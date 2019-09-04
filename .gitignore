@@ -1,0 +1,20 @@
+debug/
+release/
+*.db3
+*db3bak
+#created from qmake
+.qmake.stash 
+.qmake.cash
+Makefile 
+Makefile.debug
+Makefile.release
+.vscode/
+uic_wrapper.bat
+uic_wrapper.sh
+DkVerwaltungsQt.ini
+*.autosave
+*.pro.user
+*.old
+test_datum.s3db
+*.tmp
+*.keep
