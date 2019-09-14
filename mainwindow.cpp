@@ -1,7 +1,7 @@
 #include <QtCore>
 
 #include "dkdbhelper.h"
-
+#include "filehelper.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -19,5 +19,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_action_Neue_DB_anlegen_triggered()
 {
-    createDKDB("dkv2.s3db");
+    const QString dbfile("dkv2.s3db");
+    backupFile(dbfile);
+    createDKDB(dbfile);
 }

@@ -48,7 +48,7 @@ private:
     QSqlDatabase* Db;
 };
 
-bool createDKDB(const QString filename);
+bool createDKDB(const QString& filename);
 
 
 

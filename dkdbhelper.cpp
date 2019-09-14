@@ -20,27 +20,20 @@ bool createTables( const QSqlDatabase& db)
 bool insertInterestRates(const QSqlDatabase& db)
 {
     QString sqlZinssaetze ("INSERT INTO DKZinssaetze (Zinssatz, Bemerkung) VALUES ");
+
     sqlZinssaetze += "(" + QString::number(0.) + ",'Helden')";
     for (double zins=0.1; zins < .6; zins+=0.1)
-    {
-        sqlZinssaetze +=",";
-        sqlZinssaetze += "(" + QString::number(zins) + ",'Freunde')";
-    }
+        sqlZinssaetze += ", (" + QString::number(zins) + ",'Freunde')";
     for (double zins=.6; zins < 1.1; zins+=0.1)
-    {
-        sqlZinssaetze +=",";
-        sqlZinssaetze += "(" + QString::number(zins) + ",'Förderer')";
-    }
+        sqlZinssaetze += ", (" + QString::number(zins) + ",'Förderer')";
     for (double zins=1.1; zins < 2.; zins+=0.1)
-    {
-        sqlZinssaetze +=",";
-        sqlZinssaetze += "(" + QString::number(zins) + ",'Investoren')";
-    }
+        sqlZinssaetze += ", (" + QString::number(zins) + ",'Investoren')";
+
     QSqlQuery q(db);
     return q.exec(sqlZinssaetze);
 }
 
-bool createDKDB(const QString filename)
+bool createDKDB(const QString& filename)
 {
     if( QFile(filename).exists())
     {

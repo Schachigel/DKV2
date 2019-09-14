@@ -26,11 +26,13 @@ CONFIG += c++11
 
 SOURCES += \
         dkdbhelper.cpp \
+        filehelper.cpp \
         main.cpp \
         mainwindow.cpp
 
 HEADERS += \
         dkdbhelper.h \
+        filehelper.h \
         mainwindow.h
 
 FORMS += \
