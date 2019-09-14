@@ -15,6 +15,11 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void on_action_Neue_DB_Anlegen_triggered();
+
+    void on_action_Neue_DB_anlegen_triggered();
+
 private:
     Ui::MainWindow *ui;
 };

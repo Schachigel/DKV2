@@ -1,24 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow" >
-  <property name="geometry" >
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>429</width>
+    <height>296</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QMenuBar" name="menuBar" />
-  <widget class="QToolBar" name="mainToolBar" />
-  <widget class="QWidget" name="centralWidget" />
-  <widget class="QStatusBar" name="statusBar" />
+  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>429</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuDatenbank">
+    <property name="title">
+     <string>DK Datenbank</string>
+    </property>
+    <addaction name="action_Neue_DB_anlegen"/>
+    <addaction name="actionDBoeffnen"/>
+    <addaction name="actionDB_schliessen"/>
+   </widget>
+   <widget class="QMenu" name="menuDK_Geber">
+    <property name="title">
+     <string>DK Geber</string>
+    </property>
+    <addaction name="action_Liste"/>
+   </widget>
+   <widget class="QMenu" name="menuVertr_ge">
+    <property name="title">
+     <string>Verträge</string>
+    </property>
+   </widget>
+   <addaction name="menuDatenbank"/>
+   <addaction name="menuDK_Geber"/>
+   <addaction name="menuVertr_ge"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="action_Neue_DB_anlegen">
+   <property name="text">
+    <string>&amp;Neue Anlegen</string>
+   </property>
+   <property name="toolTip">
+    <string>Legen Sie hiermit eine leere DK Datenbank an</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionDBoeffnen">
+   <property name="text">
+    <string>&amp;Öffnen</string>
+   </property>
+   <property name="toolTip">
+    <string>Öffnen Sie hiermit eine existierende Datenbank</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionDB_schliessen">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Schließen</string>
+   </property>
+   <property name="toolTip">
+    <string>Schließen Sie hiermit die geöffnete Datenbank</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_Liste">
+   <property name="text">
+    <string>&amp;Liste</string>
+   </property>
+   <property name="toolTip">
+    <string>Zeigt eine Liste aller DK Geber an</string>
+   </property>
+  </action>
  </widget>
- <layoutDefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
+ <layoutdefault spacing="6" margin="11"/>
  <resources/>
  <connections/>
 </ui>
