@@ -55,7 +55,7 @@ QString getInitialDb()
     {
         if( dbfile == "")
         {
-            dbfile = QFileDialog::getSaveFileName(nullptr, "DkVerarbeitungs Datenbank", "dk-DB Dateien (*.s3db)", "*.s3db", nullptr,QFileDialog::DontConfirmOverwrite);
+            dbfile = QFileDialog::getSaveFileName(nullptr, "DkVerarbeitungs Datenbank", "*.s3db", "dk-DB Dateien (*.s3db)", nullptr,QFileDialog::DontConfirmOverwrite);
             qDebug() << "DbFile from user: " << dbfile;
             if( dbfile == "") return QString();
         }
@@ -64,7 +64,6 @@ QString getInitialDb()
             if( !createDKDB(dbfile))
                 return QString();
             qDebug() << "created new DbFile: " << dbfile;
-            return dbfile;
         }
         if( isValidDb(dbfile))
         {

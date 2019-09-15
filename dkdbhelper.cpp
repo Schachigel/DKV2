@@ -6,49 +6,49 @@
 
 #include "dkdbhelper.h"
 
-static dkdbschema dbstructure;
+static dbstructure dkdbstructure;
 
 void initDbHelper()
 {
-    dkdbtable DkGeber("DKGeber");
-    DkGeber.Fields.append(dkdbfield("id", "INTEGER DEFAULT '1' NOT NULL PRIMARY KEY AUTOINCREMENT"));
-    DkGeber.Fields.append(dkdbfield("Vorname", "TEXT  NOT NULL"));
-    DkGeber.Fields.append(dkdbfield("Nachname", "TEXT  NOT NULL"));
-    DkGeber.Fields.append(dkdbfield("Strasse", "TEXT  NOT NULL"));
-    DkGeber.Fields.append(dkdbfield("Plz", "TEXT  NOT NULL"));
-    DkGeber.Fields.append(dkdbfield("Stadt", "TEXT  NOT NULL"));
-    DkGeber.Fields.append(dkdbfield("IBAN", "TEXT"));
-    DkGeber.Fields.append(dkdbfield("BIC", "TEXT"));
-    dbstructure.Tables.append(DkGeber);
+    dbtable DkGeber("DKGeber");
+    DkGeber.Fields.append(dbfield("id", "INTEGER DEFAULT '1' NOT NULL PRIMARY KEY AUTOINCREMENT"));
+    DkGeber.Fields.append(dbfield("Vorname", "TEXT  NOT NULL"));
+    DkGeber.Fields.append(dbfield("Nachname", "TEXT  NOT NULL"));
+    DkGeber.Fields.append(dbfield("Strasse", "TEXT  NOT NULL"));
+    DkGeber.Fields.append(dbfield("Plz", "TEXT  NOT NULL"));
+    DkGeber.Fields.append(dbfield("Stadt", "TEXT  NOT NULL"));
+    DkGeber.Fields.append(dbfield("IBAN", "TEXT"));
+    DkGeber.Fields.append(dbfield("BIC", "TEXT"));
+    dkdbstructure.Tables.append(DkGeber);
 
-    dkdbtable DkVertrag("DKVertrag");
-    DkVertrag.Fields.append((dkdbfield("id", "INTEGER DEFAULT '0' NOT NULL PRIMARY KEY AUTOINCREMENT")));
-    DkVertrag.Fields.append((dkdbfield("DKGeberId", "INTEGER FOREIGN_KEY REFERENCES [DKGeber](id)")));
-    DkVertrag.Fields.append((dkdbfield("Kennung", "TEXT  NULL")));
-    DkVertrag.Fields.append((dkdbfield("Betrag", "FLOAT DEFAULT '0,0' NOT NULL")));
-    DkVertrag.Fields.append((dkdbfield("Wert", "FLOAT DEFAULT '0,0' NULL")));
-    DkVertrag.Fields.append((dkdbfield("ZSatz", "FLOAT DEFAULT '0,0' NOT NULL")));
-    DkVertrag.Fields.append((dkdbfield("tesaurierend", "BOOLEAN DEFAULT '1' NOT NULL")));
-    DkVertrag.Fields.append((dkdbfield("Vertragsdatum", "DATE  NULL")));
-    DkVertrag.Fields.append((dkdbfield("aktiv", "BOOLEAN DEFAULT 'false' NOT NULL")));
-    DkVertrag.Fields.append((dkdbfield("LaufzeitEnde", "DATE DEFAULT '3000-12-31' NOT NULL")));
-    DkVertrag.Fields.append((dkdbfield("LetzteZinsberechnung", "DATE  NULL")));
-    dbstructure.Tables.append(DkVertrag);
+    dbtable DkVertrag("DKVertrag");
+    DkVertrag.Fields.append((dbfield("id", "INTEGER DEFAULT '0' NOT NULL PRIMARY KEY AUTOINCREMENT")));
+    DkVertrag.Fields.append((dbfield("DKGeberId", "INTEGER FOREIGN_KEY REFERENCES [DKGeber](id)")));
+    DkVertrag.Fields.append((dbfield("Kennung", "TEXT  NULL")));
+    DkVertrag.Fields.append((dbfield("Betrag", "FLOAT DEFAULT '0,0' NOT NULL")));
+    DkVertrag.Fields.append((dbfield("Wert", "FLOAT DEFAULT '0,0' NULL")));
+    DkVertrag.Fields.append((dbfield("ZSatz", "FLOAT DEFAULT '0,0' NOT NULL")));
+    DkVertrag.Fields.append((dbfield("tesaurierend", "BOOLEAN DEFAULT '1' NOT NULL")));
+    DkVertrag.Fields.append((dbfield("Vertragsdatum", "DATE  NULL")));
+    DkVertrag.Fields.append((dbfield("aktiv", "BOOLEAN DEFAULT 'false' NOT NULL")));
+    DkVertrag.Fields.append((dbfield("LaufzeitEnde", "DATE DEFAULT '3000-12-31' NOT NULL")));
+    DkVertrag.Fields.append((dbfield("LetzteZinsberechnung", "DATE  NULL")));
+    dkdbstructure.Tables.append(DkVertrag);
 
-    dkdbtable Buchung("Buchungen");
-    Buchung.Fields.append(((dkdbfield("id", "INTEGER DEFAULT '0' NOT NULL PRIMARY KEY AUTOINCREMENT"))));
-    Buchung.Fields.append(((dkdbfield("VertragId", "INTEGER FOREIGN_KEY REFERENCES [DKVertrag](id)"))));
-    Buchung.Fields.append(((dkdbfield("Buchungsart", "INTEGER DEFAULT '0' NOT NULL"))));
-    Buchung.Fields.append(((dkdbfield("Betrag", "FLOAT DEFAULT '0' NULL"))));
-    Buchung.Fields.append(((dkdbfield("Datum", "DATE  NULL"))));
-    Buchung.Fields.append(((dkdbfield("Bemerkung", "TEXT  NULL"))));
-    dbstructure.Tables.append(Buchung);
+    dbtable Buchung("Buchungen");
+    Buchung.Fields.append(((dbfield("id", "INTEGER DEFAULT '0' NOT NULL PRIMARY KEY AUTOINCREMENT"))));
+    Buchung.Fields.append(((dbfield("VertragId", "INTEGER FOREIGN_KEY REFERENCES [DKVertrag](id)"))));
+    Buchung.Fields.append(((dbfield("Buchungsart", "INTEGER DEFAULT '0' NOT NULL"))));
+    Buchung.Fields.append(((dbfield("Betrag", "FLOAT DEFAULT '0' NULL"))));
+    Buchung.Fields.append(((dbfield("Datum", "DATE  NULL"))));
+    Buchung.Fields.append(((dbfield("Bemerkung", "TEXT  NULL"))));
+    dkdbstructure.Tables.append(Buchung);
 
-    dkdbtable Zinse("DKZinssaetze");
-    Zinse.Fields.append(dkdbfield("id","INTEGER DEFAULT '1' NOT NULL PRIMARY KEY AUTOINCREMENT"));
-    Zinse.Fields.append(dkdbfield("Zinssatz","FLOAT DEFAULT '0,0' UNIQUE NULL"));
-    Zinse.Fields.append(dkdbfield("Bemerkung","TEXT NULL"));
-    dbstructure.Tables.append(Zinse);
+    dbtable Zinse("DKZinssaetze");
+    Zinse.Fields.append(dbfield("id","INTEGER DEFAULT '1' NOT NULL PRIMARY KEY AUTOINCREMENT"));
+    Zinse.Fields.append(dbfield("Zinssatz","FLOAT DEFAULT '0,0' UNIQUE NULL"));
+    Zinse.Fields.append(dbfield("Bemerkung","TEXT NULL"));
+    dkdbstructure.Tables.append(Zinse);
 
 }
 
@@ -56,7 +56,7 @@ bool createTables( const QSqlDatabase& db)
 {
     QSqlQuery q(db);
     bool ret(true);
-    for(dkdbtable table :dbstructure.Tables)
+    for(dbtable table :dkdbstructure.Tables)
         ret &= q.exec(table.CreateTableSQL());
     return ret;
 }
@@ -86,12 +86,13 @@ bool createDKDB(const QString& filename)
             return false;
     }
     bool ret = true;
+    dbCloser closer;
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(filename);
     ret &= db.open();
     if( !ret) return ret;
 
-    dbCloser c(&db);
+    closer.set(&db);
     db.transaction();
     ret &= createTables(db);
     ret &= insertInterestRates(db);
@@ -102,17 +103,16 @@ bool createDKDB(const QString& filename)
 
 bool hasAllTables(QSqlDatabase& db)
 {
-    QSqlQuery sqlp("SELECT * FROM DKPersonen", db);
-    if( !sqlp.exec())
-        return false;
-    QSqlQuery sqlb("SELECT * FROM DKBuchungen", db);
-    if( !sqlb.exec())
-        return false;
-    QSqlQuery sqlz("SELECT * FROM DKZinssaetze", db);
-    if( !sqlz.exec())
-        return false;
+    for( auto table : dkdbstructure.Tables)
+    {
+        QSqlQuery sql(QString("SELECT * FROM ") + table.Name, db);
+        if( !sql.exec())
+        {
+            qDebug() << "testing for table " << table.Name << " failed";
+            return false;
+        }
+    }
     return true;
-
 }
 
 bool isValidDb(const QString& filename)
@@ -120,12 +120,12 @@ bool isValidDb(const QString& filename)
     if( filename == "") return false;
     if( !QFile::exists(filename)) return false;
 
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    dbCloser closer;
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "validate");
     db.setDatabaseName(filename);
     if( !db.open())
         return false;
-
-    dbCloser c(&db);
+    closer.set(&db);
     if( !hasAllTables(db))
         return false;
 
