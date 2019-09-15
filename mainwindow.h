@@ -16,11 +16,16 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_action_Neue_DB_Anlegen_triggered();
 
     void on_action_Neue_DB_anlegen_triggered();
 
+    void on_actionProgramm_beenden_triggered();
+
+    void on_actionDBoeffnen_triggered();
+
 private:
+    void initSettings();
+
     Ui::MainWindow *ui;
 };
 

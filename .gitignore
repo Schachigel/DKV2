@@ -1,5 +1,6 @@
 debug/
 release/
+test/
 *.db3
 *db3bak
 #created from qmake

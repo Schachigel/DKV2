@@ -33,7 +33,7 @@ void logger(QtMsgType type, const QMessageLogContext &context, const QString &ms
 
 void initLogging()
 {
-    logFilePath = QDir::tempPath() + QDir::separator() + "dkv2.log";
+    logFilePath = QDir::toNativeSeparators(QDir::tempPath()) + QDir::separator() + "dkv2.log";
     if( backupFile(logFilePath))
         QFile::remove(logFilePath);
     qInstallMessageHandler(logger);
@@ -45,6 +45,8 @@ int main(int argc, char *argv[])
 
     qDebug() << "DKV2 started";
     QApplication a(argc, argv);
+    a.setOrganizationName("4-MHS"); // for our settings
+    a.setApplicationName("DKV2");
     MainWindow w;
     w.show();
     int ret = a.exec();
