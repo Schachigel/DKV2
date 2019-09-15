@@ -1,13 +1,20 @@
 #include "mainwindow.h"
 
 #include "filehelper.h"
+#include "dkdbhelper.h"
+
 
 #include <QApplication>
+#include <QSettings>
+#include <qfiledialog.h>
+#include <qmessagebox.h>
 #include <QDebug>
 #include <QTime>
 #include <qfile.h>
 #include <qdir.h>
 #include <QTextStream>
+
+#include <windows.h>
 
 static QString logFilePath;
 static QFile* outFile_p(nullptr);
@@ -39,14 +46,57 @@ void initLogging()
     qInstallMessageHandler(logger);
 }
 
+QString getInitialDb()
+{
+    QSettings config;
+    QString dbfile = config.value("db/last").toString();
+    qDebug() << "DbFile read from configuration: " << dbfile;
+    do
+    {
+        if( dbfile == "")
+        {
+            dbfile = QFileDialog::getSaveFileName(nullptr, "DkVerarbeitungs Datenbank", "dk-DB Dateien (*.s3db)", "*.s3db", nullptr,QFileDialog::DontConfirmOverwrite);
+            qDebug() << "DbFile from user: " << dbfile;
+            if( dbfile == "") return QString();
+        }
+        if(!QFile::exists(dbfile))
+        {
+            if( !createDKDB(dbfile))
+                return QString();
+            qDebug() << "created new DbFile: " << dbfile;
+            return dbfile;
+        }
+        if( isValidDb(dbfile))
+        {
+            config.setValue("db/last", dbfile);
+            return dbfile;
+        }
+        else
+        {
+            auto reply = QMessageBox::question(nullptr, "DK Datenbank ungültig", "Möchten Sie eine DK Datenbankdatei auswählen?", QMessageBox::Yes|QMessageBox::No);
+            if( reply == QMessageBox::Cancel || reply == QMessageBox::No)
+                return QString();
+            dbfile = "";
+        }
+    }
+    while(true);
+}
+
 int main(int argc, char *argv[])
 {
     initLogging();
+    initDbHelper();
 
     qDebug() << "DKV2 started";
     QApplication a(argc, argv);
-    a.setOrganizationName("4-MHS"); // for our settings
+    a.setOrganizationName("4-MHS"); // used for our settings
     a.setApplicationName("DKV2");
+
+    if( getInitialDb() == "")
+    {
+        qDebug() << "No valid DB -> abort";
+        return ERROR_FILE_NOT_FOUND;
+    }
     MainWindow w;
     w.show();
     int ret = a.exec();

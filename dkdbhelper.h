@@ -1,6 +1,56 @@
 #ifndef DKDBHELPER_H
 #define DKDBHELPER_H
 #include <QSqlDatabase>
+#include <qlist.h>
+#include <qstring.h>
+
+struct dkdbfield
+{
+    QString name;
+    QString CreationSQL;
+    dkdbfield(QString n, QString c)
+    {
+        name = n;
+        CreationSQL = c;
+    }
+};
+
+struct dkdbtable{
+    QString Name;
+    QList<dkdbfield> Fields;
+    dkdbtable(QString n)
+    {
+        Name =n;
+    }
+    QString CreateTableSQL()
+    {
+        QString sql("CREATE TABLE [" + Name + "] (");
+        for(dkdbfield Field : Fields)
+        {
+            sql.append("[" + Field.name + "] ");
+            sql.append( Field.CreationSQL + ",");
+        }
+        sql.chop(1); // last comma
+        sql.append(")");
+        return sql;
+    }
+};
+
+struct dkdbschema{
+    QList<dkdbtable> Tables;
+    QString checkTablesSql()
+    {
+        QString sql("SELECT * FROM ");
+        for( dkdbtable table : Tables)
+        {
+            sql.append(table.Name);
+            sql.append(",");
+        }
+        sql.chop(1);
+        return sql;
+    }
+};
+
 
 const QString sqls_createDkGeber("CREATE TABLE [DKGeber] ("
          "[id] INTEGER DEFAULT '1' NOT NULL PRIMARY KEY AUTOINCREMENT,"
@@ -9,8 +59,8 @@ const QString sqls_createDkGeber("CREATE TABLE [DKGeber] ("
          "[Strasse] TEXT  NOT NULL,"
          "[Plz] TEXT  NOT NULL,"
          "[Stadt] TEXT  NOT NULL,"
-         "[IBAN] TEXT  NULL,"
-         "[BIC] TEXT  NULL)");
+         "[IBAN] TEXT,"
+         "[BIC] TEXT)");
 
 const QString sqls_createDkVertrag("CREATE TABLE [DKVertrag] ("
         "[id] INTEGER DEFAULT '0' NOT NULL PRIMARY KEY AUTOINCREMENT,"
@@ -48,7 +98,10 @@ private:
     QSqlDatabase* Db;
 };
 
+void initDbHelper();
+
 bool createDKDB(const QString& filename);
+bool isValidDb(const QString& filename);
 
 
 

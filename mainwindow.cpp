@@ -14,15 +14,14 @@ void MainWindow::initSettings()
     QSettings config;
     QString dbfile = config.value("db/last").toString();
     qDebug() << "DbFile read from configuration: " << dbfile;
-    ui->statusBar->showMessage(dbfile);
 }
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
     initSettings();
+    ui->setupUi(this);
 }
 
 MainWindow::~MainWindow()
