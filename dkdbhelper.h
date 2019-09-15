@@ -54,8 +54,7 @@ struct dbstructure{
 class dbCloser
 {   // for use on the stack only
 public:
-    dbCloser() : Db (nullptr){}
-//    dbCloser (QSqlDatabase* d){Db=d;}
+    dbCloser() : Db (nullptr){} // create closer before the database
     ~dbCloser(){if( !Db) return; Db->close(); Db->removeDatabase(Db->connectionName());}
     void set(QSqlDatabase* p){ Db=p;}
 private:

@@ -24,7 +24,7 @@ private slots:
     void on_actionDBoeffnen_triggered();
 
 private:
-    void initSettings();
+    void openAppDefaultDb(QString f=QString(""));
 
     Ui::MainWindow *ui;
 };

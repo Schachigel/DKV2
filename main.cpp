@@ -50,7 +50,7 @@ QString getInitialDb()
 {
     QSettings config;
     QString dbfile = config.value("db/last").toString();
-    qDebug() << "DbFile read from configuration: " << dbfile;
+    qDebug() << "DbFile from configuration: " << dbfile;
     do
     {
         if( dbfile == "")
@@ -86,20 +86,20 @@ int main(int argc, char *argv[])
     initLogging();
     initDbHelper();
 
-    qDebug() << "DKV2 started";
+    qInfo() << "DKV2 started";
     QApplication a(argc, argv);
-    a.setOrganizationName("4-MHS"); // used for our settings
+    a.setOrganizationName("4-MHS"); // used to store our settings
     a.setApplicationName("DKV2");
 
     if( getInitialDb() == "")
     {
-        qDebug() << "No valid DB -> abort";
+        qCritical() << "No valid DB -> abort";
         return ERROR_FILE_NOT_FOUND;
     }
     MainWindow w;
     w.show();
     int ret = a.exec();
-    qDebug() << "DKV2 finished";
+    qInfo() << "DKV2 finished";
 
     return ret;
 
