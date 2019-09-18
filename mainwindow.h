@@ -23,10 +23,21 @@ private slots:
 
     void on_actionDBoeffnen_triggered();
 
+    void on_action_Liste_triggered();
+
+    void on_actioncreateSampleData_triggered();
+
 private:
     void openAppDefaultDb(QString f=QString(""));
+    void preparePersonTableView();
 
     Ui::MainWindow *ui;
+
+    enum stackedWidgedsIndex
+    {
+        emptyPageIndex = 0,
+        PersonListIndex = 1
+    };
 };
 
 #endif // MAINWINDOW_H

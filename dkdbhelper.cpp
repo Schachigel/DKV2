@@ -11,7 +11,7 @@ static dbstructure dkdbstructure;
 void initDbHelper()
 {
     dbtable DkGeber("DKGeber");
-    DkGeber.Fields.append(dbfield("id", "INTEGER DEFAULT '1' NOT NULL PRIMARY KEY AUTOINCREMENT"));
+    DkGeber.Fields.append(dbfield("id", "INTEGER DEFAULT '1' NOT NULL PRIMARY KEY"));
     DkGeber.Fields.append(dbfield("Vorname", "TEXT  NOT NULL"));
     DkGeber.Fields.append(dbfield("Nachname", "TEXT  NOT NULL"));
     DkGeber.Fields.append(dbfield("Strasse", "TEXT  NOT NULL"));
