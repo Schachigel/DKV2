@@ -48,7 +48,7 @@ void MainWindow::openAppDefaultDb( QString newDbFile)
     db.setDatabaseName(newDbFile);
     db.open();
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
-    ui->statusBar->showMessage(newDbFile);
+    setStatus(newDbFile);
 }
 
 void MainWindow::preparePersonTableView()
@@ -61,6 +61,11 @@ void MainWindow::preparePersonTableView()
     ui->PersonsTable->hideColumn(0);
 }
 
+void MainWindow::setStatus(QString statustext)
+{
+    ui->statusLabel->setText(statustext);
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -69,9 +74,9 @@ MainWindow::MainWindow(QWidget *parent) :
 #ifdef QT_DEBUG
     ui->menuDebug->setTitle("Debug");
 #endif
+    ui->statusBar->addPermanentWidget(ui->statusLabel);
     setCentralWidget(ui->stackedWidget);
     openAppDefaultDb();
-    preparePersonTableView();
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 
@@ -92,7 +97,7 @@ void MainWindow::on_action_Neue_DB_anlegen_triggered()
     config.setValue("db/last", dbfile);
     openAppDefaultDb();
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
-    ui->statusBar->showMessage(dbfile);
+    setStatus(dbfile);
 }
 
 void MainWindow::on_actionProgramm_beenden_triggered()
@@ -115,6 +120,7 @@ void MainWindow::on_actionDBoeffnen_triggered()
 
 void MainWindow::on_action_Liste_triggered()
 {
+    preparePersonTableView();
     ui->stackedWidget->setCurrentIndex(PersonListIndex);
 }
 
@@ -122,44 +128,125 @@ QString single_quoted(QString s)
 {
     return "'" + s + "'";
 }
+struct PersonData
+{
+    QString Vorname;
+    QString Nachname;
+    QString Strasse;
+    QString Plz;
+    QString Stadt;
+    QString Iban;
+    QString Bic;
+};
+
+bool savePersonDataToDatabase(const PersonData& p)
+{
+    QSqlQuery query("", QSqlDatabase::database());
+    QString sql = QString("INSERT INTO DKGeber (Vorname, Nachname, Strasse, Plz, Stadt, IBAN, BIC) VALUES ( :vorn, :nachn, :strasse, :plz, :stadt, :iban, :bic)");
+    query.prepare(sql);
+    query.bindValue(":vorn", p.Vorname);
+    query.bindValue(":nachn", p.Nachname);
+    query.bindValue(":strasse", p.Strasse);
+    query.bindValue(":plz",  p.Plz);
+    query.bindValue(":stadt", p.Stadt);
+    query.bindValue(":iban", p.Iban);
+    query.bindValue(":bic", p.Bic);
+    if( !query.exec())
+    {
+        qWarning() << "Creating demo data failed\n" << query.lastQuery() << endl << query.lastError().text();
+        return false;
+    }
+    else
+    {
+        qDebug() << query.lastQuery() << "executed successfully\n" << sql;
+        return true;
+    }
+}
 
 void MainWindow::on_actioncreateSampleData_triggered()
 {
     QList<QString> Vornamen {"Holger", "Volker", "Peter", "Hans", "Susi", "Roland", "Claudia", "Emil", "Evelyn", "Ötzgür"};
     QList<QString> Nachnamen {"Maier", "Müller", "Schmit", "Kramp", "Adams", "Häcker", "Maresch", "Beutl", "Chauchev", "Chen"};
     QList<QString> Strassen {"Hauptstrasse", "Nebenstrasse", "Bahnhofstrasse", "Kirchstraße", "Dorfstrasse"};
-    QList <QPair<int, QString>> Cities {{68305, "Mannheim"}, {69123, "Heidelberg"}, {69123, "Karlsruhe"}, {90345, "Hamburg"}};
+    QList <QPair<QString, QString>> Cities {{"68305", "Mannheim"}, {"69123", "Heidelberg"}, {"69123", "Karlsruhe"}, {"90345", "Hamburg"}};
     QRandomGenerator rand(::GetTickCount());
-    QSqlQuery query("", QSqlDatabase::database());
     for( int i = 0; i<30; i++)
     {
-        QString sql = QString("INSERT INTO DKGeber (Vorname, Nachname, Strasse, Plz, Stadt, IBAN, BIC) VALUES ( :vorn, :nachn, :strasse, :plz, :stadt, :iban, :bic)");
-        QString Vorname  = single_quoted( Vornamen [rand.bounded(Vornamen.count ())]);
-        QString Nachname = single_quoted( Nachnamen[rand.bounded(Nachnamen.count())]);
-        QString Strasse =  single_quoted( Strassen[rand.bounded(Strassen.count())]);
-        int stadtindex = rand.bounded(Cities.count());
-        //sql = sql.replace(":vorn", Vorname);
-        sql = sql.replace(":nachn", Nachname);
-        sql = sql.replace(":strasse", Strasse);
-        sql = sql.replace(":plz", single_quoted( QString::number(Cities[stadtindex].first)));
-        sql = sql.replace(":stadt", single_quoted(  Cities[stadtindex].second));
-        sql = sql.replace(":iban", single_quoted("iban xxxxxxxxxxxxxxxxx"));
-        sql = sql.replace(":bic", single_quoted("BICxxxxxxxx"));
-
-/*        query.bindValue(":nn", Nachname);
-        query.bindValue(":s", Strasse);
-        query.bindValue(":plz", single_quoted( QString::number(Cities[stadtindex].first)));
-        query.bindValue(":st", single_quoted(  Cities[stadtindex].second));
-        query.bindValue(":iban", "'iban'");
-        query.bindValue(":bic", "'bic'");
-*/
-        query.prepare(sql);
-        query.bindValue(":vorn", Vorname);
-        if( !query.exec())
-            qWarning() << "Creating demo data failed\n" << query.lastQuery() << endl << query.lastError().text();
-        else
-            qDebug() << query.lastQuery() << "executed successfully\n" << sql;
+        PersonData p;
+        p.Vorname  =  Vornamen [rand.bounded(Vornamen.count ())];
+        p.Nachname = Nachnamen[rand.bounded(Nachnamen.count())];
+        p.Strasse =  Strassen[rand.bounded(Strassen.count())];
+        p.Plz = Cities[rand.bounded(Cities.count())].first;
+        p.Stadt = Cities[rand.bounded(Cities.count())].second;
+        p.Iban = "iban xxxxxxxxxxxxxxxxx";
+        p.Bic = "BICxxxxxxxx";
+        savePersonDataToDatabase(p);
     }
+    static_cast<QSqlTableModel*>(ui->PersonsTable->model())->select();
+}
 
+bool MainWindow::savePerson()
+{
+    PersonData p{ ui->leVorname->text(),
+                ui->leNachname->text(),
+                ui->leStrasse->text(),
+                ui->lePlz->text(),
+                ui->leStadt->text(),
+                ui->leIban->text(),
+                ui->leBic->text()};
+    if( p.Vorname == "" || p.Nachname == "" || p.Strasse =="" || p.Plz == "" || p.Stadt == "")
+    {
+        QMessageBox(QMessageBox::Warning, "Daten nicht gespeichert", "Namens - und Adressfelder dürfen nicht leer sein");
+        return false;
+    }
+    savePersonDataToDatabase(p);
+    return true;
+}
 
+void MainWindow::on_actionNeuer_DK_Geber_triggered()
+{
+    ui->stackedWidget->setCurrentIndex(newPersonIndex);
+}
+
+void MainWindow::on_saveExit_clicked()
+{
+    if( savePerson())
+    {
+        emptyEditPersonFields();
+    }
+    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
+}
+
+void MainWindow::emptyEditPersonFields()
+{
+    ui->leVorname->setText("");
+    ui->leNachname->setText("");
+    ui->leStrasse->setText("");
+    ui->lePlz->setText("");
+    ui->leStadt->setText("");
+    ui->leIban->setText("");
+    ui->leBic->setText("");
+}
+
+void MainWindow::on_saveNew_clicked()
+{
+    if( savePerson())
+    {
+        emptyEditPersonFields();
+    }
+}
+
+void MainWindow::on_saveList_clicked()
+{
+    if( savePerson())
+    {
+        emptyEditPersonFields();
+        on_action_Liste_triggered();
+    }
+}
+
+void MainWindow::on_cancel_clicked()
+{
+    emptyEditPersonFields();
+    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }

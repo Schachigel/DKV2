@@ -6,53 +6,221 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1163</width>
-    <height>476</height>
+    <width>1053</width>
+    <height>713</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>-  DKV2 -</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QWidget" name="verticalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>1121</width>
-      <height>371</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="cwLayout">
-     <item>
-      <widget class="QStackedWidget" name="stackedWidget">
-       <property name="currentIndex">
-        <number>1</number>
-       </property>
-       <widget class="QWidget" name="EmptyPage"/>
-       <widget class="QWidget" name="PersonsListPage">
-        <widget class="QTableView" name="PersonsTable">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>10</y>
-           <width>971</width>
-           <height>311</height>
-          </rect>
-         </property>
-        </widget>
-       </widget>
+   <layout class="QVBoxLayout" name="verticalLayout_3">
+    <item>
+     <widget class="QLabel" name="statusLabel">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QStackedWidget" name="stackedWidget">
+      <property name="currentIndex">
+       <number>2</number>
+      </property>
+      <widget class="QWidget" name="EmptyPage">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>&lt;H2&gt;Willkommen zu DKV2- Deiner Verwaltung von Direktrediten&lt;/H2&gt;</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
-     </item>
-    </layout>
-   </widget>
+      <widget class="QWidget" name="PersonsListPage">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QTableView" name="PersonsTable"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="NeuePerson">
+       <property name="maximumSize">
+        <size>
+         <width>800</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QPushButton" name="saveNew">
+            <property name="toolTip">
+             <string>Der Datensatz wird gespeichert und ein weiterer Datensatz angelegt</string>
+            </property>
+            <property name="text">
+             <string>Speichern und neu</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="saveList">
+            <property name="toolTip">
+             <string>Der Datensatz wird gespeichert und die Liste der DK Geber wird angezeigt</string>
+            </property>
+            <property name="text">
+             <string>Speichern und zur Liste</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="saveExit">
+            <property name="toolTip">
+             <string>Der Datensatz wird gespeichert und die Eingabe neuer DK Geber wird beendet</string>
+            </property>
+            <property name="text">
+             <string>Speichern und Ende</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="cancel">
+            <property name="toolTip">
+             <string>Das Anlegen eines DK Gebers wird abgebrochen</string>
+            </property>
+            <property name="text">
+             <string>Abbrechen</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="lVorname">
+            <property name="text">
+             <string>Vorname:</string>
+            </property>
+            <property name="buddy">
+             <cstring>leVorname</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="leVorname"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lNachname">
+            <property name="text">
+             <string>Nachname:</string>
+            </property>
+            <property name="buddy">
+             <cstring>leNachname</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="leNachname"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="lStrasse">
+            <property name="text">
+             <string>Straße:</string>
+            </property>
+            <property name="buddy">
+             <cstring>leStrasse</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="leStrasse"/>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="lPlzStadt">
+            <property name="text">
+             <string>PLZ - Stadt</string>
+            </property>
+            <property name="buddy">
+             <cstring>lePlz</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,5">
+            <item>
+             <widget class="QLineEdit" name="lePlz"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="leStadt"/>
+            </item>
+           </layout>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="lIban">
+            <property name="text">
+             <string>IBAN:</string>
+            </property>
+            <property name="buddy">
+             <cstring>leIban</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLineEdit" name="leIban"/>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="lBic">
+            <property name="text">
+             <string>BIC:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QLineEdit" name="leBic"/>
+          </item>
+          <item row="5" column="1">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1163</width>
+     <width>1053</width>
      <height>26</height>
     </rect>
    </property>
@@ -71,6 +239,7 @@
      <string>DK Geber</string>
     </property>
     <addaction name="action_Liste"/>
+    <addaction name="actionNeuer_DK_Geber"/>
    </widget>
    <widget class="QMenu" name="menuVertr_ge">
     <property name="title">
@@ -167,6 +336,11 @@
    </property>
    <property name="visible">
     <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionNeuer_DK_Geber">
+   <property name="text">
+    <string>Neuer DK Geber</string>
    </property>
   </action>
  </widget>

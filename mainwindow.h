@@ -27,17 +27,31 @@ private slots:
 
     void on_actioncreateSampleData_triggered();
 
+    void on_actionNeuer_DK_Geber_triggered();
+
+    void on_saveExit_clicked();
+
+    void on_saveNew_clicked();
+
+    void on_saveList_clicked();
+
+    void on_cancel_clicked();
+
 private:
     void openAppDefaultDb(QString f=QString(""));
     void preparePersonTableView();
+    void setStatus(QString msg);
+    bool savePerson();
 
     Ui::MainWindow *ui;
 
     enum stackedWidgedsIndex
     {
         emptyPageIndex = 0,
-        PersonListIndex = 1
+        PersonListIndex = 1,
+        newPersonIndex = 2
     };
+    void emptyEditPersonFields();
 };
 
 #endif // MAINWINDOW_H

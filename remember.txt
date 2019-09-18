@@ -1,1 +1,9 @@
-ToDo: Prio 2: MRU handling
+* MRU files handling (die letzten geöffneten Dateien öffnen)
+* P Liste: Click auf Header ändert Sortierung
+* P Liste: Suchen / Filtern
+
+next:
+- verträge anlegen
+- verträge ändern
+- verträge auflisten
+
