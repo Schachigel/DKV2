@@ -66,6 +66,21 @@ void initDbHelper();
 bool createDKDB(const QString& filename);
 bool isValidDb(const QString& filename);
 
+struct PersonData
+{
+    QString Vorname;
+    QString Nachname;
+    QString Strasse;
+    QString Plz;
+    QString Stadt;
+    QString Iban;
+    QString Bic;
+};
+
+void closeDbConnection();
+void openAppDefaultDb( QString newDbFile="");
+bool savePersonDataToDatabase(const PersonData& p);
+
 
 
 #endif // DKDBHELPER_H

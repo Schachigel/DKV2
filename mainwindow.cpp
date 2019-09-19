@@ -14,43 +14,6 @@
 #include <qsqlquerymodel.h>
 #include <qsqltablemodel.h>
 
-
-void closeDbConnection()
-{
-    QList<QString> cl = QSqlDatabase::connectionNames();
-    if( cl.count() == 0)
-        return;
-    if( cl.count() > 1)
-    {
-        qWarning() << "Found " << cl.count() << "connections open, when there should be 1 or 0";
-        return;
-    }
-    QSqlDatabase::removeDatabase(cl[0]);
-    qInfo() << "Database connection " << cl[0] << " removed";
-}
-
-void MainWindow::openAppDefaultDb( QString newDbFile)
-{
-    closeDbConnection();
-    QSettings config;
-    if( newDbFile == "")
-    {
-        newDbFile = config.value("db/last").toString();
-        qInfo() << "opening DbFile read from configuration: " << newDbFile;
-    }
-    else
-    {
-        config.setValue("db/last", newDbFile);
-    }
-
-    // setting the default database for the application
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(newDbFile);
-    db.open();
-    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
-    setStatus(newDbFile);
-}
-
 void MainWindow::preparePersonTableView()
 {
     QSqlTableModel* model = new QSqlTableModel(ui->PersonsTable);
@@ -61,9 +24,10 @@ void MainWindow::preparePersonTableView()
     ui->PersonsTable->hideColumn(0);
 }
 
-void MainWindow::setStatus(QString statustext)
+void MainWindow::setCurrentDbInStatusBar()
 {
-    ui->statusLabel->setText(statustext);
+    QSettings config;
+    ui->statusLabel->setText(config.value("db/last").toString());
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -74,9 +38,14 @@ MainWindow::MainWindow(QWidget *parent) :
 #ifdef QT_DEBUG
     ui->menuDebug->setTitle("Debug");
 #endif
+
     ui->statusBar->addPermanentWidget(ui->statusLabel);
+    setCurrentDbInStatusBar();
+
     setCentralWidget(ui->stackedWidget);
     openAppDefaultDb();
+
+
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 
@@ -97,7 +66,7 @@ void MainWindow::on_action_Neue_DB_anlegen_triggered()
     config.setValue("db/last", dbfile);
     openAppDefaultDb();
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
-    setStatus(dbfile);
+    setCurrentDbInStatusBar();
 }
 
 void MainWindow::on_actionProgramm_beenden_triggered()
@@ -122,45 +91,6 @@ void MainWindow::on_action_Liste_triggered()
 {
     preparePersonTableView();
     ui->stackedWidget->setCurrentIndex(PersonListIndex);
-}
-
-QString single_quoted(QString s)
-{
-    return "'" + s + "'";
-}
-struct PersonData
-{
-    QString Vorname;
-    QString Nachname;
-    QString Strasse;
-    QString Plz;
-    QString Stadt;
-    QString Iban;
-    QString Bic;
-};
-
-bool savePersonDataToDatabase(const PersonData& p)
-{
-    QSqlQuery query("", QSqlDatabase::database());
-    QString sql = QString("INSERT INTO DKGeber (Vorname, Nachname, Strasse, Plz, Stadt, IBAN, BIC) VALUES ( :vorn, :nachn, :strasse, :plz, :stadt, :iban, :bic)");
-    query.prepare(sql);
-    query.bindValue(":vorn", p.Vorname);
-    query.bindValue(":nachn", p.Nachname);
-    query.bindValue(":strasse", p.Strasse);
-    query.bindValue(":plz",  p.Plz);
-    query.bindValue(":stadt", p.Stadt);
-    query.bindValue(":iban", p.Iban);
-    query.bindValue(":bic", p.Bic);
-    if( !query.exec())
-    {
-        qWarning() << "Creating demo data failed\n" << query.lastQuery() << endl << query.lastError().text();
-        return false;
-    }
-    else
-    {
-        qDebug() << query.lastQuery() << "executed successfully\n" << sql;
-        return true;
-    }
 }
 
 void MainWindow::on_actioncreateSampleData_triggered()
@@ -250,3 +180,4 @@ void MainWindow::on_cancel_clicked()
     emptyEditPersonFields();
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
+

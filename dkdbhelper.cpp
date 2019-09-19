@@ -131,3 +131,63 @@ bool isValidDb(const QString& filename)
 
     return true;
 }
+
+void closeDbConnection()
+{
+    QList<QString> cl = QSqlDatabase::connectionNames();
+    if( cl.count() == 0)
+        return;
+    if( cl.count() > 1)
+    {
+        qWarning() << "Found " << cl.count() << "connections open, when there should be 1 or 0";
+        return;
+    }
+    QSqlDatabase::removeDatabase(cl[0]);
+    qInfo() << "Database connection " << cl[0] << " removed";
+}
+
+void openAppDefaultDb( QString newDbFile)
+{
+    closeDbConnection();
+    QSettings config;
+    if( newDbFile == "")
+    {
+        newDbFile = config.value("db/last").toString();
+        qInfo() << "opening DbFile read from configuration: " << newDbFile;
+    }
+    else
+    {
+        config.setValue("db/last", newDbFile);
+    }
+
+    // setting the default database for the application
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(newDbFile);
+    db.open();
+    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
+}
+
+bool savePersonDataToDatabase(const PersonData& p)
+{
+    QSqlQuery query("", QSqlDatabase::database()); // assuming the app database is open
+    QString sql = QString("INSERT INTO DKGeber (Vorname, Nachname, Strasse, Plz, Stadt, IBAN, BIC) VALUES ( :vorn, :nachn, :strasse, :plz, :stadt, :iban, :bic)");
+    query.prepare(sql);
+    query.bindValue(":vorn", p.Vorname);
+    query.bindValue(":nachn", p.Nachname);
+    query.bindValue(":strasse", p.Strasse);
+    query.bindValue(":plz",  p.Plz);
+    query.bindValue(":stadt", p.Stadt);
+    query.bindValue(":iban", p.Iban);
+    query.bindValue(":bic", p.Bic);
+    if( !query.exec())
+    {
+        qWarning() << "Creating demo data failed\n" << query.lastQuery() << endl << query.lastError().text();
+        return false;
+    }
+    else
+    {
+        qDebug() << query.lastQuery() << "executed successfully\n" << sql;
+        return true;
+    }
+}
+

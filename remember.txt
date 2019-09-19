@@ -1,9 +1,15 @@
+to do:
 * MRU files handling (die letzten geöffneten Dateien öffnen)
+* Fenster Position merken / beim Start setzen (Multi Screen)
+
 * P Liste: Click auf Header ändert Sortierung
-* P Liste: Suchen / Filtern
+* P Liste: Suchen / Filtern Vorname.Nachname
+* P Liste: Spalte "Anzahl Verträge"
+* P Liste: Spalten breiten "merken"
 
 next:
+- P Liste r-click Menu anlegen
 - verträge anlegen
 - verträge ändern
-- verträge auflisten
+- verträge pro person auflisten
 

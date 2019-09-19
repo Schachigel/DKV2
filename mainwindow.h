@@ -38,12 +38,11 @@ private slots:
     void on_cancel_clicked();
 
 private:
-    void openAppDefaultDb(QString f=QString(""));
-    void preparePersonTableView();
-    void setStatus(QString msg);
-    bool savePerson();
-
     Ui::MainWindow *ui;
+
+    void preparePersonTableView();
+    void setCurrentDbInStatusBar();
+    bool savePerson();
 
     enum stackedWidgedsIndex
     {
