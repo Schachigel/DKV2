@@ -37,6 +37,8 @@ private slots:
 
     void on_cancel_clicked();
 
+    void on_stackedWidget_currentChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
 

@@ -91,7 +91,9 @@ void MainWindow::on_action_Liste_triggered()
 {
     preparePersonTableView();
     ui->stackedWidget->setCurrentIndex(PersonListIndex);
-}
+    if( !ui->PersonsTable->currentIndex().isValid())
+        ui->PersonsTable->selectRow(0);
+ }
 
 void MainWindow::on_actioncreateSampleData_triggered()
 {
@@ -181,3 +183,29 @@ void MainWindow::on_cancel_clicked()
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 
+
+void MainWindow::on_stackedWidget_currentChanged(int arg1)
+{
+    if( arg1 < 0)
+    {
+        qWarning() << "stackedWidget changed to non existing page";
+        return;
+    }
+    switch(arg1)
+    {
+    case emptyPageIndex:
+        ui->actionVertrag_anlegen->setEnabled(false);
+        break;
+    case PersonListIndex:
+        ui->actionVertrag_anlegen->setEnabled(true);
+        break;
+    case newPersonIndex:
+        ui->actionVertrag_anlegen->setEnabled(false);
+        break;
+    default:
+    {
+        qWarning() << "stackedWidget current change not implemented for this index";
+        return;
+    }
+    }
+}

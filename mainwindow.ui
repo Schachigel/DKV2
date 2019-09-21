@@ -246,6 +246,7 @@
      <string>DK Geber</string>
     </property>
     <addaction name="action_Liste"/>
+    <addaction name="separator"/>
     <addaction name="actionNeuer_DK_Geber"/>
    </widget>
    <widget class="QMenu" name="menuVertr_ge">
@@ -253,6 +254,8 @@
      <string>Verträge</string>
     </property>
     <addaction name="actionListe_der_Vertr_ge_anzeigen"/>
+    <addaction name="separator"/>
+    <addaction name="actionVertrag_anlegen"/>
    </widget>
    <widget class="QMenu" name="menuDebug">
     <property name="enabled">
@@ -348,6 +351,17 @@
   <action name="actionNeuer_DK_Geber">
    <property name="text">
     <string>Neu</string>
+   </property>
+  </action>
+  <action name="actionVertrag_anlegen">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Vertrag anlegen</string>
+   </property>
+   <property name="toolTip">
+    <string>Vertrag für ausgewählten DK Geber anlegen</string>
    </property>
   </action>
  </widget>
