@@ -48,9 +48,10 @@ private:
 
     enum stackedWidgedsIndex
     {
-        emptyPageIndex = 0,
-        PersonListIndex = 1,
-        newPersonIndex = 2
+        emptyPageIndex =0,
+        PersonListIndex =1,
+        newPersonIndex =2,
+        newContractIndex =3
     };
     void emptyEditPersonFields();
 };

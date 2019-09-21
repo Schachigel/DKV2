@@ -202,6 +202,9 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
     case newPersonIndex:
         ui->actionVertrag_anlegen->setEnabled(false);
         break;
+    case newContractIndex:
+        ui->actionVertrag_anlegen->setEnabled(false);
+        break;
     default:
     {
         qWarning() << "stackedWidget current change not implemented for this index";

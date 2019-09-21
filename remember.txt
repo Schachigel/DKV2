@@ -8,8 +8,12 @@ to do:
 * P Liste: Spalten breiten "merken"
 
 next:
-- P Liste r-click Menu anlegen
 - verträge anlegen
+- vertrag aktivieren
 - verträge ändern
 - verträge pro person auflisten
+? P Liste r-click Menu anlegen
+
+next next: beim personen editieren -> menü kein neuen Vertrag anlegen möglich
+bei neuem Vertrag keine neue person
 
