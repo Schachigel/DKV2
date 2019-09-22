@@ -12,6 +12,8 @@ next:
 - vertrag aktivieren
 - verträge ändern
 - verträge pro person auflisten
+- Debug -> Log File anzeigen
+
 ? P Liste r-click Menu anlegen
 
 next next: beim personen editieren -> menü kein neuen Vertrag anlegen möglich

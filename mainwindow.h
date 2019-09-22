@@ -39,6 +39,8 @@ private slots:
 
     void on_stackedWidget_currentChanged(int arg1);
 
+    void on_actionVertrag_anlegen_triggered();
+
 private:
     Ui::MainWindow *ui;
 

@@ -68,6 +68,7 @@ bool isValidDb(const QString& filename);
 
 struct PersonData
 {
+    int id;
     QString Vorname;
     QString Nachname;
     QString Strasse;
@@ -81,6 +82,7 @@ void closeDbConnection();
 void openAppDefaultDb( QString newDbFile="");
 bool savePersonDataToDatabase(const PersonData& p);
 
-
+typedef QPair<int, QString> PersonDispStringWithId;
+void AllPersonsForSelection(QList<PersonDispStringWithId>& Entries);
 
 #endif // DKDBHELPER_H

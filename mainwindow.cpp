@@ -11,15 +11,19 @@
 #include <QMessageBox>
 #include <qsqlquery.h>
 #include <qsqlerror.h>
-#include <qsqlquerymodel.h>
 #include <qsqltablemodel.h>
+#include <qsqlquerymodel.h>
+#include <qsqlrecord.h>
+#include <qmap.h>
 
 void MainWindow::preparePersonTableView()
-{
-    QSqlTableModel* model = new QSqlTableModel(ui->PersonsTable);
+{   QSqlTableModel* model = new QSqlTableModel(ui->PersonsTable);
     //model->setQuery("SELECT Vorname, Name, Strasse, PLZ, Stadt FROM DkGeber");
     model->setTable("DKGeber");
     model->select();
+ 
+    ui->PersonsTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->PersonsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->PersonsTable->setModel(model);
     ui->PersonsTable->hideColumn(0);
 }
@@ -93,7 +97,7 @@ void MainWindow::on_action_Liste_triggered()
     ui->stackedWidget->setCurrentIndex(PersonListIndex);
     if( !ui->PersonsTable->currentIndex().isValid())
         ui->PersonsTable->selectRow(0);
- }
+}
 
 void MainWindow::on_actioncreateSampleData_triggered()
 {
@@ -119,7 +123,7 @@ void MainWindow::on_actioncreateSampleData_triggered()
 
 bool MainWindow::savePerson()
 {
-    PersonData p{ ui->leVorname->text(),
+    PersonData p{ -1/*unused*/, ui->leVorname->text(),
                 ui->leNachname->text(),
                 ui->leStrasse->text(),
                 ui->lePlz->text(),
@@ -210,5 +214,37 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
         qWarning() << "stackedWidget current change not implemented for this index";
         return;
     }
+    }// e.o. switch
+}
+
+void MainWindow::on_actionVertrag_anlegen_triggered()
+{
+    // What is the persId of the currently selected person in the person?
+    QModelIndex mi(ui->PersonsTable->currentIndex().siblingAtColumn(0));
+    QVariant data(ui->PersonsTable->model()->data(mi));
+    bool canConvert(false); data.toInt(&canConvert);
+    if( !canConvert)
+    {
+        qCritical() << "Inded der Personenliste konnte nicht bestimmt werden";
+        return;
     }
+    int CurrentlySelectedPersonId (data.toInt());
+
+    // fill combo box with person data
+    ui->cbDKGeber->clear();
+    QList<PersonDispStringWithId>Entries; AllPersonsForSelection(Entries);
+    for(PersonDispStringWithId Entry :Entries)
+    {
+        ui->cbDKGeber->addItem( Entry.second, QVariant((Entry.first)));
+    }
+    // select the correct person
+    for( int i = 0; i < ui->cbDKGeber->count(); i++)
+    {
+        if( CurrentlySelectedPersonId == ui->cbDKGeber->itemData(i))
+        {
+            ui->cbDKGeber->setCurrentIndex(i);
+            break;
+        }
+    }
+    ui->stackedWidget->setCurrentIndex(newContractIndex);
 }

@@ -191,3 +191,21 @@ bool savePersonDataToDatabase(const PersonData& p)
     }
 }
 
+void AllPersonsForSelection(QList<PersonDispStringWithId>& persons)
+{
+    QSqlQuery query;
+    query.setForwardOnly(true);
+    query.prepare("SELECT id, Vorname, Nachname, Plz, Strasse FROM DKGeber ORDER BY Nachname ASC, Vorname ASC");
+    if( !query.exec())
+    {
+        qCritical() << "Error reading DKGeber while creating a contract: " << QSqlDatabase::database().lastError().text();
+    }
+
+    while(query.next())
+    {
+        QString Entry = query.value("Nachname").toString() + QString(", ") + QString(", ") + query.value("Vorname").toString() + QString(", ") + query.value("Plz").toString();
+        Entry += QString(", ") + query.value("Strasse").toString();
+        PersonDispStringWithId entry{ query.value("id").toInt(), Entry};
+        persons.append(entry);
+    }
+}
