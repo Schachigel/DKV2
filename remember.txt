@@ -8,8 +8,9 @@ to do:
 * P Liste: Spalten breiten "merken"
 
 next:
-- verträge anlegen
-- vertrag aktivieren
+- verträge anlegen: Buttons programmieren, Datum vorbelegen
+- nach speichern felder leeren
+- vertrag "aktivieren"
 - verträge ändern
 - verträge pro person auflisten
 - Debug -> Log File anzeigen

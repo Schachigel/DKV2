@@ -529,7 +529,7 @@
   </action>
   <action name="actionVertrag_anlegen">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Vertrag anlegen</string>

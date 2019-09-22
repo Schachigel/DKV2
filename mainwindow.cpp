@@ -198,16 +198,12 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
     switch(arg1)
     {
     case emptyPageIndex:
-        ui->actionVertrag_anlegen->setEnabled(false);
         break;
     case PersonListIndex:
-        ui->actionVertrag_anlegen->setEnabled(true);
         break;
     case newPersonIndex:
-        ui->actionVertrag_anlegen->setEnabled(false);
         break;
     case newContractIndex:
-        ui->actionVertrag_anlegen->setEnabled(false);
         break;
     default:
     {
@@ -219,17 +215,6 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
 
 void MainWindow::on_actionVertrag_anlegen_triggered()
 {
-    // What is the persId of the currently selected person in the person?
-    QModelIndex mi(ui->PersonsTable->currentIndex().siblingAtColumn(0));
-    QVariant data(ui->PersonsTable->model()->data(mi));
-    bool canConvert(false); data.toInt(&canConvert);
-    if( !canConvert)
-    {
-        qCritical() << "Inded der Personenliste konnte nicht bestimmt werden";
-        return;
-    }
-    int CurrentlySelectedPersonId (data.toInt());
-
     // fill combo box with person data
     ui->cbDKGeber->clear();
     QList<PersonDispStringWithId>Entries; AllPersonsForSelection(Entries);
@@ -237,13 +222,28 @@ void MainWindow::on_actionVertrag_anlegen_triggered()
     {
         ui->cbDKGeber->addItem( Entry.second, QVariant((Entry.first)));
     }
-    // select the correct person
-    for( int i = 0; i < ui->cbDKGeber->count(); i++)
+
+    // What is the persId of the currently selected person in the person?
+    int CurrentlySelectedPersonId (-1);
+    QModelIndex mi(ui->PersonsTable->currentIndex().siblingAtColumn(0));
+    if( mi.isValid())
     {
-        if( CurrentlySelectedPersonId == ui->cbDKGeber->itemData(i))
+        QVariant data(ui->PersonsTable->model()->data(mi));
+        bool canConvert(false); data.toInt(&canConvert);
+        if( !canConvert)
         {
-            ui->cbDKGeber->setCurrentIndex(i);
-            break;
+            qCritical() << "Inded der Personenliste konnte nicht bestimmt werden";
+            return;
+        }
+        CurrentlySelectedPersonId =data.toInt();
+        // select the correct person
+        for( int i = 0; i < ui->cbDKGeber->count(); i++)
+        {
+            if( CurrentlySelectedPersonId == ui->cbDKGeber->itemData(i))
+            {
+                ui->cbDKGeber->setCurrentIndex(i);
+                break;
+            }
         }
     }
     ui->stackedWidget->setCurrentIndex(newContractIndex);
