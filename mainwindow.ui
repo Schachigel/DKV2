@@ -19,7 +19,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -35,7 +35,7 @@
       <widget class="QWidget" name="PersonsListPage">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QTableView" name="PersonsTable">
+         <widget class="QTableView" name="PersonsTableView">
           <property name="contextMenuPolicy">
            <enum>Qt::DefaultContextMenu</enum>
           </property>
@@ -46,7 +46,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="NeuePerson">
+      <widget class="QWidget" name="NewPerson">
        <property name="maximumSize">
         <size>
          <width>800</width>
@@ -190,6 +190,9 @@
             <property name="text">
              <string>BIC:</string>
             </property>
+            <property name="buddy">
+             <cstring>leBic</cstring>
+            </property>
            </widget>
           </item>
           <item row="7" column="1">
@@ -212,7 +215,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="NeuerVertrag">
+      <widget class="QWidget" name="NewContractPage">
        <property name="maximumSize">
         <size>
          <width>800</width>
@@ -223,7 +226,7 @@
         <item>
          <layout class="QHBoxLayout" name="hlNeuerVertragButtons">
           <item>
-           <widget class="QPushButton" name="saveToDKGeberList">
+           <widget class="QPushButton" name="saveContractGoToDKGeberList">
             <property name="toolTip">
              <string>Speichert den Vertrag und kehrt zur Liste der DK Geber zurück</string>
             </property>
@@ -233,7 +236,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="saveContractGoContracts">
             <property name="toolTip">
              <string>Speichert den Vertrag und geht zur Liste der Verträge</string>
             </property>
@@ -274,6 +277,9 @@
             <property name="text">
              <string>DK Geber</string>
             </property>
+            <property name="buddy">
+             <cstring>cbDKGeber</cstring>
+            </property>
            </widget>
           </item>
           <item row="0" column="1">
@@ -283,6 +289,9 @@
            <widget class="QLabel" name="label_3">
             <property name="text">
              <string>Kennung</string>
+            </property>
+            <property name="buddy">
+             <cstring>leKennung</cstring>
             </property>
            </widget>
           </item>
@@ -294,10 +303,17 @@
             <property name="text">
              <string>Betrag (Euro)</string>
             </property>
+            <property name="buddy">
+             <cstring>leBetrag</cstring>
+            </property>
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QLineEdit" name="leBetrag"/>
+           <widget class="QLineEdit" name="leBetrag">
+            <property name="inputMask">
+             <string>900000</string>
+            </property>
+           </widget>
           </item>
           <item row="3" column="0">
            <widget class="QLabel" name="label_9">
@@ -318,20 +334,20 @@
             <property name="text">
              <string>Zinssatz</string>
             </property>
+            <property name="buddy">
+             <cstring>cbZins</cstring>
+            </property>
            </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="leZins"/>
           </item>
           <item row="5" column="0">
            <widget class="QLabel" name="label_6">
             <property name="text">
              <string>Vertragsabschluss (Datum)</string>
             </property>
+            <property name="buddy">
+             <cstring>deVertragsabschluss</cstring>
+            </property>
            </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QDateEdit" name="deVertragsabschluss"/>
           </item>
           <item row="6" column="0">
            <widget class="QLabel" name="label_10">
@@ -352,6 +368,9 @@
             <property name="text">
              <string>Laufzeitende (Datum)</string>
             </property>
+            <property name="buddy">
+             <cstring>deLaufzeitEnde</cstring>
+            </property>
            </widget>
           </item>
           <item row="7" column="1">
@@ -362,6 +381,9 @@
             <property name="text">
              <string>Zinsen werden aufgerechnet</string>
             </property>
+            <property name="buddy">
+             <cstring>chkbTesaurierend</cstring>
+            </property>
            </widget>
           </item>
           <item row="8" column="1">
@@ -370,6 +392,12 @@
              <string>Tesaurierend</string>
             </property>
            </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QComboBox" name="cbZins"/>
+          </item>
+          <item row="5" column="1">
+           <widget class="QDateEdit" name="deVertragsabschluss"/>
           </item>
          </layout>
         </item>
@@ -382,6 +410,13 @@
            <bool>true</bool>
           </property>
          </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="ContractsListPage">
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QTableView" name="contractsTableView"/>
         </item>
        </layout>
       </widget>
@@ -540,6 +575,30 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>cbDKGeber</tabstop>
+  <tabstop>leKennung</tabstop>
+  <tabstop>leBetrag</tabstop>
+  <tabstop>cbZins</tabstop>
+  <tabstop>deVertragsabschluss</tabstop>
+  <tabstop>deLaufzeitEnde</tabstop>
+  <tabstop>chkbTesaurierend</tabstop>
+  <tabstop>saveContractGoToDKGeberList</tabstop>
+  <tabstop>saveContractGoContracts</tabstop>
+  <tabstop>cancelCreateContract</tabstop>
+  <tabstop>leVorname</tabstop>
+  <tabstop>leNachname</tabstop>
+  <tabstop>leStrasse</tabstop>
+  <tabstop>lePlz</tabstop>
+  <tabstop>leStadt</tabstop>
+  <tabstop>leIban</tabstop>
+  <tabstop>leBic</tabstop>
+  <tabstop>saveNew</tabstop>
+  <tabstop>saveList</tabstop>
+  <tabstop>saveExit</tabstop>
+  <tabstop>cancel</tabstop>
+  <tabstop>PersonsTableView</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

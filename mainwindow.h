@@ -15,6 +15,14 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void FillDKGeberCombo();
+
+    void FillRatesCombo();
+
+    void SelectcbDKGeberComboByPersonId(int id);
+
+    int getPersonIdFromDKGeberList();
+
 private slots:
 
     void on_action_Neue_DB_anlegen_triggered();
@@ -29,6 +37,8 @@ private slots:
 
     void on_actionNeuer_DK_Geber_triggered();
 
+    void on_actionVertrag_anlegen_triggered();
+
     void on_saveExit_clicked();
 
     void on_saveNew_clicked();
@@ -39,23 +49,34 @@ private slots:
 
     void on_stackedWidget_currentChanged(int arg1);
 
-    void on_actionVertrag_anlegen_triggered();
+    // Buttons on the "Vertrag anlegen" page
+     void on_cancelCreateContract_clicked();
+
+    void on_saveContractGoToDKGeberList_clicked();
+
+    void on_saveContractGoContracts_clicked();
+
+    void on_actionListe_der_Vertr_ge_anzeigen_triggered();
 
 private:
     Ui::MainWindow *ui;
 
     void preparePersonTableView();
+    void prepareContractListView();
     void setCurrentDbInStatusBar();
     bool savePerson();
+    bool saveNewContract();
 
     enum stackedWidgedsIndex
     {
         emptyPageIndex =0,
         PersonListIndex =1,
         newPersonIndex =2,
-        newContractIndex =3
+        newContractIndex =3,
+        ContractsListIndex =4
     };
-    void emptyEditPersonFields();
+    void clearEditPersonFields();
+    void clearNewContractFields();
 };
 
 #endif // MAINWINDOW_H

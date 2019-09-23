@@ -1,3 +1,4 @@
+#include <windows.h>
 #include <QSqlDatabase>
 #include <QSqlDriver>
 #include <QSqlError>
@@ -27,7 +28,7 @@ void initDbHelper()
     DkVertrag.Fields.append((dbfield("Kennung", "TEXT  NULL")));
     DkVertrag.Fields.append((dbfield("Betrag", "FLOAT DEFAULT '0,0' NOT NULL")));
     DkVertrag.Fields.append((dbfield("Wert", "FLOAT DEFAULT '0,0' NULL")));
-    DkVertrag.Fields.append((dbfield("ZSatz", "FLOAT DEFAULT '0,0' NOT NULL")));
+    DkVertrag.Fields.append((dbfield("ZSatz", "INTEGER FOREIGN_KEY REFERENCES [DKZinssaetze](id)")));
     DkVertrag.Fields.append((dbfield("tesaurierend", "BOOLEAN DEFAULT '1' NOT NULL")));
     DkVertrag.Fields.append((dbfield("Vertragsdatum", "DATE  NULL")));
     DkVertrag.Fields.append((dbfield("aktiv", "BOOLEAN DEFAULT 'false' NOT NULL")));
@@ -167,10 +168,43 @@ void openAppDefaultDb( QString newDbFile)
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
 }
 
-bool savePersonDataToDatabase(const PersonData& p)
+void createSampleDkDatabaseData()
+{
+    QList<QString> Vornamen {"Holger", "Volker", "Peter", "Hans", "Susi", "Roland", "Claudia", "Emil", "Evelyn", "Ötzgür", "Thomas", "Elke", "Berta", "Malte", "Jori"};
+    QList<QString> Nachnamen {"Maier", "Müller", "Schmit", "Kramp", "Adams", "Häcker", "Maresch", "Beutl", "Chauchev", "Chen", "Kirk", "Ohura", "Gorbatschov", "Merkel", "Karrenbauer", "Tritin", "Schmidt"};
+    QList<QString> Strassen {"Hauptstrasse", "Nebenstrasse", "Bahnhofstrasse", "Kirchstraße", "Dorfstrasse", "Süterlinweg", "Sorbenstrasse", "Kleines Gässchen", "Industriestrasse", "Sesamstrasse", "Lindenstrasse"};
+    QList <QPair<QString, QString>> Cities {{"68305", "Mannheim"}, {"69123", "Heidelberg"}, {"69123", "Karlsruhe"}, {"90345", "Hamburg"}};
+    QRandomGenerator rand(::GetTickCount());
+    for( int i = 0; i<30; i++)
+    {
+        PersonData p;
+        p.Vorname  =  Vornamen [rand.bounded(Vornamen.count ())];
+        p.Nachname = Nachnamen[rand.bounded(Nachnamen.count())];
+        p.Strasse =  Strassen[rand.bounded(Strassen.count())];
+        p.Plz = Cities[rand.bounded(Cities.count())].first;
+        p.Stadt = Cities[rand.bounded(Cities.count())].second;
+        p.Iban = "iban xxxxxxxxxxxxxxxxx";
+        p.Bic = "BICxxxxxxxx";
+        int Id = savePersonDataToDb(p);
+        // add a contract
+        ContractData c;
+        c.DKGeberId = Id;
+        c.Kennung = "id-" + QString::number(rand.bounded(13));
+        c.Zins = rand.bounded(1,19); // cave ! this will fail if the values were deleted from the db
+        c.Betrag = float(100) * rand.bounded(1,20);
+        c.Wert = c.Betrag;
+        c.tesaurierend = rand.bounded(100)%2 ? true : false;
+        c.Vertragsdatum = QDate::currentDate().addDays(-1 * rand.bounded(365));
+        c.StartZinsberechnung = c.Vertragsdatum.addDays(rand.bounded(15));
+        saveContractDataToDb(c);
+    }
+}
+
+int savePersonDataToDb(const PersonData& p)
 {
     QSqlQuery query("", QSqlDatabase::database()); // assuming the app database is open
-    QString sql = QString("INSERT INTO DKGeber (Vorname, Nachname, Strasse, Plz, Stadt, IBAN, BIC) VALUES ( :vorn, :nachn, :strasse, :plz, :stadt, :iban, :bic)");
+    QString sql ("INSERT INTO DKGeber (Vorname, Nachname, Strasse, Plz, Stadt, IBAN, BIC)"\
+        " VALUES ( :vorn, :nachn, :strasse, :plz, :stadt, :iban, :bic)");
     query.prepare(sql);
     query.bindValue(":vorn", p.Vorname);
     query.bindValue(":nachn", p.Nachname);
@@ -187,7 +221,7 @@ bool savePersonDataToDatabase(const PersonData& p)
     else
     {
         qDebug() << query.lastQuery() << "executed successfully\n" << sql;
-        return true;
+        return query.lastInsertId().toInt();
     }
 }
 
@@ -207,5 +241,60 @@ void AllPersonsForSelection(QList<PersonDispStringWithId>& persons)
         Entry += QString(", ") + query.value("Strasse").toString();
         PersonDispStringWithId entry{ query.value("id").toInt(), Entry};
         persons.append(entry);
+    }
+}
+
+void AllInterestRatesForSelection(QList<ZinsDispStringWithId>& Rates)
+{
+    QSqlQuery query;
+    query.setForwardOnly(true);
+    query.prepare("SELECT id, Zinssatz, Bemerkung FROM DKZinssaetze ORDER BY Zinssatz DESC");
+    if( !query.exec())
+    {
+        qCritical() << "Error reading Interrest Rates while creating a contract: " << QSqlDatabase::database().lastError().text();
+    }
+    while(query.next())
+    {
+        ZinsDispStringWithId entry{ query.value("id").toInt(), (query.value("Zinssatz").toString() + "  (" + query.value("Bemerkung").toString() + ")  ")};
+        Rates.append(entry);
+    }
+}
+
+ContractData::ContractData() :
+    DKGeberId(-1),
+    Betrag(0.), Wert(0.), Zins(0.),
+    tesaurierend(true), active(true),
+    Vertragsdatum(QDate::currentDate()),
+    LaufzeitEnde(QDate(9999, 12, 31)),
+    StartZinsberechnung(QDate::currentDate())
+{
+
+}
+
+bool saveContractDataToDb(const ContractData& c)
+{
+    QSqlQuery query("", QSqlDatabase::database());
+    QString sql ("INSERT INTO DKVertrag (DKGeberId, Kennung, Betrag, Wert, ZSatz, tesaurierend, Vertragsdatum, aktiv, LaufzeitEnde, LetzteZinsberechnung)");
+    sql += " VALUES (:dkgid, :kennung, :betrag, :wert, :zsatz, :tes, :vdatum, :akt, :lzende, :letzt )";
+    query.prepare(sql);
+    query.bindValue(":dkgid", c.DKGeberId);
+    query.bindValue(":kennung", c.Kennung);
+    query.bindValue(":betrag", c.Betrag); // zweistellig
+    query.bindValue(":wert", c.Wert); // zweistellig
+    query.bindValue(":zsatz", c.Zins);// ID !!
+    query.bindValue(":tes", c.tesaurierend? "true" : "false");
+    query.bindValue(":vdatum", c.Vertragsdatum.toString(Qt::ISODate));
+    query.bindValue(":akt", c.active ? "true": "false");
+    query.bindValue(":lzende", c.LaufzeitEnde.toString(Qt::ISODate));
+    query.bindValue(":letzt", c.StartZinsberechnung.toString(Qt::ISODate));
+    if( !query.exec())
+    {
+        qWarning() << "Creating contract db entry failed\n" << query.lastQuery() << endl << query.lastError().text();
+        return false;
+    }
+    else
+    {
+        qDebug() << query.lastQuery() << "executed successfully\n" << sql;
+        return true;
     }
 }

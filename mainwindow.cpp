@@ -16,18 +16,6 @@
 #include <qsqlrecord.h>
 #include <qmap.h>
 
-void MainWindow::preparePersonTableView()
-{   QSqlTableModel* model = new QSqlTableModel(ui->PersonsTable);
-    //model->setQuery("SELECT Vorname, Name, Strasse, PLZ, Stadt FROM DkGeber");
-    model->setTable("DKGeber");
-    model->select();
- 
-    ui->PersonsTable->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->PersonsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui->PersonsTable->setModel(model);
-    ui->PersonsTable->hideColumn(0);
-}
-
 void MainWindow::setCurrentDbInStatusBar()
 {
     QSettings config;
@@ -91,34 +79,30 @@ void MainWindow::on_actionDBoeffnen_triggered()
     openAppDefaultDb(dbfile);
 }
 
+void MainWindow::preparePersonTableView()
+{   QSqlTableModel* model = new QSqlTableModel(ui->PersonsTableView);
+    //model->setQuery("SELECT Vorname, Name, Strasse, PLZ, Stadt FROM DkGeber");
+    model->setTable("DKGeber");
+    model->select();
+
+    ui->PersonsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->PersonsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->PersonsTableView->setModel(model);
+    ui->PersonsTableView->hideColumn(0);
+}
+
 void MainWindow::on_action_Liste_triggered()
 {
     preparePersonTableView();
     ui->stackedWidget->setCurrentIndex(PersonListIndex);
-    if( !ui->PersonsTable->currentIndex().isValid())
-        ui->PersonsTable->selectRow(0);
+    if( !ui->PersonsTableView->currentIndex().isValid())
+        ui->PersonsTableView->selectRow(0);
 }
 
 void MainWindow::on_actioncreateSampleData_triggered()
 {
-    QList<QString> Vornamen {"Holger", "Volker", "Peter", "Hans", "Susi", "Roland", "Claudia", "Emil", "Evelyn", "Ötzgür"};
-    QList<QString> Nachnamen {"Maier", "Müller", "Schmit", "Kramp", "Adams", "Häcker", "Maresch", "Beutl", "Chauchev", "Chen"};
-    QList<QString> Strassen {"Hauptstrasse", "Nebenstrasse", "Bahnhofstrasse", "Kirchstraße", "Dorfstrasse"};
-    QList <QPair<QString, QString>> Cities {{"68305", "Mannheim"}, {"69123", "Heidelberg"}, {"69123", "Karlsruhe"}, {"90345", "Hamburg"}};
-    QRandomGenerator rand(::GetTickCount());
-    for( int i = 0; i<30; i++)
-    {
-        PersonData p;
-        p.Vorname  =  Vornamen [rand.bounded(Vornamen.count ())];
-        p.Nachname = Nachnamen[rand.bounded(Nachnamen.count())];
-        p.Strasse =  Strassen[rand.bounded(Strassen.count())];
-        p.Plz = Cities[rand.bounded(Cities.count())].first;
-        p.Stadt = Cities[rand.bounded(Cities.count())].second;
-        p.Iban = "iban xxxxxxxxxxxxxxxxx";
-        p.Bic = "BICxxxxxxxx";
-        savePersonDataToDatabase(p);
-    }
-    static_cast<QSqlTableModel*>(ui->PersonsTable->model())->select();
+    createSampleDkDatabaseData();
+    static_cast<QSqlTableModel*>(ui->PersonsTableView->model())->select();
 }
 
 bool MainWindow::savePerson()
@@ -135,8 +119,37 @@ bool MainWindow::savePerson()
         QMessageBox(QMessageBox::Warning, "Daten nicht gespeichert", "Namens - und Adressfelder dürfen nicht leer sein");
         return false;
     }
-    savePersonDataToDatabase(p);
-    return true;
+
+    return savePersonDataToDb(p) != 0;
+}
+
+bool MainWindow::saveNewContract()
+{
+    ContractData c;
+    c.DKGeberId = ui->cbDKGeber->itemData(ui->cbDKGeber->currentIndex()).toInt();
+    c.Kennung = ui->leKennung->text();
+    c.Betrag = ui->leBetrag->text().toFloat();
+    c.Wert = c.Betrag;
+    c.Zins = ui->cbZins->itemData(ui->cbZins->currentIndex()).toInt();
+    c.tesaurierend = ui->chkbTesaurierend->checkState() == Qt::Checked;
+    c.Vertragsdatum = ui->deVertragsabschluss->date();
+    c.active = false;
+    c.LaufzeitEnde = ui->deLaufzeitEnde->date();
+    c.StartZinsberechnung = c.LaufzeitEnde;
+
+    QString errortext;
+    if( c.Betrag <= 0)
+        errortext = "Der Kreditbetrag muss größer als null sein";
+    if( c.DKGeberId <= 0 || c.Zins <= 0)
+        errortext = "Wähle den Kreditgeber und die Zinsen aus der gegebenen Auswahl. Ist die Auswahl leer müssen zuerst Kreditgeber und Zinswerte eingegeben werden";
+    if( c.Kennung =="")
+        errortext = "Du solltest eine Kennung vergeben, damit der Kretit besser zugeordnet werden kann";
+    if( errortext != "")
+    {
+        QMessageBox::information( this, "Fehler", errortext);
+        return false;
+    }
+    return saveContractDataToDb(c);
 }
 
 void MainWindow::on_actionNeuer_DK_Geber_triggered()
@@ -148,12 +161,12 @@ void MainWindow::on_saveExit_clicked()
 {
     if( savePerson())
     {
-        emptyEditPersonFields();
+        clearEditPersonFields();
     }
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 
-void MainWindow::emptyEditPersonFields()
+void MainWindow::clearEditPersonFields()
 {
     ui->leVorname->setText("");
     ui->leNachname->setText("");
@@ -164,11 +177,20 @@ void MainWindow::emptyEditPersonFields()
     ui->leBic->setText("");
 }
 
+void MainWindow::clearNewContractFields()
+{
+    ui->leKennung->setText("");
+    ui->leBetrag->setText("");
+    ui->chkbTesaurierend->setChecked(true);
+}
+
+
+// Buttons on "DKGeber anlegen
 void MainWindow::on_saveNew_clicked()
 {
     if( savePerson())
     {
-        emptyEditPersonFields();
+        clearEditPersonFields();
     }
 }
 
@@ -176,18 +198,18 @@ void MainWindow::on_saveList_clicked()
 {
     if( savePerson())
     {
-        emptyEditPersonFields();
+        clearEditPersonFields();
         on_action_Liste_triggered();
     }
 }
 
 void MainWindow::on_cancel_clicked()
 {
-    emptyEditPersonFields();
+    clearEditPersonFields();
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 
-
+// whenever the stackedWidget changes ...
 void MainWindow::on_stackedWidget_currentChanged(int arg1)
 {
     if( arg1 < 0)
@@ -213,38 +235,105 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
     }// e.o. switch
 }
 
-void MainWindow::on_actionVertrag_anlegen_triggered()
+// switch to "Vertrag anlegen"
+
+void MainWindow::FillDKGeberCombo()
 {
-    // fill combo box with person data
     ui->cbDKGeber->clear();
-    QList<PersonDispStringWithId>Entries; AllPersonsForSelection(Entries);
-    for(PersonDispStringWithId Entry :Entries)
+    QList<PersonDispStringWithId>PersonEntries; AllPersonsForSelection(PersonEntries);
+    for(PersonDispStringWithId Entry :PersonEntries)
     {
         ui->cbDKGeber->addItem( Entry.second, QVariant((Entry.first)));
     }
+}
 
-    // What is the persId of the currently selected person in the person?
-    int CurrentlySelectedPersonId (-1);
-    QModelIndex mi(ui->PersonsTable->currentIndex().siblingAtColumn(0));
-    if( mi.isValid())
+void MainWindow::FillRatesCombo()
+{
+    QList<ZinsDispStringWithId> InterrestCbEntries; AllInterestRatesForSelection(InterrestCbEntries);
+    ui->cbZins->clear();
+    for(ZinsDispStringWithId Entry : InterrestCbEntries)
     {
-        QVariant data(ui->PersonsTable->model()->data(mi));
-        bool canConvert(false); data.toInt(&canConvert);
-        if( !canConvert)
+        ui->cbZins->addItem(Entry.second, QVariant(Entry.first));
+    }
+}
+
+void MainWindow::SelectcbDKGeberComboByPersonId(int DKGeberId)
+{
+    if( DKGeberId < 0) return;
+    // select the correct person
+    for( int i = 0; i < ui->cbDKGeber->count(); i++)
+    {
+        if( DKGeberId == ui->cbDKGeber->itemData(i))
         {
-            qCritical() << "Inded der Personenliste konnte nicht bestimmt werden";
-            return;
-        }
-        CurrentlySelectedPersonId =data.toInt();
-        // select the correct person
-        for( int i = 0; i < ui->cbDKGeber->count(); i++)
-        {
-            if( CurrentlySelectedPersonId == ui->cbDKGeber->itemData(i))
-            {
-                ui->cbDKGeber->setCurrentIndex(i);
-                break;
-            }
+            ui->cbDKGeber->setCurrentIndex(i);
+            break;
         }
     }
+}
+
+int MainWindow::getPersonIdFromDKGeberList()
+{
+    // What is the persId of the currently selected person in the person?
+    QModelIndex mi(ui->PersonsTableView->currentIndex().siblingAtColumn(0));
+    if( mi.isValid())
+    {
+        QVariant data(ui->PersonsTableView->model()->data(mi));
+        bool canConvert(false); data.toInt(&canConvert);
+        if( canConvert)
+            return data.toInt();
+        qCritical() << "Conversion error: model data is not int";
+        return -1;
+    }
+    qCritical() << "Index der Personenliste konnte nicht bestimmt werden";
+    return -1;
+}
+
+void MainWindow::on_actionVertrag_anlegen_triggered()
+{
+    FillDKGeberCombo();
+    FillRatesCombo();
+    SelectcbDKGeberComboByPersonId( getPersonIdFromDKGeberList());
+    ContractData cd;
+    ui->deLaufzeitEnde->setDate(cd.LaufzeitEnde);
+    ui->deVertragsabschluss->setDate(cd.Vertragsdatum);
+    ui->lblBeginZinsphase->setText("");
+    ui->chkbTesaurierend->setChecked(cd.tesaurierend);
+
     ui->stackedWidget->setCurrentIndex(newContractIndex);
+}
+
+// Buttons on the "Vertrag anlegen" page
+void MainWindow::on_cancelCreateContract_clicked()
+{
+    // nicht speichern. welchseln zur leeren Seite
+    clearNewContractFields();
+    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
+}
+
+void MainWindow::on_saveContractGoToDKGeberList_clicked()
+{
+    saveNewContract();
+    clearNewContractFields();
+    ui->stackedWidget->setCurrentIndex(PersonListIndex);
+}
+
+void MainWindow::on_saveContractGoContracts_clicked()
+{
+    // speichern und zur Liste der Verträge wechseln
+}
+
+void MainWindow::prepareContractListView()
+{
+    QSqlQueryModel* model = new QSqlQueryModel(ui->contractsTableView);
+    model->setQuery("SELECT DKGeber.Vorname, DKGeber.Nachname, DKVertrag.Betrag, DKVertrag.Wert, "
+                    "DKZinssaetze.Zinssatz, DKVertrag.Vertragsdatum, DKVertrag.LaufzeitEnde, "
+                    "DKZinssaetze.Zinssatz FROM DKGeber, DKVertrag, DKZinssaetze "
+                    "WHERE DKGeber.id = DKVertrag.DKGeberId AND DKVertrag.ZSatz = DKZinssaetze.id");
+    ui->contractsTableView->setModel(model);
+}
+
+void MainWindow::on_actionListe_der_Vertr_ge_anzeigen_triggered()
+{
+    prepareContractListView();
+    ui->stackedWidget->setCurrentIndex(ContractsListIndex);
 }

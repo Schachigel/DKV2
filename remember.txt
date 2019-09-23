@@ -17,6 +17,3 @@ next:
 
 ? P Liste r-click Menu anlegen
 
-next next: beim personen editieren -> menü kein neuen Vertrag anlegen möglich
-bei neuem Vertrag keine neue person
-

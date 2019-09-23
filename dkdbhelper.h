@@ -1,6 +1,7 @@
 #ifndef DKDBHELPER_H
 #define DKDBHELPER_H
 #include <QSqlDatabase>
+#include <qdatetime.h>
 #include <qlist.h>
 #include <qstring.h>
 
@@ -65,6 +66,10 @@ void initDbHelper();
 
 bool createDKDB(const QString& filename);
 bool isValidDb(const QString& filename);
+void closeDbConnection();
+void openAppDefaultDb( QString newDbFile="");
+
+void createSampleDkDatabaseData();
 
 struct PersonData
 {
@@ -77,12 +82,30 @@ struct PersonData
     QString Iban;
     QString Bic;
 };
-
-void closeDbConnection();
-void openAppDefaultDb( QString newDbFile="");
-bool savePersonDataToDatabase(const PersonData& p);
+int savePersonDataToDb(const PersonData& p);
 
 typedef QPair<int, QString> PersonDispStringWithId;
 void AllPersonsForSelection(QList<PersonDispStringWithId>& Entries);
+
+typedef QPair<int, QString> ZinsDispStringWithId;
+void AllInterestRatesForSelection(QList<ZinsDispStringWithId>& Entries);
+
+struct ContractData
+{
+    int id;
+    int DKGeberId;
+    QString Kennung;
+    float Betrag;
+    float Wert;
+    float Zins;
+    bool tesaurierend;
+    bool active;
+    QDate Vertragsdatum;
+    QDate LaufzeitEnde;
+    QDate StartZinsberechnung;
+    ContractData();
+};
+bool saveContractDataToDb(const ContractData& c);
+
 
 #endif // DKDBHELPER_H
