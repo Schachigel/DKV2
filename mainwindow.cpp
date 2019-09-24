@@ -1,9 +1,5 @@
 #include <QtCore>
 
-#include "dkdbhelper.h"
-#include "filehelper.h"
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
 #include "windows.h"
 #include <qpair.h>
 #include <qfiledialog.h>
@@ -15,6 +11,13 @@
 #include <qsqlquerymodel.h>
 #include <qsqlrecord.h>
 #include <qmap.h>
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+#include "dkdbhelper.h"
+#include "filehelper.h"
+#include "itemformatter.h"
+
 
 void MainWindow::setCurrentDbInStatusBar()
 {
@@ -119,7 +122,6 @@ bool MainWindow::savePerson()
         QMessageBox(QMessageBox::Warning, "Daten nicht gespeichert", "Namens - und Adressfelder dürfen nicht leer sein");
         return false;
     }
-
     return savePersonDataToDb(p) != 0;
 }
 
@@ -326,10 +328,18 @@ void MainWindow::prepareContractListView()
 {
     QSqlQueryModel* model = new QSqlQueryModel(ui->contractsTableView);
     model->setQuery("SELECT DKGeber.Vorname, DKGeber.Nachname, DKVertrag.Betrag, DKVertrag.Wert, "
-                    "DKZinssaetze.Zinssatz, DKVertrag.Vertragsdatum, DKVertrag.LaufzeitEnde, "
-                    "DKZinssaetze.Zinssatz FROM DKGeber, DKVertrag, DKZinssaetze "
+                    "DKZinssaetze.Zinssatz, DKVertrag.Vertragsdatum, DKVertrag.LaufzeitEnde "
+                    " FROM DKGeber, DKVertrag, DKZinssaetze "
                     "WHERE DKGeber.id = DKVertrag.DKGeberId AND DKVertrag.ZSatz = DKZinssaetze.id");
+
     ui->contractsTableView->setModel(model);
+    ui->contractsTableView->setItemDelegateForColumn(2, new EuroItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(3, new EuroItemFormatter(ui->contractsTableView));
+
+    ui->contractsTableView->setItemDelegateForColumn(4, new PercentItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(5, new DateItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(6, new DateItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->resizeColumnsToContents();
 }
 
 void MainWindow::on_actionListe_der_Vertr_ge_anzeigen_triggered()

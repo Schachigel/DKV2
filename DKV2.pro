@@ -27,12 +27,14 @@ CONFIG += c++11
 SOURCES += \
         dkdbhelper.cpp \
         filehelper.cpp \
+        itemformatter.cpp \
         main.cpp \
         mainwindow.cpp
 
 HEADERS += \
         dkdbhelper.h \
         filehelper.h \
+        itemformatter.h \
         mainwindow.h
 
 FORMS += \
