@@ -49,6 +49,33 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+// whenever the stackedWidget changes ...
+void MainWindow::on_stackedWidget_currentChanged(int arg1)
+{
+    if( arg1 < 0)
+    {
+        qWarning() << "stackedWidget changed to non existing page";
+        return;
+    }
+    switch(arg1)
+    {
+    case emptyPageIndex:
+        break;
+    case PersonListIndex:
+        break;
+    case newPersonIndex:
+        break;
+    case newContractIndex:
+        break;
+    default:
+    {
+        qWarning() << "stackedWidget current change not implemented for this index";
+        return;
+    }
+    }// e.o. switch
+}
+
+// file menu
 void MainWindow::on_action_Neue_DB_anlegen_triggered()
 {
     QString dbfile = QFileDialog::getSaveFileName(this, "Neue DkVerarbeitungs Datenbank", "*.s3db", "dk-DB Dateien (*.s3db)", nullptr);
@@ -64,12 +91,6 @@ void MainWindow::on_action_Neue_DB_anlegen_triggered()
     setCurrentDbInStatusBar();
 }
 
-void MainWindow::on_actionProgramm_beenden_triggered()
-{
-    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
-    this->close();
-}
-
 void MainWindow::on_actionDBoeffnen_triggered()
 {
     QString dbfile = QFileDialog::getOpenFileName(this, "DkVerarbeitungs Datenbank", "*.s3db", "dk-DB Dateien (*.s3db)", nullptr);
@@ -82,10 +103,18 @@ void MainWindow::on_actionDBoeffnen_triggered()
     openAppDefaultDb(dbfile);
 }
 
+void MainWindow::on_actionProgramm_beenden_triggered()
+{
+    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
+    this->close();
+}
+
+// person list page
 void MainWindow::preparePersonTableView()
 {   QSqlTableModel* model = new QSqlTableModel(ui->PersonsTableView);
     //model->setQuery("SELECT Vorname, Name, Strasse, PLZ, Stadt FROM DkGeber");
     model->setTable("DKGeber");
+    model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model->select();
 
     ui->PersonsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -102,21 +131,49 @@ void MainWindow::on_action_Liste_triggered()
         ui->PersonsTableView->selectRow(0);
 }
 
+void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &pos)
+{
+    QModelIndex index = ui->PersonsTableView->indexAt(pos).siblingAtColumn(0);
+    if( index.isValid())
+    {
+        QVariant data(ui->PersonsTableView->model()->data(index));
+        bool canConvert(false); data.toInt(&canConvert);
+        if( canConvert)
+        {
+            // QMessageBox::information(this, "person index", QString::number(data.toInt()));
+            QMenu menu( "PersonContextMenu", this);
+            menu.addAction( ui->actionKreditgeber_l_schen);
+            menu.addAction(ui->actionVertrag_anlegen);
+            menu.exec(ui->PersonsTableView->mapToGlobal(pos));
+        }
+        else
+            qCritical() << "Conversion error: model data is not int";
+        return;
+    }
+}
+
+// debug funktions
 void MainWindow::on_actioncreateSampleData_triggered()
 {
     createSampleDkDatabaseData();
     static_cast<QSqlTableModel*>(ui->PersonsTableView->model())->select();
 }
 
+// new DK Geber
+void MainWindow::on_actionNeuer_DK_Geber_triggered()
+{
+    ui->stackedWidget->setCurrentIndex(newPersonIndex);
+}
+
 bool MainWindow::savePerson()
 {
     PersonData p{ -1/*unused*/, ui->leVorname->text(),
-                ui->leNachname->text(),
-                ui->leStrasse->text(),
-                ui->lePlz->text(),
-                ui->leStadt->text(),
-                ui->leIban->text(),
-                ui->leBic->text()};
+                 ui->leNachname->text(),
+                 ui->leStrasse->text(),
+                 ui->lePlz->text(),
+                 ui->leStadt->text(),
+                 ui->leIban->text(),
+                 ui->leBic->text()};
     if( p.Vorname == "" || p.Nachname == "" || p.Strasse =="" || p.Plz == "" || p.Stadt == "")
     {
         QMessageBox(QMessageBox::Warning, "Daten nicht gespeichert", "Namens - und Adressfelder dürfen nicht leer sein");
@@ -125,6 +182,50 @@ bool MainWindow::savePerson()
     return savePersonDataToDb(p) != 0;
 }
 
+void MainWindow::clearEditPersonFields()
+{
+    ui->leVorname->setText("");
+    ui->leNachname->setText("");
+    ui->leStrasse->setText("");
+    ui->lePlz->setText("");
+    ui->leStadt->setText("");
+    ui->leIban->setText("");
+    ui->leBic->setText("");
+}
+
+void MainWindow::on_saveNew_clicked()
+{
+    if( savePerson())
+    {
+        clearEditPersonFields();
+    }
+}
+
+void MainWindow::on_saveList_clicked()
+{
+    if( savePerson())
+    {
+        clearEditPersonFields();
+        on_action_Liste_triggered();
+    }
+}
+
+void MainWindow::on_saveExit_clicked()
+{
+    if( savePerson())
+    {
+        clearEditPersonFields();
+    }
+    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
+}
+
+void MainWindow::on_cancel_clicked()
+{
+    clearEditPersonFields();
+    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
+}
+
+// new Contract
 bool MainWindow::saveNewContract()
 {
     ContractData c;
@@ -154,31 +255,6 @@ bool MainWindow::saveNewContract()
     return saveContractDataToDb(c);
 }
 
-void MainWindow::on_actionNeuer_DK_Geber_triggered()
-{
-    ui->stackedWidget->setCurrentIndex(newPersonIndex);
-}
-
-void MainWindow::on_saveExit_clicked()
-{
-    if( savePerson())
-    {
-        clearEditPersonFields();
-    }
-    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
-}
-
-void MainWindow::clearEditPersonFields()
-{
-    ui->leVorname->setText("");
-    ui->leNachname->setText("");
-    ui->leStrasse->setText("");
-    ui->lePlz->setText("");
-    ui->leStadt->setText("");
-    ui->leIban->setText("");
-    ui->leBic->setText("");
-}
-
 void MainWindow::clearNewContractFields()
 {
     ui->leKennung->setText("");
@@ -186,59 +262,7 @@ void MainWindow::clearNewContractFields()
     ui->chkbTesaurierend->setChecked(true);
 }
 
-
-// Buttons on "DKGeber anlegen
-void MainWindow::on_saveNew_clicked()
-{
-    if( savePerson())
-    {
-        clearEditPersonFields();
-    }
-}
-
-void MainWindow::on_saveList_clicked()
-{
-    if( savePerson())
-    {
-        clearEditPersonFields();
-        on_action_Liste_triggered();
-    }
-}
-
-void MainWindow::on_cancel_clicked()
-{
-    clearEditPersonFields();
-    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
-}
-
-// whenever the stackedWidget changes ...
-void MainWindow::on_stackedWidget_currentChanged(int arg1)
-{
-    if( arg1 < 0)
-    {
-        qWarning() << "stackedWidget changed to non existing page";
-        return;
-    }
-    switch(arg1)
-    {
-    case emptyPageIndex:
-        break;
-    case PersonListIndex:
-        break;
-    case newPersonIndex:
-        break;
-    case newContractIndex:
-        break;
-    default:
-    {
-        qWarning() << "stackedWidget current change not implemented for this index";
-        return;
-    }
-    }// e.o. switch
-}
-
 // switch to "Vertrag anlegen"
-
 void MainWindow::FillDKGeberCombo()
 {
     ui->cbDKGeber->clear();
@@ -273,6 +297,25 @@ void MainWindow::SelectcbDKGeberComboByPersonId(int DKGeberId)
     }
 }
 
+void MainWindow::on_cancelCreateContract_clicked()
+{
+    // nicht speichern. welchseln zur leeren Seite
+    clearNewContractFields();
+    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
+}
+
+void MainWindow::on_saveContractGoToDKGeberList_clicked()
+{
+    saveNewContract();
+    clearNewContractFields();
+    ui->stackedWidget->setCurrentIndex(PersonListIndex);
+}
+
+void MainWindow::on_saveContractGoContracts_clicked()
+{
+    // speichern und zur Liste der Verträge wechseln
+}
+
 int MainWindow::getPersonIdFromDKGeberList()
 {
     // What is the persId of the currently selected person in the person?
@@ -304,26 +347,7 @@ void MainWindow::on_actionVertrag_anlegen_triggered()
     ui->stackedWidget->setCurrentIndex(newContractIndex);
 }
 
-// Buttons on the "Vertrag anlegen" page
-void MainWindow::on_cancelCreateContract_clicked()
-{
-    // nicht speichern. welchseln zur leeren Seite
-    clearNewContractFields();
-    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
-}
-
-void MainWindow::on_saveContractGoToDKGeberList_clicked()
-{
-    saveNewContract();
-    clearNewContractFields();
-    ui->stackedWidget->setCurrentIndex(PersonListIndex);
-}
-
-void MainWindow::on_saveContractGoContracts_clicked()
-{
-    // speichern und zur Liste der Verträge wechseln
-}
-
+// List of contracts
 void MainWindow::prepareContractListView()
 {
     QSqlQueryModel* model = new QSqlQueryModel(ui->contractsTableView);
@@ -346,4 +370,21 @@ void MainWindow::on_actionListe_der_Vertr_ge_anzeigen_triggered()
 {
     prepareContractListView();
     ui->stackedWidget->setCurrentIndex(ContractsListIndex);
+}
+
+
+void MainWindow::on_actionKreditgeber_l_schen_triggered()
+{
+    QString msg( "Soll der DK Geber ");
+    QModelIndex mi(ui->PersonsTableView->currentIndex());
+    QString Vorname = ui->PersonsTableView->model()->data(mi.siblingAtColumn(1)).toString();
+    QString Nachname = ui->PersonsTableView->model()->data(mi.siblingAtColumn(2)).toString();
+    QString index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0)).toString();
+    msg += Vorname + " " + Nachname + " (id " + index + ")";
+    if( QMessageBox::Yes != QMessageBox::question(this, "DK Geber löschen", msg))
+        return;
+    QSqlQuery deleteQ;
+    deleteQ.exec("PRAGMA foreign_keys = ON");
+    deleteQ.exec("DELETE FROM DKGeber WHERE id=" + index);
+    preparePersonTableView();
 }

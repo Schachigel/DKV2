@@ -58,6 +58,10 @@ private slots:
 
     void on_actionListe_der_Vertr_ge_anzeigen_triggered();
 
+    void on_PersonsTableView_customContextMenuRequested(const QPoint &pos);
+
+    void on_actionKreditgeber_l_schen_triggered();
+
 private:
     Ui::MainWindow *ui;
 

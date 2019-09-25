@@ -24,7 +24,7 @@ void initDbHelper()
 
     dbtable DkVertrag("DKVertrag");
     DkVertrag.Fields.append((dbfield("id", "INTEGER DEFAULT '0' NOT NULL PRIMARY KEY AUTOINCREMENT")));
-    DkVertrag.Fields.append((dbfield("DKGeberId", "INTEGER FOREIGN_KEY REFERENCES [DKGeber](id)")));
+    DkVertrag.Fields.append((dbfield("DKGeberId", "INTEGER FOREIGN_KEY REFERENCES [DKGeber](id) ON DELETE CASCADE")));
     DkVertrag.Fields.append((dbfield("Kennung", "TEXT  NULL")));
     DkVertrag.Fields.append((dbfield("Betrag", "FLOAT DEFAULT '0,0' NOT NULL")));
     DkVertrag.Fields.append((dbfield("Wert", "FLOAT DEFAULT '0,0' NULL")));

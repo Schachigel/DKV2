@@ -19,7 +19,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -37,7 +37,7 @@
         <item>
          <widget class="QTableView" name="PersonsTableView">
           <property name="contextMenuPolicy">
-           <enum>Qt::DefaultContextMenu</enum>
+           <enum>Qt::CustomContextMenu</enum>
           </property>
           <property name="toolTip">
            <string>Doppelklick oder F2 um ein Feld zu ändern. Rechte Maustaste für weitere Optionen</string>
@@ -571,6 +571,14 @@
    </property>
    <property name="toolTip">
     <string>Vertrag für ausgewählten DK Geber anlegen</string>
+   </property>
+  </action>
+  <action name="actionKreditgeber_l_schen">
+   <property name="text">
+    <string>Kreditgeber löschen</string>
+   </property>
+   <property name="toolTip">
+    <string>Löscht einen Kreditgeber mit seinen Verträgen </string>
    </property>
   </action>
  </widget>
