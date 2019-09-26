@@ -15,3 +15,8 @@ QString EuroItemFormatter::displayText(const QVariant& value, const QLocale& )co
 {
     return value.toString()+" Euro";
 };
+
+QString ActivatedItemFormatter::displayText(const QVariant &value, const QLocale &) const
+{
+    return value.toString() == "true" ? "Vertrag aktiv" : "Vertrag INAKTIV";
+}

@@ -25,6 +25,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        activatecontractdlg.cpp \
         dkdbhelper.cpp \
         filehelper.cpp \
         itemformatter.cpp \
@@ -32,12 +33,14 @@ SOURCES += \
         mainwindow.cpp
 
 HEADERS += \
+        activatecontractdlg.h \
         dkdbhelper.h \
         filehelper.h \
         itemformatter.h \
         mainwindow.h
 
 FORMS += \
+        activatecontractdlg.ui \
         mainwindow.ui
 
 # Default rules for deployment.

@@ -19,7 +19,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -416,7 +416,11 @@
       <widget class="QWidget" name="ContractsListPage">
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
-         <widget class="QTableView" name="contractsTableView"/>
+         <widget class="QTableView" name="contractsTableView">
+          <property name="contextMenuPolicy">
+           <enum>Qt::CustomContextMenu</enum>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -457,6 +461,7 @@
     <addaction name="action_Liste"/>
     <addaction name="separator"/>
     <addaction name="actionNeuer_DK_Geber"/>
+    <addaction name="actionKreditgeber_l_schen"/>
    </widget>
    <widget class="QMenu" name="menuVertr_ge">
     <property name="title">
@@ -465,6 +470,7 @@
     <addaction name="actionListe_der_Vertr_ge_anzeigen"/>
     <addaction name="separator"/>
     <addaction name="actionVertrag_anlegen"/>
+    <addaction name="actionVertrag_l_schen"/>
    </widget>
    <widget class="QMenu" name="menuDebug">
     <property name="enabled">
@@ -474,19 +480,12 @@
      <string/>
     </property>
     <addaction name="actioncreateSampleData"/>
+    <addaction name="actionanzeigenLog"/>
    </widget>
    <addaction name="menuDatenbank"/>
    <addaction name="menuDK_Geber"/>
    <addaction name="menuVertr_ge"/>
    <addaction name="menuDebug"/>
-  </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_Neue_DB_anlegen">
@@ -533,7 +532,7 @@
   </action>
   <action name="action_Liste">
    <property name="text">
-    <string>&amp;Liste</string>
+    <string>&amp;Liste der DK Geber</string>
    </property>
    <property name="toolTip">
     <string>Zeigt eine Liste aller DK Geber an</string>
@@ -551,7 +550,7 @@
   </action>
   <action name="actioncreateSampleData">
    <property name="text">
-    <string>createSampleData</string>
+    <string>Create Sample Data</string>
    </property>
    <property name="visible">
     <bool>true</bool>
@@ -559,7 +558,7 @@
   </action>
   <action name="actionNeuer_DK_Geber">
    <property name="text">
-    <string>Neu</string>
+    <string>Anlegen</string>
    </property>
   </action>
   <action name="actionVertrag_anlegen">
@@ -567,7 +566,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Vertrag anlegen</string>
+    <string>Anlegen</string>
    </property>
    <property name="toolTip">
     <string>Vertrag für ausgewählten DK Geber anlegen</string>
@@ -575,10 +574,43 @@
   </action>
   <action name="actionKreditgeber_l_schen">
    <property name="text">
-    <string>Kreditgeber löschen</string>
+    <string>Löschen</string>
    </property>
    <property name="toolTip">
     <string>Löscht einen Kreditgeber mit seinen Verträgen </string>
+   </property>
+  </action>
+  <action name="actionshowLog">
+   <property name="text">
+    <string>showLog</string>
+   </property>
+  </action>
+  <action name="actionactivateContract">
+   <property name="text">
+    <string>activateContract</string>
+   </property>
+   <property name="toolTip">
+    <string>Zinszahlung des Vertrags aktivieren</string>
+   </property>
+  </action>
+  <action name="actiondeactivateContract">
+   <property name="text">
+    <string>deactivateContract</string>
+   </property>
+  </action>
+  <action name="actiondeleteContract">
+   <property name="text">
+    <string>deleteContract</string>
+   </property>
+  </action>
+  <action name="actionVertrag_l_schen">
+   <property name="text">
+    <string>Löschen</string>
+   </property>
+  </action>
+  <action name="actionanzeigenLog">
+   <property name="text">
+    <string>Open Log </string>
    </property>
   </action>
  </widget>

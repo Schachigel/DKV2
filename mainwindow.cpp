@@ -14,6 +14,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "activatecontractdlg.h"
+
 #include "dkdbhelper.h"
 #include "filehelper.h"
 #include "itemformatter.h"
@@ -40,7 +42,6 @@ MainWindow::MainWindow(QWidget *parent) :
     setCentralWidget(ui->stackedWidget);
     openAppDefaultDb();
 
-
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 
@@ -60,12 +61,24 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
     switch(arg1)
     {
     case emptyPageIndex:
+        ui->actionKreditgeber_l_schen->setEnabled(false);
+        ui->actionVertrag_l_schen->setEnabled(false);
         break;
     case PersonListIndex:
+        ui->actionKreditgeber_l_schen->setEnabled(true);
+        ui->actionVertrag_l_schen->setEnabled(false);
         break;
     case newPersonIndex:
+        ui->actionKreditgeber_l_schen->setEnabled(false);
+        ui->actionVertrag_l_schen->setEnabled(false);
         break;
     case newContractIndex:
+        ui->actionKreditgeber_l_schen->setEnabled(false);
+        ui->actionVertrag_l_schen->setEnabled(false);
+        break;
+    case ContractsListIndex:
+        ui->actionKreditgeber_l_schen->setEnabled(false);
+        ui->actionVertrag_l_schen->setEnabled(true);
         break;
     default:
     {
@@ -121,6 +134,7 @@ void MainWindow::preparePersonTableView()
     ui->PersonsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->PersonsTableView->setModel(model);
     ui->PersonsTableView->hideColumn(0);
+    ui->PersonsTableView->resizeColumnsToContents();
 }
 
 void MainWindow::on_action_Liste_triggered()
@@ -129,6 +143,22 @@ void MainWindow::on_action_Liste_triggered()
     ui->stackedWidget->setCurrentIndex(PersonListIndex);
     if( !ui->PersonsTableView->currentIndex().isValid())
         ui->PersonsTableView->selectRow(0);
+}
+
+void MainWindow::on_actionKreditgeber_l_schen_triggered()
+{
+    QString msg( "Soll der DK Geber ");
+    QModelIndex mi(ui->PersonsTableView->currentIndex());
+    QString Vorname = ui->PersonsTableView->model()->data(mi.siblingAtColumn(1)).toString();
+    QString Nachname = ui->PersonsTableView->model()->data(mi.siblingAtColumn(2)).toString();
+    QString index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0)).toString();
+    msg += Vorname + " " + Nachname + " (id " + index + ") mit allen Verträgen und Buchungen gelöscht werden?";
+    if( QMessageBox::Yes != QMessageBox::question(this, "DK Geber löschen", msg))
+        return;
+    QSqlQuery deleteQ;
+    deleteQ.exec("PRAGMA foreign_keys = ON");
+    deleteQ.exec("DELETE FROM DKGeber WHERE id=" + index);
+    preparePersonTableView();
 }
 
 void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &pos)
@@ -140,10 +170,9 @@ void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &po
         bool canConvert(false); data.toInt(&canConvert);
         if( canConvert)
         {
-            // QMessageBox::information(this, "person index", QString::number(data.toInt()));
             QMenu menu( "PersonContextMenu", this);
-            menu.addAction( ui->actionKreditgeber_l_schen);
             menu.addAction(ui->actionVertrag_anlegen);
+            menu.addAction( ui->actionKreditgeber_l_schen);
             menu.exec(ui->PersonsTableView->mapToGlobal(pos));
         }
         else
@@ -313,7 +342,10 @@ void MainWindow::on_saveContractGoToDKGeberList_clicked()
 
 void MainWindow::on_saveContractGoContracts_clicked()
 {
-    // speichern und zur Liste der Verträge wechseln
+    saveNewContract();
+    clearNewContractFields();
+    prepareContractListView();
+    ui->stackedWidget->setCurrentIndex(ContractsListIndex);
 }
 
 int MainWindow::getPersonIdFromDKGeberList()
@@ -351,40 +383,118 @@ void MainWindow::on_actionVertrag_anlegen_triggered()
 void MainWindow::prepareContractListView()
 {
     QSqlQueryModel* model = new QSqlQueryModel(ui->contractsTableView);
-    model->setQuery("SELECT DKGeber.Vorname, DKGeber.Nachname, DKVertrag.Betrag, DKVertrag.Wert, "
-                    "DKZinssaetze.Zinssatz, DKVertrag.Vertragsdatum, DKVertrag.LaufzeitEnde "
-                    " FROM DKGeber, DKVertrag, DKZinssaetze "
-                    "WHERE DKGeber.id = DKVertrag.DKGeberId AND DKVertrag.ZSatz = DKZinssaetze.id");
+    model->setQuery("SELECT DKVertrag.id, DKGeber.Vorname, DKGeber.Nachname, "
+                    "DKVertrag.Betrag, DKVertrag.Wert, "
+                    "DKZinssaetze.Zinssatz, DKVertrag.Vertragsdatum, DKVertrag.LaufzeitEnde, "
+                    "DKVertrag.aktiv "
+                    "FROM DKVertrag, DKGeber, DKZinssaetze "
+                    "WHERE DKGeber.id = DKVertrag.DKGeberId AND DKVertrag.ZSatz = DKZinssaetze.id "
+                    "ORDER BY DKVertrag.aktiv, DKGeber.Nachname");
 
     ui->contractsTableView->setModel(model);
-    ui->contractsTableView->setItemDelegateForColumn(2, new EuroItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->contractsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->contractsTableView->setItemDelegateForColumn(3, new EuroItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(4, new EuroItemFormatter(ui->contractsTableView));
 
-    ui->contractsTableView->setItemDelegateForColumn(4, new PercentItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(5, new DateItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(5, new PercentItemFormatter(ui->contractsTableView));
     ui->contractsTableView->setItemDelegateForColumn(6, new DateItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(7, new DateItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(8, new ActivatedItemFormatter(ui->contractsTableView));
     ui->contractsTableView->resizeColumnsToContents();
+    ui->contractsTableView->hideColumn(0);
 }
 
 void MainWindow::on_actionListe_der_Vertr_ge_anzeigen_triggered()
 {
     prepareContractListView();
+    if( !ui->contractsTableView->currentIndex().isValid())
+        ui->contractsTableView->selectRow(0);
+
     ui->stackedWidget->setCurrentIndex(ContractsListIndex);
 }
 
-
-void MainWindow::on_actionKreditgeber_l_schen_triggered()
+void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &pos)
 {
-    QString msg( "Soll der DK Geber ");
-    QModelIndex mi(ui->PersonsTableView->currentIndex());
-    QString Vorname = ui->PersonsTableView->model()->data(mi.siblingAtColumn(1)).toString();
-    QString Nachname = ui->PersonsTableView->model()->data(mi.siblingAtColumn(2)).toString();
-    QString index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0)).toString();
-    msg += Vorname + " " + Nachname + " (id " + index + ")";
+    QModelIndex indexClickTarget = ui->contractsTableView->indexAt(pos);
+    QModelIndex indexId = indexClickTarget.siblingAtColumn(0); // contract id
+    QModelIndex indexActive = indexClickTarget.siblingAtColumn(8); // contract active
+
+    if( indexId.isValid())
+    {
+        QVariant data(ui->contractsTableView->model()->data(indexId));
+        bool canConvert(false); data.toInt(&canConvert);
+        if( canConvert)
+        {
+            QMenu menu( "PersonContextMenu", this);
+            QVariant data(ui->contractsTableView->model()->data(indexActive));
+            if( data.toBool())
+                menu.addAction(ui->actiondeactivateContract);
+            else
+                menu.addAction(ui->actionactivateContract);
+            menu.exec(ui->PersonsTableView->mapToGlobal(pos));
+        }
+        else
+            qCritical() << "Conversion error: model data is not int";
+        return;
+    }
+}
+
+int MainWindow::getContractIdFromContractsList()
+{
+    QModelIndex mi(ui->contractsTableView->currentIndex().siblingAtColumn(0));
+    if( mi.isValid())
+    {
+        QVariant data(ui->contractsTableView->model()->data(mi));
+        bool canConvert(false); data.toInt(&canConvert);
+        if( canConvert)
+            return data.toInt();
+        qCritical() << "Conversion error: model data is not int";
+        return -1;
+    }
+    qCritical() << "Index der Personenliste konnte nicht bestimmt werden";
+    return -1;
+}
+
+QDate MainWindow::getContractDateFromContractsList()
+{
+    QModelIndex mi(ui->contractsTableView->currentIndex().siblingAtColumn(6));
+    if( mi.isValid())
+    {
+        QVariant data{ui->contractsTableView->model()->data(mi)};
+
+    }
+    return QDate();
+}
+
+void MainWindow::on_actionactivateContract_triggered()
+{
+//    int contractId = getContractIdFromContractsList();
+    QDate contractDate = getContractDateFromContractsList();
+    activateContractDlg dlg( this, contractDate);
+}
+
+void MainWindow::on_actionVertrag_l_schen_triggered()
+{
+    QModelIndex mi(ui->contractsTableView->currentIndex());
+    QString Vorname = ui->contractsTableView->model()->data(mi.siblingAtColumn(1)).toString();
+    QString Nachname = ui->contractsTableView->model()->data(mi.siblingAtColumn(2)).toString();
+    QString index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toString();
+
+    QString msg( "Soll der Vertrag von ");
+
+    msg += Vorname + " " + Nachname + " (id " + index + ") gelöscht werden?";
     if( QMessageBox::Yes != QMessageBox::question(this, "DK Geber löschen", msg))
         return;
     QSqlQuery deleteQ;
     deleteQ.exec("PRAGMA foreign_keys = ON");
-    deleteQ.exec("DELETE FROM DKGeber WHERE id=" + index);
-    preparePersonTableView();
+    deleteQ.exec("DELETE FROM DKVertrag WHERE id=" + index);
+    prepareContractListView();
+
+
+}
+
+void MainWindow::on_actionanzeigenLog_triggered()
+{
+    ::ShellExecuteA(nullptr, "open", logFilePath().toUtf8(), "", QDir::currentPath().toUtf8(), 1);
 }

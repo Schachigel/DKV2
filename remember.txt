@@ -9,8 +9,9 @@ to do:
 
 next:
 - vertrag "aktivieren"
-- verträge ändern
-- verträge pro person auflisten
+- verträge ändern? oder lieber nicht
+- Sortierung beim Klick auf TableHeader
+- verträge u Belege pro person auflisten
 - Debug -> Log File anzeigen
 
 ? P Liste r-click Menu anlegen

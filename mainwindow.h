@@ -22,6 +22,8 @@ public:
     void SelectcbDKGeberComboByPersonId(int id);
 
     int getPersonIdFromDKGeberList();
+    QDate getContractDateFromContractsList();
+    int getContractIdFromContractsList();
 
 private slots:
 
@@ -61,6 +63,14 @@ private slots:
     void on_PersonsTableView_customContextMenuRequested(const QPoint &pos);
 
     void on_actionKreditgeber_l_schen_triggered();
+
+    void on_contractsTableView_customContextMenuRequested(const QPoint &pos);
+
+    void on_actionactivateContract_triggered();
+
+    void on_actionVertrag_l_schen_triggered();
+
+    void on_actionanzeigenLog_triggered();
 
 private:
     Ui::MainWindow *ui;

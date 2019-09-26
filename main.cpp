@@ -16,7 +16,6 @@
 
 #include <windows.h>
 
-static QString logFilePath;
 static QFile* outFile_p(nullptr);
 
 void logger(QtMsgType type, const QMessageLogContext &context, const QString &msg)
@@ -24,7 +23,7 @@ void logger(QtMsgType type, const QMessageLogContext &context, const QString &ms
     // secure this code with a critical section in case we start logging from multiple threads
     if(!outFile_p)
     {
-        outFile_p = new QFile(logFilePath);
+        outFile_p = new QFile(logFilePath());
         // this file will only be closed by the system at process end
         if (!outFile_p->open(QIODevice::WriteOnly | QIODevice::Append))
             abort();
@@ -40,9 +39,8 @@ void logger(QtMsgType type, const QMessageLogContext &context, const QString &ms
 
 void initLogging()
 {
-    logFilePath = QDir::toNativeSeparators(QDir::tempPath()) + QDir::separator() + "dkv2.log";
-    if( backupFile(logFilePath))
-        QFile::remove(logFilePath);
+    if( backupFile(logFilePath()))
+        QFile::remove(logFilePath());
     qInstallMessageHandler(logger);
 }
 
@@ -86,7 +84,7 @@ int main(int argc, char *argv[])
     initLogging();
     initDbHelper();
 
-    qInfo() << "DKV2 started";
+    qInfo() << "DKV2 started " << QDate::currentDate().toString("dd.MM.yyyy") << "-" << QTime::currentTime().toString("");
     QApplication a(argc, argv);
     a.setOrganizationName("4-MHS"); // used to store our settings
     a.setApplicationName("DKV2");

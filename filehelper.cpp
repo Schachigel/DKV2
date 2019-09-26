@@ -3,6 +3,7 @@
 #include <qlist.h>
 #include <QTextStream>
 #include <QFile>
+#include <QDir>
 #include <QFileInfo>
 #include <qdebug.h>
 
@@ -47,4 +48,10 @@ bool backupFile(const QString&  fn)
             qDebug() << "Backup copy failed. File to be copied: " << backupnames[0];
         }
     return ret;
+}
+
+QString logFilePath()
+{
+    static QString logFilePath(QDir::toNativeSeparators(QDir::tempPath()) + QDir::separator() + "dkv2.log");
+    return logFilePath;
 }

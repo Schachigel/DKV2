@@ -15,5 +15,6 @@ private:
 
 bool backupFile(const QString& filename);
 
+QString logFilePath();
 
 #endif // HELPER_H

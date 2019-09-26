@@ -30,5 +30,13 @@ public:
     QString displayText(const QVariant& value, const QLocale& )const override;
 };
 
+class ActivatedItemFormatter : public QStyledItemDelegate
+{
+    Q_OBJECT
+public:
+    ActivatedItemFormatter(QObject *parent = nullptr) : QStyledItemDelegate(parent){}
+    QString displayText(const QVariant& value, const QLocale& )const override;
+};
+
 
 #endif // DATEITEMFORMATTER_H
