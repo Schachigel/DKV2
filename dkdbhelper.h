@@ -1,6 +1,12 @@
 #ifndef DKDBHELPER_H
 #define DKDBHELPER_H
+#include <qdebug.h>
 #include <QSqlDatabase>
+#include <qsqlquery.h>
+#include <qsqlerror.h>
+#include <qsqlrecord.h>
+#include <qsqlfield.h>
+#include <qvariant.h>
 #include <qdatetime.h>
 #include <qlist.h>
 #include <qstring.h>
@@ -9,11 +15,15 @@ struct dbfield
 {
     QString name;
     QString CreationSQL;
-    dbfield(QString n, QString c)
+    QVariant::Type type;
+    dbfield(QString n, QString c, QVariant::Type t=QVariant::String) :
+        name(n), CreationSQL(c), type(t)
+    {}
+    QSqlField getQSqlField()
     {
-        name = n;
-        CreationSQL = c;
+        return QSqlField(name, type);
     }
+
 };
 
 struct dbtable{
@@ -35,6 +45,19 @@ struct dbtable{
         sql.append(")");
         return sql;
     }
+    QSqlField getQSqlFieldByName(QString name)
+    {
+        for( auto field : Fields)
+        {
+            if( field.name == name)
+            {
+                QSqlField f(field.getQSqlField());
+                f.setTableName(Name);
+                return f;
+            }
+        }
+        return QSqlField();
+    }
 };
 
 struct dbstructure{
@@ -50,7 +73,18 @@ struct dbstructure{
         sql.chop(1);
         return sql;
     }
+    dbtable getTable(QString name)
+    {
+        for( dbtable table : Tables)
+        {
+            if( table.Name == name)
+                return table;
+        }
+        return dbtable("");
+    }
 };
+
+extern dbstructure dkdbstructure;
 
 class dbCloser
 {   // for use on the stack only
@@ -90,10 +124,10 @@ void AllPersonsForSelection(QList<PersonDispStringWithId>& Entries);
 typedef QPair<int, QString> ZinsDispStringWithId;
 void AllInterestRatesForSelection(QList<ZinsDispStringWithId>& Entries);
 
-struct ContractData
+struct VertragsDaten
 {
     int id;
-    int DKGeberId;
+    int KreditorId;
     QString Kennung;
     float Betrag;
     float Wert;
@@ -103,9 +137,9 @@ struct ContractData
     QDate Vertragsdatum;
     QDate LaufzeitEnde;
     QDate StartZinsberechnung;
-    ContractData();
+    VertragsDaten();
 };
-bool saveContractDataToDb(const ContractData& c);
-
+bool saveContractDataToDb(const VertragsDaten& c);
+bool activateContract( int ContractId, QDate activationDate);
 
 #endif // DKDBHELPER_H

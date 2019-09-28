@@ -15,6 +15,7 @@ class activateContractDlg : public QDialog
 public:
     explicit activateContractDlg(QWidget *parent = nullptr, QDate date=QDate::currentDate());
     ~activateContractDlg();
+    QDate getActivationDate();
 
 private:
     Ui::activateContractDlg *ui;

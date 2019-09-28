@@ -7,7 +7,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>726</width>
+    <width>836</width>
     <height>516</height>
    </rect>
   </property>
@@ -19,7 +19,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -215,7 +215,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="NewContractPage">
+      <widget class="QWidget" name="NewContract">
        <property name="maximumSize">
         <size>
          <width>800</width>
@@ -275,15 +275,15 @@
           <item row="0" column="0">
            <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>DK Geber</string>
+             <string>Kreditgeber</string>
             </property>
             <property name="buddy">
-             <cstring>cbDKGeber</cstring>
+             <cstring>comboKreditoren</cstring>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="cbDKGeber"/>
+           <widget class="QComboBox" name="comboKreditoren"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_3">
@@ -440,13 +440,13 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>726</width>
+     <width>836</width>
      <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatenbank">
     <property name="title">
-     <string>DK Datenbank</string>
+     <string>&amp;Datenbank</string>
     </property>
     <addaction name="action_Neue_DB_anlegen"/>
     <addaction name="actionDBoeffnen"/>
@@ -456,7 +456,7 @@
    </widget>
    <widget class="QMenu" name="menuDK_Geber">
     <property name="title">
-     <string>DK Geber</string>
+     <string>&amp;Kreditgeber</string>
     </property>
     <addaction name="action_Liste"/>
     <addaction name="separator"/>
@@ -465,7 +465,7 @@
    </widget>
    <widget class="QMenu" name="menuVertr_ge">
     <property name="title">
-     <string>Verträge</string>
+     <string>&amp;Verträge</string>
     </property>
     <addaction name="actionListe_der_Vertr_ge_anzeigen"/>
     <addaction name="separator"/>
@@ -587,7 +587,7 @@
   </action>
   <action name="actionactivateContract">
    <property name="text">
-    <string>activateContract</string>
+    <string>Vertrag Aktivieren</string>
    </property>
    <property name="toolTip">
     <string>Zinszahlung des Vertrags aktivieren</string>
@@ -595,12 +595,18 @@
   </action>
   <action name="actiondeactivateContract">
    <property name="text">
-    <string>deactivateContract</string>
+    <string>Zinszahlung aussetzen</string>
+   </property>
+   <property name="toolTip">
+    <string>Ist der Vertrag Inaktiv wird kein Zins bezahlt</string>
    </property>
   </action>
   <action name="actiondeleteContract">
    <property name="text">
-    <string>deleteContract</string>
+    <string>&amp;Vertrag Löschen</string>
+   </property>
+   <property name="toolTip">
+    <string>Mit dem Vertrag werden auch alle Buchungen gelöscht</string>
    </property>
   </action>
   <action name="actionVertrag_l_schen">
@@ -616,7 +622,7 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
-  <tabstop>cbDKGeber</tabstop>
+  <tabstop>comboKreditoren</tabstop>
   <tabstop>leKennung</tabstop>
   <tabstop>leBetrag</tabstop>
   <tabstop>cbZins</tabstop>

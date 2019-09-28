@@ -22,9 +22,12 @@ bool backupFile(const QString&  fn)
     QList<QString> backupnames;
     for(int i = 0; i<10; i++)
     {
+        QString backupname{fn};
+        QFileInfo fi{fn}; QString suffix = fi.completeSuffix();
+        backupname.chop(suffix.size()+1/*dot*/);
         QString nbr(QString ("%1").arg(i,int(2),10, QLatin1Char('0')));
-        QString name = fn + QString("-"+ nbr + ".bak");
-        backupnames.append(name);
+        backupname +=  QString("-"+ nbr + "." + suffix + ".bak");
+        backupnames.append(backupname);
     }
     // copy existing files to filename with next index from top to bottom
     bool ret(true);

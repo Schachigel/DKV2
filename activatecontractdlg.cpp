@@ -5,11 +5,16 @@ activateContractDlg::activateContractDlg(QWidget *parent, QDate date) :
     QDialog(parent),
     ui(new Ui::activateContractDlg)
 {
-    ui->dateEdit->setDate(date);
     ui->setupUi(this);
+    ui->dateEdit->setDate(date);
 }
 
 activateContractDlg::~activateContractDlg()
 {
     delete ui;
+}
+
+QDate activateContractDlg::getActivationDate()
+{
+    return ui->dateEdit->date();
 }

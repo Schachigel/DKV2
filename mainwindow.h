@@ -15,15 +15,15 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void FillDKGeberCombo();
+    void FillKreditorDropdown();
 
-    void FillRatesCombo();
+    void FillRatesDropdown();
 
-    void SelectcbDKGeberComboByPersonId(int id);
+    void comboKreditorenAnzeigeNachKreditorenId(int id);
 
-    int getPersonIdFromDKGeberList();
+    int getPersonIdFromKreditorenList();
     QDate getContractDateFromContractsList();
-    int getContractIdFromContractsList();
+    int getContractIdStringFromContractsList();
 
 private slots:
 
@@ -54,7 +54,7 @@ private slots:
     // Buttons on the "Vertrag anlegen" page
      void on_cancelCreateContract_clicked();
 
-    void on_saveContractGoToDKGeberList_clicked();
+    void on_saveContractGoToKreditorenList_clicked();
 
     void on_saveContractGoContracts_clicked();
 

@@ -1,9 +1,13 @@
+#include <qdebug.h>
 #include "itemformatter.h"
 
 QString DateItemFormatter::displayText(const QVariant& value, const QLocale& )const
 {
     QDate date= QDate::fromString(value.toString(), Qt::ISODate);
-    return date.toString("dd.MM.yyyy");
+    if( date == QDate())
+        return "";
+    else
+        return date.toString("dd.MM.yyyy");
 };
 
 QString PercentItemFormatter::displayText(const QVariant& value, const QLocale& )const
@@ -18,5 +22,7 @@ QString EuroItemFormatter::displayText(const QVariant& value, const QLocale& )co
 
 QString ActivatedItemFormatter::displayText(const QVariant &value, const QLocale &) const
 {
-    return value.toString() == "true" ? "Vertrag aktiv" : "Vertrag INAKTIV";
+    // the view delivers strings like "true" and "false" for boolean values
+    // let the variant resolve this ...
+    return value.toBool() ? "Vertrag aktiv" : "Vertrag INAKTIV";
 }
