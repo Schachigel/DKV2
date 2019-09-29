@@ -49,31 +49,46 @@ QString getInitialDb()
     QSettings config;
     QString dbfile = config.value("db/last").toString();
     qDebug() << "DbFile from configuration: " << dbfile;
+    if(  dbfile != "" && QFile::exists(dbfile) && isValidDb(dbfile))
+        return dbfile;
     do
     {
-        if( dbfile == "")
+        dbfile = QFileDialog::getSaveFileName(nullptr,
+                 "Wähle eine Datenbank oder gib einen Namen für eine Neue ein",
+                 "*.s3db", "dk-DB Dateien (*.s3db)", nullptr,QFileDialog::DontConfirmOverwrite);
+
+        qDebug() << "DbFile from user: " << dbfile;
+        if( dbfile == "") return QString();  // canceled by user
+
+        if( QFile::exists(dbfile))
         {
-            dbfile = QFileDialog::getSaveFileName(nullptr, "DkVerarbeitungs Datenbank", "*.s3db", "dk-DB Dateien (*.s3db)", nullptr,QFileDialog::DontConfirmOverwrite);
-            qDebug() << "DbFile from user: " << dbfile;
-            if( dbfile == "") return QString();
+            if( isValidDb(dbfile))
+                return dbfile;
+            else
+            {
+                if( QMessageBox::Yes == QMessageBox::information(nullptr, "Die gewählte Datenbank ist ungültig", "Soll die Datei für eine neue DB überschrieben werden?"))
+                {
+                    QFile::remove(dbfile);
+                    if( createDKDB(dbfile))
+                         return dbfile;
+                    else
+                    {
+                        qCritical() << "Overwrite of existing db failed";
+                        QMessageBox::critical(nullptr, "Feher", "Die Datei konnte nicht überschrieben werden. Wähle eine andere!");
+                        continue;
+                    }
+                }
+            }
         }
-        if(!QFile::exists(dbfile))
-        {
-            if( !createDKDB(dbfile))
-                return QString();
-            qDebug() << "created new DbFile: " << dbfile;
-        }
-        if( isValidDb(dbfile))
-        {
-            config.setValue("db/last", dbfile);
+        // new file ...
+        if( createDKDB(dbfile))
             return dbfile;
-        }
         else
         {
-            auto reply = QMessageBox::question(nullptr, "DK Datenbank ungültig", "Möchten Sie eine DK Datenbankdatei auswählen?", QMessageBox::Yes|QMessageBox::No);
-            if( reply == QMessageBox::Cancel || reply == QMessageBox::No)
+            qCritical() << "Creating of existing db failed";
+            if( QMessageBox::Yes != QMessageBox::question(nullptr, "Feher", "Die Datei konnte nicht angelegt werden. Möchten Sie eine andere auswählen?"))
                 return QString();
-            dbfile = "";
+            continue;
         }
     }
     while(true);
@@ -88,12 +103,14 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setOrganizationName("4-MHS"); // used to store our settings
     a.setApplicationName("DKV2");
-
-    if( getInitialDb() == "")
+    QString dbfile =getInitialDb();
+    if( dbfile == "")
     {
         qCritical() << "No valid DB -> abort";
         return ERROR_FILE_NOT_FOUND;
     }
+
+    QSettings config; config.setValue("db/last", dbfile);
     MainWindow w;
     w.show();
     int ret = a.exec();

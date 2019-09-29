@@ -139,7 +139,7 @@ struct VertragsDaten
     QDate StartZinsberechnung;
     VertragsDaten();
 };
-bool saveContractDataToDb(const VertragsDaten& c);
+bool verbucheVertrag(const VertragsDaten& c);
 bool activateContract( int ContractId, QDate activationDate);
 
 #endif // DKDBHELPER_H

@@ -4,7 +4,7 @@
 QString DateItemFormatter::displayText(const QVariant& value, const QLocale& )const
 {
     QDate date= QDate::fromString(value.toString(), Qt::ISODate);
-    if( date == QDate())
+    if( date == QDate() || date > QDate(9990, 12, 31))
         return "";
     else
         return date.toString("dd.MM.yyyy");

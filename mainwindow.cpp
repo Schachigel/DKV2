@@ -249,9 +249,8 @@ void MainWindow::on_cancel_clicked()
 }
 
 // new Contract
-bool MainWindow::saveNewContract()
+void MainWindow::setContractFromUi(VertragsDaten& c)
 {
-    VertragsDaten c;
     c.KreditorId = ui->comboKreditoren->itemData(ui->comboKreditoren->currentIndex()).toInt();
     c.Kennung = ui->leKennung->text();
     c.Betrag = ui->leBetrag->text().toFloat();
@@ -262,6 +261,12 @@ bool MainWindow::saveNewContract()
     c.active = false;
     c.LaufzeitEnde = ui->deLaufzeitEnde->date();
     c.StartZinsberechnung = c.LaufzeitEnde;
+}
+
+bool MainWindow::saveNewContract()
+{
+    VertragsDaten c;
+    setContractFromUi(c);
 
     QString errortext;
     if( c.Betrag <= 0)
@@ -275,7 +280,7 @@ bool MainWindow::saveNewContract()
         QMessageBox::information( this, "Fehler", errortext);
         return false;
     }
-    return saveContractDataToDb(c);
+    return verbucheVertrag(c);
 }
 void MainWindow::clearNewContractFields()
 {
@@ -316,25 +321,30 @@ void MainWindow::comboKreditorenAnzeigeNachKreditorenId(int KreditorenId)
         }
     }
 }
-void MainWindow::on_cancelCreateContract_clicked()
+
+void MainWindow::on_speichereVertragZurKreditorenListe_clicked()
 {
-    // nicht speichern. welchseln zur leeren Seite
-    clearNewContractFields();
-    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
-}
-void MainWindow::on_saveContractGoToKreditorenList_clicked()
-{
-    saveNewContract();
-    clearNewContractFields();
-    ui->stackedWidget->setCurrentIndex(PersonListIndex);
+    if( saveNewContract())
+    {
+        clearNewContractFields();
+        ui->stackedWidget->setCurrentIndex(PersonListIndex);
+    }
 }
 void MainWindow::on_saveContractGoContracts_clicked()
 {
-    saveNewContract();
-    clearNewContractFields();
-    prepareContractListView();
-    ui->stackedWidget->setCurrentIndex(ContractsListIndex);
+    if( saveNewContract())
+    {
+        clearNewContractFields();
+        prepareContractListView();
+        ui->stackedWidget->setCurrentIndex(ContractsListIndex);
+    }
 }
+void MainWindow::on_cancelCreateContract_clicked()
+{
+    clearNewContractFields();
+    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
+}
+
 int MainWindow::getPersonIdFromKreditorenList()
 {
     // What is the persId of the currently selected person in the person?
@@ -342,11 +352,7 @@ int MainWindow::getPersonIdFromKreditorenList()
     if( mi.isValid())
     {
         QVariant data(ui->PersonsTableView->model()->data(mi));
-        bool canConvert(false); data.toInt(&canConvert);
-        if( canConvert)
-            return data.toInt();
-        qCritical() << "Conversion error: model data is not int";
-        return -1;
+        return data.toInt();
     }
     qCritical() << "Index der Personenliste konnte nicht bestimmt werden";
     return -1;
@@ -425,13 +431,12 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &
     bool isActive (ui->contractsTableView->model()->data(indexActive).toInt() ? true : false);
     if( isActive)
     {
-        menu.addAction(ui->actiondeleteContract);
-        menu.addAction(ui->actiondeactivateContract);
+        menu.addAction(ui->actionVertrag_Beenden);
     }
     else
     {
         menu.addAction(ui->actionactivateContract);
-        menu.addAction(ui->actiondeactivateContract);
+        menu.addAction(ui->actionVertrag_l_schen); // passive Verträge können gelöscht werden
     }
     menu.exec(ui->PersonsTableView->mapToGlobal(pos));
     return;

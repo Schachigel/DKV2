@@ -1,7 +1,7 @@
 to do:
 
-+ Verträge löschen
 + Buchungen:
+++ Vertrag anlegen als Beleg speichern
 ++ Vertragsbeendigung
   Zins berechnen und zum Wert hinzufügen
   Wert ausbuchen

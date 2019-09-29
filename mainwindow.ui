@@ -226,12 +226,12 @@
         <item>
          <layout class="QHBoxLayout" name="hlNeuerVertragButtons">
           <item>
-           <widget class="QPushButton" name="saveContractGoToDKGeberList">
+           <widget class="QPushButton" name="speichereVertragZurKreditorenListe">
             <property name="toolTip">
              <string>Speichert den Vertrag und kehrt zur Liste der DK Geber zurück</string>
             </property>
             <property name="text">
-             <string>Speichern zur Geber Liste</string>
+             <string>Speichern, dann zur Kreditoren Liste</string>
             </property>
            </widget>
           </item>
@@ -582,7 +582,7 @@
   </action>
   <action name="actionshowLog">
    <property name="text">
-    <string>showLog</string>
+    <string>Show Log file</string>
    </property>
   </action>
   <action name="actionactivateContract">
@@ -593,30 +593,22 @@
     <string>Zinszahlung des Vertrags aktivieren</string>
    </property>
   </action>
-  <action name="actiondeactivateContract">
-   <property name="text">
-    <string>Zinszahlung aussetzen</string>
-   </property>
-   <property name="toolTip">
-    <string>Ist der Vertrag Inaktiv wird kein Zins bezahlt</string>
-   </property>
-  </action>
-  <action name="actiondeleteContract">
-   <property name="text">
-    <string>&amp;Vertrag Löschen</string>
-   </property>
-   <property name="toolTip">
-    <string>Mit dem Vertrag werden auch alle Buchungen gelöscht</string>
-   </property>
-  </action>
   <action name="actionVertrag_l_schen">
    <property name="text">
-    <string>Löschen</string>
+    <string>Vertrag &amp;Löschen</string>
    </property>
   </action>
   <action name="actionanzeigenLog">
    <property name="text">
     <string>Open Log </string>
+   </property>
+  </action>
+  <action name="actionVertrag_Beenden">
+   <property name="text">
+    <string>Vertrag &amp;Beenden</string>
+   </property>
+   <property name="toolTip">
+    <string>Zins und Auszahlungsbetrag berechnen, Vertrag löschen</string>
    </property>
   </action>
  </widget>
@@ -629,7 +621,7 @@
   <tabstop>deVertragsabschluss</tabstop>
   <tabstop>deLaufzeitEnde</tabstop>
   <tabstop>chkbTesaurierend</tabstop>
-  <tabstop>saveContractGoToDKGeberList</tabstop>
+  <tabstop>speichereVertragZurKreditorenListe</tabstop>
   <tabstop>saveContractGoContracts</tabstop>
   <tabstop>cancelCreateContract</tabstop>
   <tabstop>leVorname</tabstop>
