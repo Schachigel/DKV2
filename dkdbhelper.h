@@ -36,12 +36,12 @@ struct dbtable{
     QString CreateTableSQL()
     {
         QString sql("CREATE TABLE [" + Name + "] (");
-        for(dbfield Field : Fields)
+        for( int i = 0; i< Fields.count(); i++)
         {
-            sql.append("[" + Field.name + "] ");
-            sql.append( Field.CreationSQL + ",");
+            if( i>0) sql.append(", ");
+            sql.append("[" + Fields[i].name + "] ");
+            sql.append( Fields[i].CreationSQL);
         }
-        sql.chop(1); // last comma
         sql.append(")");
         return sql;
     }
@@ -65,12 +65,11 @@ struct dbstructure{
     QString checkTablesSql()
     {
         QString sql("SELECT * FROM ");
-        for( dbtable table : Tables)
+        for( int i=0; i<Tables.count(); i++)
         {
-            sql.append(table.Name);
-            sql.append(",");
+            if( i>0) sql.append(", ");
+            sql.append(Tables[i].Name);
         }
-        sql.chop(1);
         return sql;
     }
     dbtable getTable(QString name)
