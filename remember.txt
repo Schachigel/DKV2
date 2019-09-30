@@ -1,19 +1,28 @@
-to do:
+to do: Doku als Writer Dokument
 
 + Buchungen:
-++ Vertrag anlegen als Beleg speichern
 ++ Vertragsbeendigung
   Zins berechnen und zum Wert hinzufügen
   Wert ausbuchen
   Vertrag deaktivieren / löschen?
-++ Geldeingang (Kredit erhöhen) =
+++ Jahreszinsberechnung
+    - alle aktiven Verträge
+    - Zeitraum von max(1.1.<jahr>, LetzteZinsberechnung) bis Jahresende
+    - Tage (finanzmathematisch) * Zinssatz / (Tage pro Jahr finanzmathematisch)
+++ (prio 2) Geldeingang (Kredit erhöhen) =
   tesaurierend
     Zins "bis dato" errechnen, Wert erhöhen, "ZinsenStart Datum" setzten
     erhöhungsbetrag hinzufügen, Vertragsbetrag und Wert erhöhen
+    cave: zins f finanzamt ausweisen?
   nicht tesaurierend
     -> geht nicht, neuen Vertrag anlegen
-++ Jahreszinsberechnung
 
+Menüeintrag "Unterstützung"
+- Log anzeigen
+- "entpersonalisierte" db kopie anlegen
+Menüeintrag "Datei"
+- Einstellungen (?)
+- Backup Kopie anlegen / Backup auf GDrive speichern
 
 * MRU files handling (die letzten geöffneten Dateien öffnen)?
 * Fenster Position merken / beim Start setzen (Multi Screen)
@@ -30,3 +39,5 @@ next:
 ? P Liste r-click Menu anlegen
 - isValidDb: check colums
 
+DONE
+++ Vertrag anlegen als Beleg speichern (OK)

@@ -92,7 +92,7 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
 // file menu
 void MainWindow::on_action_Neue_DB_anlegen_triggered()
 {
-    QString dbfile = QFileDialog::getSaveFileName(this, "Neue DkVerarbeitungs Datenbank", "*.s3db", "dk-DB Dateien (*.s3db)", nullptr);
+    QString dbfile = QFileDialog::getSaveFileName(this, "Neue DkVerarbeitungs Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
     if( dbfile == "")
         return;
 
@@ -105,7 +105,7 @@ void MainWindow::on_action_Neue_DB_anlegen_triggered()
 }
 void MainWindow::on_actionDBoeffnen_triggered()
 {
-    QString dbfile = QFileDialog::getOpenFileName(this, "DkVerarbeitungs Datenbank", "*.s3db", "dk-DB Dateien (*.s3db)", nullptr);
+    QString dbfile = QFileDialog::getOpenFileName(this, "DkVerarbeitungs Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
     if( dbfile == "")
     {
         qDebug() << "keine Datei wurde ausgewählt";

@@ -58,6 +58,10 @@ void initDbHelper()
     Buchungen.Fields.append(((dbfield("Datum",        "DATE  NULL"))));
     Buchungen.Fields.append(((dbfield("Bemerkung",    "TEXT  NULL"))));
     dkdbstructure.Tables.append(Buchungen);
+
+    dbtable meta("Meta");
+    meta.Fields.append(dbfield("Name", "TEXT NOT NULL"));
+    meta.Fields.append(dbfield("Wert", "TEXT NOT NULL"));
 }
 
 bool createTables( const QSqlDatabase& db)
@@ -109,6 +113,12 @@ bool insertBuchungsarten(const QSqlDatabase& db)
     return true;
 }
 
+bool insertProperties(const QSqlDatabase& db)
+{
+    QSqlQuery sql("INSERT INTO Meta (Name, Wert) VALUES (\"Version\", \"1.0\"", db);
+    return true;
+}
+
 bool createDKDB(const QString& filename)
 {
     closeDbConnection();
@@ -128,6 +138,7 @@ bool createDKDB(const QString& filename)
     ret &= createTables(db);
     ret &= insertInterestRates(db);
     ret &= insertBuchungsarten(db);
+    ret &= insertProperties(db);
     if( ret) db.commit(); else db.rollback();
 
     if (isValidDb(filename))

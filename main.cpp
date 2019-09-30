@@ -55,7 +55,7 @@ QString getInitialDb()
     {
         dbfile = QFileDialog::getSaveFileName(nullptr,
                  "Wähle eine Datenbank oder gib einen Namen für eine Neue ein",
-                 "*.s3db", "dk-DB Dateien (*.s3db)", nullptr,QFileDialog::DontConfirmOverwrite);
+                 "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr,QFileDialog::DontConfirmOverwrite);
 
         qDebug() << "DbFile from user: " << dbfile;
         if( dbfile == "") return QString();  // canceled by user
