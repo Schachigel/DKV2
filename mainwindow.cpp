@@ -150,20 +150,19 @@ void MainWindow::on_actionKreditgeber_l_schen_triggered()
     msg += Vorname + " " + Nachname + " (id " + index + ") mit allen Verträgen und Buchungen gelöscht werden?";
     if( QMessageBox::Yes != QMessageBox::question(this, "Kreditgeber löschen?", msg))
         return;
-    QSqlDatabase::database().transaction();
     QSqlQuery deleteQ;
 
     if( !deleteQ.exec("DELETE FROM [Vertraege] WHERE [KreditorId]=" +index))
         qCritical() << "Delete Kreditor failed "<< deleteQ.lastError() << "\n" << deleteQ.lastQuery();
 
-    if( !deleteQ.exec("DELETE FROM [Kreditoren] WHERE [id]=" + index))
+/*    if( !deleteQ.exec("DELETE FROM [Kreditoren] WHERE [id]=" + index))
     {
         qCritical() << "Delete Kreditor failed "<< deleteQ.lastError()<< "\n" << deleteQ.lastQuery();
         QSqlDatabase::database().rollback();
     }
     else
         QSqlDatabase::database().commit();
-
+*/
     preparePersonTableView();
 }
 void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &pos)
@@ -492,7 +491,7 @@ void MainWindow::on_actionVertrag_l_schen_triggered()
     QString msg( "Soll der Vertrag von ");
 
     msg += Vorname + " " + Nachname + " (id " + index + ") gelöscht werden?";
-    if( QMessageBox::Yes != QMessageBox::question(this, "Kreditor löschen", msg))
+    if( QMessageBox::Yes != QMessageBox::question(this, "Kreditvertrag löschen", msg))
         return;
     QSqlQuery deleteQ;
     if( !deleteQ.exec("DELETE FROM Vertraege WHERE id=" + index))

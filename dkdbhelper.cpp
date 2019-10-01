@@ -52,7 +52,7 @@ void initDbHelper()
 
     dbtable Buchungen("Buchungen");
     Buchungen.Fields.append(((dbfield("id",           "INTEGER DEFAULT '0' NOT NULL PRIMARY KEY AUTOINCREMENT", QVariant::Int))));
-    Buchungen.Fields.append(((dbfield("VertragId",    "INTEGER FOREIGN_KEY REFERENCES [Vertraege](id)", QVariant::Int))));
+    Buchungen.Fields.append(((dbfield("VertragId",    "INTEGER FOREIGN_KEY REFERENCES [Vertraege](id) ON DELETE SET NULL", QVariant::Int))));
     Buchungen.Fields.append(((dbfield("Buchungsart",  "INTEGER FOREIGN_KEY REFERENCES [Buchungsarten](id)", QVariant::Int))));
     Buchungen.Fields.append(((dbfield("Betrag",       "FLOAT DEFAULT '0' NULL", QVariant::Double))));
     Buchungen.Fields.append(((dbfield("Datum",        "DATE  NULL"))));
@@ -133,7 +133,7 @@ bool createDKDB(const QString& filename)
     if( !db.open()) return false;
     bool ret = true;
     closer.set(&db);
-    QSqlQuery enableRefInt("PRAGMA foreign_keys = OFF");
+    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     db.transaction();
     ret &= createTables(db);
     ret &= insertInterestRates(db);
@@ -175,7 +175,7 @@ bool isValidDb(const QString& filename)
     db.setDatabaseName(filename);
     if( !db.open())
         return false;
-    QSqlQuery enableRefInt("PRAGMA foreign_keys = OFF");
+    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     closer.set(&db);
     if( !hasAllTables(db))
         return false;
@@ -214,7 +214,7 @@ void openAppDefaultDb( QString newDbFile)
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(newDbFile);
     db.open();
-    QSqlQuery enableRefInt("PRAGMA foreign_keys = OFF");
+    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
 }
 
 void createSampleDkDatabaseData()
