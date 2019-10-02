@@ -40,7 +40,7 @@ void db::cleanupTestCase()
 
 void db::test_case1()
 {
-
+    QVERIFY(1==1);
 }
 
 QTEST_MAIN(db)
