@@ -1,15 +1,17 @@
 #include <QtTest>
 #include <QCoreApplication>
 
+#include "..\DKV2\dkdbhelper.h"
+
 // add necessary includes here
 
-class db : public QObject
+class testRefInt : public QObject
 {
     Q_OBJECT
 
 public:
-    db();
-    ~db();
+    testRefInt();
+    ~testRefInt();
 
 private slots:
     void initTestCase();
@@ -18,31 +20,31 @@ private slots:
 
 };
 
-db::db()
+testRefInt::testRefInt()
 {
 
 }
 
-db::~db()
+testRefInt::~testRefInt()
 {
 
 }
 
-void db::initTestCase()
+void testRefInt::initTestCase()
 {
 
 }
 
-void db::cleanupTestCase()
+void testRefInt::cleanupTestCase()
 {
 
 }
 
-void db::test_case1()
+void testRefInt::test_case1()
 {
     QVERIFY(1==1);
 }
 
-QTEST_MAIN(db)
+QTEST_MAIN(testRefInt)
 
 #include "tst_db.moc"

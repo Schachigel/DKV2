@@ -155,14 +155,6 @@ void MainWindow::on_actionKreditgeber_l_schen_triggered()
     if( !deleteQ.exec("DELETE FROM [Vertraege] WHERE [KreditorId]=" +index))
         qCritical() << "Delete Kreditor failed "<< deleteQ.lastError() << "\n" << deleteQ.lastQuery();
 
-/*    if( !deleteQ.exec("DELETE FROM [Kreditoren] WHERE [id]=" + index))
-    {
-        qCritical() << "Delete Kreditor failed "<< deleteQ.lastError()<< "\n" << deleteQ.lastQuery();
-        QSqlDatabase::database().rollback();
-    }
-    else
-        QSqlDatabase::database().commit();
-*/
     preparePersonTableView();
 }
 void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &pos)

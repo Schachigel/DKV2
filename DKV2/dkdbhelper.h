@@ -11,17 +11,26 @@
 #include <qlist.h>
 #include <qstring.h>
 
+QString dbTypeFromVariant(QVariant::Type t);
+struct dbtable;
+
 struct dbfield
 {
+    dbtable* table;
     QString name;
-    QString CreationSQL;
-    QVariant::Type type;
-    dbfield(QString n, QString c, QVariant::Type t=QVariant::String) :
-        name(n), CreationSQL(c), type(t)
+    QVariant::Type VType;
+    QString TypeInfo;
+    dbfield(dbtable& parent, QString n, QVariant::Type t=QVariant::String, QString ti="") :
+        table(&parent), name(n), VType(t), TypeInfo(ti)
     {}
+
+    QString CreateFieldSQL()
+    {
+        return "[" + name + "] " + dbTypeFromVariant(VType) + " " +TypeInfo;
+    }
     QSqlField getQSqlField()
     {
-        return QSqlField(name, type);
+        return QSqlField(name, VType);
     }
 
 };
@@ -39,8 +48,7 @@ struct dbtable{
         for( int i = 0; i< Fields.count(); i++)
         {
             if( i>0) sql.append(", ");
-            sql.append("[" + Fields[i].name + "] ");
-            sql.append( Fields[i].CreationSQL);
+            sql.append(Fields[i].CreateFieldSQL());
         }
         sql.append(")");
         return sql;
