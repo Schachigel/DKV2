@@ -152,7 +152,7 @@ void MainWindow::on_actionKreditgeber_l_schen_triggered()
         return;
     QSqlQuery deleteQ;
 
-    if( !deleteQ.exec("DELETE FROM [Vertraege] WHERE [KreditorId]=" +index))
+    if( !deleteQ.exec("DELETE FROM [Kreditoren] WHERE [Id]=" +index))
         qCritical() << "Delete Kreditor failed "<< deleteQ.lastError() << "\n" << deleteQ.lastQuery();
 
     preparePersonTableView();

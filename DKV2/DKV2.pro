@@ -26,6 +26,8 @@ CONFIG += c++11
 
 SOURCES += \
         activatecontractdlg.cpp \
+        dbfield.cpp \
+        dbtable.cpp \
         dkdbhelper.cpp \
         filehelper.cpp \
         itemformatter.cpp \
@@ -34,6 +36,8 @@ SOURCES += \
 
 HEADERS += \
         activatecontractdlg.h \
+        dbfield.h \
+        dbtable.h \
         dkdbhelper.h \
         filehelper.h \
         itemformatter.h \

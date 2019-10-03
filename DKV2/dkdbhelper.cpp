@@ -10,58 +10,110 @@
 
 dbstructure dkdbstructure;
 
+QString dbfield::CreateFieldSQL()
+{
+    QString s( "[" + name + "] " + dbTypeFromVariant(vType) + " " +TypeInfo);
+    if( reference.name.isEmpty())
+        return s;
+    Q_ASSERT(table);
+    s += " FOREIGN_KEY REFERENCES [" + reference.tablename +"](" + reference.name + ")";
+    if( option)
+    {
+        if( option == refIntOption::onDeleteNull)
+            s += " ON DELETE SET NULL";
+        if( option == refIntOption::onDeleteCascade)
+            s += " ON DELETE CASCADE";
+    }
+    return s;
+}
+QSqlField dbfield::getQSqlField()
+{
+    return QSqlField(name, vType);
+}
+
+QString dbtable::CreateTableSQL()
+{
+    QString sql("CREATE TABLE [" + Name + "] (");
+    for( int i = 0; i< Fields.count(); i++)
+    {
+        if( i>0) sql.append(", ");
+        sql.append(Fields[i].CreateFieldSQL());
+    }
+    sql.append(")");
+    return sql;
+}
+QSqlField dbtable::getQSqlFieldByName(QString name)
+{
+    for( auto field : Fields)
+    {
+        if( field.name == name)
+        {
+            QSqlField f(field.getQSqlField());
+            f.setTableName(Name);
+            return f;
+        }
+    }
+    return QSqlField();
+}
+
+
+
 void initDbHelper()
 {
     // DB date -> Variant String
     // DB bool -> Variant int
     dbtable Kreditoren("Kreditoren");
-    Kreditoren.Fields.append(dbfield(Kreditoren, "id",       QVariant::Int,    "'0' NOT NULL PRIMARY KEY AUTOINCREMENT"));
-    Kreditoren.Fields.append(dbfield(Kreditoren, "Vorname",  QVariant::String, "NOT NULL"));
-    Kreditoren.Fields.append(dbfield(Kreditoren, "Nachname", QVariant::String, "NOT NULL"));
-    Kreditoren.Fields.append(dbfield(Kreditoren, "Strasse",  QVariant::String, "NOT NULL"));
-    Kreditoren.Fields.append(dbfield(Kreditoren, "Plz",      QVariant::String, "NOT NULL"));
-    Kreditoren.Fields.append(dbfield(Kreditoren, "Stadt",    QVariant::String, "NOT NULL"));
-    Kreditoren.Fields.append(dbfield(Kreditoren, "IBAN",     QVariant::String));
-    Kreditoren.Fields.append(dbfield(Kreditoren, "BIC",      QVariant::String));
+    Kreditoren.Fields.append(dbfield(&Kreditoren, "id",       QVariant::Int,    "PRIMARY KEY AUTOINCREMENT"));
+    Kreditoren.Fields.append(dbfield(&Kreditoren, "Vorname",  QVariant::String, "NOT NULL"));
+    Kreditoren.Fields.append(dbfield(&Kreditoren, "Nachname", QVariant::String, "NOT NULL"));
+    Kreditoren.Fields.append(dbfield(&Kreditoren, "Strasse",  QVariant::String, "NOT NULL"));
+    Kreditoren.Fields.append(dbfield(&Kreditoren, "Plz",      QVariant::String, "NOT NULL"));
+    Kreditoren.Fields.append(dbfield(&Kreditoren, "Stadt",    QVariant::String, "NOT NULL"));
+    Kreditoren.Fields.append(dbfield(&Kreditoren, "IBAN",     QVariant::String));
+    Kreditoren.Fields.append(dbfield(&Kreditoren, "BIC",      QVariant::String));
     dkdbstructure.Tables.append(Kreditoren);
 
-    dbtable Zinsen("Zinssaetze");
-    Zinsen.Fields.append(dbfield(Zinsen, "id",       QVariant::Int,    "DEFAULT '0' NOT NULL PRIMARY KEY AUTOINCREMENT"));
-    Zinsen.Fields.append(dbfield(Zinsen, "Zinssatz", QVariant::Double, "DEFAULT '0,0' UNIQUE NULL"));
-    Zinsen.Fields.append(dbfield(Zinsen, "Bemerkung"));
-    dkdbstructure.Tables.append(Zinsen);
+    dbtable Zinssaetze("Zinssaetze");
+    Zinssaetze.Fields.append(dbfield(&Zinssaetze, "id",       QVariant::Int,    "PRIMARY KEY AUTOINCREMENT"));
+    Zinssaetze.Fields.append(dbfield(&Zinssaetze, "Zinssatz", QVariant::Double, "DEFAULT '0,0' UNIQUE NULL"));
+    Zinssaetze.Fields.append(dbfield(&Zinssaetze, "Bemerkung"));
+    dkdbstructure.Tables.append(Zinssaetze);
 
     dbtable Vertraege("Vertraege");
-    Vertraege.Fields.append((dbfield(Vertraege, "id",         QVariant::Int, "DEFAULT '0' NOT NULL PRIMARY KEY AUTOINCREMENT")));
-    Vertraege.Fields.append((dbfield(Vertraege, "KreditorId", QVariant::Int, "FOREIGN_KEY REFERENCES [Kreditoren](id) ON DELETE CASCADE")));
-    Vertraege.Fields.append((dbfield(Vertraege, "Kennung")));
-    Vertraege.Fields.append((dbfield(Vertraege, "Betrag",     QVariant::Double, "DEFAULT '0,0' NOT NULL")));
-    Vertraege.Fields.append((dbfield(Vertraege, "Wert",       QVariant::Double, "DEFAULT '0,0' NULL")));
-    Vertraege.Fields.append((dbfield(Vertraege, "ZSatz",      QVariant::Int, "FOREIGN_KEY REFERENCES [Zinssaetze](id)")));
-    Vertraege.Fields.append((dbfield(Vertraege, "tesaurierend",  QVariant::Bool, "DEFAULT '1' NOT NULL")));
-    Vertraege.Fields.append((dbfield(Vertraege, "Vertragsdatum", QVariant::Date, "DATE  NULL")));
-    Vertraege.Fields.append((dbfield(Vertraege, "aktiv",         QVariant::Bool, "DEFAULT '0' NOT NULL")));
-    Vertraege.Fields.append((dbfield(Vertraege, "LaufzeitEnde",  QVariant::Date, "DEFAULT '3000-12-31' NOT NULL")));
-    Vertraege.Fields.append((dbfield(Vertraege, "LetzteZinsberechnung", QVariant::Date, "NULL")));
+    Vertraege.Fields.append((dbfield(&Vertraege, "id",         QVariant::Int, "PRIMARY KEY AUTOINCREMENT")));
+//    Vertraege.Fields.append((dbfield(&Vertraege, "KreditorId", QVariant::Int, "FOREIGN_KEY REFERENCES [Kreditoren](id) ON DELETE CASCADE" )));
+    Vertraege.Fields.append((dbfield(&Vertraege, "KreditorId", QVariant::Int, "", Kreditoren["id"].getInfo(), dbfield::refIntOption::onDeleteCascade )));
+    Vertraege.Fields.append((dbfield(&Vertraege, "Kennung")));
+    Vertraege.Fields.append((dbfield(&Vertraege, "Betrag",     QVariant::Double, "DEFAULT '0,0' NOT NULL")));
+    Vertraege.Fields.append((dbfield(&Vertraege, "Wert",       QVariant::Double, "DEFAULT '0,0' NULL")));
+//    Vertraege.Fields.append((dbfield(&Vertraege, "ZSatz",      QVariant::Int, "FOREIGN_KEY REFERENCES [Zinssaetze](id)")));
+    Vertraege.Fields.append((dbfield(&Vertraege, "ZSatz",      QVariant::Int, "", Zinssaetze["id"].getInfo(), dbfield::refIntOption::non)));
+    Vertraege.Fields.append((dbfield(&Vertraege, "tesaurierend",  QVariant::Bool, "DEFAULT '1' NOT NULL")));
+    Vertraege.Fields.append((dbfield(&Vertraege, "Vertragsdatum", QVariant::Date, "DATE  NULL")));
+    Vertraege.Fields.append((dbfield(&Vertraege, "aktiv",         QVariant::Bool, "DEFAULT '0' NOT NULL")));
+    Vertraege.Fields.append((dbfield(&Vertraege, "LaufzeitEnde",  QVariant::Date, "DEFAULT '3000-12-31' NOT NULL")));
+    Vertraege.Fields.append((dbfield(&Vertraege, "LetzteZinsberechnung", QVariant::Date, "NULL")));
     dkdbstructure.Tables.append(Vertraege);
 
     dbtable Buchungsarten("Buchungsarten");
-    Buchungsarten.Fields.append(dbfield(Buchungsarten, "id",  QVariant::Int, "DEFAULT '0' NOT NULL PRIMARY KEY AUTOINCREMENT"));
-    Buchungsarten.Fields.append(dbfield(Buchungsarten, "Art", QVariant::String, "NOT NULL"));
+    Buchungsarten.Fields.append(dbfield(&Buchungsarten, "id",  QVariant::Int, "PRIMARY KEY AUTOINCREMENT"));
+    Buchungsarten.Fields.append(dbfield(&Buchungsarten, "Art", QVariant::String, "NOT NULL"));
     dkdbstructure.Tables.append(Buchungsarten);
 
     dbtable Buchungen("Buchungen");
-    Buchungen.Fields.append(((dbfield(Buchungen, "id",           QVariant::Int, "DEFAULT '0' NOT NULL PRIMARY KEY AUTOINCREMENT"))));
-    Buchungen.Fields.append(((dbfield(Buchungen, "VertragId",    QVariant::Int, "FOREIGN_KEY REFERENCES [Vertraege](id) ON DELETE SET NULL"))));
-    Buchungen.Fields.append(((dbfield(Buchungen, "Buchungsart",  QVariant::Int, "FOREIGN_KEY REFERENCES [Buchungsarten](id)"))));
-    Buchungen.Fields.append(((dbfield(Buchungen, "Betrag",       QVariant::Double, "DEFAULT '0' NULL"))));
-    Buchungen.Fields.append(((dbfield(Buchungen, "Datum",        QVariant::Date))));
-    Buchungen.Fields.append(((dbfield(Buchungen, "Bemerkung",    QVariant::String))));
+    Buchungen.Fields.append(((dbfield(&Buchungen, "id",           QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))));
+//    Buchungen.Fields.append(((dbfield(&Buchungen, "VertragId",    QVariant::Int, "FOREIGN_KEY REFERENCES [Vertraege](id) ON DELETE SET NULL"))));
+    Buchungen.Fields.append(((dbfield(&Buchungen, "VertragId",    QVariant::Int, "", Vertraege["id"].getInfo(), dbfield::refIntOption::onDeleteNull))));
+//    Buchungen.Fields.append(((dbfield(&Buchungen, "Buchungsart",  QVariant::Int, "FOREIGN_KEY REFERENCES [Buchungsarten](id)"))));
+    Buchungen.Fields.append(((dbfield(&Buchungen, "Buchungsart",  QVariant::Int, "", Buchungsarten["id"].getInfo(), dbfield::refIntOption::non))));
+    Buchungen.Fields.append(((dbfield(&Buchungen, "Betrag",       QVariant::Double, "DEFAULT '0' NULL"))));
+    Buchungen.Fields.append(((dbfield(&Buchungen, "Datum",        QVariant::Date))));
+    Buchungen.Fields.append(((dbfield(&Buchungen, "Bemerkung",    QVariant::String))));
     dkdbstructure.Tables.append(Buchungen);
 
     dbtable meta("Meta");
-    meta.Fields.append(dbfield(meta, "Name", QVariant::String, "NOT NULL"));
-    meta.Fields.append(dbfield(meta, "Wert", QVariant::String, "NOT NULL"));
+    meta.Fields.append(dbfield(&meta, "Name", QVariant::String, "NOT NULL"));
+    meta.Fields.append(dbfield(&meta, "Wert", QVariant::String, "NOT NULL"));
 }
 
 QString dbTypeFromVariant(QVariant::Type t)

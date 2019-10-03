@@ -11,62 +11,12 @@
 #include <qlist.h>
 #include <qstring.h>
 
+class dbfield;
+class dbtable;
+#include "dbtable.h"
+#include "dbfield.h"
+
 QString dbTypeFromVariant(QVariant::Type t);
-struct dbtable;
-
-struct dbfield
-{
-    dbtable* table;
-    QString name;
-    QVariant::Type VType;
-    QString TypeInfo;
-    dbfield(dbtable& parent, QString n, QVariant::Type t=QVariant::String, QString ti="") :
-        table(&parent), name(n), VType(t), TypeInfo(ti)
-    {}
-
-    QString CreateFieldSQL()
-    {
-        return "[" + name + "] " + dbTypeFromVariant(VType) + " " +TypeInfo;
-    }
-    QSqlField getQSqlField()
-    {
-        return QSqlField(name, VType);
-    }
-
-};
-
-struct dbtable{
-    QString Name;
-    QList<dbfield> Fields;
-    dbtable(QString n)
-    {
-        Name =n;
-    }
-    QString CreateTableSQL()
-    {
-        QString sql("CREATE TABLE [" + Name + "] (");
-        for( int i = 0; i< Fields.count(); i++)
-        {
-            if( i>0) sql.append(", ");
-            sql.append(Fields[i].CreateFieldSQL());
-        }
-        sql.append(")");
-        return sql;
-    }
-    QSqlField getQSqlFieldByName(QString name)
-    {
-        for( auto field : Fields)
-        {
-            if( field.name == name)
-            {
-                QSqlField f(field.getQSqlField());
-                f.setTableName(Name);
-                return f;
-            }
-        }
-        return QSqlField();
-    }
-};
 
 struct dbstructure{
     QList<dbtable> Tables;
