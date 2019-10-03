@@ -1,5 +1,5 @@
-#ifndef HELPER_H
-#define HELPER_H
+#ifndef FILEHELPER_H
+#define FILEHELPER_H
 #include <qstring.h>
 #include <qfile.h>
 
@@ -17,4 +17,4 @@ bool backupFile(const QString& filename);
 
 QString logFilePath();
 
-#endif // HELPER_H
+#endif // FILEHELPER_H
