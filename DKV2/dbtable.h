@@ -12,13 +12,12 @@
 #include "dbfield.h"
 
 struct dbtable{
-    QString Name;
-    QList<dbfield> Fields;
-    dbtable(QString n) : Name(n)
+    QString name;
+    QList<dbfield> fields;
+    dbtable(QString n) : name(n)
     {}
     dbfield operator[](QString s);
     QString CreateTableSQL();
-    QSqlField getQSqlFieldByName(QString);
 };
 
 

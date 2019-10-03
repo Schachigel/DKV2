@@ -22,7 +22,7 @@ public:
     int getPersonIdFromKreditorenList();
     QDate getContractDateFromContractsList();
     int getContractIdStringFromContractsList();
-    void setContractFromUi(VertragsDaten& c);
+    void VertragsdatenAusFormular(VertragsDaten& c);
     
 private slots:
 
@@ -68,8 +68,8 @@ private:
 
     void preparePersonTableView();
     void prepareContractListView();
-    void setCurrentDbInStatusBar();
-    bool savePerson();
+    void DbInStatuszeileAnzeigen();
+    bool KreditgeberSpeichern();
     bool saveNewContract();
 
     enum stackedWidgedsIndex
@@ -80,7 +80,7 @@ private:
         newContractIndex =3,
         ContractsListIndex =4
     };
-    void clearEditPersonFields();
+    void KreditorFormulardatenLoeschen();
     void clearNewContractFields();
 };
 

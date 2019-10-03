@@ -586,7 +586,7 @@ public:
         actionListe_der_Vertr_ge_anzeigen->setText(QCoreApplication::translate("MainWindow", "Liste der Vertr\303\244ge anzeigen", nullptr));
         actioncreateSampleData->setText(QCoreApplication::translate("MainWindow", "Create Sample Data", nullptr));
         actionNeuer_DK_Geber->setText(QCoreApplication::translate("MainWindow", "Anlegen", nullptr));
-        actionVertrag_anlegen->setText(QCoreApplication::translate("MainWindow", "Anlegen", nullptr));
+        actionVertrag_anlegen->setText(QCoreApplication::translate("MainWindow", "Vertrag Anlegen", nullptr));
 #if QT_CONFIG(tooltip)
         actionVertrag_anlegen->setToolTip(QCoreApplication::translate("MainWindow", "Vertrag f\303\274r ausgew\303\244hlten DK Geber anlegen", nullptr));
 #endif // QT_CONFIG(tooltip)

@@ -25,7 +25,7 @@ struct dbfield
         onDeleteNull
     };
 
-    dbtable* table;
+    QString tablename;
     QString name;
     QVariant::Type vType;
 
@@ -37,20 +37,20 @@ struct dbfield
 
     explicit dbfield()
     {
-        table = nullptr;
         vType = QVariant::Type::Invalid;
     }
     dbfield (const dbfield& dbf) :
-        table(dbf.table), name(dbf.name), vType(dbf.vType), TypeInfo(dbf.TypeInfo), reference(dbf.reference), option(dbf.option)
+        tablename(dbf.tablename), name(dbf.name), vType(dbf.vType), TypeInfo(dbf.TypeInfo), reference(dbf.reference), option(dbf.option)
     {
     }
-    dbfield(dbtable* table, QString n, QVariant::Type t=QVariant::String,
+    dbfield(QString tn, QString n, QVariant::Type t=QVariant::String,
             QString ti="", dbfieldinfo r = dbfieldinfo(), refIntOption opt = refIntOption::non) :
-        table(table), name(n), vType(t), TypeInfo(ti), reference(r), option(opt)
+        tablename(tn), name(n), vType(t), TypeInfo(ti), reference(r), option(opt)
     {
     }
-    QString CreateFieldSQL();
-    QSqlField getQSqlField();
+    bool operator ==(const dbfield &b) const;
+    QString CreateSQL();
+    QSqlField toQSqlField();
     dbfieldinfo getInfo();
 };
 

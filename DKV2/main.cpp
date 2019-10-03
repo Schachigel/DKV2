@@ -4,7 +4,6 @@
 
 #include "dkdbhelper.h"
 
-
 #include <QApplication>
 #include <QSettings>
 #include <qfiledialog.h>
@@ -50,7 +49,7 @@ QString getInitialDb()
     QSettings config;
     QString dbfile = config.value("db/last").toString();
     qDebug() << "DbFile from configuration: " << dbfile;
-    if(  dbfile != "" && QFile::exists(dbfile) && isValidDb(dbfile))
+    if(  dbfile != "" && QFile::exists(dbfile) && istValideDatenbank(dbfile))
         return dbfile;
     do
     {
@@ -63,14 +62,14 @@ QString getInitialDb()
 
         if( QFile::exists(dbfile))
         {
-            if( isValidDb(dbfile))
+            if( istValideDatenbank(dbfile))
                 return dbfile;
             else
             {
                 if( QMessageBox::Yes == QMessageBox::information(nullptr, "Die gewählte Datenbank ist ungültig", "Soll die Datei für eine neue DB überschrieben werden?"))
                 {
                     QFile::remove(dbfile);
-                    if( createDKDB(dbfile))
+                    if( DKDatenbankAnlegen(dbfile))
                          return dbfile;
                     else
                     {
@@ -82,7 +81,7 @@ QString getInitialDb()
             }
         }
         // new file ...
-        if( createDKDB(dbfile))
+        if( DKDatenbankAnlegen(dbfile))
             return dbfile;
         else
         {
@@ -98,7 +97,7 @@ QString getInitialDb()
 int main(int argc, char *argv[])
 {
     initLogging();
-    initDbHelper();
+    initDKDBStruktur();
 
     qInfo() << "DKV2 started " << QDate::currentDate().toString("dd.MM.yyyy") << "-" << QTime::currentTime().toString("");
     QApplication a(argc, argv);

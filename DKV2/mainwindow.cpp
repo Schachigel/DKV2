@@ -21,13 +21,6 @@
 #include "filehelper.h"
 #include "itemformatter.h"
 
-
-void MainWindow::setCurrentDbInStatusBar()
-{
-    QSettings config;
-    ui->statusLabel->setText(config.value("db/last").toString());
-}
-
 // construction, destruction
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -39,16 +32,22 @@ MainWindow::MainWindow(QWidget *parent) :
 #endif
 
     ui->statusBar->addPermanentWidget(ui->statusLabel);
-    setCurrentDbInStatusBar();
+    DbInStatuszeileAnzeigen();
 
     setCentralWidget(ui->stackedWidget);
-    openAppDefaultDb();
+    DatenbankZurAnwendungOeffnen();
 
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::DbInStatuszeileAnzeigen()
+{
+    QSettings config;
+    ui->statusLabel->setText(config.value("db/last").toString());
 }
 
 // whenever the stackedWidget changes ...
@@ -96,23 +95,25 @@ void MainWindow::on_action_Neue_DB_anlegen_triggered()
     if( dbfile == "")
         return;
 
-    createDKDB(dbfile);
+    DKDatenbankAnlegen(dbfile);
     QSettings config;
     config.setValue("db/last", dbfile);
-    openAppDefaultDb();
+    DatenbankZurAnwendungOeffnen();
+    DbInStatuszeileAnzeigen();
+
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
-    setCurrentDbInStatusBar();
 }
 void MainWindow::on_actionDBoeffnen_triggered()
 {
     QString dbfile = QFileDialog::getOpenFileName(this, "DkVerarbeitungs Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
     if( dbfile == "")
     {
-        qDebug() << "keine Datei wurde ausgewählt";
+        qDebug() << "keine Datei wurde vom Anwender ausgewählt";
         return;
     }
+    DatenbankZurAnwendungOeffnen(dbfile);
+
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
-    openAppDefaultDb(dbfile);
 }
 void MainWindow::on_actionProgramm_beenden_triggered()
 {
@@ -136,9 +137,10 @@ void MainWindow::preparePersonTableView()
 void MainWindow::on_action_Liste_triggered()
 {
     preparePersonTableView();
-    ui->stackedWidget->setCurrentIndex(PersonListIndex);
     if( !ui->PersonsTableView->currentIndex().isValid())
         ui->PersonsTableView->selectRow(0);
+
+    ui->stackedWidget->setCurrentIndex(PersonListIndex);
 }
 void MainWindow::on_actionKreditgeber_l_schen_triggered()
 {
@@ -150,12 +152,11 @@ void MainWindow::on_actionKreditgeber_l_schen_triggered()
     msg += Vorname + " " + Nachname + " (id " + index + ") mit allen Verträgen und Buchungen gelöscht werden?";
     if( QMessageBox::Yes != QMessageBox::question(this, "Kreditgeber löschen?", msg))
         return;
-    QSqlQuery deleteQ;
 
-    if( !deleteQ.exec("DELETE FROM [Kreditoren] WHERE [Id]=" +index))
-        qCritical() << "Delete Kreditor failed "<< deleteQ.lastError() << "\n" << deleteQ.lastQuery();
-
-    preparePersonTableView();
+    if( KreditorLoeschen(index))
+        preparePersonTableView();
+    else
+        Q_ASSERT(!bool("could not remove kreditor and contracts"));
 }
 void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &pos)
 {
@@ -180,7 +181,7 @@ void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &po
 // debug funktions
 void MainWindow::on_actioncreateSampleData_triggered()
 {
-    createSampleDkDatabaseData();
+    BeispieldatenAnlegen();
     preparePersonTableView();
     prepareContractListView();
 }
@@ -189,15 +190,14 @@ void MainWindow::on_actionanzeigenLog_triggered()
     ::ShellExecuteA(nullptr, "open", logFilePath().toUtf8(), "", QDir::currentPath().toUtf8(), 1);
 }
 
-
 // new DK Geber
 void MainWindow::on_actionNeuer_DK_Geber_triggered()
 {
     ui->stackedWidget->setCurrentIndex(newPersonIndex);
 }
-bool MainWindow::savePerson()
+bool MainWindow::KreditgeberSpeichern()
 {
-    PersonData p{ -1/*unused*/, ui->leVorname->text(),
+    KreditorDaten p{ ui->leVorname->text(),
                  ui->leNachname->text(),
                  ui->leStrasse->text(),
                  ui->lePlz->text(),
@@ -209,9 +209,9 @@ bool MainWindow::savePerson()
         QMessageBox(QMessageBox::Warning, "Daten nicht gespeichert", "Namens - und Adressfelder dürfen nicht leer sein");
         return false;
     }
-    return savePersonDataToDb(p) != 0;
+    return KreditorDatenSpeichern(p) != 0;
 }
-void MainWindow::clearEditPersonFields()
+void MainWindow::KreditorFormulardatenLoeschen()
 {
     ui->leVorname->setText("");
     ui->leNachname->setText("");
@@ -223,39 +223,39 @@ void MainWindow::clearEditPersonFields()
 }
 void MainWindow::on_saveNew_clicked()
 {
-    if( savePerson())
+    if( KreditgeberSpeichern())
     {
-        clearEditPersonFields();
+        KreditorFormulardatenLoeschen();
     }
 }
 void MainWindow::on_saveList_clicked()
 {
-    if( savePerson())
+    if( KreditgeberSpeichern())
     {
-        clearEditPersonFields();
+        KreditorFormulardatenLoeschen();
         on_action_Liste_triggered();
     }
 }
 void MainWindow::on_saveExit_clicked()
 {
-    if( savePerson())
+    if( KreditgeberSpeichern())
     {
-        clearEditPersonFields();
+        KreditorFormulardatenLoeschen();
     }
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_cancel_clicked()
 {
-    clearEditPersonFields();
+    KreditorFormulardatenLoeschen();
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 
 // new Contract
-void MainWindow::setContractFromUi(VertragsDaten& c)
+void MainWindow::VertragsdatenAusFormular(VertragsDaten& c)
 {
     c.KreditorId = ui->comboKreditoren->itemData(ui->comboKreditoren->currentIndex()).toInt();
     c.Kennung = ui->leKennung->text();
-    c.Betrag = ui->leBetrag->text().toFloat();
+    c.Betrag = ui->leBetrag->text().toDouble();
     c.Wert = c.Betrag;
     c.Zins = ui->cbZins->itemData(ui->cbZins->currentIndex()).toInt();
     c.tesaurierend = ui->chkbTesaurierend->checkState() == Qt::Checked;
@@ -268,7 +268,7 @@ void MainWindow::setContractFromUi(VertragsDaten& c)
 bool MainWindow::saveNewContract()
 {
     VertragsDaten c;
-    setContractFromUi(c);
+    VertragsdatenAusFormular(c);
 
     QString errortext;
     if( c.Betrag <= 0)
@@ -282,7 +282,7 @@ bool MainWindow::saveNewContract()
         QMessageBox::information( this, "Fehler", errortext);
         return false;
     }
-    return verbucheVertrag(c);
+    return VertragVerbuchen(c);
 }
 void MainWindow::clearNewContractFields()
 {
@@ -295,17 +295,17 @@ void MainWindow::clearNewContractFields()
 void MainWindow::FillKreditorDropdown()
 {
     ui->comboKreditoren->clear();
-    QList<PersonDispStringWithId>PersonEntries; AllPersonsForSelection(PersonEntries);
-    for(PersonDispStringWithId Entry :PersonEntries)
+    QList<KreditorAnzeigeMitId>PersonEntries; KreditorenFuerAuswahlliste(PersonEntries);
+    for(KreditorAnzeigeMitId Entry :PersonEntries)
     {
         ui->comboKreditoren->addItem( Entry.second, QVariant((Entry.first)));
     }
 }
 void MainWindow::FillRatesDropdown()
 {
-    QList<ZinsDispStringWithId> InterrestCbEntries; AllInterestRatesForSelection(InterrestCbEntries);
+    QList<ZinsAnzeigeMitId> InterrestCbEntries; ZinssaetzeFuerAuswahlliste(InterrestCbEntries);
     ui->cbZins->clear();
-    for(ZinsDispStringWithId Entry : InterrestCbEntries)
+    for(ZinsAnzeigeMitId Entry : InterrestCbEntries)
     {
         ui->cbZins->addItem(Entry.second, QVariant(Entry.first));
     }
@@ -376,24 +376,23 @@ void MainWindow::on_actionVertrag_anlegen_triggered()
 // List of contracts
 void MainWindow::prepareContractListView()
 {
-    // why use a record here? so that we can use the indexOf function to set the formatter (just in case we need to reorder columns
-    QSqlRecord record;
-    record.append(dkdbstructure.getTable("Vertraege").getQSqlFieldByName("id"));
-    record.append(dkdbstructure.getTable("Kreditoren").getQSqlFieldByName("Vorname"));
-    record.append(dkdbstructure.getTable("Kreditoren").getQSqlFieldByName("Nachname"));
-    record.append(dkdbstructure.getTable("Vertraege").getQSqlFieldByName("Betrag"));
-    record.append(dkdbstructure.getTable("Vertraege").getQSqlFieldByName("Wert"));
-    record.append(dkdbstructure.getTable("Zinssaetze").getQSqlFieldByName("Zinssatz"));
-    record.append(dkdbstructure.getTable("Vertraege").getQSqlFieldByName("Vertragsdatum"));
-    record.append(dkdbstructure.getTable("Vertraege").getQSqlFieldByName("LetzteZinsberechnung"));
-    record.append(dkdbstructure.getTable("Vertraege").getQSqlFieldByName("aktiv"));
-    record.append(dkdbstructure.getTable("Vertraege").getQSqlFieldByName("LaufzeitEnde"));
+    QVector<dbfield> fields;
+    fields.append(dkdbstructur["Vertraege"]["id"]);
+    fields.append(dkdbstructur["Kreditoren"]["Vorname"]);
+    fields.append(dkdbstructur["Kreditoren"]["Nachname"]);
+    fields.append(dkdbstructur["Vertraege"]["Betrag"]);
+    fields.append(dkdbstructur["Vertraege"]["Wert"]);
+    fields.append(dkdbstructur["Zinssaetze"]["Zinssatz"]);
+    fields.append(dkdbstructur["Vertraege"]["Vertragsdatum"]);
+    fields.append(dkdbstructur["Vertraege"]["LetzteZinsberechnung"]);
+    fields.append(dkdbstructur["Vertraege"]["aktiv"]);
+    fields.append(dkdbstructur["Vertraege"]["LaufzeitEnde"]);
 
     QString sql("SELECT ");
-    for( int i = 0; i < record.count(); i++)
+    for( int i = 0; i < fields.size(); i++)
     {
         if( i) sql +=", ";
-        sql += record.field(i).tableName() +"." +record.field(i).name();
+        sql += fields[i].tablename +"." +fields[i].name;
     }
     sql += " FROM Vertraege, Kreditoren, Zinssaetze "
             "WHERE Kreditoren.id = Vertraege.KreditorId AND Vertraege.ZSatz = Zinssaetze.id "
@@ -405,13 +404,13 @@ void MainWindow::prepareContractListView()
     ui->contractsTableView->setModel(model);
     ui->contractsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->contractsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui->contractsTableView->setItemDelegateForColumn(record.indexOf("Vertraege.Betrag"), new EuroItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(record.indexOf("Vertraege.Wert"), new EuroItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(record.indexOf("Zinssaetze.Zinssatz"), new PercentItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(record.indexOf("Vertraege.Vertragsdatum"), new DateItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(record.indexOf("Vertraege.LaufzeitEnde"), new DateItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(record.indexOf("Vertraege.LetzteZinsberechnung"), new DateItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(record.indexOf("Vertraege.aktiv"), new ActivatedItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["Betrag"]), new EuroItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["Wert"]), new EuroItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Zinssaetze"]["Zinssatz"]), new PercentItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["Vertragsdatum"]), new DateItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["LaufzeitEnde"]), new DateItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["LetzteZinsberechnung"]), new DateItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["aktiv"]), new ActivatedItemFormatter(ui->contractsTableView));
     ui->contractsTableView->resizeColumnsToContents();
     ui->contractsTableView->hideColumn(0);
 }
@@ -426,7 +425,6 @@ void MainWindow::on_actionListe_der_Vertr_ge_anzeigen_triggered()
 void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &pos)
 {
     QModelIndex indexClickTarget = ui->contractsTableView->indexAt(pos);
-//    QModelIndex indexContractId = indexClickTarget.siblingAtColumn(0);
     QModelIndex indexActive = indexClickTarget.siblingAtColumn(8); // contract active
 
     QMenu menu( "PersonContextMenu", this);
@@ -469,7 +467,7 @@ void MainWindow::on_actionactivateContract_triggered()
     activateContractDlg dlg( this, contractDate);
     if( QDialog::Accepted == dlg.exec())
     {
-        if( activateContract(getContractIdStringFromContractsList(), dlg.getActivationDate()))
+        if( VertragAktivieren(getContractIdStringFromContractsList(), dlg.getActivationDate()))
             prepareContractListView();
     }
 }
@@ -485,11 +483,7 @@ void MainWindow::on_actionVertrag_l_schen_triggered()
     msg += Vorname + " " + Nachname + " (id " + index + ") gelöscht werden?";
     if( QMessageBox::Yes != QMessageBox::question(this, "Kreditvertrag löschen", msg))
         return;
-    QSqlQuery deleteQ;
-    if( !deleteQ.exec("DELETE FROM Vertraege WHERE id=" + index))
-    {
-        qCritical() << "failed to delete person: " << deleteQ.lastError();
-    }
+    VertragLoeschen(index);
     prepareContractListView();
 }
 

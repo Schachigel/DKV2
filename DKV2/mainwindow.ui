@@ -566,7 +566,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Anlegen</string>
+    <string>Vertrag Anlegen</string>
    </property>
    <property name="toolTip">
     <string>Vertrag für ausgewählten DK Geber anlegen</string>
