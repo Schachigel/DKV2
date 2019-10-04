@@ -343,7 +343,7 @@ int speichereVertrag(const VertragsDaten& c)
 
     QSqlQuery VertragEinfuegen;
     QString sqlVertragEinfuegen ("INSERT INTO Vertraege (KreditorId, Kennung, Betrag, Wert, ZSatz, tesaurierend, Vertragsdatum, aktiv, LaufzeitEnde, LetzteZinsberechnung)");
-    sqlVertragEinfuegen += " VALUES (:dkgid, :kennung, :betrag, :wert, :zsatz, :tes, :vdatum, :akt, :lzende, :letzt )";
+    sqlVertragEinfuegen += " VALUES (\":dkgid\", \":kennung\", \":betrag\", \":wert\", \":zsatz\", \":tes\", \":vdatum\", \":akt\", \":lzende\", \":letzt\" )";
     sqlVertragEinfuegen.replace(QString(":dkgid"), QString::number(c.KreditorId));
     sqlVertragEinfuegen.replace(":kennung", c.Kennung);
     sqlVertragEinfuegen.replace(":betrag", QString::number(c.Betrag, 'f', 2)); // zweistellig
