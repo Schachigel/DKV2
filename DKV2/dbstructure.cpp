@@ -1,9 +1,10 @@
 #include <qdebug.h>
+#include <QSqlDatabase>
+#include <QSqlQuery>
 
 #include "dbstructure.h"
 
-
-void dbstructure::addTable(const dbtable& t)
+dbstructure dbstructure::appendTable(dbtable t)
 {
     for (auto table: Tables)
         if( table.name == t.name)
@@ -12,9 +13,10 @@ void dbstructure::addTable(const dbtable& t)
             Q_ASSERT(!bool("redundent table in structure"));
         }
     Tables.append(t);
+    return *this;
 }
 
-dbtable dbstructure::operator[](QString name)
+dbtable dbstructure::operator[](const QString& name)
 {
     for( dbtable table : Tables)
     {
@@ -23,6 +25,30 @@ dbtable dbstructure::operator[](QString name)
     }
     Q_ASSERT(!bool("access to unknown database table"));
     return dbtable("");
+}
+
+bool dbstructure::createDb(QSqlDatabase db)
+{
+    QSqlQuery q(db);
+    bool ret{true};
+    for(dbtable table :getTables())
+    {
+        QString tableSql(table.CreateTableSQL());
+        ret &= q.exec(tableSql);
+        if(!ret)
+        {
+            qCritical() << "Table creation failed: " << q.lastError() << "\n" << tableSql << endl;
+            break;
+        }
+        else
+            qDebug() << "Created table:" << table.name  << "\n" << tableSql << endl;
+    }
+    return ret;
+}
+
+bool dbstructure::checkDb()
+{
+
 }
 
 QString dbstructure::checkTablesSql()
@@ -35,4 +61,3 @@ QString dbstructure::checkTablesSql()
     }
     return sql;
 }
-

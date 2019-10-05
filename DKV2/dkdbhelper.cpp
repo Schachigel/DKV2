@@ -18,109 +18,108 @@ void initDKDBStruktur()
     // DB date -> Variant String
     // DB bool -> Variant int
     dbtable Kreditoren("Kreditoren");
-    Kreditoren.fields.append(dbfield(Kreditoren.name, "id",       QVariant::Int,    "PRIMARY KEY AUTOINCREMENT"));
-    Kreditoren.fields.append(dbfield(Kreditoren.name, "Vorname",  QVariant::String, "NOT NULL"));
-    Kreditoren.fields.append(dbfield(Kreditoren.name, "Nachname", QVariant::String, "NOT NULL"));
-    Kreditoren.fields.append(dbfield(Kreditoren.name, "Strasse",  QVariant::String, "NOT NULL"));
-    Kreditoren.fields.append(dbfield(Kreditoren.name, "Plz",      QVariant::String, "NOT NULL"));
-    Kreditoren.fields.append(dbfield(Kreditoren.name, "Stadt",    QVariant::String, "NOT NULL"));
-    Kreditoren.fields.append(dbfield(Kreditoren.name, "IBAN",     QVariant::String));
-    Kreditoren.fields.append(dbfield(Kreditoren.name, "BIC",      QVariant::String));
-    dkdbstructur.addTable(Kreditoren);
+    Kreditoren.fields.append(dbfield("id",       QVariant::Int,    "PRIMARY KEY AUTOINCREMENT"));
+    Kreditoren.fields.append(dbfield("Vorname",  QVariant::String, "NOT NULL"));
+    Kreditoren.fields.append(dbfield("Nachname", QVariant::String, "NOT NULL"));
+    Kreditoren.fields.append(dbfield("Strasse",  QVariant::String, "NOT NULL"));
+    Kreditoren.fields.append(dbfield("Plz",      QVariant::String, "NOT NULL"));
+    Kreditoren.fields.append(dbfield("Stadt",    QVariant::String, "NOT NULL"));
+    Kreditoren.fields.append(dbfield("IBAN",     QVariant::String));
+    Kreditoren.fields.append(dbfield("BIC",      QVariant::String));
+    dkdbstructur.appendTable(Kreditoren);
 
     dbtable Zinssaetze("Zinssaetze");
-    Zinssaetze.fields.append(dbfield(Zinssaetze.name, "id",       QVariant::Int,    "PRIMARY KEY AUTOINCREMENT"));
-    Zinssaetze.fields.append(dbfield(Zinssaetze.name, "Zinssatz", QVariant::Double, "DEFAULT '0,0' UNIQUE NULL"));
-    Zinssaetze.fields.append(dbfield(Zinssaetze.name, "Bemerkung"));
-    dkdbstructur.addTable(Zinssaetze);
+    Zinssaetze.fields.append(dbfield("id",       QVariant::Int,    "PRIMARY KEY AUTOINCREMENT"));
+    Zinssaetze.fields.append(dbfield("Zinssatz", QVariant::Double, "DEFAULT '0,0' UNIQUE NULL"));
+    Zinssaetze.fields.append(dbfield("Bemerkung"));
+    dkdbstructur.appendTable(Zinssaetze);
 
     dbtable Vertraege("Vertraege");
-    Vertraege.fields.append((dbfield(Vertraege.name, "id",         QVariant::Int, "PRIMARY KEY AUTOINCREMENT")));
-    Vertraege.fields.append((dbfield(Vertraege.name, "KreditorId", QVariant::Int, "", Kreditoren["id"].getInfo(), dbfield::refIntOption::onDeleteCascade )));
-    Vertraege.fields.append((dbfield(Vertraege.name, "Kennung")));
-    Vertraege.fields.append((dbfield(Vertraege.name, "Betrag",     QVariant::Double, "DEFAULT '0,0' NOT NULL")));
-    Vertraege.fields.append((dbfield(Vertraege.name, "Wert",       QVariant::Double, "DEFAULT '0,0' NULL")));
-    Vertraege.fields.append((dbfield(Vertraege.name, "ZSatz",      QVariant::Int, "", Zinssaetze["id"].getInfo(), dbfield::refIntOption::non)));
-    Vertraege.fields.append((dbfield(Vertraege.name, "tesaurierend",  QVariant::Bool, "DEFAULT '1' NOT NULL")));
-    Vertraege.fields.append((dbfield(Vertraege.name, "Vertragsdatum", QVariant::Date, "DATE  NULL")));
-    Vertraege.fields.append((dbfield(Vertraege.name, "aktiv",         QVariant::Bool, "DEFAULT '0' NOT NULL")));
-    Vertraege.fields.append((dbfield(Vertraege.name, "LaufzeitEnde",  QVariant::Date, "DEFAULT '3000-12-31' NOT NULL")));
-    Vertraege.fields.append((dbfield(Vertraege.name, "LetzteZinsberechnung", QVariant::Date, "NULL")));
-    dkdbstructur.addTable(Vertraege);
+    Vertraege.fields.append((dbfield("id",         QVariant::Int, "PRIMARY KEY AUTOINCREMENT")));
+    Vertraege.fields.append((dbfield("KreditorId", QVariant::Int, "", Kreditoren["id"].getInfo(), dbfield::refIntOption::onDeleteCascade )));
+    Vertraege.fields.append((dbfield("Kennung")));
+    Vertraege.fields.append((dbfield("Betrag",     QVariant::Double, "DEFAULT '0,0' NOT NULL")));
+    Vertraege.fields.append((dbfield("Wert",       QVariant::Double, "DEFAULT '0,0' NULL")));
+    Vertraege.fields.append((dbfield("ZSatz",      QVariant::Int, "", Zinssaetze["id"].getInfo(), dbfield::refIntOption::non)));
+    Vertraege.fields.append((dbfield("tesaurierend",  QVariant::Bool, "DEFAULT '1' NOT NULL")));
+    Vertraege.fields.append((dbfield("Vertragsdatum", QVariant::Date, "DATE  NULL")));
+    Vertraege.fields.append((dbfield("aktiv",         QVariant::Bool, "DEFAULT '0' NOT NULL")));
+    Vertraege.fields.append((dbfield("LaufzeitEnde",  QVariant::Date, "DEFAULT '3000-12-31' NOT NULL")));
+    Vertraege.fields.append((dbfield("LetzteZinsberechnung", QVariant::Date, "NULL")));
+    dkdbstructur.appendTable(Vertraege);
 
     dbtable Buchungsarten("Buchungsarten");
-    Buchungsarten.fields.append(dbfield(Buchungsarten.name, "id",  QVariant::Int, "PRIMARY KEY AUTOINCREMENT"));
-    Buchungsarten.fields.append(dbfield(Buchungsarten.name, "Art", QVariant::String, "NOT NULL"));
-    dkdbstructur.addTable(Buchungsarten);
+    Buchungsarten.fields.append(dbfield("id",  QVariant::Int, "PRIMARY KEY AUTOINCREMENT"));
+    Buchungsarten.fields.append(dbfield("Art", QVariant::String, "NOT NULL"));
+    dkdbstructur.appendTable(Buchungsarten);
 
     dbtable Buchungen("Buchungen");
-    Buchungen.fields.append(((dbfield(Buchungen.name, "id",           QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))));
-    Buchungen.fields.append(((dbfield(Buchungen.name, "VertragId",    QVariant::Int, "", Vertraege["id"].getInfo(), dbfield::refIntOption::onDeleteNull))));
-    Buchungen.fields.append(((dbfield(Buchungen.name, "Buchungsart",  QVariant::Int, "", Buchungsarten["id"].getInfo(), dbfield::refIntOption::non))));
-    Buchungen.fields.append(((dbfield(Buchungen.name, "Betrag",       QVariant::Double, "DEFAULT '0' NULL"))));
-    Buchungen.fields.append(((dbfield(Buchungen.name, "Datum",        QVariant::Date))));
-    Buchungen.fields.append(((dbfield(Buchungen.name, "Bemerkung",    QVariant::String))));
-    dkdbstructur.addTable(Buchungen);
+    Buchungen.fields.append(((dbfield("id",           QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))));
+    Buchungen.fields.append(((dbfield("VertragId",    QVariant::Int, "", Vertraege["id"].getInfo(), dbfield::refIntOption::onDeleteNull))));
+    Buchungen.fields.append(((dbfield("Buchungsart",  QVariant::Int, "", Buchungsarten["id"].getInfo(), dbfield::refIntOption::non))));
+    Buchungen.fields.append(((dbfield("Betrag",       QVariant::Double, "DEFAULT '0' NULL"))));
+    Buchungen.fields.append(((dbfield("Datum",        QVariant::Date))));
+    Buchungen.fields.append(((dbfield("Bemerkung",    QVariant::String))));
+    dkdbstructur.appendTable(Buchungen);
 
     dbtable meta("Meta");
-    meta.fields.append(dbfield(meta.name, "Name", QVariant::String, "NOT NULL"));
-    meta.fields.append(dbfield(meta.name, "Wert", QVariant::String, "NOT NULL"));
-    dkdbstructur.addTable(meta);
+    meta.fields.append(dbfield("Name", QVariant::String, "NOT NULL"));
+    meta.fields.append(dbfield("Wert", QVariant::String, "NOT NULL"));
+    dkdbstructur.appendTable(meta);
 }
 
-bool DKDB_TabellenAnlegen( const QSqlDatabase& db)
-{   LOG_ENTRY_and_EXIT;
+bool ZinssaetzeEinfuegen()
+{
+    TableDataInserter ti(dkdbstructur["Zinssaetze"]);
+    ti.setValue("Zinssatz", 0.);
+    ti.setValue("Bemerkung", "Unser Held");
+    QSqlQuery sql0;
+    bool ret = sql0.exec(ti.InsertRecordSQL());
 
-    QSqlQuery q(db);
-    bool ret{true};
-    for(dbtable table :dkdbstructur.getTables())
+    double Zins = 0.1;
+    for (Zins=0.1; Zins < .6; Zins+=0.1)
     {
-        QString tableSql(table.CreateTableSQL());
-        ret = q.exec(tableSql);
-        if(!ret)
-            qCritical() << "table.CreateTableSQL() failed: " << q.lastError() << "\n" << tableSql;
-        else
-            qDebug() << "New Database table creation. Tablename:" << table.name  << "\n" << tableSql;
+        ti.setValue("Zinssatz", Zins); ti.setValue("Bemerkung", "Unser Freund");
+        QSqlQuery sql;
+        ret &= sql.exec(ti.InsertRecordSQL());
+    }
+    for (; Zins < 1.1; Zins+=0.1){
+        ti.setValue("Zinssatz", Zins); ti.setValue("Bemerkung", "Unser Förderer");
+        QSqlQuery sql;
+        ret &= sql.exec(ti.InsertRecordSQL());
+    }
+    for (; Zins < 2.; Zins+=0.1)
+    {
+        ti.setValue("Zinssatz", Zins); ti.setValue("Bemerkungen", "Unser Investor");
+        QSqlQuery sql;
+        ret &= sql.exec(ti.InsertRecordSQL());
+    }
+    if( !ret)
+        qCritical() << "There was an error creating intrest values";
+    return ret;
+}
+
+bool BuchungsartenEinfuegen()
+{
+    QStringList arten{"Vertrag anlegen", "Vertrag aktivieren", "Passiven Vertrag löschen", "Vertrag beenden"};
+    bool ret = true;
+    for( auto art: arten)
+    {
+        TableDataInserter ti( dkdbstructur["Buchungsarten"]);
+        ti.setValue("Art", QVariant(art));
+        QString sqls (ti.InsertRecordSQL());
+        QSqlQuery sql;
+        ret &= sql.exec(sqls);
+        if( !ret)
+            qCritical() << "failed to store booking types"<< sql.lastError() << "\n" << sqls;
     }
     return ret;
 }
 
-bool ZinssaetzeEinfuegen(const QSqlDatabase& db)
+bool EigenschaftenEinfuegen()
 {
-    QString sqlZinssaetze ("INSERT INTO Zinssaetze (Zinssatz, Bemerkung) VALUES ");
-    sqlZinssaetze += "(" + QString::number(0.) + ",'Unser Held')";
-    double Zins = 0.1;
-    for (Zins=0.1; Zins < .6; Zins+=0.1)
-        sqlZinssaetze += ", (" + QString::number(Zins) + ",'Unser Freund')";
-    for (; Zins < 1.1; Zins+=0.1)
-        sqlZinssaetze += ", (" + QString::number(Zins) + ",'Unser Foerderer')";
-    for (; Zins < 2.; Zins+=0.1)
-        sqlZinssaetze += ", (" + QString::number(Zins) + ",'Unser Investor')";
-    QSqlQuery q(db);
-    return q.exec(sqlZinssaetze);
-}
-
-bool BuchungsartenEinfuegen(const QSqlDatabase& db)
-{
-    QSqlQuery sql(db);
-    sql.prepare("INSERT INTO Buchungsarten (Art) VALUES (:art)");
-
-    QStringList arten{"Vertrag anlegen", "Vertrag aktivieren", "Passiven Vertrag löschen", "Vertrag beenden"};
-    for( auto art: arten)
-    {
-        sql.bindValue(":art", art);
-        if( !sql.exec())
-        {
-            qCritical() << "Anlegen von Buchungsarten fehlgeschlagen\n" << sql.lastQuery() << "\n"<< sql.lastError();
-            return false;
-        }
-    }
-    return true;
-}
-
-bool EigenschaftenEinfuegen(const QSqlDatabase& db)
-{
-    QSqlQuery sql("INSERT INTO Meta (Name, Wert) VALUES (\"Version\", \"1.0\"", db);
+    QSqlQuery sql;
+    sql.exec("INSERT INTO Meta (Name, Wert) VALUES (\"Version\", \"1.0\"");
     return true;
 }
 
@@ -131,6 +130,7 @@ bool DKDatenbankAnlegen(const QString& filename)
     if( QFile(filename).exists())
     {
         backupFile(filename);
+        QFile(filename).remove();
     }
     dbCloser closer;
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
@@ -140,12 +140,12 @@ bool DKDatenbankAnlegen(const QString& filename)
     bool ret = true;
     closer.set(&db);
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
-    db.transaction();
-    ret &= DKDB_TabellenAnlegen(db);
-    ret &= ZinssaetzeEinfuegen(db);
-    ret &= BuchungsartenEinfuegen(db);
-    ret &= EigenschaftenEinfuegen(db);
-    if( ret) db.commit(); else db.rollback();
+//    db.transaction();
+    ret &= dkdbstructur.createDb(db);
+    ret &= ZinssaetzeEinfuegen();
+    ret &= BuchungsartenEinfuegen();
+    ret &= EigenschaftenEinfuegen();
+//    if( ret) db.commit(); else db.rollback();
 
     if (istValideDatenbank(filename))
         return ret;
@@ -169,6 +169,7 @@ bool hatAlleTabellen(QSqlDatabase& db)
             return false;
         }
     }
+    qDebug() << db.databaseName() << " has all tables expected";
     return true;
 }
 
@@ -178,16 +179,17 @@ bool istValideDatenbank(const QString& filename)
     if( filename == "") return false;
     if( !QFile::exists(filename)) return false;
 
-    dbCloser closer;
+    dbCloser closer; // create before db
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "validate");
     db.setDatabaseName(filename);
     if( !db.open())
         return false;
-    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     closer.set(&db);
+    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     if( !hatAlleTabellen(db))
         return false;
 
+    qDebug() << filename << " is a valid dk database";
     return true;
 }
 

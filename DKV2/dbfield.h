@@ -14,7 +14,6 @@ struct dbfieldinfo
 {
     QString tablename;
     QString name;
-    QVariant::Type type;
 };
 
 struct dbfield
@@ -43,9 +42,9 @@ struct dbfield
         tablename(dbf.tablename), name(dbf.name), vType(dbf.vType), TypeInfo(dbf.TypeInfo), reference(dbf.reference), option(dbf.option)
     {
     }
-    dbfield(QString tn, QString n, QVariant::Type t=QVariant::String,
+    dbfield(QString n, QVariant::Type t=QVariant::String,
             QString ti="", dbfieldinfo r = dbfieldinfo(), refIntOption opt = refIntOption::non) :
-        tablename(tn), name(n), vType(t), TypeInfo(ti), reference(r), option(opt)
+        name(n), vType(t), TypeInfo(ti), reference(r), option(opt)
     {
     }
     bool operator ==(const dbfield &b) const;

@@ -19,16 +19,6 @@ class dbtable;
 
 extern dbstructure dkdbstructur;
 
-class dbCloser
-{   // for use on the stack only
-public:
-    dbCloser() : Db (nullptr){} // create closer before the database
-    ~dbCloser(){if( !Db) return; Db->close(); Db->removeDatabase(Db->connectionName());}
-    void set(QSqlDatabase* p){ Db=p;}
-private:
-    QSqlDatabase* Db;
-};
-
 void initDKDBStruktur();
 
 bool DKDatenbankAnlegen(const QString& filename);
@@ -36,7 +26,7 @@ bool istValideDatenbank(const QString& filename);
 void DatenbankverbindungSchliessen();
 void DatenbankZurAnwendungOeffnen( QString newDbFile="");
 
-void BeispieldatenAnlegen(int datensaetze =30);
+void BeispieldatenAnlegen(int datensaetze =20);
 
 struct KreditorDaten
 {

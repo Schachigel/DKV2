@@ -64,6 +64,6 @@ QString dbfield::CreateSQL()
 
 dbfieldinfo dbfield::getInfo()
 {
-    return dbfieldinfo{tablename, name, vType };
+    return dbfieldinfo{tablename, name};
 }
 

@@ -10,10 +10,10 @@ private:
     QString fname;
 public:
     functionlogging(QString x) :fname(x) {
-        qDebug() << "Begin of " << fname;
+        qDebug() << ">> " << fname;
     }
     ~functionlogging(){
-        qDebug() << "End of " << fname;
+        qDebug() << "<< " << fname;
     }
 };
 
