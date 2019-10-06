@@ -11,26 +11,43 @@
 #include <QList>
 
 #include "dbfield.h"
+class dbstructure;
 
-struct dbtable{
+class dbtable
+{
+    friend class dbstructure;
+public:
+    // constr. destr. & access fu
+    dbtable(QString n="") : name(n) {}
+    QString Name() const {return name;}
+    void setName(QString n){name=n;}
+    QList<dbfield> Fields() const { return fields;}
+    dbfield operator[](QString s);
+    // interface
+    dbtable append(const dbfield&);
+private:
     QString name;
     QList<dbfield> fields;
-    dbtable append(dbfield);
-    dbtable(QString n) : name(n)
-    {}
-    dbfield operator[](QString s);
-    QString CreateTableSQL();
+    // helper
+    QString CreateTableSQL() const;
 };
 
-struct TableDataInserter
+class TableDataInserter
 {
+public:
+    // constr. destrc. & access fu
     TableDataInserter(const dbtable& t);
-    QString InsertRecordSQL();
     void setValue(const QString& field, const QVariant& v);
-    bool InsertData(QSqlDatabase db);
+    // interface
+    bool InsertData(QSqlDatabase db =QSqlDatabase::database());
+    int getInsertedRecordId(){return lastRecord;}
 private:
+    // data
     QString tablename;
     QSqlRecord record;
+    int lastRecord;
+    // helper
+    QString InsertRecordSQL();
 };
 
 #endif // DBTABLE_H

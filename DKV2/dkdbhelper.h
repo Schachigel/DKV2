@@ -11,8 +11,6 @@
 #include <qlist.h>
 #include <qstring.h>
 
-class dbfield;
-class dbtable;
 #include "dbtable.h"
 #include "dbfield.h"
 #include "dbstructure.h"
@@ -49,17 +47,17 @@ void ZinssaetzeFuerAuswahlliste(QList<ZinsAnzeigeMitId>& Entries);
 
 struct VertragsDaten
 {
-    int id;
-    int KreditorId;
-    QString Kennung;
-    double Betrag;
-    double Wert;
-    double Zins;
-    bool tesaurierend;
-    bool active;
-    QDate Vertragsdatum;
-    QDate LaufzeitEnde;
-    QDate StartZinsberechnung;
+//    int id;
+    QVariant KreditorId;
+    QVariant Kennung;
+    QVariant Betrag;
+    QVariant Wert;
+    QVariant Zins;
+    QVariant tesaurierend;
+    QVariant active;
+    QVariant Vertragsdatum;
+    QVariant LaufzeitEnde;
+    QVariant StartZinsberechnung;
     VertragsDaten() :
         KreditorId(-1),
         Betrag(0.), Wert(0.), Zins(0.),

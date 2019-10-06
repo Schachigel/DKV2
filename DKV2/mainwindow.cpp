@@ -330,7 +330,9 @@ void MainWindow::on_speichereVertragZurKreditorenListe_clicked()
     {
         clearNewContractFields();
         ui->stackedWidget->setCurrentIndex(PersonListIndex);
+        return;
     }
+    // todo: issue a message an stop processing
 }
 void MainWindow::on_saveContractGoContracts_clicked()
 {
@@ -339,7 +341,10 @@ void MainWindow::on_saveContractGoContracts_clicked()
         clearNewContractFields();
         prepareContractListView();
         ui->stackedWidget->setCurrentIndex(ContractsListIndex);
+        return;
     }
+    // todo: issue a message an stop processing
+
 }
 void MainWindow::on_cancelCreateContract_clicked()
 {
@@ -365,10 +370,10 @@ void MainWindow::on_actionVertrag_anlegen_triggered()
     FillRatesDropdown();
     comboKreditorenAnzeigeNachKreditorenId( getPersonIdFromKreditorenList());
     VertragsDaten cd;
-    ui->deLaufzeitEnde->setDate(cd.LaufzeitEnde);
-    ui->deVertragsabschluss->setDate(cd.Vertragsdatum);
+    ui->deLaufzeitEnde->setDate(cd.LaufzeitEnde.toDate());
+    ui->deVertragsabschluss->setDate(cd.Vertragsdatum.toDate());
     ui->lblBeginZinsphase->setText("");
-    ui->chkbTesaurierend->setChecked(cd.tesaurierend);
+    ui->chkbTesaurierend->setChecked(cd.tesaurierend.toBool());
 
     ui->stackedWidget->setCurrentIndex(newContractIndex);
 }
@@ -392,7 +397,7 @@ void MainWindow::prepareContractListView()
     for( int i = 0; i < fields.size(); i++)
     {
         if( i) sql +=", ";
-        sql += fields[i].tablename +"." +fields[i].name;
+        sql += fields[i].Tablename() +"." +fields[i].Name();
     }
     sql += " FROM Vertraege, Kreditoren, Zinssaetze "
             "WHERE Kreditoren.id = Vertraege.KreditorId AND Vertraege.ZSatz = Zinssaetze.id "

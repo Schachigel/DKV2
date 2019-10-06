@@ -6,37 +6,38 @@ dbfield dbtable::operator[](QString s)
 {
     for (auto f : fields)
     {
-        if( f.name == s)
+        if( f.Name() == s)
             return f;
     }
     return dbfield();
 }
 
-dbtable dbtable::append(dbfield f)
+dbtable dbtable::append(const dbfield& f)
 {
-    f.tablename = name;
-    fields.append(f);
+    dbfield newf(f);
+    newf.setTablename(Name());
+    fields.append(newf);
     return *this;
 }
 
-QString dbtable::CreateTableSQL()
+QString dbtable::CreateTableSQL() const
 {
     QString sql("CREATE TABLE [" + name + "] (");
-    for( int i = 0; i< fields.count(); i++)
+    for( int i = 0; i< Fields().count(); i++)
     {
         if( i>0) sql.append(", ");
-        sql.append(fields[i].CreateSQL());
+        sql.append(Fields()[i].getCreateSqlSnippet());
     }
     sql.append(")");
     return sql;
 }
 
-TableDataInserter::TableDataInserter(const dbtable& t) :tablename(t.name)
+TableDataInserter::TableDataInserter(const dbtable& t) :tablename(t.Name()), lastRecord(-1)
 {
-    for (auto f : t.fields)
+    for (auto f : t.Fields())
     {
-        QSqlField sqlf(f.name, f.vType, tablename);
-        if( f.TypeInfo.contains("AUTOINCREMENT", Qt::CaseInsensitive) )
+        QSqlField sqlf(f.Name(), f.VType(), tablename);
+        if( f.TypeInfo().contains("AUTOINCREMENT", Qt::CaseInsensitive) )
             sqlf.setAutoValue(true);
         record.append(sqlf);
     }
@@ -52,11 +53,26 @@ void TableDataInserter::setValue(const QString& n, const QVariant& v)
             qCritical() << "wrong field type for insertion";
     }
     else
-        qCritical() << "wrong field name for insertion";
+        qCritical() << "wrong field name for insertion " << n;
 }
 
-QString singleQuoted(QString s)
+QString format4SQL(QVariant v)
 {
+    QString s;
+    switch(v.type())
+    {
+    case QVariant::Double:
+    {   double d(v.toDouble());
+        s = QString::number(d, 'f', 2);
+        break;
+    }
+    case QVariant::Bool:
+        s = (v.toBool())? "1" : "0";
+        break;
+    default:
+        s = v.toString();
+    }
+
     return "'" + s +"'";
 }
 
@@ -70,7 +86,9 @@ QString TableDataInserter::InsertRecordSQL()
         if( record.field(i).isAutoValue())
             sql += "NULL";
         else
-            sql += singleQuoted(record.field(i).value().toString());
+        {
+            sql += format4SQL(record.field(i).value());
+        }
     }
     qDebug() << "InsertRecordSQL:\n" << sql << ")";
     return sql +")";
@@ -80,6 +98,7 @@ bool TableDataInserter::InsertData(QSqlDatabase db)
 {
     QSqlQuery q(db);
     bool ret = q.exec(InsertRecordSQL());
+    lastRecord = q.lastInsertId().toInt();
     if( !ret)
     {
         qCritical() << "Insert record failed: " << q.lastError() << "\n" << q.lastQuery() << endl;

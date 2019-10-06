@@ -6,20 +6,18 @@
 
 #include "dbtable.h"
 
-struct dbstructure
+class dbstructure
 {
+public:
+    // constr., destr. & access fu
+    dbtable operator[](const QString& name);
+    QList<dbtable> getTables(){ return Tables;}
+    // interface
     dbstructure appendTable(dbtable t);
     bool createDb(QSqlDatabase db);
-    bool checkDb();
 
-    QString checkTablesSql();
-    dbtable operator[](const QString& name);
-    QList<dbtable> getTables(){
-        return Tables;
-    }
 private:
     QList<dbtable> Tables;
-
 };
 
 class dbCloser

@@ -7,7 +7,7 @@
 dbstructure dbstructure::appendTable(dbtable t)
 {
     for (auto table: Tables)
-        if( table.name == t.name)
+        if( table.Name() == t.Name())
         {
             qCritical() << "Versuch eine Tabelle wiederholt zur Datenbank hinzuzufügen";
             Q_ASSERT(!bool("redundent table in structure"));
@@ -20,11 +20,11 @@ dbtable dbstructure::operator[](const QString& name)
 {
     for( dbtable table : Tables)
     {
-        if( table.name == name)
+        if( table.Name() == name)
             return table;
     }
     Q_ASSERT(!bool("access to unknown database table"));
-    return dbtable("");
+    return dbtable();
 }
 
 bool dbstructure::createDb(QSqlDatabase db)
@@ -41,23 +41,7 @@ bool dbstructure::createDb(QSqlDatabase db)
             break;
         }
         else
-            qDebug() << "Created table:" << table.name  << "\n" << tableSql << endl;
+            qDebug() << "Created table:" << table.Name()  << "\n" << tableSql;
     }
     return ret;
-}
-
-bool dbstructure::checkDb()
-{
-
-}
-
-QString dbstructure::checkTablesSql()
-{
-    QString sql("SELECT * FROM ");
-    for( int i=0; i<Tables.count(); i++)
-    {
-        if( i>0) sql.append(", ");
-        sql.append(Tables[i].name);
-    }
-    return sql;
 }

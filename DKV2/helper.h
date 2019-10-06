@@ -13,7 +13,7 @@ public:
         qDebug() << ">> " << fname;
     }
     ~functionlogging(){
-        qDebug() << "<< " << fname;
+        qDebug() << "<< " << fname << endl;
     }
 };
 

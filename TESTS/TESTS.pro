@@ -8,4 +8,5 @@ TEMPLATE = app
 SOURCES +=  tst_db.cpp \
     ../dkv2/dbfield.cpp \
     ../dkv2/dbstructure.cpp \
-    ../dkv2/dbtable.cpp
+    ../dkv2/dbtable.cpp \
+    ../dkv2/filehelper.cpp

@@ -30,8 +30,11 @@ void logger(QtMsgType type, const QMessageLogContext &context, const QString &ms
     }
     static QHash<QtMsgType, QString> msgLevelHash({{QtDebugMsg, "DBuG"}, {QtInfoMsg, "INFo"}, {QtWarningMsg, "WaRN"}, {QtCriticalMsg, "ERRo"}, {QtFatalMsg, "FaTl"}});
 
+    QString endlCorrectedMsg (msg);
+    bool corrected = false;
+    if( endlCorrectedMsg.endsWith("\n")) {corrected = true; endlCorrectedMsg.chop(1);}
     QTextStream ts(outFile_p);
-    ts << QTime::currentTime().toString("hh:mm:ss.zzz") << " " << msgLevelHash[type] << " : " << msg << " (" << context.file << ")" << endl;
+    ts << QTime::currentTime().toString("hh:mm:ss.zzz") << " " << msgLevelHash[type] << " : " << msg << " (" << context.file << ")" << (corrected? "\n": "") << endl;
 
     if (type == QtFatalMsg)
         abort();
@@ -55,7 +58,7 @@ QString getInitialDb()
     {
         dbfile = QFileDialog::getSaveFileName(nullptr,
                  "Wähle eine Datenbank oder gib einen Namen für eine Neue ein",
-                 "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr,QFileDialog::DontConfirmOverwrite);
+                 "..\\data", "dk-DB Dateien (*.dkdb)", nullptr,QFileDialog::DontConfirmOverwrite);
 
         qDebug() << "DbFile from user: " << dbfile;
         if( dbfile == "") return QString();  // canceled by user

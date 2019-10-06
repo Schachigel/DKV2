@@ -9,6 +9,7 @@ bool dbfield::operator ==(const dbfield &b) const
             && (vType == b.vType));
 }
 
+// local helper
 QVariant::Type dbCompatibleVType(QVariant::Type t)
 {
     switch( t)
@@ -45,12 +46,11 @@ QString dbTypeFromVariant(QVariant::Type t)
     }
 }
 
-QString dbfield::CreateSQL()
+QString dbfield::getCreateSqlSnippet()
 {
-    QString s( "[" + name + "] " + dbTypeFromVariant(vType) + " " +TypeInfo);
+    QString s( "[" + name + "] " + dbTypeFromVariant(vType) + " " +TypeInfo());
     if( reference.name.isEmpty())
         return s;
-//    Q_ASSERT(table);
     s += " FOREIGN_KEY REFERENCES [" + reference.tablename +"](" + reference.name + ")";
     if( option)
     {
@@ -62,7 +62,7 @@ QString dbfield::CreateSQL()
     return s;
 }
 
-dbfieldinfo dbfield::getInfo()
+dbfieldinfo dbfield::getReferenzeInfo()
 {
     return dbfieldinfo{tablename, name};
 }
