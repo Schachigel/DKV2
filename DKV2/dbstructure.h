@@ -10,11 +10,11 @@ class dbstructure
 {
 public:
     // constr., destr. & access fu
-    dbtable operator[](const QString& name);
-    QList<dbtable> getTables(){ return Tables;}
+    dbtable operator[](const QString& name) const;
+    QList<dbtable> getTables() const { return Tables;}
     // interface
     dbstructure appendTable(dbtable t);
-    bool createDb(QSqlDatabase db);
+    bool createDb(QSqlDatabase db) const;
 
 private:
     QList<dbtable> Tables;
@@ -23,7 +23,7 @@ private:
 class dbCloser
 {   // for use on the stack only
 public:
-    dbCloser() : Db (nullptr){} // create closer before the database
+    dbCloser() : Db (nullptr){} // create 'closer' before the database
     ~dbCloser(){if( !Db) return; Db->close(); Db->removeDatabase(Db->connectionName());}
     void set(QSqlDatabase* p){ Db=p;}
 private:

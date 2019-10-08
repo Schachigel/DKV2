@@ -2,7 +2,7 @@
 #include "dbtable.h"
 #include "dbfield.h"
 
-dbfield dbtable::operator[](QString s)
+dbfield dbtable::operator[](QString s) const
 {
     for (auto f : fields)
     {
@@ -76,7 +76,7 @@ QString format4SQL(QVariant v)
     return "'" + s +"'";
 }
 
-QString TableDataInserter::InsertRecordSQL()
+QString TableDataInserter::InsertRecordSQL() const
 {
     QString sql("INSERT INTO " + tablename +" VALUES (");
 

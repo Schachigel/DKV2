@@ -24,6 +24,7 @@ QVariant::Type dbCompatibleVType(QVariant::Type t)
         return QVariant::Int;
     default:
         Q_ASSERT(!bool("invalid database type"));
+        return QVariant::Invalid;
     }
 }
 
@@ -43,6 +44,7 @@ QString dbTypeFromVariant(QVariant::Type t)
         return "INTEGER";
     default:
         Q_ASSERT(!bool("invalid database type"));
+        return "INVALID";
     }
 }
 

@@ -16,7 +16,7 @@ dbstructure dbstructure::appendTable(dbtable t)
     return *this;
 }
 
-dbtable dbstructure::operator[](const QString& name)
+dbtable dbstructure::operator[](const QString& name) const
 {
     for( dbtable table : Tables)
     {
@@ -27,7 +27,7 @@ dbtable dbstructure::operator[](const QString& name)
     return dbtable();
 }
 
-bool dbstructure::createDb(QSqlDatabase db)
+bool dbstructure::createDb(QSqlDatabase db) const
 {
     QSqlQuery q(db);
     bool ret{true};
