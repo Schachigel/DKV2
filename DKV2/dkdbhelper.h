@@ -75,4 +75,13 @@ QString ContractList_FROM();
 QString ContractList_WHERE(QString filter);
 QString ContractList_SQL(QVector<dbfield> f, QString filter);
 
+struct DbSummary
+{
+    double aktiveDk;
+    double passiveDk;
+    double WertAktiveDk;
+};
+void berechneZusammenfassung(DbSummary& dbs);
+
+
 #endif // DKDBHELPER_H

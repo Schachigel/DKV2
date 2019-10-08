@@ -51,6 +51,7 @@ public:
     QAction *actionVertrag_l_schen;
     QAction *actionanzeigenLog;
     QAction *actionVertrag_Beenden;
+    QAction *action_bersicht;
     QWidget *centralWidget;
     QVBoxLayout *verticalLayout_2;
     QLabel *statusLabel;
@@ -123,6 +124,9 @@ public:
     QLineEdit *leVertrgeFilter;
     QPushButton *FilterVertrgeZurcksetzten;
     QTableView *contractsTableView;
+    QWidget *Overview;
+    QVBoxLayout *verticalLayout_5;
+    QLabel *lblOverview;
     QMenuBar *menuBar;
     QMenu *menuDatenbank;
     QMenu *menuDK_Geber;
@@ -170,6 +174,8 @@ public:
         actionanzeigenLog->setObjectName(QString::fromUtf8("actionanzeigenLog"));
         actionVertrag_Beenden = new QAction(MainWindow);
         actionVertrag_Beenden->setObjectName(QString::fromUtf8("actionVertrag_Beenden"));
+        action_bersicht = new QAction(MainWindow);
+        action_bersicht->setObjectName(QString::fromUtf8("action_bersicht"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         verticalLayout_2 = new QVBoxLayout(centralWidget);
@@ -519,6 +525,18 @@ public:
         verticalLayout_4->addWidget(contractsTableView);
 
         stackedWidget->addWidget(ContractsListPage);
+        Overview = new QWidget();
+        Overview->setObjectName(QString::fromUtf8("Overview"));
+        verticalLayout_5 = new QVBoxLayout(Overview);
+        verticalLayout_5->setSpacing(6);
+        verticalLayout_5->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_5->setObjectName(QString::fromUtf8("verticalLayout_5"));
+        lblOverview = new QLabel(Overview);
+        lblOverview->setObjectName(QString::fromUtf8("lblOverview"));
+
+        verticalLayout_5->addWidget(lblOverview);
+
+        stackedWidget->addWidget(Overview);
 
         verticalLayout_2->addWidget(stackedWidget);
 
@@ -590,15 +608,15 @@ public:
         menuDK_Geber->addAction(actionNeuer_DK_Geber);
         menuDK_Geber->addAction(actionKreditgeber_l_schen);
         menuVertr_ge->addAction(actionListe_der_Vertr_ge_anzeigen);
+        menuVertr_ge->addAction(action_bersicht);
         menuVertr_ge->addSeparator();
         menuVertr_ge->addAction(actionVertrag_anlegen);
-        menuVertr_ge->addAction(actionVertrag_l_schen);
         menuDebug->addAction(actioncreateSampleData);
         menuDebug->addAction(actionanzeigenLog);
 
         retranslateUi(MainWindow);
 
-        stackedWidget->setCurrentIndex(4);
+        stackedWidget->setCurrentIndex(5);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -654,6 +672,10 @@ public:
         actionVertrag_Beenden->setText(QCoreApplication::translate("MainWindow", "Vertrag &Beenden", nullptr));
 #if QT_CONFIG(tooltip)
         actionVertrag_Beenden->setToolTip(QCoreApplication::translate("MainWindow", "Zins und Auszahlungsbetrag berechnen, Vertrag l\303\266schen", nullptr));
+#endif // QT_CONFIG(tooltip)
+        action_bersicht->setText(QCoreApplication::translate("MainWindow", "\303\234bersicht", nullptr));
+#if QT_CONFIG(tooltip)
+        action_bersicht->setToolTip(QCoreApplication::translate("MainWindow", "\303\234bersicht \303\274ber Vertragsdaten anzeigen", nullptr));
 #endif // QT_CONFIG(tooltip)
         statusLabel->setText(QString());
         label->setText(QCoreApplication::translate("MainWindow", "<H2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</H2>", nullptr));
@@ -715,6 +737,10 @@ public:
         lblHinweis->setText(QCoreApplication::translate("MainWindow", "<H3> Nach dem Anlegen m\303\274ssen die Vertr\303\244ge nach Zahlungseingang aktiviert werden, damit die Zinsberechnung beginnt!", nullptr));
         label_12->setText(QCoreApplication::translate("MainWindow", "Filter", nullptr));
         FilterVertrgeZurcksetzten->setText(QCoreApplication::translate("MainWindow", "zur\303\274cksetzten", nullptr));
+#if QT_CONFIG(tooltip)
+        contractsTableView->setToolTip(QCoreApplication::translate("MainWindow", "Verwende die sekund\303\244re Maustaste f\303\274r weitere Optionen", nullptr));
+#endif // QT_CONFIG(tooltip)
+        lblOverview->setText(QCoreApplication::translate("MainWindow", "TextLabel", nullptr));
         menuDatenbank->setTitle(QCoreApplication::translate("MainWindow", "&Datenbank", nullptr));
         menuDK_Geber->setTitle(QCoreApplication::translate("MainWindow", "&Kreditgeber", nullptr));
         menuVertr_ge->setTitle(QCoreApplication::translate("MainWindow", "&Vertr\303\244ge", nullptr));

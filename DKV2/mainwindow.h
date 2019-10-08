@@ -71,6 +71,10 @@ private slots:
 
     void on_leVertrgeFilter_editingFinished();
 
+    void on_actionVertrag_Beenden_triggered();
+
+    void on_action_bersicht_triggered();
+
 private:
     Ui::MainWindow *ui;
 
@@ -86,7 +90,8 @@ private:
         PersonListIndex =1,
         newPersonIndex =2,
         newContractIndex =3,
-        ContractsListIndex =4
+        ContractsListIndex =4,
+        OverviewIndex=5
     };
     void KreditorFormulardatenLoeschen();
     void clearNewContractFields();

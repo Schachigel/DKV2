@@ -480,6 +480,7 @@ void MainWindow::on_actionactivateContract_triggered()
 void MainWindow::on_actionVertrag_l_schen_triggered()
 {
     QModelIndex mi(ui->contractsTableView->currentIndex());
+    if( !mi.isValid()) return;
     QString Vorname = ui->contractsTableView->model()->data(mi.siblingAtColumn(1)).toString();
     QString Nachname = ui->contractsTableView->model()->data(mi.siblingAtColumn(2)).toString();
     QString index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toString();
@@ -517,3 +518,27 @@ void MainWindow::on_FilterVertrgeZurcksetzten_clicked()
     prepareContractListView();
 }
 
+void MainWindow::on_actionVertrag_Beenden_triggered()
+{
+    // Vertrag beenden -> Zins berechnen und m Auszahlungsbetrag anzeigen, dann löschen
+}
+
+QString prepareOverviewPage()
+{   // Summe der Direktkredite,
+    // versprochene DK (inaktive DK)
+    // Zinen pa, davon auszuzahlen
+    DbSummary dbs;
+    berechneZusammenfassung(dbs);
+    QString lbl ("<html><body><H1>Übersicht</H1>"
+                "Summe aller Direktkredite: " + QString::number(dbs.aktiveDk) +"<br>" +
+                "Summe der noch ausstehenden (passiven) DK: " + QString::number(dbs.passiveDk) +"<br>" +
+                "Summe der DK inclusive erworbener Zinsen: "+ QString::number(dbs.WertAktiveDk) +
+                "</body></html>");
+    return lbl;
+}
+
+void MainWindow::on_action_bersicht_triggered()
+{
+    ui->lblOverview->setText( prepareOverviewPage());
+    ui->stackedWidget->setCurrentIndex(OverviewIndex);
+}

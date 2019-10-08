@@ -505,3 +505,21 @@ QString ContractList_SQL(const QVector<dbfield> fields, QString filter)
     qDebug() << "ContractList SQL: \n" << sql;
     return sql;
 }
+
+QVariant ExecuteSingleValueSql(QString s)
+{
+    QSqlQuery q(s);
+    if( !q.exec()) return QVariant();
+    q.next();
+    return q.value(0);
+}
+
+void berechneZusammenfassung(DbSummary& dbs)
+{
+    QString SqlAktive  ="SELECT SUM([Betrag]) FROM [Vertraege] WHERE [aktiv] = 1";
+    QString SqlPassive ="SELECT SUM([Betrag]) FROM [Vertraege] WHERE [aktiv] = 0";
+    QString SqlWertAktive ="SELECT SUM([Wert]) FROM [Vertraege] WHERE [aktiv] = 1";
+    dbs.aktiveDk  = ExecuteSingleValueSql(SqlAktive).toReal();
+    dbs.passiveDk = ExecuteSingleValueSql(SqlPassive).toReal();
+    dbs.WertAktiveDk = ExecuteSingleValueSql(SqlWertAktive).toReal();
+}
