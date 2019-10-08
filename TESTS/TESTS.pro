@@ -1,5 +1,5 @@
 QT += testlib
-QT += gui  sql
+QT += sql
 
 CONFIG += qt warn_on depend_includepath testcase
 
@@ -10,3 +10,6 @@ SOURCES +=  tst_db.cpp \
     ../dkv2/dbstructure.cpp \
     ../dkv2/dbtable.cpp \
     ../dkv2/filehelper.cpp
+
+HEADERS += \
+    tst_db.h

@@ -23,7 +23,7 @@ public:
     QDate getContractDateFromContractsList();
     int getContractIdStringFromContractsList();
     void VertragsdatenAusFormular(VertragsDaten& c);
-    
+
 private slots:
 
     void on_action_Neue_DB_anlegen_triggered();
@@ -62,6 +62,14 @@ private slots:
     void on_actionVertrag_l_schen_triggered();
 
     void on_actionanzeigenLog_triggered();
+
+    void on_leFilter_editingFinished();
+
+    void on_pbPersonFilterZurcksetzten_clicked();
+
+    void on_FilterVertrgeZurcksetzten_clicked();
+
+    void on_leVertrgeFilter_editingFinished();
 
 private:
     Ui::MainWindow *ui;

@@ -472,3 +472,36 @@ bool VertragLoeschen(QString index)
     }
     return true;
 }
+
+QString ContractList_SELECT(const QVector<dbfield> fields)
+{
+    QString sql("SELECT ");
+    for( int i = 0; i < fields.size(); i++)
+    {
+        if( i) sql +=", ";
+        sql += fields[i].Tablename() +"." +fields[i].Name();
+    }
+    return sql;
+}
+
+QString ContractList_FROM()
+{
+    return  "FROM Vertraege, Kreditoren, Zinssaetze";
+}
+QString ContractList_WHERE(QString Filter)
+{
+    QString s ("WHERE Kreditoren.id = Vertraege.KreditorId AND Vertraege.ZSatz = Zinssaetze.id");
+    if( Filter.size()> 2)
+    {
+        s += " AND ( Vorname LIKE '%" + Filter + "%' OR Nachname LIKE '%" + Filter + "%' )";
+    }
+    return s;
+}
+QString ContractList_SQL(const QVector<dbfield> fields, QString filter)
+{
+    QString sql = ContractList_SELECT(fields) + " "
+           + ContractList_FROM() + " "
+           + ContractList_WHERE(filter);
+    qDebug() << "ContractList SQL: \n" << sql;
+    return sql;
+}

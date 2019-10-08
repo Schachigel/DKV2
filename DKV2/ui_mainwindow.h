@@ -52,13 +52,18 @@ public:
     QAction *actionanzeigenLog;
     QAction *actionVertrag_Beenden;
     QWidget *centralWidget;
-    QHBoxLayout *horizontalLayout_5;
+    QVBoxLayout *verticalLayout_2;
+    QLabel *statusLabel;
     QStackedWidget *stackedWidget;
     QWidget *EmptyPage;
     QHBoxLayout *horizontalLayout_2;
     QLabel *label;
     QWidget *PersonsListPage;
+    QVBoxLayout *verticalLayout_3;
     QHBoxLayout *horizontalLayout;
+    QLabel *label_11;
+    QLineEdit *leFilter;
+    QPushButton *pbPersonFilterZurcksetzten;
     QTableView *PersonsTableView;
     QWidget *NewPerson;
     QVBoxLayout *verticalLayout;
@@ -112,9 +117,12 @@ public:
     QDateEdit *deVertragsabschluss;
     QLabel *lblHinweis;
     QWidget *ContractsListPage;
+    QVBoxLayout *verticalLayout_4;
     QHBoxLayout *horizontalLayout_4;
+    QLabel *label_12;
+    QLineEdit *leVertrgeFilter;
+    QPushButton *FilterVertrgeZurcksetzten;
     QTableView *contractsTableView;
-    QLabel *statusLabel;
     QMenuBar *menuBar;
     QMenu *menuDatenbank;
     QMenu *menuDK_Geber;
@@ -164,10 +172,15 @@ public:
         actionVertrag_Beenden->setObjectName(QString::fromUtf8("actionVertrag_Beenden"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
-        horizontalLayout_5 = new QHBoxLayout(centralWidget);
-        horizontalLayout_5->setSpacing(6);
-        horizontalLayout_5->setContentsMargins(11, 11, 11, 11);
-        horizontalLayout_5->setObjectName(QString::fromUtf8("horizontalLayout_5"));
+        verticalLayout_2 = new QVBoxLayout(centralWidget);
+        verticalLayout_2->setSpacing(6);
+        verticalLayout_2->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
+        statusLabel = new QLabel(centralWidget);
+        statusLabel->setObjectName(QString::fromUtf8("statusLabel"));
+
+        verticalLayout_2->addWidget(statusLabel);
+
         stackedWidget = new QStackedWidget(centralWidget);
         stackedWidget->setObjectName(QString::fromUtf8("stackedWidget"));
         EmptyPage = new QWidget();
@@ -184,15 +197,36 @@ public:
         stackedWidget->addWidget(EmptyPage);
         PersonsListPage = new QWidget();
         PersonsListPage->setObjectName(QString::fromUtf8("PersonsListPage"));
-        horizontalLayout = new QHBoxLayout(PersonsListPage);
-        horizontalLayout->setSpacing(6);
-        horizontalLayout->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_3 = new QVBoxLayout(PersonsListPage);
+        verticalLayout_3->setSpacing(6);
+        verticalLayout_3->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
+        horizontalLayout = new QHBoxLayout();
+        horizontalLayout->setSpacing(7);
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        label_11 = new QLabel(PersonsListPage);
+        label_11->setObjectName(QString::fromUtf8("label_11"));
+
+        horizontalLayout->addWidget(label_11);
+
+        leFilter = new QLineEdit(PersonsListPage);
+        leFilter->setObjectName(QString::fromUtf8("leFilter"));
+
+        horizontalLayout->addWidget(leFilter);
+
+        pbPersonFilterZurcksetzten = new QPushButton(PersonsListPage);
+        pbPersonFilterZurcksetzten->setObjectName(QString::fromUtf8("pbPersonFilterZurcksetzten"));
+
+        horizontalLayout->addWidget(pbPersonFilterZurcksetzten);
+
+
+        verticalLayout_3->addLayout(horizontalLayout);
+
         PersonsTableView = new QTableView(PersonsListPage);
         PersonsTableView->setObjectName(QString::fromUtf8("PersonsTableView"));
         PersonsTableView->setContextMenuPolicy(Qt::CustomContextMenu);
 
-        horizontalLayout->addWidget(PersonsTableView);
+        verticalLayout_3->addWidget(PersonsTableView);
 
         stackedWidget->addWidget(PersonsListPage);
         NewPerson = new QWidget();
@@ -453,24 +487,40 @@ public:
         stackedWidget->addWidget(NewContract);
         ContractsListPage = new QWidget();
         ContractsListPage->setObjectName(QString::fromUtf8("ContractsListPage"));
-        horizontalLayout_4 = new QHBoxLayout(ContractsListPage);
+        verticalLayout_4 = new QVBoxLayout(ContractsListPage);
+        verticalLayout_4->setSpacing(6);
+        verticalLayout_4->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_4->setObjectName(QString::fromUtf8("verticalLayout_4"));
+        horizontalLayout_4 = new QHBoxLayout();
         horizontalLayout_4->setSpacing(6);
-        horizontalLayout_4->setContentsMargins(11, 11, 11, 11);
         horizontalLayout_4->setObjectName(QString::fromUtf8("horizontalLayout_4"));
+        label_12 = new QLabel(ContractsListPage);
+        label_12->setObjectName(QString::fromUtf8("label_12"));
+
+        horizontalLayout_4->addWidget(label_12);
+
+        leVertrgeFilter = new QLineEdit(ContractsListPage);
+        leVertrgeFilter->setObjectName(QString::fromUtf8("leVertrgeFilter"));
+
+        horizontalLayout_4->addWidget(leVertrgeFilter);
+
+        FilterVertrgeZurcksetzten = new QPushButton(ContractsListPage);
+        FilterVertrgeZurcksetzten->setObjectName(QString::fromUtf8("FilterVertrgeZurcksetzten"));
+
+        horizontalLayout_4->addWidget(FilterVertrgeZurcksetzten);
+
+
+        verticalLayout_4->addLayout(horizontalLayout_4);
+
         contractsTableView = new QTableView(ContractsListPage);
         contractsTableView->setObjectName(QString::fromUtf8("contractsTableView"));
         contractsTableView->setContextMenuPolicy(Qt::CustomContextMenu);
 
-        horizontalLayout_4->addWidget(contractsTableView);
+        verticalLayout_4->addWidget(contractsTableView);
 
         stackedWidget->addWidget(ContractsListPage);
 
-        horizontalLayout_5->addWidget(stackedWidget);
-
-        statusLabel = new QLabel(centralWidget);
-        statusLabel->setObjectName(QString::fromUtf8("statusLabel"));
-
-        horizontalLayout_5->addWidget(statusLabel);
+        verticalLayout_2->addWidget(stackedWidget);
 
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
@@ -548,7 +598,7 @@ public:
 
         retranslateUi(MainWindow);
 
-        stackedWidget->setCurrentIndex(3);
+        stackedWidget->setCurrentIndex(4);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -605,7 +655,13 @@ public:
 #if QT_CONFIG(tooltip)
         actionVertrag_Beenden->setToolTip(QCoreApplication::translate("MainWindow", "Zins und Auszahlungsbetrag berechnen, Vertrag l\303\266schen", nullptr));
 #endif // QT_CONFIG(tooltip)
+        statusLabel->setText(QString());
         label->setText(QCoreApplication::translate("MainWindow", "<H2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</H2>", nullptr));
+        label_11->setText(QCoreApplication::translate("MainWindow", "Filter", nullptr));
+#if QT_CONFIG(tooltip)
+        leFilter->setToolTip(QCoreApplication::translate("MainWindow", "Gib 2 oder mehr Zeichen ein und dr\303\274cke die R\303\274cklauftaste", nullptr));
+#endif // QT_CONFIG(tooltip)
+        pbPersonFilterZurcksetzten->setText(QCoreApplication::translate("MainWindow", "zur\303\274cksetzen", nullptr));
 #if QT_CONFIG(tooltip)
         PersonsTableView->setToolTip(QCoreApplication::translate("MainWindow", "Doppelklick oder F2 um ein Feld zu \303\244ndern. Rechte Maustaste f\303\274r weitere Optionen", nullptr));
 #endif // QT_CONFIG(tooltip)
@@ -657,7 +713,8 @@ public:
         label_8->setText(QCoreApplication::translate("MainWindow", "Zinsen werden aufgerechnet", nullptr));
         chkbTesaurierend->setText(QCoreApplication::translate("MainWindow", "Tesaurierend", nullptr));
         lblHinweis->setText(QCoreApplication::translate("MainWindow", "<H3> Nach dem Anlegen m\303\274ssen die Vertr\303\244ge nach Zahlungseingang aktiviert werden, damit die Zinsberechnung beginnt!", nullptr));
-        statusLabel->setText(QString());
+        label_12->setText(QCoreApplication::translate("MainWindow", "Filter", nullptr));
+        FilterVertrgeZurcksetzten->setText(QCoreApplication::translate("MainWindow", "zur\303\274cksetzten", nullptr));
         menuDatenbank->setTitle(QCoreApplication::translate("MainWindow", "&Datenbank", nullptr));
         menuDK_Geber->setTitle(QCoreApplication::translate("MainWindow", "&Kreditgeber", nullptr));
         menuVertr_ge->setTitle(QCoreApplication::translate("MainWindow", "&Vertr\303\244ge", nullptr));

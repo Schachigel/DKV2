@@ -70,4 +70,9 @@ bool VertragVerbuchen(const VertragsDaten& c);
 bool VertragAktivieren( int ContractId, QDate activationDate);
 bool VertragLoeschen(QString index);
 
+QString ContractList_SELECT(QVector<dbfield> f);
+QString ContractList_FROM();
+QString ContractList_WHERE(QString filter);
+QString ContractList_SQL(QVector<dbfield> f, QString filter);
+
 #endif // DKDBHELPER_H

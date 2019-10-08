@@ -18,7 +18,6 @@ to do: Doku als Writer Dokument
     -> geht nicht, neuen Vertrag anlegen
 
 Menüeintrag "Unterstützung"
-- Log anzeigen
 - "entpersonalisierte" db kopie anlegen
 Menüeintrag "Datei"
 - Einstellungen (?)
@@ -42,3 +41,4 @@ next:
 
 DONE
 ++ Vertrag anlegen als Beleg speichern (OK)
+- dbg: log anzeigen

@@ -10,6 +10,8 @@
 #include "../dkv2/filehelper.h"
 #include "../dkv2/helper.h"
 
+#include "tst_db.h"
+
 static QFile* outFile_p(nullptr);
 // add necessary includes here
 void logger(QtMsgType type, const QMessageLogContext &context, const QString &msg)
@@ -31,35 +33,7 @@ void logger(QtMsgType type, const QMessageLogContext &context, const QString &ms
         abort();
 }
 
-//
-class testRefInt : public QObject
-{
-    Q_OBJECT
-
-public:
-    testRefInt() {}
-    ~testRefInt() {}
-
-private:
-    const QString filename = "..\\data\\testdb.sqlite";
-    const QString testCon = "test_connection"; // "qt_sql_default_connection";
-    int tableRecordCount(QString table);
-
-private slots:
-    //    void initTestCase();
-    //    void cleanupTestCase();
-    void init();
-    void cleanup();
-    void test_createSimpleTable();
-    void test_createSimpleTable2();
-    void test_SimpleTableAddData();
-    void test_createSimpleTable_wRefInt();
-    void test_createSimpleTable_wRefInt2();
-    void test_addRecords_wDep();
-    void test_deleteRecord_wDep();
-};
-
-int testRefInt::tableRecordCount(QString tname)
+int tst_db::tableRecordCount(QString tname)
 {
     QSqlQuery q(QSqlDatabase::database(testCon));
     if (q.exec("SELECT COUNT(*) FROM " + tname)) {
@@ -72,7 +46,7 @@ int testRefInt::tableRecordCount(QString tname)
     }
 }
 
-void testRefInt::init()
+void tst_db::init()
 { //LOG_ENTRY_and_EXIT;
     if (QFile::exists(filename))
         QFile::remove(filename);
@@ -84,7 +58,7 @@ void testRefInt::init()
              enableRefInt.lastError().text().toLocal8Bit().data());
 }
 
-void testRefInt::cleanup()
+void tst_db::cleanup()
 { //LOG_ENTRY_and_EXIT;
     QSqlDatabase::database().removeDatabase(testCon);
     QSqlDatabase::database().close();
@@ -92,7 +66,7 @@ void testRefInt::cleanup()
         QFile::remove(filename);
 }
 
-void testRefInt::test_createSimpleTable()
+void tst_db::test_createSimpleTable()
 {
     LOG_ENTRY_and_EXIT;
     dbstructure s;
@@ -104,7 +78,7 @@ void testRefInt::test_createSimpleTable()
     QVERIFY2(QFile::exists(filename), "No database file found");
 }
 
-void testRefInt::test_createSimpleTable2()
+void tst_db::test_createSimpleTable2()
 {
     dbstructure s = dbstructure()
                         .appendTable(dbtable("Ad").append(dbfield("vname")).append(dbfield("nname")))
@@ -113,7 +87,7 @@ void testRefInt::test_createSimpleTable2()
     QVERIFY2(QFile::exists(filename), "No database file found");
 }
 
-void testRefInt::test_SimpleTableAddData()
+void tst_db::test_SimpleTableAddData()
 {
     dbstructure s = dbstructure()
                         .appendTable(dbtable("Ad").append(dbfield("vname")).append(dbfield("nname")))
@@ -129,7 +103,7 @@ void testRefInt::test_SimpleTableAddData()
     QVERIFY(tableRecordCount("Ad") == 1);
 }
 
-void testRefInt::test_createSimpleTable_wRefInt()
+void tst_db::test_createSimpleTable_wRefInt()
 {
     LOG_ENTRY_and_EXIT;
     dbstructure s;
@@ -148,7 +122,7 @@ void testRefInt::test_createSimpleTable_wRefInt()
     QVERIFY2(QFile::exists(filename), "No database file found");
 }
 
-void testRefInt::test_createSimpleTable_wRefInt2()
+void tst_db::test_createSimpleTable_wRefInt2()
 {
     LOG_ENTRY_and_EXIT;
     dbstructure s = dbstructure()
@@ -166,7 +140,7 @@ void testRefInt::test_createSimpleTable_wRefInt2()
     QVERIFY2(QFile::exists(filename), "No database file found");
 }
 
-void testRefInt::test_addRecords_wDep()
+void tst_db::test_addRecords_wDep()
 {
     LOG_ENTRY_and_EXIT;
     dbstructure s = dbstructure()
@@ -201,7 +175,7 @@ void testRefInt::test_addRecords_wDep()
     QVERIFY(!tdiChild2.InsertData(QSqlDatabase::database(testCon)));
 }
 
-void testRefInt::test_deleteRecord_wDep()
+void tst_db::test_deleteRecord_wDep()
 {
     LOG_ENTRY_and_EXIT;
     dbstructure s = dbstructure()
@@ -242,6 +216,4 @@ void testRefInt::test_deleteRecord_wDep()
     QVERIFY(tableRecordCount("c") == 0);
 }
 
-QTEST_MAIN(testRefInt)
-
-#include "tst_db.moc"
+QTEST_MAIN(tst_db)

@@ -125,11 +125,14 @@ void MainWindow::on_actionProgramm_beenden_triggered()
 void MainWindow::preparePersonTableView()
 {   QSqlTableModel* model = new QSqlTableModel(ui->PersonsTableView);
     model->setTable("Kreditoren");
+    model->setFilter("Vorname LIKE '%" + ui->leFilter->text() + "%' OR Nachname LIKE '%" + ui->leFilter->text() + "%'");
     model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model->select();
 
     ui->PersonsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->PersonsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->PersonsTableView->setAlternatingRowColors(true);
+    ui->PersonsTableView->setSortingEnabled(true);
     ui->PersonsTableView->setModel(model);
     ui->PersonsTableView->hideColumn(0);
     ui->PersonsTableView->resizeColumnsToContents();
@@ -393,22 +396,14 @@ void MainWindow::prepareContractListView()
     fields.append(dkdbstructur["Vertraege"]["aktiv"]);
     fields.append(dkdbstructur["Vertraege"]["LaufzeitEnde"]);
 
-    QString sql("SELECT ");
-    for( int i = 0; i < fields.size(); i++)
-    {
-        if( i) sql +=", ";
-        sql += fields[i].Tablename() +"." +fields[i].Name();
-    }
-    sql += " FROM Vertraege, Kreditoren, Zinssaetze "
-            "WHERE Kreditoren.id = Vertraege.KreditorId AND Vertraege.ZSatz = Zinssaetze.id "
-            "ORDER BY Vertraege.aktiv, Kreditoren.Nachname";
-    qDebug() << "sql to populate contract list: " << sql;
-
     QSqlQueryModel* model = new QSqlQueryModel(ui->contractsTableView);
-    model->setQuery(sql);
+    model->setQuery(ContractList_SQL(fields, ui->leVertrgeFilter->text()));
+
     ui->contractsTableView->setModel(model);
     ui->contractsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->contractsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->contractsTableView->setAlternatingRowColors(true);
+    ui->contractsTableView->setSortingEnabled(true);
     ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["Betrag"]), new EuroItemFormatter(ui->contractsTableView));
     ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["Wert"]), new EuroItemFormatter(ui->contractsTableView));
     ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Zinssaetze"]["Zinssatz"]), new PercentItemFormatter(ui->contractsTableView));
@@ -418,6 +413,12 @@ void MainWindow::prepareContractListView()
     ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["aktiv"]), new ActivatedItemFormatter(ui->contractsTableView));
     ui->contractsTableView->resizeColumnsToContents();
     ui->contractsTableView->hideColumn(0);
+
+    QSortFilterProxyModel *m=new QSortFilterProxyModel(this);
+    m->setDynamicSortFilter(true);
+    m->setSourceModel(model);
+    ui->contractsTableView->setModel(m);
+    ui->contractsTableView->setSortingEnabled(true);
 }
 void MainWindow::on_actionListe_der_Vertr_ge_anzeigen_triggered()
 {
@@ -489,6 +490,30 @@ void MainWindow::on_actionVertrag_l_schen_triggered()
     if( QMessageBox::Yes != QMessageBox::question(this, "Kreditvertrag löschen", msg))
         return;
     VertragLoeschen(index);
+    prepareContractListView();
+}
+
+void MainWindow::on_leFilter_editingFinished()
+{
+    if( ui->leFilter->text().length() < 2) return;
+    preparePersonTableView();
+}
+
+void MainWindow::on_pbPersonFilterZurcksetzten_clicked()
+{
+    ui->leFilter->setText("");
+    preparePersonTableView();
+}
+
+void MainWindow::on_leVertrgeFilter_editingFinished()
+{
+    if( ui->leVertrgeFilter->text().length() < 2) return;
+    prepareContractListView();
+}
+
+void MainWindow::on_FilterVertrgeZurcksetzten_clicked()
+{
+    ui->leVertrgeFilter->setText("");
     prepareContractListView();
 }
 
