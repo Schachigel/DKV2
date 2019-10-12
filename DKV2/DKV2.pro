@@ -31,6 +31,7 @@ SOURCES += \
         dbtable.cpp \
         dkdbhelper.cpp \
         filehelper.cpp \
+        helper.cpp \
         itemformatter.cpp \
         main.cpp \
         mainwindow.cpp

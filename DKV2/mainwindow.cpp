@@ -27,9 +27,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-#ifdef QT_DEBUG
+//#ifdef QT_DEBUG
     ui->menuDebug->setTitle("Debug");
-#endif
+//#endif
 
     ui->statusBar->addPermanentWidget(ui->statusLabel);
     DbInStatuszeileAnzeigen();

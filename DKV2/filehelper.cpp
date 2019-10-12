@@ -1,4 +1,4 @@
-#include "filehelper.h"
+
 #include <qstring.h>
 #include <qlist.h>
 #include <QTextStream>
@@ -6,6 +6,10 @@
 #include <QDir>
 #include <QFileInfo>
 #include <qdebug.h>
+
+#include "filehelper.h"
+
+QFile* outFile_p(nullptr);
 
 
 bool overwrite_copy(const QString& from, const QString& to)
@@ -53,8 +57,3 @@ bool backupFile(const QString&  fn)
     return ret;
 }
 
-QString logFilePath()
-{
-    static QString logFilePath(QDir::toNativeSeparators(QDir::tempPath()) + QDir::separator() + "dkv2.log");
-    return logFilePath;
-}

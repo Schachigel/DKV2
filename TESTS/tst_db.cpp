@@ -11,27 +11,7 @@
 #include "../dkv2/helper.h"
 
 #include "tst_db.h"
-
-static QFile* outFile_p(nullptr);
 // add necessary includes here
-void logger(QtMsgType type, const QMessageLogContext &context, const QString &msg)
-{
-    // secure this code with a critical section in case we start logging from multiple threads
-    if(!outFile_p)
-    {
-        outFile_p = new QFile(logFilePath());
-        // this file will only be closed by the system at process end
-        if (!outFile_p->open(QIODevice::WriteOnly | QIODevice::Append))
-            abort();
-    }
-    static QHash<QtMsgType, QString> msgLevelHash({{QtDebugMsg, "DBuG"}, {QtInfoMsg, "INFo"}, {QtWarningMsg, "WaRN"}, {QtCriticalMsg, "ERRo"}, {QtFatalMsg, "FaTl"}});
-
-    QTextStream ts(outFile_p);
-    ts << QTime::currentTime().toString("hh:mm:ss.zzz") << " " << msgLevelHash[type] << " : " << msg << " (" << context.file << ")" << endl;
-
-    if (type == QtFatalMsg)
-        abort();
-}
 
 int tst_db::tableRecordCount(QString tname)
 {
