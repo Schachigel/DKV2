@@ -17,15 +17,16 @@
 
 #include "activatecontractdlg.h"
 
-#include "dkdbhelper.h"
+#include "helper.h"
 #include "filehelper.h"
 #include "itemformatter.h"
+#include "dkdbhelper.h"
 
 // construction, destruction
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
-{
+{LOG_ENTRY_and_EXIT;
     ui->setupUi(this);
 //#ifdef QT_DEBUG
     ui->menuDebug->setTitle("Debug");
@@ -52,7 +53,7 @@ void MainWindow::DbInStatuszeileAnzeigen()
 
 // whenever the stackedWidget changes ...
 void MainWindow::on_stackedWidget_currentChanged(int arg1)
-{
+{    LOG_ENTRY_and_EXIT;
     if( arg1 < 0)
     {
         qWarning() << "stackedWidget changed to non existing page";
@@ -90,7 +91,7 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
 
 // file menu
 void MainWindow::on_action_Neue_DB_anlegen_triggered()
-{
+{LOG_ENTRY_and_EXIT;
     QString dbfile = QFileDialog::getSaveFileName(this, "Neue DkVerarbeitungs Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
     if( dbfile == "")
         return;
@@ -104,7 +105,7 @@ void MainWindow::on_action_Neue_DB_anlegen_triggered()
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_actionDBoeffnen_triggered()
-{
+{LOG_ENTRY_and_EXIT;
     QString dbfile = QFileDialog::getOpenFileName(this, "DkVerarbeitungs Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
     if( dbfile == "")
     {
@@ -116,14 +117,15 @@ void MainWindow::on_actionDBoeffnen_triggered()
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_actionProgramm_beenden_triggered()
-{
+{LOG_ENTRY_and_EXIT;
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
     this->close();
 }
 
 // person list page
 void MainWindow::preparePersonTableView()
-{   QSqlTableModel* model = new QSqlTableModel(ui->PersonsTableView);
+{LOG_ENTRY_and_EXIT;
+    QSqlTableModel* model = new QSqlTableModel(ui->PersonsTableView);
     model->setTable("Kreditoren");
     model->setFilter("Vorname LIKE '%" + ui->leFilter->text() + "%' OR Nachname LIKE '%" + ui->leFilter->text() + "%'");
     model->setEditStrategy(QSqlTableModel::OnManualSubmit);
@@ -138,7 +140,7 @@ void MainWindow::preparePersonTableView()
     ui->PersonsTableView->resizeColumnsToContents();
 }
 void MainWindow::on_action_Liste_triggered()
-{
+{LOG_ENTRY_and_EXIT;
     preparePersonTableView();
     if( !ui->PersonsTableView->currentIndex().isValid())
         ui->PersonsTableView->selectRow(0);
@@ -146,7 +148,7 @@ void MainWindow::on_action_Liste_triggered()
     ui->stackedWidget->setCurrentIndex(PersonListIndex);
 }
 void MainWindow::on_actionKreditgeber_l_schen_triggered()
-{
+{LOG_ENTRY_and_EXIT;
     QString msg( "Soll der Kreditgeber ");
     QModelIndex mi(ui->PersonsTableView->currentIndex());
     QString Vorname = ui->PersonsTableView->model()->data(mi.siblingAtColumn(1)).toString();
@@ -162,7 +164,7 @@ void MainWindow::on_actionKreditgeber_l_schen_triggered()
         Q_ASSERT(!bool("could not remove kreditor and contracts"));
 }
 void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &pos)
-{
+{LOG_ENTRY_and_EXIT;
     QModelIndex index = ui->PersonsTableView->indexAt(pos).siblingAtColumn(0);
     if( index.isValid())
     {
@@ -183,23 +185,23 @@ void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &po
 
 // debug funktions
 void MainWindow::on_actioncreateSampleData_triggered()
-{
+{LOG_ENTRY_and_EXIT;
     BeispieldatenAnlegen();
     preparePersonTableView();
     prepareContractListView();
 }
 void MainWindow::on_actionanzeigenLog_triggered()
-{
+{LOG_ENTRY_and_EXIT;
     ::ShellExecuteA(nullptr, "open", logFilePath().toUtf8(), "", QDir::currentPath().toUtf8(), 1);
 }
 
 // new DK Geber
 void MainWindow::on_actionNeuer_DK_Geber_triggered()
-{
+{LOG_ENTRY_and_EXIT;
     ui->stackedWidget->setCurrentIndex(newPersonIndex);
 }
 bool MainWindow::KreditgeberSpeichern()
-{
+{LOG_ENTRY_and_EXIT;
     KreditorDaten p{ ui->leVorname->text(),
                  ui->leNachname->text(),
                  ui->leStrasse->text(),
@@ -215,7 +217,7 @@ bool MainWindow::KreditgeberSpeichern()
     return KreditorDatenSpeichern(p) != 0;
 }
 void MainWindow::KreditorFormulardatenLoeschen()
-{
+{LOG_ENTRY_and_EXIT;
     ui->leVorname->setText("");
     ui->leNachname->setText("");
     ui->leStrasse->setText("");
@@ -225,14 +227,14 @@ void MainWindow::KreditorFormulardatenLoeschen()
     ui->leBic->setText("");
 }
 void MainWindow::on_saveNew_clicked()
-{
+{LOG_ENTRY_and_EXIT;
     if( KreditgeberSpeichern())
     {
         KreditorFormulardatenLoeschen();
     }
 }
 void MainWindow::on_saveList_clicked()
-{
+{LOG_ENTRY_and_EXIT;
     if( KreditgeberSpeichern())
     {
         KreditorFormulardatenLoeschen();
@@ -240,7 +242,7 @@ void MainWindow::on_saveList_clicked()
     }
 }
 void MainWindow::on_saveExit_clicked()
-{
+{LOG_ENTRY_and_EXIT;
     if( KreditgeberSpeichern())
     {
         KreditorFormulardatenLoeschen();
@@ -248,14 +250,14 @@ void MainWindow::on_saveExit_clicked()
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_cancel_clicked()
-{
+{LOG_ENTRY_and_EXIT;
     KreditorFormulardatenLoeschen();
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 
 // new Contract
 void MainWindow::VertragsdatenAusFormular(VertragsDaten& c)
-{
+{LOG_ENTRY_and_EXIT;
     c.KreditorId = ui->comboKreditoren->itemData(ui->comboKreditoren->currentIndex()).toInt();
     c.Kennung = ui->leKennung->text();
     c.Betrag = ui->leBetrag->text().toDouble();
@@ -269,7 +271,7 @@ void MainWindow::VertragsdatenAusFormular(VertragsDaten& c)
 }
 
 bool MainWindow::saveNewContract()
-{
+{LOG_ENTRY_and_EXIT;
     VertragsDaten c;
     VertragsdatenAusFormular(c);
 
@@ -288,7 +290,7 @@ bool MainWindow::saveNewContract()
     return VertragVerbuchen(c);
 }
 void MainWindow::clearNewContractFields()
-{
+{LOG_ENTRY_and_EXIT;
     ui->leKennung->setText("");
     ui->leBetrag->setText("");
     ui->chkbTesaurierend->setChecked(true);
@@ -296,7 +298,7 @@ void MainWindow::clearNewContractFields()
 
 // switch to "Vertrag anlegen"
 void MainWindow::FillKreditorDropdown()
-{
+{LOG_ENTRY_and_EXIT;
     ui->comboKreditoren->clear();
     QList<KreditorAnzeigeMitId>PersonEntries; KreditorenFuerAuswahlliste(PersonEntries);
     for(KreditorAnzeigeMitId Entry :PersonEntries)
@@ -305,7 +307,7 @@ void MainWindow::FillKreditorDropdown()
     }
 }
 void MainWindow::FillRatesDropdown()
-{
+{LOG_ENTRY_and_EXIT;
     QList<ZinsAnzeigeMitId> InterrestCbEntries; ZinssaetzeFuerAuswahlliste(InterrestCbEntries);
     ui->cbZins->clear();
     for(ZinsAnzeigeMitId Entry : InterrestCbEntries)
@@ -314,7 +316,7 @@ void MainWindow::FillRatesDropdown()
     }
 }
 void MainWindow::comboKreditorenAnzeigeNachKreditorenId(int KreditorenId)
-{
+{LOG_ENTRY_and_EXIT;
     if( KreditorenId < 0) return;
     // select the correct person
     for( int i = 0; i < ui->comboKreditoren->count(); i++)
@@ -338,7 +340,7 @@ void MainWindow::on_speichereVertragZurKreditorenListe_clicked()
     // todo: issue a message an stop processing
 }
 void MainWindow::on_saveContractGoContracts_clicked()
-{
+{LOG_ENTRY_and_EXIT;
     if( saveNewContract())
     {
         clearNewContractFields();
@@ -350,13 +352,13 @@ void MainWindow::on_saveContractGoContracts_clicked()
 
 }
 void MainWindow::on_cancelCreateContract_clicked()
-{
+{LOG_ENTRY_and_EXIT;
     clearNewContractFields();
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 
 int MainWindow::getPersonIdFromKreditorenList()
-{
+{LOG_ENTRY_and_EXIT;
     // What is the persId of the currently selected person in the person?
     QModelIndex mi(ui->PersonsTableView->currentIndex().siblingAtColumn(0));
     if( mi.isValid())
@@ -368,7 +370,7 @@ int MainWindow::getPersonIdFromKreditorenList()
     return -1;
 }
 void MainWindow::on_actionVertrag_anlegen_triggered()
-{
+{LOG_ENTRY_and_EXIT;
     FillKreditorDropdown();
     FillRatesDropdown();
     comboKreditorenAnzeigeNachKreditorenId( getPersonIdFromKreditorenList());
@@ -383,7 +385,7 @@ void MainWindow::on_actionVertrag_anlegen_triggered()
 
 // List of contracts
 void MainWindow::prepareContractListView()
-{
+{LOG_ENTRY_and_EXIT;
     QVector<dbfield> fields;
     fields.append(dkdbstructur["Vertraege"]["id"]);
     fields.append(dkdbstructur["Kreditoren"]["Vorname"]);
@@ -421,7 +423,7 @@ void MainWindow::prepareContractListView()
     ui->contractsTableView->setSortingEnabled(true);
 }
 void MainWindow::on_actionListe_der_Vertr_ge_anzeigen_triggered()
-{
+{LOG_ENTRY_and_EXIT;
     prepareContractListView();
     if( !ui->contractsTableView->currentIndex().isValid())
         ui->contractsTableView->selectRow(0);
@@ -429,7 +431,7 @@ void MainWindow::on_actionListe_der_Vertr_ge_anzeigen_triggered()
     ui->stackedWidget->setCurrentIndex(ContractsListIndex);
 }
 void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &pos)
-{
+{LOG_ENTRY_and_EXIT;
     QModelIndex indexClickTarget = ui->contractsTableView->indexAt(pos);
     QModelIndex indexActive = indexClickTarget.siblingAtColumn(8); // contract active
 
@@ -448,7 +450,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &
     return;
 }
 int MainWindow::getContractIdStringFromContractsList()
-{
+{LOG_ENTRY_and_EXIT;
     QModelIndex mi(ui->contractsTableView->currentIndex().siblingAtColumn(0));
     if( mi.isValid())
     {
@@ -458,7 +460,7 @@ int MainWindow::getContractIdStringFromContractsList()
     return -1;
 }
 QDate MainWindow::getContractDateFromContractsList()
-{
+{LOG_ENTRY_and_EXIT;
     QModelIndex mi(ui->contractsTableView->currentIndex().siblingAtColumn(6));
     if( mi.isValid())
     {
@@ -468,7 +470,7 @@ QDate MainWindow::getContractDateFromContractsList()
     return QDate();
 }
 void MainWindow::on_actionactivateContract_triggered()
-{
+{LOG_ENTRY_and_EXIT;
     QDate contractDate = getContractDateFromContractsList();
     activateContractDlg dlg( this, contractDate);
     if( QDialog::Accepted == dlg.exec())
@@ -478,7 +480,7 @@ void MainWindow::on_actionactivateContract_triggered()
     }
 }
 void MainWindow::on_actionVertrag_l_schen_triggered()
-{
+{LOG_ENTRY_and_EXIT;
     QModelIndex mi(ui->contractsTableView->currentIndex());
     if( !mi.isValid()) return;
     QString Vorname = ui->contractsTableView->model()->data(mi.siblingAtColumn(1)).toString();
@@ -495,36 +497,37 @@ void MainWindow::on_actionVertrag_l_schen_triggered()
 }
 
 void MainWindow::on_leFilter_editingFinished()
-{
+{LOG_ENTRY_and_EXIT;
     if( ui->leFilter->text().length() < 2) return;
     preparePersonTableView();
 }
 
 void MainWindow::on_pbPersonFilterZurcksetzten_clicked()
-{
+{LOG_ENTRY_and_EXIT;
     ui->leFilter->setText("");
     preparePersonTableView();
 }
 
 void MainWindow::on_leVertrgeFilter_editingFinished()
-{
+{LOG_ENTRY_and_EXIT;
     if( ui->leVertrgeFilter->text().length() < 2) return;
     prepareContractListView();
 }
 
 void MainWindow::on_FilterVertrgeZurcksetzten_clicked()
-{
+{LOG_ENTRY_and_EXIT;
     ui->leVertrgeFilter->setText("");
     prepareContractListView();
 }
 
 void MainWindow::on_actionVertrag_Beenden_triggered()
-{
+{LOG_ENTRY_and_EXIT;
     // Vertrag beenden -> Zins berechnen und m Auszahlungsbetrag anzeigen, dann löschen
 }
 
 QString prepareOverviewPage()
-{   // Summe der Direktkredite,
+{LOG_ENTRY_and_EXIT;
+    // Summe der Direktkredite,
     // versprochene DK (inaktive DK)
     // Zinen pa, davon auszuzahlen
     DbSummary dbs;
@@ -538,7 +541,7 @@ QString prepareOverviewPage()
 }
 
 void MainWindow::on_action_bersicht_triggered()
-{
+{LOG_ENTRY_and_EXIT;
     ui->lblOverview->setText( prepareOverviewPage());
     ui->stackedWidget->setCurrentIndex(OverviewIndex);
 }

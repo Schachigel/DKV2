@@ -181,7 +181,8 @@ bool istValideDatenbank(const QString& filename)
     if( !db.open())
         return false;
     closer.set(&db);
-    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
+    QSqlQuery enableRefInt(db);
+    enableRefInt.exec("PRAGMA foreign_keys = ON");
     if( !hatAlleTabellen(db))
         return false;
 

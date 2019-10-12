@@ -11,12 +11,17 @@
 class functionlogging {
 private:
     QString fname;
+    static int depth;
 public:
     functionlogging(QString x) :fname(x) {
-        qDebug() << ">> " << fname;
+        depth++;
+        QString fill=QString(">").repeated(depth);
+        qDebug().noquote() << fill << fname;
     }
     ~functionlogging(){
-        qDebug() << "<< " << fname << endl;
+        QString fill=QString("<").repeated(depth);
+        depth--;
+        qDebug().noquote() << fill << fname << endl;
     }
 };
 

@@ -9,12 +9,17 @@
 
 
 //Define MACRO for easy use for end user.
-#define LOG_ENTRY_EXIT_FOR(x)       functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
-#define LOG_ENTRY_and_EXIT              LOG_ENTRY_EXIT_FOR(__func__)
+#define LOG_ENTRY_EXIT_FOR(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
+#define LOG_ENTRY_and_EXIT  LOG_ENTRY_EXIT_FOR(__func__)
 
-extern QFile* outFile_p;
+QFile* outFile_p;
+int functionlogging::depth =0;
 
+#ifdef QT_DEBUG
 void logger(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+#else
+void logger(QtMsgType type, const QMessageLogContext &, const QString &msg)
+#endif
 {
     // secure this code with a critical section in case we start logging from multiple threads
     if(!outFile_p)
@@ -27,10 +32,15 @@ void logger(QtMsgType type, const QMessageLogContext &context, const QString &ms
     static QHash<QtMsgType, QString> msgLevelHash({{QtDebugMsg, "DBuG"}, {QtInfoMsg, "INFo"}, {QtWarningMsg, "WaRN"}, {QtCriticalMsg, "ERRo"}, {QtFatalMsg, "FaTl"}});
 
     QString endlCorrectedMsg (msg);
-    bool corrected = false;
-    if( endlCorrectedMsg.endsWith("\n")) {corrected = true; endlCorrectedMsg.chop(1);}
+    int lfCount = 0;
+    while( endlCorrectedMsg.endsWith(QChar::LineFeed) || endlCorrectedMsg.endsWith(QChar::CarriageReturn) )
+        {lfCount++; endlCorrectedMsg.chop(1);}
     QTextStream ts(outFile_p);
-    ts << QTime::currentTime().toString("hh:mm:ss.zzz") << " " << msgLevelHash[type] << " : " << msg << " (" << context.file << ")" << (corrected? "\n": "") << endl;
+    ts << QTime::currentTime().toString("hh:mm:ss.zzz") << " " << msgLevelHash[type] << " : " << endlCorrectedMsg;
+#ifdef QT_DEBUG
+    ts << " (" << context.file << ")";
+#endif
+    while(lfCount-->=0) ts << endl;
 
     if (type == QtFatalMsg)
         abort();

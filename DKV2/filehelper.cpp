@@ -9,9 +9,6 @@
 
 #include "filehelper.h"
 
-QFile* outFile_p(nullptr);
-
-
 bool overwrite_copy(const QString& from, const QString& to)
 {
     qDebug() << "overwrite_copy " << from << " to " << to;
