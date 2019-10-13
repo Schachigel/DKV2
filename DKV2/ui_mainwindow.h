@@ -616,7 +616,7 @@ public:
 
         retranslateUi(MainWindow);
 
-        stackedWidget->setCurrentIndex(5);
+        stackedWidget->setCurrentIndex(3);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -724,7 +724,6 @@ public:
         label_2->setText(QCoreApplication::translate("MainWindow", "Kreditgeber", nullptr));
         label_3->setText(QCoreApplication::translate("MainWindow", "Kennung", nullptr));
         label_4->setText(QCoreApplication::translate("MainWindow", "Betrag (Euro)", nullptr));
-        leBetrag->setInputMask(QCoreApplication::translate("MainWindow", "900000", nullptr));
         label_9->setText(QCoreApplication::translate("MainWindow", "Wert incl. Zinsen (Euro)", nullptr));
         lblWert->setText(QString());
         label_5->setText(QCoreApplication::translate("MainWindow", "Zinssatz", nullptr));

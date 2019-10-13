@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->menuDebug->setTitle("Debug");
 //#endif
 
+    ui->leBetrag->setValidator(new QIntValidator(0,999999,this));
     ui->statusBar->addPermanentWidget(ui->statusLabel);
     DbInStatuszeileAnzeigen();
 
