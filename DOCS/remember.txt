@@ -27,8 +27,6 @@ Menüeintrag "Datei"
 * Fenster Position merken / beim Start setzen (Multi Screen)
 * revisit logging: remove dev logging, improve error logging  
 ** alternativ: switch loggin default not to log qDebug but only qWarn and qCritical
-* Listen: Click auf Header ändert Sortierung
-* P Liste: Suchen / Filtern Vorname.Nachname
 * P Liste: Spalte "Anzahl Verträge"?
 
 next:
@@ -41,4 +39,6 @@ next:
 
 DONE
 ++ Vertrag anlegen als Beleg speichern (OK)
-- dbg: log anzeigen
+- dbg: log anzeigen (OK)
+* Listen: Click auf Header ändert Sortierung (OK)
+* P Liste: Suchen / Filtern Vorname.Nachname (OK)
