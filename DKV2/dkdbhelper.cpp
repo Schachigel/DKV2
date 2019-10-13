@@ -5,6 +5,10 @@
 #include <QSqlQuery>
 #include <QtCore>
 
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+
 #include "helper.h"
 #include "filehelper.h"
 #include "dkdbhelper.h"
@@ -368,10 +372,9 @@ int BuchungsartIdFromArt(QString s)
     return i;
 }
 
-bool BelegZuNeuemVertragSpeichern(const int VertragId, const VertragsDaten& c)
-{   LOG_ENTRY_and_EXIT;
-
-    QVector<dbfield> fields;
+void baueDatensatzStrukturFuerBelegNeuerVertrag(QVector<dbfield>& fields)
+{
+    fields.append(dkdbstructur["Vertraege" ]["id"]);
     fields.append(dkdbstructur["Vertraege"]["Betrag"]);
     fields.append(dkdbstructur["Vertraege"]["Wert"]);
     fields.append(dkdbstructur["Zinssaetze"]["Zinssatz"]);
@@ -379,6 +382,7 @@ bool BelegZuNeuemVertragSpeichern(const int VertragId, const VertragsDaten& c)
     fields.append(dkdbstructur["Vertraege"]["Vertragsdatum"]);
     fields.append(dkdbstructur["Vertraege"]["aktiv"]);
     fields.append(dkdbstructur["Vertraege"]["LetzteZinsberechnung"]);
+    fields.append(dkdbstructur["Kreditoren"]["id"]);
     fields.append(dkdbstructur["Kreditoren"]["Vorname"]);
     fields.append(dkdbstructur["Kreditoren"]["Nachname"]);
     fields.append(dkdbstructur["Kreditoren"]["Strasse"]);
@@ -386,12 +390,12 @@ bool BelegZuNeuemVertragSpeichern(const int VertragId, const VertragsDaten& c)
     fields.append(dkdbstructur["Kreditoren"]["Stadt"]);
     fields.append(dkdbstructur["Kreditoren"]["IBAN"]);
     fields.append(dkdbstructur["Kreditoren"]["BIC"]);
-
-    fields.append(dkdbstructur["Vertraege" ]["id"]);
-    fields.append(dkdbstructur["Kreditoren"]["id"]);
     fields.append(dkdbstructur["Zinssaetze"]["id"]);
     fields.append(dkdbstructur["Vertraege" ]["ZSatz"]);
+}
 
+QSqlRecord DatensatzFuerBelegNeuerVertrag(const int VertragId, const QVector<dbfield>& fields)
+{
     QString sql("SELECT ");
     for( int i =0; i<fields.size(); i++)
     {
@@ -406,15 +410,65 @@ bool BelegZuNeuemVertragSpeichern(const int VertragId, const VertragsDaten& c)
     if( !all.exec(sql))
     {
         qDebug() << "preparing buchungstext failed " << all.lastError() << "\n" << all.lastQuery();
-        return false;
+        return QSqlRecord();
     }
-
     all.next();
-    QString Buchungstext;
-    for( int i =0; i<all.record().count(); i++)
+    return all.record();
+}
+
+QJsonValue jsonValueFromVariant(QVariant v)
+{
+    switch(v.type())
     {
-        Buchungstext += all.record().field(i).tableName()+ "." + all.record().fieldName(i) + ":\"" + all.record().field(i).value().toString() + "\";";
+    case QVariant::Int:
+        return QJsonValue(v.toInt());
+    case QVariant::String:
+        return QJsonValue(v.toString());
+    case QVariant::Double:
+        return QJsonValue(v.toDouble());
+    case QVariant::Date:
+        return QJsonValue(v.toDate().toString(Qt::ISODate));
+    case QVariant::Bool:
+        return QJsonValue(v.toBool());
+    default:
+        qDebug() << "jsonValueFromVariant: invalid data type: " << v;
     }
+    return QJsonValue();
+}
+
+QString JasonAusDatensatz( QSqlRecord r)
+{
+    QJsonObject Vertrag;
+    QJsonObject Kreditor;
+    QJsonObject Zinssatz;
+    for( int i =0; i<r.count(); i++)
+    {
+        QSqlField f(r.field(i));
+        if( f.tableName() == "Vertraege")
+            Vertrag.insert(f.name(), jsonValueFromVariant(f.value()));
+        else if( f.tableName() == "Kreditoren")
+            Kreditor.insert(f.name(), jsonValueFromVariant(f.value()));
+        else if( f.tableName() == "Zinssaetze")
+            Zinssatz.insert(f.name(), jsonValueFromVariant(f.value()));
+        else qDebug() << "unknown table info in record: " << f;
+    }
+    QJsonArray Beleg;
+    Beleg.push_back(Vertrag);
+    Beleg.push_back(Kreditor);
+    Beleg.push_back(Zinssatz);
+
+    return QJsonDocument(Beleg).toJson();
+}
+
+bool BelegZuNeuemVertragSpeichern(const int VertragId, const VertragsDaten& c)
+{   LOG_ENTRY_and_EXIT;
+
+    QVector<dbfield> fields;
+    baueDatensatzStrukturFuerBelegNeuerVertrag(fields);
+    QSqlRecord beleg = DatensatzFuerBelegNeuerVertrag(VertragId, fields);
+
+    QString Buchungstext = JasonAusDatensatz(beleg);
+
     qDebug() << "Speichere Buchungsdaten:\n" << Buchungstext;
     QSqlQuery sqlBuchung;
     sqlBuchung.prepare("INSERT INTO Buchungen (VertragId, Buchungsart, Betrag, Datum, Bemerkung)"
