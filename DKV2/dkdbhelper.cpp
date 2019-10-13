@@ -261,7 +261,7 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
         c.Vertragsdatum = vertragsdatum;
         c.active = 0 != rand.bounded(3)%3; // random data, more true then false
         if( c.active.toBool() ) c.StartZinsberechnung =vertragsdatum.addDays(rand.bounded(15));
-        VertragVerbuchen(c);
+        c.verbucheVertrag();
     }
 }
 
@@ -340,28 +340,6 @@ void ZinssaetzeFuerAuswahlliste(QList<ZinsAnzeigeMitId>& Rates)
         ZinsAnzeigeMitId entry{ query.value("id").toInt(), (query.value("Zinssatz").toString() + "  (" + query.value("Bemerkung").toString() + ")  ")};
         Rates.append(entry);
     }
-}
-
-int speichereVertrag(const VertragsDaten& c)
-{   LOG_ENTRY_and_EXIT;
-    TableDataInserter ti(dkdbstructur["Vertraege"]);
-    ti.setValue(dkdbstructur["Vertraege"]["KreditorId"].Name(), c.KreditorId);
-    ti.setValue(dkdbstructur["Vertraege"]["Kennung"].Name(), c.Kennung);
-    ti.setValue(dkdbstructur["Vertraege"]["Betrag"].Name(), c.Betrag);
-    ti.setValue(dkdbstructur["Vertraege"]["Wert"].Name(), c.Wert);
-    ti.setValue(dkdbstructur["Vertraege"]["ZSatz"].Name(), c.Zins);
-    ti.setValue(dkdbstructur["Vertraege"]["tesaurierend"].Name(), c.tesaurierend);
-    ti.setValue(dkdbstructur["Vertraege"]["Vertragsdatum"].Name(), c.Vertragsdatum);
-    ti.setValue(dkdbstructur["Vertraege"]["aktiv"].Name(), c.active);
-    ti.setValue(dkdbstructur["Vertraege"]["LaufzeitEnde"].Name(), c.LaufzeitEnde);
-    ti.setValue(dkdbstructur["Vertraege"]["LetzteZinsberechnung"].Name(), c.StartZinsberechnung);
-    if( ti.InsertData(QSqlDatabase::database()))
-    {
-        int lastid = ti.getInsertedRecordId();
-        qDebug() << "Neuer Vertrag wurde eingefügt mit id:" << lastid;
-        return lastid;
-    }
-    return -1;
 }
 
 int BuchungsartIdFromArt(QString s)
@@ -460,7 +438,7 @@ QString JasonAusDatensatz( QSqlRecord r)
     return QJsonDocument(Beleg).toJson();
 }
 
-bool BelegZuNeuemVertragSpeichern(const int VertragId, const VertragsDaten& c)
+bool VertragsDaten::BelegZuNeuemVertragSpeichern(const int VertragId)
 {   LOG_ENTRY_and_EXIT;
 
     QVector<dbfield> fields;
@@ -475,7 +453,7 @@ bool BelegZuNeuemVertragSpeichern(const int VertragId, const VertragsDaten& c)
                        " VALUES (:VertragsId, :Buchungsart, :Betrag, :Datum, :Bemerkung)");
     sqlBuchung.bindValue(":VertragsId", QVariant(VertragId));
     sqlBuchung.bindValue(":Buchungsart", QVariant(BuchungsartIdFromArt("Vertrag anlegen")));
-    sqlBuchung.bindValue(":Betrag", QVariant(c.Betrag));
+    sqlBuchung.bindValue(":Betrag", QVariant(Betrag));
     sqlBuchung.bindValue(":Datum", QVariant(QDate::currentDate()));
     sqlBuchung.bindValue(":Bemerkung", QVariant(Buchungstext));
     if( !sqlBuchung.exec())
@@ -486,13 +464,13 @@ bool BelegZuNeuemVertragSpeichern(const int VertragId, const VertragsDaten& c)
     return true;
 }
 
-bool VertragVerbuchen(const VertragsDaten& c)
+bool VertragsDaten::verbucheVertrag()
 {   LOG_ENTRY_and_EXIT;
 
     QSqlDatabase::database().transaction();
-    int vid = speichereVertrag(c);
+    int vid = speichereVertrag();
     if( vid >0 )
-        if( BelegZuNeuemVertragSpeichern(vid, c))
+        if( BelegZuNeuemVertragSpeichern(vid))
         {
             QSqlDatabase::database().commit();
             return true;
@@ -501,6 +479,28 @@ bool VertragVerbuchen(const VertragsDaten& c)
     qCritical() << "ein neuer Vertrag konnte nicht gespeichert werden";
     QSqlDatabase::database().rollback();
     return false;
+}
+
+int VertragsDaten::speichereVertrag()
+{   LOG_ENTRY_and_EXIT;
+    TableDataInserter ti(dkdbstructur["Vertraege"]);
+    ti.setValue(dkdbstructur["Vertraege"]["KreditorId"].Name(), KreditorId);
+    ti.setValue(dkdbstructur["Vertraege"]["Kennung"].Name(), Kennung);
+    ti.setValue(dkdbstructur["Vertraege"]["Betrag"].Name(), Betrag);
+    ti.setValue(dkdbstructur["Vertraege"]["Wert"].Name(), Wert);
+    ti.setValue(dkdbstructur["Vertraege"]["ZSatz"].Name(), Zins);
+    ti.setValue(dkdbstructur["Vertraege"]["tesaurierend"].Name(), tesaurierend);
+    ti.setValue(dkdbstructur["Vertraege"]["Vertragsdatum"].Name(), Vertragsdatum);
+    ti.setValue(dkdbstructur["Vertraege"]["aktiv"].Name(), active);
+    ti.setValue(dkdbstructur["Vertraege"]["LaufzeitEnde"].Name(), LaufzeitEnde);
+    ti.setValue(dkdbstructur["Vertraege"]["LetzteZinsberechnung"].Name(), StartZinsberechnung);
+    if( ti.InsertData(QSqlDatabase::database()))
+    {
+        int lastid = ti.getInsertedRecordId();
+        qDebug() << "Neuer Vertrag wurde eingefügt mit id:" << lastid;
+        return lastid;
+    }
+    return -1;
 }
 
 bool VertragAktivieren( int ContractId, QDate activationDate)

@@ -287,7 +287,7 @@ bool MainWindow::saveNewContract()
         QMessageBox::information( this, "Fehler", errortext);
         return false;
     }
-    return VertragVerbuchen(c);
+    return c.verbucheVertrag();
 }
 void MainWindow::clearNewContractFields()
 {LOG_ENTRY_and_EXIT;

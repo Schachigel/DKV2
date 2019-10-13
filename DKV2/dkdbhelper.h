@@ -65,8 +65,11 @@ struct VertragsDaten
         Vertragsdatum(QDate::currentDate()),
         LaufzeitEnde(QDate(9999, 12, 31)),
         StartZinsberechnung(QDate(9999, 12, 31)) {}
+    bool verbucheVertrag();
+    int speichereVertrag();
+    bool BelegZuNeuemVertragSpeichern(const int vid);
 };
-bool VertragVerbuchen(const VertragsDaten& c);
+// bool VertragVerbuchen(const VertragsDaten& c);
 bool VertragAktivieren( int ContractId, QDate activationDate);
 bool VertragLoeschen(QString index);
 
