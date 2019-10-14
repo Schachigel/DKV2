@@ -16,7 +16,7 @@ struct dbfieldinfo
     QString name;
 };
 
-class dbfield
+class dbfield : public QSqlField
 {
 public: // types
     enum refIntOption {
@@ -25,31 +25,30 @@ public: // types
         onDeleteNull
     };
     // constr. destr. & access fu
-    explicit dbfield() : vType(QVariant::Type::Invalid){}
+    explicit dbfield() : QSqlField(){}
     dbfield(QString n, QVariant::Type t=QVariant::String,
-            QString ti="", dbfieldinfo r = dbfieldinfo(), refIntOption opt = refIntOption::non) :
-          name(n), vType(t), SqlTypeDetails(ti), reference(r), option(opt)  {}
+            QString ti="", dbfield ref = dbfield(), refIntOption opt = refIntOption::non) :
+          QSqlField(n, t), SqlTypeDetails(ti), option(opt)  { reference.tablename = ref.tableName(); reference.name = ref.name();}
+
     bool operator ==(const dbfield &b) const;
-    QString Tablename()    const {return tablename;}
-    void setTablename(QString n) {tablename = n;}
-    QString Name()         const {return name;}
-    QVariant::Type VType() const {return vType;}
-    QString TypeInfo()     const {return SqlTypeDetails;}
+//    QString tableName()    const {return _tablename;}
+//    void setTableName(QString n) {_tablename = n;}
+//    QString name()         const {return _name;}
+//    QVariant::Type type() const {return _type;}
+    QString typeInfo()     const {return SqlTypeDetails;}
     dbfieldinfo getReferenzeInfo();
     // interface
     QString getCreateSqlSnippet();
 
 private:
     // data
-    QString tablename;
-    QString name;
-    QVariant::Type vType;
+//    QString _tablename;
+//    QString _name;
+//    QVariant::Type _type;
 
-    int padding; // unused
     QString SqlTypeDetails;
     dbfieldinfo reference;
     refIntOption option;
-    int padding2; // unused
 };
 
 

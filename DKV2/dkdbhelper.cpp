@@ -40,11 +40,11 @@ void initDKDBStruktur()
 
     dbtable Vertraege("Vertraege");
     Vertraege.append((dbfield("id",         QVariant::Int, "PRIMARY KEY AUTOINCREMENT")));
-    Vertraege.append((dbfield("KreditorId", QVariant::Int, "", {"Kreditoren","id"}, dbfield::refIntOption::onDeleteCascade )));
+    Vertraege.append((dbfield("KreditorId", QVariant::Int, "", Kreditoren["id"], dbfield::refIntOption::onDeleteCascade )));
     Vertraege.append((dbfield("Kennung")));
     Vertraege.append((dbfield("Betrag",     QVariant::Double, "DEFAULT '0,0' NOT NULL")));
     Vertraege.append((dbfield("Wert",       QVariant::Double, "DEFAULT '0,0' NULL")));
-    Vertraege.append((dbfield("ZSatz",      QVariant::Int, "", {"Zinssaetze","id"}, dbfield::refIntOption::non)));
+    Vertraege.append((dbfield("ZSatz",      QVariant::Int, "", Zinssaetze["id"], dbfield::refIntOption::non)));
     Vertraege.append((dbfield("tesaurierend",  QVariant::Bool, "DEFAULT '1' NOT NULL")));
     Vertraege.append((dbfield("Vertragsdatum", QVariant::Date, "DATE  NULL")));
     Vertraege.append((dbfield("aktiv",         QVariant::Bool, "DEFAULT '0' NOT NULL")));
@@ -59,8 +59,8 @@ void initDKDBStruktur()
 
     dbtable Buchungen("Buchungen");
     Buchungen.append(((dbfield("id",           QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))));
-    Buchungen.append(((dbfield("VertragId",    QVariant::Int, "", Vertraege["id"].getReferenzeInfo(), dbfield::refIntOption::onDeleteNull))));
-    Buchungen.append(((dbfield("Buchungsart",  QVariant::Int, "", Buchungsarten["id"].getReferenzeInfo(), dbfield::refIntOption::non))));
+    Buchungen.append(((dbfield("VertragId",    QVariant::Int, "", Vertraege["id"], dbfield::refIntOption::onDeleteNull))));
+    Buchungen.append(((dbfield("Buchungsart",  QVariant::Int, "", Buchungsarten["id"], dbfield::refIntOption::non))));
     Buchungen.append(((dbfield("Betrag",       QVariant::Double, "DEFAULT '0' NULL"))));
     Buchungen.append(((dbfield("Datum",        QVariant::Date))));
     Buchungen.append(((dbfield("Bemerkung",    QVariant::String))));
@@ -378,7 +378,7 @@ QSqlRecord DatensatzFuerBelegNeuerVertrag(const int VertragId, const QVector<dbf
     for( int i =0; i<fields.size(); i++)
     {
         if( i) sql += ", ";
-        sql += fields[i].Tablename() + "." + fields[i].Name();
+        sql += fields[i].tableName() + "." + fields[i].name();
     }
     sql += " FROM Vertraege, Kreditoren, Zinssaetze "
            " WHERE Vertraege.id = " + QString::number(VertragId) +
@@ -484,16 +484,16 @@ bool VertragsDaten::verbucheVertrag()
 int VertragsDaten::speichereVertrag()
 {   LOG_ENTRY_and_EXIT;
     TableDataInserter ti(dkdbstructur["Vertraege"]);
-    ti.setValue(dkdbstructur["Vertraege"]["KreditorId"].Name(), KreditorId);
-    ti.setValue(dkdbstructur["Vertraege"]["Kennung"].Name(), Kennung);
-    ti.setValue(dkdbstructur["Vertraege"]["Betrag"].Name(), Betrag);
-    ti.setValue(dkdbstructur["Vertraege"]["Wert"].Name(), Wert);
-    ti.setValue(dkdbstructur["Vertraege"]["ZSatz"].Name(), Zins);
-    ti.setValue(dkdbstructur["Vertraege"]["tesaurierend"].Name(), tesaurierend);
-    ti.setValue(dkdbstructur["Vertraege"]["Vertragsdatum"].Name(), Vertragsdatum);
-    ti.setValue(dkdbstructur["Vertraege"]["aktiv"].Name(), active);
-    ti.setValue(dkdbstructur["Vertraege"]["LaufzeitEnde"].Name(), LaufzeitEnde);
-    ti.setValue(dkdbstructur["Vertraege"]["LetzteZinsberechnung"].Name(), StartZinsberechnung);
+    ti.setValue(dkdbstructur["Vertraege"]["KreditorId"].name(), KreditorId);
+    ti.setValue(dkdbstructur["Vertraege"]["Kennung"].name(), Kennung);
+    ti.setValue(dkdbstructur["Vertraege"]["Betrag"].name(), Betrag);
+    ti.setValue(dkdbstructur["Vertraege"]["Wert"].name(), Wert);
+    ti.setValue(dkdbstructur["Vertraege"]["ZSatz"].name(), Zins);
+    ti.setValue(dkdbstructur["Vertraege"]["tesaurierend"].name(), tesaurierend);
+    ti.setValue(dkdbstructur["Vertraege"]["Vertragsdatum"].name(), Vertragsdatum);
+    ti.setValue(dkdbstructur["Vertraege"]["aktiv"].name(), active);
+    ti.setValue(dkdbstructur["Vertraege"]["LaufzeitEnde"].name(), LaufzeitEnde);
+    ti.setValue(dkdbstructur["Vertraege"]["LetzteZinsberechnung"].name(), StartZinsberechnung);
     if( ti.InsertData(QSqlDatabase::database()))
     {
         int lastid = ti.getInsertedRecordId();
@@ -534,7 +534,7 @@ QString ContractList_SELECT(const QVector<dbfield> fields)
     for( int i = 0; i < fields.size(); i++)
     {
         if( i) sql +=", ";
-        sql += fields[i].Tablename() +"." +fields[i].Name();
+        sql += fields[i].tableName() +"." +fields[i].name();
     }
     return sql;
 }

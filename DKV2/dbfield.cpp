@@ -4,9 +4,9 @@
 
 bool dbfield::operator ==(const dbfield &b) const
 {
-    return ((tablename == b.tablename)
-            && (name == b.name)
-            && (vType == b.vType));
+    return ((tableName() == b.tableName())
+            && (name() == b.name())
+            && (type() == b.type()));
 }
 
 // local helper
@@ -50,7 +50,7 @@ QString dbTypeFromVariant(QVariant::Type t)
 
 QString dbfield::getCreateSqlSnippet()
 {
-    QString s( "[" + name + "] " + dbTypeFromVariant(vType) + " " +TypeInfo());
+    QString s( "[" + name() + "] " + dbTypeFromVariant(type()) + " " +typeInfo());
     if( reference.name.isEmpty())
         return s;
     s += " FOREIGN_KEY REFERENCES [" + reference.tablename +"](" + reference.name + ")";
@@ -66,6 +66,6 @@ QString dbfield::getCreateSqlSnippet()
 
 dbfieldinfo dbfield::getReferenzeInfo()
 {
-    return dbfieldinfo{tablename, name};
+    return dbfieldinfo{tableName(), name()};
 }
 

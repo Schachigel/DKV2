@@ -30,8 +30,6 @@ Menüeintrag "Datei"
 * P Liste: Spalte "Anzahl Verträge"?
 
 next:
-- verträge ändern? oder lieber nicht
-- Sortierung beim Klick auf TableHeader
 - verträge u Belege pro person auflisten
 
 ? P Liste r-click Menu anlegen
@@ -41,4 +39,6 @@ DONE
 ++ Vertrag anlegen als Beleg speichern (OK)
 - dbg: log anzeigen (OK)
 * Listen: Click auf Header ändert Sortierung (OK)
+- Verträge: Sortierung beim Klick auf TableHeader (OK)
 * P Liste: Suchen / Filtern Vorname.Nachname (OK)
+- verträge ändern? oder lieber nicht (NOT)

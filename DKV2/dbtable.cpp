@@ -6,7 +6,7 @@ dbfield dbtable::operator[](QString s) const
 {
     for (auto f : fields)
     {
-        if( f.Name() == s)
+        if( f.name() == s)
             return f;
     }
     return dbfield();
@@ -15,7 +15,7 @@ dbfield dbtable::operator[](QString s) const
 dbtable dbtable::append(const dbfield& f)
 {
     dbfield newf(f);
-    newf.setTablename(Name());
+    newf.setTableName(Name());
     fields.append(newf);
     return *this;
 }
@@ -36,8 +36,8 @@ TableDataInserter::TableDataInserter(const dbtable& t) :tablename(t.Name()), las
 {
     for (auto f : t.Fields())
     {
-        QSqlField sqlf(f.Name(), f.VType(), tablename);
-        if( f.TypeInfo().contains("AUTOINCREMENT", Qt::CaseInsensitive) )
+        QSqlField sqlf(f.name(), f.type(), tablename);
+        if( f.typeInfo().contains("AUTOINCREMENT", Qt::CaseInsensitive) )
             sqlf.setAutoValue(true);
         record.append(sqlf);
     }
