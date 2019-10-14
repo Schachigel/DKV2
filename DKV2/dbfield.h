@@ -10,7 +10,7 @@
 
 struct dbtable;
 
-struct dbfieldinfo
+struct refFieldInfo
 {
     QString tablename;
     QString name;
@@ -31,23 +31,15 @@ public: // types
           QSqlField(n, t), SqlTypeDetails(ti), option(opt)  { reference.tablename = ref.tableName(); reference.name = ref.name();}
 
     bool operator ==(const dbfield &b) const;
-//    QString tableName()    const {return _tablename;}
-//    void setTableName(QString n) {_tablename = n;}
-//    QString name()         const {return _name;}
-//    QVariant::Type type() const {return _type;}
     QString typeInfo()     const {return SqlTypeDetails;}
-    dbfieldinfo getReferenzeInfo();
+    refFieldInfo getReferenzeInfo();
     // interface
     QString getCreateSqlSnippet();
 
 private:
     // data
-//    QString _tablename;
-//    QString _name;
-//    QVariant::Type _type;
-
     QString SqlTypeDetails;
-    dbfieldinfo reference;
+    refFieldInfo reference;
     refIntOption option;
 };
 

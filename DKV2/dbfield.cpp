@@ -64,8 +64,8 @@ QString dbfield::getCreateSqlSnippet()
     return s;
 }
 
-dbfieldinfo dbfield::getReferenzeInfo()
+refFieldInfo dbfield::getReferenzeInfo()
 {
-    return dbfieldinfo{tableName(), name()};
+    return refFieldInfo{tableName(), name()};
 }
 
