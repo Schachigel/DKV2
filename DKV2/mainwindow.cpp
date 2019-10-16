@@ -164,6 +164,13 @@ void MainWindow::on_actionKreditgeber_l_schen_triggered()
     else
         Q_ASSERT(!bool("could not remove kreditor and contracts"));
 }
+void MainWindow::on_actionVertraege_zeigen_triggered()
+{
+    QModelIndex mi(ui->PersonsTableView->currentIndex());
+    QString index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0)).toString();
+    ui->leVertrgeFilter->setText(index);
+    on_actionListe_der_Vertr_ge_anzeigen_triggered();
+}
 void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &pos)
 {LOG_ENTRY_and_EXIT;
     QModelIndex index = ui->PersonsTableView->indexAt(pos).siblingAtColumn(0);
@@ -176,6 +183,7 @@ void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &po
             QMenu menu( "PersonContextMenu", this);
             menu.addAction(ui->actionVertrag_anlegen);
             menu.addAction( ui->actionKreditgeber_l_schen);
+            menu.addAction(ui->actionVertraege_zeigen);
             menu.exec(ui->PersonsTableView->mapToGlobal(pos));
         }
         else
@@ -546,3 +554,4 @@ void MainWindow::on_action_bersicht_triggered()
     ui->lblOverview->setText( prepareOverviewPage());
     ui->stackedWidget->setCurrentIndex(OverviewIndex);
 }
+

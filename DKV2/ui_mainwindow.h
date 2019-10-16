@@ -52,6 +52,7 @@ public:
     QAction *actionanzeigenLog;
     QAction *actionVertrag_Beenden;
     QAction *action_bersicht;
+    QAction *actionVertraege_zeigen;
     QWidget *centralWidget;
     QVBoxLayout *verticalLayout_2;
     QLabel *statusLabel;
@@ -176,6 +177,8 @@ public:
         actionVertrag_Beenden->setObjectName(QString::fromUtf8("actionVertrag_Beenden"));
         action_bersicht = new QAction(MainWindow);
         action_bersicht->setObjectName(QString::fromUtf8("action_bersicht"));
+        actionVertraege_zeigen = new QAction(MainWindow);
+        actionVertraege_zeigen->setObjectName(QString::fromUtf8("actionVertraege_zeigen"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         verticalLayout_2 = new QVBoxLayout(centralWidget);
@@ -676,6 +679,10 @@ public:
         action_bersicht->setText(QCoreApplication::translate("MainWindow", "\303\234bersicht", nullptr));
 #if QT_CONFIG(tooltip)
         action_bersicht->setToolTip(QCoreApplication::translate("MainWindow", "\303\234bersicht \303\274ber Vertragsdaten anzeigen", nullptr));
+#endif // QT_CONFIG(tooltip)
+        actionVertraege_zeigen->setText(QCoreApplication::translate("MainWindow", "Vertr\303\244ge zeigen", nullptr));
+#if QT_CONFIG(tooltip)
+        actionVertraege_zeigen->setToolTip(QCoreApplication::translate("MainWindow", "zu den Vertr\303\244gen dieses Kreditgebers wechseln", nullptr));
 #endif // QT_CONFIG(tooltip)
         statusLabel->setText(QString());
         label->setText(QCoreApplication::translate("MainWindow", "<H2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</H2>", nullptr));

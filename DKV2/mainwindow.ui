@@ -678,6 +678,14 @@
     <string>Übersicht über Vertragsdaten anzeigen</string>
    </property>
   </action>
+  <action name="actionVertraege_zeigen">
+   <property name="text">
+    <string>Verträge zeigen</string>
+   </property>
+   <property name="toolTip">
+    <string>zu den Verträgen dieses Kreditgebers wechseln</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>

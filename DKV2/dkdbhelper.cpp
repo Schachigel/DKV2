@@ -546,6 +546,13 @@ QString ContractList_FROM()
 QString ContractList_WHERE(QString Filter)
 {
     QString s ("WHERE Kreditoren.id = Vertraege.KreditorId AND Vertraege.ZSatz = Zinssaetze.id");
+    bool isNumber (false);
+    int index = Filter.toInt(&isNumber);
+    if (isNumber)
+    {
+        s += " AND Kreditoren.id = '" + QString::number(index) + "'";
+        return s;
+    }
     if( Filter.size()> 2)
     {
         s += " AND ( Vorname LIKE '%" + Filter + "%' OR Nachname LIKE '%" + Filter + "%' )";

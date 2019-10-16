@@ -75,6 +75,8 @@ private slots:
 
     void on_action_bersicht_triggered();
 
+    void on_actionVertraege_zeigen_triggered();
+
 private:
     Ui::MainWindow *ui;
 
