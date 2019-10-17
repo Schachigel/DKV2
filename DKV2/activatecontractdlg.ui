@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>activateContractDlg</class>
- <widget class="QDialog" name="activateContractDlg">
+ <class>askDateDlg</class>
+ <widget class="QDialog" name="askDateDlg">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -30,16 +30,22 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout" stretch="7,2,2">
     <item>
-     <widget class="QLabel" name="lblActivationMsg">
+     <widget class="QLabel" name="lblMsg">
       <property name="text">
        <string>&lt;H3&gt;Mit der Aktivierung des Vertrags beginnt die Zinsberechnung. &lt;br&gt;Bitte geben Sie das Datum des Geldeingangs ein:</string>
+      </property>
+      <property name="scaledContents">
+       <bool>false</bool>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
       </property>
      </widget>
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="lblDate">
         <property name="text">
          <string>Die Verzinsung beginnt am</string>
         </property>
@@ -68,7 +74,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>activateContractDlg</receiver>
+   <receiver>askDateDlg</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -84,7 +90,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>activateContractDlg</receiver>
+   <receiver>askDateDlg</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

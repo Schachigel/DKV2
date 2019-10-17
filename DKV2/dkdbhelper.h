@@ -71,7 +71,8 @@ struct VertragsDaten
 };
 // bool VertragVerbuchen(const VertragsDaten& c);
 bool VertragAktivieren( int ContractId, QDate activationDate);
-bool VertragLoeschen(QString index);
+bool passivenVertragLoeschen(QString index);
+bool aktivenVertragLoeschen(const int index, const QDate endD, double& neuerWert, double& davonZins);
 
 QString ContractList_SELECT(QVector<dbfield> f);
 QString ContractList_FROM();
@@ -84,6 +85,7 @@ struct DbSummary
     double passiveDk;
     double WertAktiveDk;
 };
+QVariant ExecuteSingleValueSql(QString s);
 void berechneZusammenfassung(DbSummary& dbs);
 
 

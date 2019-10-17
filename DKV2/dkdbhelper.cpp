@@ -516,9 +516,13 @@ bool VertragAktivieren( int ContractId, QDate activationDate)
     return ret;
 }
 
-bool VertragLoeschen(QString index)
+bool passivenVertragLoeschen(QString index)
 {   LOG_ENTRY_and_EXIT;
-
+    if( ExecuteSingleValueSql("SELECT [aktiv] FROM [Vertraege] WHERE id=" +index).toBool())
+    {
+        qWarning() << "will not delete active contract w id:" << index;
+        return false;
+    }
     QSqlQuery deleteQ;
     if( !deleteQ.exec("DELETE FROM Vertraege WHERE id=" + index))
     {
@@ -528,8 +532,27 @@ bool VertragLoeschen(QString index)
     return true;
 }
 
+bool aktivenVertragLoeschen(const int index, const QDate ende, double& neuerWert, double& davonZins)
+{   LOG_ENTRY_and_EXIT;
+    if( ExecuteSingleValueSql("SELECT [aktiv] FROM [Vertraege] WHERE id=" +QString::number(index)).toBool())
+    {
+        qWarning() << "will not delete passive contract w id:" << index;
+        return false;
+    }
+    QSqlQuery currentValues;
+    currentValues.exec("SELECT [Vertraege.Wert], [Vertraege.LetzteZinsberechnung], [Zinssaetze.Zinssatz]");
+    /* to do
+     * - ende < letzteZinsberechnung -> ERROR
+     * - calculate time difference ende-letzteZinsberechnung
+     * - calculate davonZins = Wert*(ZinsProZeiteinheit * time differenz)
+     * - calculate neuerWert = Wert+davonZins
+     * return
+     */
+    return true;
+}
+
 QString ContractList_SELECT(const QVector<dbfield> fields)
-{
+{   LOG_ENTRY_and_EXIT;
     QString sql("SELECT ");
     for( int i = 0; i < fields.size(); i++)
     {

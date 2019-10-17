@@ -15,7 +15,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "activatecontractdlg.h"
+#include "askdatedlg.h"
 
 #include "helper.h"
 #include "filehelper.h"
@@ -481,10 +481,10 @@ QDate MainWindow::getContractDateFromContractsList()
 void MainWindow::on_actionactivateContract_triggered()
 {LOG_ENTRY_and_EXIT;
     QDate contractDate = getContractDateFromContractsList();
-    activateContractDlg dlg( this, contractDate);
+    askDateDlg dlg( this, contractDate);
     if( QDialog::Accepted == dlg.exec())
     {
-        if( VertragAktivieren(getContractIdStringFromContractsList(), dlg.getActivationDate()))
+        if( VertragAktivieren(getContractIdStringFromContractsList(), dlg.getDate()))
             prepareContractListView();
     }
 }
@@ -501,13 +501,12 @@ void MainWindow::on_actionVertrag_l_schen_triggered()
     msg += Vorname + " " + Nachname + " (id " + index + ") gelöscht werden?";
     if( QMessageBox::Yes != QMessageBox::question(this, "Kreditvertrag löschen", msg))
         return;
-    VertragLoeschen(index);
+    passivenVertragLoeschen(index);
     prepareContractListView();
 }
 
 void MainWindow::on_leFilter_editingFinished()
 {LOG_ENTRY_and_EXIT;
-    if( ui->leFilter->text().length() < 2) return;
     preparePersonTableView();
 }
 
@@ -519,7 +518,6 @@ void MainWindow::on_pbPersonFilterZurcksetzten_clicked()
 
 void MainWindow::on_leVertrgeFilter_editingFinished()
 {LOG_ENTRY_and_EXIT;
-    if( ui->leVertrgeFilter->text().length() < 2) return;
     prepareContractListView();
 }
 
@@ -531,7 +529,29 @@ void MainWindow::on_FilterVertrgeZurcksetzten_clicked()
 
 void MainWindow::on_actionVertrag_Beenden_triggered()
 {LOG_ENTRY_and_EXIT;
-    // Vertrag beenden -> Zins berechnen und m Auszahlungsbetrag anzeigen, dann löschen
+    QModelIndex mi(ui->contractsTableView->currentIndex());
+    if( !mi.isValid()) return;    // Vertrag beenden -> Zins berechnen und m Auszahlungsbetrag anzeigen, dann löschen
+    int index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toInt();
+    QString Vorname = ui->contractsTableView->model()->data(mi.siblingAtColumn(1)).toString();
+    QString Nachname = ui->contractsTableView->model()->data(mi.siblingAtColumn(2)).toString();
+    QString Wert = ui->contractsTableView->model()->data(mi.siblingAtColumn(4)).toString();
+
+    QString msg("<h3>Wenn Sie einen Vertrag beenden wird der Zins abschließend berechnet und der Auszahlungsbetrag ermittelt.<br>"
+                "\nUm den Vertrag von %1 %2 mit dem Wert %3 Euro jetzt zu beenden geben Sie das Datum des Vertragendes ein und klicken Sie OK");
+    msg = msg.arg(Vorname, Nachname, Wert);
+
+    askDateDlg dlg( this, QDate::currentDate());
+    dlg.setMsg(msg);
+    dlg.setDateLabel("Ende der Zinsberechnung:");
+    if( QDialog::Accepted != dlg.exec())
+    {
+        qDebug() << "Delete contract was aborted by the user";
+        return;
+    }
+
+    double neuerWert{0.};
+    double davonZins{0.};
+    aktivenVertragLoeschen( index, dlg.getDate(), neuerWert, davonZins);
 }
 
 QString prepareOverviewPage()

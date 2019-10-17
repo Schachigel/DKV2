@@ -25,7 +25,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-        activatecontractdlg.cpp \
+        askdatedlg.cpp \
         dbfield.cpp \
         dbstructure.cpp \
         dbtable.cpp \
@@ -37,7 +37,7 @@ SOURCES += \
         mainwindow.cpp
 
 HEADERS += \
-        activatecontractdlg.h \
+        askdatedlg.h \
         dbfield.h \
         dbstructure.h \
         dbtable.h \
