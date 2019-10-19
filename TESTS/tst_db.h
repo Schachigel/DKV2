@@ -1,21 +1,21 @@
 #ifndef TST_DB_H
 #define TST_DB_H
 //
-
-#include "QCoreApplication"
+#include <qobject.h>
 
 class tst_db : public QObject
 {
     Q_OBJECT
-
 public:
     tst_db() {}
     ~tst_db() {}
 
 private:
     const QString filename = "..\\data\\testdb.sqlite";
-    const QString testCon = "test_connection"; // "qt_sql_default_connection";
+    const QString testCon = "test_connection";
     int tableRecordCount(QString table);
+
+signals:
 
 private slots:
     //    void initTestCase();

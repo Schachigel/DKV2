@@ -1,5 +1,5 @@
 #include "askdatedlg.h"
-#include "ui_activatecontractdlg.h"
+#include "ui_askDateDlg.h"
 
 askDateDlg::askDateDlg(QWidget *parent, QDate date) :
     QDialog(parent),

@@ -48,7 +48,7 @@ HEADERS += \
         mainwindow.h
 
 FORMS += \
-        activatecontractdlg.ui \
+        askDateDlg.ui \
         mainwindow.ui
 
 # Default rules for deployment.

@@ -534,7 +534,7 @@ bool passivenVertragLoeschen(QString index)
 
 bool aktivenVertragLoeschen(const int index, const QDate ende, double& neuerWert, double& davonZins)
 {   LOG_ENTRY_and_EXIT;
-    if( ExecuteSingleValueSql("SELECT [aktiv] FROM [Vertraege] WHERE id=" +QString::number(index)).toBool())
+    if( !ExecuteSingleValueSql("SELECT [aktiv] FROM [Vertraege] WHERE id=" +QString::number(index)).toBool())
     {
         qWarning() << "will not delete passive contract w id:" << index;
         return false;
@@ -592,10 +592,20 @@ QString ContractList_SQL(const QVector<dbfield> fields, QString filter)
 }
 
 QVariant ExecuteSingleValueSql(QString s)
-{
-    QSqlQuery q(s);
-    if( !q.exec()) return QVariant();
-    q.next();
+{   LOG_ENTRY_and_EXIT;
+    QSqlQuery q;
+    q.prepare(s);
+    if( !q.exec())
+    {
+        qCritical() << "SingleValueSql failed to execute: " << q.lastError() << "\n" << q.lastQuery();
+        return QVariant();
+    }
+    q.last();
+    if(q.at() != 0)
+    {
+        qCritical() << "SingleValueSql returned more then one value\n" << q.lastQuery();
+        return QVariant();
+    }
     return q.value(0);
 }
 

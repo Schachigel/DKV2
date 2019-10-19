@@ -1,14 +1,13 @@
-#include <QCoreApplication>
-#include <QFile>
+
 #include <QSqlDatabase>
 #include <QString>
 #include <QtTest>
 
-#include "../dkv2/dbstructure.h"
-#include "../dkv2/dbtable.h"
-#include "../dkv2/dkdbhelper.h"
-#include "../dkv2/filehelper.h"
-#include "../dkv2/helper.h"
+#include "../DKV2/dbstructure.h"
+#include "../DKV2/dbtable.h"
+#include "../DKV2/dkdbhelper.h"
+#include "../DKV2/filehelper.h"
+#include "../DKV2/helper.h"
 
 #include "tst_db.h"
 // add necessary includes here
@@ -196,4 +195,3 @@ void tst_db::test_deleteRecord_wDep()
     QVERIFY(tableRecordCount("c") == 0);
 }
 
-QTEST_MAIN(tst_db)
