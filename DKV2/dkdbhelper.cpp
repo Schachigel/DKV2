@@ -591,9 +591,9 @@ QString ContractList_SQL(const QVector<dbfield> fields, QString filter)
     return sql;
 }
 
-QVariant ExecuteSingleValueSql(QString s)
+QVariant ExecuteSingleValueSql(QString s, QString con)
 {   LOG_ENTRY_and_EXIT;
-    QSqlQuery q;
+    QSqlQuery q(QSqlDatabase::database(con));
     q.prepare(s);
     if( !q.exec())
     {

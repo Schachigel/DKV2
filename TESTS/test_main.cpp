@@ -21,6 +21,9 @@ int main(int argc, char *argv[])
     ASSERT_TEST(new tst_db);
     ASSERT_TEST(new test_dkdbhelper);
 
-    if( status) qDebug() << "There were " << status << " errors";
+    if( status == 1) qDebug() << "\n>>>   There was an error   <<< ";
+    else if (status > 1) qDebug() << "\n>>>   There were " << status << " errors   <<<";
+    else qDebug() << "\n>>>   There were no errors   <<<";
+
     return status;
 }

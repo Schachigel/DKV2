@@ -1,5 +1,6 @@
 
 #include <QSqlDatabase>
+#include <QSqlQuery>
 #include <QString>
 #include <QtTest>
 
@@ -9,24 +10,12 @@
 #include "../DKV2/filehelper.h"
 #include "../DKV2/helper.h"
 
+#include "testhelper.h"
 #include "tst_db.h"
 // add necessary includes here
 
-int tst_db::tableRecordCount(QString tname)
-{
-    QSqlQuery q(QSqlDatabase::database(testCon));
-    if (q.exec("SELECT COUNT(*) FROM " + tname)) {
-        q.next();
-        qDebug() << "#Datensätze: " << q.record().value(0);
-        return q.record().value(0).toInt();
-    } else {
-        qCritical() << "selecting data failed " << q.lastError() << "\n" << q.lastQuery() << endl;
-        return -1;
-    }
-}
-
 void tst_db::init()
-{ //LOG_ENTRY_and_EXIT;
+{LOG_ENTRY_and_EXIT;
     if (QFile::exists(filename))
         QFile::remove(filename);
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", testCon);
@@ -38,7 +27,7 @@ void tst_db::init()
 }
 
 void tst_db::cleanup()
-{ //LOG_ENTRY_and_EXIT;
+{LOG_ENTRY_and_EXIT;
     QSqlDatabase::database().removeDatabase(testCon);
     QSqlDatabase::database().close();
     if (QFile::exists(filename))
@@ -47,14 +36,16 @@ void tst_db::cleanup()
 
 void tst_db::test_createSimpleTable()
 {
-    LOG_ENTRY_and_EXIT;
+
     dbstructure s;
     dbtable t("t");
     dbfield f("f");
     t.append(f);
     s.appendTable(t);
     QVERIFY2(s.createDb(QSqlDatabase::database(testCon)), "Database was not created");
-    QVERIFY2(QFile::exists(filename), "No database file found");
+
+    QVERIFY2(dbHasTable("t"), "Table was not created");
+    QVERIFY2(dbTableHasField("t", "f"), "Field was not created");
 }
 
 void tst_db::test_createSimpleTable2()
@@ -63,7 +54,12 @@ void tst_db::test_createSimpleTable2()
                         .appendTable(dbtable("Ad").append(dbfield("vname")).append(dbfield("nname")))
                         .appendTable(dbtable("cities").append(dbfield("plz")));
     QVERIFY2(s.createDb(QSqlDatabase::database(testCon)), "Database was not created");
-    QVERIFY2(QFile::exists(filename), "No database file found");
+
+    QVERIFY2(dbHasTable("Ad"), "Table Ad not found");
+    QVERIFY2(dbTableHasField("Ad", "vname"), "Field not found");
+    QVERIFY2(dbTableHasField("Ad", "nname"), "Field not found");
+    QVERIFY2(dbHasTable("cities"), "Table cities not found");
+    QVERIFY2(dbTableHasField("cities", "plz"), "Field not found");
 }
 
 void tst_db::test_SimpleTableAddData()
@@ -87,7 +83,7 @@ void tst_db::test_createSimpleTable_wRefInt()
     LOG_ENTRY_and_EXIT;
     dbstructure s;
     dbtable parent("p");
-    dbfield id("i", QVariant::Int, "PRIMARY KEY AUTOINCREMENT");
+    dbfield id("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT");
     parent.append(id);
     s.appendTable(parent);
     dbtable child("c");
@@ -98,26 +94,35 @@ void tst_db::test_createSimpleTable_wRefInt()
     child.append(parentId);
     s.appendTable(child);
     QVERIFY2(s.createDb(QSqlDatabase::database(testCon)), "Database was not created");
-    QVERIFY2(QFile::exists(filename), "No database file found");
+
+    QVERIFY2(dbHasTable("p"), "table p was not created");
+    QVERIFY2(dbTableHasField("p", "id"), "table p has no field id");
+    QVERIFY2(dbHasTable("c"), "table p was not created");
+    QVERIFY2(dbTableHasField("c", "id"), "table c has no field id");
+    QVERIFY2(dbTableHasField("c", "parent"), "table c has no field parent");
 }
 
 void tst_db::test_createSimpleTable_wRefInt2()
 {
     LOG_ENTRY_and_EXIT;
     dbstructure s = dbstructure()
-                        .appendTable(dbtable("p").append(
-                            dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT")));
-                        s.appendTable(
-                            dbtable("c")
-                                .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
-                                .append(dbfield("pid",
-                                                QVariant::Int,
-                                                "",
-                                                s["p"]["id"],
-                                                dbfield::refIntOption::onDeleteCascade)));
+                    .appendTable(dbtable("p").append(
+                        dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT")));
+    s.appendTable(
+        dbtable("c")
+            .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
+            .append(dbfield("pid",
+                QVariant::Int,
+                "",
+                s["p"]["id"],
+                dbfield::refIntOption::onDeleteCascade)));
     QVERIFY2(s.createDb(QSqlDatabase::database(testCon)), "Database was not created");
-    QVERIFY2(QFile::exists(filename), "No database file found");
-}
+
+    QVERIFY2(dbHasTable("p"), "table p was not created");
+    QVERIFY2(dbTableHasField("p", "id"), "table p has no field id");
+    QVERIFY2(dbHasTable("c"), "table p was not created");
+    QVERIFY2(dbTableHasField("c", "id"), "table c has no field id");
+    QVERIFY2(dbTableHasField("c", "pid"), "table c has no field pid");}
 
 void tst_db::test_addRecords_wDep()
 {
@@ -127,16 +132,15 @@ void tst_db::test_addRecords_wDep()
                             dbtable("p")
                                 .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
                                 .append(dbfield("name")));
-                        s.appendTable(
-                            dbtable("c")
-                                .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
-                                .append(dbfield("pid",
-                                                QVariant::Int,
-                                                "",
-                                                s["p"]["id"],
-                                                dbfield::refIntOption::onDeleteCascade)));
+    s.appendTable(
+        dbtable("c")
+            .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
+            .append(dbfield("pid",
+                QVariant::Int,
+                "",
+                s["p"]["id"],
+                dbfield::refIntOption::onDeleteCascade)));
     QVERIFY2(s.createDb(QSqlDatabase::database(testCon)), "Database was not created");
-    QVERIFY2(QFile::exists(filename), "No database file found");
 
     TableDataInserter tdi(s["p"]);
     tdi.setValue("name", "Holger");
@@ -162,14 +166,14 @@ void tst_db::test_deleteRecord_wDep()
                             dbtable("p")
                                 .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
                                 .append(dbfield("name")));
-                        s.appendTable(
-                            dbtable("c")
-                                .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
-                                .append(dbfield("pid",
-                                                QVariant::Int,
-                                                "",
-                                                s["p"]["id"],
-                                                dbfield::refIntOption::onDeleteCascade)));
+    s.appendTable(
+        dbtable("c")
+            .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
+            .append(dbfield("pid",
+                QVariant::Int,
+                "",
+                s["p"]["id"],
+                dbfield::refIntOption::onDeleteCascade)));
     QVERIFY2(s.createDb(QSqlDatabase::database(testCon)), "Database was not created");
     QVERIFY2(QFile::exists(filename), "No database file found");
 

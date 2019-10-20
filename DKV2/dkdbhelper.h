@@ -85,7 +85,7 @@ struct DbSummary
     double passiveDk;
     double WertAktiveDk;
 };
-QVariant ExecuteSingleValueSql(QString s);
+QVariant ExecuteSingleValueSql(QString s, QString connection="");
 void berechneZusammenfassung(DbSummary& dbs);
 
 

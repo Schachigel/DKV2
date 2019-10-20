@@ -12,8 +12,6 @@ public:
 
 private:
     const QString filename = "..\\data\\testdb.sqlite";
-    const QString testCon = "test_connection";
-    int tableRecordCount(QString table);
 
 signals:
 

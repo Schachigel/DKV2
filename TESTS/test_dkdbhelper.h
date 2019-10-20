@@ -21,8 +21,8 @@ private slots:
     //    void cleanupTestCase();
     void init();
     void cleanup();
-    void test_empty();
-    void test_empty2();
+    void test_querySingleValueInvalidQuery();
+    void test_querySingleValue();
 };
 
 #endif // TEST_DKDBHELPER_H
