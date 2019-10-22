@@ -50,4 +50,48 @@ void test_dkdbhelper::test_querySingleValue()
     QVERIFY2(hallo.toString() == "Hallo", "ExecuteSingleValueSql failed");
 }
 
+void test_dkdbhelper::test_querySingleValue_multipleResults()
+{
+    dbstructure s = dbstructure()
+        .appendTable(dbtable("t")
+            .append(dbfield("id", QVariant::Int))
+            .append(dbfield("f")));
+    s.createDb(QSqlDatabase::database(testCon));
+    TableDataInserter tdi(s["t"]);
+    tdi.setValue("id", 1);
+    tdi.setValue("f", "Hallo");
+    tdi.InsertData(QSqlDatabase::database(testCon));
+    tdi.setValue("id", 1);
+    tdi.setValue("f", "Hallo1");
+    tdi.InsertData(QSqlDatabase::database(testCon));
+    QVariant hallo = ExecuteSingleValueSql("SELECT [f] FROM [t] WHERE id=1", testCon);
+    QVERIFY2(hallo.type() == QVariant::Invalid , "ExecuteSingleValueSql failed");
+}
 
+void test_dkdbhelper::test_berechneZusammenfassung()
+{
+    dbstructure s = dbstructure()
+        .appendTable(dbtable("Vertraege")
+            .append(dbfield("Betrag", QVariant::Double))
+            .append(dbfield("Wert", QVariant::Double))
+            .append(dbfield("aktiv", QVariant::Bool)));
+    s.createDb(QSqlDatabase::database(testCon));
+
+    TableDataInserter tdi(s["Vertraege"]);
+    tdi.setValue("Betrag", 100.);
+    tdi.setValue("Wert", 101.);
+    tdi.setValue("aktiv", true);
+    tdi.InsertData(QSqlDatabase::database(testCon));
+    tdi.InsertData(QSqlDatabase::database(testCon));
+    tdi.setValue("Betrag", 200.);
+    tdi.setValue("Wert", 201.);
+    tdi.setValue("aktiv", false);
+    tdi.InsertData(QSqlDatabase::database(testCon));
+    tdi.InsertData(QSqlDatabase::database(testCon));
+    DbSummary dbs;
+    berechneZusammenfassung(dbs, testCon);
+    QVERIFY(dbs.aktiveDk == 200.);
+    QVERIFY(dbs.passiveDk == 400.);
+    QVERIFY(dbs.WertAktiveDk == 202.);
+
+}

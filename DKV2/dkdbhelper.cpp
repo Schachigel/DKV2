@@ -503,7 +503,7 @@ int VertragsDaten::speichereVertrag()
     return -1;
 }
 
-bool VertragAktivieren( int ContractId, QDate activationDate)
+bool VertragAktivieren( int ContractId, const QDate& activationDate)
 {   LOG_ENTRY_and_EXIT;
 
     QSqlQuery updateQ;
@@ -516,7 +516,7 @@ bool VertragAktivieren( int ContractId, QDate activationDate)
     return ret;
 }
 
-bool passivenVertragLoeschen(QString index)
+bool passivenVertragLoeschen(const QString& index)
 {   LOG_ENTRY_and_EXIT;
     if( ExecuteSingleValueSql("SELECT [aktiv] FROM [Vertraege] WHERE id=" +index).toBool())
     {
@@ -532,15 +532,26 @@ bool passivenVertragLoeschen(QString index)
     return true;
 }
 
-bool aktivenVertragLoeschen(const int index, const QDate ende, double& neuerWert, double& davonZins)
+bool aktivenVertragLoeschen(const int index, const QDate /*ende*/, double& /*neuerWert*/, double& /*davonZins*/)
 {   LOG_ENTRY_and_EXIT;
-    if( !ExecuteSingleValueSql("SELECT [aktiv] FROM [Vertraege] WHERE id=" +QString::number(index)).toBool())
+    if( !ExecuteSingleValueSql("[aktiv]", "[Vertraege]", "id=" +QString::number(index)).toBool())
     {
         qWarning() << "will not delete passive contract w id:" << index;
         return false;
     }
-    QSqlQuery currentValues;
-    currentValues.exec("SELECT [Vertraege.Wert], [Vertraege.LetzteZinsberechnung], [Zinssaetze.Zinssatz]");
+    QString sql = "SELECT [Vertrage.Betrag], [Vertraege.Wert], [Vertraege.LetzteZinsberechnung], [Zinssaetze.Zinssatz] ";
+        sql += "FROM [Vertrage], [Zinssatz] ";
+        sql += "WHERE id=" + QString::number(index) + " AND [Zinssaetze].[id]=[Vertraege].[ZSatz]";
+
+   QVector<dbfield> fields;
+   fields.push_back(dkdbstructur["Vertraege"]["Betrag"]);
+   fields.push_back(dkdbstructur["Vertraege"]["Wert"]);
+   fields.push_back(dkdbstructur["Vertraege"]["ZSatz"]);
+   fields.push_back(dkdbstructur["Zinssaetze"]["Zinssatz"]);
+
+   QSqlRecord rec = ExecuteSingleRecordSql(fields, "[Vertraege].[id]="+QString::number(index));
+
+
     /* to do
      * - ende < letzteZinsberechnung -> ERROR
      * - calculate time difference ende-letzteZinsberechnung
@@ -551,7 +562,7 @@ bool aktivenVertragLoeschen(const int index, const QDate ende, double& neuerWert
     return true;
 }
 
-QString ContractList_SELECT(const QVector<dbfield> fields)
+QString ContractList_SELECT(const QVector<dbfield>& fields)
 {   LOG_ENTRY_and_EXIT;
     QString sql("SELECT ");
     for( int i = 0; i < fields.size(); i++)
@@ -566,7 +577,7 @@ QString ContractList_FROM()
 {
     return  "FROM Vertraege, Kreditoren, Zinssaetze";
 }
-QString ContractList_WHERE(QString Filter)
+QString ContractList_WHERE(const QString& Filter)
 {
     QString s ("WHERE Kreditoren.id = Vertraege.KreditorId AND Vertraege.ZSatz = Zinssaetze.id");
     bool isNumber (false);
@@ -582,7 +593,7 @@ QString ContractList_WHERE(QString Filter)
     }
     return s;
 }
-QString ContractList_SQL(const QVector<dbfield> fields, QString filter)
+QString ContractList_SQL(const QVector<dbfield>& fields, const QString& filter)
 {
     QString sql = ContractList_SELECT(fields) + " "
            + ContractList_FROM() + " "
@@ -591,7 +602,40 @@ QString ContractList_SQL(const QVector<dbfield> fields, QString filter)
     return sql;
 }
 
-QVariant ExecuteSingleValueSql(QString s, QString con)
+QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString& where, const QString& con)
+{
+    QString Select ("SELECT ");
+    QString From ("FROM ");
+    QString Where("WHERE " + where);
+
+    QStringList usedTables;
+    for(int i=0; i < fields.count(); i++)
+    {
+        const dbfield& f = fields[i];
+        if( i!=0)
+            Select += ", ";
+        Select += "[" + f.tableName() + "].[" + f.name() + "]";
+
+        if( !usedTables.contains(f.tableName()))
+        {
+            if( usedTables.count()!= 0)
+                From += ", ";
+            usedTables.push_back(f.tableName());
+            From += "[" + f.tableName() +"]";
+        }
+
+        refFieldInfo ref = f.getReferenzeInfo();
+        if( !ref.tablename.isEmpty())
+        {
+            Where += " AND [" + ref.tablename + "].[" + ref.name + "]=[" + f.tableName() +"].[" + f.name() +"]";
+        }
+    }
+    QString sql = Select + " " + From + " " + Where;
+    qDebug() << sql;
+    return QSqlRecord();
+}
+
+QVariant ExecuteSingleValueSql(const QString& s, const QString& con)
 {   LOG_ENTRY_and_EXIT;
     QSqlQuery q(QSqlDatabase::database(con));
     q.prepare(s);
@@ -609,12 +653,15 @@ QVariant ExecuteSingleValueSql(QString s, QString con)
     return q.value(0);
 }
 
-void berechneZusammenfassung(DbSummary& dbs)
+QVariant ExecuteSingleValueSql( const QString& field, const QString& table, const QString& where, const QString& con)
 {
-    QString SqlAktive  ="SELECT SUM([Betrag]) FROM [Vertraege] WHERE [aktiv] = 1";
-    QString SqlPassive ="SELECT SUM([Betrag]) FROM [Vertraege] WHERE [aktiv] = 0";
-    QString SqlWertAktive ="SELECT SUM([Wert]) FROM [Vertraege] WHERE [aktiv] = 1";
-    dbs.aktiveDk  = ExecuteSingleValueSql(SqlAktive).toReal();
-    dbs.passiveDk = ExecuteSingleValueSql(SqlPassive).toReal();
-    dbs.WertAktiveDk = ExecuteSingleValueSql(SqlWertAktive).toReal();
+    QString sql = "SELECT " + field + " FROM " + table + " WHERE " + where;
+    return ExecuteSingleValueSql(sql, con);
+}
+
+void berechneZusammenfassung(DbSummary& dbs, QString con)
+{
+    dbs.aktiveDk  = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 1", con).toReal();
+    dbs.passiveDk = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 0", con).toReal();
+    dbs.WertAktiveDk = ExecuteSingleValueSql("SUM([Wert])", "[Vertraege]", "[aktiv] = 1", con).toReal();
 }

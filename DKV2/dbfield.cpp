@@ -2,6 +2,14 @@
 #include "dbfield.h"
 #include "dbtable.h"
 
+dbfield::dbfield(QString name,
+        QVariant::Type type/*=QVariant::String*/, QString td/*=""*/,
+        dbfield ref /*= dbfield()*/, refIntOption opt /*= refIntOption::non*/)
+    : QSqlField(name, type), SqlTypeDetails(td), option(opt)
+{
+    reference.tablename = ref.tableName();
+    reference.name = ref.name();
+}
 bool dbfield::operator ==(const dbfield &b) const
 {
     return ((tableName() == b.tableName())
@@ -64,8 +72,8 @@ QString dbfield::getCreateSqlSnippet()
     return s;
 }
 
-refFieldInfo dbfield::getReferenzeInfo()
+refFieldInfo dbfield::getReferenzeInfo() const
 {
-    return refFieldInfo{tableName(), name()};
+    return refFieldInfo{reference.tablename, reference.name};
 }
 
