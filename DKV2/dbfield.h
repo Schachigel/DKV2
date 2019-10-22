@@ -26,13 +26,14 @@ public: // types
     };
     // constr. destr. & access fu
     explicit dbfield() : QSqlField(){}
-    dbfield(QString n, QVariant::Type t=QVariant::String,
-            QString ti="", dbfield ref = dbfield(), refIntOption opt = refIntOption::non) :
-          QSqlField(n, t), SqlTypeDetails(ti), option(opt)  { reference.tablename = ref.tableName(); reference.name = ref.name();}
+    dbfield(QString name,
+            QVariant::Type type=QVariant::String,
+            QString td="", dbfield ref = dbfield(), refIntOption opt = refIntOption::non);
+//     :  QSqlField(name, type), SqlTypeDetails(td), option(opt);
 
     bool operator ==(const dbfield &b) const;
     QString typeInfo()     const {return SqlTypeDetails;}
-    refFieldInfo getReferenzeInfo();
+    refFieldInfo getReferenzeInfo() const;
     // interface
     QString getCreateSqlSnippet();
 

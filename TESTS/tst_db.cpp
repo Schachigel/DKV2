@@ -199,3 +199,30 @@ void tst_db::test_deleteRecord_wDep()
     QVERIFY(tableRecordCount("c") == 0);
 }
 
+void tst_db::dbfieldCopyConst()
+{
+    LOG_ENTRY_and_EXIT;
+    dbstructure s = dbstructure()
+                        .appendTable(
+                            dbtable("p")
+                                .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
+                                .append(dbfield("name")));
+    s.appendTable(
+        dbtable("c")
+            .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
+            .append(dbfield("pid",
+                QVariant::Int,
+                "",
+                s["p"]["id"],
+                dbfield::refIntOption::onDeleteCascade)));
+    QVERIFY2(s.createDb(QSqlDatabase::database(testCon)), "Database was not created");
+
+    TableDataInserter tdi(s["p"]);
+    tdi.setValue("name", "Holger");
+    QVERIFY(tdi.InsertData(QSqlDatabase::database(testCon)));
+    QVERIFY(tableRecordCount("p") == 1);
+    dbfield cp(s["c"]["pid"]);
+    QVERIFY(!cp.getReferenzeInfo().tablename.isEmpty());
+    QVERIFY(!cp.getReferenzeInfo().name.isEmpty());
+}
+

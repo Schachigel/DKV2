@@ -70,14 +70,14 @@ struct VertragsDaten
     bool BelegZuNeuemVertragSpeichern(const int vid);
 };
 // bool VertragVerbuchen(const VertragsDaten& c);
-bool VertragAktivieren( int ContractId, QDate activationDate);
-bool passivenVertragLoeschen(QString index);
+bool VertragAktivieren( int ContractId, const QDate& activationDate);
+bool passivenVertragLoeschen(const QString& index);
 bool aktivenVertragLoeschen(const int index, const QDate endD, double& neuerWert, double& davonZins);
 
-QString ContractList_SELECT(QVector<dbfield> f);
+QString ContractList_SELECT(QVector<dbfield>& f);
 QString ContractList_FROM();
-QString ContractList_WHERE(QString filter);
-QString ContractList_SQL(QVector<dbfield> f, QString filter);
+QString ContractList_WHERE(const QString& filter);
+QString ContractList_SQL(const QVector<dbfield>& f, const QString& filter);
 
 struct DbSummary
 {
@@ -85,8 +85,11 @@ struct DbSummary
     double passiveDk;
     double WertAktiveDk;
 };
-QVariant ExecuteSingleValueSql(QString s, QString connection="");
-void berechneZusammenfassung(DbSummary& dbs);
 
+QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString& where, const QString& con="");
+QVariant ExecuteSingleValueSql( const QString& s, const QString& connection="");
+QVariant ExecuteSingleValueSql( const QString& field, const QString& table, const QString& where, const QString& con="");
+
+void berechneZusammenfassung(DbSummary& dbs, QString con="");
 
 #endif // DKDBHELPER_H

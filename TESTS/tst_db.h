@@ -27,5 +27,6 @@ private slots:
     void test_createSimpleTable_wRefInt2();
     void test_addRecords_wDep();
     void test_deleteRecord_wDep();
+    void dbfieldCopyConst();
 };
 #endif // TST_DB_H

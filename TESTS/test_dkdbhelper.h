@@ -23,6 +23,8 @@ private slots:
     void cleanup();
     void test_querySingleValueInvalidQuery();
     void test_querySingleValue();
+    void test_querySingleValue_multipleResults();
+    void test_berechneZusammenfassung();
 };
 
 #endif // TEST_DKDBHELPER_H
