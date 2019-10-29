@@ -14,6 +14,6 @@ int TageBisJahresende(const QDate& d);
 int TageSeitJahresAnfang_a(const QDate& d);
 int TageSeitJahresAnfang(const QDate& d);
 
-double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool zumJahresende=true, const bool tesa=true);
+double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool tesa=true);
 
 #endif // FINHELPER_H

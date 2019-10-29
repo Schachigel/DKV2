@@ -9,7 +9,10 @@ double round(const double d, const int stellen)
 {
     return qRound(d * pow(10,stellen))/pow(10,stellen);
 }
-
+double round2(const double d)
+{
+    return round( d, 2);
+}
 double round6(const double d)
 {
     return round( d, 6);
@@ -95,12 +98,19 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
 {
     if( von > bis)
         qCritical() << "Zinseszins kann nicht berechnet werden - ungültige Parameter";
-    if( von.year() == bis.year())
+    int TageImErstenJahr = TageBisJahresende(von);
+    double ZinsImErstenJahr = double(TageImErstenJahr)/360. *zins/100. *wert;
+    double gesamtZins (ZinsImErstenJahr);
+
+    double zwischenWert = (tesa) ? (wert+ZinsImErstenJahr) : (wert);
+    for( int jahre=0; jahre < bis.year()-von.year()-1; jahre++)
     {
-        return TageZwischen(von, bis);
+        double JahresZins = zwischenWert *zins/100.;
+        gesamtZins += JahresZins;
+        zwischenWert = (tesa) ? (zwischenWert+JahresZins) : zwischenWert;
     }
-    int tage = TageBisJahresende(von);
-    tage += 360* (bis.year() - von.year() -1);
-    tage += TageSeitJahresAnfang(bis);
-    return tage*zins*wert;
+    int phase3 = TageSeitJahresAnfang(bis);
+    double Zins2 = double(phase3)/360. *zins/100. *zwischenWert;
+    gesamtZins += Zins2;
+    return round2(gesamtZins);
 }

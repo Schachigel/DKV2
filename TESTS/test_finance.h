@@ -25,6 +25,8 @@ private slots:
     void test_TageSeitJahresanfang();
     void test_TageZwischen_data();
     void test_TageZwischen();
+    void test_ZinsesZins_data();
+    void test_ZinsesZins();
 };
 
 #endif // TEST_FINANCE_H
