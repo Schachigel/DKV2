@@ -5,6 +5,9 @@
 #include "test_dkdbhelper.h"
 #include "test_finance.h"
 
+#ifndef TESTLIB_SELFCOVERAGE_START
+#define TESTLIB_SELFCOVERAGE_START(a)
+#endif
 
 // QTEST_MAIN(tst_db)
 int main(int argc, char *argv[])

@@ -1,4 +1,14 @@
+#if defined(__APPLE__)
+#include <mach/mach_time.h>
+uint32_t GetTickCount() {
+    uint64_t mat = mach_absolute_time();
+    uint32_t mul = 0x80d9594e;
+    return ((((0xffffffff & mat) * mul) >> 32) + (mat >> 32) * mul) >> 23;
+}
+#else
 #include <windows.h>
+#endif
+
 #include <QSqlDatabase>
 #include <QSqlDriver>
 #include <QSqlError>
