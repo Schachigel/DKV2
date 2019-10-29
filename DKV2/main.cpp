@@ -14,7 +14,11 @@
 #include <qdir.h>
 #include <QTextStream>
 
+#if defined (Q_OS_WIN)
 #include <windows.h>
+#else
+#define ERROR_FILE_NOT_FOUND 5
+#endif
 
 #include <helper.h>
 

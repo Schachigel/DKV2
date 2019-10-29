@@ -1,6 +1,10 @@
 #include <QtCore>
 
+#if defined(Q_OS_WIN)
 #include "windows.h"
+#else
+#include <stdlib.h>
+#endif
 #include <qpair.h>
 #include <qfiledialog.h>
 #include <QRandomGenerator>
@@ -201,7 +205,12 @@ void MainWindow::on_actioncreateSampleData_triggered()
 }
 void MainWindow::on_actionanzeigenLog_triggered()
 {LOG_ENTRY_and_EXIT;
+    #if defined(Q_OS_WIN)
     ::ShellExecuteA(nullptr, "open", logFilePath().toUtf8(), "", QDir::currentPath().toUtf8(), 1);
+    #else
+    QString cmd = "open " + logFilePath().toUtf8();
+    system(cmd.toUtf8().constData());
+    #endif
 }
 
 // new DK Geber
