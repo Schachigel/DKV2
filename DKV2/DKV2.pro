@@ -31,6 +31,7 @@ SOURCES += \
         dbtable.cpp \
         dkdbhelper.cpp \
         filehelper.cpp \
+        finhelper.cpp \
         helper.cpp \
         itemformatter.cpp \
         main.cpp \
@@ -43,6 +44,8 @@ HEADERS += \
         dbtable.h \
         dkdbhelper.h \
         filehelper.h \
+        financaltimespan.h \
+        finhelper.h \
         helper.h \
         itemformatter.h \
         mainwindow.h
@@ -57,5 +60,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 DISTFILES += \
+    ../DOCS/Zinsberechnungsmethode.txt \
+    ../DOCS/Zinstage.xlsx \
     DOKU \
     remember.txt

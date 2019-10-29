@@ -11,6 +11,7 @@
 
 #include "helper.h"
 #include "filehelper.h"
+#include "finhelper.h"
 #include "dkdbhelper.h"
 #include "dbstructure.h"
 
@@ -126,34 +127,34 @@ bool EigenschaftenEinfuegen()
 bool DKDatenbankAnlegen(const QString& filename)
 {    LOG_ENTRY_and_EXIT;
 
-    DatenbankverbindungSchliessen();
-    if( QFile(filename).exists())
-    {
-        backupFile(filename);
-        QFile(filename).remove();
-    }
-    dbCloser closer;
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(filename);
+     DatenbankverbindungSchliessen();
+      if( QFile(filename).exists())
+      {
+          backupFile(filename);
+          QFile(filename).remove();
+      }
+      dbCloser closer;
+       QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+        db.setDatabaseName(filename);
 
-    if( !db.open()) return false;
-    bool ret = true;
-    closer.set(&db);
-    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
-//    db.transaction();
-    ret &= dkdbstructur.createDb(db);
-    ret &= ZinssaetzeEinfuegen();
-    ret &= BuchungsartenEinfuegen();
-    ret &= EigenschaftenEinfuegen();
-//    if( ret) db.commit(); else db.rollback();
+         if( !db.open()) return false;
+         bool ret = true;
+          closer.set(&db);
+           QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
+            //    db.transaction();
+            ret &= dkdbstructur.createDb(db);
+             ret &= ZinssaetzeEinfuegen();
+              ret &= BuchungsartenEinfuegen();
+               ret &= EigenschaftenEinfuegen();
+                //    if( ret) db.commit(); else db.rollback();
 
-    if (istValideDatenbank(filename))
-        return ret;
-    else
-    {
-        qCritical() << "Newly created db is invalid. We should panic";
-        return false;
-    }
+                if (istValideDatenbank(filename))
+                    return ret;
+                else
+                {
+                    qCritical() << "Newly created db is invalid. We should panic";
+                    return false;
+                }
 }
 
 bool hatAlleTabellen(QSqlDatabase& db)
@@ -241,8 +242,8 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
     for( int i = 0; i<AnzahlDatensaetze; i++)
     {
         KreditorDaten p{ Vornamen [rand.bounded(Vornamen.count ())], Nachnamen[rand.bounded(Nachnamen.count())],
-        Strassen[rand.bounded(Strassen.count())], Cities[rand.bounded(Cities.count())].first, Cities[rand.bounded(Cities.count())].second,
-        "iban xxxxxxxxxxxxxxxxx", "BICxxxxxxxx"};
+                    Strassen[rand.bounded(Strassen.count())], Cities[rand.bounded(Cities.count())].first, Cities[rand.bounded(Cities.count())].second,
+                    "iban xxxxxxxxxxxxxxxxx", "BICxxxxxxxx"};
         int neueKreditorId =0;
         if( 0 > (neueKreditorId = KreditorDatenSpeichern(p)))
         {
@@ -270,7 +271,7 @@ int KreditorDatenSpeichern(const KreditorDaten& p)
 
     QSqlQuery query; // assuming the app database is open
     QString sql ("INSERT INTO Kreditoren (Vorname, Nachname, Strasse, Plz, Stadt, IBAN, BIC)"\
-        " VALUES ( :vorn, :nachn, :strasse, :plz, :stadt, :iban, :bic)");
+                 " VALUES ( :vorn, :nachn, :strasse, :plz, :stadt, :iban, :bic)");
     query.prepare(sql);
     query.bindValue(":vorn", p.Vorname);
     query.bindValue(":nachn", p.Nachname);
@@ -382,7 +383,7 @@ QSqlRecord DatensatzFuerBelegNeuerVertrag(const int VertragId, const QVector<dbf
     }
     sql += " FROM Vertraege, Kreditoren, Zinssaetze "
            " WHERE Vertraege.id = " + QString::number(VertragId) +
-           " AND Kreditoren.id = Vertraege.KreditorId AND Vertraege.ZSatz = Zinssaetze.id ";
+            " AND Kreditoren.id = Vertraege.KreditorId AND Vertraege.ZSatz = Zinssaetze.id ";
 
     QSqlQuery all;
     if( !all.exec(sql))
@@ -532,7 +533,7 @@ bool passivenVertragLoeschen(const QString& index)
     return true;
 }
 
-bool aktivenVertragLoeschen(const int index, const QDate /*ende*/, double& /*neuerWert*/, double& /*davonZins*/)
+bool aktivenVertragLoeschen(const int index, const QDate ende, double& neuerWert, double& davonZins)
 {   LOG_ENTRY_and_EXIT;
     if( !ExecuteSingleValueSql("[aktiv]", "[Vertraege]", "id=" +QString::number(index)).toBool())
     {
@@ -540,25 +541,30 @@ bool aktivenVertragLoeschen(const int index, const QDate /*ende*/, double& /*neu
         return false;
     }
     QString sql = "SELECT [Vertrage.Betrag], [Vertraege.Wert], [Vertraege.LetzteZinsberechnung], [Zinssaetze.Zinssatz] ";
-        sql += "FROM [Vertrage], [Zinssatz] ";
-        sql += "WHERE id=" + QString::number(index) + " AND [Zinssaetze].[id]=[Vertraege].[ZSatz]";
+    sql += "FROM [Vertrage], [Zinssatz] ";
+    sql += "WHERE id=" + QString::number(index) + " AND [Zinssaetze].[id]=[Vertraege].[ZSatz]";
 
-   QVector<dbfield> fields;
-   fields.push_back(dkdbstructur["Vertraege"]["Betrag"]);
-   fields.push_back(dkdbstructur["Vertraege"]["Wert"]);
-   fields.push_back(dkdbstructur["Vertraege"]["ZSatz"]);
-   fields.push_back(dkdbstructur["Zinssaetze"]["Zinssatz"]);
+    QVector<dbfield> fields;
+    // fields.push_back(dkdbstructur["Vertraege"]["Betrag"]);
+    fields.push_back(dkdbstructur["Vertraege"]["Wert"]);
+    fields.push_back(dkdbstructur["Vertraege"]["LetzteZinsberechnung"]);
+    fields.push_back(dkdbstructur["Vertraege"]["ZSatz"]);
+    fields.push_back(dkdbstructur["Zinssaetze"]["Zinssatz"]);
 
-   QSqlRecord rec = ExecuteSingleRecordSql(fields, "[Vertraege].[id]="+QString::number(index));
+    QSqlRecord rec = ExecuteSingleRecordSql(fields, "[Vertraege].[id]="+QString::number(index));
+    double wert (rec.value("Wert").toReal());
+    // double betrag(rec.value("Betrag").toReal());
+    double zinssatz(rec.value("Zinssatz").toReal());
+    QDate zinsStart(rec.value("LetzteZinsberechnung").toDate());
 
+    if( ende < zinsStart)
+    {
+        qCritical() << "Vertragsende VOR Beginn der Zinsphase";
+        return false;
+    }
 
-    /* to do
-     * - ende < letzteZinsberechnung -> ERROR
-     * - calculate time difference ende-letzteZinsberechnung
-     * - calculate davonZins = Wert*(ZinsProZeiteinheit * time differenz)
-     * - calculate neuerWert = Wert+davonZins
-     * return
-     */
+//    davonZins = ZinsesZins( zinssatz, wert, zinsStart, ende);
+    neuerWert = wert + davonZins;
     return true;
 }
 
@@ -596,8 +602,8 @@ QString ContractList_WHERE(const QString& Filter)
 QString ContractList_SQL(const QVector<dbfield>& fields, const QString& filter)
 {
     QString sql = ContractList_SELECT(fields) + " "
-           + ContractList_FROM() + " "
-           + ContractList_WHERE(filter);
+            + ContractList_FROM() + " "
+            + ContractList_WHERE(filter);
     qDebug() << "ContractList SQL: \n" << sql;
     return sql;
 }

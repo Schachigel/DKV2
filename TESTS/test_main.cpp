@@ -3,6 +3,8 @@
 #include <qtest.h>
 #include "tst_db.h"
 #include "test_dkdbhelper.h"
+#include "test_finance.h"
+
 
 // QTEST_MAIN(tst_db)
 int main(int argc, char *argv[])
@@ -18,8 +20,10 @@ int main(int argc, char *argv[])
       delete obj;
     };
 
-    ASSERT_TEST(new tst_db);
-    ASSERT_TEST(new test_dkdbhelper);
+//    ASSERT_TEST(new tst_db);
+//    ASSERT_TEST(new test_dkdbhelper);
+    ASSERT_TEST(new test_finance);
+
 
     if( status == 1) qDebug() << "\n>>>   There was an error   <<< ";
     else if (status > 1) qDebug() << "\n>>>   There were " << status << " errors   <<<";

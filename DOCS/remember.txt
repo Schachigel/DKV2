@@ -16,6 +16,8 @@ to do: Doku als Writer Dokument
     cave: zins f finanzamt ausweisen?
   nicht tesaurierend
     -> geht nicht, neuen Vertrag anlegen
+?! ausgezahlte Zinsen "merken" zur späteren Anzeige?
+
 
 Menüeintrag "Unterstützung"
 - "entpersonalisierte" db kopie anlegen
@@ -30,7 +32,6 @@ Menüeintrag "Datei"
 * P Liste: Spalte "Anzahl Verträge"?
 
 next:
-- verträge u Belege pro person auflisten
 
 ? P Liste r-click Menu anlegen
 - isValidDb: check colums
@@ -42,3 +43,4 @@ DONE
 - Verträge: Sortierung beim Klick auf TableHeader (OK)
 * P Liste: Suchen / Filtern Vorname.Nachname (OK)
 - verträge ändern? oder lieber nicht (NOT)
+- verträge u Belege pro person auflisten
