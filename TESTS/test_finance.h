@@ -23,8 +23,8 @@ private slots:
     void test_TageBisJahresende();
     void test_TageSeitJahresanfang_data();
     void test_TageSeitJahresanfang();
-    void test_TageZwischen_data();
-    void test_TageZwischen();
+//    void test_TageZwischen_data();
+//    void test_TageZwischen();
     void test_ZinsesZins_data();
     void test_ZinsesZins();
 };
