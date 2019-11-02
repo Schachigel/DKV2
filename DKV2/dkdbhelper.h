@@ -72,7 +72,7 @@ struct VertragsDaten
 // bool VertragVerbuchen(const VertragsDaten& c);
 bool VertragAktivieren( int ContractId, const QDate& activationDate);
 bool passivenVertragLoeschen(const QString& index);
-bool aktivenVertragLoeschen(const int index, const QDate endD, double& neuerWert, double& davonZins);
+bool VertragsdatenZurLoeschung(const int index, const QDate endD, double& neuerWert, double& davonZins);
 
 QString ContractList_SELECT(QVector<dbfield>& f);
 QString ContractList_FROM();
@@ -85,10 +85,6 @@ struct DbSummary
     double passiveDk;
     double WertAktiveDk;
 };
-
-QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString& where, const QString& con="");
-QVariant ExecuteSingleValueSql( const QString& s, const QString& connection="");
-QVariant ExecuteSingleValueSql( const QString& field, const QString& table, const QString& where, const QString& con="");
 
 void berechneZusammenfassung(DbSummary& dbs, QString con="");
 

@@ -545,12 +545,12 @@ void MainWindow::on_actionVertrag_Beenden_triggered()
     QString Nachname = ui->contractsTableView->model()->data(mi.siblingAtColumn(2)).toString();
     QString Wert = ui->contractsTableView->model()->data(mi.siblingAtColumn(4)).toString();
 
-    QString msg("<h3>Wenn Sie einen Vertrag beenden wird der Zins abschließend berechnet und der Auszahlungsbetrag ermittelt.<br>"
-                "\nUm den Vertrag von %1 %2 mit dem Wert %3 Euro jetzt zu beenden geben Sie das Datum des Vertragendes ein und klicken Sie OK");
-    msg = msg.arg(Vorname, Nachname, Wert);
+    QString getDateMsg("<h3>Wenn Sie einen Vertrag beenden wird der Zins abschließend berechnet und der Auszahlungsbetrag ermittelt.<br></h3>"
+                "Um den Vertrag von %1 %2 mit dem Wert %3 Euro jetzt zu beenden geben Sie das Datum des Vertragendes ein und klicken Sie OK");
+    getDateMsg = getDateMsg.arg(Vorname, Nachname, Wert);
 
     askDateDlg dlg( this, QDate::currentDate());
-    dlg.setMsg(msg);
+    dlg.setMsg(getDateMsg);
     dlg.setDateLabel("Ende der Zinsberechnung:");
     if( QDialog::Accepted != dlg.exec())
     {
@@ -560,14 +560,21 @@ void MainWindow::on_actionVertrag_Beenden_triggered()
 
     double neuerWert{0.};
     double davonZins{0.};
-    aktivenVertragLoeschen( index, dlg.getDate(), neuerWert, davonZins);
+    VertragsdatenZurLoeschung( index, dlg.getDate(), neuerWert, davonZins);
+    QString confirmDeleteMsg("<h3>Vertragsabschluß</h3><br>Wert zum Vertragsende: %1 Euro<br>Zins der letzten Zinsphase: %2 Euro<br>"\
+                             "Soll der Vertrag gelöscht werden?");
+    confirmDeleteMsg = confirmDeleteMsg.arg(QString::number(neuerWert), QString::number(davonZins));
+    if( QMessageBox::Yes != QMessageBox::question(this, "Vertrag löschen?", confirmDeleteMsg))
+        return;
+
+
 }
 
 QString prepareOverviewPage()
 {LOG_ENTRY_and_EXIT;
     // Summe der Direktkredite,
     // versprochene DK (inaktive DK)
-    // Zinen pa, davon auszuzahlen
+    // Zinsen pa, davon auszuzahlen
     DbSummary dbs;
     berechneZusammenfassung(dbs);
     QString lbl ("<html><body><H1>Übersicht</H1>"

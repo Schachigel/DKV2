@@ -1,5 +1,13 @@
 to do: Doku als Writer Dokument
 
+Buchungen Refactoring:
+- neuen Vertrag Buchung prüfen (sqliteAdmin Anzeigefehler?)
+- weitere Buchungen:
+** Kreditor anlegen,
+** aktiven Vertrag löschen,
+** passiven Vertrag löscen
+
+
 + Buchungen:
 ++ Vertragsbeendigung
   Zins berechnen und zum Wert hinzufügen
@@ -27,7 +35,7 @@ Menüeintrag "Datei"
 
 * MRU files handling (die letzten geöffneten Dateien öffnen)?
 * Fenster Position merken / beim Start setzen (Multi Screen)
-* revisit logging: remove dev logging, improve error logging  
+* revisit logging: remove dev logging, improve error logging
 ** alternativ: switch loggin default not to log qDebug but only qWarn and qCritical
 * P Liste: Spalte "Anzahl Verträge"?
 

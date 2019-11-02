@@ -7,11 +7,6 @@
 #include <QDebug>
 #include "helper.h"
 
-
-//Define MACRO for easy use for end user.
-#define LOG_ENTRY_EXIT_FOR(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
-#define LOG_ENTRY_and_EXIT  LOG_ENTRY_EXIT_FOR(__func__)
-
 QFile* outFile_p;
 int functionlogging::depth =0;
 

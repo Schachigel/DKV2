@@ -5,6 +5,7 @@
 #include <QtTest>
 
 #include "../DKV2/helper.h"
+#include "../DKV2/sqlhelper.h"
 #include "../DKV2/dkdbhelper.h"
 
 #include "test_dkdbhelper.h"

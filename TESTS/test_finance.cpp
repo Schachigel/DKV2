@@ -65,117 +65,6 @@ void test_finance::test_TageSeitJahresanfang()
 
 }
 
-/*
-void test_finance::test_TageZwischen_data()
-{
-    struct VonBisTage
-    {
-        QDate von;
-        QDate bis;
-        int tage;
-    } testdata[]{
-
-    // leap year
-        // start at BoY
-    {QDate(2016, 1,  1), QDate(2016,  1,  2),  1},
-    {QDate(2016, 1,  1), QDate(2016,  1, 31), 29},
-    {QDate(2016, 1,  1), QDate(2016,  2,  1), 30},
-    {QDate(2016, 1,  1), QDate(2016,  2, 15), 44},
-        // ends around year end
-    {QDate(2016, 1,  1), QDate(2016, 12, 29), 358},
-    {QDate(2016, 1,  1), QDate(2016, 12, 30), 359},
-    {QDate(2016, 1,  1), QDate(2016, 12, 31), 359},
-    {QDate(2016, 3,  3), QDate(2016, 12, 29), 296},
-    {QDate(2016, 3,  3), QDate(2016, 12, 30), 297},
-    {QDate(2016, 3,  3), QDate(2016, 12, 31), 297},
-        // starts around end of feb
-    {QDate(2016, 2, 28), QDate(2016,  2, 29),  1},
-    {QDate(2016, 2, 28), QDate(2016,  3,  1),  3},
-    {QDate(2016, 2, 28), QDate(2016,  3, 13), 15},
-    {QDate(2016, 2, 29), QDate(2016,  3,  1),  2},
-    {QDate(2016, 2, 29), QDate(2016,  3, 13), 14},
-        // end around end of feb
-    {QDate(2016, 1,  5), QDate(2016,  2, 28), 53},
-    {QDate(2016, 1,  5), QDate(2016,  2, 29), 54},
-    {QDate(2016, 1,  5), QDate(2016,  3,  1), 56},
-        // starts around 30 day month
-    {QDate(2016, 4,  29), QDate(2016,  11,  9), 190},
-    {QDate(2016, 4,  30), QDate(2016,  11,  9), 189},
-    {QDate(2016, 5,   1), QDate(2016,  11,  9), 188},
-        // ends around 30 day month
-    {QDate(2016, 1,  5), QDate(2016,  4, 29), 114},
-    {QDate(2016, 1,  5), QDate(2016,  4, 30), 115},
-    {QDate(2016, 1,  5), QDate(2016,  5,  1), 116},
-        // starts around 31 day month
-    {QDate(2016, 8,  30), QDate(2016,  11,  9), 69},
-    {QDate(2016, 8,  31), QDate(2016,  11,  9), 69},
-    {QDate(2016, 9,   1), QDate(2016,  11,  9), 68},
-        // ends around 31 day month
-    {QDate(2016, 1,  5), QDate(2016,  5, 30), 145},
-    {QDate(2016, 1,  5), QDate(2016,  5, 31), 145},
-    {QDate(2016, 1,  5), QDate(2016,  6,  1), 146},
-
-    // NOT ly
-        // start at BoY
-    {QDate(2017, 1,  1), QDate(2017,  1,  2),  1},
-    {QDate(2017, 1,  1), QDate(2017,  1, 31), 29},
-    {QDate(2017, 1,  1), QDate(2017,  2,  1), 30},
-    {QDate(2017, 1,  1), QDate(2017,  2, 15), 44},
-        // ends around year end
-    {QDate(2017, 1,  1), QDate(2017, 12, 29), 358},
-    {QDate(2017, 1,  1), QDate(2017, 12, 30), 359},
-    {QDate(2017, 1,  1), QDate(2017, 12, 31), 359},
-    {QDate(2017, 3,  3), QDate(2017, 12, 29), 296},
-    {QDate(2017, 3,  3), QDate(2017, 12, 30), 297},
-    {QDate(2017, 3,  3), QDate(2017, 12, 31), 297},
-        // starts around end of feb
-    {QDate(2017, 2, 28), QDate(2017,  3,  1),  3},
-    {QDate(2017, 2, 28), QDate(2017,  3, 13), 15},
-        // end around end of feb
-    {QDate(2017, 1,  5), QDate(2017,  2, 28), 53},
-    {QDate(2017, 1,  5), QDate(2017,  3,  1), 56},
-        // starts around 30 day month
-    {QDate(2017, 4,  29), QDate(2017,  11,  9), 190},
-    {QDate(2017, 4,  30), QDate(2017,  11,  9), 189},
-    {QDate(2017, 5,   1), QDate(2017,  11,  9), 188},
-        // ends around 30 day month
-    {QDate(2017, 1,  5), QDate(2017,  4, 29), 114},
-    {QDate(2017, 1,  5), QDate(2017,  4, 30), 115},
-    {QDate(2017, 1,  5), QDate(2017,  5,  1), 116},
-        // starts around 31 day month
-    {QDate(2017, 8,  30), QDate(2017,  11,  9), 69},
-    {QDate(2017, 8,  31), QDate(2017,  11,  9), 69},
-    {QDate(2017, 9,   1), QDate(2017,  11,  9), 68},
-        // ends around 31 day month
-    {QDate(2017, 1,  5), QDate(2017,  5, 30), 145},
-    {QDate(2017, 1,  5), QDate(2017,  5, 31), 145},
-    {QDate(2017, 1,  5), QDate(2017,  6,  1), 146},
-    {QDate(), QDate(), -1}
-    };
-
-    QTest::addColumn<QDate>("von");
-    QTest::addColumn<QDate>("bis");
-    QTest::addColumn<int>  ("tageZwischenLt_excel");
-
-    int i = 0;
-    do
-    {
-        QDate von(testdata[i].von);
-        QDate bis(testdata[i].bis);
-        int  tage(testdata[i].tage);
-        QTest::newRow((QString("Tage zw. ")+von.toString() +" und " + bis.toString()).toLocal8Bit().data())
-            << von << bis << tage;
-    }while(testdata[++i].tage != -1);
-
-}
-void test_finance::test_TageZwischen()
-{
-    QFETCH(QDate, von);
-    QFETCH(QDate, bis);
-    QFETCH(int, tageZwischenLt_excel);
-    QCOMPARE(tageZwischenLt_excel, TageZwischen(von, bis));
-}
-*/
 void test_finance::test_ZinsesZins_data()
 {
     QTest::addColumn<QDate>( "von");
@@ -230,6 +119,7 @@ void test_finance::test_ZinsesZins_data()
         // längere Zeiträume
         {QDate(2015, 12, 31), QDate(2024,   2,   28), 10., 100.,117.81, 81.61 },
         {QDate(2015, 12, 31), QDate(2024,   2,   29), 10., 100.,117.87 ,81.64 },
+        {QDate(2015,  1,  1), QDate(2025,   1,    1), 10., 100.,159.37 ,100.0 },
 
         {QDate(), QDate(), 0., 0., 0., 0.}
     };

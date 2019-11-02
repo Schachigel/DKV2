@@ -30,26 +30,6 @@ int TageSeitMonatsAnfang_inclusive(const QDate& d)
     return d.day();
 }
 
-/*
-int TageZwischen(const QDate& von, const QDate& bis)
-{
-    Q_ASSERT(von.year() == bis.year());
-    if( bis.day() == 31)
-        return TageZwischen(von, QDate(bis.year(), bis.month(), 30));
-    int days =0;
-    if(von.month() == bis.month())
-    {
-        days += bis.day() - von.day();
-    }
-    else
-    {
-        days += 30* (bis.month() - von.month()-1);
-        days += TageBisMonatsende_exclusiv(von);
-        days += TageSeitMonatsAnfang_inclusive(bis);
-    }
-    return days;
-}
-*/
 int TageBisJahresende_a(const QDate& d)
 {
     if( d.day()==d.daysInMonth())

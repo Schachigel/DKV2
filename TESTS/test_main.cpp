@@ -25,7 +25,6 @@ int main(int argc, char *argv[])
 
     ASSERT_TEST(new tst_db);
     ASSERT_TEST(new test_dkdbhelper);
-
     ASSERT_TEST(new test_finance);
 
 

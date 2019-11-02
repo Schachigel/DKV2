@@ -21,6 +21,7 @@ uint32_t GetTickCount() {
 
 #include "helper.h"
 #include "filehelper.h"
+#include "sqlhelper.h"
 #include "finhelper.h"
 #include "dkdbhelper.h"
 #include "dbstructure.h"
@@ -75,6 +76,7 @@ void initDKDBStruktur()
     Buchungen.append(((dbfield("Betrag",       QVariant::Double, "DEFAULT '0' NULL"))));
     Buchungen.append(((dbfield("Datum",        QVariant::Date))));
     Buchungen.append(((dbfield("Bemerkung",    QVariant::String))));
+    Buchungen.append(((dbfield("Buchungsdaten",    QVariant::String))));
     dkdbstructur.appendTable(Buchungen);
 
     dbtable meta("Meta");
@@ -138,36 +140,37 @@ bool DKDatenbankAnlegen(const QString& filename)
 {    LOG_ENTRY_and_EXIT;
 
      DatenbankverbindungSchliessen();
-      if( QFile(filename).exists())
-      {
-          backupFile(filename);
-          QFile(filename).remove();
-      }
-      dbCloser closer;
-       QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-        db.setDatabaseName(filename);
+    if( QFile(filename).exists())
+    {
+      backupFile(filename);
+      QFile(filename).remove();
+    }
+    dbCloser closer;
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(filename);
 
-         if( !db.open()) return false;
-         bool ret = true;
-          closer.set(&db);
-           QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
-            //    db.transaction();
-            ret &= dkdbstructur.createDb(db);
-             ret &= ZinssaetzeEinfuegen();
-              ret &= BuchungsartenEinfuegen();
-               ret &= EigenschaftenEinfuegen();
-                //    if( ret) db.commit(); else db.rollback();
-
-                if (istValideDatenbank(filename))
-                    return ret;
-                else
-                {
-                    qCritical() << "Newly created db is invalid. We should panic";
-                    return false;
-                }
+    if( !db.open()) return false;
+    bool ret = true;
+    closer.set(&db);
+    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
+    {
+    db.transaction();
+    ret &= dkdbstructur.createDb(db);
+    ret &= ZinssaetzeEinfuegen();
+    ret &= BuchungsartenEinfuegen();
+    ret &= EigenschaftenEinfuegen();
+    if( ret) db.commit(); else db.rollback();
+    }
+    if (istValideDatenbank(filename))
+        return ret;
+    else
+    {
+        qCritical() << "Newly created db is invalid. We should panic";
+        return false;
+    }
 }
 
-bool hatAlleTabellen(QSqlDatabase& db)
+bool hatAlleTabellenUndFelder(QSqlDatabase& db)
 {   LOG_ENTRY_and_EXIT;
 
     for( auto table : dkdbstructur.getTables())
@@ -177,6 +180,11 @@ bool hatAlleTabellen(QSqlDatabase& db)
         if( !sql.exec())
         {
             qDebug() << "testing for table " << table.Name() << " failed\n" << sql.lastError() << "\n" << sql.lastQuery();
+            return false;
+        }
+        if( table.Fields().count() != sql.record().count())
+        {
+            qCritical() << "Tabelle " << table.Name() << " hat nicht genug Felder";
             return false;
         }
     }
@@ -198,7 +206,7 @@ bool istValideDatenbank(const QString& filename)
     closer.set(&db);
     QSqlQuery enableRefInt(db);
     enableRefInt.exec("PRAGMA foreign_keys = ON");
-    if( !hatAlleTabellen(db))
+    if( !hatAlleTabellenUndFelder(db))
         return false;
 
     qDebug() << filename << " is a valid dk database";
@@ -361,8 +369,9 @@ int BuchungsartIdFromArt(QString s)
     return i;
 }
 
-void baueDatensatzStrukturFuerBelegNeuerVertrag(QVector<dbfield>& fields)
+QVector<dbfield> DatenfelderFuerBeleg()
 {
+    QVector<dbfield> fields;
     fields.append(dkdbstructur["Vertraege" ]["id"]);
     fields.append(dkdbstructur["Vertraege"]["Betrag"]);
     fields.append(dkdbstructur["Vertraege"]["Wert"]);
@@ -371,6 +380,8 @@ void baueDatensatzStrukturFuerBelegNeuerVertrag(QVector<dbfield>& fields)
     fields.append(dkdbstructur["Vertraege"]["Vertragsdatum"]);
     fields.append(dkdbstructur["Vertraege"]["aktiv"]);
     fields.append(dkdbstructur["Vertraege"]["LetzteZinsberechnung"]);
+    fields.append(dkdbstructur["Vertraege"]["Kennung"]);
+    fields.append(dkdbstructur["Vertraege"]["LaufzeitEnde"]);
     fields.append(dkdbstructur["Kreditoren"]["id"]);
     fields.append(dkdbstructur["Kreditoren"]["Vorname"]);
     fields.append(dkdbstructur["Kreditoren"]["Nachname"]);
@@ -379,30 +390,10 @@ void baueDatensatzStrukturFuerBelegNeuerVertrag(QVector<dbfield>& fields)
     fields.append(dkdbstructur["Kreditoren"]["Stadt"]);
     fields.append(dkdbstructur["Kreditoren"]["IBAN"]);
     fields.append(dkdbstructur["Kreditoren"]["BIC"]);
-    fields.append(dkdbstructur["Zinssaetze"]["id"]);
+//    fields.append(dkdbstructur["Zinssaetze"]["id"]);
     fields.append(dkdbstructur["Vertraege" ]["ZSatz"]);
-}
-
-QSqlRecord DatensatzFuerBelegNeuerVertrag(const int VertragId, const QVector<dbfield>& fields)
-{
-    QString sql("SELECT ");
-    for( int i =0; i<fields.size(); i++)
-    {
-        if( i) sql += ", ";
-        sql += fields[i].tableName() + "." + fields[i].name();
-    }
-    sql += " FROM Vertraege, Kreditoren, Zinssaetze "
-           " WHERE Vertraege.id = " + QString::number(VertragId) +
-            " AND Kreditoren.id = Vertraege.KreditorId AND Vertraege.ZSatz = Zinssaetze.id ";
-
-    QSqlQuery all;
-    if( !all.exec(sql))
-    {
-        qDebug() << "preparing buchungstext failed " << all.lastError() << "\n" << all.lastQuery();
-        return QSqlRecord();
-    }
-    all.next();
-    return all.record();
+    fields.append(dkdbstructur["Vertraege"]["KreditorId"]);
+    return fields;
 }
 
 QJsonValue jsonValueFromVariant(QVariant v)
@@ -410,6 +401,9 @@ QJsonValue jsonValueFromVariant(QVariant v)
     switch(v.type())
     {
     case QVariant::Int:
+    case QVariant::UInt:
+    case QVariant::LongLong:
+    case QVariant::ULongLong:
         return QJsonValue(v.toInt());
     case QVariant::String:
         return QJsonValue(v.toString());
@@ -425,48 +419,24 @@ QJsonValue jsonValueFromVariant(QVariant v)
     return QJsonValue();
 }
 
-QString JasonAusDatensatz( QSqlRecord r)
-{
-    QJsonObject Vertrag;
-    QJsonObject Kreditor;
-    QJsonObject Zinssatz;
-    for( int i =0; i<r.count(); i++)
-    {
-        QSqlField f(r.field(i));
-        if( f.tableName() == "Vertraege")
-            Vertrag.insert(f.name(), jsonValueFromVariant(f.value()));
-        else if( f.tableName() == "Kreditoren")
-            Kreditor.insert(f.name(), jsonValueFromVariant(f.value()));
-        else if( f.tableName() == "Zinssaetze")
-            Zinssatz.insert(f.name(), jsonValueFromVariant(f.value()));
-        else qDebug() << "unknown table info in record: " << f;
-    }
-    QJsonArray Beleg;
-    Beleg.push_back(Vertrag);
-    Beleg.push_back(Kreditor);
-    Beleg.push_back(Zinssatz);
-
-    return QJsonDocument(Beleg).toJson();
-}
-
 bool VertragsDaten::BelegZuNeuemVertragSpeichern(const int VertragId)
 {   LOG_ENTRY_and_EXIT;
 
-    QVector<dbfield> fields;
-    baueDatensatzStrukturFuerBelegNeuerVertrag(fields);
-    QSqlRecord beleg = DatensatzFuerBelegNeuerVertrag(VertragId, fields);
-
-    QString Buchungstext = JasonAusDatensatz(beleg);
-
-    qDebug() << "Speichere Buchungsdaten:\n" << Buchungstext;
+    QVector<dbfield> fields (DatenfelderFuerBeleg());
+    QSqlRecord rec = ExecuteSingleRecordSql( fields, "[Vertraege].[id]=" + QString::number(VertragId));
+    QString BuchungsDatenJson = JsonFromRecord(rec);
+    qDebug().noquote() << "Speichere Buchungsdaten:\n" << BuchungsDatenJson;
+    QString msg("Neuer Vertrag #");
+    msg += QString::number(VertragId) + QString("für ") + rec.value("[Kreditoren].[Vorname]").toString() + rec.value("[Kreditoren].[Nachname]").toString();
     QSqlQuery sqlBuchung;
-    sqlBuchung.prepare("INSERT INTO Buchungen (VertragId, Buchungsart, Betrag, Datum, Bemerkung)"
-                       " VALUES (:VertragsId, :Buchungsart, :Betrag, :Datum, :Bemerkung)");
+    sqlBuchung.prepare("INSERT INTO Buchungen (VertragId, Buchungsart, Betrag, Datum, Bemerkung, Buchungsdaten)"
+                       " VALUES (:VertragsId, :Buchungsart, :Betrag, :Datum, :Bemerkung, :Buchungsdaten)");
     sqlBuchung.bindValue(":VertragsId", QVariant(VertragId));
     sqlBuchung.bindValue(":Buchungsart", QVariant(BuchungsartIdFromArt("Vertrag anlegen")));
     sqlBuchung.bindValue(":Betrag", QVariant(Betrag));
     sqlBuchung.bindValue(":Datum", QVariant(QDate::currentDate()));
-    sqlBuchung.bindValue(":Bemerkung", QVariant(Buchungstext));
+    sqlBuchung.bindValue(":Bemerkung", QVariant(msg));
+    sqlBuchung.bindValue(":Buchungsdaten", QVariant(BuchungsDatenJson));
     if( !sqlBuchung.exec())
     {
         qCritical() << "Buchung wurde nicht gesp. Fehler: " << sqlBuchung.lastError();
@@ -543,7 +513,7 @@ bool passivenVertragLoeschen(const QString& index)
     return true;
 }
 
-bool aktivenVertragLoeschen(const int index, const QDate ende, double& neuerWert, double& davonZins)
+bool VertragsdatenZurLoeschung(const int index, const QDate ende, double& neuerWert, double& davonZins)
 {   LOG_ENTRY_and_EXIT;
     if( !ExecuteSingleValueSql("[aktiv]", "[Vertraege]", "id=" +QString::number(index)).toBool())
     {
@@ -555,7 +525,7 @@ bool aktivenVertragLoeschen(const int index, const QDate ende, double& neuerWert
     sql += "WHERE id=" + QString::number(index) + " AND [Zinssaetze].[id]=[Vertraege].[ZSatz]";
 
     QVector<dbfield> fields;
-    // fields.push_back(dkdbstructur["Vertraege"]["Betrag"]);
+    fields.push_back(dkdbstructur["Vertraege"]["Betrag"]);
     fields.push_back(dkdbstructur["Vertraege"]["Wert"]);
     fields.push_back(dkdbstructur["Vertraege"]["LetzteZinsberechnung"]);
     fields.push_back(dkdbstructur["Vertraege"]["ZSatz"]);
@@ -563,7 +533,7 @@ bool aktivenVertragLoeschen(const int index, const QDate ende, double& neuerWert
 
     QSqlRecord rec = ExecuteSingleRecordSql(fields, "[Vertraege].[id]="+QString::number(index));
     double wert (rec.value("Wert").toReal());
-    // double betrag(rec.value("Betrag").toReal());
+    //    double betrag(rec.value("Betrag").toReal());
     double zinssatz(rec.value("Zinssatz").toReal());
     QDate zinsStart(rec.value("LetzteZinsberechnung").toDate());
 
@@ -573,7 +543,7 @@ bool aktivenVertragLoeschen(const int index, const QDate ende, double& neuerWert
         return false;
     }
 
-//    davonZins = ZinsesZins( zinssatz, wert, zinsStart, ende);
+    davonZins = ZinsesZins( zinssatz, wert, zinsStart, ende);
     neuerWert = wert + davonZins;
     return true;
 }
@@ -616,81 +586,6 @@ QString ContractList_SQL(const QVector<dbfield>& fields, const QString& filter)
             + ContractList_WHERE(filter);
     qDebug() << "ContractList SQL: \n" << sql;
     return sql;
-}
-
-QString SelectQueryFromFields(const QVector<dbfield>& fields, const QString& where)
-{
-    QString Select ("SELECT ");
-    QString From ("FROM ");
-    QString Where("WHERE " + where);
-
-    QStringList usedTables;
-    for(int i=0; i < fields.count(); i++)
-    {
-        const dbfield& f = fields[i];
-        if( i!=0)
-            Select += ", ";
-        Select += "[" + f.tableName() + "].[" + f.name() + "]";
-
-        if( !usedTables.contains(f.tableName()))
-        {
-            if( usedTables.count()!= 0)
-                From += ", ";
-            usedTables.push_back(f.tableName());
-            From += "[" + f.tableName() +"]";
-        }
-
-        refFieldInfo ref = f.getReferenzeInfo();
-        if( !ref.tablename.isEmpty())
-        {
-            Where += " AND [" + ref.tablename + "].[" + ref.name + "]=[" + f.tableName() +"].[" + f.name() +"]";
-        }
-    }
-    return Select + " " + From + " " + Where;
-}
-
-QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString& where, const QString& con)
-{
-    QString sql = SelectQueryFromFields(fields, where);
-    qDebug() << "ExecuteSingleRecordSql:\n" << sql;
-    QSqlQuery q(QSqlDatabase::database(con));
-    q.prepare(sql);
-    if( !q.exec())
-    {
-        qCritical() << "SingleRecordSql failed " << q.lastError() << "\n" << q.lastQuery();
-        return QSqlRecord();
-    }
-    q.last();
-    if(q.at() != 0)
-    {
-        qCritical() << "SingleRecordSql returned more then one value\n" << q.lastQuery();
-        return QSqlRecord();
-    }
-    return q.record();
-}
-
-QVariant ExecuteSingleValueSql(const QString& s, const QString& con)
-{   LOG_ENTRY_and_EXIT;
-    QSqlQuery q(QSqlDatabase::database(con));
-    q.prepare(s);
-    if( !q.exec())
-    {
-        qCritical() << "SingleValueSql failed to execute: " << q.lastError() << "\n" << q.lastQuery();
-        return QVariant();
-    }
-    q.last();
-    if(q.at() != 0)
-    {
-        qCritical() << "SingleValueSql returned more then one value\n" << q.lastQuery();
-        return QVariant();
-    }
-    return q.value(0);
-}
-
-QVariant ExecuteSingleValueSql( const QString& field, const QString& table, const QString& where, const QString& con)
-{
-    QString sql = "SELECT " + field + " FROM " + table + " WHERE " + where;
-    return ExecuteSingleValueSql(sql, con);
 }
 
 void berechneZusammenfassung(DbSummary& dbs, QString con)

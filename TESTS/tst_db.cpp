@@ -16,6 +16,7 @@
 
 void tst_db::init()
 {LOG_ENTRY_and_EXIT;
+    QDir().mkdir(QString("..\\data"));
     if (QFile::exists(filename))
         QFile::remove(filename);
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", testCon);
@@ -32,6 +33,7 @@ void tst_db::cleanup()
     QSqlDatabase::database().close();
     if (QFile::exists(filename))
         QFile::remove(filename);
+    QDir().rmdir("..\\data");
 }
 
 void tst_db::test_createSimpleTable()
@@ -226,3 +228,14 @@ void tst_db::dbfieldCopyConst()
     QVERIFY(!cp.getReferenzeInfo().name.isEmpty());
 }
 
+void tst_db::newDbIsValid()
+{
+    // init
+    const char* dbname ="..\\data\\UnitTestDb.dkdb";
+    initDKDBStruktur();
+    // test
+    DKDatenbankAnlegen( dbname);
+    QVERIFY(istValideDatenbank(dbname));
+    // cleanup
+    QFile().remove(dbname);
+}

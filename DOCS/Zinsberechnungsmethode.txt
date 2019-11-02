@@ -1,12 +1,12 @@
 
-DKV2 verwendet die 30/306 Methode
+DKV2 verwendet die 30/360 Methode
 
 - Der vereinbarte Zinssatz ist ein Jahreszins.
 - Für einen vollständigen Monat wird 1/12 des Jahreszinses berechnet wird.
 - Für einen Tag wird 1/360 des Jahreszinses berechnet.
 - Der 31. Tag eines Monats ist kein Zinstag.
 - Beginnt oder endet der Zinszeitraum am 31. so wird er wie der vorangehende 30. gewertet.
-- Läuft der Zinszeitraum über den Februar hinaus wird er mit 1/12 des Jahreszinses berechnet
+- Läuft der Zinszeitraum über den Februar vollständig hinaus wird er mit 1/12 des Jahreszinses berechnet
 - Endet der Zinszeitraum am Monatsende des Februar, so wird der Februar mit 28/360 bzw. in Schaltjahren mit 29/360 berechnet.
 - Der erste Tag eines Zinszeitraums wird nicht verzinst.
 - Der Auszahlungstag wird verzinst.

@@ -35,7 +35,8 @@ SOURCES += \
         helper.cpp \
         itemformatter.cpp \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+        sqlhelper.cpp
 
 HEADERS += \
         askdatedlg.h \
@@ -48,7 +49,8 @@ HEADERS += \
         finhelper.h \
         helper.h \
         itemformatter.h \
-        mainwindow.h
+        mainwindow.h \
+        sqlhelper.h
 
 FORMS += \
         askDateDlg.ui \
@@ -62,5 +64,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 DISTFILES += \
     ../DOCS/Zinsberechnungsmethode.txt \
     ../DOCS/Zinstage.xlsx \
+    ../DOCS/remember.txt \
     DOKU \
     remember.txt
