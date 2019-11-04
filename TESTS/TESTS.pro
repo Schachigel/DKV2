@@ -9,6 +9,7 @@ SOURCES +=  tst_db.cpp \
     ../DKV2/dkdbhelper.cpp \
     ../DKV2/finhelper.cpp \
     ../DKV2/sqlhelper.cpp \
+    ../DKV2/vertrag.cpp \
     ../dkv2/dbfield.cpp \
     ../dkv2/dbstructure.cpp \
     ../dkv2/dbtable.cpp \

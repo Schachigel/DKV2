@@ -81,9 +81,16 @@ void test_finance::test_ZinsesZins_data()
         double ZinsTesauriert; double Zins;
     };
     testdata d[]={
-//        // remember: last day is IN, first day is OUT
-//        // expected test results validated with https://www.zinsen-berechnen.de/sparbuch-rechner.php
-//        // in the app the start and end month are both fully in the period
+        //        // remember: last day is IN, first day is OUT
+        //        // expected test results validated with docs\\Zinsberechnung.xlsx
+
+        // period within the same year
+        {QDate(2019,  1, 03), QDate(2019,  11,  04), 10., 100.,  8.36 ,  8.36 },
+        {QDate(2019,  1, 31), QDate(2019,  11,  30), 10., 100.,  8.33 ,  8.33 },
+        {QDate(2019,  6,  1), QDate(2019,  12,  31), 10., 100.,  5.81 ,  5.81 },
+        {QDate(2016,  1, 15), QDate(2016,   2,  29), 10., 100.,  1.22 ,  1.22 },
+        {QDate(2016,  1, 15), QDate(2016,   3,   1), 10., 100.,  1.28 ,  1.28 },
+
         {QDate(2015, 12,  1), QDate(2017,  01,  31), 10., 100., 11.81 , 11.64 },
         {QDate(2016, 12,  1), QDate(2018,  01,  01), 10., 100., 10.92 , 10.84 },
         // geht der Vertrag über Feb hinaus, zählt Feb er 30 Tage

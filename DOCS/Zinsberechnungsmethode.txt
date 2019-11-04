@@ -28,3 +28,16 @@ März komplett
 1Monat und 2Tage = 32 Tage
 
 nach: https://www.zinsen-berechnen.de/zinsmethoden/deutsche-zinsmethode.php
+
+EXCEL Equivalente:
+
+Zeitdifferenz innerhalb eines Jahres:
+=Days360(von; bis; TRUE)
+
+Zeitdifferenz Jahresübergreifend:
+Phase 1 (Tage des ersten Jahres) =DAYS360(von; DATE(year(von), 12, 31);TRUE)
+Phase 2 (volle Jahre) =MAX(YEAR(AK$6)-YEAR(AK$5)-1;0)
+Phase 3 (Tage des letzten Jahres)=DAYS360(DATE(YEAR(bis);1;1)-1;bis; TRUE)
+
+! Jährlicher Zinsgutschrift ist immer zum Jahresende. Der Wert des Guthabens ändert sich
+also nach Phase 1 und jedem vollen Jahr

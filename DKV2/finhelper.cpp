@@ -30,6 +30,24 @@ int TageSeitMonatsAnfang_inclusive(const QDate& d)
     return d.day();
 }
 
+int TageZwischen(QDate von, QDate bis)
+{
+    Q_ASSERT( von.year() == bis.year());
+    Q_ASSERT(bis >= von);
+    if( bis.day() == 31)
+        return TageZwischen(von, QDate(bis.year(), bis.month(), 30));
+    if( von.month() == bis.month())
+        return bis.day() -von.day();
+
+    int tageErsterMonat = von.daysInMonth()== von.day() ? 0 : 30-von.day();
+    int tageVolleMonate = 30* (bis.month() -von.month() -1);
+    int tageLetzterMonat = bis.day();
+    qDebug() << "TageZwischen (" << von << ") - (" << bis << "): "
+             << tageErsterMonat << " + " << tageVolleMonate << " + " << tageLetzterMonat
+             << " =" << tageErsterMonat+tageVolleMonate+tageLetzterMonat;
+    return tageErsterMonat + tageVolleMonate + tageLetzterMonat;
+}
+
 int TageBisJahresende_a(const QDate& d)
 {
     if( d.day()==d.daysInMonth())
@@ -91,6 +109,10 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
         return -1.;
     }
 
+    if( von.year() == bis.year())
+    {
+        return round2(double(TageZwischen(von, bis))/360. *zins/100. *wert);
+    }
     int TageImErstenJahr = TageBisJahresende(von); // first day no intrest
     double ZinsImErstenJahr = round2(double(TageImErstenJahr)/360. *zins/100. *wert);
     double gesamtZins (ZinsImErstenJahr);
