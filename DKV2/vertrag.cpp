@@ -6,7 +6,7 @@
 #include "dkdbhelper.h"
 #include "vertrag.h"
 
-bool Vertrag::ausDb(int id, bool mitBelegdaten)
+bool Vertrag::ausDb(int vId, bool mitBelegdaten)
 {   LOG_ENTRY_and_EXIT;
     QVector<dbfield>fields;
     fields.append(dkdbstructur["Vertraege"]["id"]);
@@ -34,10 +34,10 @@ bool Vertrag::ausDb(int id, bool mitBelegdaten)
         fields.append(dkdbstructur["Zinssaetze"]["Zinssatz"]);
     }
 
-    QSqlRecord rec = ExecuteSingleRecordSql(fields, "[Vertraege].[id]=" +QString::number(id));
+    QSqlRecord rec = ExecuteSingleRecordSql(fields, "[Vertraege].[id]=" +QString::number(vId));
     if( rec.isEmpty())
         return false;
-    id                  = rec.value("id").toInt();
+    id                  = rec.value("Vertraege.id").toInt();
     kreditorId          = rec.value("KreditorId").toInt();
     betrag              = rec.value("Betrag").toDouble();
     wert                = rec.value("Wert").toDouble();
@@ -61,7 +61,28 @@ bool Vertrag::ausDb(int id, bool mitBelegdaten)
     return true;
 }
 
-int Vertrag::speichereVertragstabelle()
+bool Vertrag::BelegSpeichern(int BArt, QString msg)
+{   LOG_ENTRY_and_EXIT;
+    updateAusDb();
+    QSqlQuery sqlBuchung;
+    sqlBuchung.prepare("INSERT INTO Buchungen (VertragId, Buchungsart, Betrag, Datum, Bemerkung, Buchungsdaten)"
+                       " VALUES (:VertragsId, :Buchungsart, :Betrag, :Datum, :Bemerkung, :Buchungsdaten)");
+    sqlBuchung.bindValue(":VertragsId", QVariant(id));
+    sqlBuchung.bindValue(":Buchungsart", BArt);
+    sqlBuchung.bindValue(":Betrag", QVariant(betrag));
+    sqlBuchung.bindValue(":Datum", QVariant(QDate::currentDate()));
+    sqlBuchung.bindValue(":Bemerkung", QVariant(msg));
+    sqlBuchung.bindValue(":Buchungsdaten", QVariant(buchungsdatenJson));
+    if( !sqlBuchung.exec())
+    {
+        qCritical() << "Buchung wurde nicht gesp. Fehler: " << sqlBuchung.lastError();
+        return false;
+    }
+    qDebug().noquote() << msg << "\n" << buchungsdatenJson;
+    return true;
+}
+
+int Vertrag::speichereNeuenVertrag()
 {  LOG_ENTRY_and_EXIT;
     TableDataInserter ti(dkdbstructur["Vertraege"]);
     ti.setValue(dkdbstructur["Vertraege"]["KreditorId"].name(), kreditorId);
@@ -83,26 +104,6 @@ int Vertrag::speichereVertragstabelle()
     return -1;
 }
 
-bool Vertrag::BelegSpeichern(int BArt, QString msg)
-{   LOG_ENTRY_and_EXIT;
-    QSqlQuery sqlBuchung;
-    sqlBuchung.prepare("INSERT INTO Buchungen (VertragId, Buchungsart, Betrag, Datum, Bemerkung, Buchungsdaten)"
-                       " VALUES (:VertragsId, :Buchungsart, :Betrag, :Datum, :Bemerkung, :Buchungsdaten)");
-    sqlBuchung.bindValue(":VertragsId", QVariant(id));
-    sqlBuchung.bindValue(":Buchungsart", BArt);
-    sqlBuchung.bindValue(":Betrag", QVariant(betrag));
-    sqlBuchung.bindValue(":Datum", QVariant(QDate::currentDate()));
-    sqlBuchung.bindValue(":Bemerkung", QVariant(msg));
-    sqlBuchung.bindValue(":Buchungsdaten", QVariant(buchungsdatenJson));
-    if( !sqlBuchung.exec())
-    {
-        qCritical() << "Buchung wurde nicht gesp. Fehler: " << sqlBuchung.lastError();
-        return false;
-    }
-    qDebug().noquote() << msg << "\n" << buchungsdatenJson;
-    return true;
-}
-
 bool Vertrag::speichereBelegNeuerVertrag()
 {
     if( buchungsdatenJson.isEmpty())
@@ -114,34 +115,42 @@ bool Vertrag::speichereBelegNeuerVertrag()
     return BelegSpeichern(BuchungsartIdFromArt("Vertrag anlegen"), msg);
 }
 
-bool Vertrag::speichernAlsNeuenVertrag()
+bool Vertrag::verbucheNeuenVertrag()
 {   LOG_ENTRY_and_EXIT;
+
     QSqlDatabase::database().transaction();
-    setVid( speichereVertragstabelle());
+    setVid( speichereNeuenVertrag());
     if( id>0 )
-    {
         if( speichereBelegNeuerVertrag())
+        {
             QSqlDatabase::database().commit();
-        return true;
-    }
+            return true;
+        }
     qCritical() << "ein neuer Vertrag konnte nicht gespeichert werden";
     QSqlDatabase::database().rollback();
     return false;
 }
 
-/*static*/ bool Vertrag::aktiviereVertrag(int vId, const QDate& aDate)
+bool Vertrag::aktiviereVertrag(const QDate& aDate)
 {   LOG_ENTRY_and_EXIT;
     QSqlDatabase::database().transaction();
 
     QSqlQuery updateQ;
     updateQ.prepare("UPDATE Vertraege SET LetzteZinsberechnung = :vdate, aktiv = :true WHERE id = :id");
     updateQ.bindValue(":vdate",QVariant(aDate));
-    updateQ.bindValue(":id", QVariant(vId));
+    updateQ.bindValue(":id", QVariant(id));
     updateQ.bindValue(":true", QVariant(true));
     bool ret = updateQ.exec();
     qDebug() << updateQ.lastQuery() << updateQ.lastError();
+    if( ret)
+    {
+        active = true;
+        startZinsberechnung = aDate;
+    }
 
-    ret &= true; // BELEG BUCHEN ToDo
+    QString BelegNachricht ("Vertrag %1 aktiviert zum %2");
+    BelegNachricht = BelegNachricht.arg(QString::number(id), aDate.toString());
+    ret &= BelegSpeichern(BuchungsartIdFromArt("Vertrag aktivieren"), BelegNachricht); // BELEG BUCHEN ToDo
 
     if(ret)
         QSqlDatabase::database().commit();

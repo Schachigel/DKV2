@@ -40,15 +40,16 @@ public:
 
     // interface
     bool ausDb(int id, bool mitBelegdaten= false);
-    bool speichernAlsNeuenVertrag();
+    bool verbucheNeuenVertrag();
+    bool aktiviereVertrag(const QDate& aDate);
     // statics
-    static bool aktiviereVertrag(int vId, const QDate& aDate);
     static bool passivenVertragLoeschen(const int vId);
 private:
     // helper
     bool BelegSpeichern(int BArt, QString msg);
-    int speichereVertragstabelle();
+    int speichereNeuenVertrag();
     bool speichereBelegNeuerVertrag();
+    void updateAusDb(){ausDb(id, true);}
     // data
     int id;
     int      kreditorId;

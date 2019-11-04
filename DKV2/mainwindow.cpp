@@ -309,7 +309,7 @@ bool MainWindow::saveNewContract()
         QMessageBox::information( this, "Fehler", errortext);
         return false;
     }
-    return c.speichernAlsNeuenVertrag();
+    return c.verbucheNeuenVertrag();
 }
 void MainWindow::clearNewContractFields()
 {LOG_ENTRY_and_EXIT;
@@ -497,7 +497,9 @@ void MainWindow::on_actionactivateContract_triggered()
     askDateDlg dlg( this, contractDate);
     if( QDialog::Accepted == dlg.exec())
     {
-        if( Vertrag::aktiviereVertrag(getContractIdStringFromContractsList(), dlg.getDate()))
+        Vertrag v;
+        v.ausDb(getContractIdStringFromContractsList(), true);
+        if( v.aktiviereVertrag(dlg.getDate()))
             prepareContractListView();
     }
 }

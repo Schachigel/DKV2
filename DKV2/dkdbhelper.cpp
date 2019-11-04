@@ -281,7 +281,7 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
                          betragUWert, betragUWert, zinsid,
                          vertragsdatum,
                          tesa, active, StartZinsberechnung);
-        vertrag.speichernAlsNeuenVertrag();
+        vertrag.verbucheNeuenVertrag();
     }
 }
 

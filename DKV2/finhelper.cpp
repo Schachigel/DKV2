@@ -42,10 +42,9 @@ int TageZwischen(const QDate& von, const QDate& bis)
         return bis.day() -von.day();
 
     int tageErsterMonat = 30-von.day();
-
     int tageVolleMonate = 30* (bis.month() -von.month() -1);
     int tageLetzterMonat = bis.day();
-    qDebug() << "TageZwischen (" << von << ") - (" << bis << "): "
+    qDebug() << "TageZwischen (" << von << ") und (" << bis << "): "
              << tageErsterMonat << " + " << tageVolleMonate << " + " << tageLetzterMonat
              << " =" << tageErsterMonat+tageVolleMonate+tageLetzterMonat;
     return tageErsterMonat + tageVolleMonate + tageLetzterMonat;
