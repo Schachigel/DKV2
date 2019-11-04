@@ -3,6 +3,7 @@
 
 #include <dkdbhelper.h>
 #include <QMainWindow>
+#include "vertrag.h"
 
 namespace Ui {
 class MainWindow;
@@ -22,7 +23,7 @@ public:
     int getPersonIdFromKreditorenList();
     QDate getContractDateFromContractsList();
     int getContractIdStringFromContractsList();
-    void VertragsdatenAusFormular(VertragsDaten& c);
+    Vertrag VertragsdatenAusFormular();
 
 private slots:
 

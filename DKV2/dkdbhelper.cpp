@@ -14,7 +14,7 @@ uint32_t GetTickCount() {
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QtCore>
-
+#include <QVector>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
@@ -23,6 +23,7 @@ uint32_t GetTickCount() {
 #include "filehelper.h"
 #include "sqlhelper.h"
 #include "finhelper.h"
+#include "vertrag.h"
 #include "dkdbhelper.h"
 #include "dbstructure.h"
 
@@ -269,19 +270,40 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
             Q_ASSERT(!bool("Verbuchung des neuen Vertrags gescheitert"));
         }
         // add a contract
-        VertragsDaten c;
-        c.KreditorId = neueKreditorId;
-        c.Kennung = "id-" + QString::number(rand.bounded(13));
-        c.Zins = rand.bounded(1,19); // cave ! this will fail if the values were deleted from the db
-        c.Betrag = double(100) * rand.bounded(1,20);
-        c.Wert = c.Betrag;
-        c.tesaurierend = rand.bounded(100)%2 ? true : false;
+        double betragUWert = double(100) * rand.bounded(1,20);
+        int zinsid = rand.bounded(1,19);
+        bool tesa = rand.bounded(100)%2 ? true : false;
+        bool active = 0 != rand.bounded(3)%3;
         QDate vertragsdatum= QDate::currentDate().addDays(-1 * rand.bounded(365));
-        c.Vertragsdatum = vertragsdatum;
-        c.active = 0 != rand.bounded(3)%3; // random data, more true then false
-        if( c.active.toBool() ) c.StartZinsberechnung =vertragsdatum.addDays(rand.bounded(15));
-        c.verbucheVertrag();
+        QDate StartZinsberechnung = ( active) ? vertragsdatum.addDays(rand.bounded(15)) : QDate(9999, 12, 31);
+
+        Vertrag vertrag (neueKreditorId, QString::number(i),
+                         betragUWert, betragUWert, zinsid,
+                         vertragsdatum,
+                         tesa, active, StartZinsberechnung);
+        vertrag.speichernAlsNeuenVertrag();
     }
+}
+
+bool KreditorDaten::fromDb( int id)
+{
+    QVector<dbfield> fields;
+    fields.append(dkdbstructur["Kreditoren"]["Vorname"]);
+    fields.append(dkdbstructur["Kreditoren"]["Nachname"]);
+    fields.append(dkdbstructur["Kreditoren"]["Strasse"]);
+    fields.append(dkdbstructur["Kreditoren"]["Plz"]);
+    fields.append(dkdbstructur["Kreditoren"]["Stadt"]);
+    fields.append(dkdbstructur["Kreditoren"]["IBAN"]);
+    fields.append(dkdbstructur["Kreditoren"]["BIC"]);
+    QSqlRecord rec = ExecuteSingleRecordSql(fields, "id=" +QString::number(id));
+    if( rec.isEmpty()) return false;
+    Vorname = rec.value("Vorname").toString();
+    Nachname = rec.value("Nachname").toString();
+    Strasse = rec.value("Strasse").toString();
+    Plz = rec.value("Plz").toString();
+    Iban = rec.value("IBAN").toString();
+    Bic = rec.value("BIC").toString();
+    return false;
 }
 
 int KreditorDatenSpeichern(const KreditorDaten& p)
@@ -367,185 +389,6 @@ int BuchungsartIdFromArt(QString s)
     query.next();
     int i = query.value(0).toInt();
     return i;
-}
-
-QVector<dbfield> DatenfelderFuerBeleg()
-{
-    QVector<dbfield> fields;
-    fields.append(dkdbstructur["Vertraege" ]["id"]);
-    fields.append(dkdbstructur["Vertraege"]["Betrag"]);
-    fields.append(dkdbstructur["Vertraege"]["Wert"]);
-    fields.append(dkdbstructur["Zinssaetze"]["Zinssatz"]);
-    fields.append(dkdbstructur["Vertraege"]["tesaurierend"]);
-    fields.append(dkdbstructur["Vertraege"]["Vertragsdatum"]);
-    fields.append(dkdbstructur["Vertraege"]["aktiv"]);
-    fields.append(dkdbstructur["Vertraege"]["LetzteZinsberechnung"]);
-    fields.append(dkdbstructur["Vertraege"]["Kennung"]);
-    fields.append(dkdbstructur["Vertraege"]["LaufzeitEnde"]);
-    fields.append(dkdbstructur["Kreditoren"]["id"]);
-    fields.append(dkdbstructur["Kreditoren"]["Vorname"]);
-    fields.append(dkdbstructur["Kreditoren"]["Nachname"]);
-    fields.append(dkdbstructur["Kreditoren"]["Strasse"]);
-    fields.append(dkdbstructur["Kreditoren"]["Plz"]);
-    fields.append(dkdbstructur["Kreditoren"]["Stadt"]);
-    fields.append(dkdbstructur["Kreditoren"]["IBAN"]);
-    fields.append(dkdbstructur["Kreditoren"]["BIC"]);
-//    fields.append(dkdbstructur["Zinssaetze"]["id"]);
-    fields.append(dkdbstructur["Vertraege" ]["ZSatz"]);
-    fields.append(dkdbstructur["Vertraege"]["KreditorId"]);
-    return fields;
-}
-
-QJsonValue jsonValueFromVariant(QVariant v)
-{
-    switch(v.type())
-    {
-    case QVariant::Int:
-    case QVariant::UInt:
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
-        return QJsonValue(v.toInt());
-    case QVariant::String:
-        return QJsonValue(v.toString());
-    case QVariant::Double:
-        return QJsonValue(v.toDouble());
-    case QVariant::Date:
-        return QJsonValue(v.toDate().toString(Qt::ISODate));
-    case QVariant::Bool:
-        return QJsonValue(v.toBool());
-    default:
-        qDebug() << "jsonValueFromVariant: invalid data type: " << v;
-    }
-    return QJsonValue();
-}
-
-bool VertragsDaten::BelegZuNeuemVertragSpeichern(const int VertragId)
-{   LOG_ENTRY_and_EXIT;
-
-    QVector<dbfield> fields (DatenfelderFuerBeleg());
-    QSqlRecord rec = ExecuteSingleRecordSql( fields, "[Vertraege].[id]=" + QString::number(VertragId));
-    QString BuchungsDatenJson = JsonFromRecord(rec);
-    qDebug().noquote() << "Speichere Buchungsdaten:\n" << BuchungsDatenJson;
-    QString msg("Neuer Vertrag #");
-    msg += QString::number(VertragId) + QString("für ") + rec.value("[Kreditoren].[Vorname]").toString() + rec.value("[Kreditoren].[Nachname]").toString();
-    QSqlQuery sqlBuchung;
-    sqlBuchung.prepare("INSERT INTO Buchungen (VertragId, Buchungsart, Betrag, Datum, Bemerkung, Buchungsdaten)"
-                       " VALUES (:VertragsId, :Buchungsart, :Betrag, :Datum, :Bemerkung, :Buchungsdaten)");
-    sqlBuchung.bindValue(":VertragsId", QVariant(VertragId));
-    sqlBuchung.bindValue(":Buchungsart", QVariant(BuchungsartIdFromArt("Vertrag anlegen")));
-    sqlBuchung.bindValue(":Betrag", QVariant(Betrag));
-    sqlBuchung.bindValue(":Datum", QVariant(QDate::currentDate()));
-    sqlBuchung.bindValue(":Bemerkung", QVariant(msg));
-    sqlBuchung.bindValue(":Buchungsdaten", QVariant(BuchungsDatenJson));
-    if( !sqlBuchung.exec())
-    {
-        qCritical() << "Buchung wurde nicht gesp. Fehler: " << sqlBuchung.lastError();
-        return false;
-    }
-    return true;
-}
-
-bool VertragsDaten::verbucheVertrag()
-{   LOG_ENTRY_and_EXIT;
-
-    QSqlDatabase::database().transaction();
-    int vid = speichereVertrag();
-    if( vid >0 )
-        if( BelegZuNeuemVertragSpeichern(vid))
-        {
-            QSqlDatabase::database().commit();
-            return true;
-        }
-
-    qCritical() << "ein neuer Vertrag konnte nicht gespeichert werden";
-    QSqlDatabase::database().rollback();
-    return false;
-}
-
-int VertragsDaten::speichereVertrag()
-{   LOG_ENTRY_and_EXIT;
-    TableDataInserter ti(dkdbstructur["Vertraege"]);
-    ti.setValue(dkdbstructur["Vertraege"]["KreditorId"].name(), KreditorId);
-    ti.setValue(dkdbstructur["Vertraege"]["Kennung"].name(), Kennung);
-    ti.setValue(dkdbstructur["Vertraege"]["Betrag"].name(), Betrag);
-    ti.setValue(dkdbstructur["Vertraege"]["Wert"].name(), Wert);
-    ti.setValue(dkdbstructur["Vertraege"]["ZSatz"].name(), Zins);
-    ti.setValue(dkdbstructur["Vertraege"]["tesaurierend"].name(), tesaurierend);
-    ti.setValue(dkdbstructur["Vertraege"]["Vertragsdatum"].name(), Vertragsdatum);
-    ti.setValue(dkdbstructur["Vertraege"]["aktiv"].name(), active);
-    ti.setValue(dkdbstructur["Vertraege"]["LaufzeitEnde"].name(), LaufzeitEnde);
-    ti.setValue(dkdbstructur["Vertraege"]["LetzteZinsberechnung"].name(), StartZinsberechnung);
-    if( ti.InsertData(QSqlDatabase::database()))
-    {
-        int lastid = ti.getInsertedRecordId();
-        qDebug() << "Neuer Vertrag wurde eingefügt mit id:" << lastid;
-        return lastid;
-    }
-    return -1;
-}
-
-bool VertragAktivieren( int ContractId, const QDate& activationDate)
-{   LOG_ENTRY_and_EXIT;
-
-    QSqlQuery updateQ;
-    updateQ.prepare("UPDATE Vertraege SET LetzteZinsberechnung = :vdate, aktiv = :true WHERE id = :id");
-    updateQ.bindValue(":vdate",QVariant(activationDate));
-    updateQ.bindValue(":id", QVariant(ContractId));
-    updateQ.bindValue(":true", QVariant(true));
-    bool ret = updateQ.exec();
-    qDebug() << updateQ.lastQuery() << updateQ.lastError();
-    return ret;
-}
-
-bool passivenVertragLoeschen(const QString& index)
-{   LOG_ENTRY_and_EXIT;
-    if( ExecuteSingleValueSql("SELECT [aktiv] FROM [Vertraege] WHERE id=" +index).toBool())
-    {
-        qWarning() << "will not delete active contract w id:" << index;
-        return false;
-    }
-    QSqlQuery deleteQ;
-    if( !deleteQ.exec("DELETE FROM Vertraege WHERE id=" + index))
-    {
-        qCritical() << "failed to delete Contract: " << deleteQ.lastError() << "\n" << deleteQ.lastQuery();
-        return false;
-    }
-    return true;
-}
-
-bool VertragsdatenZurLoeschung(const int index, const QDate ende, double& neuerWert, double& davonZins)
-{   LOG_ENTRY_and_EXIT;
-    if( !ExecuteSingleValueSql("[aktiv]", "[Vertraege]", "id=" +QString::number(index)).toBool())
-    {
-        qWarning() << "will not delete passive contract w id:" << index;
-        return false;
-    }
-    QString sql = "SELECT [Vertrage.Betrag], [Vertraege.Wert], [Vertraege.LetzteZinsberechnung], [Zinssaetze.Zinssatz] ";
-    sql += "FROM [Vertrage], [Zinssatz] ";
-    sql += "WHERE id=" + QString::number(index) + " AND [Zinssaetze].[id]=[Vertraege].[ZSatz]";
-
-    QVector<dbfield> fields;
-    fields.push_back(dkdbstructur["Vertraege"]["Betrag"]);
-    fields.push_back(dkdbstructur["Vertraege"]["Wert"]);
-    fields.push_back(dkdbstructur["Vertraege"]["LetzteZinsberechnung"]);
-    fields.push_back(dkdbstructur["Vertraege"]["ZSatz"]);
-    fields.push_back(dkdbstructur["Zinssaetze"]["Zinssatz"]);
-
-    QSqlRecord rec = ExecuteSingleRecordSql(fields, "[Vertraege].[id]="+QString::number(index));
-    double wert (rec.value("Wert").toReal());
-    //    double betrag(rec.value("Betrag").toReal());
-    double zinssatz(rec.value("Zinssatz").toReal());
-    QDate zinsStart(rec.value("LetzteZinsberechnung").toDate());
-
-    if( ende < zinsStart)
-    {
-        qCritical() << "Vertragsende VOR Beginn der Zinsphase";
-        return false;
-    }
-
-    davonZins = ZinsesZins( zinssatz, wert, zinsStart, ende);
-    neuerWert = wert + davonZins;
-    return true;
 }
 
 QString ContractList_SELECT(const QVector<dbfield>& fields)

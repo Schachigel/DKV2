@@ -101,3 +101,28 @@ QString JsonFromRecord( QSqlRecord r)
     doc.setObject(root);
     return doc.toJson();
 }
+
+/*
+QJsonValue jsonValueFromVariant(QVariant v)
+{
+    switch(v.type())
+    {
+    case QVariant::Int:
+    case QVariant::UInt:
+    case QVariant::LongLong:
+    case QVariant::ULongLong:
+        return QJsonValue(v.toInt());
+    case QVariant::String:
+        return QJsonValue(v.toString());
+    case QVariant::Double:
+        return QJsonValue(v.toDouble());
+    case QVariant::Date:
+        return QJsonValue(v.toDate().toString(Qt::ISODate));
+    case QVariant::Bool:
+        return QJsonValue(v.toBool());
+    default:
+        qDebug() << "jsonValueFromVariant: invalid data type: " << v;
+    }
+    return QJsonValue();
+}
+*/

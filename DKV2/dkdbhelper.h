@@ -36,6 +36,7 @@ struct KreditorDaten
     QString Stadt;
     QString Iban;
     QString Bic;
+    bool fromDb(int id);
 };
 int KreditorDatenSpeichern(const KreditorDaten& p);
 bool KreditorLoeschen(QString index);
@@ -45,31 +46,8 @@ void KreditorenFuerAuswahlliste(QList<KreditorAnzeigeMitId>& Entries);
 typedef QPair<int, QString> ZinsAnzeigeMitId;
 void ZinssaetzeFuerAuswahlliste(QList<ZinsAnzeigeMitId>& Entries);
 
-struct VertragsDaten
-{
-//    int id;
-    QVariant KreditorId;
-    QVariant Kennung;
-    QVariant Betrag;
-    QVariant Wert;
-    QVariant Zins;
-    QVariant tesaurierend;
-    QVariant active;
-    QVariant Vertragsdatum;
-    QVariant LaufzeitEnde;
-    QVariant StartZinsberechnung;
-    VertragsDaten() :
-        KreditorId(-1),
-        Betrag(0.), Wert(0.), Zins(0.),
-        tesaurierend(true), active(false),
-        Vertragsdatum(QDate::currentDate()),
-        LaufzeitEnde(QDate(9999, 12, 31)),
-        StartZinsberechnung(QDate(9999, 12, 31)) {}
-    bool verbucheVertrag();
-    int speichereVertrag();
-    bool BelegZuNeuemVertragSpeichern(const int vid);
-};
-// bool VertragVerbuchen(const VertragsDaten& c);
+int BuchungsartIdFromArt(QString s);
+
 bool VertragAktivieren( int ContractId, const QDate& activationDate);
 bool passivenVertragLoeschen(const QString& index);
 bool VertragsdatenZurLoeschung(const int index, const QDate endD, double& neuerWert, double& davonZins);

@@ -24,6 +24,8 @@
 #include "helper.h"
 #include "filehelper.h"
 #include "itemformatter.h"
+#include "finhelper.h"
+#include "vertrag.h"
 #include "dkdbhelper.h"
 
 // construction, destruction
@@ -274,38 +276,40 @@ void MainWindow::on_cancel_clicked()
 }
 
 // new Contract
-void MainWindow::VertragsdatenAusFormular(VertragsDaten& c)
+Vertrag MainWindow::VertragsdatenAusFormular()
 {LOG_ENTRY_and_EXIT;
-    c.KreditorId = ui->comboKreditoren->itemData(ui->comboKreditoren->currentIndex()).toInt();
-    c.Kennung = ui->leKennung->text();
-    c.Betrag = ui->leBetrag->text().toDouble();
-    c.Wert = c.Betrag;
-    c.Zins = ui->cbZins->itemData(ui->cbZins->currentIndex()).toInt();
-    c.tesaurierend = ui->chkbTesaurierend->checkState() == Qt::Checked;
-    c.Vertragsdatum = ui->deVertragsabschluss->date();
-    c.active = false;
-    c.LaufzeitEnde = ui->deLaufzeitEnde->date();
-    c.StartZinsberechnung = c.LaufzeitEnde;
+    int KreditorId = ui->comboKreditoren->itemData(ui->comboKreditoren->currentIndex()).toInt();
+    QString Kennung = ui->leKennung->text();
+    double Betrag = ui->leBetrag->text().toDouble();
+    double Wert = Betrag;
+    int ZinsId = ui->cbZins->itemData(ui->cbZins->currentIndex()).toInt();
+    bool tesaurierend = ui->chkbTesaurierend->checkState() == Qt::Checked;
+    QDate Vertragsdatum = ui->deVertragsabschluss->date();
+
+    QDate LaufzeitEnde = ui->deLaufzeitEnde->date();
+    QDate StartZinsberechnung = LaufzeitEnde;
+
+    return Vertrag(KreditorId, Kennung, Betrag, Wert, ZinsId, Vertragsdatum,
+                   false/*aktiv*/, tesaurierend, StartZinsberechnung, LaufzeitEnde);
 }
 
 bool MainWindow::saveNewContract()
 {LOG_ENTRY_and_EXIT;
-    VertragsDaten c;
-    VertragsdatenAusFormular(c);
+    Vertrag c =VertragsdatenAusFormular();
 
     QString errortext;
-    if( c.Betrag <= 0)
+    if( c.Betrag() <= 0)
         errortext = "Der Kreditbetrag muss größer als null sein";
-    if( c.KreditorId <= 0 || c.Zins <= 0)
+    if( c.KreditorId() <= 0 || c.ZinsId() <= 0)
         errortext = "Wähle den Kreditgeber und die Zinsen aus der gegebenen Auswahl. Ist die Auswahl leer müssen zuerst Kreditgeber und Zinswerte eingegeben werden";
-    if( c.Kennung =="")
+    if( c.Kennung() =="")
         errortext = "Du solltest eine Kennung vergeben, damit der Kretit besser zugeordnet werden kann";
     if( errortext != "")
     {
         QMessageBox::information( this, "Fehler", errortext);
         return false;
     }
-    return c.verbucheVertrag();
+    return c.speichernAlsNeuenVertrag();
 }
 void MainWindow::clearNewContractFields()
 {LOG_ENTRY_and_EXIT;
@@ -392,11 +396,11 @@ void MainWindow::on_actionVertrag_anlegen_triggered()
     FillKreditorDropdown();
     FillRatesDropdown();
     comboKreditorenAnzeigeNachKreditorenId( getPersonIdFromKreditorenList());
-    VertragsDaten cd;
-    ui->deLaufzeitEnde->setDate(cd.LaufzeitEnde.toDate());
-    ui->deVertragsabschluss->setDate(cd.Vertragsdatum.toDate());
+    Vertrag cd; // this is to get the defaults of the class definition
+    ui->deLaufzeitEnde->setDate(cd.LaufzeitEnde());
+    ui->deVertragsabschluss->setDate(cd.Vertragsabschluss());
     ui->lblBeginZinsphase->setText("");
-    ui->chkbTesaurierend->setChecked(cd.tesaurierend.toBool());
+    ui->chkbTesaurierend->setChecked(cd.Tesaurierend());
 
     ui->stackedWidget->setCurrentIndex(newContractIndex);
 }
@@ -493,7 +497,7 @@ void MainWindow::on_actionactivateContract_triggered()
     askDateDlg dlg( this, contractDate);
     if( QDialog::Accepted == dlg.exec())
     {
-        if( VertragAktivieren(getContractIdStringFromContractsList(), dlg.getDate()))
+        if( Vertrag::aktiviereVertrag(getContractIdStringFromContractsList(), dlg.getDate()))
             prepareContractListView();
     }
 }
@@ -510,7 +514,8 @@ void MainWindow::on_actionVertrag_l_schen_triggered()
     msg += Vorname + " " + Nachname + " (id " + index + ") gelöscht werden?";
     if( QMessageBox::Yes != QMessageBox::question(this, "Kreditvertrag löschen", msg))
         return;
-    passivenVertragLoeschen(index);
+    // passivenVertragLoeschen(index);
+    Vertrag::passivenVertragLoeschen(index.toInt());
     prepareContractListView();
 }
 
@@ -541,13 +546,15 @@ void MainWindow::on_actionVertrag_Beenden_triggered()
     QModelIndex mi(ui->contractsTableView->currentIndex());
     if( !mi.isValid()) return;    // Vertrag beenden -> Zins berechnen und m Auszahlungsbetrag anzeigen, dann löschen
     int index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toInt();
-    QString Vorname = ui->contractsTableView->model()->data(mi.siblingAtColumn(1)).toString();
-    QString Nachname = ui->contractsTableView->model()->data(mi.siblingAtColumn(2)).toString();
-    QString Wert = ui->contractsTableView->model()->data(mi.siblingAtColumn(4)).toString();
 
-    QString getDateMsg("<h3>Wenn Sie einen Vertrag beenden wird der Zins abschließend berechnet und der Auszahlungsbetrag ermittelt.<br></h3>"
-                "Um den Vertrag von %1 %2 mit dem Wert %3 Euro jetzt zu beenden geben Sie das Datum des Vertragendes ein und klicken Sie OK");
-    getDateMsg = getDateMsg.arg(Vorname, Nachname, Wert);
+    Vertrag v;
+    v.ausDb(index, true);
+    double WertBisHeute = v.Wert() + ZinsesZins(v.Zinsfuss(), v.Wert(), v.StartZinsberechnung(), QDate::currentDate(), v.Tesaurierend());
+    QString getDateMsg("<h2>Wenn Sie einen Vertrag beenden wird der Zins abschließend"
+                " berechnet und der Auszahlungsbetrag ermittelt.<br></h2>"
+                "Um den Vertrag von %1 %2 mit dem aktuellen Wert %3 Euro jetzt zu beenden "
+                "wählen Sie das Datum des Vertragendes ein und klicken Sie OK");
+    getDateMsg = getDateMsg.arg(v.Vorname(), v.Nachname(), QString::number(WertBisHeute));
 
     askDateDlg dlg( this, QDate::currentDate());
     dlg.setMsg(getDateMsg);
@@ -558,16 +565,14 @@ void MainWindow::on_actionVertrag_Beenden_triggered()
         return;
     }
 
-    double neuerWert{0.};
-    double davonZins{0.};
-    VertragsdatenZurLoeschung( index, dlg.getDate(), neuerWert, davonZins);
+    double davonZins =ZinsesZins(v.Zinsfuss(), v.Wert(), v.StartZinsberechnung(), dlg.getDate(), v.Tesaurierend());
+    double neuerWert =v.Wert() +davonZins;
+
     QString confirmDeleteMsg("<h3>Vertragsabschluß</h3><br>Wert zum Vertragsende: %1 Euro<br>Zins der letzten Zinsphase: %2 Euro<br>"\
                              "Soll der Vertrag gelöscht werden?");
     confirmDeleteMsg = confirmDeleteMsg.arg(QString::number(neuerWert), QString::number(davonZins));
     if( QMessageBox::Yes != QMessageBox::question(this, "Vertrag löschen?", confirmDeleteMsg))
         return;
-
-
 }
 
 QString prepareOverviewPage()

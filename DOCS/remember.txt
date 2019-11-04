@@ -1,5 +1,7 @@
 to do: Doku als Writer Dokument
 
+VertragsdatenAusFormular muss Vertrag.Kontakt füllen ...
+
 Buchungen Refactoring:
 - neuen Vertrag Buchung prüfen (sqliteAdmin Anzeigefehler?)
 - weitere Buchungen:

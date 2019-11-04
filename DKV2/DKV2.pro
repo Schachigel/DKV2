@@ -36,7 +36,8 @@ SOURCES += \
         itemformatter.cpp \
         main.cpp \
         mainwindow.cpp \
-        sqlhelper.cpp
+        sqlhelper.cpp \
+        vertrag.cpp
 
 HEADERS += \
         askdatedlg.h \
@@ -50,7 +51,8 @@ HEADERS += \
         helper.h \
         itemformatter.h \
         mainwindow.h \
-        sqlhelper.h
+        sqlhelper.h \
+        vertrag.h
 
 FORMS += \
         askDateDlg.ui \
