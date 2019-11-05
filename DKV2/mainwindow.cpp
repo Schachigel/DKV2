@@ -290,7 +290,7 @@ Vertrag MainWindow::VertragsdatenAusFormular()
     QDate StartZinsberechnung = LaufzeitEnde;
 
     return Vertrag(KreditorId, Kennung, Betrag, Wert, ZinsId, Vertragsdatum,
-                   false/*aktiv*/, tesaurierend, StartZinsberechnung, LaufzeitEnde);
+                   tesaurierend, false/*aktiv*/,StartZinsberechnung, LaufzeitEnde);
 }
 
 bool MainWindow::saveNewContract()
@@ -336,6 +336,7 @@ void MainWindow::FillRatesDropdown()
     {
         ui->cbZins->addItem(Entry.second, QVariant(Entry.first));
     }
+    ui->cbZins->setCurrentIndex(InterrestCbEntries.count()-1);
 }
 void MainWindow::comboKreditorenAnzeigeNachKreditorenId(int KreditorenId)
 {LOG_ENTRY_and_EXIT;
@@ -399,7 +400,6 @@ void MainWindow::on_actionVertrag_anlegen_triggered()
     Vertrag cd; // this is to get the defaults of the class definition
     ui->deLaufzeitEnde->setDate(cd.LaufzeitEnde());
     ui->deVertragsabschluss->setDate(cd.Vertragsabschluss());
-    ui->lblBeginZinsphase->setText("");
     ui->chkbTesaurierend->setChecked(cd.Tesaurierend());
 
     ui->stackedWidget->setCurrentIndex(newContractIndex);

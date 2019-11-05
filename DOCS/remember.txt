@@ -5,9 +5,9 @@ VertragsdatenAusFormular muss Vertrag.Kontakt füllen ...
 Buchungen Refactoring:
 - neuen Vertrag Buchung prüfen (sqliteAdmin Anzeigefehler?)
 - weitere Buchungen:
-** Kreditor anlegen,
-** aktiven Vertrag löschen,
-** passiven Vertrag löscen
+** Kreditor anlegen,-> wird kein Geld bewegt -> kein Beleg
+** aktiven Vertrag beenden,
+** passiven Vertrag löschen -> wird kein Geld bewegt -> kein Beleg
 
 
 + Buchungen:

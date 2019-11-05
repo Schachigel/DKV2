@@ -105,18 +105,14 @@ public:
     QLineEdit *leKennung;
     QLabel *label_4;
     QLineEdit *leBetrag;
-    QLabel *label_9;
-    QLabel *lblWert;
     QLabel *label_5;
+    QComboBox *cbZins;
     QLabel *label_6;
-    QLabel *label_10;
-    QLabel *lblBeginZinsphase;
+    QDateEdit *deVertragsabschluss;
     QLabel *label_7;
     QDateEdit *deLaufzeitEnde;
     QLabel *label_8;
     QCheckBox *chkbTesaurierend;
-    QComboBox *cbZins;
-    QDateEdit *deVertragsabschluss;
     QLabel *lblHinweis;
     QWidget *ContractsListPage;
     QVBoxLayout *verticalLayout_4;
@@ -139,7 +135,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
-        MainWindow->resize(836, 516);
+        MainWindow->resize(909, 526);
         action_Neue_DB_anlegen = new QAction(MainWindow);
         action_Neue_DB_anlegen->setObjectName(QString::fromUtf8("action_Neue_DB_anlegen"));
         actionDBoeffnen = new QAction(MainWindow);
@@ -424,65 +420,45 @@ public:
 
         formLayout_2->setWidget(2, QFormLayout::FieldRole, leBetrag);
 
-        label_9 = new QLabel(NewContract);
-        label_9->setObjectName(QString::fromUtf8("label_9"));
-
-        formLayout_2->setWidget(3, QFormLayout::LabelRole, label_9);
-
-        lblWert = new QLabel(NewContract);
-        lblWert->setObjectName(QString::fromUtf8("lblWert"));
-
-        formLayout_2->setWidget(3, QFormLayout::FieldRole, lblWert);
-
         label_5 = new QLabel(NewContract);
         label_5->setObjectName(QString::fromUtf8("label_5"));
 
-        formLayout_2->setWidget(4, QFormLayout::LabelRole, label_5);
-
-        label_6 = new QLabel(NewContract);
-        label_6->setObjectName(QString::fromUtf8("label_6"));
-
-        formLayout_2->setWidget(5, QFormLayout::LabelRole, label_6);
-
-        label_10 = new QLabel(NewContract);
-        label_10->setObjectName(QString::fromUtf8("label_10"));
-
-        formLayout_2->setWidget(6, QFormLayout::LabelRole, label_10);
-
-        lblBeginZinsphase = new QLabel(NewContract);
-        lblBeginZinsphase->setObjectName(QString::fromUtf8("lblBeginZinsphase"));
-
-        formLayout_2->setWidget(6, QFormLayout::FieldRole, lblBeginZinsphase);
-
-        label_7 = new QLabel(NewContract);
-        label_7->setObjectName(QString::fromUtf8("label_7"));
-
-        formLayout_2->setWidget(7, QFormLayout::LabelRole, label_7);
-
-        deLaufzeitEnde = new QDateEdit(NewContract);
-        deLaufzeitEnde->setObjectName(QString::fromUtf8("deLaufzeitEnde"));
-
-        formLayout_2->setWidget(7, QFormLayout::FieldRole, deLaufzeitEnde);
-
-        label_8 = new QLabel(NewContract);
-        label_8->setObjectName(QString::fromUtf8("label_8"));
-
-        formLayout_2->setWidget(8, QFormLayout::LabelRole, label_8);
-
-        chkbTesaurierend = new QCheckBox(NewContract);
-        chkbTesaurierend->setObjectName(QString::fromUtf8("chkbTesaurierend"));
-
-        formLayout_2->setWidget(8, QFormLayout::FieldRole, chkbTesaurierend);
+        formLayout_2->setWidget(3, QFormLayout::LabelRole, label_5);
 
         cbZins = new QComboBox(NewContract);
         cbZins->setObjectName(QString::fromUtf8("cbZins"));
 
-        formLayout_2->setWidget(4, QFormLayout::FieldRole, cbZins);
+        formLayout_2->setWidget(3, QFormLayout::FieldRole, cbZins);
+
+        label_6 = new QLabel(NewContract);
+        label_6->setObjectName(QString::fromUtf8("label_6"));
+
+        formLayout_2->setWidget(4, QFormLayout::LabelRole, label_6);
 
         deVertragsabschluss = new QDateEdit(NewContract);
         deVertragsabschluss->setObjectName(QString::fromUtf8("deVertragsabschluss"));
 
-        formLayout_2->setWidget(5, QFormLayout::FieldRole, deVertragsabschluss);
+        formLayout_2->setWidget(4, QFormLayout::FieldRole, deVertragsabschluss);
+
+        label_7 = new QLabel(NewContract);
+        label_7->setObjectName(QString::fromUtf8("label_7"));
+
+        formLayout_2->setWidget(5, QFormLayout::LabelRole, label_7);
+
+        deLaufzeitEnde = new QDateEdit(NewContract);
+        deLaufzeitEnde->setObjectName(QString::fromUtf8("deLaufzeitEnde"));
+
+        formLayout_2->setWidget(5, QFormLayout::FieldRole, deLaufzeitEnde);
+
+        label_8 = new QLabel(NewContract);
+        label_8->setObjectName(QString::fromUtf8("label_8"));
+
+        formLayout_2->setWidget(6, QFormLayout::LabelRole, label_8);
+
+        chkbTesaurierend = new QCheckBox(NewContract);
+        chkbTesaurierend->setObjectName(QString::fromUtf8("chkbTesaurierend"));
+
+        formLayout_2->setWidget(6, QFormLayout::FieldRole, chkbTesaurierend);
 
 
         vlNeuerVertrag->addLayout(formLayout_2);
@@ -546,7 +522,7 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 836, 26));
+        menuBar->setGeometry(QRect(0, 0, 909, 21));
         menuDatenbank = new QMenu(menuBar);
         menuDatenbank->setObjectName(QString::fromUtf8("menuDatenbank"));
         menuDK_Geber = new QMenu(menuBar);
@@ -731,12 +707,8 @@ public:
         label_2->setText(QCoreApplication::translate("MainWindow", "Kreditgeber", nullptr));
         label_3->setText(QCoreApplication::translate("MainWindow", "Kennung", nullptr));
         label_4->setText(QCoreApplication::translate("MainWindow", "Betrag (Euro)", nullptr));
-        label_9->setText(QCoreApplication::translate("MainWindow", "Wert incl. Zinsen (Euro)", nullptr));
-        lblWert->setText(QString());
         label_5->setText(QCoreApplication::translate("MainWindow", "Zinssatz", nullptr));
         label_6->setText(QCoreApplication::translate("MainWindow", "Vertragsabschluss (Datum)", nullptr));
-        label_10->setText(QCoreApplication::translate("MainWindow", "Beginn des n\303\244chsten Zinszeitraums", nullptr));
-        lblBeginZinsphase->setText(QString());
         label_7->setText(QCoreApplication::translate("MainWindow", "Laufzeitende (Datum)", nullptr));
         label_8->setText(QCoreApplication::translate("MainWindow", "Zinsen werden aufgerechnet", nullptr));
         chkbTesaurierend->setText(QCoreApplication::translate("MainWindow", "Tesaurierend", nullptr));

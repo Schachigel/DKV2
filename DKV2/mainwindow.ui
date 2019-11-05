@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>836</width>
-    <height>516</height>
+    <width>909</width>
+    <height>526</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -347,20 +347,6 @@
            <widget class="QLineEdit" name="leBetrag"/>
           </item>
           <item row="3" column="0">
-           <widget class="QLabel" name="label_9">
-            <property name="text">
-             <string>Wert incl. Zinsen (Euro)</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLabel" name="lblWert">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
            <widget class="QLabel" name="label_5">
             <property name="text">
              <string>Zinssatz</string>
@@ -370,7 +356,10 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
+          <item row="3" column="1">
+           <widget class="QComboBox" name="cbZins"/>
+          </item>
+          <item row="4" column="0">
            <widget class="QLabel" name="label_6">
             <property name="text">
              <string>Vertragsabschluss (Datum)</string>
@@ -380,21 +369,10 @@
             </property>
            </widget>
           </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_10">
-            <property name="text">
-             <string>Beginn des nächsten Zinszeitraums</string>
-            </property>
-           </widget>
+          <item row="4" column="1">
+           <widget class="QDateEdit" name="deVertragsabschluss"/>
           </item>
-          <item row="6" column="1">
-           <widget class="QLabel" name="lblBeginZinsphase">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="0">
+          <item row="5" column="0">
            <widget class="QLabel" name="label_7">
             <property name="text">
              <string>Laufzeitende (Datum)</string>
@@ -404,10 +382,10 @@
             </property>
            </widget>
           </item>
-          <item row="7" column="1">
+          <item row="5" column="1">
            <widget class="QDateEdit" name="deLaufzeitEnde"/>
           </item>
-          <item row="8" column="0">
+          <item row="6" column="0">
            <widget class="QLabel" name="label_8">
             <property name="text">
              <string>Zinsen werden aufgerechnet</string>
@@ -417,18 +395,12 @@
             </property>
            </widget>
           </item>
-          <item row="8" column="1">
+          <item row="6" column="1">
            <widget class="QCheckBox" name="chkbTesaurierend">
             <property name="text">
              <string>Tesaurierend</string>
             </property>
            </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QComboBox" name="cbZins"/>
-          </item>
-          <item row="5" column="1">
-           <widget class="QDateEdit" name="deVertragsabschluss"/>
           </item>
          </layout>
         </item>
@@ -499,8 +471,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>836</width>
-     <height>26</height>
+     <width>909</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatenbank">
