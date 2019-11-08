@@ -19,29 +19,12 @@ extern dbstructure dkdbstructur;
 
 void initDKDBStruktur();
 
-bool DKDatenbankAnlegen(const QString& filename);
+bool DKDatenbankAnlegen(const QString& filename, QSqlDatabase db=QSqlDatabase());
 bool istValideDatenbank(const QString& filename);
 void DatenbankverbindungSchliessen();
 void DatenbankZurAnwendungOeffnen( QString newDbFile="");
 
 void BeispieldatenAnlegen(int datensaetze =20);
-
-struct KreditorDaten
-{
-//    int id;
-    QString Vorname;
-    QString Nachname;
-    QString Strasse;
-    QString Plz;
-    QString Stadt;
-    QString Iban;
-    QString Bic;
-    bool fromDb(int id);
-};
-int KreditorDatenSpeichern(const KreditorDaten& p);
-bool KreditorLoeschen(QString index);
-typedef QPair<int, QString> KreditorAnzeigeMitId;
-void KreditorenFuerAuswahlliste(QList<KreditorAnzeigeMitId>& Entries);
 
 typedef QPair<int, QString> ZinsAnzeigeMitId;
 void ZinssaetzeFuerAuswahlliste(QList<ZinsAnzeigeMitId>& Entries);

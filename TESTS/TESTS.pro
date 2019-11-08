@@ -8,6 +8,7 @@ TEMPLATE = app
 SOURCES +=  tst_db.cpp \
     ../DKV2/dkdbhelper.cpp \
     ../DKV2/finhelper.cpp \
+    ../DKV2/kreditor.cpp \
     ../DKV2/sqlhelper.cpp \
     ../DKV2/vertrag.cpp \
     ../dkv2/dbfield.cpp \

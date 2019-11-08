@@ -26,6 +26,7 @@
 #include "itemformatter.h"
 #include "finhelper.h"
 #include "vertrag.h"
+#include "kreditor.h"
 #include "dkdbhelper.h"
 
 // construction, destruction
@@ -165,7 +166,7 @@ void MainWindow::on_actionKreditgeber_l_schen_triggered()
     if( QMessageBox::Yes != QMessageBox::question(this, "Kreditgeber löschen?", msg))
         return;
 
-    if( KreditorLoeschen(index))
+    if( Kreditor::Loeschen(index.toInt()))
         preparePersonTableView();
     else
         Q_ASSERT(!bool("could not remove kreditor and contracts"));
@@ -222,19 +223,29 @@ void MainWindow::on_actionNeuer_DK_Geber_triggered()
 }
 bool MainWindow::KreditgeberSpeichern()
 {LOG_ENTRY_and_EXIT;
-    KreditorDaten p{ ui->leVorname->text(),
-                 ui->leNachname->text(),
-                 ui->leStrasse->text(),
-                 ui->lePlz->text(),
-                 ui->leStadt->text(),
-                 ui->leIban->text(),
-                 ui->leBic->text()};
-    if( p.Vorname == "" || p.Nachname == "" || p.Strasse =="" || p.Plz == "" || p.Stadt == "")
+
+    if( ui->leVorname->text().isEmpty() || ui->leNachname->text().isEmpty()
+       || ui->leStrasse->text().isEmpty() || ui->lePlz->text().isEmpty() || ui->leStadt->text().isEmpty())
     {
         QMessageBox(QMessageBox::Warning, "Daten nicht gespeichert", "Namens - und Adressfelder dürfen nicht leer sein");
         return false;
     }
-    return KreditorDatenSpeichern(p) != 0;
+
+    Kreditor k;
+    k.setValue("Vorname", ui->leVorname->text());
+    k.setValue("Nachname", ui->leNachname->text());
+    k.setValue("Strasse", ui->leStrasse->text());
+    k.setValue("Plz", ui->lePlz->text());
+    k.setValue("Stadt", ui->leStadt->text());
+    k.setValue("IBAN", ui->leIban->text());
+    k.setValue("BIC", ui->leBic->text());
+    if( k.Speichern() == -1)
+    {
+        QMessageBox::information( this, "Fehler", "Der Datensatz konnte nicht gespeichert werden.");
+        qCritical() << "Kreditgeber konnte nicht gespeichert werden";
+        return false;
+    }
+    return true;
 }
 void MainWindow::KreditorFormulardatenLoeschen()
 {LOG_ENTRY_and_EXIT;
@@ -248,18 +259,15 @@ void MainWindow::KreditorFormulardatenLoeschen()
 }
 void MainWindow::on_saveNew_clicked()
 {LOG_ENTRY_and_EXIT;
-    if( KreditgeberSpeichern())
-    {
-        KreditorFormulardatenLoeschen();
-    }
+    KreditgeberSpeichern();
+    KreditorFormulardatenLoeschen();
 }
 void MainWindow::on_saveList_clicked()
 {LOG_ENTRY_and_EXIT;
-    if( KreditgeberSpeichern())
-    {
-        KreditorFormulardatenLoeschen();
-        on_action_Liste_triggered();
-    }
+    KreditgeberSpeichern();
+    KreditorFormulardatenLoeschen();
+
+    on_action_Liste_triggered();
 }
 void MainWindow::on_saveExit_clicked()
 {LOG_ENTRY_and_EXIT;
@@ -322,8 +330,9 @@ void MainWindow::clearNewContractFields()
 void MainWindow::FillKreditorDropdown()
 {LOG_ENTRY_and_EXIT;
     ui->comboKreditoren->clear();
-    QList<KreditorAnzeigeMitId>PersonEntries; KreditorenFuerAuswahlliste(PersonEntries);
-    for(KreditorAnzeigeMitId Entry :PersonEntries)
+    QList<QPair<int, QString>> Personen;
+    Kreditor k; k.KreditorenMitId(Personen);
+    for(auto Entry :Personen)
     {
         ui->comboKreditoren->addItem( Entry.second, QVariant((Entry.first)));
     }

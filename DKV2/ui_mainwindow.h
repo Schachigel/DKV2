@@ -314,6 +314,7 @@ public:
         horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
         lePlz = new QLineEdit(NewPerson);
         lePlz->setObjectName(QString::fromUtf8("lePlz"));
+        lePlz->setMaxLength(8);
 
         horizontalLayout_3->addWidget(lePlz);
 
@@ -595,7 +596,7 @@ public:
 
         retranslateUi(MainWindow);
 
-        stackedWidget->setCurrentIndex(3);
+        stackedWidget->setCurrentIndex(2);
 
 
         QMetaObject::connectSlotsByName(MainWindow);

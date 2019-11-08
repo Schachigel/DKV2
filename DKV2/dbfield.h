@@ -32,7 +32,7 @@ public: // types
 //     :  QSqlField(name, type), SqlTypeDetails(td), option(opt);
 
     bool operator ==(const dbfield &b) const;
-    QString typeInfo()     const {return SqlTypeDetails;}
+    QString typeDetails()     const {return SqlTypeDetails;}
     refFieldInfo getReferenzeInfo() const;
     // interface
     QString getCreateSqlSnippet();

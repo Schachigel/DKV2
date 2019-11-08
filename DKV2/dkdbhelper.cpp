@@ -25,12 +25,16 @@ uint32_t GetTickCount() {
 #include "finhelper.h"
 #include "vertrag.h"
 #include "dkdbhelper.h"
+#include "kreditor.h"
 #include "dbstructure.h"
 
 dbstructure dkdbstructur;
 
 void initDKDBStruktur()
 {
+    static bool init_done = false;
+    if( init_done) return;
+    init_done = true;
     LOG_ENTRY_and_EXIT;
     // DB date -> Variant String
     // DB bool -> Variant int
@@ -86,37 +90,35 @@ void initDKDBStruktur()
     dkdbstructur.appendTable(meta);
 }
 
-bool ZinssaetzeEinfuegen()
+bool ZinssaetzeEinfuegen(QSqlDatabase db)
 {
+    double Zins = 0.;
+    double ZinsIncrement = 0.01;
     TableDataInserter ti(dkdbstructur["Zinssaetze"]);
     ti.setValue("Zinssatz", 0.);
     ti.setValue("Bemerkung", "Unser Held");
-    bool ret = ti.InsertData();
+    bool ret = 0<= ti.InsertData(db);
 
-    double Zins = 0.1;
-    for (Zins=0.1; Zins < .6; Zins+=0.1)
+    for (Zins+=ZinsIncrement; ret && Zins < .6; Zins+=ZinsIncrement)
     {
         ti.setValue("Zinssatz", Zins); ti.setValue("Bemerkung", "Unser Freund");
-        QSqlQuery sql;
-        ret &= ti.InsertData();
+        ret &= 0<=ti.InsertData(db);
     }
-    for (; Zins < 1.1; Zins+=0.1){
+    for (; ret && Zins < 1.1; Zins+=ZinsIncrement){
         ti.setValue("Zinssatz", Zins); ti.setValue("Bemerkung", "Unser Förderer");
-        QSqlQuery sql;
-        ret &= ti.InsertData();
+        ret &= 0<= ti.InsertData(db);
     }
-    for (; Zins < 2.; Zins+=0.1)
+    for (; ret && Zins < 2.; Zins+=ZinsIncrement)
     {
         ti.setValue("Zinssatz", Zins); ti.setValue("Bemerkung", "Unser Investor");
-        QSqlQuery sql;
-        ret &= ti.InsertData();
+        ret &= 0<= ti.InsertData(db);
     }
     if( !ret)
         qCritical() << "There was an error creating intrest values";
     return ret;
 }
 
-bool BuchungsartenEinfuegen()
+bool BuchungsartenEinfuegen(QSqlDatabase db)
 {
     QStringList arten{"Vertrag anlegen", "Vertrag aktivieren", "Passiven Vertrag löschen", "Vertrag beenden"};
     bool ret = true;
@@ -125,41 +127,46 @@ bool BuchungsartenEinfuegen()
         TableDataInserter ti( dkdbstructur["Buchungsarten"]);
         ti.setValue("Art", QVariant(art));
 
-        ret &= ti.InsertData();
+        ret &= 0<= ti.InsertData(db);
     }
     return ret;
 }
 
-bool EigenschaftenEinfuegen()
+bool EigenschaftenEinfuegen(QSqlDatabase db)
 {
-    QSqlQuery sql;
+    QSqlQuery sql(db);
     sql.exec("INSERT INTO Meta (Name, Wert) VALUES (\"Version\", \"1.0\"");
     return true;
 }
 
-bool DKDatenbankAnlegen(const QString& filename)
+bool DKDatenbankAnlegen(const QString& filename, QSqlDatabase db)
 {    LOG_ENTRY_and_EXIT;
-
-     DatenbankverbindungSchliessen();
-    if( QFile(filename).exists())
-    {
-      backupFile(filename);
-      QFile(filename).remove();
-    }
+    if( (filename.length()>0) == db.isValid())
+        // use this function with db xor with filename
+        return false;
     dbCloser closer;
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(filename);
+    if( !filename.isEmpty())
+    {
+        DatenbankverbindungSchliessen();
+        if( QFile(filename).exists())
+        {
+            backupFile(filename);
+            QFile(filename).remove();
+        }
+        db = QSqlDatabase::addDatabase("QSQLITE");
+        db.setDatabaseName(filename);
 
-    if( !db.open()) return false;
+        if( !db.open()) return false;
+        closer.set(&db);
+    }
     bool ret = true;
-    closer.set(&db);
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     {
     db.transaction();
     ret &= dkdbstructur.createDb(db);
-    ret &= ZinssaetzeEinfuegen();
-    ret &= BuchungsartenEinfuegen();
-    ret &= EigenschaftenEinfuegen();
+    ret &= ZinssaetzeEinfuegen(db);
+    ret &= BuchungsartenEinfuegen(db);
+    ret &= EigenschaftenEinfuegen(db);
     if( ret) db.commit(); else db.rollback();
     }
     if (istValideDatenbank(filename))
@@ -260,13 +267,19 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
     QRandomGenerator rand(::GetTickCount());
     for( int i = 0; i<AnzahlDatensaetze; i++)
     {
-        KreditorDaten p{ Vornamen [rand.bounded(Vornamen.count ())], Nachnamen[rand.bounded(Nachnamen.count())],
-                    Strassen[rand.bounded(Strassen.count())], Cities[rand.bounded(Cities.count())].first, Cities[rand.bounded(Cities.count())].second,
-                    "iban xxxxxxxxxxxxxxxxx", "BICxxxxxxxx"};
-        int neueKreditorId =0;
-        if( 0 > (neueKreditorId = KreditorDatenSpeichern(p)))
+        Kreditor k;
+        k.setValue("Vorname", Vornamen [rand.bounded(Vornamen.count ())]);
+        k.setValue("Nachname", Nachnamen[rand.bounded(Nachnamen.count())]);
+        k.setValue("Strasse", Strassen[rand.bounded(Strassen.count())]);
+        k.setValue("Plz", Cities[rand.bounded(Cities.count())].first);
+        k.setValue("Stadt", Cities[rand.bounded(Cities.count())].second);
+        k.setValue("IBAN", "DExx-xxxxx");
+        k.setValue("BIC", "bic...");
+
+        int neueKreditorId =k.Speichern();
+        if( -1 == neueKreditorId)
         {
-            qCritical() << "No id from KreditorDatenSpeichern";
+            qCritical() << "No id from Kreditor.Speichern";
             Q_ASSERT(!bool("Verbuchung des neuen Vertrags gescheitert"));
         }
         // add a contract
@@ -282,87 +295,6 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
                          vertragsdatum,
                          tesa, active, StartZinsberechnung);
         vertrag.verbucheNeuenVertrag();
-    }
-}
-
-bool KreditorDaten::fromDb( int id)
-{
-    QVector<dbfield> fields;
-    fields.append(dkdbstructur["Kreditoren"]["Vorname"]);
-    fields.append(dkdbstructur["Kreditoren"]["Nachname"]);
-    fields.append(dkdbstructur["Kreditoren"]["Strasse"]);
-    fields.append(dkdbstructur["Kreditoren"]["Plz"]);
-    fields.append(dkdbstructur["Kreditoren"]["Stadt"]);
-    fields.append(dkdbstructur["Kreditoren"]["IBAN"]);
-    fields.append(dkdbstructur["Kreditoren"]["BIC"]);
-    QSqlRecord rec = ExecuteSingleRecordSql(fields, "id=" +QString::number(id));
-    if( rec.isEmpty()) return false;
-    Vorname = rec.value("Vorname").toString();
-    Nachname = rec.value("Nachname").toString();
-    Strasse = rec.value("Strasse").toString();
-    Plz = rec.value("Plz").toString();
-    Iban = rec.value("IBAN").toString();
-    Bic = rec.value("BIC").toString();
-    return false;
-}
-
-int KreditorDatenSpeichern(const KreditorDaten& p)
-{   LOG_ENTRY_and_EXIT;
-
-    QSqlQuery query; // assuming the app database is open
-    QString sql ("INSERT INTO Kreditoren (Vorname, Nachname, Strasse, Plz, Stadt, IBAN, BIC)"\
-                 " VALUES ( :vorn, :nachn, :strasse, :plz, :stadt, :iban, :bic)");
-    query.prepare(sql);
-    query.bindValue(":vorn", p.Vorname);
-    query.bindValue(":nachn", p.Nachname);
-    query.bindValue(":strasse", p.Strasse);
-    query.bindValue(":plz",  p.Plz);
-    query.bindValue(":stadt", p.Stadt);
-    query.bindValue(":iban", p.Iban);
-    query.bindValue(":bic", p.Bic);
-    if( !query.exec())
-    {
-        qWarning() << "Kreditor Daten konnten nicht gespeichert werden\n" << query.lastQuery() << endl << query.lastError().text();
-        return -1;
-    }
-    else
-    {
-        qDebug() << query.lastQuery() << "executed successfully w SQL statement:\n" << sql;
-        return query.lastInsertId().toInt();
-    }
-}
-
-bool KreditorLoeschen(QString index)
-{   LOG_ENTRY_and_EXIT;
-
-    // referential integrity will delete the contracts
-    QSqlQuery deleteQ;
-    if( !deleteQ.exec("DELETE FROM [Kreditoren] WHERE [Id]=" +index))
-    {
-        qCritical() << "Delete Kreditor failed "<< deleteQ.lastError() << "\n" << deleteQ.lastQuery();
-        return false;
-    }
-    else
-        return true;
-}
-
-void KreditorenFuerAuswahlliste(QList<KreditorAnzeigeMitId>& persons)
-{   LOG_ENTRY_and_EXIT;
-
-    QSqlQuery query;
-    query.setForwardOnly(true);
-    query.prepare("SELECT id, Vorname, Nachname, Plz, Strasse FROM Kreditoren ORDER BY Nachname ASC, Vorname ASC");
-    if( !query.exec())
-    {
-        qCritical() << "Error reading DKGeber while creating a contract: " << QSqlDatabase::database().lastError().text();
-    }
-
-    while(query.next())
-    {
-        QString Entry = query.value("Nachname").toString() + QString(", ") + query.value("Vorname").toString() + QString(", ") + query.value("Plz").toString();
-        Entry += QString(", ") + query.value("Strasse").toString();
-        KreditorAnzeigeMitId entry{ query.value("id").toInt(), Entry};
-        persons.append(entry);
     }
 }
 

@@ -50,13 +50,13 @@ bool Vertrag::ausDb(int vId, bool mitBelegdaten)
     {
         buchungsdatenJson = JsonFromRecord(rec);
         zinsFuss = rec.value("Zinssaetze.Zinssatz").toDouble();
-        dkGeber.Vorname = rec.value("Kreditoren.Vorname").toString();
-        dkGeber.Nachname = rec.value("Kreditoren.Nachname").toString();
-        dkGeber.Strasse = rec.value("Kreditoren.Strasse").toString();
-        dkGeber.Plz = rec.value("Kreditoren.Plz").toString();
-        dkGeber.Stadt= rec.value("Kreditoren.Stadt").toString();
-        dkGeber.Iban= rec.value("Kreditoren.IBAN").toString();
-        dkGeber.Bic= rec.value("Kreditoren.BIC").toString();
+        dkGeber.setValue("Vorname", rec.value("Kreditoren.Vorname"));
+        dkGeber.setValue("Nachname", rec.value("Kreditoren.Nachname"));
+        dkGeber.setValue("Strasse ", rec.value("Kreditoren.Strasse"));
+        dkGeber.setValue("Plz", rec.value("Kreditoren.Plz"));
+        dkGeber.setValue("Stadt", rec.value("Kreditoren.Stadt"));
+        dkGeber.setValue("Iban", rec.value("Kreditoren.IBAN"));
+        dkGeber.setValue("Bic", rec.value("Kreditoren.BIC"));
     }
     return true;
 }
@@ -95,13 +95,10 @@ int Vertrag::speichereNeuenVertrag()
     ti.setValue(dkdbstructur["Vertraege"]["aktiv"].name(), active);
     ti.setValue(dkdbstructur["Vertraege"]["LaufzeitEnde"].name(), laufzeitEnde);
     ti.setValue(dkdbstructur["Vertraege"]["LetzteZinsberechnung"].name(), startZinsberechnung);
-    if( ti.InsertData(QSqlDatabase::database()))
-    {
-        int lastid = ti.getInsertedRecordId();
-        qDebug() << "Neuer Vertrag wurde eingefügt mit id:" << lastid;
-        return lastid;
-    }
-    return -1;
+    int lastid =ti.InsertData(QSqlDatabase::database());
+    if( lastid <0) return -1;
+    qDebug() << "Neuer Vertrag wurde eingefügt mit id:" << lastid;
+    return lastid;
 }
 
 bool Vertrag::speichereBelegNeuerVertrag()

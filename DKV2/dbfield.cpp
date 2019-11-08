@@ -58,7 +58,7 @@ QString dbTypeFromVariant(QVariant::Type t)
 
 QString dbfield::getCreateSqlSnippet()
 {
-    QString s( "[" + name() + "] " + dbTypeFromVariant(type()) + " " +typeInfo());
+    QString s( "[" + name() + "] " + dbTypeFromVariant(type()) + " " +typeDetails());
     if( reference.name.isEmpty())
         return s;
     s += " FOREIGN_KEY REFERENCES [" + reference.tablename +"](" + reference.name + ")";

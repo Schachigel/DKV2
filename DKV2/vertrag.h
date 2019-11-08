@@ -5,6 +5,7 @@
 #include <QDate>
 #include <QVariant>
 
+#include "kreditor.h"
 #include "dkdbhelper.h"
 
 class Vertrag
@@ -33,8 +34,8 @@ public:
     bool Tesaurierend() const {return tesaurierend;}
     double Zinsfuss() const {return zinsFuss;}
     QDate StartZinsberechnung() const {return startZinsberechnung;}
-    QString Vorname() const {return dkGeber.Vorname;}
-    QString Nachname() const {return dkGeber.Nachname;}
+    QString Vorname() const {return dkGeber.getValue("Vorname").toString();}
+    QString Nachname() const {return dkGeber.getValue("Nachname").toString();}
     // setter
     void setVid(int i){ id = i;}
 
@@ -64,7 +65,7 @@ private:
     QDate laufzeitEnde;
     // Belegdaten
     double zinsFuss;
-    KreditorDaten dkGeber;
+    Kreditor dkGeber;
     QString buchungsdatenJson;
 
 };

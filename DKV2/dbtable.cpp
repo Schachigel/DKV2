@@ -32,19 +32,26 @@ QString dbtable::CreateTableSQL() const
     return sql;
 }
 
-TableDataInserter::TableDataInserter(const dbtable& t) :tablename(t.Name()), lastRecord(-1)
+TableDataInserter::TableDataInserter(const dbtable& t)
 {
-    for (auto f : t.Fields())
+    init(t);
+}
+
+void TableDataInserter::init(const dbtable& t)
+{
+    tablename = t.Name();
+    for (auto dbfield : t.Fields())
     {
-        QSqlField sqlf(f.name(), f.type(), tablename);
-        if( f.typeInfo().contains("AUTOINCREMENT", Qt::CaseInsensitive) )
-            sqlf.setAutoValue(true);
-        record.append(sqlf);
+        QSqlField sqlField(dbfield.name(), dbfield.type(), tablename);
+        if( dbfield.typeDetails().contains("AUTOINCREMENT", Qt::CaseInsensitive) )
+            sqlField.setAutoValue(true);
+        record.append(sqlField);
     }
 }
 
 void TableDataInserter::setValue(const QString& n, const QVariant& v)
 {
+    if( n.isEmpty()) return;
     if( record.contains(n))
     {
         if( record.field(n).type() == v.type())
@@ -78,6 +85,7 @@ QString format4SQL(QVariant v)
 
 QString TableDataInserter::InsertRecordSQL() const
 {
+    if( record.isEmpty()) return QString();
     QString sql("INSERT INTO " + tablename +" VALUES (");
 
     for( int i=0; i<record.count(); i++)
@@ -90,19 +98,22 @@ QString TableDataInserter::InsertRecordSQL() const
             sql += format4SQL(record.field(i).value());
         }
     }
-    qDebug() << "InsertRecordSQL:\n" << sql << ")";
-    return sql +")";
+    sql +=")";
+    qDebug() << "InsertRecordSQL:" << endl << sql << endl;
+    return sql;
 }
 
-bool TableDataInserter::InsertData(QSqlDatabase db)
+int TableDataInserter::InsertData(QSqlDatabase db) const
 {
+    if( record.isEmpty()) return false;
     QSqlQuery q(db);
     bool ret = q.exec(InsertRecordSQL());
-    lastRecord = q.lastInsertId().toInt();
+    int lastRecord = q.lastInsertId().toInt();
     if( !ret)
     {
         qCritical() << "Insert record failed: " << q.lastError() << "\n" << q.lastQuery() << endl;
-        return false;
+        return -1;
     }
-    return true;
+    qDebug() << "successfully inserted Data at index " << q.lastInsertId().toInt() << endl <<  q.lastQuery() << endl;
+    return lastRecord;
 }

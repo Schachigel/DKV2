@@ -34,6 +34,7 @@ SOURCES += \
         finhelper.cpp \
         helper.cpp \
         itemformatter.cpp \
+        kreditor.cpp \
         main.cpp \
         mainwindow.cpp \
         sqlhelper.cpp \
@@ -50,6 +51,7 @@ HEADERS += \
         finhelper.h \
         helper.h \
         itemformatter.h \
+        kreditor.h \
         mainwindow.h \
         sqlhelper.h \
         vertrag.h

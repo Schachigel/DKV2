@@ -6,6 +6,7 @@
 
 #include "../DKV2/dbstructure.h"
 #include "../DKV2/dbtable.h"
+#include "../DKV2/kreditor.h"
 #include "../DKV2/dkdbhelper.h"
 #include "../DKV2/filehelper.h"
 #include "../DKV2/helper.h"
@@ -76,7 +77,7 @@ void tst_db::test_SimpleTableAddData()
     TableDataInserter tdi(s["Ad"]);
     tdi.setValue("vname", QVariant("Holger"));
     tdi.setValue("nname", "Mairon");
-    QVERIFY(tdi.InsertData(QSqlDatabase::database(testCon)));
+    QVERIFY( 0<= tdi.InsertData(QSqlDatabase::database(testCon)));
     QVERIFY(tableRecordCount("Ad") == 1);
 }
 
@@ -146,18 +147,18 @@ void tst_db::test_addRecords_wDep()
 
     TableDataInserter tdi(s["p"]);
     tdi.setValue("name", "Holger");
-    QVERIFY(tdi.InsertData(QSqlDatabase::database(testCon)));
+    QVERIFY( 0<= tdi.InsertData(QSqlDatabase::database(testCon)));
     QVERIFY(tableRecordCount("p") == 1);
 
     qDebug() << "add depending data sets" << endl;
     TableDataInserter tdiChild1(s["c"]);
     tdiChild1.setValue("pid", QVariant(1)); // should work
-    QVERIFY(tdiChild1.InsertData(QSqlDatabase::database(testCon)));
+    QVERIFY( 0<= tdiChild1.InsertData(QSqlDatabase::database(testCon)));
 
     qDebug() << "add invalid depending data sets" << endl;
     TableDataInserter tdiChild2(s["c"]);
     tdiChild2.setValue("pid", 2); // should fail - no matching parent in table p
-    QVERIFY(!tdiChild2.InsertData(QSqlDatabase::database(testCon)));
+    QVERIFY( 0> tdiChild2.InsertData(QSqlDatabase::database(testCon)));
 }
 
 void tst_db::test_deleteRecord_wDep()
@@ -181,16 +182,16 @@ void tst_db::test_deleteRecord_wDep()
 
     TableDataInserter tdi(s["p"]);
     tdi.setValue("name", "Holger");
-    QVERIFY(tdi.InsertData(QSqlDatabase::database(testCon)));
+    QVERIFY( 0<= tdi.InsertData(QSqlDatabase::database(testCon)));
     QVERIFY(tableRecordCount("p") == 1);
 
     qDebug() << "add depending data sets" << endl;
     TableDataInserter tdiChild1(s["c"]);
     tdiChild1.setValue("pid", QVariant(1)); // should work
-    QVERIFY(tdiChild1.InsertData(QSqlDatabase::database(testCon)));
+    QVERIFY( 0<= tdiChild1.InsertData(QSqlDatabase::database(testCon)));
     TableDataInserter tdiChild2(s["c"]);
     tdiChild2.setValue("pid", QVariant(1)); // second child to matching parent in table p
-    QVERIFY(tdiChild2.InsertData(QSqlDatabase::database(testCon)));
+    QVERIFY( 0<= tdiChild2.InsertData(QSqlDatabase::database(testCon)));
     QVERIFY(tableRecordCount("p") == 1);
     QVERIFY(tableRecordCount("c") == 2);
 
@@ -221,7 +222,7 @@ void tst_db::dbfieldCopyConst()
 
     TableDataInserter tdi(s["p"]);
     tdi.setValue("name", "Holger");
-    QVERIFY(tdi.InsertData(QSqlDatabase::database(testCon)));
+    QVERIFY( 0<= tdi.InsertData(QSqlDatabase::database(testCon)));
     QVERIFY(tableRecordCount("p") == 1);
     dbfield cp(s["c"]["pid"]);
     QVERIFY(!cp.getReferenzeInfo().tablename.isEmpty());
@@ -231,11 +232,25 @@ void tst_db::dbfieldCopyConst()
 void tst_db::newDbIsValid()
 {
     // init
-    const char* dbname ="..\\data\\UnitTestDb.dkdb";
     initDKDBStruktur();
     // test
-    DKDatenbankAnlegen( dbname);
-    QVERIFY(istValideDatenbank(dbname));
-    // cleanup
-    QFile().remove(dbname);
+    DKDatenbankAnlegen( QString(), QSqlDatabase::database(testCon));
+    QVERIFY(istValideDatenbank(filename));
+}
+
+void tst_db::createKreditor()
+{
+    // init
+    initDKDBStruktur();
+    // test
+    DKDatenbankAnlegen( QString(), QSqlDatabase::database(testCon));
+    Kreditor k;
+    k.setValue("Vorname", "Hugo");
+    k.setValue("Nachname", "Hurtig");
+    k.setValue("Plz", "68305");
+    k.setValue("Stadt", "Mannheim");
+    k.setValue("Strasse", "Pfungstadterstr. 1");
+    QVERIFY( -1 != k.Speichern(QSqlDatabase::database(testCon)));
+    QVERIFY(tableRecordCount("Kreditoren") == 1);
+
 }

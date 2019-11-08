@@ -41,7 +41,7 @@ bool dbstructure::createDb(QSqlDatabase db) const
             break;
         }
         else
-            qDebug() << "Created table:" << table.Name()  << "\n" << tableSql;
+            qDebug() << "Created table:" << table.Name()  << endl << tableSql << endl;
     }
     return ret;
 }
