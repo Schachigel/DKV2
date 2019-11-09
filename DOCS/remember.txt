@@ -1,6 +1,6 @@
 to do: Doku als Writer Dokument
 
-VertragsdatenAusFormular muss Vertrag.Kontakt füllen ...
+?! Memory leak: was muss beim öffnen einer Seite jedesmal gemacht werden, was nur einmal?
 
 Buchungen Refactoring:
 - neuen Vertrag Buchung prüfen (sqliteAdmin Anzeigefehler?)
@@ -11,14 +11,12 @@ Buchungen Refactoring:
 
 
 + Buchungen:
-++ Vertragsbeendigung
-  Zins berechnen und zum Wert hinzufügen
-  Wert ausbuchen
-  Vertrag deaktivieren / löschen?
+
 ++ Jahreszinsberechnung
     - alle aktiven Verträge
     - Zeitraum von max(1.1.<jahr>, LetzteZinsberechnung) bis Jahresende
     - Tage (finanzmathematisch) * Zinssatz / (Tage pro Jahr finanzmathematisch)
+
 ++ (prio 2) Geldeingang (Kredit erhöhen) =
   tesaurierend
     Zins "bis dato" errechnen, Wert erhöhen, "ZinsenStart Datum" setzten
@@ -47,6 +45,12 @@ next:
 - isValidDb: check colums
 
 DONE
+
+++ Vertragsbeendigung
+  Zins berechnen und zum Wert hinzufügen
+  Wert ausbuchen
+  Vertrag deaktivieren / BEENDEN
+
 ++ Vertrag anlegen als Beleg speichern (OK)
 - dbg: log anzeigen (OK)
 * Listen: Click auf Header ändert Sortierung (OK)

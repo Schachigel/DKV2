@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <dkdbhelper.h>
+#include <QItemSelection>
 #include <QMainWindow>
 #include "vertrag.h"
 
@@ -78,6 +79,14 @@ private slots:
 
     void on_actionVertraege_zeigen_triggered();
 
+    void on_tblViewBookingsSelectionChanged(const QItemSelection &, const QItemSelection &);
+
+    void on_actionShow_Bookings_triggered();
+
+    void on_tblViewBookings_pressed(const QModelIndex &index);
+
+    void on_tblViewBookings_entered(const QModelIndex &index);
+
 private:
     Ui::MainWindow *ui;
 
@@ -94,7 +103,8 @@ private:
         newPersonIndex =2,
         newContractIndex =3,
         ContractsListIndex =4,
-        OverviewIndex=5
+        OverviewIndex=5,
+        bookingsListIndex=6
     };
     void KreditorFormulardatenLoeschen();
     void clearNewContractFields();

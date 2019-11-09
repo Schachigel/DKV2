@@ -12,6 +12,7 @@
 #include <qsqlquery.h>
 #include <qsqlerror.h>
 #include <qsqltablemodel.h>
+#include <QSqlRelationalTableModel>
 #include <qsqlquerymodel.h>
 #include <qsqlrecord.h>
 #include <qsqlfield.h>
@@ -88,6 +89,10 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
     case ContractsListIndex:
         ui->actionKreditgeber_l_schen->setEnabled(false);
         ui->actionVertrag_l_schen->setEnabled(true);
+        break;
+    case bookingsListIndex:
+        ui->actionKreditgeber_l_schen->setEnabled(false);
+        ui->actionVertrag_l_schen->setEnabled(false);
         break;
     default:
     {
@@ -607,3 +612,40 @@ void MainWindow::on_action_bersicht_triggered()
     ui->stackedWidget->setCurrentIndex(OverviewIndex);
 }
 
+void MainWindow::on_tblViewBookingsSelectionChanged(const QItemSelection& to, const QItemSelection& )
+{
+    QString json =ui->tblViewBookings->model()->data(to.indexes().at(0).siblingAtColumn(6)).toString();
+    ui->lblYson->setText(json);
+}
+void MainWindow::on_actionShow_Bookings_triggered()
+{LOG_ENTRY_and_EXIT;
+
+    QSqlRelationalTableModel* model = new QSqlRelationalTableModel(ui->tblViewBookings);
+    model->setTable("Buchungen");
+    model->setSort(0,Qt::DescendingOrder );
+    model->setRelation(2, QSqlRelation("Buchungsarten", "id", "Art"));
+
+    model->select();
+
+    ui->tblViewBookings->setModel(model);
+    ui->tblViewBookings->hideColumn(6);
+    ui->tblViewBookings->resizeColumnsToContents();
+
+    connect(ui->tblViewBookings->selectionModel(),
+        SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)),
+            this, SLOT(on_tblViewBookingsSelectionChanged(const QItemSelection&, const QItemSelection&)));
+
+    ui->stackedWidget->setCurrentIndex(bookingsListIndex);
+}
+
+void MainWindow::on_tblViewBookings_pressed(const QModelIndex &index)
+{
+    QString json =ui->tblViewBookings->model()->data(index.siblingAtColumn(6)).toString();
+    ui->lblYson->setText(json);
+}
+
+void MainWindow::on_tblViewBookings_entered(const QModelIndex &index)
+{
+    QString json =ui->tblViewBookings->model()->data(index.siblingAtColumn(6)).toString();
+    ui->lblYson->setText(json);
+}

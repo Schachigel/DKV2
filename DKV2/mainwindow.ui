@@ -26,7 +26,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>6</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -466,6 +466,71 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="BookingsPage">
+       <layout class="QVBoxLayout" name="verticalLayout_bookings">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_filter" stretch="0,0,0">
+          <property name="spacing">
+           <number>7</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="lblFilterBookings">
+            <property name="text">
+             <string>Filter</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="leFilterBookings">
+            <property name="toolTip">
+             <string>Gib 2 oder mehr Zeichen ein und drücke die Rücklauftaste</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pbPersonFilterZurcksetztenBookings">
+            <property name="text">
+             <string>zurücksetzen</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="3,3">
+          <item>
+           <widget class="QTableView" name="tblViewBookings">
+            <property name="contextMenuPolicy">
+             <enum>Qt::CustomContextMenu</enum>
+            </property>
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
+            </property>
+            <property name="dragDropOverwriteMode">
+             <bool>false</bool>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::SingleSelection</enum>
+            </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectRows</enum>
+            </property>
+            <property name="toolTipBookings" stdset="0">
+             <string>Doppelklick oder F2 um ein Feld zu ändern. Rechte Maustaste für weitere Optionen</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lblYson">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -512,10 +577,11 @@
      <bool>true</bool>
     </property>
     <property name="title">
-     <string/>
+     <string>Debug</string>
     </property>
     <addaction name="actioncreateSampleData"/>
     <addaction name="actionanzeigenLog"/>
+    <addaction name="actionShow_Bookings"/>
    </widget>
    <addaction name="menuDatenbank"/>
    <addaction name="menuDK_Geber"/>
@@ -585,7 +651,7 @@
   </action>
   <action name="actioncreateSampleData">
    <property name="text">
-    <string>Create Sample Data</string>
+    <string>Beispieldaten erstellen</string>
    </property>
    <property name="visible">
     <bool>true</bool>
@@ -635,7 +701,7 @@
   </action>
   <action name="actionanzeigenLog">
    <property name="text">
-    <string>Open Log </string>
+    <string>Log Datei öffnen</string>
    </property>
   </action>
   <action name="actionVertrag_Beenden">
@@ -660,6 +726,11 @@
    </property>
    <property name="toolTip">
     <string>zu den Verträgen dieses Kreditgebers wechseln</string>
+   </property>
+  </action>
+  <action name="actionShow_Bookings">
+   <property name="text">
+    <string>Buchungen anzeigen</string>
    </property>
   </action>
  </widget>

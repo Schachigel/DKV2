@@ -53,6 +53,7 @@ public:
     QAction *actionVertrag_Beenden;
     QAction *action_bersicht;
     QAction *actionVertraege_zeigen;
+    QAction *actionShow_Bookings;
     QWidget *centralWidget;
     QVBoxLayout *verticalLayout_2;
     QLabel *statusLabel;
@@ -124,6 +125,15 @@ public:
     QWidget *Overview;
     QVBoxLayout *verticalLayout_5;
     QLabel *lblOverview;
+    QWidget *BookingsPage;
+    QVBoxLayout *verticalLayout_bookings;
+    QHBoxLayout *horizontalLayout_filter;
+    QLabel *lblFilterBookings;
+    QLineEdit *leFilterBookings;
+    QPushButton *pbPersonFilterZurcksetztenBookings;
+    QHBoxLayout *horizontalLayout_5;
+    QTableView *tblViewBookings;
+    QLabel *lblYson;
     QMenuBar *menuBar;
     QMenu *menuDatenbank;
     QMenu *menuDK_Geber;
@@ -175,6 +185,8 @@ public:
         action_bersicht->setObjectName(QString::fromUtf8("action_bersicht"));
         actionVertraege_zeigen = new QAction(MainWindow);
         actionVertraege_zeigen->setObjectName(QString::fromUtf8("actionVertraege_zeigen"));
+        actionShow_Bookings = new QAction(MainWindow);
+        actionShow_Bookings->setObjectName(QString::fromUtf8("actionShow_Bookings"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         verticalLayout_2 = new QVBoxLayout(centralWidget);
@@ -517,6 +529,57 @@ public:
         verticalLayout_5->addWidget(lblOverview);
 
         stackedWidget->addWidget(Overview);
+        BookingsPage = new QWidget();
+        BookingsPage->setObjectName(QString::fromUtf8("BookingsPage"));
+        verticalLayout_bookings = new QVBoxLayout(BookingsPage);
+        verticalLayout_bookings->setSpacing(6);
+        verticalLayout_bookings->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_bookings->setObjectName(QString::fromUtf8("verticalLayout_bookings"));
+        horizontalLayout_filter = new QHBoxLayout();
+        horizontalLayout_filter->setSpacing(7);
+        horizontalLayout_filter->setObjectName(QString::fromUtf8("horizontalLayout_filter"));
+        lblFilterBookings = new QLabel(BookingsPage);
+        lblFilterBookings->setObjectName(QString::fromUtf8("lblFilterBookings"));
+
+        horizontalLayout_filter->addWidget(lblFilterBookings);
+
+        leFilterBookings = new QLineEdit(BookingsPage);
+        leFilterBookings->setObjectName(QString::fromUtf8("leFilterBookings"));
+
+        horizontalLayout_filter->addWidget(leFilterBookings);
+
+        pbPersonFilterZurcksetztenBookings = new QPushButton(BookingsPage);
+        pbPersonFilterZurcksetztenBookings->setObjectName(QString::fromUtf8("pbPersonFilterZurcksetztenBookings"));
+
+        horizontalLayout_filter->addWidget(pbPersonFilterZurcksetztenBookings);
+
+
+        verticalLayout_bookings->addLayout(horizontalLayout_filter);
+
+        horizontalLayout_5 = new QHBoxLayout();
+        horizontalLayout_5->setSpacing(6);
+        horizontalLayout_5->setObjectName(QString::fromUtf8("horizontalLayout_5"));
+        tblViewBookings = new QTableView(BookingsPage);
+        tblViewBookings->setObjectName(QString::fromUtf8("tblViewBookings"));
+        tblViewBookings->setContextMenuPolicy(Qt::CustomContextMenu);
+        tblViewBookings->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        tblViewBookings->setDragDropOverwriteMode(false);
+        tblViewBookings->setSelectionMode(QAbstractItemView::SingleSelection);
+        tblViewBookings->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+        horizontalLayout_5->addWidget(tblViewBookings);
+
+        lblYson = new QLabel(BookingsPage);
+        lblYson->setObjectName(QString::fromUtf8("lblYson"));
+
+        horizontalLayout_5->addWidget(lblYson);
+
+        horizontalLayout_5->setStretch(0, 3);
+        horizontalLayout_5->setStretch(1, 3);
+
+        verticalLayout_bookings->addLayout(horizontalLayout_5);
+
+        stackedWidget->addWidget(BookingsPage);
 
         verticalLayout_2->addWidget(stackedWidget);
 
@@ -593,10 +656,11 @@ public:
         menuVertr_ge->addAction(actionVertrag_anlegen);
         menuDebug->addAction(actioncreateSampleData);
         menuDebug->addAction(actionanzeigenLog);
+        menuDebug->addAction(actionShow_Bookings);
 
         retranslateUi(MainWindow);
 
-        stackedWidget->setCurrentIndex(2);
+        stackedWidget->setCurrentIndex(6);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -632,7 +696,7 @@ public:
 #endif // QT_CONFIG(tooltip)
         actionProgramm_beenden->setText(QCoreApplication::translate("MainWindow", "Programm beenden", nullptr));
         actionListe_der_Vertr_ge_anzeigen->setText(QCoreApplication::translate("MainWindow", "Liste der Vertr\303\244ge anzeigen", nullptr));
-        actioncreateSampleData->setText(QCoreApplication::translate("MainWindow", "Create Sample Data", nullptr));
+        actioncreateSampleData->setText(QCoreApplication::translate("MainWindow", "Beispieldaten erstellen", nullptr));
         actionNeuer_DK_Geber->setText(QCoreApplication::translate("MainWindow", "Anlegen", nullptr));
         actionVertrag_anlegen->setText(QCoreApplication::translate("MainWindow", "Vertrag Anlegen", nullptr));
 #if QT_CONFIG(tooltip)
@@ -648,7 +712,7 @@ public:
         actionactivateContract->setToolTip(QCoreApplication::translate("MainWindow", "Zinszahlung des Vertrags aktivieren", nullptr));
 #endif // QT_CONFIG(tooltip)
         actionVertrag_l_schen->setText(QCoreApplication::translate("MainWindow", "Vertrag &L\303\266schen", nullptr));
-        actionanzeigenLog->setText(QCoreApplication::translate("MainWindow", "Open Log ", nullptr));
+        actionanzeigenLog->setText(QCoreApplication::translate("MainWindow", "Log Datei \303\266ffnen", nullptr));
         actionVertrag_Beenden->setText(QCoreApplication::translate("MainWindow", "Vertrag &Beenden", nullptr));
 #if QT_CONFIG(tooltip)
         actionVertrag_Beenden->setToolTip(QCoreApplication::translate("MainWindow", "Zins und Auszahlungsbetrag berechnen, Vertrag l\303\266schen", nullptr));
@@ -661,6 +725,7 @@ public:
 #if QT_CONFIG(tooltip)
         actionVertraege_zeigen->setToolTip(QCoreApplication::translate("MainWindow", "zu den Vertr\303\244gen dieses Kreditgebers wechseln", nullptr));
 #endif // QT_CONFIG(tooltip)
+        actionShow_Bookings->setText(QCoreApplication::translate("MainWindow", "Buchungen anzeigen", nullptr));
         statusLabel->setText(QString());
         label->setText(QCoreApplication::translate("MainWindow", "<H2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</H2>", nullptr));
         label_11->setText(QCoreApplication::translate("MainWindow", "Filter", nullptr));
@@ -720,10 +785,17 @@ public:
         contractsTableView->setToolTip(QCoreApplication::translate("MainWindow", "Verwende die sekund\303\244re Maustaste f\303\274r weitere Optionen", nullptr));
 #endif // QT_CONFIG(tooltip)
         lblOverview->setText(QCoreApplication::translate("MainWindow", "TextLabel", nullptr));
+        lblFilterBookings->setText(QCoreApplication::translate("MainWindow", "Filter", nullptr));
+#if QT_CONFIG(tooltip)
+        leFilterBookings->setToolTip(QCoreApplication::translate("MainWindow", "Gib 2 oder mehr Zeichen ein und dr\303\274cke die R\303\274cklauftaste", nullptr));
+#endif // QT_CONFIG(tooltip)
+        pbPersonFilterZurcksetztenBookings->setText(QCoreApplication::translate("MainWindow", "zur\303\274cksetzen", nullptr));
+        tblViewBookings->setProperty("toolTipBookings", QVariant(QCoreApplication::translate("MainWindow", "Doppelklick oder F2 um ein Feld zu \303\244ndern. Rechte Maustaste f\303\274r weitere Optionen", nullptr)));
+        lblYson->setText(QString());
         menuDatenbank->setTitle(QCoreApplication::translate("MainWindow", "&Datenbank", nullptr));
         menuDK_Geber->setTitle(QCoreApplication::translate("MainWindow", "&Kreditgeber", nullptr));
         menuVertr_ge->setTitle(QCoreApplication::translate("MainWindow", "&Vertr\303\244ge", nullptr));
-        menuDebug->setTitle(QString());
+        menuDebug->setTitle(QCoreApplication::translate("MainWindow", "Debug", nullptr));
     } // retranslateUi
 
 };
