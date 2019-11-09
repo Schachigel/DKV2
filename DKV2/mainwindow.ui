@@ -694,7 +694,7 @@
     <string>Zinszahlung des Vertrags aktivieren</string>
    </property>
   </action>
-  <action name="actionVertrag_l_schen">
+  <action name="actionVertrag_passiv_loeschen">
    <property name="text">
     <string>Vertrag &amp;Löschen</string>
    </property>

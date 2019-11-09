@@ -61,7 +61,7 @@ private slots:
 
     void on_actionactivateContract_triggered();
 
-    void on_actionVertrag_l_schen_triggered();
+    void on_actionVertrag_passiv_loeschen_triggered();
 
     void on_actionanzeigenLog_triggered();
 
@@ -86,6 +86,7 @@ private slots:
     void on_tblViewBookings_pressed(const QModelIndex &index);
 
     void on_tblViewBookings_entered(const QModelIndex &index);
+
 
 private:
     Ui::MainWindow *ui;

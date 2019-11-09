@@ -72,27 +72,27 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
     {
     case emptyPageIndex:
         ui->actionKreditgeber_l_schen->setEnabled(false);
-        ui->actionVertrag_l_schen->setEnabled(false);
+        ui->actionVertrag_passiv_loeschen->setEnabled(false);
         break;
     case PersonListIndex:
         ui->actionKreditgeber_l_schen->setEnabled(true);
-        ui->actionVertrag_l_schen->setEnabled(false);
+        ui->actionVertrag_passiv_loeschen->setEnabled(false);
         break;
     case newPersonIndex:
         ui->actionKreditgeber_l_schen->setEnabled(false);
-        ui->actionVertrag_l_schen->setEnabled(false);
+        ui->actionVertrag_passiv_loeschen->setEnabled(false);
         break;
     case newContractIndex:
         ui->actionKreditgeber_l_schen->setEnabled(false);
-        ui->actionVertrag_l_schen->setEnabled(false);
+        ui->actionVertrag_passiv_loeschen->setEnabled(false);
         break;
     case ContractsListIndex:
         ui->actionKreditgeber_l_schen->setEnabled(false);
-        ui->actionVertrag_l_schen->setEnabled(true);
+        ui->actionVertrag_passiv_loeschen->setEnabled(true);
         break;
     case bookingsListIndex:
         ui->actionKreditgeber_l_schen->setEnabled(false);
-        ui->actionVertrag_l_schen->setEnabled(false);
+        ui->actionVertrag_passiv_loeschen->setEnabled(false);
         break;
     default:
     {
@@ -480,7 +480,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &
     else
     {
         menu.addAction(ui->actionactivateContract);
-        menu.addAction(ui->actionVertrag_l_schen); // passive Verträge können gelöscht werden
+        menu.addAction(ui->actionVertrag_passiv_loeschen); // passive Verträge können gelöscht werden
     }
     menu.exec(ui->PersonsTableView->mapToGlobal(pos));
     return;
@@ -517,7 +517,7 @@ void MainWindow::on_actionactivateContract_triggered()
             prepareContractListView();
     }
 }
-void MainWindow::on_actionVertrag_l_schen_triggered()
+void MainWindow::on_actionVertrag_passiv_loeschen_triggered()
 {LOG_ENTRY_and_EXIT;
     QModelIndex mi(ui->contractsTableView->currentIndex());
     if( !mi.isValid()) return;
@@ -530,8 +530,9 @@ void MainWindow::on_actionVertrag_l_schen_triggered()
     msg += Vorname + " " + Nachname + " (id " + index + ") gelöscht werden?";
     if( QMessageBox::Yes != QMessageBox::question(this, "Kreditvertrag löschen", msg))
         return;
-    // passivenVertragLoeschen(index);
-    Vertrag::passivenVertragLoeschen(index.toInt());
+
+    Vertrag v; v.setVid(index.toInt());
+    v.passivenVertragLoeschen();
     prepareContractListView();
 }
 
@@ -649,3 +650,4 @@ void MainWindow::on_tblViewBookings_entered(const QModelIndex &index)
     QString json =ui->tblViewBookings->model()->data(index.siblingAtColumn(6)).toString();
     ui->lblYson->setText(json);
 }
+

@@ -48,7 +48,7 @@ public:
     QAction *actionKreditgeber_l_schen;
     QAction *actionshowLog;
     QAction *actionactivateContract;
-    QAction *actionVertrag_l_schen;
+    QAction *actionVertrag_passiv_loeschen;
     QAction *actionanzeigenLog;
     QAction *actionVertrag_Beenden;
     QAction *action_bersicht;
@@ -175,8 +175,8 @@ public:
         actionshowLog->setObjectName(QString::fromUtf8("actionshowLog"));
         actionactivateContract = new QAction(MainWindow);
         actionactivateContract->setObjectName(QString::fromUtf8("actionactivateContract"));
-        actionVertrag_l_schen = new QAction(MainWindow);
-        actionVertrag_l_schen->setObjectName(QString::fromUtf8("actionVertrag_l_schen"));
+        actionVertrag_passiv_loeschen = new QAction(MainWindow);
+        actionVertrag_passiv_loeschen->setObjectName(QString::fromUtf8("actionVertrag_passiv_loeschen"));
         actionanzeigenLog = new QAction(MainWindow);
         actionanzeigenLog->setObjectName(QString::fromUtf8("actionanzeigenLog"));
         actionVertrag_Beenden = new QAction(MainWindow);
@@ -711,7 +711,7 @@ public:
 #if QT_CONFIG(tooltip)
         actionactivateContract->setToolTip(QCoreApplication::translate("MainWindow", "Zinszahlung des Vertrags aktivieren", nullptr));
 #endif // QT_CONFIG(tooltip)
-        actionVertrag_l_schen->setText(QCoreApplication::translate("MainWindow", "Vertrag &L\303\266schen", nullptr));
+        actionVertrag_passiv_loeschen->setText(QCoreApplication::translate("MainWindow", "Vertrag &L\303\266schen", nullptr));
         actionanzeigenLog->setText(QCoreApplication::translate("MainWindow", "Log Datei \303\266ffnen", nullptr));
         actionVertrag_Beenden->setText(QCoreApplication::translate("MainWindow", "Vertrag &Beenden", nullptr));
 #if QT_CONFIG(tooltip)
