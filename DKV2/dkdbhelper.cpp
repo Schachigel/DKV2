@@ -348,10 +348,7 @@ QString ContractList_WHERE(const QString& Filter)
         s += " AND Kreditoren.id = '" + QString::number(index) + "'";
         return s;
     }
-    if( Filter.size()> 2)
-    {
-        s += " AND ( Vorname LIKE '%" + Filter + "%' OR Nachname LIKE '%" + Filter + "%' )";
-    }
+    s += " AND ( Vorname LIKE '%" + Filter + "%' OR Nachname LIKE '%" + Filter + "%' )";
     return s;
 }
 QString ContractList_SQL(const QVector<dbfield>& fields, const QString& filter)
