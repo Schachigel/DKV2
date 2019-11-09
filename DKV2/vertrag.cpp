@@ -159,18 +159,32 @@ bool Vertrag::aktiviereVertrag(const QDate& aDate)
     return ret;
 }
 
-/*static*/ bool Vertrag::passivenVertragLoeschen(const int vId)
+bool Vertrag::passivenVertragLoeschen()
 {   LOG_ENTRY_and_EXIT;
-    if( ExecuteSingleValueSql("SELECT [aktiv] FROM [Vertraege] WHERE id=" +QString::number(vId)).toBool())
+    if( ExecuteSingleValueSql("SELECT [aktiv] FROM [Vertraege] WHERE id=" +QString::number(id)).toBool())
     {
-        qWarning() << "will not delete active contract w id:" << QString::number(vId);
+        qWarning() << "will not delete active contract w id:" << id;
+        return false;
+    }
+
+    QSqlDatabase::database().transaction();
+    // wg der ref. integrit. muss ERST die Buchung gemacht werden, dann der Vertrag gelöscht
+    QString Belegnachricht("Passiver Vertrag %1 gelöscht");
+    Belegnachricht = Belegnachricht.arg(QString::number(id));
+    if( !BelegSpeichern(BuchungsartIdFromArt("Passiven Vertrag löschen"), Belegnachricht))
+    {
+        qCritical() << "Belegdaten konnten nicht gespeichert werden";
+        QSqlDatabase::database().rollback();
         return false;
     }
     QSqlQuery deleteQ;
-    if( !deleteQ.exec("DELETE FROM Vertraege WHERE id=" + QString::number(vId)))
+    if( !deleteQ.exec("DELETE FROM Vertraege WHERE id=" + QString::number(id)))
     {
-        qCritical() << "failed to delete Contract: " << deleteQ.lastError() << "\n" << deleteQ.lastQuery();
+        qCritical() << "failed to delete Contract: " << deleteQ.lastError() << endl << deleteQ.lastQuery();
+        QSqlDatabase::database().rollback();
         return false;
     }
+    QSqlDatabase::database().commit();
+    qDebug() << "passiver Vertrag " << id << "gelöscht";
     return true;
 }

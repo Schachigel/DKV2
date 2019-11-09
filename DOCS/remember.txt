@@ -1,5 +1,6 @@
 to do: Doku als Writer Dokument
 
+?! Buchungsarten: enum statt String
 ?! Memory leak: was muss beim öffnen einer Seite jedesmal gemacht werden, was nur einmal?
 
 Buchungen Refactoring:

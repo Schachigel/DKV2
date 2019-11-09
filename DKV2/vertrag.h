@@ -44,7 +44,7 @@ public:
     bool verbucheNeuenVertrag();
     bool aktiviereVertrag(const QDate& aDate);
     // statics
-    static bool passivenVertragLoeschen(const int vId);
+    bool passivenVertragLoeschen();
 private:
     // helper
     bool BelegSpeichern(int BArt, QString msg);
