@@ -30,8 +30,11 @@ uint32_t GetTickCount() {
 
 dbstructure dkdbstructur;
 
+QList<QPair<int, QString>> Buchungsarten;
+
 void initDKDBStruktur()
 {
+    initBuchungsarten();
     static bool init_done = false;
     if( init_done) return;
     init_done = true;
@@ -70,7 +73,7 @@ void initDKDBStruktur()
     dkdbstructur.appendTable(Vertraege);
 
     dbtable Buchungsarten("Buchungsarten");
-    Buchungsarten.append(dbfield("id",  QVariant::Int, "PRIMARY KEY AUTOINCREMENT"));
+    Buchungsarten.append(dbfield("id",  QVariant::Int, "PRIMARY KEY"));
     Buchungsarten.append(dbfield("Art", QVariant::String, "NOT NULL"));
     dkdbstructur.appendTable(Buchungsarten);
 
@@ -88,6 +91,22 @@ void initDKDBStruktur()
     meta.append(dbfield("Name", QVariant::String, "NOT NULL"));
     meta.append(dbfield("Wert", QVariant::String, "NOT NULL"));
     dkdbstructur.appendTable(meta);
+}
+
+void initBuchungsarten()
+{
+    //    "NOOP",
+    //    "Vertrag anlegen",
+    //    "Vertrag aktivieren",
+    //    "Passiven Vertrag löschen",
+    //    "Vertrag beenden",
+    //    "Zinsgutschrift"
+    Buchungsarten.push_back(QPair<int, QString>(Buchungsart_i::NOOP, ""));
+    Buchungsarten.push_back(QPair<int, QString>(Buchungsart_i::VERTRAG_ANLEGEN, "Vertrag anlegen"));
+    Buchungsarten.push_back(QPair<int, QString>(Buchungsart_i::VERTRAG_AKTIVIEREN, "Vertrag aktivieren"));
+    Buchungsarten.push_back(QPair<int, QString>(Buchungsart_i::PASSIVEN_VERTRAG_LOESCHEN, "Passiven Vertrag löschen"));
+    Buchungsarten.push_back(QPair<int, QString>(Buchungsart_i::VERTRAG_BEENDEN, "Vertrag beenden"));
+    Buchungsarten.push_back(QPair<int, QString>(Buchungsart_i::ZINSGUTSCHRIFT, "Zinsgutschrift"));
 }
 
 bool ZinssaetzeEinfuegen(QSqlDatabase db)
@@ -120,12 +139,12 @@ bool ZinssaetzeEinfuegen(QSqlDatabase db)
 
 bool BuchungsartenEinfuegen(QSqlDatabase db)
 {
-    QStringList arten{"Vertrag anlegen", "Vertrag aktivieren", "Passiven Vertrag löschen", "Vertrag beenden"};
     bool ret = true;
-    for( auto art: arten)
+    for( auto art: Buchungsarten)
     {
         TableDataInserter ti( dkdbstructur["Buchungsarten"]);
-        ti.setValue("Art", QVariant(art));
+        ti.setValue("id", QVariant(art.first));
+        ti.setValue("Art", QVariant(art.second));
 
         ret &= 0<= ti.InsertData(db);
     }
@@ -313,14 +332,6 @@ void ZinssaetzeFuerAuswahlliste(QList<ZinsAnzeigeMitId>& Rates)
         ZinsAnzeigeMitId entry{ query.value("id").toInt(), (query.value("Zinssatz").toString() + "  (" + query.value("Bemerkung").toString() + ")  ")};
         Rates.append(entry);
     }
-}
-
-int BuchungsartIdFromArt(QString s)
-{
-    QSqlQuery query("SELECT * FROM Buchungsarten WHERE Art =\"" + s + "\"");
-    query.next();
-    int i = query.value(0).toInt();
-    return i;
 }
 
 QString ContractList_SELECT(const QVector<dbfield>& fields)

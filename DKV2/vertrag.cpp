@@ -106,7 +106,7 @@ bool Vertrag::speichereBelegNeuerVertrag()
     }
     QString msg("Neuer Vertrag #" +QString::number(id));
 
-    return BelegSpeichern(BuchungsartIdFromArt("Vertrag anlegen"), msg);
+    return BelegSpeichern(VERTRAG_ANLEGEN, msg);
 }
 
 bool Vertrag::verbucheNeuenVertrag()
@@ -144,7 +144,7 @@ bool Vertrag::aktiviereVertrag(const QDate& aDate)
 
     QString BelegNachricht ("Vertrag %1 aktiviert zum %2");
     BelegNachricht = BelegNachricht.arg(QString::number(id), aDate.toString());
-    ret &= BelegSpeichern(BuchungsartIdFromArt("Vertrag aktivieren"), BelegNachricht); // BELEG BUCHEN ToDo
+    ret &= BelegSpeichern(VERTRAG_AKTIVIEREN, BelegNachricht);
 
     if(ret)
         QSqlDatabase::database().commit();
@@ -168,7 +168,7 @@ bool Vertrag::passivenVertragLoeschen()
     // wg der ref. integrit. muss ERST die Buchung gemacht werden, dann der Vertrag gelöscht
     QString Belegnachricht("Passiver Vertrag %1 gelöscht");
     Belegnachricht = Belegnachricht.arg(QString::number(id));
-    if( !BelegSpeichern(BuchungsartIdFromArt("Passiven Vertrag löschen"), Belegnachricht))
+    if( !BelegSpeichern( PASSIVEN_VERTRAG_LOESCHEN, Belegnachricht))
     {
         qCritical() << "Belegdaten konnten nicht gespeichert werden";
         QSqlDatabase::database().rollback();
@@ -200,7 +200,7 @@ bool Vertrag::aktivenVertragLoeschen( const QDate& termin)
     QSqlDatabase::database().transaction();
     QString Belegnachricht("Aktiven Vertrag " + QString::number(id) + " beenden. ");
     Belegnachricht += QString::number(Wert()) + "Euro (" + QString::number(davonZins) + "Euro Zins)";
-    if( !BelegSpeichern(BuchungsartIdFromArt("Vertrag beenden"), Belegnachricht))
+    if( !BelegSpeichern(VERTRAG_BEENDEN, Belegnachricht))
     {
         qCritical() << "Belegdaten konnten nicht gespeichert werden";
         QSqlDatabase::database().rollback();

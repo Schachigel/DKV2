@@ -16,9 +16,21 @@
 #include "dbstructure.h"
 
 extern dbstructure dkdbstructur;
+extern QList<QPair<int, QString>> Buchungsarten;
+
+enum Buchungsart_i
+{
+    NOOP =0,
+    VERTRAG_ANLEGEN =1,
+    VERTRAG_AKTIVIEREN =2,
+    PASSIVEN_VERTRAG_LOESCHEN =3,
+    VERTRAG_BEENDEN =4,
+    ZINSGUTSCHRIFT =5,
+    BART_NEXT =6
+};
 
 void initDKDBStruktur();
-
+void initBuchungsarten();
 bool DKDatenbankAnlegen(const QString& filename, QSqlDatabase db=QSqlDatabase());
 bool istValideDatenbank(const QString& filename);
 void DatenbankverbindungSchliessen();

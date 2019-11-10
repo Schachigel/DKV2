@@ -1,16 +1,8 @@
-to do: Doku als Writer Dokument
 
-?! Buchungen: beim Löschen wird keine Vid geschrieben
 ?! Buchungsarten: enum statt String
+?! Buchungsart: Zinsgutschrift
+
 ?! Memory leak: was muss beim öffnen einer Seite jedesmal gemacht werden, was nur einmal?
-
-Buchungen Refactoring:
-- neuen Vertrag Buchung prüfen (sqliteAdmin Anzeigefehler?)
-- weitere Buchungen:
-** Kreditor anlegen,-> wird kein Geld bewegt -> kein Beleg
-** aktiven Vertrag beenden,
-** passiven Vertrag löschen -> wird kein Geld bewegt -> kein Beleg
-
 
 + Buchungen:
 
@@ -26,7 +18,6 @@ Buchungen Refactoring:
     cave: zins f finanzamt ausweisen?
   nicht tesaurierend
     -> geht nicht, neuen Vertrag anlegen
-?! ausgezahlte Zinsen "merken" zur späteren Anzeige?
 
 
 Menüeintrag "Unterstützung"
@@ -38,15 +29,30 @@ Menüeintrag "Datei"
 * MRU files handling (die letzten geöffneten Dateien öffnen)?
 * Fenster Position merken / beim Start setzen (Multi Screen)
 * revisit logging: remove dev logging, improve error logging
-** alternativ: switch loggin default not to log qDebug but only qWarn and qCritical
 * P Liste: Spalte "Anzahl Verträge"?
 
 next:
 
 ? P Liste r-click Menu anlegen
-- isValidDb: check colums
 
 DONE
+
+- Doku als Writer Dokument
+
+- isValidDb: check colums
+
+?! ausgezahlte Zinsen "merken" zur späteren Anzeige? -> nein. Kann man auch nachträglich berechnen
+
+Buchungen Refactoring:
+- weitere Buchungen:
+** Kreditor anlegen,-> wird kein Geld bewegt -> kein Beleg (nein, ein Beleg ist immer gut)
+** aktiven Vertrag beenden -> done
+** passiven Vertrag löschen -> wird kein Geld bewegt -> kein Beleg (nein...)
+
+- neuen Vertrag Buchung prüfen (sqliteAdmin Anzeigefehler?)
+
+?! Buchungen: beim Löschen wird keine Vid geschrieben
+!! works as designed: sie wird geschrieben und nach dem löschen durch ref. integ. ge-nullt
 
 ++ Vertragsbeendigung
   Zins berechnen und zum Wert hinzufügen

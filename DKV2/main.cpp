@@ -84,7 +84,6 @@ int main(int argc, char *argv[])
     initLogging();
     LOG_ENTRY_and_EXIT;
     initDKDBStruktur();
-
     qInfo() << "DKV2 started " << QDate::currentDate().toString("dd.MM.yyyy") << "-" << QTime::currentTime().toString();
     QApplication a(argc, argv);
     a.setOrganizationName("4-MHS"); // used to store our settings
