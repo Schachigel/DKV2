@@ -83,11 +83,6 @@ private slots:
 
     void on_actionShow_Bookings_triggered();
 
-    void on_tblViewBookings_pressed(const QModelIndex &index);
-
-    void on_tblViewBookings_entered(const QModelIndex &index);
-
-
 private:
     Ui::MainWindow *ui;
 

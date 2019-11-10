@@ -31,7 +31,7 @@ int Kreditor::Speichern(QSqlDatabase db) const
     QSqlQuery deleteQ;
     if( !deleteQ.exec("DELETE FROM [Kreditoren] WHERE [Id]=" +QString::number(index)))
     {
-        qCritical() << "Delete Kreditor failed "<< deleteQ.lastError() << "\n" << deleteQ.lastQuery();
+        qCritical() << "Delete Kreditor failed "<< deleteQ.lastError() << endl << deleteQ.lastQuery();
         return false;
     }
     else

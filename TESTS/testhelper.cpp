@@ -15,7 +15,7 @@ int tableRecordCount(QString tname)
         qDebug() << "#Datensätze: " << q.record().value(0);
         return q.record().value(0).toInt();
     } else {
-        qCritical() << "selecting data failed " << q.lastError() << "\n" << q.lastQuery() << endl;
+        qCritical() << "selecting data failed " << q.lastError() << endl << q.lastQuery() << endl;
         return -1;
     }
 }

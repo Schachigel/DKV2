@@ -1,5 +1,6 @@
 to do: Doku als Writer Dokument
 
+?! Buchungen: beim Löschen wird keine Vid geschrieben
 ?! Buchungsarten: enum statt String
 ?! Memory leak: was muss beim öffnen einer Seite jedesmal gemacht werden, was nur einmal?
 

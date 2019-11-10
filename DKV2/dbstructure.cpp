@@ -37,7 +37,7 @@ bool dbstructure::createDb(QSqlDatabase db) const
         ret &= q.exec(tableSql);
         if(!ret)
         {
-            qCritical() << "Table creation failed: " << q.lastError() << "\n" << tableSql << endl;
+            qCritical() << "Table creation failed: " << q.lastError() << endl << tableSql << endl;
             break;
         }
         else

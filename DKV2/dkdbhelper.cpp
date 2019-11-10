@@ -187,7 +187,7 @@ bool hatAlleTabellenUndFelder(QSqlDatabase& db)
         sql.prepare(QString("SELECT * FROM ") + table.Name());
         if( !sql.exec())
         {
-            qDebug() << "testing for table " << table.Name() << " failed\n" << sql.lastError() << "\n" << sql.lastQuery();
+            qDebug() << "testing for table " << table.Name() << " failed\n" << sql.lastError() << endl << sql.lastQuery();
             return false;
         }
         if( table.Fields().count() != sql.record().count())

@@ -99,7 +99,7 @@ QString TableDataInserter::InsertRecordSQL() const
         }
     }
     sql +=")";
-    qDebug() << "InsertRecordSQL:" << endl << sql << endl;
+//    qDebug() << "InsertRecordSQL:" << endl << sql << endl;
     return sql;
 }
 
@@ -111,7 +111,7 @@ int TableDataInserter::InsertData(QSqlDatabase db) const
     int lastRecord = q.lastInsertId().toInt();
     if( !ret)
     {
-        qCritical() << "Insert record failed: " << q.lastError() << "\n" << q.lastQuery() << endl;
+        qCritical() << "Insert record failed: " << q.lastError() << endl << q.lastQuery() << endl;
         return -1;
     }
     qDebug() << "successfully inserted Data at index " << q.lastInsertId().toInt() << endl <<  q.lastQuery() << endl;

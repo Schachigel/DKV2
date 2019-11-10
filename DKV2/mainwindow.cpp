@@ -561,9 +561,9 @@ void MainWindow::on_FilterVertrgeZurcksetzten_clicked()
 void MainWindow::on_actionVertrag_Beenden_triggered()
 {LOG_ENTRY_and_EXIT;
     QModelIndex mi(ui->contractsTableView->currentIndex());
-    if( !mi.isValid()) return;    // Vertrag beenden -> Zins berechnen und m Auszahlungsbetrag anzeigen, dann löschen
+    if( !mi.isValid()) return;
     int index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toInt();
-
+    // Vertrag beenden -> Zins berechnen und m Auszahlungsbetrag anzeigen, dann löschen
     Vertrag v;
     v.ausDb(index, true);
     double WertBisHeute = v.Wert() + ZinsesZins(v.Zinsfuss(), v.Wert(), v.StartZinsberechnung(), QDate::currentDate(), v.Tesaurierend());
@@ -590,6 +590,9 @@ void MainWindow::on_actionVertrag_Beenden_triggered()
     confirmDeleteMsg = confirmDeleteMsg.arg(QString::number(neuerWert), QString::number(davonZins));
     if( QMessageBox::Yes != QMessageBox::question(this, "Vertrag löschen?", confirmDeleteMsg))
         return;
+    if( !v.aktivenVertragLoeschen(dlg.getDate()))
+        qCritical() << "Deleting the contract failed";
+    prepareContractListView();
 }
 
 QString prepareOverviewPage()
@@ -606,7 +609,6 @@ QString prepareOverviewPage()
                 "</body></html>");
     return lbl;
 }
-
 void MainWindow::on_action_bersicht_triggered()
 {LOG_ENTRY_and_EXIT;
     ui->lblOverview->setText( prepareOverviewPage());
@@ -637,17 +639,5 @@ void MainWindow::on_actionShow_Bookings_triggered()
             this, SLOT(on_tblViewBookingsSelectionChanged(const QItemSelection&, const QItemSelection&)));
 
     ui->stackedWidget->setCurrentIndex(bookingsListIndex);
-}
-
-void MainWindow::on_tblViewBookings_pressed(const QModelIndex &index)
-{
-    QString json =ui->tblViewBookings->model()->data(index.siblingAtColumn(6)).toString();
-    ui->lblYson->setText(json);
-}
-
-void MainWindow::on_tblViewBookings_entered(const QModelIndex &index)
-{
-    QString json =ui->tblViewBookings->model()->data(index.siblingAtColumn(6)).toString();
-    ui->lblYson->setText(json);
 }
 

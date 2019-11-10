@@ -45,7 +45,7 @@ QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString&
     q.prepare(sql);
     if( !q.exec())
     {
-        qCritical() << "SingleRecordSql failed " << q.lastError() << "\n" << q.lastQuery();
+        qCritical() << "SingleRecordSql failed " << q.lastError() << endl << q.lastQuery();
         return QSqlRecord();
     }
     q.last();
@@ -63,7 +63,7 @@ QVariant ExecuteSingleValueSql(const QString& s, const QString& con)
     q.prepare(s);
     if( !q.exec())
     {
-        qCritical() << "SingleValueSql failed to execute: " << q.lastError() << "\n" << q.lastQuery();
+        qCritical() << "SingleValueSql failed to execute: " << q.lastError() << endl << q.lastQuery();
         return QVariant();
     }
     q.last();

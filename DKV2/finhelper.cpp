@@ -136,6 +136,6 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
         << "\nErstes Jahr : " << ZinsImErstenJahr << "(" << TageImErstenJahr << " Tage)"
         << "\nVolle Jahre : " << ZinsVolleJahre << "(" << jahre << " Jahre)"
         << "\nLetztes Jahr: " << ZinsRestjahr << "(" << TageImLetztenJahr << " Tage)"
-        << "\nGesamtzins  : " << gesamtZins << "\n";
+        << "\nGesamtzins  : " << gesamtZins << endl;
     return round2(gesamtZins);
 }

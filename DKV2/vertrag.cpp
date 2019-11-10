@@ -3,6 +3,7 @@
 #include "helper.h"
 #include "dbfield.h"
 #include "sqlhelper.h"
+#include "finhelper.h"
 #include "dkdbhelper.h"
 #include "vertrag.h"
 
@@ -52,8 +53,8 @@ bool Vertrag::ausDb(int vId, bool mitBelegdaten)
         zinsFuss = rec.value("Zinssaetze.Zinssatz").toDouble();
         dkGeber.setValue("Vorname", rec.value("Kreditoren.Vorname"));
         dkGeber.setValue("Nachname", rec.value("Kreditoren.Nachname"));
-        dkGeber.setValue("Strasse ", rec.value("Kreditoren.Strasse"));
-        dkGeber.setValue("Plz", rec.value("Kreditoren.Plz"));
+        dkGeber.setValue("Strasse", rec.value("Kreditoren.Strasse"));
+        dkGeber.setValue("Plz", rec.value("Kreditoren.Plz").toString());
         dkGeber.setValue("Stadt", rec.value("Kreditoren.Stadt"));
         dkGeber.setValue("Iban", rec.value("Kreditoren.IBAN"));
         dkGeber.setValue("Bic", rec.value("Kreditoren.BIC"));
@@ -61,28 +62,24 @@ bool Vertrag::ausDb(int vId, bool mitBelegdaten)
     return true;
 }
 
-bool Vertrag::BelegSpeichern(int BArt, QString msg)
+bool Vertrag::BelegSpeichern(const int BArt, const QString& msg)
 {   LOG_ENTRY_and_EXIT;
+
     updateAusDb();
-    QSqlQuery sqlBuchung;
-    sqlBuchung.prepare("INSERT INTO Buchungen (VertragId, Buchungsart, Betrag, Datum, Bemerkung, Buchungsdaten)"
-                       " VALUES (:VertragsId, :Buchungsart, :Betrag, :Datum, :Bemerkung, :Buchungsdaten)");
-    sqlBuchung.bindValue(":VertragsId", QVariant(id));
-    sqlBuchung.bindValue(":Buchungsart", BArt);
-    sqlBuchung.bindValue(":Betrag", QVariant(betrag));
-    sqlBuchung.bindValue(":Datum", QVariant(QDate::currentDate()));
-    sqlBuchung.bindValue(":Bemerkung", QVariant(msg));
-    sqlBuchung.bindValue(":Buchungsdaten", QVariant(buchungsdatenJson));
-    if( !sqlBuchung.exec())
-    {
-        qCritical() << "Buchung wurde nicht gesp. Fehler: " << sqlBuchung.lastError();
-        return false;
-    }
-    qDebug().noquote() << msg << "\n" << buchungsdatenJson;
+    TableDataInserter ti(dkdbstructur["Buchungen"]);
+    ti.setValue("VertragId", id);
+    ti.setValue("Buchungsart", BArt);
+    ti.setValue("Betrag", betrag);
+    ti.setValue("Datum", QDate::currentDate());
+    ti.setValue("Bemerkung", msg);
+    ti.setValue("Buchungsdaten", buchungsdatenJson);
+    ti.InsertData();
+
+    qDebug().noquote() << msg << endl << buchungsdatenJson;
     return true;
 }
 
-int Vertrag::speichereNeuenVertrag()
+int Vertrag::speichereNeuenVertrag() const
 {  LOG_ENTRY_and_EXIT;
     TableDataInserter ti(dkdbstructur["Vertraege"]);
     ti.setValue(dkdbstructur["Vertraege"]["KreditorId"].name(), kreditorId);
@@ -187,4 +184,40 @@ bool Vertrag::passivenVertragLoeschen()
     QSqlDatabase::database().commit();
     qDebug() << "passiver Vertrag " << id << "gelöscht";
     return true;
+}
+
+bool Vertrag::aktivenVertragLoeschen( const QDate& termin)
+{LOG_ENTRY_and_EXIT;
+    if( !ExecuteSingleValueSql("SELECT [aktiv] FROM [Vertraege] WHERE id=" +QString::number(id)).toBool())
+    {
+        qWarning() << "will not delete passive contract w id:" << id;
+        return false;
+    }
+    // abschluss Wert berechnen
+    double davonZins =ZinsesZins(Zinsfuss(), Wert(), StartZinsberechnung(), termin, Tesaurierend());
+    wert += davonZins;
+
+    QSqlDatabase::database().transaction();
+    QString Belegnachricht("Aktiven Vertrag " + QString::number(id) + " beenden. ");
+    Belegnachricht += QString::number(Wert()) + "Euro (" + QString::number(davonZins) + "Euro Zins)";
+    if( !BelegSpeichern(BuchungsartIdFromArt("Vertrag beenden"), Belegnachricht))
+    {
+        qCritical() << "Belegdaten konnten nicht gespeichert werden";
+        QSqlDatabase::database().rollback();
+        return false;
+    }
+
+
+    QSqlQuery deleteQ;
+    if( !deleteQ.exec("DELETE FROM Vertraege WHERE id=" + QString::number(id)))
+    {
+        qCritical() << "failed to delete active Contract: " << deleteQ.lastError() << endl << deleteQ.lastQuery();
+        QSqlDatabase::database().rollback();
+        return false;
+    }
+    QSqlDatabase::database().commit();
+    qDebug() << "aktiver Vertrag " << id << "beendet";
+    return true;
+
+
 }

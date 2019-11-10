@@ -45,10 +45,11 @@ public:
     bool aktiviereVertrag(const QDate& aDate);
     // statics
     bool passivenVertragLoeschen();
+    bool aktivenVertragLoeschen(const QDate& termin);
 private:
     // helper
-    bool BelegSpeichern(int BArt, QString msg);
-    int speichereNeuenVertrag();
+    bool BelegSpeichern(const int BArt, const QString& msg);
+    int speichereNeuenVertrag() const;
     bool speichereBelegNeuerVertrag();
     void updateAusDb(){ausDb(id, true);}
     // data
