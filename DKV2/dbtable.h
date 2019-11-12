@@ -44,6 +44,7 @@ public:
     QSqlRecord getRecord() const {return record;}
     // interface
     int InsertData(QSqlDatabase db =QSqlDatabase::database()) const;
+    int UpdateData(QSqlDatabase db) const;
     //int getInsertedRecordId() const {return lastRecord;}
 private:
     // data
@@ -51,7 +52,8 @@ private:
     QSqlRecord record;
     //int lastRecord;
     // helper
-    QString InsertRecordSQL() const;
+    QString getInsertRecordSQL() const;
+    QString getUpdateRecordSQL() const;
 };
 
 #endif // DBTABLE_H

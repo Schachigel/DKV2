@@ -24,6 +24,13 @@ int Kreditor::Speichern(QSqlDatabase db) const
     return ti.InsertData(db);
 }
 
+int Kreditor::Update(QSqlDatabase db) const
+{LOG_ENTRY_and_EXIT;
+    if( ti.getRecord().isEmpty())
+        return -1;
+    return ti.UpdateData(db);
+}
+
 /* static */ bool Kreditor::Loeschen(int index)
 {   LOG_ENTRY_and_EXIT;
 

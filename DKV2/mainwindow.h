@@ -41,6 +41,7 @@ private slots:
 
     void on_saveList_clicked();
     void on_cancel_clicked();
+    void on_actionDkGeberBearbeiten_triggered();
 
     void on_stackedWidget_currentChanged(int arg1);
 
@@ -83,6 +84,7 @@ private slots:
 
     void on_actionShow_Bookings_triggered();
 
+
 private:
     Ui::MainWindow *ui;
 
@@ -103,6 +105,7 @@ private:
         bookingsListIndex=6
     };
     void KreditorFormulardatenLoeschen();
+    void KreditorFormulardatenBelegen(int id);
     void clearNewContractFields();
 };
 

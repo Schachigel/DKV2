@@ -48,6 +48,7 @@ void initDKDBStruktur()
     Kreditoren.append(dbfield("Strasse",  QVariant::String, "NOT NULL"));
     Kreditoren.append(dbfield("Plz",      QVariant::String, "NOT NULL"));
     Kreditoren.append(dbfield("Stadt",    QVariant::String, "NOT NULL"));
+    Kreditoren.append(dbfield("Anmerkung",QVariant::String));
     Kreditoren.append(dbfield("IBAN",     QVariant::String));
     Kreditoren.append(dbfield("BIC",      QVariant::String));
     dkdbstructur.appendTable(Kreditoren);

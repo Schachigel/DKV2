@@ -83,7 +83,7 @@ QString format4SQL(QVariant v)
     return "'" + s +"'";
 }
 
-QString TableDataInserter::InsertRecordSQL() const
+QString TableDataInserter::getInsertRecordSQL() const
 {
     if( record.isEmpty()) return QString();
     QString sql("INSERT INTO " + tablename +" VALUES (");
@@ -99,7 +99,29 @@ QString TableDataInserter::InsertRecordSQL() const
         }
     }
     sql +=")";
-//    qDebug() << "InsertRecordSQL:" << endl << sql << endl;
+    return sql;
+}
+
+QString TableDataInserter::getUpdateRecordSQL() const
+{
+//"UPDATE names SET firstname = 'Nisse', lastname = 'Svensson' WHERE id = 7"
+    if( record.isEmpty()) return QString();
+    QString sql("UPDATE " + tablename +" SET ");
+    QString where(" WHERE ");
+
+    int alreadySetFields = 0;
+    for( int i=0; i<record.count(); i++)
+    {
+        if( alreadySetFields>0) sql += ", ";
+        if( record.field(i).isAutoValue())
+            where += record.field(i).name() + " = " + record.field(i).value().toString();
+        else
+        {
+            sql += record.field(i).name() + " = " + format4SQL(record.field(i).value());
+            alreadySetFields++;
+        }
+    }
+    sql += where;
     return sql;
 }
 
@@ -107,7 +129,7 @@ int TableDataInserter::InsertData(QSqlDatabase db) const
 {
     if( record.isEmpty()) return false;
     QSqlQuery q(db);
-    bool ret = q.exec(InsertRecordSQL());
+    bool ret = q.exec(getInsertRecordSQL());
     int lastRecord = q.lastInsertId().toInt();
     if( !ret)
     {
@@ -117,3 +139,19 @@ int TableDataInserter::InsertData(QSqlDatabase db) const
     qDebug() << "successfully inserted Data at index " << q.lastInsertId().toInt() << endl <<  q.lastQuery() << endl;
     return lastRecord;
 }
+
+int TableDataInserter::UpdateData(QSqlDatabase db) const
+{
+    if( record.isEmpty()) return false;
+    QSqlQuery q(db);
+    bool ret = q.exec(getUpdateRecordSQL());
+    int lastRecord = q.lastInsertId().toInt();
+    if( !ret)
+    {
+        qCritical() << "Insert record failed: " << q.lastError() << endl << q.lastQuery() << endl;
+        return -1;
+    }
+    qDebug() << "successfully updated Data at index " << q.lastInsertId().toInt() << endl <<  q.lastQuery() << endl;
+    return lastRecord;
+}
+

@@ -25,6 +25,7 @@
 #include "helper.h"
 #include "filehelper.h"
 #include "itemformatter.h"
+#include "sqlhelper.h"
 #include "finhelper.h"
 #include "vertrag.h"
 #include "kreditor.h"
@@ -46,6 +47,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setCentralWidget(ui->stackedWidget);
     DatenbankZurAnwendungOeffnen();
+
+    ui->txtAnmerkung->setTabChangesFocus(true);
 
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
@@ -176,6 +179,7 @@ void MainWindow::on_actionKreditgeber_l_schen_triggered()
     else
         Q_ASSERT(!bool("could not remove kreditor and contracts"));
 }
+
 void MainWindow::on_actionVertraege_zeigen_triggered()
 {
     QModelIndex mi(ui->PersonsTableView->currentIndex());
@@ -193,6 +197,7 @@ void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &po
         if( canConvert)
         {
             QMenu menu( "PersonContextMenu", this);
+            menu.addAction(ui->actionDkGeberBearbeiten);
             menu.addAction(ui->actionVertrag_anlegen);
             menu.addAction( ui->actionKreditgeber_l_schen);
             menu.addAction(ui->actionVertraege_zeigen);
@@ -242,15 +247,22 @@ bool MainWindow::KreditgeberSpeichern()
     k.setValue("Strasse", ui->leStrasse->text());
     k.setValue("Plz", ui->lePlz->text());
     k.setValue("Stadt", ui->leStadt->text());
+    k.setValue("Anmerkung", ui->txtAnmerkung->toPlainText());
     k.setValue("IBAN", ui->leIban->text());
     k.setValue("BIC", ui->leBic->text());
-    if( k.Speichern() == -1)
+
+    if( ui->lblPersId->text() != "")
+        k.setValue("Id", ui->lblPersId->text().toInt());     // update not insert
+
+    bool ret = ( ui->lblPersId->text() == "") ? ( k.Speichern() == -1) : ( k.Update() == -1);
+    if(ret)
     {
         QMessageBox::information( this, "Fehler", "Der Datensatz konnte nicht gespeichert werden.");
         qCritical() << "Kreditgeber konnte nicht gespeichert werden";
         return false;
     }
-    return true;
+
+    return ret;
 }
 void MainWindow::KreditorFormulardatenLoeschen()
 {LOG_ENTRY_and_EXIT;
@@ -259,9 +271,24 @@ void MainWindow::KreditorFormulardatenLoeschen()
     ui->leStrasse->setText("");
     ui->lePlz->setText("");
     ui->leStadt->setText("");
+    ui->txtAnmerkung->setPlainText("");
     ui->leIban->setText("");
     ui->leBic->setText("");
+    ui->lblPersId->setText("");
 }
+void MainWindow::KreditorFormulardatenBelegen(int id)
+{
+    QSqlRecord rec = ExecuteSingleRecordSql(dkdbstructur["Kreditoren"].Fields(), "Id=" +QString::number(id));
+    ui->leVorname->setText(rec.field("Vorname").value().toString());
+    ui->leNachname->setText(rec.field("Nachname").value().toString());
+    ui->leStrasse->setText(rec.field("Strasse").value().toString());
+    ui->lePlz->setText(rec.field("Plz").value().toString());
+    ui->leStadt->setText(rec.field("Stadt").value().toString());
+    ui->txtAnmerkung->setPlainText(rec.field("Anmerkung").value().toString());
+    ui->leIban  ->setText(rec.field("IBAN").value().toString());
+    ui->leBic  ->setText(rec.field("BIC").value().toString());
+}
+
 void MainWindow::on_saveNew_clicked()
 {LOG_ENTRY_and_EXIT;
     KreditgeberSpeichern();
@@ -282,6 +309,19 @@ void MainWindow::on_saveExit_clicked()
     }
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
+void MainWindow::on_actionDkGeberBearbeiten_triggered()
+{LOG_ENTRY_and_EXIT;
+
+    QModelIndex mi(ui->PersonsTableView->currentIndex());
+    QVariant index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0));
+    ui->lblPersId->setText(index.toString());
+//    ui->leVorname->setEnabled(false);
+//    ui->leNachname->setEnabled(false);
+
+    KreditorFormulardatenBelegen(index.toInt());
+    ui->stackedWidget->setCurrentIndex(newPersonIndex);
+}
+
 void MainWindow::on_cancel_clicked()
 {LOG_ENTRY_and_EXIT;
     KreditorFormulardatenLoeschen();
@@ -604,7 +644,7 @@ QString prepareOverviewPage()
     berechneZusammenfassung(dbs);
     QString lbl ("<html><body><H1>Übersicht</H1>"
                 "Summe aller Direktkredite: " + QString::number(dbs.aktiveDk) +"<br>" +
-                "Summe der noch ausstehenden (passiven) DK: " + QString::number(dbs.passiveDk) +"<br>" +
+                "Summe der noch ausstehenden (inaktiven) DK: " + QString::number(dbs.passiveDk) +"<br>" +
                 "Summe der DK inclusive erworbener Zinsen: "+ QString::number(dbs.WertAktiveDk) +
                 "</body></html>");
     return lbl;
@@ -640,4 +680,3 @@ void MainWindow::on_actionShow_Bookings_triggered()
 
     ui->stackedWidget->setCurrentIndex(bookingsListIndex);
 }
-

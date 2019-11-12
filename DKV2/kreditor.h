@@ -18,6 +18,7 @@ public:
     void setValue(const QString& n, const QVariant& v){ti.setValue(n, v);}
     QVariant getValue(const QString& f) const { return ti.getValue(f);}
     int Speichern(QSqlDatabase db=QSqlDatabase::database()) const;
+    int Update(QSqlDatabase db=QSqlDatabase::database()) const;
     void KreditorenMitId(QList<QPair<int,QString>> &entries) const;
     static bool Loeschen(int index);
 private:
