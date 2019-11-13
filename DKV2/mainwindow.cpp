@@ -49,6 +49,9 @@ MainWindow::MainWindow(QWidget *parent) :
     DatenbankZurAnwendungOeffnen();
 
     ui->txtAnmerkung->setTabChangesFocus(true);
+    QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b",
+       QRegularExpression::CaseInsensitiveOption);
+    ui->leEMail->setValidator(new QRegularExpressionValidator(rx, this));
 
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
@@ -237,32 +240,42 @@ bool MainWindow::KreditgeberSpeichern()
     if( ui->leVorname->text().isEmpty() || ui->leNachname->text().isEmpty()
        || ui->leStrasse->text().isEmpty() || ui->lePlz->text().isEmpty() || ui->leStadt->text().isEmpty())
     {
-        QMessageBox(QMessageBox::Warning, "Daten nicht gespeichert", "Namens - und Adressfelder dürfen nicht leer sein");
+        QMessageBox::information(this, "Daten nicht gespeichert", "Namens - und Adressfelder dürfen nicht leer sein");
         return false;
     }
+    if( !ui->leEMail->text().isEmpty())
+        if( !ui->leEMail->hasAcceptableInput())
+        {
+            QMessageBox::information(this, "Daten nicht gespeichert", "Das Format der E-mail Adresse ist ungültig");
+            return false;
+        }
 
     Kreditor k;
-    k.setValue("Vorname", ui->leVorname->text());
-    k.setValue("Nachname", ui->leNachname->text());
-    k.setValue("Strasse", ui->leStrasse->text());
-    k.setValue("Plz", ui->lePlz->text());
-    k.setValue("Stadt", ui->leStadt->text());
+    k.setValue("Vorname", ui->leVorname->text().trimmed());
+    k.setValue("Nachname", ui->leNachname->text().trimmed());
+    k.setValue("Strasse", ui->leStrasse->text().trimmed());
+    k.setValue("Plz", ui->lePlz->text().trimmed());
+    k.setValue("Stadt", ui->leStadt->text().trimmed());
+    QString email = ui->leEMail->text().trimmed().toLower();
+    k.setValue("Email", email.isEmpty() ? "NULL_STRING" : email);
     k.setValue("Anmerkung", ui->txtAnmerkung->toPlainText());
-    k.setValue("IBAN", ui->leIban->text());
-    k.setValue("BIC", ui->leBic->text());
+    k.setValue("IBAN", ui->leIban->text().trimmed());
+    k.setValue("BIC", ui->leBic->text().trimmed());
 
     if( ui->lblPersId->text() != "")
         k.setValue("Id", ui->lblPersId->text().toInt());     // update not insert
 
-    bool ret = ( ui->lblPersId->text() == "") ? ( k.Speichern() == -1) : ( k.Update() == -1);
-    if(ret)
+    bool failed = ( ui->lblPersId->text() == "") ? ( k.Speichern() == -1) : ( k.Update() == -1);
+    if(failed)
     {
-        QMessageBox::information( this, "Fehler", "Der Datensatz konnte nicht gespeichert werden.");
+        QMessageBox::information( this, "Fehler", "Der Datensatz konnte nicht gespeichert werden. "
+                                                 "Ist die E-Mail Adresse einmalig? Gibt es die Adressdaten in der Datenbank bereits?"
+                                 "\nBitte überprüfen Sie ihre Eingaben");
         qCritical() << "Kreditgeber konnte nicht gespeichert werden";
         return false;
     }
 
-    return ret;
+    return true;
 }
 void MainWindow::KreditorFormulardatenLoeschen()
 {LOG_ENTRY_and_EXIT;
@@ -271,6 +284,7 @@ void MainWindow::KreditorFormulardatenLoeschen()
     ui->leStrasse->setText("");
     ui->lePlz->setText("");
     ui->leStadt->setText("");
+    ui->leEMail->setText("");
     ui->txtAnmerkung->setPlainText("");
     ui->leIban->setText("");
     ui->leBic->setText("");
@@ -284,6 +298,7 @@ void MainWindow::KreditorFormulardatenBelegen(int id)
     ui->leStrasse->setText(rec.field("Strasse").value().toString());
     ui->lePlz->setText(rec.field("Plz").value().toString());
     ui->leStadt->setText(rec.field("Stadt").value().toString());
+    ui->leEMail->setText(rec.field("Email").value().toString());
     ui->txtAnmerkung->setPlainText(rec.field("Anmerkung").value().toString());
     ui->leIban  ->setText(rec.field("IBAN").value().toString());
     ui->leBic  ->setText(rec.field("BIC").value().toString());
@@ -291,23 +306,24 @@ void MainWindow::KreditorFormulardatenBelegen(int id)
 
 void MainWindow::on_saveNew_clicked()
 {LOG_ENTRY_and_EXIT;
-    KreditgeberSpeichern();
-    KreditorFormulardatenLoeschen();
+    if( KreditgeberSpeichern())
+        KreditorFormulardatenLoeschen();
 }
 void MainWindow::on_saveList_clicked()
 {LOG_ENTRY_and_EXIT;
-    KreditgeberSpeichern();
-    KreditorFormulardatenLoeschen();
-
-    on_action_Liste_triggered();
+    if( KreditgeberSpeichern())
+    {
+        KreditorFormulardatenLoeschen();
+        on_action_Liste_triggered();
+    }
 }
 void MainWindow::on_saveExit_clicked()
 {LOG_ENTRY_and_EXIT;
     if( KreditgeberSpeichern())
     {
         KreditorFormulardatenLoeschen();
+        ui->stackedWidget->setCurrentIndex(emptyPageIndex);
     }
-    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_actionDkGeberBearbeiten_triggered()
 {LOG_ENTRY_and_EXIT;
@@ -315,8 +331,6 @@ void MainWindow::on_actionDkGeberBearbeiten_triggered()
     QModelIndex mi(ui->PersonsTableView->currentIndex());
     QVariant index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0));
     ui->lblPersId->setText(index.toString());
-//    ui->leVorname->setEnabled(false);
-//    ui->leNachname->setEnabled(false);
 
     KreditorFormulardatenBelegen(index.toInt());
     ui->stackedWidget->setCurrentIndex(newPersonIndex);

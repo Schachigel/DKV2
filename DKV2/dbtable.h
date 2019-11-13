@@ -25,8 +25,10 @@ public:
     dbfield operator[](QString s) const;
     // interface
     dbtable append(const dbfield&);
+    void setUnique(const QVector<dbfield>& fs);
 private:
     QString name;
+    QString unique;
     QVector<dbfield> fields;
     // helper
     QString CreateTableSQL() const;

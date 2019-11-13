@@ -85,19 +85,23 @@ public:
     QLineEdit *leNachname;
     QLabel *lStrasse;
     QLineEdit *leStrasse;
-    QLabel *lblAnmerkung;
-    QSpacerItem *horizontalSpacer;
+    QLabel *lPlzStadt;
+    QHBoxLayout *horizontalLayout_3;
+    QLineEdit *lePlz;
+    QLineEdit *leStadt;
+    QLabel *lblEMail;
+    QLineEdit *leEMail;
     QLabel *lIban;
     QLineEdit *leIban;
     QLabel *lBic;
     QLineEdit *leBic;
-    QPlainTextEdit *txtAnmerkung;
-    QHBoxLayout *horizontalLayout_3;
-    QLineEdit *lePlz;
-    QLineEdit *leStadt;
-    QLabel *lPlzStadt;
-    QLabel *lblHiddenPersId;
     QLabel *lblPersId;
+    QLabel *lblHiddenPersId;
+    QSpacerItem *horizontalSpacer_4;
+    QHBoxLayout *horizontalLayout_6;
+    QLabel *lblAnmerkung;
+    QPlainTextEdit *txtAnmerkung;
+    QSpacerItem *horizontalSpacer;
     QWidget *NewContract;
     QVBoxLayout *vlNeuerVertrag;
     QHBoxLayout *hlNeuerVertragButtons;
@@ -151,7 +155,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
-        MainWindow->resize(872, 470);
+        MainWindow->resize(872, 522);
         action_Neue_DB_anlegen = new QAction(MainWindow);
         action_Neue_DB_anlegen->setObjectName(QString::fromUtf8("action_Neue_DB_anlegen"));
         actionDBoeffnen = new QAction(MainWindow);
@@ -324,41 +328,10 @@ public:
 
         formLayout->setWidget(2, QFormLayout::FieldRole, leStrasse);
 
-        lblAnmerkung = new QLabel(NewPerson);
-        lblAnmerkung->setObjectName(QString::fromUtf8("lblAnmerkung"));
+        lPlzStadt = new QLabel(NewPerson);
+        lPlzStadt->setObjectName(QString::fromUtf8("lPlzStadt"));
 
-        formLayout->setWidget(5, QFormLayout::LabelRole, lblAnmerkung);
-
-        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-        formLayout->setItem(7, QFormLayout::FieldRole, horizontalSpacer);
-
-        lIban = new QLabel(NewPerson);
-        lIban->setObjectName(QString::fromUtf8("lIban"));
-
-        formLayout->setWidget(8, QFormLayout::LabelRole, lIban);
-
-        leIban = new QLineEdit(NewPerson);
-        leIban->setObjectName(QString::fromUtf8("leIban"));
-
-        formLayout->setWidget(8, QFormLayout::FieldRole, leIban);
-
-        lBic = new QLabel(NewPerson);
-        lBic->setObjectName(QString::fromUtf8("lBic"));
-
-        formLayout->setWidget(9, QFormLayout::LabelRole, lBic);
-
-        leBic = new QLineEdit(NewPerson);
-        leBic->setObjectName(QString::fromUtf8("leBic"));
-
-        formLayout->setWidget(9, QFormLayout::FieldRole, leBic);
-
-        txtAnmerkung = new QPlainTextEdit(NewPerson);
-        txtAnmerkung->setObjectName(QString::fromUtf8("txtAnmerkung"));
-        txtAnmerkung->setMinimumSize(QSize(0, 50));
-        txtAnmerkung->setMaximumSize(QSize(16777215, 50));
-
-        formLayout->setWidget(5, QFormLayout::FieldRole, txtAnmerkung);
+        formLayout->setWidget(4, QFormLayout::LabelRole, lPlzStadt);
 
         horizontalLayout_3 = new QHBoxLayout();
         horizontalLayout_3->setSpacing(6);
@@ -379,21 +352,72 @@ public:
 
         formLayout->setLayout(4, QFormLayout::FieldRole, horizontalLayout_3);
 
-        lPlzStadt = new QLabel(NewPerson);
-        lPlzStadt->setObjectName(QString::fromUtf8("lPlzStadt"));
+        lblEMail = new QLabel(NewPerson);
+        lblEMail->setObjectName(QString::fromUtf8("lblEMail"));
 
-        formLayout->setWidget(4, QFormLayout::LabelRole, lPlzStadt);
+        formLayout->setWidget(5, QFormLayout::LabelRole, lblEMail);
+
+        leEMail = new QLineEdit(NewPerson);
+        leEMail->setObjectName(QString::fromUtf8("leEMail"));
+
+        formLayout->setWidget(5, QFormLayout::FieldRole, leEMail);
+
+        lIban = new QLabel(NewPerson);
+        lIban->setObjectName(QString::fromUtf8("lIban"));
+
+        formLayout->setWidget(10, QFormLayout::LabelRole, lIban);
+
+        leIban = new QLineEdit(NewPerson);
+        leIban->setObjectName(QString::fromUtf8("leIban"));
+
+        formLayout->setWidget(10, QFormLayout::FieldRole, leIban);
+
+        lBic = new QLabel(NewPerson);
+        lBic->setObjectName(QString::fromUtf8("lBic"));
+
+        formLayout->setWidget(11, QFormLayout::LabelRole, lBic);
+
+        leBic = new QLineEdit(NewPerson);
+        leBic->setObjectName(QString::fromUtf8("leBic"));
+
+        formLayout->setWidget(11, QFormLayout::FieldRole, leBic);
+
+        lblPersId = new QLabel(NewPerson);
+        lblPersId->setObjectName(QString::fromUtf8("lblPersId"));
+
+        formLayout->setWidget(12, QFormLayout::LabelRole, lblPersId);
 
         lblHiddenPersId = new QLabel(NewPerson);
         lblHiddenPersId->setObjectName(QString::fromUtf8("lblHiddenPersId"));
         lblHiddenPersId->setEnabled(false);
 
-        formLayout->setWidget(10, QFormLayout::FieldRole, lblHiddenPersId);
+        formLayout->setWidget(12, QFormLayout::FieldRole, lblHiddenPersId);
 
-        lblPersId = new QLabel(NewPerson);
-        lblPersId->setObjectName(QString::fromUtf8("lblPersId"));
+        horizontalSpacer_4 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-        formLayout->setWidget(10, QFormLayout::LabelRole, lblPersId);
+        formLayout->setItem(8, QFormLayout::FieldRole, horizontalSpacer_4);
+
+        horizontalLayout_6 = new QHBoxLayout();
+        horizontalLayout_6->setSpacing(6);
+        horizontalLayout_6->setObjectName(QString::fromUtf8("horizontalLayout_6"));
+        lblAnmerkung = new QLabel(NewPerson);
+        lblAnmerkung->setObjectName(QString::fromUtf8("lblAnmerkung"));
+
+        horizontalLayout_6->addWidget(lblAnmerkung);
+
+        txtAnmerkung = new QPlainTextEdit(NewPerson);
+        txtAnmerkung->setObjectName(QString::fromUtf8("txtAnmerkung"));
+        txtAnmerkung->setMinimumSize(QSize(0, 50));
+        txtAnmerkung->setMaximumSize(QSize(16777215, 50));
+
+        horizontalLayout_6->addWidget(txtAnmerkung);
+
+        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_6->addItem(horizontalSpacer);
+
+
+        formLayout->setLayout(6, QFormLayout::SpanningRole, horizontalLayout_6);
 
 
         verticalLayout->addLayout(formLayout);
@@ -635,10 +659,11 @@ public:
         lVorname->setBuddy(leVorname);
         lNachname->setBuddy(leNachname);
         lStrasse->setBuddy(leStrasse);
-        lblAnmerkung->setBuddy(txtAnmerkung);
+        lPlzStadt->setBuddy(lePlz);
+        lblEMail->setBuddy(leEMail);
         lIban->setBuddy(leIban);
         lBic->setBuddy(leBic);
-        lPlzStadt->setBuddy(lePlz);
+        lblAnmerkung->setBuddy(txtAnmerkung);
         label_2->setBuddy(comboKreditoren);
         label_3->setBuddy(leKennung);
         label_4->setBuddy(leBetrag);
@@ -651,16 +676,15 @@ public:
         QWidget::setTabOrder(leNachname, leStrasse);
         QWidget::setTabOrder(leStrasse, lePlz);
         QWidget::setTabOrder(lePlz, leStadt);
-        QWidget::setTabOrder(leStadt, txtAnmerkung);
+        QWidget::setTabOrder(leStadt, leEMail);
+        QWidget::setTabOrder(leEMail, txtAnmerkung);
         QWidget::setTabOrder(txtAnmerkung, leIban);
         QWidget::setTabOrder(leIban, leBic);
         QWidget::setTabOrder(leBic, saveNew);
         QWidget::setTabOrder(saveNew, saveList);
         QWidget::setTabOrder(saveList, saveExit);
         QWidget::setTabOrder(saveExit, cancel);
-        QWidget::setTabOrder(cancel, leBetrag);
-        QWidget::setTabOrder(leBetrag, cbZins);
-        QWidget::setTabOrder(cbZins, deVertragsabschluss);
+        QWidget::setTabOrder(cancel, deVertragsabschluss);
         QWidget::setTabOrder(deVertragsabschluss, chkbTesaurierend);
         QWidget::setTabOrder(chkbTesaurierend, speichereVertragZurKreditorenListe);
         QWidget::setTabOrder(speichereVertragZurKreditorenListe, saveContractGoContracts);
@@ -677,6 +701,8 @@ public:
         QWidget::setTabOrder(leFilterBookings, pbPersonFilterZurcksetztenBookings);
         QWidget::setTabOrder(pbPersonFilterZurcksetztenBookings, tblViewBookings);
         QWidget::setTabOrder(tblViewBookings, deLaufzeitEnde);
+        QWidget::setTabOrder(deLaufzeitEnde, leBetrag);
+        QWidget::setTabOrder(leBetrag, cbZins);
 
         menuBar->addAction(menuDatenbank->menuAction());
         menuBar->addAction(menuDK_Geber->menuAction());
@@ -701,7 +727,7 @@ public:
 
         retranslateUi(MainWindow);
 
-        stackedWidget->setCurrentIndex(1);
+        stackedWidget->setCurrentIndex(2);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -800,12 +826,13 @@ public:
         lVorname->setText(QCoreApplication::translate("MainWindow", "Vorname:", nullptr));
         lNachname->setText(QCoreApplication::translate("MainWindow", "Nachname:", nullptr));
         lStrasse->setText(QCoreApplication::translate("MainWindow", "Stra\303\237e:", nullptr));
-        lblAnmerkung->setText(QCoreApplication::translate("MainWindow", "Anmerkung", nullptr));
+        lPlzStadt->setText(QCoreApplication::translate("MainWindow", "PLZ - Stadt", nullptr));
+        lblEMail->setText(QCoreApplication::translate("MainWindow", "E-Mail", nullptr));
         lIban->setText(QCoreApplication::translate("MainWindow", "IBAN:", nullptr));
         lBic->setText(QCoreApplication::translate("MainWindow", "BIC:", nullptr));
-        lPlzStadt->setText(QCoreApplication::translate("MainWindow", "PLZ - Stadt", nullptr));
-        lblHiddenPersId->setText(QString());
         lblPersId->setText(QString());
+        lblHiddenPersId->setText(QString());
+        lblAnmerkung->setText(QCoreApplication::translate("MainWindow", "Anmerkung", nullptr));
 #if QT_CONFIG(tooltip)
         speichereVertragZurKreditorenListe->setToolTip(QCoreApplication::translate("MainWindow", "Speichert den Vertrag und kehrt zur Liste der DK Geber zur\303\274ck", nullptr));
 #endif // QT_CONFIG(tooltip)

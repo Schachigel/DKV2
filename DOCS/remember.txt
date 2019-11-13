@@ -1,5 +1,15 @@
 
-?! Buchungsarten: enum statt String
+
+neues Feld f Kreditoren: e-mail
+- format validator
+- einmaligkeit
+
+Vertragsnummer (Claudias Wunsch)
+
+Adressen einmaligkeit
+
+Zinsen aus enum analog Buchungsarten
+
 ?! Buchungsart: Zinsgutschrift
 
 ?! Memory leak: was muss beim öffnen einer Seite jedesmal gemacht werden, was nur einmal?
@@ -36,6 +46,10 @@ next:
 ? P Liste r-click Menu anlegen
 
 DONE
+
+!! neues Feld f Kreditoren: Anmerkungen
+
+!! Buchungsarten: enum statt String
 
 - Doku als Writer Dokument
 

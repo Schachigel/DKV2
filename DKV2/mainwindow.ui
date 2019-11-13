@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>872</width>
-    <height>470</height>
+    <height>522</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,7 +26,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -187,68 +187,13 @@
           <item row="2" column="1">
            <widget class="QLineEdit" name="leStrasse"/>
           </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="lblAnmerkung">
+          <item row="4" column="0">
+           <widget class="QLabel" name="lPlzStadt">
             <property name="text">
-             <string>Anmerkung</string>
+             <string>PLZ - Stadt</string>
             </property>
             <property name="buddy">
-             <cstring>txtAnmerkung</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="1">
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="8" column="0">
-           <widget class="QLabel" name="lIban">
-            <property name="text">
-             <string>IBAN:</string>
-            </property>
-            <property name="buddy">
-             <cstring>leIban</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="1">
-           <widget class="QLineEdit" name="leIban"/>
-          </item>
-          <item row="9" column="0">
-           <widget class="QLabel" name="lBic">
-            <property name="text">
-             <string>BIC:</string>
-            </property>
-            <property name="buddy">
-             <cstring>leBic</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="1">
-           <widget class="QLineEdit" name="leBic"/>
-          </item>
-          <item row="5" column="1">
-           <widget class="QPlainTextEdit" name="txtAnmerkung">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>50</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>50</height>
-             </size>
+             <cstring>lePlz</cstring>
             </property>
            </widget>
           </item>
@@ -266,17 +211,53 @@
             </item>
            </layout>
           </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="lPlzStadt">
+          <item row="5" column="0">
+           <widget class="QLabel" name="lblEMail">
             <property name="text">
-             <string>PLZ - Stadt</string>
+             <string>E-Mail</string>
             </property>
             <property name="buddy">
-             <cstring>lePlz</cstring>
+             <cstring>leEMail</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="leEMail"/>
+          </item>
+          <item row="10" column="0">
+           <widget class="QLabel" name="lIban">
+            <property name="text">
+             <string>IBAN:</string>
+            </property>
+            <property name="buddy">
+             <cstring>leIban</cstring>
             </property>
            </widget>
           </item>
           <item row="10" column="1">
+           <widget class="QLineEdit" name="leIban"/>
+          </item>
+          <item row="11" column="0">
+           <widget class="QLabel" name="lBic">
+            <property name="text">
+             <string>BIC:</string>
+            </property>
+            <property name="buddy">
+             <cstring>leBic</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="1">
+           <widget class="QLineEdit" name="leBic"/>
+          </item>
+          <item row="12" column="0">
+           <widget class="QLabel" name="lblPersId">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="12" column="1">
            <widget class="QLabel" name="lblHiddenPersId">
             <property name="enabled">
              <bool>false</bool>
@@ -286,12 +267,61 @@
             </property>
            </widget>
           </item>
-          <item row="10" column="0">
-           <widget class="QLabel" name="lblPersId">
-            <property name="text">
-             <string/>
+          <item row="8" column="1">
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
-           </widget>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="6" column="0" colspan="2">
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <widget class="QLabel" name="lblAnmerkung">
+              <property name="text">
+               <string>Anmerkung</string>
+              </property>
+              <property name="buddy">
+               <cstring>txtAnmerkung</cstring>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPlainTextEdit" name="txtAnmerkung">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>50</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
@@ -792,6 +822,7 @@
   <tabstop>leStrasse</tabstop>
   <tabstop>lePlz</tabstop>
   <tabstop>leStadt</tabstop>
+  <tabstop>leEMail</tabstop>
   <tabstop>txtAnmerkung</tabstop>
   <tabstop>leIban</tabstop>
   <tabstop>leBic</tabstop>
@@ -799,8 +830,6 @@
   <tabstop>saveList</tabstop>
   <tabstop>saveExit</tabstop>
   <tabstop>cancel</tabstop>
-  <tabstop>leBetrag</tabstop>
-  <tabstop>cbZins</tabstop>
   <tabstop>deVertragsabschluss</tabstop>
   <tabstop>chkbTesaurierend</tabstop>
   <tabstop>speichereVertragZurKreditorenListe</tabstop>
@@ -818,6 +847,8 @@
   <tabstop>pbPersonFilterZurcksetztenBookings</tabstop>
   <tabstop>tblViewBookings</tabstop>
   <tabstop>deLaufzeitEnde</tabstop>
+  <tabstop>leBetrag</tabstop>
+  <tabstop>cbZins</tabstop>
  </tabstops>
  <resources/>
  <connections/>

@@ -20,6 +20,17 @@ dbtable dbtable::append(const dbfield& f)
     return *this;
 }
 
+void dbtable::setUnique( const QVector<dbfield>& fs)
+{
+    QString tmp;
+    for( int i =0; i < fs.count(); i++)
+    {
+        if( i>0) tmp += ", ";
+        tmp += fs[i].name();
+    }
+    unique = ", UNIQUE (" +tmp +")";
+}
+
 QString dbtable::CreateTableSQL() const
 {
     QString sql("CREATE TABLE [" + name + "] (");
@@ -28,6 +39,8 @@ QString dbtable::CreateTableSQL() const
         if( i>0) sql.append(", ");
         sql.append(Fields()[i].getCreateSqlSnippet());
     }
+    if( !unique.isEmpty())
+        sql.append(unique);
     sql.append(")");
     return sql;
 }
@@ -76,11 +89,14 @@ QString format4SQL(QVariant v)
     case QVariant::Bool:
         s = (v.toBool())? "1" : "0";
         break;
+    case QVariant::String:
     default:
         s = v.toString();
     }
-
-    return "'" + s +"'";
+    if( s == "NULL_STRING")
+        return "(NULL)";
+    else
+        return "'" + s +"'";
 }
 
 QString TableDataInserter::getInsertRecordSQL() const

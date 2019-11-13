@@ -48,9 +48,16 @@ void initDKDBStruktur()
     Kreditoren.append(dbfield("Strasse",  QVariant::String, "NOT NULL"));
     Kreditoren.append(dbfield("Plz",      QVariant::String, "NOT NULL"));
     Kreditoren.append(dbfield("Stadt",    QVariant::String, "NOT NULL"));
-    Kreditoren.append(dbfield("Anmerkung",QVariant::String));
-    Kreditoren.append(dbfield("IBAN",     QVariant::String));
-    Kreditoren.append(dbfield("BIC",      QVariant::String));
+    Kreditoren.append(dbfield("Email",    QVariant::String, "TYPE UNIQUE"));
+    Kreditoren.append(dbfield("Anmerkung"));
+    Kreditoren.append(dbfield("IBAN"));
+    Kreditoren.append(dbfield("BIC"));
+    QVector<dbfield> unique;
+    unique.append(Kreditoren["Vorname"]);
+    unique.append(Kreditoren["Nachname"]);
+    unique.append(Kreditoren["Strasse"]);
+    unique.append(Kreditoren["Stadt"]);
+    Kreditoren.setUnique(unique);
     dkdbstructur.appendTable(Kreditoren);
 
     dbtable Zinssaetze("Zinssaetze");
@@ -283,16 +290,20 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
     QList<QString> Vornamen {"Holger", "Volker", "Peter", "Hans", "Susi", "Roland", "Claudia", "Emil", "Evelyn", "Ötzgür", "Thomas", "Elke", "Berta", "Malte", "Jori", "Paul", "Jonas", "Finn", "Leon", "Luca", "Emma", "Mia", "Lena", "Anna"};
     QList<QString> Nachnamen {"Maier", "Müller", "Schmit", "Kramp", "Adams", "Häcker", "Maresch", "Beutl", "Chauchev", "Chen", "Kirk", "Ohura", "Gorbatschov", "Merkel", "Karrenbauer", "Tritin", "Schmidt", "Rao", "Lassen", "Hurgedü"};
     QList<QString> Strassen {"Hauptstrasse", "Nebenstrasse", "Bahnhofstrasse", "Kirchstraße", "Dorfstrasse", "Süterlinweg", "Sorbenstrasse", "Kleines Gässchen", "Industriestrasse", "Sesamstrasse", "Lindenstrasse"};
+    QList<QString> emailprovider {"gmail.com", "googlemail.com", "mailbox.org", "t-online.de", "mail.de", "mail.com", "online.de", "yahoo.de", "yahoo.com", "telekom.de", "proivder.co.uk"};
     QList <QPair<QString, QString>> Cities {{"68305", "Mannheim"}, {"69123", "Heidelberg"}, {"69123", "Karlsruhe"}, {"90345", "Hamburg"}};
     QRandomGenerator rand(::GetTickCount());
     for( int i = 0; i<AnzahlDatensaetze; i++)
     {
         Kreditor k;
-        k.setValue("Vorname", Vornamen [rand.bounded(Vornamen.count ())]);
-        k.setValue("Nachname", Nachnamen[rand.bounded(Nachnamen.count())]);
+        QString vn (Vornamen [rand.bounded(Vornamen.count ())]);
+        QString nn (Nachnamen [rand.bounded(Nachnamen.count ())]);
+        k.setValue("Vorname", vn);
+        k.setValue("Nachname", nn);
         k.setValue("Strasse", Strassen[rand.bounded(Strassen.count())]);
         k.setValue("Plz", Cities[rand.bounded(Cities.count())].first);
         k.setValue("Stadt", Cities[rand.bounded(Cities.count())].second);
+        k.setValue("Email", vn+"."+nn+"@"+emailprovider[rand.bounded(emailprovider.count())]);
         k.setValue("IBAN", "DExx-xxxxx");
         k.setValue("BIC", "bic...");
 
