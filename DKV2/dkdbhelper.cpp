@@ -69,7 +69,7 @@ void initDKDBStruktur()
     dbtable Vertraege("Vertraege");
     Vertraege.append((dbfield("id",         QVariant::Int, "PRIMARY KEY AUTOINCREMENT")));
     Vertraege.append((dbfield("KreditorId", QVariant::Int, "", Kreditoren["id"], dbfield::refIntOption::onDeleteCascade )));
-    Vertraege.append((dbfield("Kennung")));
+    Vertraege.append((dbfield("Kennung",    QVariant::String, "UNIQUE")));
     Vertraege.append((dbfield("Betrag",     QVariant::Double, "DEFAULT '0,0' NOT NULL")));
     Vertraege.append((dbfield("Wert",       QVariant::Double, "DEFAULT '0,0' NULL")));
     Vertraege.append((dbfield("ZSatz",      QVariant::Int, "", Zinssaetze["id"], dbfield::refIntOption::non)));
@@ -161,9 +161,18 @@ bool BuchungsartenEinfuegen(QSqlDatabase db)
 
 bool EigenschaftenEinfuegen(QSqlDatabase db)
 {
+    bool ret =true;
     QSqlQuery sql(db);
-    sql.exec("INSERT INTO Meta (Name, Wert) VALUES (\"Version\", \"1.0\"");
-    return true;
+    ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('Version', '1.0')");
+    QRandomGenerator rand(::GetTickCount());
+    ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('IdOffset', '" + QString::number(rand.bounded(10000,20000)) + "')");
+    ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('ProjektInitialen', 'EM')");
+    return ret;
+}
+
+QVariant Eigenschaft(const QString& name)
+{
+    return ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'");
 }
 
 bool DKDatenbankAnlegen(const QString& filename, QSqlDatabase db)
@@ -284,6 +293,14 @@ void DatenbankZurAnwendungOeffnen( QString newDbFile)
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
 }
 
+QString ProposeKennung()
+{
+    int idOffset = Eigenschaft("IdOffset").toInt();
+    QString maxid = QString::number(idOffset + getHighestTableId("Vertraege")).rightJustified(6, '0');
+    QString PI = Eigenschaft("ProjektInitialen").toString();
+    return PI+ QString::number(QDate::currentDate().year()) +"-" + maxid;
+}
+
 void BeispieldatenAnlegen( int AnzahlDatensaetze)
 {   LOG_ENTRY_and_EXIT;
 
@@ -321,7 +338,7 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
         QDate vertragsdatum= QDate::currentDate().addDays(-1 * rand.bounded(365));
         QDate StartZinsberechnung = ( active) ? vertragsdatum.addDays(rand.bounded(15)) : QDate(9999, 12, 31);
 
-        Vertrag vertrag (neueKreditorId, QString::number(i),
+        Vertrag vertrag (neueKreditorId, ProposeKennung(),
                          betragUWert, betragUWert, zinsid,
                          vertragsdatum,
                          tesa, active, StartZinsberechnung);
@@ -371,7 +388,10 @@ QString ContractList_WHERE(const QString& Filter)
         s += " AND Kreditoren.id = '" + QString::number(index) + "'";
         return s;
     }
-    s += " AND ( Vorname LIKE '%" + Filter + "%' OR Nachname LIKE '%" + Filter + "%' )";
+    s += " AND ( "
+    "Vorname  LIKE '%" + Filter + "%' OR "
+    "Nachname LIKE '%" + Filter + "%' OR "
+    "Kennung  LIKE '%" + Filter + "%')";
     return s;
 }
 QString ContractList_SQL(const QVector<dbfield>& fields, const QString& filter)

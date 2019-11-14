@@ -68,7 +68,6 @@ private:
     double zinsFuss;
     Kreditor dkGeber;
     QString buchungsdatenJson;
-
 };
 
 #endif // VERTRAG_H

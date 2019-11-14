@@ -24,5 +24,5 @@ QString ActivatedItemFormatter::displayText(const QVariant &value, const QLocale
 {
     // the view delivers strings like "true" and "false" for boolean values
     // let the variant resolve this ...
-    return value.toBool() ? "Vertrag aktiv" : "Vertrag INAKTIV";
+    return value.toBool() ? " aktiv " : "- INAKTIV -";
 }

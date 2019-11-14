@@ -36,6 +36,7 @@ bool istValideDatenbank(const QString& filename);
 void DatenbankverbindungSchliessen();
 void DatenbankZurAnwendungOeffnen( QString newDbFile="");
 
+QString ProposeKennung();
 void BeispieldatenAnlegen(int datensaetze =20);
 
 typedef QPair<int, QString> ZinsAnzeigeMitId;
@@ -51,6 +52,8 @@ QString ContractList_SELECT(QVector<dbfield>& f);
 QString ContractList_FROM();
 QString ContractList_WHERE(const QString& filter);
 QString ContractList_SQL(const QVector<dbfield>& f, const QString& filter);
+
+QVariant Eigenschaft(const QString& name);
 
 struct DbSummary
 {

@@ -113,13 +113,16 @@ bool Vertrag::verbucheNeuenVertrag()
 {   LOG_ENTRY_and_EXIT;
 
     QSqlDatabase::database().transaction();
-    setVid( speichereNeuenVertrag());
-    if( id>0 )
+    int nextId =speichereNeuenVertrag();
+    if( nextId>0 )
+    {
+        setVid( nextId);
         if( speichereBelegNeuerVertrag())
         {
             QSqlDatabase::database().commit();
             return true;
         }
+    }
     qCritical() << "ein neuer Vertrag konnte nicht gespeichert werden";
     QSqlDatabase::database().rollback();
     return false;

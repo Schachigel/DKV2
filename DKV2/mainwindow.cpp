@@ -303,6 +303,16 @@ void MainWindow::KreditorFormulardatenBelegen(int id)
     ui->leIban  ->setText(rec.field("IBAN").value().toString());
     ui->leBic  ->setText(rec.field("BIC").value().toString());
 }
+void MainWindow::on_actionDkGeberBearbeiten_triggered()
+{LOG_ENTRY_and_EXIT;
+
+    QModelIndex mi(ui->PersonsTableView->currentIndex());
+    QVariant index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0));
+    ui->lblPersId->setText(index.toString());
+
+    KreditorFormulardatenBelegen(index.toInt());
+    ui->stackedWidget->setCurrentIndex(newPersonIndex);
+}
 
 void MainWindow::on_saveNew_clicked()
 {LOG_ENTRY_and_EXIT;
@@ -325,17 +335,6 @@ void MainWindow::on_saveExit_clicked()
         ui->stackedWidget->setCurrentIndex(emptyPageIndex);
     }
 }
-void MainWindow::on_actionDkGeberBearbeiten_triggered()
-{LOG_ENTRY_and_EXIT;
-
-    QModelIndex mi(ui->PersonsTableView->currentIndex());
-    QVariant index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0));
-    ui->lblPersId->setText(index.toString());
-
-    KreditorFormulardatenBelegen(index.toInt());
-    ui->stackedWidget->setCurrentIndex(newPersonIndex);
-}
-
 void MainWindow::on_cancel_clicked()
 {LOG_ENTRY_and_EXIT;
     KreditorFormulardatenLoeschen();
@@ -370,13 +369,15 @@ bool MainWindow::saveNewContract()
     if( c.KreditorId() <= 0 || c.ZinsId() <= 0)
         errortext = "Wähle den Kreditgeber und die Zinsen aus der gegebenen Auswahl. Ist die Auswahl leer müssen zuerst Kreditgeber und Zinswerte eingegeben werden";
     if( c.Kennung() =="")
-        errortext = "Du solltest eine Kennung vergeben, damit der Kretit besser zugeordnet werden kann";
+        errortext = "Du solltest eine eindeutige Kennung vergeben, damit der Kretit besser zugeordnet werden kann";
+    if( !c.verbucheNeuenVertrag())
+        errortext = "Der Vertrag konnte nicht gespeichert werden. Ist die Kennung des Vertrags eindeutig?";
     if( errortext != "")
     {
         QMessageBox::information( this, "Fehler", errortext);
         return false;
     }
-    return c.verbucheNeuenVertrag();
+    return true;
 }
 void MainWindow::clearNewContractFields()
 {LOG_ENTRY_and_EXIT;
@@ -421,14 +422,12 @@ void MainWindow::comboKreditorenAnzeigeNachKreditorenId(int KreditorenId)
 }
 
 void MainWindow::on_speichereVertragZurKreditorenListe_clicked()
-{
+{LOG_ENTRY_and_EXIT;
     if( saveNewContract())
     {
         clearNewContractFields();
         ui->stackedWidget->setCurrentIndex(PersonListIndex);
-        return;
     }
-    // todo: issue a message an stop processing
 }
 void MainWindow::on_saveContractGoContracts_clicked()
 {LOG_ENTRY_and_EXIT;
@@ -437,10 +436,7 @@ void MainWindow::on_saveContractGoContracts_clicked()
         clearNewContractFields();
         prepareContractListView();
         ui->stackedWidget->setCurrentIndex(ContractsListIndex);
-        return;
     }
-    // todo: issue a message an stop processing
-
 }
 void MainWindow::on_cancelCreateContract_clicked()
 {LOG_ENTRY_and_EXIT;
@@ -460,10 +456,12 @@ int MainWindow::getPersonIdFromKreditorenList()
     qCritical() << "Index der Personenliste konnte nicht bestimmt werden";
     return -1;
 }
+
 void MainWindow::on_actionVertrag_anlegen_triggered()
 {LOG_ENTRY_and_EXIT;
     FillKreditorDropdown();
     FillRatesDropdown();
+    ui->leKennung->setText( ProposeKennung());
     comboKreditorenAnzeigeNachKreditorenId( getPersonIdFromKreditorenList());
     Vertrag cd; // this is to get the defaults of the class definition
     ui->deLaufzeitEnde->setDate(cd.LaufzeitEnde());
@@ -478,6 +476,7 @@ void MainWindow::prepareContractListView()
 {LOG_ENTRY_and_EXIT;
     QVector<dbfield> fields;
     fields.append(dkdbstructur["Vertraege"]["id"]);
+    fields.append(dkdbstructur["Vertraege"]["Kennung"]);
     fields.append(dkdbstructur["Kreditoren"]["Vorname"]);
     fields.append(dkdbstructur["Kreditoren"]["Nachname"]);
     fields.append(dkdbstructur["Vertraege"]["Betrag"]);

@@ -672,26 +672,26 @@ public:
         label_7->setBuddy(deLaufzeitEnde);
         label_8->setBuddy(chkbTesaurierend);
 #endif // QT_CONFIG(shortcut)
-        QWidget::setTabOrder(leVorname, leNachname);
-        QWidget::setTabOrder(leNachname, leStrasse);
-        QWidget::setTabOrder(leStrasse, lePlz);
-        QWidget::setTabOrder(lePlz, leStadt);
-        QWidget::setTabOrder(leStadt, leEMail);
-        QWidget::setTabOrder(leEMail, txtAnmerkung);
-        QWidget::setTabOrder(txtAnmerkung, leIban);
-        QWidget::setTabOrder(leIban, leBic);
-        QWidget::setTabOrder(leBic, saveNew);
-        QWidget::setTabOrder(saveNew, saveList);
-        QWidget::setTabOrder(saveList, saveExit);
-        QWidget::setTabOrder(saveExit, cancel);
-        QWidget::setTabOrder(cancel, deVertragsabschluss);
-        QWidget::setTabOrder(deVertragsabschluss, chkbTesaurierend);
+        QWidget::setTabOrder(leKennung, leBetrag);
+        QWidget::setTabOrder(leBetrag, cbZins);
+        QWidget::setTabOrder(cbZins, deVertragsabschluss);
+        QWidget::setTabOrder(deVertragsabschluss, deLaufzeitEnde);
+        QWidget::setTabOrder(deLaufzeitEnde, chkbTesaurierend);
         QWidget::setTabOrder(chkbTesaurierend, speichereVertragZurKreditorenListe);
         QWidget::setTabOrder(speichereVertragZurKreditorenListe, saveContractGoContracts);
         QWidget::setTabOrder(saveContractGoContracts, cancelCreateContract);
         QWidget::setTabOrder(cancelCreateContract, comboKreditoren);
-        QWidget::setTabOrder(comboKreditoren, leKennung);
-        QWidget::setTabOrder(leKennung, PersonsTableView);
+        QWidget::setTabOrder(comboKreditoren, saveList);
+        QWidget::setTabOrder(saveList, saveExit);
+        QWidget::setTabOrder(saveExit, cancel);
+        QWidget::setTabOrder(cancel, lePlz);
+        QWidget::setTabOrder(lePlz, leEMail);
+        QWidget::setTabOrder(leEMail, txtAnmerkung);
+        QWidget::setTabOrder(txtAnmerkung, leIban);
+        QWidget::setTabOrder(leIban, leBic);
+        QWidget::setTabOrder(leBic, saveNew);
+        QWidget::setTabOrder(saveNew, leVorname);
+        QWidget::setTabOrder(leVorname, PersonsTableView);
         QWidget::setTabOrder(PersonsTableView, leFilter);
         QWidget::setTabOrder(leFilter, pbPersonFilterZurcksetzten);
         QWidget::setTabOrder(pbPersonFilterZurcksetzten, leVertrgeFilter);
@@ -700,9 +700,9 @@ public:
         QWidget::setTabOrder(contractsTableView, leFilterBookings);
         QWidget::setTabOrder(leFilterBookings, pbPersonFilterZurcksetztenBookings);
         QWidget::setTabOrder(pbPersonFilterZurcksetztenBookings, tblViewBookings);
-        QWidget::setTabOrder(tblViewBookings, deLaufzeitEnde);
-        QWidget::setTabOrder(deLaufzeitEnde, leBetrag);
-        QWidget::setTabOrder(leBetrag, cbZins);
+        QWidget::setTabOrder(tblViewBookings, leStadt);
+        QWidget::setTabOrder(leStadt, leNachname);
+        QWidget::setTabOrder(leNachname, leStrasse);
 
         menuBar->addAction(menuDatenbank->menuAction());
         menuBar->addAction(menuDK_Geber->menuAction());
@@ -727,7 +727,7 @@ public:
 
         retranslateUi(MainWindow);
 
-        stackedWidget->setCurrentIndex(2);
+        stackedWidget->setCurrentIndex(3);
 
 
         QMetaObject::connectSlotsByName(MainWindow);

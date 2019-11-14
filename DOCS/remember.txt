@@ -1,13 +1,4 @@
 
-
-neues Feld f Kreditoren: e-mail
-- format validator
-- einmaligkeit
-
-Vertragsnummer (Claudias Wunsch)
-
-Adressen einmaligkeit
-
 Zinsen aus enum analog Buchungsarten
 
 ?! Buchungsart: Zinsgutschrift
@@ -46,6 +37,18 @@ next:
 ? P Liste r-click Menu anlegen
 
 DONE
+
+Adressen einmaligkeit: Die Kombination aus Vorname, Nachname, Stadt und Straße
+muss in der Datenbank einmalig sein (SQL unique)
+
+Vertragsnummer generieren (Claudias Wunsch)
+<projektkürzel><jahr>-laufendeNr (m offset)
+- unique in der tabelle
+- Filterbar
+
+neues Feld f Kreditoren: e-mail
+- format validator
+- einmaligkeit
 
 !! neues Feld f Kreditoren: Anmerkungen
 

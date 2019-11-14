@@ -81,6 +81,12 @@ QVariant ExecuteSingleValueSql( const QString& field, const QString& table, cons
     return ExecuteSingleValueSql(sql, con);
 }
 
+int getHighestTableId(const QString& tablename, const QString& con)
+{LOG_ENTRY_and_EXIT;
+    QString sql = "SELECT max(ROWID) FROM " + tablename;
+    return ExecuteSingleValueSql(sql, con).toInt();
+}
+
 QString JsonFromRecord( QSqlRecord r)
 {
     QMap<QString, QVariantMap> jRecord;

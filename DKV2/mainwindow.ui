@@ -26,7 +26,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -817,26 +817,26 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
-  <tabstop>leVorname</tabstop>
-  <tabstop>leNachname</tabstop>
-  <tabstop>leStrasse</tabstop>
-  <tabstop>lePlz</tabstop>
-  <tabstop>leStadt</tabstop>
-  <tabstop>leEMail</tabstop>
-  <tabstop>txtAnmerkung</tabstop>
-  <tabstop>leIban</tabstop>
-  <tabstop>leBic</tabstop>
-  <tabstop>saveNew</tabstop>
-  <tabstop>saveList</tabstop>
-  <tabstop>saveExit</tabstop>
-  <tabstop>cancel</tabstop>
+  <tabstop>leKennung</tabstop>
+  <tabstop>leBetrag</tabstop>
+  <tabstop>cbZins</tabstop>
   <tabstop>deVertragsabschluss</tabstop>
+  <tabstop>deLaufzeitEnde</tabstop>
   <tabstop>chkbTesaurierend</tabstop>
   <tabstop>speichereVertragZurKreditorenListe</tabstop>
   <tabstop>saveContractGoContracts</tabstop>
   <tabstop>cancelCreateContract</tabstop>
   <tabstop>comboKreditoren</tabstop>
-  <tabstop>leKennung</tabstop>
+  <tabstop>saveList</tabstop>
+  <tabstop>saveExit</tabstop>
+  <tabstop>cancel</tabstop>
+  <tabstop>lePlz</tabstop>
+  <tabstop>leEMail</tabstop>
+  <tabstop>txtAnmerkung</tabstop>
+  <tabstop>leIban</tabstop>
+  <tabstop>leBic</tabstop>
+  <tabstop>saveNew</tabstop>
+  <tabstop>leVorname</tabstop>
   <tabstop>PersonsTableView</tabstop>
   <tabstop>leFilter</tabstop>
   <tabstop>pbPersonFilterZurcksetzten</tabstop>
@@ -846,9 +846,9 @@
   <tabstop>leFilterBookings</tabstop>
   <tabstop>pbPersonFilterZurcksetztenBookings</tabstop>
   <tabstop>tblViewBookings</tabstop>
-  <tabstop>deLaufzeitEnde</tabstop>
-  <tabstop>leBetrag</tabstop>
-  <tabstop>cbZins</tabstop>
+  <tabstop>leStadt</tabstop>
+  <tabstop>leNachname</tabstop>
+  <tabstop>leStrasse</tabstop>
  </tabstops>
  <resources/>
  <connections/>
