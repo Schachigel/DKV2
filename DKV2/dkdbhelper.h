@@ -18,7 +18,7 @@
 extern dbstructure dkdbstructur;
 extern QList<QPair<int, QString>> Buchungsarten;
 
-enum Buchungsart_i
+ enum Buchungsart_i
 {
     NOOP =0,
     VERTRAG_ANLEGEN =1,
@@ -55,6 +55,8 @@ QString ContractList_SQL(const QVector<dbfield>& f, const QString& filter);
 
 QVariant Eigenschaft(const QString& name);
 
+int JahreszahlFuerAbschluss();
+bool Jahresabschluss(int Jahr);
 struct DbSummary
 {
     double aktiveDk;

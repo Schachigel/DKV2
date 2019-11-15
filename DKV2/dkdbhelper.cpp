@@ -33,12 +33,11 @@ dbstructure dkdbstructur;
 QList<QPair<int, QString>> Buchungsarten;
 
 void initDKDBStruktur()
-{
+{LOG_ENTRY_and_EXIT;
     initBuchungsarten();
     static bool init_done = false;
     if( init_done) return;
     init_done = true;
-    LOG_ENTRY_and_EXIT;
     // DB date -> Variant String
     // DB bool -> Variant int
     dbtable Kreditoren("Kreditoren");
@@ -102,7 +101,7 @@ void initDKDBStruktur()
 }
 
 void initBuchungsarten()
-{
+{LOG_ENTRY_and_EXIT;
     //    "NOOP",
     //    "Vertrag anlegen",
     //    "Vertrag aktivieren",
@@ -118,7 +117,7 @@ void initBuchungsarten()
 }
 
 bool ZinssaetzeEinfuegen(QSqlDatabase db)
-{
+{LOG_ENTRY_and_EXIT;
     double Zins = 0.;
     double ZinsIncrement = 0.01;
     TableDataInserter ti(dkdbstructur["Zinssaetze"]);
@@ -146,7 +145,7 @@ bool ZinssaetzeEinfuegen(QSqlDatabase db)
 }
 
 bool BuchungsartenEinfuegen(QSqlDatabase db)
-{
+{LOG_ENTRY_and_EXIT;
     bool ret = true;
     for( auto art: Buchungsarten)
     {
@@ -160,7 +159,7 @@ bool BuchungsartenEinfuegen(QSqlDatabase db)
 }
 
 bool EigenschaftenEinfuegen(QSqlDatabase db)
-{
+{LOG_ENTRY_and_EXIT;
     bool ret =true;
     QSqlQuery sql(db);
     ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('Version', '1.0')");
@@ -171,12 +170,12 @@ bool EigenschaftenEinfuegen(QSqlDatabase db)
 }
 
 QVariant Eigenschaft(const QString& name)
-{
+{LOG_ENTRY_and_EXIT;
     return ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'");
 }
 
 bool DKDatenbankAnlegen(const QString& filename, QSqlDatabase db)
-{    LOG_ENTRY_and_EXIT;
+{LOG_ENTRY_and_EXIT;
     if( (filename.length()>0) == db.isValid())
         // use this function with db xor with filename
         return false;
@@ -215,8 +214,7 @@ bool DKDatenbankAnlegen(const QString& filename, QSqlDatabase db)
 }
 
 bool hatAlleTabellenUndFelder(QSqlDatabase& db)
-{   LOG_ENTRY_and_EXIT;
-
+{LOG_ENTRY_and_EXIT;
     for( auto table : dkdbstructur.getTables())
     {
         QSqlQuery sql(db);
@@ -237,7 +235,7 @@ bool hatAlleTabellenUndFelder(QSqlDatabase& db)
 }
 
 bool istValideDatenbank(const QString& filename)
-{   LOG_ENTRY_and_EXIT;
+{LOG_ENTRY_and_EXIT;
 
     if( filename == "") return false;
     if( !QFile::exists(filename)) return false;
@@ -258,7 +256,7 @@ bool istValideDatenbank(const QString& filename)
 }
 
 void DatenbankverbindungSchliessen()
-{   LOG_ENTRY_and_EXIT;
+{LOG_ENTRY_and_EXIT;
 
     QList<QString> cl = QSqlDatabase::connectionNames();
     if( cl.count() == 0)
@@ -273,7 +271,7 @@ void DatenbankverbindungSchliessen()
 }
 
 void DatenbankZurAnwendungOeffnen( QString newDbFile)
-{   LOG_ENTRY_and_EXIT;
+{LOG_ENTRY_and_EXIT;
 
     DatenbankverbindungSchliessen();
     QSettings config;
@@ -294,7 +292,7 @@ void DatenbankZurAnwendungOeffnen( QString newDbFile)
 }
 
 QString ProposeKennung()
-{
+{LOG_ENTRY_and_EXIT;
     int idOffset = Eigenschaft("IdOffset").toInt();
     QString maxid = QString::number(idOffset + getHighestTableId("Vertraege")).rightJustified(6, '0');
     QString PI = Eigenschaft("ProjektInitialen").toString();
@@ -302,7 +300,7 @@ QString ProposeKennung()
 }
 
 void BeispieldatenAnlegen( int AnzahlDatensaetze)
-{   LOG_ENTRY_and_EXIT;
+{LOG_ENTRY_and_EXIT;
 
     QList<QString> Vornamen {"Holger", "Volker", "Peter", "Hans", "Susi", "Roland", "Claudia", "Emil", "Evelyn", "Ötzgür", "Thomas", "Elke", "Berta", "Malte", "Jori", "Paul", "Jonas", "Finn", "Leon", "Luca", "Emma", "Mia", "Lena", "Anna"};
     QList<QString> Nachnamen {"Maier", "Müller", "Schmit", "Kramp", "Adams", "Häcker", "Maresch", "Beutl", "Chauchev", "Chen", "Kirk", "Ohura", "Gorbatschov", "Merkel", "Karrenbauer", "Tritin", "Schmidt", "Rao", "Lassen", "Hurgedü"};
@@ -347,7 +345,7 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
 }
 
 void ZinssaetzeFuerAuswahlliste(QList<ZinsAnzeigeMitId>& Rates)
-{   LOG_ENTRY_and_EXIT;
+{LOG_ENTRY_and_EXIT;
 
     QSqlQuery query;
     query.setForwardOnly(true);
@@ -364,7 +362,7 @@ void ZinssaetzeFuerAuswahlliste(QList<ZinsAnzeigeMitId>& Rates)
 }
 
 QString ContractList_SELECT(const QVector<dbfield>& fields)
-{   LOG_ENTRY_and_EXIT;
+{LOG_ENTRY_and_EXIT;
     QString sql("SELECT ");
     for( int i = 0; i < fields.size(); i++)
     {
@@ -375,11 +373,11 @@ QString ContractList_SELECT(const QVector<dbfield>& fields)
 }
 
 QString ContractList_FROM()
-{
+{LOG_ENTRY_and_EXIT;
     return  "FROM Vertraege, Kreditoren, Zinssaetze";
 }
 QString ContractList_WHERE(const QString& Filter)
-{
+{LOG_ENTRY_and_EXIT;
     QString s ("WHERE Kreditoren.id = Vertraege.KreditorId AND Vertraege.ZSatz = Zinssaetze.id");
     bool isNumber (false);
     int index = Filter.toInt(&isNumber);
@@ -395,12 +393,60 @@ QString ContractList_WHERE(const QString& Filter)
     return s;
 }
 QString ContractList_SQL(const QVector<dbfield>& fields, const QString& filter)
-{
+{LOG_ENTRY_and_EXIT;
     QString sql = ContractList_SELECT(fields) + " "
             + ContractList_FROM() + " "
             + ContractList_WHERE(filter);
     qDebug() << "ContractList SQL: \n" << sql;
     return sql;
+}
+
+int JahreszahlFuerAbschluss()
+{LOG_ENTRY_and_EXIT;
+    QDate aeltesteZinszahlung = ExecuteSingleValueSql("SELECT min(LetzteZinsberechnung) FROM Vertraege WHERE aktiv != 0").toDate();
+    if( aeltesteZinszahlung.month()==12 && aeltesteZinszahlung.day() == 31)
+        return aeltesteZinszahlung.year() +1;
+    return aeltesteZinszahlung.year();
+}
+
+bool Jahresabschluss(int Jahr)
+{LOG_ENTRY_and_EXIT;
+    QSqlQuery select; select.prepare( "SELECT Vertraege.id, Vertraege.Betrag, Vertraege.Wert, Zinssaetze.Zinssatz, Vertraege.tesaurierend, Vertraege.LetzteZinsberechnung "
+                                      "FROM Vertraege, Zinssaetze "
+                                      "WHERE Vertraege.ZSatz = Zinssaetze.id");//  AND aktiv!=0");
+    if( !select.exec() || !select.first())
+    {
+        qCritical() << "faild to select contracts: " << select.lastError() << endl << "in " << select.lastQuery();
+        return false;
+    }
+    const QDate YearEnd= QDate(Jahr, 12, 31);
+    do
+    {
+        int id        =select.record().value("id").toInt();
+        // double betrag = select.record().value("Betrag").toDouble();
+        double wert   = select.record().value("Wert").toDouble();
+        double zinsf  = select.record().value("Zinssatz").toDouble();
+        bool tesa     = select.record().value("tesaurierend").toBool();
+        QDate start   = select.record().value("LetzteZinsberechnung").toDate();
+        if( start > YearEnd)
+            continue;
+        double zins = ZinsesZins(zinsf, wert, start, YearEnd, tesa);
+        qDebug() << "Updating contract " << id;
+        qDebug() << zinsf << "% Zins von " << wert << " zwischen " << start << " und " << QDate(Jahr, 12, 31) << ((tesa)? " (tesaurierend)" : " (mit Auszahlung=");
+        qDebug() << "Zins: " << zins << ((tesa)?" Neuer Wert: ": " Auszahlung: ") << ((tesa)? (wert+zins) : (zins));
+
+    }while(select.next());
+    // for each active contract
+    //   if( letzteZinsberechnung < "ZYEAR/12/31")
+    //     calculate Zins,
+    //     tesa: add Zins to Wert, store new Wert, set LastZinsberechnung to year End
+    //     ! tesa: set LastZinsberechnung to year End
+    //     printouts 2 pdf:
+    //     tesa: Danke!
+    //     ! tesa: Finanzamt + Danke
+    //     create Buchung
+
+    return true;
 }
 
 void berechneZusammenfassung(DbSummary& dbs, QString con)

@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>872</width>
-    <height>522</height>
+    <width>909</width>
+    <height>567</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -613,8 +613,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>872</width>
-     <height>26</height>
+     <width>909</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatenbank">
@@ -641,9 +641,10 @@
      <string>&amp;Verträge</string>
     </property>
     <addaction name="actionListe_der_Vertr_ge_anzeigen"/>
-    <addaction name="action_bersicht"/>
-    <addaction name="separator"/>
     <addaction name="actionVertrag_anlegen"/>
+    <addaction name="separator"/>
+    <addaction name="action_bersicht"/>
+    <addaction name="actionJahreszinsabrechnung"/>
    </widget>
    <widget class="QMenu" name="menuDebug">
     <property name="enabled">
@@ -812,6 +813,11 @@
    </property>
    <property name="toolTip">
     <string>Adressdaten und Bankdaten bearbeiten</string>
+   </property>
+  </action>
+  <action name="actionJahreszinsabrechnung">
+   <property name="text">
+    <string>Jahreszinsabrechnung</string>
    </property>
   </action>
  </widget>
