@@ -486,10 +486,10 @@ void MainWindow::prepareContractListView()
     fields.append(dkdbstructur["Vertraege"]["LetzteZinsberechnung"]);
     fields.append(dkdbstructur["Vertraege"]["aktiv"]);
     fields.append(dkdbstructur["Vertraege"]["LaufzeitEnde"]);
-
     QSqlQueryModel* model = new QSqlQueryModel(ui->contractsTableView);
     model->setQuery(ContractList_SQL(fields, ui->leVertrgeFilter->text()));
 
+    colIndexFieldActiveInContractList = fields.indexOf(dkdbstructur["Vertraege"]["aktiv"]);
     ui->contractsTableView->setModel(model);
     ui->contractsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->contractsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -522,7 +522,7 @@ void MainWindow::on_actionListe_der_Vertr_ge_anzeigen_triggered()
 void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &pos)
 {LOG_ENTRY_and_EXIT;
     QModelIndex indexClickTarget = ui->contractsTableView->indexAt(pos);
-    QModelIndex indexActive = indexClickTarget.siblingAtColumn(8); // contract active
+    QModelIndex indexActive = indexClickTarget.siblingAtColumn(colIndexFieldActiveInContractList); // contract active
 
     QMenu menu( "PersonContextMenu", this);
     bool isActive (ui->contractsTableView->model()->data(indexActive).toInt() ? true : false);
@@ -700,9 +700,9 @@ void MainWindow::on_actionJahreszinsabrechnung_triggered()
     // look at all "letzteZinsberechnung"
     // find the oldest, take the year (=ZYEAR)
     int zJahr = JahreszahlFuerAbschluss();
-    QString msg = "Der Jahresabschluss für das Jahr " + QString::number(zJahr) + " kann gemacht werden\n";
+    QString msg = "Der Jahresabschluss für das Jahr " + QString::number(zJahr) + " kann gemacht werden\n\n";
     msg += "Dabei werden die Zinsen für alle Verträge berechnet. Der Wert von tesaurierenden Verträgen wird angepasst\n";
-    msg += "Dieser Vorgang kann nicht rückgängig gemacht werden. Fortfahren?";
+    msg += "Dieser Vorgang kann nicht rückgängig gemacht werden. Möchtest Du fortfahren?";
 
     // ask user: there are n contracts to work on for year ZYEAR
     // do you want to apply Zinsabrechnung?
@@ -710,5 +710,5 @@ void MainWindow::on_actionJahreszinsabrechnung_triggered()
         return;
 
     Jahresabschluss(zJahr);
-
+    on_actionListe_der_Vertr_ge_anzeigen_triggered( );
 }

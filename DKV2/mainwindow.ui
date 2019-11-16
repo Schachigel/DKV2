@@ -26,7 +26,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -823,6 +823,20 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
+  <tabstop>leVorname</tabstop>
+  <tabstop>leNachname</tabstop>
+  <tabstop>leStrasse</tabstop>
+  <tabstop>lePlz</tabstop>
+  <tabstop>leStadt</tabstop>
+  <tabstop>leEMail</tabstop>
+  <tabstop>txtAnmerkung</tabstop>
+  <tabstop>leIban</tabstop>
+  <tabstop>leBic</tabstop>
+  <tabstop>saveNew</tabstop>
+  <tabstop>saveList</tabstop>
+  <tabstop>saveExit</tabstop>
+  <tabstop>cancel</tabstop>
+  <tabstop>comboKreditoren</tabstop>
   <tabstop>leKennung</tabstop>
   <tabstop>leBetrag</tabstop>
   <tabstop>cbZins</tabstop>
@@ -832,29 +846,15 @@
   <tabstop>speichereVertragZurKreditorenListe</tabstop>
   <tabstop>saveContractGoContracts</tabstop>
   <tabstop>cancelCreateContract</tabstop>
-  <tabstop>comboKreditoren</tabstop>
-  <tabstop>saveList</tabstop>
-  <tabstop>saveExit</tabstop>
-  <tabstop>cancel</tabstop>
-  <tabstop>lePlz</tabstop>
-  <tabstop>leEMail</tabstop>
-  <tabstop>txtAnmerkung</tabstop>
-  <tabstop>leIban</tabstop>
-  <tabstop>leBic</tabstop>
-  <tabstop>saveNew</tabstop>
-  <tabstop>leVorname</tabstop>
-  <tabstop>PersonsTableView</tabstop>
   <tabstop>leFilter</tabstop>
   <tabstop>pbPersonFilterZurcksetzten</tabstop>
-  <tabstop>leVertrgeFilter</tabstop>
-  <tabstop>FilterVertrgeZurcksetzten</tabstop>
-  <tabstop>contractsTableView</tabstop>
+  <tabstop>PersonsTableView</tabstop>
   <tabstop>leFilterBookings</tabstop>
   <tabstop>pbPersonFilterZurcksetztenBookings</tabstop>
   <tabstop>tblViewBookings</tabstop>
-  <tabstop>leStadt</tabstop>
-  <tabstop>leNachname</tabstop>
-  <tabstop>leStrasse</tabstop>
+  <tabstop>FilterVertrgeZurcksetzten</tabstop>
+  <tabstop>contractsTableView</tabstop>
+  <tabstop>leVertrgeFilter</tabstop>
  </tabstops>
  <resources/>
  <connections/>

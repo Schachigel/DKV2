@@ -5,6 +5,7 @@
 
 
 double round(const double d, const int stellen = 2);
+double round2(const double d);
 double round6(const double d);
 
 int TageBisJahresende_a(const QDate& d);

@@ -193,7 +193,7 @@ bool Vertrag::aktivenVertragLoeschen( const QDate& termin)
 {LOG_ENTRY_and_EXIT;
     if( !ExecuteSingleValueSql("SELECT [aktiv] FROM [Vertraege] WHERE id=" +QString::number(id)).toBool())
     {
-        qWarning() << "will not delete passive contract w id:" << id;
+        qWarning() << "will not delete non-activ contract w id:" << id;
         return false;
     }
     // abschluss Wert berechnen
@@ -210,7 +210,6 @@ bool Vertrag::aktivenVertragLoeschen( const QDate& termin)
         return false;
     }
 
-
     QSqlQuery deleteQ;
     if( !deleteQ.exec("DELETE FROM Vertraege WHERE id=" + QString::number(id)))
     {
@@ -222,5 +221,61 @@ bool Vertrag::aktivenVertragLoeschen( const QDate& termin)
     qDebug() << "aktiver Vertrag " << id << "beendet";
     return true;
 
+
+}
+
+bool Vertrag::speichereJahresabschluss(const QDate& end)
+{
+    letzteZinsgutschrift = ZinsesZins(Zinsfuss(), Wert(), StartZinsberechnung(), end);
+    double neuerWert = 0.;
+    bool ret =true;
+    QString where = "id = " + QString::number(id);
+    if( Tesaurierend())
+    {
+        neuerWert = round(wert +letzteZinsgutschrift);
+        ret &= ExecuteUpdateSql( "Vertraege", "Wert", QVariant(neuerWert), where);
+        if( ret)
+            wert = neuerWert;
+    }
+    ret &= ExecuteUpdateSql( "Vertraege", "LetzteZinsberechnung", QVariant(end), where);
+
+    if( ret)
+    {   // update this contract in Memory
+        startZinsberechnung = end;
+    }
+
+    return ret;
+}
+
+bool Vertrag::speichereBelegJahresabschluss(const QDate &end)
+{
+    QString msg = QString::number(letzteZinsgutschrift) + " Euro "
+                    "Zinsgutschrift zum " + end.toString();
+    return BelegSpeichern(ZINSGUTSCHRIFT, msg);
+}
+
+bool Vertrag::verbucheJahreszins(const QDate& end)
+{
+    if( end < StartZinsberechnung())
+    {
+        qDebug() << "Begin der Zinsberechnung ist NACH dem Jahresabschlussdatum -> keine Abrechnung";
+        return false;
+    }
+    QSqlDatabase::database().transaction();
+    if( !speichereJahresabschluss(end))
+    {
+        qCritical() << "Jahresabschluss wurde nicht gespeichert";
+        QSqlDatabase::database().rollback();
+        return false;
+    }
+    if( !speichereBelegJahresabschluss(end))
+    {
+        qCritical() << "Jahresabschluss Beleg wurde nicht gespeichert";
+        QSqlDatabase::database().rollback();
+        return false;
+    }
+    QSqlDatabase::database().commit();
+    // Briefe Drucken
+    return true;
 
 }

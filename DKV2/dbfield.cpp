@@ -17,25 +17,6 @@ bool dbfield::operator ==(const dbfield &b) const
             && (type() == b.type()));
 }
 
-// local helper
-QVariant::Type dbCompatibleVType(QVariant::Type t)
-{
-    switch( t)
-    {
-    case QVariant::String:
-    case QVariant::Int:
-    case QVariant::Double:
-        return t;
-    case QVariant::Date:
-        return QVariant::String; // sadly ...
-    case QVariant::Bool:
-        return QVariant::Int;
-    default:
-        Q_ASSERT(!bool("invalid database type"));
-        return QVariant::Invalid;
-    }
-}
-
 QString dbTypeFromVariant(QVariant::Type t)
 {
     switch( t)

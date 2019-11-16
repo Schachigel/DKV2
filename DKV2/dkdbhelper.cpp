@@ -411,40 +411,23 @@ int JahreszahlFuerAbschluss()
 
 bool Jahresabschluss(int Jahr)
 {LOG_ENTRY_and_EXIT;
-    QSqlQuery select; select.prepare( "SELECT Vertraege.id, Vertraege.Betrag, Vertraege.Wert, Zinssaetze.Zinssatz, Vertraege.tesaurierend, Vertraege.LetzteZinsberechnung "
-                                      "FROM Vertraege, Zinssaetze "
-                                      "WHERE Vertraege.ZSatz = Zinssaetze.id");//  AND aktiv!=0");
-    if( !select.exec() || !select.first())
+    QSqlQuery sql; sql.prepare( "SELECT Vertraege.id "
+                                "FROM Vertraege WHERE aktiv != 0");
+    if( !(sql.exec() && sql.first()))
     {
-        qCritical() << "faild to select contracts: " << select.lastError() << endl << "in " << select.lastQuery();
+        qCritical() << "faild to select contracts: " << sql.lastError() << endl << "in " << sql.lastQuery();
         return false;
     }
     const QDate YearEnd= QDate(Jahr, 12, 31);
     do
     {
-        int id        =select.record().value("id").toInt();
-        // double betrag = select.record().value("Betrag").toDouble();
-        double wert   = select.record().value("Wert").toDouble();
-        double zinsf  = select.record().value("Zinssatz").toDouble();
-        bool tesa     = select.record().value("tesaurierend").toBool();
-        QDate start   = select.record().value("LetzteZinsberechnung").toDate();
-        if( start > YearEnd)
-            continue;
-        double zins = ZinsesZins(zinsf, wert, start, YearEnd, tesa);
-        qDebug() << "Updating contract " << id;
-        qDebug() << zinsf << "% Zins von " << wert << " zwischen " << start << " und " << QDate(Jahr, 12, 31) << ((tesa)? " (tesaurierend)" : " (mit Auszahlung=");
-        qDebug() << "Zins: " << zins << ((tesa)?" Neuer Wert: ": " Auszahlung: ") << ((tesa)? (wert+zins) : (zins));
+        Vertrag v; v.ausDb(sqlVal<int>(sql, "id"), true);
+        v.verbucheJahreszins(YearEnd);
 
-    }while(select.next());
-    // for each active contract
-    //   if( letzteZinsberechnung < "ZYEAR/12/31")
-    //     calculate Zins,
-    //     tesa: add Zins to Wert, store new Wert, set LastZinsberechnung to year End
-    //     ! tesa: set LastZinsberechnung to year End
+    } while(sql.next());
     //     printouts 2 pdf:
     //     tesa: Danke!
     //     ! tesa: Finanzamt + Danke
-    //     create Buchung
 
     return true;
 }

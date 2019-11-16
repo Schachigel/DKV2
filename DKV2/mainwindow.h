@@ -84,12 +84,11 @@ private slots:
 
     void on_actionShow_Bookings_triggered();
 
-
     void on_actionJahreszinsabrechnung_triggered();
 
 private:
     Ui::MainWindow *ui;
-
+    int colIndexFieldActiveInContractList;
     void preparePersonTableView();
     void prepareContractListView();
     void DbInStatuszeileAnzeigen();

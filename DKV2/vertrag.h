@@ -22,7 +22,7 @@ public:
         betrag(betrag), wert(wert), zinsId(zId),
         tesaurierend(tesa), active(aktiv),
         vertragsdatum(vd), startZinsberechnung(startd),
-        laufzeitEnde(endd) {}
+        laufzeitEnde(endd), letzteZinsgutschrift(0.) {  }
     // getter
     double Betrag() const { return betrag;}
     double Wert() const { return wert;}
@@ -43,6 +43,7 @@ public:
     bool ausDb(int id, bool mitBelegdaten= false);
     bool verbucheNeuenVertrag();
     bool aktiviereVertrag(const QDate& aDate);
+    bool verbucheJahreszins(const QDate& YearEnd);
     // statics
     bool passivenVertragLoeschen();
     bool aktivenVertragLoeschen(const QDate& termin);
@@ -52,6 +53,8 @@ private:
     int speichereNeuenVertrag() const;
     bool speichereBelegNeuerVertrag();
     void updateAusDb(){ausDb(id, true);}
+    bool speichereJahresabschluss(const QDate& end);
+    bool speichereBelegJahresabschluss(const QDate& end);
     // data
     int id;
     int      kreditorId;
@@ -66,6 +69,7 @@ private:
     QDate laufzeitEnde;
     // Belegdaten
     double zinsFuss;
+    double letzteZinsgutschrift;
     Kreditor dkGeber;
     QString buchungsdatenJson;
 };

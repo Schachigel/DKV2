@@ -38,7 +38,7 @@ QString SelectQueryFromFields(const QVector<dbfield>& fields, const QString& whe
 }
 
 QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString& where, const QString& con)
-{
+{LOG_ENTRY_and_EXIT;
     QString sql = SelectQueryFromFields(fields, where);
     qDebug() << "ExecuteSingleRecordSql:\n" << sql;
     QSqlQuery q(QSqlDatabase::database(con));
@@ -76,10 +76,28 @@ QVariant ExecuteSingleValueSql(const QString& s, const QString& con)
 }
 
 QVariant ExecuteSingleValueSql( const QString& field, const QString& table, const QString& where, const QString& con)
-{
+{LOG_ENTRY_and_EXIT;
     QString sql = "SELECT " + field + " FROM " + table + " WHERE " + where;
     return ExecuteSingleValueSql(sql, con);
 }
+
+bool ExecuteUpdateSql(const QString& table, const QString& field, const QVariant& newValue, const QString& where, const QString& con)
+{LOG_ENTRY_and_EXIT;
+    QString sql = "UPDATE " + table;
+    sql += " SET " + field + " = '" + newValue.toString();
+    sql += "' WHERE " + where;
+    QSqlQuery q(QSqlDatabase::database(con));
+    q.prepare(sql);
+    if( q.exec())
+    {
+        qDebug() << "successfully executed update sql " << q.lastQuery();
+        return true;
+    }
+    qCritical() << "faild to execute update sql: " << q.lastError()
+                << endl << q.lastQuery();
+    return false;
+}
+
 
 int getHighestTableId(const QString& tablename, const QString& con)
 {LOG_ENTRY_and_EXIT;
@@ -88,7 +106,7 @@ int getHighestTableId(const QString& tablename, const QString& con)
 }
 
 QString JsonFromRecord( QSqlRecord r)
-{
+{LOG_ENTRY_and_EXIT;
     QMap<QString, QVariantMap> jRecord;
     for(int i=0; i< r.count(); i++)
     {
@@ -108,27 +126,32 @@ QString JsonFromRecord( QSqlRecord r)
     return doc.toJson();
 }
 
-/*
-QJsonValue jsonValueFromVariant(QVariant v)
+template<>
+bool sqlVal(QSqlQuery sql, QString fname)
 {
-    switch(v.type())
-    {
-    case QVariant::Int:
-    case QVariant::UInt:
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
-        return QJsonValue(v.toInt());
-    case QVariant::String:
-        return QJsonValue(v.toString());
-    case QVariant::Double:
-        return QJsonValue(v.toDouble());
-    case QVariant::Date:
-        return QJsonValue(v.toDate().toString(Qt::ISODate));
-    case QVariant::Bool:
-        return QJsonValue(v.toBool());
-    default:
-        qDebug() << "jsonValueFromVariant: invalid data type: " << v;
-    }
-    return QJsonValue();
+    return sql.record().value(fname).toBool();
 }
-*/
+
+template <>
+int sqlVal(QSqlQuery sql, QString fname)
+{
+    return sql.record().value(fname).toInt();
+}
+
+template <>
+double sqlVal(QSqlQuery sql, QString fname)
+{
+    return sql.record().value(fname).toDouble();
+}
+
+template <>
+QString sqlVal(QSqlQuery sql, QString fname)
+{
+    return sql.record().value(fname).toString();
+}
+
+template<>
+QDate sqlVal(QSqlQuery sql, QString fname)
+{
+    return sql.record().value(fname).toDate();
+}
