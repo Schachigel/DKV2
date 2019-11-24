@@ -4,6 +4,7 @@
 #include "tst_db.h"
 #include "test_dkdbhelper.h"
 #include "test_finance.h"
+#include "test_sqlhelper.h"
 
 #ifndef TESTLIB_SELFCOVERAGE_START
 #define TESTLIB_SELFCOVERAGE_START(a)
@@ -26,6 +27,7 @@ int main(int argc, char *argv[])
     ASSERT_TEST(new tst_db);
     ASSERT_TEST(new test_dkdbhelper);
     ASSERT_TEST(new test_finance);
+    ASSERT_TEST(new test_sqlhelper);
 
 
     if( status == 1) qDebug() << "\n>>>   There was an error   <<< ";

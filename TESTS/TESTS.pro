@@ -19,10 +19,12 @@ SOURCES +=  tst_db.cpp \
     test_dkdbhelper.cpp \
     test_finance.cpp \
     test_main.cpp \
+    test_sqlhelper.cpp \
     testhelper.cpp
 
 HEADERS += \
     test_dkdbhelper.h \
     test_finance.h \
+    test_sqlhelper.h \
     testhelper.h \
     tst_db.h
