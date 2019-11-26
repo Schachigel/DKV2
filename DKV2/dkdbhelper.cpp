@@ -308,6 +308,7 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
     QList<QString> emailprovider {"gmail.com", "googlemail.com", "mailbox.org", "t-online.de", "mail.de", "mail.com", "online.de", "yahoo.de", "yahoo.com", "telekom.de", "proivder.co.uk"};
     QList <QPair<QString, QString>> Cities {{"68305", "Mannheim"}, {"69123", "Heidelberg"}, {"69123", "Karlsruhe"}, {"90345", "Hamburg"}};
     QRandomGenerator rand(::GetTickCount());
+    int maxZinsIndex = ExecuteSingleValueSql("SELECT max(id) FROM Zinssaetze").toInt();
     for( int i = 0; i<AnzahlDatensaetze; i++)
     {
         Kreditor k;
@@ -330,7 +331,7 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
         }
         // add a contract
         double betragUWert = double(100) * rand.bounded(1,20);
-        int zinsid = rand.bounded(1,19);
+        int zinsid = rand.bounded(1,maxZinsIndex);
         bool tesa = rand.bounded(100)%2 ? true : false;
         bool active = 0 != rand.bounded(3)%3;
         QDate vertragsdatum= QDate::currentDate().addDays(-1 * rand.bounded(365));
