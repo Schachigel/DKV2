@@ -33,6 +33,7 @@ SOURCES += \
         filehelper.cpp \
         finhelper.cpp \
         helper.cpp \
+        htmlbrief.cpp \
         itemformatter.cpp \
         kreditor.cpp \
         main.cpp \
@@ -50,6 +51,7 @@ HEADERS += \
         financaltimespan.h \
         finhelper.h \
         helper.h \
+        htmlbrief.h \
         itemformatter.h \
         kreditor.h \
         mainwindow.h \
@@ -69,5 +71,6 @@ DISTFILES += \
     ../DOCS/Zinsberechnungsmethode.txt \
     ../DOCS/Zinstage.xlsx \
     ../DOCS/remember.txt \
+    ../letter.html \
     DOKU \
     remember.txt

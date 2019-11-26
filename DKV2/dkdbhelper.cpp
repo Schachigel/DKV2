@@ -166,6 +166,7 @@ bool EigenschaftenEinfuegen(QSqlDatabase db)
     QRandomGenerator rand(::GetTickCount());
     ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('IdOffset', '" + QString::number(rand.bounded(10000,20000)) + "')");
     ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('ProjektInitialen', 'EM')");
+// WIP    ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('Lettertemplate', '" +lettertemplate + "')");
     return ret;
 }
 
