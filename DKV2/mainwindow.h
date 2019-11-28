@@ -86,6 +86,8 @@ private slots:
 
     void on_actionJahreszinsabrechnung_triggered();
 
+    void on_leBetrag_editingFinished();
+
 private:
     Ui::MainWindow *ui;
     int colIndexFieldActiveInContractList;

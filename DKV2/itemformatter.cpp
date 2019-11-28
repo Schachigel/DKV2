@@ -17,7 +17,7 @@ QString PercentItemFormatter::displayText(const QVariant& value, const QLocale& 
 
 QString EuroItemFormatter::displayText(const QVariant& value, const QLocale& )const
 {
-    return value.toString()+" Euro";
+    return QString("%L1").arg(value.toDouble())+" Euro";
 };
 
 QString ActivatedItemFormatter::displayText(const QVariant &value, const QLocale &) const

@@ -471,6 +471,12 @@ void MainWindow::on_actionVertrag_anlegen_triggered()
     ui->stackedWidget->setCurrentIndex(newContractIndex);
 }
 
+
+void MainWindow::on_leBetrag_editingFinished()
+{
+    ui->leBetrag->setText(QString("%L1").arg(ui->leBetrag->text().toDouble()));
+}
+
 // List of contracts
 void MainWindow::prepareContractListView()
 {LOG_ENTRY_and_EXIT;

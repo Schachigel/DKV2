@@ -1,3 +1,9 @@
+<claudia 2011-11>
+1000er punkte anzeigen:
+(OK)  Verträge Liste: Betrag
+(OK)  Verträeg Liste: Wert
+(OK) Vertrag Anlegen -> Betrag
+
 
 Zinsen aus enum analog Buchungsarten
 
@@ -6,11 +12,6 @@ Zinsen aus enum analog Buchungsarten
 ?! Memory leak: was muss beim öffnen einer Seite jedesmal gemacht werden, was nur einmal?
 
 + Buchungen:
-
-++ Jahreszinsberechnung
-    - alle aktiven Verträge
-    - Zeitraum von max(1.1.<jahr>, LetzteZinsberechnung) bis Jahresende
-    - Tage (finanzmathematisch) * Zinssatz / (Tage pro Jahr finanzmathematisch)
 
 ++ (prio 2) Geldeingang (Kredit erhöhen) =
   tesaurierend
@@ -37,6 +38,12 @@ next:
 ? P Liste r-click Menu anlegen
 
 DONE
+
+++ Jahreszinsberechnung
+    - alle aktiven Verträge
+    - Zeitraum von max(1.1.<jahr>, LetzteZinsberechnung) bis Jahresende
+    - Tage (finanzmathematisch) * Zinssatz / (Tage pro Jahr finanzmathematisch)
+
 
 Adressen einmaligkeit: Die Kombination aus Vorname, Nachname, Stadt und Straße
 muss in der Datenbank einmalig sein (SQL unique)
