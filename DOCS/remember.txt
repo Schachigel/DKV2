@@ -1,11 +1,8 @@
-<claudia 2011-11>
-1000er punkte anzeigen:
-(OK)  Verträge Liste: Betrag
-(OK)  Verträeg Liste: Wert
-(OK) Vertrag Anlegen -> Betrag
-
 
 Zinsen aus enum analog Buchungsarten
+
+
+?! TESTfehler
 
 ?! Buchungsart: Zinsgutschrift
 
@@ -38,6 +35,13 @@ next:
 ? P Liste r-click Menu anlegen
 
 DONE
+
+!! Claudia: DK- vor die Kennung
+
+1000er punkte anzeigen:
+(OK)  Verträge Liste: Betrag
+(OK)  Verträeg Liste: Wert
+(OK) Vertrag Anlegen -> Betrag
 
 ++ Jahreszinsberechnung
     - alle aktiven Verträge

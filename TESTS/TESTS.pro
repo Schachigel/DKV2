@@ -16,6 +16,7 @@ SOURCES +=  tst_db.cpp \
     ../dkv2/dbtable.cpp \
     ../dkv2/filehelper.cpp \
     ../dkv2/helper.cpp \
+    ../dkv2/htmlbrief.cpp \
     test_dkdbhelper.cpp \
     test_finance.cpp \
     test_main.cpp \

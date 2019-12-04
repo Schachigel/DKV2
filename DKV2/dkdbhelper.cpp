@@ -27,6 +27,7 @@ uint32_t GetTickCount() {
 #include "dkdbhelper.h"
 #include "kreditor.h"
 #include "dbstructure.h"
+#include "htmlbrief.h"
 
 dbstructure dkdbstructur;
 
@@ -34,6 +35,8 @@ QList<QPair<int, QString>> Buchungsarten;
 
 void initDKDBStruktur()
 {LOG_ENTRY_and_EXIT;
+    static bool done = false;
+    if( done) return; // 4 tests
     initBuchungsarten();
     static bool init_done = false;
     if( init_done) return;
@@ -98,6 +101,7 @@ void initDKDBStruktur()
     meta.append(dbfield("Name", QVariant::String, "NOT NULL"));
     meta.append(dbfield("Wert", QVariant::String, "NOT NULL"));
     dkdbstructur.appendTable(meta);
+    done = true;
 }
 
 void initBuchungsarten()
@@ -165,8 +169,8 @@ bool EigenschaftenEinfuegen(QSqlDatabase db)
     ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('Version', '1.0')");
     QRandomGenerator rand(::GetTickCount());
     ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('IdOffset', '" + QString::number(rand.bounded(10000,20000)) + "')");
-    ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('ProjektInitialen', 'EM')");
-// WIP    ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('Lettertemplate', '" +lettertemplate + "')");
+    ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('ProjektInitialen', 'ESP')");
+    ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('Lettertemplate', '" +htmlbrief::getTemplate() + "')");
     return ret;
 }
 
@@ -296,8 +300,8 @@ QString ProposeKennung()
 {LOG_ENTRY_and_EXIT;
     int idOffset = Eigenschaft("IdOffset").toInt();
     QString maxid = QString::number(idOffset + getHighestTableId("Vertraege")).rightJustified(6, '0');
-    QString PI = Eigenschaft("ProjektInitialen").toString();
-    return PI+ QString::number(QDate::currentDate().year()) +"-" + maxid;
+    QString PI = "DK-" + Eigenschaft("ProjektInitialen").toString();
+    return PI + "-" + QString::number(QDate::currentDate().year()) + "-" + maxid;
 }
 
 void BeispieldatenAnlegen( int AnzahlDatensaetze)

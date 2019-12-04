@@ -4,12 +4,12 @@
 #include <QString>
 #include <QtTest>
 
-#include "../DKV2/dbstructure.h"
-#include "../DKV2/dbtable.h"
-#include "../DKV2/kreditor.h"
-#include "../DKV2/dkdbhelper.h"
-#include "../DKV2/filehelper.h"
-#include "../DKV2/helper.h"
+#include "../dkv2/dbstructure.h"
+#include "../dkv2/dbtable.h"
+#include "../dkv2/kreditor.h"
+#include "../dkv2/dkdbhelper.h"
+#include "../dkv2/filehelper.h"
+#include "../dkv2/helper.h"
 
 #include "testhelper.h"
 #include "tst_db.h"
@@ -20,6 +20,8 @@ void tst_db::init()
     QDir().mkdir(QString("..\\data"));
     if (QFile::exists(filename))
         QFile::remove(filename);
+    if (QFile::exists(filename))
+        QFAIL("db alredy exists");
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", testCon);
     db.setDatabaseName(filename);
     QVERIFY(db.open());
@@ -250,6 +252,9 @@ void tst_db::createKreditor()
     k.setValue("Plz", "68305");
     k.setValue("Stadt", "Mannheim");
     k.setValue("Strasse", "Pfungstadterstr. 1");
+    k.setValue("Email", "hugo@hurtig.com");
+    k.setValue("Anmerkung", "anmerkung");
+
     QVERIFY( -1 != k.Speichern(QSqlDatabase::database(testCon)));
     QVERIFY(tableRecordCount("Kreditoren") == 1);
 
