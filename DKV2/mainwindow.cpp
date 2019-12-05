@@ -30,6 +30,7 @@
 #include "vertrag.h"
 #include "kreditor.h"
 #include "dkdbhelper.h"
+#include "jahresabschluss.h"
 
 // construction, destruction
 MainWindow::MainWindow(QWidget *parent) :
@@ -702,19 +703,16 @@ void MainWindow::on_actionShow_Bookings_triggered()
 
 void MainWindow::on_actionJahreszinsabrechnung_triggered()
 {LOG_ENTRY_and_EXIT;
-    // Which Year should we work on?
-    // look at all "letzteZinsberechnung"
-    // find the oldest, take the year (=ZYEAR)
-    int zJahr = JahreszahlFuerAbschluss();
-    QString msg = "Der Jahresabschluss für das Jahr " + QString::number(zJahr) + " kann gemacht werden\n\n";
+    jahresabschluss Abschluss;
+
+    QString msg = "Der Jahresabschluss für das Jahr "
+                  + QString::number(Abschluss.abzuschliessendesJahr())
+                  + " kann gemacht werden\n\n";
     msg += "Dabei werden die Zinsen für alle Verträge berechnet. Der Wert von tesaurierenden Verträgen wird angepasst\n";
     msg += "Dieser Vorgang kann nicht rückgängig gemacht werden. Möchtest Du fortfahren?";
 
-    // ask user: there are n contracts to work on for year ZYEAR
-    // do you want to apply Zinsabrechnung?
     if( QMessageBox::Ok != QMessageBox::information(this, "Jahresabschluss", msg))
         return;
-
-    Jahresabschluss(zJahr);
+    Abschluss.execute();
     on_actionListe_der_Vertr_ge_anzeigen_triggered( );
 }

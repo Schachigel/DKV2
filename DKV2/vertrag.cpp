@@ -277,5 +277,32 @@ bool Vertrag::verbucheJahreszins(const QDate& end)
     QSqlDatabase::database().commit();
     // Briefe Drucken
     return true;
-
 }
+
+//QString Vertrag::JahresabschlussCSV()
+//{ // Vertrag.id, Kreditor.id, Betrag, Zins, neuerWert, Kreditor.Vorname, Kreditor.Nachname
+//    QString ret = QString::number(id);
+//    ret += "; " + QString::number(kreditorId);
+//    ret += "; " + QString("%L1").arg(betrag);
+//    ret += "; " + QString("%L1%").arg(zinsFuss);
+//    ret += "; " + QString("%L1").arg(letzteZinsgutschrift);
+//    ret += "; " + QString("%L1").arg(wert);
+//    ret += "; " + dkGeber.getValue("Vorname").toString();
+//    ret += "; " + dkGeber.getValue("Nachname").toString();
+//    return ret;
+//}
+
+//QString Vertrag::JahresabschlussTHTML()
+//{
+//    // Vertrag.id, Kreditor.id, Betrag, Zins, neuerWert, Kreditor.Vorname, Kreditor.Nachname
+//    QString ret = QString::number(id);
+//    ret += "; " + QString::number(kreditorId);
+//    ret += "; " + QString("%L1").arg(betrag);
+//    ret += "; " + QString("%L1%").arg(zinsFuss);
+//    ret += "; " + QString("%L1").arg(letzteZinsgutschrift);
+//    ret += "; " + QString("%L1").arg(wert);
+//    ret += "; " + dkGeber.getValue("Vorname").toString();
+//    ret += "; " + dkGeber.getValue("Nachname").toString();
+//    return ret;
+
+//}

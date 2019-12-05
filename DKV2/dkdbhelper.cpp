@@ -407,37 +407,6 @@ QString ContractList_SQL(const QVector<dbfield>& fields, const QString& filter)
     return sql;
 }
 
-int JahreszahlFuerAbschluss()
-{LOG_ENTRY_and_EXIT;
-    QDate aeltesteZinszahlung = ExecuteSingleValueSql("SELECT min(LetzteZinsberechnung) FROM Vertraege WHERE aktiv != 0").toDate();
-    if( aeltesteZinszahlung.month()==12 && aeltesteZinszahlung.day() == 31)
-        return aeltesteZinszahlung.year() +1;
-    return aeltesteZinszahlung.year();
-}
-
-bool Jahresabschluss(int Jahr)
-{LOG_ENTRY_and_EXIT;
-    QSqlQuery sql; sql.prepare( "SELECT Vertraege.id "
-                                "FROM Vertraege WHERE aktiv != 0");
-    if( !(sql.exec() && sql.first()))
-    {
-        qCritical() << "faild to select contracts: " << sql.lastError() << endl << "in " << sql.lastQuery();
-        return false;
-    }
-    const QDate YearEnd= QDate(Jahr, 12, 31);
-    do
-    {
-        Vertrag v; v.ausDb(sqlVal<int>(sql, "id"), true);
-        v.verbucheJahreszins(YearEnd);
-
-    } while(sql.next());
-    //     printouts 2 pdf:
-    //     tesa: Danke!
-    //     ! tesa: Finanzamt + Danke
-
-    return true;
-}
-
 void berechneZusammenfassung(DbSummary& dbs, QString con)
 {
     dbs.aktiveDk  = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 1", con).toReal();

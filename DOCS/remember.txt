@@ -1,8 +1,10 @@
 
+Ausgabe Jahresabschluß:
+ - Buchungen anzeigen
+ - als csv speichern
+ - drucken
+
 Zinsen aus enum analog Buchungsarten
-
-
-?! TESTfehler
 
 ?! Buchungsart: Zinsgutschrift
 
@@ -35,6 +37,8 @@ next:
 ? P Liste r-click Menu anlegen
 
 DONE
+
+?! TESTfehler
 
 !! Claudia: DK- vor die Kennung
 

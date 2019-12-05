@@ -35,6 +35,7 @@ SOURCES += \
         helper.cpp \
         htmlbrief.cpp \
         itemformatter.cpp \
+        jahresabschluss.cpp \
         kreditor.cpp \
         main.cpp \
         mainwindow.cpp \
@@ -53,6 +54,7 @@ HEADERS += \
         helper.h \
         htmlbrief.h \
         itemformatter.h \
+        jahresabschluss.h \
         kreditor.h \
         mainwindow.h \
         sqlhelper.h \
