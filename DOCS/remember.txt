@@ -1,3 +1,4 @@
+Zinsberechnung sollte Wert=betrag für nicht tesaurierende Verträge anpassen
 
 Ausgabe Jahresabschluß:
  - Buchungen anzeigen
@@ -37,6 +38,9 @@ next:
 ? P Liste r-click Menu anlegen
 
 DONE
+
+Liste der Verträge: "tesaurierend" spalte anzeigen
+
 
 ?! TESTfehler
 

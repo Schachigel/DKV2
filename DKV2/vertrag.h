@@ -22,13 +22,16 @@ public:
         betrag(betrag), wert(wert), zinsId(zId),
         tesaurierend(tesa), active(aktiv),
         vertragsdatum(vd), startZinsberechnung(startd),
-        laufzeitEnde(endd), letzteZinsgutschrift(0.) {  }
+        laufzeitEnde(endd), letzteZinsgutschrift(0.) {
+        if( !tesaurierend) this->wert = 0.;
+    }
     // getter
     double Betrag() const { return betrag;}
     double Wert() const { return wert;}
     int KreditorId() const { return kreditorId;}
     QString Kennung() const {return kennung;}
     int ZinsId() const {return zinsId;}
+    double Zins() const {return letzteZinsgutschrift;}
     QDate Vertragsabschluss() const {return vertragsdatum;}
     QDate LaufzeitEnde() const {return laufzeitEnde;}
     bool Tesaurierend() const {return tesaurierend;}
@@ -38,6 +41,7 @@ public:
     QString Nachname() const {return dkGeber.getValue("Nachname").toString();}
     // setter
     void setVid(int i){ id = i;}
+    int getVid() const { return id;}
 
     // interface
     bool ausDb(int id, bool mitBelegdaten= false);
@@ -57,7 +61,7 @@ private:
     bool speichereBelegJahresabschluss(const QDate& end);
     // data
     int id;
-    int      kreditorId;
+    int kreditorId;
     QString kennung;
     double betrag;
     double wert;

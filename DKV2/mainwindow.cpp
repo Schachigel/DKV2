@@ -31,6 +31,7 @@
 #include "kreditor.h"
 #include "dkdbhelper.h"
 #include "jahresabschluss.h"
+#include "frmjahresabschluss.h"
 
 // construction, destruction
 MainWindow::MainWindow(QWidget *parent) :
@@ -348,9 +349,9 @@ Vertrag MainWindow::VertragsdatenAusFormular()
     int KreditorId = ui->comboKreditoren->itemData(ui->comboKreditoren->currentIndex()).toInt();
     QString Kennung = ui->leKennung->text();
     double Betrag = ui->leBetrag->text().toDouble();
-    double Wert = Betrag;
-    int ZinsId = ui->cbZins->itemData(ui->cbZins->currentIndex()).toInt();
     bool tesaurierend = ui->chkbTesaurierend->checkState() == Qt::Checked;
+    double Wert = tesaurierend ? Betrag : 0.;
+    int ZinsId = ui->cbZins->itemData(ui->cbZins->currentIndex()).toInt();
     QDate Vertragsdatum = ui->deVertragsabschluss->date();
 
     QDate LaufzeitEnde = ui->deLaufzeitEnde->date();
@@ -503,7 +504,7 @@ void MainWindow::prepareContractListView()
     ui->contractsTableView->setAlternatingRowColors(true);
     ui->contractsTableView->setSortingEnabled(true);
     ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["Betrag"]), new EuroItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["Wert"]), new EuroItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["Wert"]), new WertEuroItemFormatter(ui->contractsTableView));
     ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Zinssaetze"]["Zinssatz"]), new PercentItemFormatter(ui->contractsTableView));
     ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["Vertragsdatum"]), new DateItemFormatter(ui->contractsTableView));
     ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["LaufzeitEnde"]), new DateItemFormatter(ui->contractsTableView));
@@ -714,5 +715,7 @@ void MainWindow::on_actionJahreszinsabrechnung_triggered()
     if( QMessageBox::Ok != QMessageBox::information(this, "Jahresabschluss", msg))
         return;
     Abschluss.execute();
+    frmJahresabschluss dlgJA(Abschluss, this);
+    dlgJA.exec();
     on_actionListe_der_Vertr_ge_anzeigen_triggered( );
 }

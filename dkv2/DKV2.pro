@@ -32,6 +32,7 @@ SOURCES += \
         dkdbhelper.cpp \
         filehelper.cpp \
         finhelper.cpp \
+        frmjahresabschluss.cpp \
         helper.cpp \
         htmlbrief.cpp \
         itemformatter.cpp \
@@ -51,6 +52,7 @@ HEADERS += \
         filehelper.h \
         financaltimespan.h \
         finhelper.h \
+        frmjahresabschluss.h \
         helper.h \
         htmlbrief.h \
         itemformatter.h \
@@ -62,6 +64,7 @@ HEADERS += \
 
 FORMS += \
         askDateDlg.ui \
+        frmjahresabschluss.ui \
         mainwindow.ui
 
 # Default rules for deployment.

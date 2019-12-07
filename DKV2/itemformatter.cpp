@@ -20,6 +20,15 @@ QString EuroItemFormatter::displayText(const QVariant& value, const QLocale& )co
     return QString("%L1").arg(value.toDouble())+" Euro";
 };
 
+QString WertEuroItemFormatter::displayText(const QVariant& value, const QLocale& )const
+{
+    double d = value.toDouble();
+    if( d != 0.)
+        return QString("%L1").arg(value.toDouble())+" Euro";
+    else
+        return QString("(auszahlend)");
+};
+
 QString ActivatedItemFormatter::displayText(const QVariant &value, const QLocale &) const
 {
     // the view delivers strings like "true" and "false" for boolean values
