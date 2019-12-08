@@ -1,18 +1,27 @@
+#include <QDir>
+#include <QSettings>
+#include <QStandardItem>
+
+#include <helper.h>
+#include "filehelper.h"
 #include "frmjahresabschluss.h"
 #include "ui_frmjahresabschluss.h"
-#include "QStandardItem"
 
 
 frmJahresabschluss::frmJahresabschluss(const jahresabschluss& JA, QWidget *parent) :
       QDialog(parent),
       ui(new Ui::frmJahresabschluss),
       ja (JA)
-{
+{ LOG_ENTRY_and_EXIT;
     ui->setupUi(this);
-    fillTesaList();
+    // fillTesaList();
+    if( !JA.getTesaV().empty())
+        ui->listTesa->setModel(getModelFromContracts(JA.getTesaV()));
     ui->listTesa->resizeColumnsToContents();
     ui->listTesa->verticalHeader()->hide();
-    fillnTesaList();
+
+    if( !JA.get_nTesaV().empty())
+        ui->listN_Tesa->setModel(getModelFromContracts(JA.get_nTesaV()));
     ui->listN_Tesa->resizeColumnsToContents();
     ui->listN_Tesa->verticalHeader()->hide();
 }
@@ -22,89 +31,105 @@ frmJahresabschluss::~frmJahresabschluss()
     delete ui;
 }
 
-void frmJahresabschluss::fillTesaList()
-{
+QStandardItemModel* frmJahresabschluss::getModelFromContracts(const QVector<Vertrag>&vertraege) const
+{ LOG_ENTRY_and_EXIT;
+    bool thesa {vertraege[0].Tesaurierend()};
     QStandardItemModel *model = new QStandardItemModel();
-    model->setHorizontalHeaderItem(0, new QStandardItem("Vertrags Nr."));
-    model->setHorizontalHeaderItem(1, new QStandardItem("Kreditbetrag"));
-    model->setHorizontalHeaderItem(2, new QStandardItem(" Zins lauf. Jahr"));
-    model->setHorizontalHeaderItem(3, new QStandardItem("akt. Gesamtwert"));
-    model->setHorizontalHeaderItem(4, new QStandardItem("  Vorname  "));
-    model->setHorizontalHeaderItem(5, new QStandardItem("  Nachname "));
+    int itemIndex {0};
+    model->setHorizontalHeaderItem(itemIndex++, new QStandardItem("Vertrags Nr."));
+    model->setHorizontalHeaderItem(itemIndex++, new QStandardItem("Kreditbetrag"));
+    if( thesa)
+    {
+        model->setHorizontalHeaderItem(itemIndex++, new QStandardItem(" Zins lauf. Jahr"));
+        model->setHorizontalHeaderItem(itemIndex++, new QStandardItem("akt. Gesamtwert"));
+    }
+    else
+        model->setHorizontalHeaderItem(itemIndex++, new QStandardItem("auszuz. Zins "));
+    model->setHorizontalHeaderItem(itemIndex++, new QStandardItem("  Vorname  "));
+    model->setHorizontalHeaderItem(itemIndex++, new QStandardItem("  Nachname "));
 
     int row {-1};
     QStandardItem* item;
-    for( auto vertrag: ja.getTesaV())
+    for( auto vertrag: vertraege)
     {
         row++;
+        itemIndex = 0;
+
         // VertragsId, Betrag ,Zins, Wert (neu), Vorname, Nachname
         item =new QStandardItem(QString::number(vertrag.getVid()));
         item->setTextAlignment(Qt::AlignCenter);
-        model->setItem(row, 0, item);
+        model->setItem(row, itemIndex++, item);
 
         item =new QStandardItem(QString::number(vertrag.Betrag())+" Euro");
         item->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-        model->setItem(row, 1, item);
+        model->setItem(row, itemIndex++, item);
 
         item =new QStandardItem(QString::number(vertrag.Zins())+" Euro");
         item->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-        model->setItem(row, 2, item);
+        model->setItem(row, itemIndex++, item);
 
-        item =new QStandardItem(QString::number(vertrag.Wert())+" Euro");
-        item->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-        model->setItem(row, 3, item);
+        if( thesa)
+        {
+            item =new QStandardItem(QString::number(vertrag.Wert())+" Euro");
+            item->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
+            model->setItem(row, itemIndex++, item);
+        }
 
         item =new QStandardItem(vertrag.Vorname());
         item->setTextAlignment(Qt::AlignCenter);
-        model->setItem(row, 4, item);
+        model->setItem(row, itemIndex++, item);
 
         item =new QStandardItem(vertrag.Nachname());
         item->setTextAlignment(Qt::AlignCenter);
-        model->setItem(row, 5, item);
+        model->setItem(row, itemIndex++, item);
     }
-    ui->listTesa->setModel(model);
+    return model;
 }
-
-void frmJahresabschluss::fillnTesaList()
-{
-    QStandardItemModel *model = new QStandardItemModel();
-    model->setHorizontalHeaderItem(0, new QStandardItem("Vertrags Nr."));
-    model->setHorizontalHeaderItem(1, new QStandardItem("Kreditbetrag"));
-    model->setHorizontalHeaderItem(2, new QStandardItem("auszuz. Zins "));
-    model->setHorizontalHeaderItem(3, new QStandardItem("  Vorname  "));
-    model->setHorizontalHeaderItem(4, new QStandardItem("  Nachname "));
-
-    int row {-1};
-    QStandardItem* item;
-    for( auto vertrag: ja.get_nTesaV())
-    {
-        row++;
-        // VertragsId, Betrag ,Zins, Wert (neu), Vorname, Nachname
-        item =new QStandardItem(QString::number(vertrag.getVid()));
-        item->setTextAlignment(Qt::AlignCenter);
-        model->setItem(row, 0, item);
-
-        item =new QStandardItem(QString::number(vertrag.Betrag())+" Euro");
-        item->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-        model->setItem(row, 1, item);
-
-        item =new QStandardItem(QString::number(vertrag.Zins())+" Euro");
-        item->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-        model->setItem(row, 2, item);
-
-        item =new QStandardItem(vertrag.Vorname());
-        model->setItem(row, 3, item);
-        item->setTextAlignment(Qt::AlignCenter);
-
-        item =new QStandardItem(vertrag.Nachname());
-        model->setItem(row, 4, item);
-        item->setTextAlignment(Qt::AlignCenter);
-    }
-    ui->listN_Tesa->setModel(model);
-}
-
 
 void frmJahresabschluss::on_pbOK_clicked()
 {
     close();
+}
+
+QString appendCsvLine( QString line, QString appendix)
+{
+    if( line.size()) line += "; ";
+    appendix = appendix.replace(';', '#');
+    return line + appendix;
+}
+
+void writeCsv(const jahresabschluss& ja, QString filename)
+{
+    backupFile(filename);
+    QFile file(filename);
+    file.open(QIODevice::WriteOnly|QIODevice::Truncate);
+    QTextStream s(&file);
+    for( auto vertrag: ja.getTesaV())
+    {
+        QString line = appendCsvLine("", QString::number(vertrag.getVid()));
+        line = appendCsvLine(line, QString::number(vertrag.Betrag()));
+        line = appendCsvLine(line, QString::number(vertrag.Zins()));
+        line = appendCsvLine(line, (vertrag.Tesaurierend() ? QString::number(vertrag.Wert()) : "-"));
+        line = appendCsvLine(line, vertrag.Vorname());
+        line = appendCsvLine(line, vertrag.Nachname());
+ // to be continued
+        s << line << endl;
+    }
+}
+
+void frmJahresabschluss::on_btnCsv_clicked()
+{ LOG_ENTRY_and_EXIT;
+    QSettings config;
+    QString dir(config.value("outdir").toString());
+
+    QString fn_thesa(QDir::cleanPath(dir + "/DKV2-JA-"
+                    + QString::number(ja.abzuschliessendesJahr())
+                    + "-thesaurierend.csv"));
+    writeCsv(ja, fn_thesa);
+
+    QString fn_n_thesa(QDir::cleanPath(dir + "/DKV2-JA-"
+                     + QString::number(ja.abzuschliessendesJahr())
+                     + "-ausschuettend.csv"));
+    writeCsv(ja, fn_n_thesa);
+    showFileInFolder(fn_thesa);
 }

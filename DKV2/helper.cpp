@@ -46,3 +46,13 @@ QString logFilePath()
     static QString logFilePath(QDir::toNativeSeparators(QDir::tempPath()) + QDir::separator() + "dkv2.log");
     return logFilePath;
 }
+
+void showFileInFolder(const QString &path)
+{
+#ifdef _WIN32    //Code for Windows
+    QProcess::startDetached("explorer.exe", {"/select,", QDir::toNativeSeparators(path)});
+#elif defined(__APPLE__)    //Code for Mac
+    QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to reveal POSIX file \"" + path + "\""});
+    QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to activate"});
+#endif
+}

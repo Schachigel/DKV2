@@ -2,6 +2,9 @@
 #define FRMJAHRESABSCHLUSS_H
 
 #include <QDialog>
+#include <QStandardItemModel>
+
+#include "vertrag.h"
 #include "jahresabschluss.h"
 
 
@@ -19,12 +22,14 @@ public:
 
 private slots:
     void on_pbOK_clicked();
+    void on_btnCsv_clicked();
 
 private:
     Ui::frmJahresabschluss *ui;
     const jahresabschluss& ja;
-    void fillTesaList();
-    void fillnTesaList();
+    QStandardItemModel* getModelFromContracts(const QVector<Vertrag>& vertraege) const;
+//    void fillTesaList();
+//    void fillnTesaList();
 };
 
 #endif // FRMJAHRESABSCHLUSS_H

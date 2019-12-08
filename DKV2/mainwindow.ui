@@ -614,7 +614,7 @@
      <x>0</x>
      <y>0</y>
      <width>909</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatenbank">
@@ -624,6 +624,8 @@
     <addaction name="action_Neue_DB_anlegen"/>
     <addaction name="actionDBoeffnen"/>
     <addaction name="actionDB_schliessen"/>
+    <addaction name="separator"/>
+    <addaction name="actionAusgabeverzeichnis_festlegen"/>
     <addaction name="separator"/>
     <addaction name="actionProgramm_beenden"/>
    </widget>
@@ -818,6 +820,11 @@
   <action name="actionJahreszinsabrechnung">
    <property name="text">
     <string>Jahreszinsabrechnung</string>
+   </property>
+  </action>
+  <action name="actionAusgabeverzeichnis_festlegen">
+   <property name="text">
+    <string>Ausgabeverzeichnis festlegen</string>
    </property>
   </action>
  </widget>

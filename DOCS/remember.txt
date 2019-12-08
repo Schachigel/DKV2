@@ -1,8 +1,10 @@
+CSV: alle Kreditor Daten wegschreiben
+
+Konfiguration Ausgabeverzeichnis testen
+
 plausibilitätsbetrachtung beim Löschen (ende -datum vs. LetzteZinsberechnung
 
 default datum beim beenden / aktivieren?!
-
-Zinsberechnung sollte Wert=betrag für nicht tesaurierende Verträge anpassen
 
 Ausgabe Jahresabschluß:
  - Buchungen anzeigen
@@ -43,8 +45,9 @@ next:
 
 DONE
 
-Liste der Verträge: "tesaurierend" spalte anzeigen
+Zinsberechnung sollte Wert=betrag für nicht tesaurierende Verträge anpassen sondern auf 0 setzten
 
+Liste der Verträge: "tesaurierend" spalte anzeigen
 
 ?! TESTfehler
 

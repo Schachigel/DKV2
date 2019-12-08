@@ -5,23 +5,23 @@
 #else
 #include <stdlib.h>
 #endif
-#include <qpair.h>
-#include <qfiledialog.h>
+#include <QPair>
+#include <QFileDialog>
 #include <QRandomGenerator>
 #include <QMessageBox>
-#include <qsqlquery.h>
-#include <qsqlerror.h>
-#include <qsqltablemodel.h>
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QSqlTableModel>
 #include <QSqlRelationalTableModel>
-#include <qsqlquerymodel.h>
-#include <qsqlrecord.h>
-#include <qsqlfield.h>
-#include <qmap.h>
+#include <QSqlQueryModel>
+#include <QSqlRecord>
+#include <QSqlField>
+#include <QMap>
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
 #include "askdatedlg.h"
-
 #include "helper.h"
 #include "filehelper.h"
 #include "itemformatter.h"
@@ -718,4 +718,16 @@ void MainWindow::on_actionJahreszinsabrechnung_triggered()
     frmJahresabschluss dlgJA(Abschluss, this);
     dlgJA.exec();
     on_actionListe_der_Vertr_ge_anzeigen_triggered( );
+}
+
+void MainWindow::on_actionAusgabeverzeichnis_festlegen_triggered()
+{
+    QString dir;
+    QSettings config;
+    config.value("outdir", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+
+    dir = QFileDialog::getExistingDirectory(this, "Ausgabeverzeichnis", dir,
+                                        QFileDialog::ShowDirsOnly
+                                            | QFileDialog::DontResolveSymlinks);
+    config.setValue("outdir", dir);
 }

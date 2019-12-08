@@ -88,6 +88,8 @@ private slots:
 
     void on_leBetrag_editingFinished();
 
+    void on_actionAusgabeverzeichnis_festlegen_triggered();
+
 private:
     Ui::MainWindow *ui;
     int colIndexFieldActiveInContractList;
