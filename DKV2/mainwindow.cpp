@@ -348,7 +348,7 @@ Vertrag MainWindow::VertragsdatenAusFormular()
 {LOG_ENTRY_and_EXIT;
     int KreditorId = ui->comboKreditoren->itemData(ui->comboKreditoren->currentIndex()).toInt();
     QString Kennung = ui->leKennung->text();
-    double Betrag = ui->leBetrag->text().toDouble();
+    double Betrag = ui->leBetrag->text().remove('.').toDouble();
     bool tesaurierend = ui->chkbTesaurierend->checkState() == Qt::Checked;
     double Wert = tesaurierend ? Betrag : 0.;
     int ZinsId = ui->cbZins->itemData(ui->cbZins->currentIndex()).toInt();

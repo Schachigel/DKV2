@@ -85,7 +85,7 @@ int Vertrag::speichereNeuenVertrag() const
     ti.setValue(dkdbstructur["Vertraege"]["KreditorId"].name(), kreditorId);
     ti.setValue(dkdbstructur["Vertraege"]["Kennung"].name(), kennung);
     ti.setValue(dkdbstructur["Vertraege"]["Betrag"].name(), betrag);
-    ti.setValue(dkdbstructur["Vertraege"]["Wert"].name(), wert);
+    ti.setValue(dkdbstructur["Vertraege"]["Wert"].name(), tesaurierend?wert:0.);
     ti.setValue(dkdbstructur["Vertraege"]["ZSatz"].name(), zinsId);
     ti.setValue(dkdbstructur["Vertraege"]["tesaurierend"].name(), tesaurierend);
     ti.setValue(dkdbstructur["Vertraege"]["Vertragsdatum"].name(), vertragsdatum);
@@ -226,23 +226,19 @@ bool Vertrag::aktivenVertragLoeschen( const QDate& termin)
 
 bool Vertrag::speichereJahresabschluss(const QDate& end)
 {
-    letzteZinsgutschrift = ZinsesZins(Zinsfuss(), Wert(), StartZinsberechnung(), end);
-    double neuerWert = 0.;
-    bool ret =true;
-    QString where = "id = " + QString::number(id);
-    if( Tesaurierend())
-    {
-        neuerWert = round(wert +letzteZinsgutschrift);
-        ret &= ExecuteUpdateSql( "Vertraege", "Wert", QVariant(neuerWert), where);
-        if( ret)
-            wert = neuerWert;
-    }
-    ret &= ExecuteUpdateSql( "Vertraege", "LetzteZinsberechnung", QVariant(end), where);
+    letzteZinsgutschrift = ZinsesZins(Zinsfuss(), tesaurierend?Wert():Betrag(), StartZinsberechnung(), end, tesaurierend);
+    qDebug() << "JA: berechneter Zins: " << letzteZinsgutschrift;
 
-    if( ret)
-    {   // update this contract in Memory
-        startZinsberechnung = end;
-    }
+    double neuerWert =  Tesaurierend() ? round(wert +letzteZinsgutschrift) : 0.;
+    qDebug() << "JA: aktualisierter Wert: " << neuerWert;
+
+    QString where = "id = " + QString::number(id);
+    bool ret =true;
+    ret &= ExecuteUpdateSql( "Vertraege", "Wert", QVariant(neuerWert), where);
+    if( ret) wert = neuerWert;       // update this contract obj. in Memory
+
+    ret &= ExecuteUpdateSql( "Vertraege", "LetzteZinsberechnung", QVariant(end), where);
+    if( ret) startZinsberechnung = end;       // update this contract obj. in Memory
 
     return ret;
 }

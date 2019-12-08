@@ -103,3 +103,8 @@ void frmJahresabschluss::fillnTesaList()
     ui->listN_Tesa->setModel(model);
 }
 
+
+void frmJahresabschluss::on_pbOK_clicked()
+{
+    close();
+}

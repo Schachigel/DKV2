@@ -32,8 +32,9 @@ int TageSeitMonatsAnfang_inclusive(const QDate& d)
 
 int TageZwischen(const QDate& von, const QDate& bis)
 {
+    if( bis == von) return 0;
     Q_ASSERT( von.year() == bis.year());
-    Q_ASSERT(bis >= von);
+    Q_ASSERT(bis > von);
     if( bis.day() == 31)
         return TageZwischen(von, QDate(bis.year(), bis.month(), 30));
     if( von.day() == 31)

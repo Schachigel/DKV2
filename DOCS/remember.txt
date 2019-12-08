@@ -1,3 +1,7 @@
+plausibilitätsbetrachtung beim Löschen (ende -datum vs. LetzteZinsberechnung
+
+default datum beim beenden / aktivieren?!
+
 Zinsberechnung sollte Wert=betrag für nicht tesaurierende Verträge anpassen
 
 Ausgabe Jahresabschluß:
