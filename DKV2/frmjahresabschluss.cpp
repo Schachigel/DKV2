@@ -98,22 +98,30 @@ QString appendCsvLine( QString line, QString appendix)
     return line + appendix;
 }
 
-void writeCsv(const jahresabschluss& ja, QString filename)
+void writeCsv(QVector<Vertrag> vertraege, QString filename)
 {
     backupFile(filename);
     QFile file(filename);
     file.open(QIODevice::WriteOnly|QIODevice::Truncate);
     QTextStream s(&file);
-    for( auto vertrag: ja.getTesaV())
+    QString header = "vid; Betrag; Zins; Wert; Vorname; Nachname; Strasse; Plz; Stadt; Email; IBAN; BIC";
+    s << header;
+    for( auto vertrag: vertraege)
     {
+        s << endl;
         QString line = appendCsvLine("", QString::number(vertrag.getVid()));
         line = appendCsvLine(line, QString::number(vertrag.Betrag()));
         line = appendCsvLine(line, QString::number(vertrag.Zins()));
         line = appendCsvLine(line, (vertrag.Tesaurierend() ? QString::number(vertrag.Wert()) : "-"));
         line = appendCsvLine(line, vertrag.Vorname());
         line = appendCsvLine(line, vertrag.Nachname());
- // to be continued
-        s << line << endl;
+        line = appendCsvLine(line, vertrag.getKreditor().getValue("Strasse").toString());
+        line = appendCsvLine(line, vertrag.getKreditor().getValue("Plz").toString());
+        line = appendCsvLine(line, vertrag.getKreditor().getValue("Stadt").toString());
+        line = appendCsvLine(line, vertrag.getKreditor().getValue("Email").toString());
+        line = appendCsvLine(line, vertrag.getKreditor().getValue("IBAN").toString());
+        line = appendCsvLine(line, vertrag.getKreditor().getValue("BIC").toString());
+        s << line;
     }
 }
 
@@ -125,11 +133,11 @@ void frmJahresabschluss::on_btnCsv_clicked()
     QString fn_thesa(QDir::cleanPath(dir + "/DKV2-JA-"
                     + QString::number(ja.abzuschliessendesJahr())
                     + "-thesaurierend.csv"));
-    writeCsv(ja, fn_thesa);
+    writeCsv(ja.getTesaV(), fn_thesa);
 
     QString fn_n_thesa(QDir::cleanPath(dir + "/DKV2-JA-"
                      + QString::number(ja.abzuschliessendesJahr())
                      + "-ausschuettend.csv"));
-    writeCsv(ja, fn_n_thesa);
+    writeCsv(ja.get_nTesaV(), fn_n_thesa);
     showFileInFolder(fn_thesa);
 }

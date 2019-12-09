@@ -29,6 +29,7 @@ bool Vertrag::ausDb(int vId, bool mitBelegdaten)
         fields.append(dkdbstructur["Kreditoren"]["Strasse"]);
         fields.append(dkdbstructur["Kreditoren"]["Plz"]);
         fields.append(dkdbstructur["Kreditoren"]["Stadt"]);
+        fields.append(dkdbstructur["Kreditoren"]["Email"]);
         fields.append(dkdbstructur["Kreditoren"]["IBAN"]);
         fields.append(dkdbstructur["Kreditoren"]["BIC"]);
         fields.append(dkdbstructur["Zinssaetze"]["id"]);
@@ -56,6 +57,7 @@ bool Vertrag::ausDb(int vId, bool mitBelegdaten)
         dkGeber.setValue("Strasse", rec.value("Kreditoren.Strasse"));
         dkGeber.setValue("Plz", rec.value("Kreditoren.Plz").toString());
         dkGeber.setValue("Stadt", rec.value("Kreditoren.Stadt"));
+        dkGeber.setValue("Email", rec.value("Kreditoren.Email"));
         dkGeber.setValue("Iban", rec.value("Kreditoren.IBAN"));
         dkGeber.setValue("Bic", rec.value("Kreditoren.BIC"));
     }

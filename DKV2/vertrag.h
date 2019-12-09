@@ -26,6 +26,7 @@ public:
         if( !tesaurierend) this->wert = 0.;
     }
     // getter
+    int getVid() const { return id;}
     double Betrag() const { return betrag;}
     double Wert() const { return wert;}
     int KreditorId() const { return kreditorId;}
@@ -39,9 +40,9 @@ public:
     QDate StartZinsberechnung() const {return startZinsberechnung;}
     QString Vorname() const {return dkGeber.getValue("Vorname").toString();}
     QString Nachname() const {return dkGeber.getValue("Nachname").toString();}
+    Kreditor getKreditor() const { return dkGeber;}
     // setter
     void setVid(int i){ id = i;}
-    int getVid() const { return id;}
 
     // interface
     bool ausDb(int id, bool mitBelegdaten= false);
