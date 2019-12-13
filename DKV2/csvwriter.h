@@ -10,8 +10,10 @@ class csvwriter
 public:
     csvwriter (){}
     void addColumn(QString header);
+    int  addColumns(QString headers);
     void appendToRow(QString value);
     void addRow(QList<QString> cols);
+    void addRow(QString row);
     void save(QString filname);
     QString out();
 private:

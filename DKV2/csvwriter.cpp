@@ -11,12 +11,24 @@
 void csvwriter::addColumn(QString header)
 {
     Q_ASSERT(rows.empty()); // no add. columns after adding data
-    headers.append(header);
+    header.replace(";", "#");
+    headers.append(header.trimmed());
+}
+
+int csvwriter::addColumns(QString headers)
+{
+    QList<QString> list = headers.split(";");
+    for(auto s : list)
+    {
+        addColumn(s);
+    }
+    return list.size();
 }
 
 void csvwriter::appendToRow( QString value)
 {
-    currentRow.append(value);
+    value.replace(";", "#");
+    currentRow.append(value.trimmed());
     if( currentRow.size() == headers.size())
     {
         rows.append( currentRow);
@@ -27,13 +39,21 @@ void csvwriter::appendToRow( QString value)
 void csvwriter::addRow(QList<QString> cols)
 {
     Q_ASSERT(cols.size() == headers.size());
-    rows.append(cols);
+    for( auto s : cols)
+    {
+        appendToRow(s);
+    }
+}
+
+void csvwriter::addRow(QString row)
+{
+    QList<QString> list = row.split(";");
+    addRow(list);
 }
 
 QString appendCsvLine( QString line, QString appendix)
 {
     if( line.size()) line += "; ";
-    appendix = appendix.replace(';', '#');
     return line + appendix;
 }
 

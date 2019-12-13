@@ -117,11 +117,11 @@ private:
     void clearNewContractFields();
 protected:
     void timerEvent(QTimerEvent* te) override
-        {
-            splash->finish(this);
-            killTimer(te->timerId());
-            delete splash;
-        }
+    {
+        splash->finish(this);
+        killTimer(te->timerId());
+        delete splash;
+    }
 };
 
 #endif // MAINWINDOW_H

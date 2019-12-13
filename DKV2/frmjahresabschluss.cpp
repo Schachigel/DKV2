@@ -4,6 +4,7 @@
 
 #include <helper.h>
 #include "filehelper.h"
+#include "csvwriter.h"
 #include "frmjahresabschluss.h"
 #include "ui_frmjahresabschluss.h"
 
@@ -90,40 +91,28 @@ void frmJahresabschluss::on_pbOK_clicked()
 {
     close();
 }
-namespace
-{
-QString appendCsvLine( QString line, QString appendix)
-{
-    if( line.size()) line += "; ";
-    appendix = appendix.replace(';', '#');
-    return line + appendix;
-}
-}
+
 void writeCsv(QVector<Vertrag> vertraege, QString filename)
 {
-    backupFile(filename);
-    QFile file(filename);
-    file.open(QIODevice::WriteOnly|QIODevice::Truncate);
-    QTextStream s(&file);
-    QString header = "vid; Betrag; Zins; Wert; Vorname; Nachname; Strasse; Plz; Stadt; Email; IBAN; BIC";
-    s << header;
+    csvwriter csv;
+    csv.addColumns("vid; Betrag; Zins; Wert; Vorname; Nachname; Strasse; Plz; Stadt; Email; IBAN; BIC");
+
     for( auto vertrag: vertraege)
     {
-        s << endl;
-        QString line = appendCsvLine("", QString::number(vertrag.getVid()));
-        line = appendCsvLine(line, QString::number(vertrag.Betrag()));
-        line = appendCsvLine(line, QString::number(vertrag.Zins()));
-        line = appendCsvLine(line, (vertrag.Tesaurierend() ? QString::number(vertrag.Wert()) : "-"));
-        line = appendCsvLine(line, vertrag.Vorname());
-        line = appendCsvLine(line, vertrag.Nachname());
-        line = appendCsvLine(line, vertrag.getKreditor().getValue("Strasse").toString());
-        line = appendCsvLine(line, vertrag.getKreditor().getValue("Plz").toString());
-        line = appendCsvLine(line, vertrag.getKreditor().getValue("Stadt").toString());
-        line = appendCsvLine(line, vertrag.getKreditor().getValue("Email").toString());
-        line = appendCsvLine(line, vertrag.getKreditor().getValue("IBAN").toString());
-        line = appendCsvLine(line, vertrag.getKreditor().getValue("BIC").toString());
-        s << line;
+        csv.appendToRow(QString::number(vertrag.getVid()));
+        csv.appendToRow(QString::number(vertrag.Betrag()));
+        csv.appendToRow(QString::number(vertrag.Zins()));
+        csv.appendToRow((vertrag.Tesaurierend() ? QString::number(vertrag.Wert()) : "-"));
+        csv.appendToRow(vertrag.Vorname());
+        csv.appendToRow(vertrag.Nachname());
+        csv.appendToRow(vertrag.getKreditor().getValue("Strasse").toString());
+        csv.appendToRow(vertrag.getKreditor().getValue("Plz").toString());
+        csv.appendToRow(vertrag.getKreditor().getValue("Stadt").toString());
+        csv.appendToRow(vertrag.getKreditor().getValue("Email").toString());
+        csv.appendToRow(vertrag.getKreditor().getValue("IBAN").toString());
+        csv.appendToRow(vertrag.getKreditor().getValue("BIC").toString());
     }
+    csv.save(filename);
 }
 
 void frmJahresabschluss::on_btnCsv_clicked()
