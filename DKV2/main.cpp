@@ -5,6 +5,9 @@
 #include "dkdbhelper.h"
 
 #include <QApplication>
+#include <QSplashScreen>
+#include <QDirIterator>
+#include <QPixmap>
 #include <QSettings>
 #include <qfiledialog.h>
 #include <qmessagebox.h>
@@ -79,6 +82,14 @@ QString getInitialDb()
     while(true);
 }
 
+QSplashScreen* doSplash()
+{
+    QPixmap pixmap(":/res/Logo.PNG");
+    QSplashScreen *splash = new QSplashScreen(pixmap, Qt::SplashScreen|Qt::WindowStaysOnTopHint);
+    splash->show();
+    return splash;
+}
+
 int main(int argc, char *argv[])
 {
     initLogging();
@@ -88,6 +99,8 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setOrganizationName("4-MHS"); // used to store our settings
     a.setApplicationName("DKV2");
+    QSplashScreen* splash = doSplash();
+
     QString dbfile =getInitialDb();
     if( dbfile == "")
     {
@@ -97,8 +110,11 @@ int main(int argc, char *argv[])
 
     QSettings config; config.setValue("db/last", dbfile);
     MainWindow w;
+    w.setSplash(splash);
     w.show();
+
     int ret = a.exec();
+
     qInfo() << "DKV2 finished";
 
     return ret;

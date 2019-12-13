@@ -57,9 +57,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
+
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::setSplash(QSplashScreen* s)
+{
+    splash = s;
+    startTimer(3333);
 }
 
 void MainWindow::DbInStatuszeileAnzeigen()

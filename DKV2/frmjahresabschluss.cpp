@@ -90,14 +90,15 @@ void frmJahresabschluss::on_pbOK_clicked()
 {
     close();
 }
-
+namespace
+{
 QString appendCsvLine( QString line, QString appendix)
 {
     if( line.size()) line += "; ";
     appendix = appendix.replace(';', '#');
     return line + appendix;
 }
-
+}
 void writeCsv(QVector<Vertrag> vertraege, QString filename)
 {
     backupFile(filename);

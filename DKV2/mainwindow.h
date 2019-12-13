@@ -3,6 +3,7 @@
 
 #include <dkdbhelper.h>
 #include <QItemSelection>
+#include <QSplashScreen>
 #include <QMainWindow>
 #include "vertrag.h"
 
@@ -17,6 +18,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void setSplash(QSplashScreen* s);
 
     void FillKreditorDropdown();
     void FillRatesDropdown();
@@ -92,6 +94,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    QSplashScreen* splash;
     int colIndexFieldActiveInContractList;
     void preparePersonTableView();
     void prepareContractListView();
@@ -112,6 +115,13 @@ private:
     void KreditorFormulardatenLoeschen();
     void KreditorFormulardatenBelegen(int id);
     void clearNewContractFields();
+protected:
+    void timerEvent(QTimerEvent* te) override
+        {
+            splash->finish(this);
+            killTimer(te->timerId());
+            delete splash;
+        }
 };
 
 #endif // MAINWINDOW_H

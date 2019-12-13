@@ -26,6 +26,7 @@ CONFIG += c++11
 
 SOURCES += \
         askdatedlg.cpp \
+        csvwriter.cpp \
         dbfield.cpp \
         dbstructure.cpp \
         dbtable.cpp \
@@ -45,6 +46,7 @@ SOURCES += \
 
 HEADERS += \
         askdatedlg.h \
+        csvwriter.h \
         dbfield.h \
         dbstructure.h \
         dbtable.h \
@@ -79,3 +81,6 @@ DISTFILES += \
     ../letter.html \
     DOKU \
     remember.txt
+
+RESOURCES += \
+    resource.qrc
