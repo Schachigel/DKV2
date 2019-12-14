@@ -645,11 +645,19 @@
     <property name="title">
      <string>&amp;Verträge</string>
     </property>
+    <widget class="QMenu" name="menuListen_drucken">
+     <property name="title">
+      <string>Listen drucken</string>
+     </property>
+     <addaction name="actionAktive_Vertr_ge_CSV"/>
+    </widget>
     <addaction name="actionListe_der_Vertr_ge_anzeigen"/>
     <addaction name="actionVertrag_anlegen"/>
     <addaction name="separator"/>
-    <addaction name="action_bersicht"/>
     <addaction name="actionJahreszinsabrechnung"/>
+    <addaction name="separator"/>
+    <addaction name="action_bersicht"/>
+    <addaction name="menuListen_drucken"/>
    </widget>
    <widget class="QMenu" name="menuDebug">
     <property name="enabled">
@@ -828,6 +836,11 @@
   <action name="actionAusgabeverzeichnis_festlegen">
    <property name="text">
     <string>Ausgabeverzeichnis festlegen</string>
+   </property>
+  </action>
+  <action name="actionAktive_Vertr_ge_CSV">
+   <property name="text">
+    <string>Aktive Verträge (CSV)</string>
    </property>
   </action>
  </widget>

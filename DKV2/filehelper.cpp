@@ -6,7 +6,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <qdebug.h>
-
+#include "helper.h"
 #include "filehelper.h"
 
 bool overwrite_copy(const QString& from, const QString& to)
@@ -52,5 +52,15 @@ bool backupFile(const QString&  fn)
             qDebug() << "Backup copy failed. File to be copied: " << backupnames[0];
         }
     return ret;
+}
+
+void showFileInFolder(const QString &path)
+{
+#ifdef _WIN32    //Code for Windows
+    QProcess::startDetached("explorer.exe", {"/select,", QDir::toNativeSeparators(path)});
+#elif defined(__APPLE__)    //Code for Mac
+    QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to reveal POSIX file \"" + path + "\""});
+    QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to activate"});
+#endif
 }
 

@@ -56,6 +56,8 @@ QString ContractList_SQL(const QVector<dbfield>& f, const QString& filter);
 
 QVariant Eigenschaft(const QString& name);
 
+void CsvActiveContracts();
+
 struct DbSummary
 {
     int     AnzahlAktive;

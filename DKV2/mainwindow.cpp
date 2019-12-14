@@ -227,6 +227,8 @@ void MainWindow::on_actioncreateSampleData_triggered()
     BeispieldatenAnlegen();
     preparePersonTableView();
     prepareContractListView();
+    if( ui->stackedWidget->currentIndex() == OverviewIndex)
+        on_action_bersicht_triggered();
 }
 void MainWindow::on_actionanzeigenLog_triggered()
 {LOG_ENTRY_and_EXIT;
@@ -751,4 +753,9 @@ void MainWindow::on_actionAusgabeverzeichnis_festlegen_triggered()
                                         QFileDialog::ShowDirsOnly
                                             | QFileDialog::DontResolveSymlinks);
     config.setValue("outdir", dir);
+}
+
+void MainWindow::on_actionAktive_Vertr_ge_CSV_triggered()
+{
+    CsvActiveContracts();
 }

@@ -1,20 +1,10 @@
 #ifndef FILEHELPER_H
 #define FILEHELPER_H
-#include <qstring.h>
-#include <qfile.h>
-
-class fileCloser
-{   // for use on the stack only
-public:
-    fileCloser (QFile* f){F=f;}
-    fileCloser() = delete;
-    ~fileCloser(){F->close();}
-private:
-    QFile* F;
-};
+#include <QString>
+#include <QFile>
 
 bool backupFile(const QString& filename);
 
-QString logFilePath();
+void showFileInFolder(const QString &path);
 
 #endif // FILEHELPER_H

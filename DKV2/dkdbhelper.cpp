@@ -22,6 +22,7 @@ uint32_t GetTickCount() {
 #include "helper.h"
 #include "filehelper.h"
 #include "sqlhelper.h"
+#include "csvwriter.h"
 #include "finhelper.h"
 #include "vertrag.h"
 #include "dkdbhelper.h"
@@ -415,6 +416,27 @@ void berechneZusammenfassung(DbSummary& dbs, QString con)
     dbs.WertAktive    = ExecuteSingleValueSql("SUM([Wert])", "[Vertraege]", "[aktiv] = 1", con).toReal();
     dbs.AnzahlPassive = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] = 0", con).toInt();
     dbs.BetragPassive = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 0", con).toReal();
+}
+
+void CsvActiveContracts()
+{
+    QDate today = QDate::currentDate();
+    QString filename(today.toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
+
+    QVector<dbfield> fields;
+    fields.append(dkdbstructur["Vertraege"]["id"]);
+    fields.append(dkdbstructur["Vertraege"]["KreditorId"]);
+    fields.append(dkdbstructur["Kreditoren"]["Vorname"]);
+    fields.append(dkdbstructur["Kreditoren"]["Nachname"]);
+    fields.append(dkdbstructur["Kreditoren"]["Strasse"]);
+    fields.append(dkdbstructur["Kreditoren"]["Stadt"]);
+    fields.append(dkdbstructur["Kreditoren"]["Nachname"]);
+    fields.append(dkdbstructur["Vertraege"]["Betrag"]);
+    fields.append(dkdbstructur["Vertraege"]["Wert"]);
+    fields.append(dkdbstructur["Vertraege"]["Vertragsdatum"]);
+
+    table2csv( fields, "[aktiv] = 1", filename);
+    showFileInFolder(filename);
 }
 
 void berechneVertragsenden( QVector<ContractEnd>& ce, QString con)

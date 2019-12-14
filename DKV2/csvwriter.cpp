@@ -1,10 +1,13 @@
 
 #include <QtGlobal>
+#include <QDebug>
 #include <QString>
 #include <QList>
 #include <QStringList>
 #include <QTextStream>
+#include <QSqlQuery>
 
+#include "sqlhelper.h"
 #include "filehelper.h"
 #include "csvwriter.h"
 
@@ -83,4 +86,25 @@ void csvwriter::save(QString filename)
     file.open(QIODevice::WriteOnly|QIODevice::Truncate);
     QTextStream s(&file);
     s << out();
+}
+
+void table2csv(QVector<dbfield>& fields, QString where, QString filename, QString con)
+{
+    csvwriter csv;
+    for(auto f : fields)
+        csv.addColumn(f.name());
+
+    QString sql = SelectQueryFromFields(fields, where);
+    QSqlQuery q (con);
+    q.exec(sql);
+    qDebug() << sql << endl;
+    while( q.next())
+    {
+        for (auto f: fields)
+        {
+            csv.appendToRow(q.record().value(f.name()).toString());
+        }
+    }
+
+    csv.save(filename);
 }

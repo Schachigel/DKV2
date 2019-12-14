@@ -91,6 +91,8 @@ private slots:
 
     void on_actionAusgabeverzeichnis_festlegen_triggered();
 
+    void on_actionAktive_Vertr_ge_CSV_triggered();
+
 private:
     Ui::MainWindow *ui;
     QSplashScreen* splash;

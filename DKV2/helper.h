@@ -36,6 +36,4 @@ extern QFile* outFile_p;
 void logger(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 QString logFilePath();
 
-void showFileInFolder(const QString &path);
-
 #endif // HELPER_H
