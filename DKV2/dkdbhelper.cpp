@@ -9,11 +9,11 @@ uint32_t GetTickCount() {
 #include <windows.h>
 #endif
 
+#include <QtCore>
 #include <QSqlDatabase>
 #include <QSqlDriver>
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QtCore>
 #include <QVector>
 #include <QJsonDocument>
 #include <QJsonArray>

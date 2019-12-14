@@ -15,7 +15,9 @@ frmJahresabschluss::frmJahresabschluss(const jahresabschluss& JA, QWidget *paren
       ja (JA)
 { LOG_ENTRY_and_EXIT;
     ui->setupUi(this);
-    // fillTesaList();
+
+    ui->lblTesa->setText("<h1>Jahresabschluss " + QString::number(ja.abzuschliessendesJahr()) + " für Verträge mit Zinsgutschrift</h1>");
+    ui->lblAusz->setText("<h1>Jahresabschluss " + QString::number(ja.abzuschliessendesJahr()) + " für Verträge mit Zinsauszahlung</h1>");
     if( !JA.getTesaV().empty())
         ui->listTesa->setModel(getModelFromContracts(JA.getTesaV()));
     ui->listTesa->resizeColumnsToContents();
@@ -95,14 +97,14 @@ void frmJahresabschluss::on_pbOK_clicked()
 void writeCsv(QVector<Vertrag> vertraege, QString filename)
 {
     csvwriter csv;
-    csv.addColumns("vid; Betrag; Zins; Wert; Vorname; Nachname; Strasse; Plz; Stadt; Email; IBAN; BIC");
-
+    csv.addColumns("Vertrags Nr; Kreditsumme (Euro); Zins (Euro); Wert nach Zinsgutschrift (Euro); Vorname; Nachname; Strasse; Plz; Stadt; Email; IBAN; BIC");
+    QLocale locale(QLocale::German, QLocale::LatinScript, QLocale::Germany);
     for( auto vertrag: vertraege)
     {
         csv.appendToRow(QString::number(vertrag.getVid()));
-        csv.appendToRow(QString::number(vertrag.Betrag()));
-        csv.appendToRow(QString::number(vertrag.Zins()));
-        csv.appendToRow((vertrag.Tesaurierend() ? QString::number(vertrag.Wert()) : "-"));
+        csv.appendToRow(locale.toCurrencyString(vertrag.Betrag(), " "));
+        csv.appendToRow(locale.toCurrencyString(vertrag.Zins(), " "));
+        csv.appendToRow((vertrag.Tesaurierend() ? locale.toCurrencyString(vertrag.Wert(), " ") : "-"));
         csv.appendToRow(vertrag.Vorname());
         csv.appendToRow(vertrag.Nachname());
         csv.appendToRow(vertrag.getKreditor().getValue("Strasse").toString());

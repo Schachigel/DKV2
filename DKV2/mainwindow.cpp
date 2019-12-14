@@ -719,7 +719,7 @@ void MainWindow::on_actionJahreszinsabrechnung_triggered()
     msg += "Dabei werden die Zinsen für alle Verträge berechnet. Der Wert von tesaurierenden Verträgen wird angepasst\n";
     msg += "Dieser Vorgang kann nicht rückgängig gemacht werden. Möchtest Du fortfahren?";
 
-    if( QMessageBox::Ok != QMessageBox::information(this, "Jahresabschluss", msg))
+    if( QMessageBox::Yes != QMessageBox::question(this, "Jahresabschluss", msg))
         return;
     Abschluss.execute();
     frmJahresabschluss dlgJA(Abschluss, this);

@@ -4,17 +4,17 @@
 
 #include "dkdbhelper.h"
 
-#include <QApplication>
-#include <QSplashScreen>
-#include <QDirIterator>
-#include <QPixmap>
-#include <QSettings>
-#include <qfiledialog.h>
-#include <qmessagebox.h>
 #include <QDebug>
+#include <QDirIterator>
 #include <QTime>
-#include <qfile.h>
-#include <qdir.h>
+#include <QFile>
+#include <QDir>
+#include <QApplication>
+#include <QSettings>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QSplashScreen>
+#include <QPixmap>
 #include <QTextStream>
 
 #if defined (Q_OS_WIN)
@@ -42,8 +42,8 @@ QString getInitialDb()
     do
     {
         dbfile = QFileDialog::getSaveFileName(nullptr,
-                 "Wähle eine Datenbank oder gib einen Namen für eine Neue ein",
-                 "..\\data", "dk-DB Dateien (*.dkdb)", nullptr,QFileDialog::DontConfirmOverwrite);
+                                              "Wähle eine Datenbank oder gib einen Namen für eine Neue ein",
+                                              "..\\data", "dk-DB Dateien (*.dkdb)", nullptr,QFileDialog::DontConfirmOverwrite);
 
         qDebug() << "DbFile from user: " << dbfile;
         if( dbfile == "") return QString();  // canceled by user
@@ -58,7 +58,7 @@ QString getInitialDb()
                 {
                     QFile::remove(dbfile);
                     if( DKDatenbankAnlegen(dbfile))
-                         return dbfile;
+                        return dbfile;
                     else
                     {
                         qCritical() << "Overwrite of existing db failed";
@@ -82,6 +82,17 @@ QString getInitialDb()
     while(true);
 }
 
+QString initDb()
+{
+    QString dbfile =getInitialDb();
+    if( dbfile == "")
+    {
+        qCritical() << "No valid DB -> abort";
+        exit (ERROR_FILE_NOT_FOUND);
+    }
+    return dbfile;
+}
+
 QSplashScreen* doSplash()
 {
     QPixmap pixmap(":/res/Logo.PNG");
@@ -94,21 +105,21 @@ int main(int argc, char *argv[])
 {
     initLogging();
     LOG_ENTRY_and_EXIT;
-    initDKDBStruktur();
+    QLocale locale(QLocale::German, QLocale::LatinScript, QLocale::Germany);
+    QLocale::setDefault(locale); // do before starting the event loop
+
     qInfo() << "DKV2 started " << QDate::currentDate().toString("dd.MM.yyyy") << "-" << QTime::currentTime().toString();
+
     QApplication a(argc, argv);
     a.setOrganizationName("4-MHS"); // used to store our settings
     a.setApplicationName("DKV2");
-    QSplashScreen* splash = doSplash();
 
-    QString dbfile =getInitialDb();
-    if( dbfile == "")
-    {
-        qCritical() << "No valid DB -> abort";
-        return ERROR_FILE_NOT_FOUND;
-    }
+    QSplashScreen* splash = doSplash(); // do only AFTER having an app. object
 
-    QSettings config; config.setValue("db/last", dbfile);
+    initDKDBStruktur();
+    QSettings config;
+    config.setValue("db/last", initDb());
+
     MainWindow w;
     w.setSplash(splash);
     w.show();
@@ -116,7 +127,6 @@ int main(int argc, char *argv[])
     int ret = a.exec();
 
     qInfo() << "DKV2 finished";
-
     return ret;
 
 }
