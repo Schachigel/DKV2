@@ -553,7 +553,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &
     menu.exec(ui->PersonsTableView->mapToGlobal(pos));
     return;
 }
-int MainWindow::getContractIdStringFromContractsList()
+int MainWindow::getContractIdFromContractsList()
 {LOG_ENTRY_and_EXIT;
     QModelIndex mi(ui->contractsTableView->currentIndex().siblingAtColumn(0));
     if( mi.isValid())
@@ -563,24 +563,14 @@ int MainWindow::getContractIdStringFromContractsList()
     }
     return -1;
 }
-QDate MainWindow::getContractDateFromContractsList()
-{LOG_ENTRY_and_EXIT;
-    QModelIndex mi(ui->contractsTableView->currentIndex().siblingAtColumn(6));
-    if( mi.isValid())
-    {
-        QVariant data{ui->contractsTableView->model()->data(mi)};
-        return data.toDate();
-    }
-    return QDate();
-}
+
 void MainWindow::on_actionactivateContract_triggered()
 {LOG_ENTRY_and_EXIT;
-    QDate contractDate = getContractDateFromContractsList();
-    askDateDlg dlg( this, contractDate);
+    askDateDlg dlg( this, QDate::currentDate());
     if( QDialog::Accepted == dlg.exec())
     {
         Vertrag v;
-        v.ausDb(getContractIdStringFromContractsList(), true);
+        v.ausDb(getContractIdFromContractsList(), true);
         if( v.aktiviereVertrag(dlg.getDate()))
             prepareContractListView();
     }
@@ -670,11 +660,35 @@ QString prepareOverviewPage()
     // Zinsen pa, davon auszuzahlen
     DbSummary dbs;
     berechneZusammenfassung(dbs);
-    QString lbl ("<html><body><H1>Übersicht</H1>"
-                "Summe aller Direktkredite: " + QString::number(dbs.aktiveDk) +"<br>" +
-                "Summe der noch ausstehenden (inaktiven) DK: " + QString::number(dbs.passiveDk) +"<br>" +
-                "Summe der DK inclusive erworbener Zinsen: "+ QString::number(dbs.WertAktiveDk) +
-                "</body></html>");
+    QLocale locale;
+    QString lbl (QString("<html><body>"
+                        "<style>H1 { padding: 2em }"
+                        "table, thead, td { padding: 5px}"
+                        "</style>"
+                "<H1>Übersicht</H1>"
+                "<table>") +
+                "<tr><td>Anzahl der Direktkredite: </td><td align=right>" + QString::number(dbs.AnzahlAktive) +"</td></tr>" +
+                "<tr><td>Summe der  Direktkredite: </td><td align=right>" + locale.toCurrencyString(dbs.BetragAktive) +"</td></tr>" +
+                "<tr><td>Wert der DK inklusive erworbener Zinsen</td><td align=right>"+ locale.toCurrencyString(dbs.WertAktive) + "</td></tr>" +
+                "<tr><td>Anzahl noch ausstehender (inaktiven) DK </td><td align=right>" + QString::number(dbs.AnzahlPassive) +"</td></tr>" +
+                "<tr><td>Summe noch ausstehender (inaktiven) DK </td><td align=right>" + locale.toCurrencyString(dbs.BetragPassive) +"</td></tr>" +
+                "</table>");
+
+    QVector<ContractEnd> ce;
+    berechneVertragsenden(ce);
+    if( !ce.isEmpty())
+    {
+        lbl += "<H1>Auslaufende Verträge</H1>";
+        lbl += "<table>";
+        lbl += "<thead><tr><td> Jahr </td><td> Anzahl </td><td> Summe </td></tr></thead>";
+        for( auto x: ce)
+        {
+            lbl += "<tr><td>" + QString::number(x.year) + "</td><td align=right>" +
+                   QString::number(x.count) + "</td><td align=right>" + locale.toCurrencyString(x.value) + "</td></tr>";
+        }
+    }
+
+    lbl += "</body></html>";
     return lbl;
 }
 void MainWindow::on_action_bersicht_triggered()

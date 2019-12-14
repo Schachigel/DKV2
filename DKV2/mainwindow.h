@@ -24,8 +24,7 @@ public:
     void FillRatesDropdown();
     void comboKreditorenAnzeigeNachKreditorenId(int id);
     int getPersonIdFromKreditorenList();
-    QDate getContractDateFromContractsList();
-    int getContractIdStringFromContractsList();
+    int getContractIdFromContractsList();
     Vertrag VertragsdatenAusFormular();
 
 private slots:

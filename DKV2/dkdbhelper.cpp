@@ -337,15 +337,15 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
         // add a contract
         double betragUWert = double(100) * rand.bounded(1,20);
         int zinsid = rand.bounded(1,maxZinsIndex);
-        bool tesa = rand.bounded(100)%2 ? true : false;
-        bool active = 0 != rand.bounded(3)%3;
+        bool tesa = rand.bounded(100)%4 ? true : false;  // 75% thesaurierend
+        bool active = rand.bounded(100)%6 ? true : false; // 85% inaktiv
         QDate vertragsdatum= QDate::currentDate().addDays(-1 * rand.bounded(365));
         QDate StartZinsberechnung = ( active) ? vertragsdatum.addDays(rand.bounded(15)) : QDate(9999, 12, 31);
-
+        QDate LaufzeitEnde = rand.bounded(100)%3 ? QDate(9999, 12, 31) : StartZinsberechnung.addDays( 500+ rand.bounded(0, 1000) );
         Vertrag vertrag (neueKreditorId, ProposeKennung(),
                          betragUWert, betragUWert, zinsid,
                          vertragsdatum,
-                         tesa, active, StartZinsberechnung);
+                         tesa, active, StartZinsberechnung, LaufzeitEnde);
         vertrag.verbucheNeuenVertrag();
     }
 }
@@ -407,9 +407,48 @@ QString ContractList_SQL(const QVector<dbfield>& fields, const QString& filter)
     return sql;
 }
 
+
 void berechneZusammenfassung(DbSummary& dbs, QString con)
-{
-    dbs.aktiveDk  = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 1", con).toReal();
-    dbs.passiveDk = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 0", con).toReal();
-    dbs.WertAktiveDk = ExecuteSingleValueSql("SUM([Wert])", "[Vertraege]", "[aktiv] = 1", con).toReal();
+{LOG_ENTRY_and_EXIT;
+    dbs.AnzahlAktive  = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] = 1", con).toInt();
+    dbs.BetragAktive  = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 1", con).toReal();
+    dbs.WertAktive    = ExecuteSingleValueSql("SUM([Wert])", "[Vertraege]", "[aktiv] = 1", con).toReal();
+    dbs.AnzahlPassive = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] = 0", con).toInt();
+    dbs.BetragPassive = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 0", con).toReal();
+}
+
+void berechneVertragsenden( QVector<ContractEnd>& ce, QString con)
+{LOG_ENTRY_and_EXIT;
+
+    QMap<int, int> m_count;
+    QMap<int, double> m_sum;
+    const int maxYear = QDate::currentDate().year() +99;
+
+    QSqlQuery sql(QSqlDatabase::database(con));
+    sql.setForwardOnly(true);
+    sql.exec("SELECT * FROM [Vertraege] WHERE [aktiv] = 1");
+    while( sql.next())
+    {
+        QDate end = sql.record().value("LaufzeitEnde").toDate();
+        if( !end.isValid()) continue;
+        if( end.year() > maxYear) continue;
+        if( end.year() < QDate::currentDate().year()) continue;
+        if( m_count.contains(end.year()))
+        {
+            m_count[end.year()] = m_count[end.year()] +1;
+            m_sum[end.year()]   = m_sum[end.year()] +
+                                (sql.record().value("tesaurierend").toBool() ? sql.record().value("Wert").toReal() : sql.record().value("Betrag").toReal());
+        }
+        else
+        {
+            m_count[end.year()] = 1;
+            m_sum[end.year()]   = (sql.record().value("tesaurierend").toBool() ? sql.record().value("Wert").toReal() : sql.record().value("Betrag").toReal());
+        }
+    }
+    QMapIterator<int, int> i(m_count);
+    while (i.hasNext()) {
+        i.next();
+        ce.append({i.key(), i.value(), m_sum[i.key()]});
+    }
+    return;
 }

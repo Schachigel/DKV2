@@ -58,11 +58,21 @@ QVariant Eigenschaft(const QString& name);
 
 struct DbSummary
 {
-    double aktiveDk;
-    double passiveDk;
-    double WertAktiveDk;
+    int     AnzahlAktive;
+    double  BetragAktive;
+    double  WertAktive;
+    int     AnzahlPassive;
+    double  BetragPassive;
 };
 
+struct ContractEnd
+{
+    int year;
+    int count;
+    double value;
+};
+
+void berechneVertragsenden(QVector<ContractEnd>& ce, QString con="");
 void berechneZusammenfassung(DbSummary& dbs, QString con="");
 
 #endif // DKDBHELPER_H
