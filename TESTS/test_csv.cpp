@@ -1,5 +1,5 @@
 #include "test_csv.h"
-#include "../dkv2/csvwriter.h"
+#include "../DKV2/csvwriter.h"
 
 test_csv::test_csv(QObject *parent) : QObject(parent)
 {
