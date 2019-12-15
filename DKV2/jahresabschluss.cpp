@@ -35,10 +35,10 @@ bool jahresabschluss::execute()
         Vertrag v; v.ausDb(sqlVal<int>(sql, "id"), true);
         if( v.verbucheJahreszins(YearEnd))
         {
-            if( v.Tesaurierend())
-                tesaV.push_back(v);
+            if( v.Thesaurierend())
+                thesaV.push_back(v);
             else
-                n_tesaV.append(v);
+                n_thesaV.append(v);
         }
 
     } while(sql.next());

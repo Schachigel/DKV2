@@ -86,27 +86,27 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
     switch(arg1)
     {
     case emptyPageIndex:
-        ui->actionKreditgeber_l_schen->setEnabled(false);
+        ui->actionKreditgeber_loeschen->setEnabled(false);
         ui->actionVertrag_passiv_loeschen->setEnabled(false);
         break;
     case PersonListIndex:
-        ui->actionKreditgeber_l_schen->setEnabled(true);
+        ui->actionKreditgeber_loeschen->setEnabled(true);
         ui->actionVertrag_passiv_loeschen->setEnabled(false);
         break;
     case newPersonIndex:
-        ui->actionKreditgeber_l_schen->setEnabled(false);
+        ui->actionKreditgeber_loeschen->setEnabled(false);
         ui->actionVertrag_passiv_loeschen->setEnabled(false);
         break;
     case newContractIndex:
-        ui->actionKreditgeber_l_schen->setEnabled(false);
+        ui->actionKreditgeber_loeschen->setEnabled(false);
         ui->actionVertrag_passiv_loeschen->setEnabled(false);
         break;
     case ContractsListIndex:
-        ui->actionKreditgeber_l_schen->setEnabled(false);
+        ui->actionKreditgeber_loeschen->setEnabled(false);
         ui->actionVertrag_passiv_loeschen->setEnabled(true);
         break;
     case bookingsListIndex:
-        ui->actionKreditgeber_l_schen->setEnabled(false);
+        ui->actionKreditgeber_loeschen->setEnabled(false);
         ui->actionVertrag_passiv_loeschen->setEnabled(false);
         break;
     default:
@@ -175,7 +175,7 @@ void MainWindow::on_action_Liste_triggered()
 
     ui->stackedWidget->setCurrentIndex(PersonListIndex);
 }
-void MainWindow::on_actionKreditgeber_l_schen_triggered()
+void MainWindow::on_actionKreditgeber_loeschen_triggered()
 {LOG_ENTRY_and_EXIT;
     QString msg( "Soll der Kreditgeber ");
     QModelIndex mi(ui->PersonsTableView->currentIndex());
@@ -196,8 +196,8 @@ void MainWindow::on_actionVertraege_zeigen_triggered()
 {
     QModelIndex mi(ui->PersonsTableView->currentIndex());
     QString index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0)).toString();
-    ui->leVertrgeFilter->setText(index);
-    on_actionListe_der_Vertr_ge_anzeigen_triggered();
+    ui->leVertraegeFilter->setText(index);
+    on_actionListe_der_Vertraege_anzeigen_triggered();
 }
 void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &pos)
 {LOG_ENTRY_and_EXIT;
@@ -211,7 +211,7 @@ void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &po
             QMenu menu( "PersonContextMenu", this);
             menu.addAction(ui->actionDkGeberBearbeiten);
             menu.addAction(ui->actionVertrag_anlegen);
-            menu.addAction( ui->actionKreditgeber_l_schen);
+            menu.addAction( ui->actionKreditgeber_loeschen);
             menu.addAction(ui->actionVertraege_zeigen);
             menu.exec(ui->PersonsTableView->mapToGlobal(pos));
         }
@@ -358,8 +358,8 @@ Vertrag MainWindow::VertragsdatenAusFormular()
     int KreditorId = ui->comboKreditoren->itemData(ui->comboKreditoren->currentIndex()).toInt();
     QString Kennung = ui->leKennung->text();
     double Betrag = ui->leBetrag->text().remove('.').toDouble();
-    bool tesaurierend = ui->chkbTesaurierend->checkState() == Qt::Checked;
-    double Wert = tesaurierend ? Betrag : 0.;
+    bool thesaurierend = ui->chkbThesaurierend->checkState() == Qt::Checked;
+    double Wert = thesaurierend ? Betrag : 0.;
     int ZinsId = ui->cbZins->itemData(ui->cbZins->currentIndex()).toInt();
     QDate Vertragsdatum = ui->deVertragsabschluss->date();
 
@@ -367,7 +367,7 @@ Vertrag MainWindow::VertragsdatenAusFormular()
     QDate StartZinsberechnung = LaufzeitEnde;
 
     return Vertrag(KreditorId, Kennung, Betrag, Wert, ZinsId, Vertragsdatum,
-                   tesaurierend, false/*aktiv*/,StartZinsberechnung, LaufzeitEnde);
+                   thesaurierend, false/*aktiv*/,StartZinsberechnung, LaufzeitEnde);
 }
 
 bool MainWindow::saveNewContract()
@@ -394,7 +394,7 @@ void MainWindow::clearNewContractFields()
 {LOG_ENTRY_and_EXIT;
     ui->leKennung->setText("");
     ui->leBetrag->setText("");
-    ui->chkbTesaurierend->setChecked(true);
+    ui->chkbThesaurierend->setChecked(true);
 }
 
 // switch to "Vertrag anlegen"
@@ -477,7 +477,7 @@ void MainWindow::on_actionVertrag_anlegen_triggered()
     Vertrag cd; // this is to get the defaults of the class definition
     ui->deLaufzeitEnde->setDate(cd.LaufzeitEnde());
     ui->deVertragsabschluss->setDate(cd.Vertragsabschluss());
-    ui->chkbTesaurierend->setChecked(cd.Tesaurierend());
+    ui->chkbThesaurierend->setChecked(cd.Thesaurierend());
 
     ui->stackedWidget->setCurrentIndex(newContractIndex);
 }
@@ -504,7 +504,7 @@ void MainWindow::prepareContractListView()
     fields.append(dkdbstructur["Vertraege"]["aktiv"]);
     fields.append(dkdbstructur["Vertraege"]["LaufzeitEnde"]);
     QSqlQueryModel* model = new QSqlQueryModel(ui->contractsTableView);
-    model->setQuery(ContractList_SQL(fields, ui->leVertrgeFilter->text()));
+    model->setQuery(ContractList_SQL(fields, ui->leVertraegeFilter->text()));
 
     colIndexFieldActiveInContractList = fields.indexOf(dkdbstructur["Vertraege"]["aktiv"]);
     ui->contractsTableView->setModel(model);
@@ -528,7 +528,7 @@ void MainWindow::prepareContractListView()
     ui->contractsTableView->setModel(m);
     ui->contractsTableView->setSortingEnabled(true);
 }
-void MainWindow::on_actionListe_der_Vertr_ge_anzeigen_triggered()
+void MainWindow::on_actionListe_der_Vertraege_anzeigen_triggered()
 {LOG_ENTRY_and_EXIT;
     prepareContractListView();
     if( !ui->contractsTableView->currentIndex().isValid())
@@ -601,20 +601,20 @@ void MainWindow::on_leFilter_editingFinished()
     preparePersonTableView();
 }
 
-void MainWindow::on_pbPersonFilterZurcksetzten_clicked()
+void MainWindow::on_pbPersonFilterZuruecksetzen_clicked()
 {LOG_ENTRY_and_EXIT;
     ui->leFilter->setText("");
     preparePersonTableView();
 }
 
-void MainWindow::on_leVertrgeFilter_editingFinished()
+void MainWindow::on_leVertraegeFilter_editingFinished()
 {LOG_ENTRY_and_EXIT;
     prepareContractListView();
 }
 
-void MainWindow::on_FilterVertrgeZurcksetzten_clicked()
+void MainWindow::on_FilterVertraegeZuruecksetzen_clicked()
 {LOG_ENTRY_and_EXIT;
-    ui->leVertrgeFilter->setText("");
+    ui->leVertraegeFilter->setText("");
     prepareContractListView();
 }
 
@@ -626,7 +626,7 @@ void MainWindow::on_actionVertrag_Beenden_triggered()
     // Vertrag beenden -> Zins berechnen und m Auszahlungsbetrag anzeigen, dann löschen
     Vertrag v;
     v.ausDb(index, true);
-    double WertBisHeute = v.Wert() + ZinsesZins(v.Zinsfuss(), v.Wert(), v.StartZinsberechnung(), QDate::currentDate(), v.Tesaurierend());
+    double WertBisHeute = v.Wert() + ZinsesZins(v.Zinsfuss(), v.Wert(), v.StartZinsberechnung(), QDate::currentDate(), v.Thesaurierend());
     QString getDateMsg("<h2>Wenn Sie einen Vertrag beenden wird der Zins abschließend"
                 " berechnet und der Auszahlungsbetrag ermittelt.<br></h2>"
                 "Um den Vertrag von %1 %2 mit dem aktuellen Wert %3 Euro jetzt zu beenden "
@@ -642,7 +642,7 @@ void MainWindow::on_actionVertrag_Beenden_triggered()
         return;
     }
 
-    double davonZins =ZinsesZins(v.Zinsfuss(), v.Wert(), v.StartZinsberechnung(), dlg.getDate(), v.Tesaurierend());
+    double davonZins =ZinsesZins(v.Zinsfuss(), v.Wert(), v.StartZinsberechnung(), dlg.getDate(), v.Thesaurierend());
     double neuerWert =v.Wert() +davonZins;
 
     QString confirmDeleteMsg("<h3>Vertragsabschluß</h3><br>Wert zum Vertragsende: %1 Euro<br>Zins der letzten Zinsphase: %2 Euro<br>"\
@@ -732,7 +732,7 @@ void MainWindow::on_actionJahreszinsabrechnung_triggered()
     QString msg = "Der Jahresabschluss für das Jahr "
                   + QString::number(Abschluss.abzuschliessendesJahr())
                   + " kann gemacht werden\n\n";
-    msg += "Dabei werden die Zinsen für alle Verträge berechnet. Der Wert von tesaurierenden Verträgen wird angepasst\n";
+    msg += "Dabei werden die Zinsen für alle Verträge berechnet. Der Wert von thesaurierenden Verträgen wird angepasst\n";
     msg += "Dieser Vorgang kann nicht rückgängig gemacht werden. Möchtest Du fortfahren?";
 
     if( QMessageBox::Yes != QMessageBox::question(this, "Jahresabschluss", msg))
@@ -740,7 +740,7 @@ void MainWindow::on_actionJahreszinsabrechnung_triggered()
     Abschluss.execute();
     frmJahresabschluss dlgJA(Abschluss, this);
     dlgJA.exec();
-    on_actionListe_der_Vertr_ge_anzeigen_triggered( );
+    on_actionListe_der_Vertraege_anzeigen_triggered( );
 }
 
 void MainWindow::on_actionAusgabeverzeichnis_festlegen_triggered()
@@ -755,7 +755,7 @@ void MainWindow::on_actionAusgabeverzeichnis_festlegen_triggered()
     config.setValue("outdir", dir);
 }
 
-void MainWindow::on_actionAktive_Vertr_ge_CSV_triggered()
+void MainWindow::on_actionAktive_Vertraege_CSV_triggered()
 {
     CsvActiveContracts();
 }

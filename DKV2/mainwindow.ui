@@ -61,7 +61,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pbPersonFilterZurcksetzten">
+           <widget class="QPushButton" name="pbPersonFilterZuruecksetzen">
             <property name="text">
              <string>zurücksetzen</string>
             </property>
@@ -468,14 +468,14 @@
              <string>Zinsen werden aufgerechnet</string>
             </property>
             <property name="buddy">
-             <cstring>chkbTesaurierend</cstring>
+             <cstring>chkbThesaurierend</cstring>
             </property>
            </widget>
           </item>
           <item row="6" column="1">
-           <widget class="QCheckBox" name="chkbTesaurierend">
+           <widget class="QCheckBox" name="chkbThesaurierend">
             <property name="text">
-             <string>Tesaurierend</string>
+             <string>Thesaurierend</string>
             </property>
            </widget>
           </item>
@@ -505,12 +505,12 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="leVertrgeFilter"/>
+           <widget class="QLineEdit" name="leVertraegeFilter"/>
           </item>
           <item>
-           <widget class="QPushButton" name="FilterVertrgeZurcksetzten">
+           <widget class="QPushButton" name="FilterVertraegeZuruecksetzen">
             <property name="text">
-             <string>zurücksetzten</string>
+             <string>zurücksetzen</string>
             </property>
            </widget>
           </item>
@@ -564,7 +564,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pbPersonFilterZurcksetztenBookings">
+           <widget class="QPushButton" name="pbPersonFilterZuruecksetzenBookings">
             <property name="text">
              <string>zurücksetzen</string>
             </property>
@@ -639,7 +639,7 @@
     <addaction name="action_Liste"/>
     <addaction name="separator"/>
     <addaction name="actionNeuer_DK_Geber"/>
-    <addaction name="actionKreditgeber_l_schen"/>
+    <addaction name="actionKreditgeber_loeschen"/>
    </widget>
    <widget class="QMenu" name="menuVertr_ge">
     <property name="title">
@@ -649,14 +649,14 @@
      <property name="title">
       <string>Listen drucken</string>
      </property>
-     <addaction name="actionAktive_Vertr_ge_CSV"/>
+     <addaction name="actionAktive_Vertraege_CSV"/>
     </widget>
-    <addaction name="actionListe_der_Vertr_ge_anzeigen"/>
+    <addaction name="actionListe_der_Vertraege_anzeigen"/>
     <addaction name="actionVertrag_anlegen"/>
     <addaction name="separator"/>
     <addaction name="actionJahreszinsabrechnung"/>
     <addaction name="separator"/>
-    <addaction name="action_bersicht"/>
+    <addaction name="action_Uebersicht"/>
     <addaction name="menuListen_drucken"/>
    </widget>
    <widget class="QMenu" name="menuDebug">
@@ -731,7 +731,7 @@
     <string>Programm beenden</string>
    </property>
   </action>
-  <action name="actionListe_der_Vertr_ge_anzeigen">
+  <action name="actionListe_der_Vertraege_anzeigen">
    <property name="text">
     <string>Liste der Verträge anzeigen</string>
    </property>
@@ -760,7 +760,7 @@
     <string>Vertrag für ausgewählten DK Geber anlegen</string>
    </property>
   </action>
-  <action name="actionKreditgeber_l_schen">
+  <action name="actionKreditgeber_loeschen">
    <property name="text">
     <string>Löschen</string>
    </property>
@@ -799,7 +799,7 @@
     <string>Zins und Auszahlungsbetrag berechnen, Vertrag löschen</string>
    </property>
   </action>
-  <action name="action_bersicht">
+  <action name="action_Uebersicht">
    <property name="text">
     <string>Übersicht</string>
    </property>
@@ -838,7 +838,7 @@
     <string>Ausgabeverzeichnis festlegen</string>
    </property>
   </action>
-  <action name="actionAktive_Vertr_ge_CSV">
+  <action name="actionAktive_Vertraege_CSV">
    <property name="text">
     <string>Aktive Verträge (CSV)</string>
    </property>
@@ -865,19 +865,19 @@
   <tabstop>cbZins</tabstop>
   <tabstop>deVertragsabschluss</tabstop>
   <tabstop>deLaufzeitEnde</tabstop>
-  <tabstop>chkbTesaurierend</tabstop>
+  <tabstop>chkbThesaurierend</tabstop>
   <tabstop>speichereVertragZurKreditorenListe</tabstop>
   <tabstop>saveContractGoContracts</tabstop>
   <tabstop>cancelCreateContract</tabstop>
   <tabstop>leFilter</tabstop>
-  <tabstop>pbPersonFilterZurcksetzten</tabstop>
+  <tabstop>pbPersonFilterZuruecksetzen</tabstop>
   <tabstop>PersonsTableView</tabstop>
   <tabstop>leFilterBookings</tabstop>
-  <tabstop>pbPersonFilterZurcksetztenBookings</tabstop>
+  <tabstop>pbPersonFilterZuruecksetzenBookings</tabstop>
   <tabstop>tblViewBookings</tabstop>
-  <tabstop>FilterVertrgeZurcksetzten</tabstop>
+  <tabstop>FilterVertraegeZuruecksetzen</tabstop>
   <tabstop>contractsTableView</tabstop>
-  <tabstop>leVertrgeFilter</tabstop>
+  <tabstop>leVertraegeFilter</tabstop>
  </tabstops>
  <resources/>
  <connections/>

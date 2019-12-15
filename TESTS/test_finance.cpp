@@ -71,14 +71,14 @@ void test_finance::test_ZinsesZins_data()
     QTest::addColumn<QDate>( "bis");
     QTest::addColumn<double>("zinssatz");
     QTest::addColumn<double>("wert");
-    QTest::addColumn<double>("ZinsTesauriert");
+    QTest::addColumn<double>("ZinsThesauriert");
     QTest::addColumn<double>("Zins");
 
     struct testdata
     {
         QDate von; QDate bis;
         double zinssatz; double wert;
-        double ZinsTesauriert; double Zins;
+        double ZinsThesauriert; double Zins;
     };
     testdata d[]={
         //        // remember: last day is IN, first day is OUT
@@ -141,7 +141,7 @@ void test_finance::test_ZinsesZins_data()
     do
     {
         QTest::newRow(QString().toLocal8Bit().data())
-            << d[l].von << d[l].bis << d[l].zinssatz << d[l].wert << d[l].ZinsTesauriert <<  d[l].Zins ;
+            << d[l].von << d[l].bis << d[l].zinssatz << d[l].wert << d[l].ZinsThesauriert <<  d[l].Zins ;
         l++;
     }while( d[l].von.isValid());
 }
@@ -151,12 +151,12 @@ void test_finance::test_ZinsesZins()
     QFETCH(QDate,  bis);
     QFETCH(double, zinssatz);
     QFETCH(double, wert);
-    QFETCH(double, ZinsTesauriert);
+    QFETCH(double, ZinsThesauriert);
     QFETCH(double, Zins);
     QString msg("%3% Zinsen von %4 euro vom %1 bis %2, ");
     msg = msg.arg(von.toString("dd.MM.yyyy"), bis.toString("dd.MM.yyyy"), QString::number(zinssatz), QString::number(wert));
     qDebug().noquote() <<  msg;
-    QCOMPARE(ZinsesZins(zinssatz, wert, von, bis, true ), ZinsTesauriert);
+    QCOMPARE(ZinsesZins(zinssatz, wert, von, bis, true ), ZinsThesauriert);
     QCOMPARE(ZinsesZins(zinssatz, wert, von, bis, false), Zins);
 
 }

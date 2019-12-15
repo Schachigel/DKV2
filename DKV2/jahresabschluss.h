@@ -11,14 +11,14 @@ public:
     jahresabschluss();
     bool execute();
     int abzuschliessendesJahr() const {return Jahr;}
-    const QVector<Vertrag> getTesaV() const {return tesaV;}
-    const QVector<Vertrag> get_nTesaV() const {return n_tesaV;}
+    const QVector<Vertrag> getThesaV() const {return thesaV;}
+    const QVector<Vertrag> get_nThesaV() const {return n_thesaV;}
 
 private:
     int JahreszahlFuerAbschluss();
     int Jahr;
-    QVector<Vertrag> tesaV;
-    QVector<Vertrag> n_tesaV;
+    QVector<Vertrag> thesaV;
+    QVector<Vertrag> n_thesaV;
 };
 
 

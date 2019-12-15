@@ -43,7 +43,7 @@ bool Vertrag::ausDb(int vId, bool mitBelegdaten)
     kreditorId          = rec.value("KreditorId").toInt();
     betrag              = rec.value("Betrag").toDouble();
     wert                = rec.value("Wert").toDouble();
-    tesaurierend        = rec.value("tesaurierend").toBool();
+    thesaurierend        = rec.value("tesaurierend").toBool();
     active              = rec.value("aktiv").toBool();
     vertragsdatum       = rec.value("Vertragsdatum").toDate();
     laufzeitEnde        = rec.value("LaufzeitEnde").toDate();
@@ -87,9 +87,9 @@ int Vertrag::speichereNeuenVertrag() const
     ti.setValue(dkdbstructur["Vertraege"]["KreditorId"].name(), kreditorId);
     ti.setValue(dkdbstructur["Vertraege"]["Kennung"].name(), kennung);
     ti.setValue(dkdbstructur["Vertraege"]["Betrag"].name(), betrag);
-    ti.setValue(dkdbstructur["Vertraege"]["Wert"].name(), tesaurierend?wert:0.);
+    ti.setValue(dkdbstructur["Vertraege"]["Wert"].name(), thesaurierend?wert:0.);
     ti.setValue(dkdbstructur["Vertraege"]["ZSatz"].name(), zinsId);
-    ti.setValue(dkdbstructur["Vertraege"]["tesaurierend"].name(), tesaurierend);
+    ti.setValue(dkdbstructur["Vertraege"]["tesaurierend"].name(), thesaurierend);
     ti.setValue(dkdbstructur["Vertraege"]["Vertragsdatum"].name(), vertragsdatum);
     ti.setValue(dkdbstructur["Vertraege"]["aktiv"].name(), active);
     ti.setValue(dkdbstructur["Vertraege"]["LaufzeitEnde"].name(), laufzeitEnde);
@@ -199,7 +199,7 @@ bool Vertrag::aktivenVertragLoeschen( const QDate& termin)
         return false;
     }
     // abschluss Wert berechnen
-    double davonZins =ZinsesZins(Zinsfuss(), Wert(), StartZinsberechnung(), termin, Tesaurierend());
+    double davonZins =ZinsesZins(Zinsfuss(), Wert(), StartZinsberechnung(), termin, Thesaurierend());
     wert += davonZins;
 
     QSqlDatabase::database().transaction();
@@ -228,10 +228,10 @@ bool Vertrag::aktivenVertragLoeschen( const QDate& termin)
 
 bool Vertrag::speichereJahresabschluss(const QDate& end)
 {
-    letzteZinsgutschrift = ZinsesZins(Zinsfuss(), tesaurierend?Wert():Betrag(), StartZinsberechnung(), end, tesaurierend);
+    letzteZinsgutschrift = ZinsesZins(Zinsfuss(), thesaurierend?Wert():Betrag(), StartZinsberechnung(), end, thesaurierend);
     qDebug() << "JA: berechneter Zins: " << letzteZinsgutschrift;
 
-    double neuerWert =  Tesaurierend() ? round(wert +letzteZinsgutschrift) : 0.;
+    double neuerWert =  Thesaurierend() ? round(wert +letzteZinsgutschrift) : 0.;
     qDebug() << "JA: aktualisierter Wert: " << neuerWert;
 
     QString where = "id = " + QString::number(id);

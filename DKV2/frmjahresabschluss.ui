@@ -32,7 +32,7 @@
       <number>10</number>
      </property>
      <item>
-      <widget class="QLabel" name="lblTesa">
+      <widget class="QLabel" name="lblThesa">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -40,7 +40,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>&lt;h2&gt;Tesaurierende Verträge&lt;/h2&gt;</string>
+        <string>&lt;h2&gt;Thesaurierende Verträge&lt;/h2&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -51,7 +51,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QTableView" name="listTesa"/>
+      <widget class="QTableView" name="listThesa"/>
      </item>
      <item>
       <widget class="QLabel" name="lblAusz">
@@ -73,7 +73,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QTableView" name="listN_Tesa"/>
+      <widget class="QTableView" name="listN_Thesa"/>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout" stretch="5,0,0">
