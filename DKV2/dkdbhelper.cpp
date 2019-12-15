@@ -65,7 +65,7 @@ void initDKDBStruktur()
     Vertraege.append((dbfield("Betrag",     QVariant::Double, "DEFAULT '0,0' NOT NULL")));
     Vertraege.append((dbfield("Wert",       QVariant::Double, "DEFAULT '0,0' NULL")));
     Vertraege.append((dbfield("ZSatz",      QVariant::Int, "", Zinssaetze["id"], dbfield::refIntOption::non)));
-    Vertraege.append((dbfield("tesaurierend",  QVariant::Bool, "DEFAULT '1' NOT NULL")));
+    Vertraege.append((dbfield("thesaurierend", QVariant::Bool, "DEFAULT '1' NOT NULL")));
     Vertraege.append((dbfield("Vertragsdatum", QVariant::Date, "DATE  NULL")));
     Vertraege.append((dbfield("aktiv",         QVariant::Bool, "DEFAULT '0' NOT NULL")));
     Vertraege.append((dbfield("LaufzeitEnde",  QVariant::Date, "DEFAULT '3000-12-31' NOT NULL")));
@@ -458,12 +458,12 @@ void berechneVertragsenden( QVector<ContractEnd>& ce, QString con)
         {
             m_count[end.year()] = m_count[end.year()] +1;
             m_sum[end.year()]   = m_sum[end.year()] +
-                                (sql.record().value("tesaurierend").toBool() ? sql.record().value("Wert").toReal() : sql.record().value("Betrag").toReal());
+                                (sql.record().value("thesaurierend").toBool() ? sql.record().value("Wert").toReal() : sql.record().value("Betrag").toReal());
         }
         else
         {
             m_count[end.year()] = 1;
-            m_sum[end.year()]   = (sql.record().value("tesaurierend").toBool() ? sql.record().value("Wert").toReal() : sql.record().value("Betrag").toReal());
+            m_sum[end.year()]   = (sql.record().value("thesaurierend").toBool() ? sql.record().value("Wert").toReal() : sql.record().value("Betrag").toReal());
         }
     }
     QMapIterator<int, int> i(m_count);

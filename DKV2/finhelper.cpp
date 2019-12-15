@@ -105,7 +105,7 @@ int TageSeitJahresAnfang(const QDate& d)
 
 double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool tesa)
 {
-    qDebug().noquote() << "\n\nZinsberechnung von " << von << " bis " << bis << QString((tesa)? " tesaurierend" : ("bei Zinsauszahlungen"));
+    qDebug().noquote() << "\n\nZinsberechnung von " << von << " bis " << bis << QString((tesa)? " thesaurierend" : ("bei Zinsauszahlungen"));
     if( !(von.isValid() && bis.isValid()) || ( von > bis))
     {
         qCritical() << "Zinseszins kann nicht berechnet werden - ungültige Parameter";

@@ -14,16 +14,16 @@ public:
     Vertrag(int kId = -1, QString ken = "",
             double betrag =0., double wert =0., int zId =-1,
             QDate vd =QDate::currentDate(),
-            bool tesa =true, bool aktiv =false,
+            bool thesa =true, bool aktiv =false,
             QDate startd =QDate(9999, 12, 31),
             QDate endd = QDate(9999, 12, 31))
             :
         id(-1), kreditorId(kId), kennung(ken),
         betrag(betrag), wert(wert), zinsId(zId),
-        tesaurierend(tesa), active(aktiv),
+        thesaurierend(thesa), active(aktiv),
         vertragsdatum(vd), startZinsberechnung(startd),
         laufzeitEnde(endd), letzteZinsgutschrift(0.) {
-        if( !tesaurierend) this->wert = 0.;
+        if( !thesaurierend) this->wert = 0.;
     }
     // getter
     int getVid() const { return id;}
@@ -35,7 +35,7 @@ public:
     double Zins() const {return letzteZinsgutschrift;}
     QDate Vertragsabschluss() const {return vertragsdatum;}
     QDate LaufzeitEnde() const {return laufzeitEnde;}
-    bool Tesaurierend() const {return tesaurierend;}
+    bool Thesaurierend() const {return thesaurierend;}
     double Zinsfuss() const {return zinsFuss;}
     QDate StartZinsberechnung() const {return startZinsberechnung;}
     QString Vorname() const {return dkGeber.getValue("Vorname").toString();}
@@ -67,7 +67,7 @@ private:
     double betrag;
     double wert;
     int zinsId;
-    bool tesaurierend;
+    bool thesaurierend;
     bool active;
     QDate vertragsdatum;
     QDate startZinsberechnung;

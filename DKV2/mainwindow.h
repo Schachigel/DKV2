@@ -53,11 +53,11 @@ private slots:
 
     void on_saveContractGoContracts_clicked();
 
-    void on_actionListe_der_Vertr_ge_anzeigen_triggered();
+    void on_actionListe_der_Vertraege_anzeigen_triggered();
 
     void on_PersonsTableView_customContextMenuRequested(const QPoint &pos);
 
-    void on_actionKreditgeber_l_schen_triggered();
+    void on_actionKreditgeber_loeschen_triggered();
 
     void on_contractsTableView_customContextMenuRequested(const QPoint &pos);
 
@@ -69,11 +69,11 @@ private slots:
 
     void on_leFilter_editingFinished();
 
-    void on_pbPersonFilterZurcksetzten_clicked();
+    void on_pbPersonFilterZuruecksetzen_clicked();
 
-    void on_FilterVertrgeZurcksetzten_clicked();
+    void on_FilterVertraegeZuruecksetzen_clicked();
 
-    void on_leVertrgeFilter_editingFinished();
+    void on_leVertraegeFilter_editingFinished();
 
     void on_actionVertrag_Beenden_triggered();
 
@@ -91,7 +91,7 @@ private slots:
 
     void on_actionAusgabeverzeichnis_festlegen_triggered();
 
-    void on_actionAktive_Vertr_ge_CSV_triggered();
+    void on_actionAktive_Vertraege_CSV_triggered();
 
 private:
     Ui::MainWindow *ui;

@@ -16,17 +16,17 @@ frmJahresabschluss::frmJahresabschluss(const jahresabschluss& JA, QWidget *paren
 { LOG_ENTRY_and_EXIT;
     ui->setupUi(this);
 
-    ui->lblTesa->setText("<h2>Jahresabschluss " + QString::number(ja.abzuschliessendesJahr()) + " für Verträge mit Zinsgutschrift</h2>");
-    ui->lblAusz->setText("<h2>Jahresabschluss " + QString::number(ja.abzuschliessendesJahr()) + " für Verträge mit Zinsauszahlung</h2>");
-    if( !JA.getTesaV().empty())
-        ui->listTesa->setModel(getModelFromContracts(JA.getTesaV()));
-    ui->listTesa->resizeColumnsToContents();
-    ui->listTesa->verticalHeader()->hide();
+    ui->lblThesa->setText("<h2>Jahresabschluss " + QString::number(ja.abzuschliessendesJahr()) + " für Verträge mit Zinsgutschrift</h1>");
+    ui->lblAusz->setText( "<h2>Jahresabschluss " + QString::number(ja.abzuschliessendesJahr()) + " für Verträge mit Zinsauszahlung</h1>");
+    if( !JA.getThesaV().empty())
+        ui->listThesa->setModel(getModelFromContracts(JA.getThesaV()));
+    ui->listThesa->resizeColumnsToContents();
+    ui->listThesa->verticalHeader()->hide();
 
-    if( !JA.get_nTesaV().empty())
-        ui->listN_Tesa->setModel(getModelFromContracts(JA.get_nTesaV()));
-    ui->listN_Tesa->resizeColumnsToContents();
-    ui->listN_Tesa->verticalHeader()->hide();
+    if( !JA.get_nThesaV().empty())
+        ui->listN_Thesa->setModel(getModelFromContracts(JA.get_nThesaV()));
+    ui->listN_Thesa->resizeColumnsToContents();
+    ui->listN_Thesa->verticalHeader()->hide();
 }
 
 frmJahresabschluss::~frmJahresabschluss()
@@ -36,7 +36,7 @@ frmJahresabschluss::~frmJahresabschluss()
 
 QStandardItemModel* frmJahresabschluss::getModelFromContracts(const QVector<Vertrag>&vertraege) const
 { LOG_ENTRY_and_EXIT;
-    bool thesa {vertraege[0].Tesaurierend()};
+    bool thesa {vertraege[0].Thesaurierend()};
     QStandardItemModel *model = new QStandardItemModel();
     int itemIndex {0};
     model->setHorizontalHeaderItem(itemIndex++, new QStandardItem("Vertrags Nr."));
@@ -104,7 +104,7 @@ void writeCsv(QVector<Vertrag> vertraege, QString filename)
         csv.appendToRow(QString::number(vertrag.getVid()));
         csv.appendToRow(locale.toCurrencyString(vertrag.Betrag(), " "));
         csv.appendToRow(locale.toCurrencyString(vertrag.Zins(), " "));
-        csv.appendToRow((vertrag.Tesaurierend() ? locale.toCurrencyString(vertrag.Wert(), " ") : "-"));
+        csv.appendToRow((vertrag.Thesaurierend() ? locale.toCurrencyString(vertrag.Wert(), " ") : "-"));
         csv.appendToRow(vertrag.Vorname());
         csv.appendToRow(vertrag.Nachname());
         csv.appendToRow(vertrag.getKreditor().getValue("Strasse").toString());
@@ -125,11 +125,11 @@ void frmJahresabschluss::on_btnCsv_clicked()
     QString fn_thesa(QDir::cleanPath(dir + "/DKV2-JA-"
                     + QString::number(ja.abzuschliessendesJahr())
                     + "-thesaurierend.csv"));
-    writeCsv(ja.getTesaV(), fn_thesa);
+    writeCsv(ja.getThesaV(), fn_thesa);
 
     QString fn_n_thesa(QDir::cleanPath(dir + "/DKV2-JA-"
                      + QString::number(ja.abzuschliessendesJahr())
                      + "-ausschuettend.csv"));
-    writeCsv(ja.get_nTesaV(), fn_n_thesa);
+    writeCsv(ja.get_nThesaV(), fn_n_thesa);
     showFileInFolder(fn_thesa);
 }
