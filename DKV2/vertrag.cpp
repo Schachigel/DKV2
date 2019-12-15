@@ -16,7 +16,7 @@ bool Vertrag::ausDb(int vId, bool mitBelegdaten)
     fields.append(dkdbstructur["Vertraege"]["Betrag"]);
     fields.append(dkdbstructur["Vertraege"]["Wert"]);
     fields.append(dkdbstructur["Vertraege"]["ZSatz"]);
-    fields.append(dkdbstructur["Vertraege"]["tesaurierend"]);
+    fields.append(dkdbstructur["Vertraege"]["thesaurierend"]);
     fields.append(dkdbstructur["Vertraege"]["Vertragsdatum"]);
     fields.append(dkdbstructur["Vertraege"]["aktiv"]);
     fields.append(dkdbstructur["Vertraege"]["LaufzeitEnde"]);
@@ -43,7 +43,7 @@ bool Vertrag::ausDb(int vId, bool mitBelegdaten)
     kreditorId          = rec.value("KreditorId").toInt();
     betrag              = rec.value("Betrag").toDouble();
     wert                = rec.value("Wert").toDouble();
-    thesaurierend        = rec.value("tesaurierend").toBool();
+    thesaurierend       = rec.value("thesaurierend").toBool();
     active              = rec.value("aktiv").toBool();
     vertragsdatum       = rec.value("Vertragsdatum").toDate();
     laufzeitEnde        = rec.value("LaufzeitEnde").toDate();
@@ -89,7 +89,7 @@ int Vertrag::speichereNeuenVertrag() const
     ti.setValue(dkdbstructur["Vertraege"]["Betrag"].name(), betrag);
     ti.setValue(dkdbstructur["Vertraege"]["Wert"].name(), thesaurierend?wert:0.);
     ti.setValue(dkdbstructur["Vertraege"]["ZSatz"].name(), zinsId);
-    ti.setValue(dkdbstructur["Vertraege"]["tesaurierend"].name(), thesaurierend);
+    ti.setValue(dkdbstructur["Vertraege"]["thesaurierend"].name(), thesaurierend);
     ti.setValue(dkdbstructur["Vertraege"]["Vertragsdatum"].name(), vertragsdatum);
     ti.setValue(dkdbstructur["Vertraege"]["aktiv"].name(), active);
     ti.setValue(dkdbstructur["Vertraege"]["LaufzeitEnde"].name(), laufzeitEnde);
