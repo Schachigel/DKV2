@@ -377,11 +377,11 @@ bool MainWindow::saveNewContract()
     QString errortext;
     if( c.Betrag() <= 0)
         errortext = "Der Kreditbetrag muss größer als null sein";
-    if( c.KreditorId() <= 0 || c.ZinsId() <= 0)
+    else if( c.KreditorId() <= 0 || c.ZinsId() <= 0)
         errortext = "Wähle den Kreditgeber und die Zinsen aus der gegebenen Auswahl. Ist die Auswahl leer müssen zuerst Kreditgeber und Zinswerte eingegeben werden";
-    if( c.Kennung() =="")
-        errortext = "Du solltest eine eindeutige Kennung vergeben, damit der Kretit besser zugeordnet werden kann";
-    if( !c.verbucheNeuenVertrag())
+    else if( c.Kennung() == "")
+        errortext = "Du solltest eine eindeutige Kennung vergeben, damit der Kredit besser zugeordnet werden kann";
+    else if( !c.verbucheNeuenVertrag())
         errortext = "Der Vertrag konnte nicht gespeichert werden. Ist die Kennung des Vertrags eindeutig?";
     if( errortext != "")
     {
