@@ -119,9 +119,12 @@ private:
 protected:
     void timerEvent(QTimerEvent* te) override
     {
-        splash->finish(this);
+        if( splash)
+        {
+            splash->finish(this);
+            delete splash;
+        }
         killTimer(te->timerId());
-        delete splash;
     }
 };
 

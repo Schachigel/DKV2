@@ -213,15 +213,25 @@ bool hatAlleTabellenUndFelder(QSqlDatabase& db)
     for( auto table : dkdbstructur.getTables())
     {
         QSqlQuery sql(db);
-        sql.prepare(QString("SELECT * FROM ") + table.Name());
+        sql.prepare(QString("SELECT * FROM ") + table.Name() +" LIMIT 0");
         if( !sql.exec())
         {
             qDebug() << "testing for table " << table.Name() << " failed\n" << sql.lastError() << endl << sql.lastQuery();
             return false;
         }
+        QSqlRecord r=sql.record();
+        for(int i = 0; i< r.count(); i++ )
+        {
+            QString fieldname = r.fieldName(i);
+            if( table[fieldname] == dbfield())
+            {
+                qDebug() << "testing for field" << fieldname << " failed\n" << sql.lastError() << endl << sql.lastQuery();
+                return false;
+            }
+        }
         if( table.Fields().count() != sql.record().count())
         {
-            qCritical() << "Tabelle " << table.Name() << " hat nicht genug Felder";
+            qCritical() << "Tabelle " << table.Name() << " hat nicht die richtige Anzahl Felder";
             return false;
         }
     }

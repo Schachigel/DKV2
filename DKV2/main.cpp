@@ -114,7 +114,11 @@ int main(int argc, char *argv[])
     a.setOrganizationName("4-MHS"); // used to store our settings
     a.setApplicationName("DKV2");
 
+#ifndef QT_DEBUG
     QSplashScreen* splash = doSplash(); // do only AFTER having an app. object
+#else
+    QSplashScreen* splash = nullptr;
+#endif
 
     initDKDBStruktur();
     QSettings config;

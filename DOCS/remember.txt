@@ -1,7 +1,4 @@
-?! Resize Jahresabschluss:
-- autom. Breite anpassen und pos d buttons ->OK
-- elemente "sizen" nicht mit -> OK
-- Abstand oberer Rand soll konstant bleiben
+?! tabellennamen prüfen beim öffnen der db funktioniert nicht?
 
 ?! Übersicht auf kl Bildschirm sieht schlecht aus:
 - breite auf 90% hauptfensterbreite, zentriert
@@ -62,6 +59,11 @@ next:
 ? P Liste r-click Menu anlegen
 
 DONE
+
+?! Resize Jahresabschluss:
+- autom. Breite anpassen und pos d buttons ->OK
+- elemente "sizen" nicht mit -> OK
+- Abstand oberer Rand soll konstant bleiben = lbl nicht resizen -> OK
 
 Konfiguration Ausgabeverzeichnis testen
 
