@@ -16,8 +16,8 @@ frmJahresabschluss::frmJahresabschluss(const jahresabschluss& JA, QWidget *paren
 { LOG_ENTRY_and_EXIT;
     ui->setupUi(this);
 
-    ui->lblTesa->setText("<h1>Jahresabschluss " + QString::number(ja.abzuschliessendesJahr()) + " für Verträge mit Zinsgutschrift</h1>");
-    ui->lblAusz->setText("<h1>Jahresabschluss " + QString::number(ja.abzuschliessendesJahr()) + " für Verträge mit Zinsauszahlung</h1>");
+    ui->lblTesa->setText("<h2>Jahresabschluss " + QString::number(ja.abzuschliessendesJahr()) + " für Verträge mit Zinsgutschrift</h2>");
+    ui->lblAusz->setText("<h2>Jahresabschluss " + QString::number(ja.abzuschliessendesJahr()) + " für Verträge mit Zinsauszahlung</h2>");
     if( !JA.getTesaV().empty())
         ui->listTesa->setModel(getModelFromContracts(JA.getTesaV()));
     ui->listTesa->resizeColumnsToContents();

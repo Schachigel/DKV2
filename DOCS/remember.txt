@@ -1,6 +1,24 @@
-CSV: alle Kreditor Daten wegschreiben
+?! Resize Jahresabschluss:
+- autom. Breite anpassen und pos d buttons ->OK
+- elemente "sizen" nicht mit -> OK
+- Abstand oberer Rand soll konstant bleiben
 
-Konfiguration Ausgabeverzeichnis testen
+?! Übersicht auf kl Bildschirm sieht schlecht aus:
+- breite auf 90% hauptfensterbreite, zentriert
+- tableviews auto resize
+- button pos resize, so dass sie immer rechts unten sichtbar sind
+
+?! Übersicht drucken implementieren
+
+?! Übersicht: Pro Jahr: wieviele Verträge / welche Summe pro Zinssatz bestehen?
+
+?! Frank: gibt es eine alternative zum Löschen? Sind die Belege ausreichend?
+
+!! FTP Upload / GDrive Upload
+- wie kann man Datenverlust vermeiden? Nur Dateien überschreiben, die sich seit dem Download nicht verändert haben?
+- Datei nach dem download umbenennen bis zum nächsten Upload?
+- hash beim herunterladen merken?
+- .lock fiel anlegen?
 
 plausibilitätsbetrachtung beim Löschen (ende -datum vs. LetzteZinsberechnung
 
@@ -44,6 +62,10 @@ next:
 ? P Liste r-click Menu anlegen
 
 DONE
+
+Konfiguration Ausgabeverzeichnis testen
+
+CSV jahresabschluss: alle Kreditor Daten wegschreiben
 
 Zinsberechnung sollte Wert=betrag für nicht tesaurierende Verträge anpassen sondern auf 0 setzten
 
