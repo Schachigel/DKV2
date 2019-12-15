@@ -11,13 +11,13 @@ SOURCES +=  tst_db.cpp \
     ../DKV2/kreditor.cpp \
     ../DKV2/sqlhelper.cpp \
     ../DKV2/vertrag.cpp \
-    ../dkv2/csvwriter.cpp \
-    ../dkv2/dbfield.cpp \
-    ../dkv2/dbstructure.cpp \
-    ../dkv2/dbtable.cpp \
-    ../dkv2/filehelper.cpp \
-    ../dkv2/helper.cpp \
-    ../dkv2/htmlbrief.cpp \
+    ../DKV2/csvwriter.cpp \
+    ../DKV2/dbfield.cpp \
+    ../DKV2/dbstructure.cpp \
+    ../DKV2/dbtable.cpp \
+    ../DKV2/filehelper.cpp \
+    ../DKV2/helper.cpp \
+    ../DKV2/htmlbrief.cpp \
     test_csv.cpp \
     test_dkdbhelper.cpp \
     test_finance.cpp \
