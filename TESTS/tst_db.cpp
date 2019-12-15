@@ -4,12 +4,12 @@
 #include <QString>
 #include <QtTest>
 
-#include "../dkv2/dbstructure.h"
-#include "../dkv2/dbtable.h"
-#include "../dkv2/kreditor.h"
-#include "../dkv2/dkdbhelper.h"
-#include "../dkv2/filehelper.h"
-#include "../dkv2/helper.h"
+#include "../DKV2/dbstructure.h"
+#include "../DKV2/dbtable.h"
+#include "../DKV2/kreditor.h"
+#include "../DKV2/dkdbhelper.h"
+#include "../DKV2/filehelper.h"
+#include "../DKV2/helper.h"
 
 #include "testhelper.h"
 #include "tst_db.h"

@@ -1,7 +1,7 @@
 #include "test_sqlhelper.h"
 
-#include "../dkv2/sqlhelper.h"
-#include "../dkv2/helper.h"
+#include "../DKV2/sqlhelper.h"
+#include "../DKV2/helper.h"
 
 #include <QSqlDatabase>
 #include <QSqlQuery>

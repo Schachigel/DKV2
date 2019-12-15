@@ -1,14 +1,3 @@
-#if defined(__APPLE__)
-#include <mach/mach_time.h>
-uint32_t GetTickCount() {
-    uint64_t mat = mach_absolute_time();
-    uint32_t mul = 0x80d9594e;
-    return ((((0xffffffff & mat) * mul) >> 32) + (mat >> 32) * mul) >> 23;
-}
-#else
-#include <windows.h>
-#endif
-
 #include <QtCore>
 #include <QSqlDatabase>
 #include <QSqlDriver>
@@ -167,9 +156,9 @@ bool EigenschaftenEinfuegen(QSqlDatabase db)
 {LOG_ENTRY_and_EXIT;
     bool ret =true;
     QSqlQuery sql(db);
+    QRandomGenerator *rand = QRandomGenerator::system();
     ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('Version', '1.0')");
-    QRandomGenerator rand(::GetTickCount());
-    ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('IdOffset', '" + QString::number(rand.bounded(10000,20000)) + "')");
+    ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('IdOffset', '" + QString::number(rand->bounded(10000,20000)) + "')");
     ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('ProjektInitialen', 'ESP')");
     ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('Lettertemplate', '" +htmlbrief::getTemplate() + "')");
     return ret;
@@ -313,19 +302,19 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
     QList<QString> Strassen {"Hauptstrasse", "Nebenstrasse", "Bahnhofstrasse", "Kirchstraße", "Dorfstrasse", "Süterlinweg", "Sorbenstrasse", "Kleines Gässchen", "Industriestrasse", "Sesamstrasse", "Lindenstrasse"};
     QList<QString> emailprovider {"gmail.com", "googlemail.com", "mailbox.org", "t-online.de", "mail.de", "mail.com", "online.de", "yahoo.de", "yahoo.com", "telekom.de", "proivder.co.uk"};
     QList <QPair<QString, QString>> Cities {{"68305", "Mannheim"}, {"69123", "Heidelberg"}, {"69123", "Karlsruhe"}, {"90345", "Hamburg"}};
-    QRandomGenerator rand(::GetTickCount());
+    QRandomGenerator *rand = QRandomGenerator::system();
     int maxZinsIndex = ExecuteSingleValueSql("SELECT max(id) FROM Zinssaetze").toInt();
     for( int i = 0; i<AnzahlDatensaetze; i++)
     {
         Kreditor k;
-        QString vn (Vornamen [rand.bounded(Vornamen.count ())]);
-        QString nn (Nachnamen [rand.bounded(Nachnamen.count ())]);
+        QString vn (Vornamen [rand->bounded(Vornamen.count ())]);
+        QString nn (Nachnamen [rand->bounded(Nachnamen.count ())]);
         k.setValue("Vorname", vn);
         k.setValue("Nachname", nn);
-        k.setValue("Strasse", Strassen[rand.bounded(Strassen.count())]);
-        k.setValue("Plz", Cities[rand.bounded(Cities.count())].first);
-        k.setValue("Stadt", Cities[rand.bounded(Cities.count())].second);
-        k.setValue("Email", vn+"."+nn+"@"+emailprovider[rand.bounded(emailprovider.count())]);
+        k.setValue("Strasse", Strassen[rand->bounded(Strassen.count())]);
+        k.setValue("Plz", Cities[rand->bounded(Cities.count())].first);
+        k.setValue("Stadt", Cities[rand->bounded(Cities.count())].second);
+        k.setValue("Email", vn+"."+nn+"@"+emailprovider[rand->bounded(emailprovider.count())]);
         k.setValue("IBAN", "DExx-xxxxx");
         k.setValue("BIC", "bic...");
 
@@ -336,13 +325,13 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
             Q_ASSERT(!bool("Verbuchung des neuen Vertrags gescheitert"));
         }
         // add a contract
-        double betragUWert = double(100) * rand.bounded(1,20);
-        int zinsid = rand.bounded(1,maxZinsIndex);
-        bool tesa = rand.bounded(100)%4 ? true : false;  // 75% thesaurierend
-        bool active = rand.bounded(100)%6 ? true : false; // 85% inaktiv
-        QDate vertragsdatum= QDate::currentDate().addDays(-1 * rand.bounded(365));
-        QDate StartZinsberechnung = ( active) ? vertragsdatum.addDays(rand.bounded(15)) : QDate(9999, 12, 31);
-        QDate LaufzeitEnde = rand.bounded(100)%3 ? QDate(9999, 12, 31) : StartZinsberechnung.addDays( 500+ rand.bounded(0, 1000) );
+        double betragUWert = double(100) * rand->bounded(1,20);
+        int zinsid = rand->bounded(1,maxZinsIndex);
+        bool tesa = rand->bounded(100)%4 ? true : false;  // 75% thesaurierend
+        bool active = rand->bounded(100)%6 ? true : false; // 85% inaktiv
+        QDate vertragsdatum= QDate::currentDate().addDays(-1 * rand->bounded(365));
+        QDate StartZinsberechnung = ( active) ? vertragsdatum.addDays(rand->bounded(15)) : QDate(9999, 12, 31);
+        QDate LaufzeitEnde = rand->bounded(100)%3 ? QDate(9999, 12, 31) : StartZinsberechnung.addDays( 500+ rand->bounded(0, 1000) );
         Vertrag vertrag (neueKreditorId, ProposeKennung(),
                          betragUWert, betragUWert, zinsid,
                          vertragsdatum,
