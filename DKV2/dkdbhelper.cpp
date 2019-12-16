@@ -473,3 +473,19 @@ void berechneVertragsenden( QVector<ContractEnd>& ce, QString con)
     }
     return;
 }
+
+void berechneJahrZinsVerteilung( QVector<YZV>& yzv, QString con)
+{
+    QString sql = "SELECT count(*), Substr([Vertragsdatum], 0, 5), [Zinssaetze].[Zinssatz]"
+                  "FROM [Vertraege], [Zinssaetze] "
+                  "WHERE [ZSatz] = [Zinssaetze].[id] "
+                  "GROUP BY Substr([Vertragsdatum], 0, 4), [ZSatz]";
+    QSqlQuery query(con);
+    query.exec(sql);
+    while( query.next())
+    {
+        QSqlRecord r =query.record();
+        yzv.push_back({r.value(1).toInt(), r.value(2).toReal(), r.value(0).toInt() });
+    }
+    return;
+}

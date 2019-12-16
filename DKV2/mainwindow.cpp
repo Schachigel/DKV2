@@ -228,7 +228,7 @@ void MainWindow::on_actioncreateSampleData_triggered()
     preparePersonTableView();
     prepareContractListView();
     if( ui->stackedWidget->currentIndex() == OverviewIndex)
-        on_action_bersicht_triggered();
+        on_action_Uebersicht_triggered();
 }
 void MainWindow::on_actionanzeigenLog_triggered()
 {LOG_ENTRY_and_EXIT;
@@ -667,7 +667,7 @@ QString prepareOverviewPage()
                         "<style>H1 { padding: 2em }"
                         "table, thead, td { padding: 5px}"
                         "</style>"
-                "<H1>Übersicht</H1>"
+                "<H2>Übersicht</H2>"
                 "<table>") +
                 "<tr><td>Anzahl der Direktkredite: </td><td align=right>" + QString::number(dbs.AnzahlAktive) +"</td></tr>" +
                 "<tr><td>Summe der  Direktkredite: </td><td align=right>" + locale.toCurrencyString(dbs.BetragAktive) +"</td></tr>" +
@@ -680,7 +680,7 @@ QString prepareOverviewPage()
     berechneVertragsenden(ce);
     if( !ce.isEmpty())
     {
-        lbl += "<H1>Auslaufende Verträge</H1>";
+        lbl += "<H2>Auslaufende Verträge</H2>";
         lbl += "<table>";
         lbl += "<thead><tr><td> Jahr </td><td> Anzahl </td><td> Summe </td></tr></thead>";
         for( auto x: ce)
@@ -688,12 +688,27 @@ QString prepareOverviewPage()
             lbl += "<tr><td>" + QString::number(x.year) + "</td><td align=right>" +
                    QString::number(x.count) + "</td><td align=right>" + locale.toCurrencyString(x.value) + "</td></tr>";
         }
+        lbl += "</table>";
+    }
+    QVector<YZV> yzv;
+    berechneJahrZinsVerteilung( yzv);
+    if( !yzv.isEmpty())
+    {
+        lbl += "<H2>Verteilung der Zinssätze pro Jahr</H2>";
+        lbl += "<table>";
+        lbl += "<thead><tr><td style=\"padding:2px;\"> Jahr </td><td style=\"padding:2px;\"> Zinssatz </td><td style=\"padding:2px;\"> Anzahl</td></tr></thead>";
+        for( auto x: yzv)
+        {
+            lbl += "<tr><td style=\"padding:2px;\">" + QString::number(x.year) + "</td><td align=center style=\"padding:2px;\">" +
+                   QString::number(x.intrest) + "</td><td align=center style=\"padding:2px;\">" + QString::number(x.count) + "</td></tr>";
+        }
+        lbl += "</table>";
     }
 
     lbl += "</body></html>";
     return lbl;
 }
-void MainWindow::on_action_bersicht_triggered()
+void MainWindow::on_action_Uebersicht_triggered()
 {LOG_ENTRY_and_EXIT;
     ui->lblOverview->setText( prepareOverviewPage());
     ui->stackedWidget->setCurrentIndex(OverviewIndex);

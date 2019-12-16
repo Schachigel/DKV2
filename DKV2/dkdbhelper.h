@@ -73,8 +73,15 @@ struct ContractEnd
     int count;
     double value;
 };
-
 void berechneVertragsenden(QVector<ContractEnd>& ce, QString con="");
 void berechneZusammenfassung(DbSummary& dbs, QString con="");
+
+struct YZV
+{
+    int year;
+    double intrest;
+    int count;
+};
+void berechneJahrZinsVerteilung( QVector<YZV>& yzv, QString con ="");
 
 #endif // DKDBHELPER_H

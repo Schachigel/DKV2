@@ -77,7 +77,7 @@ private slots:
 
     void on_actionVertrag_Beenden_triggered();
 
-    void on_action_bersicht_triggered();
+    void on_action_Uebersicht_triggered();
 
     void on_actionVertraege_zeigen_triggered();
 
@@ -92,6 +92,7 @@ private slots:
     void on_actionAusgabeverzeichnis_festlegen_triggered();
 
     void on_actionAktive_Vertraege_CSV_triggered();
+
 
 private:
     Ui::MainWindow *ui;
