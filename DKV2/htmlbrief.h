@@ -6,7 +6,7 @@
 class htmlbrief
 {
 public:
-    static const QString htmlTemplate;
+    static QString htmlTemplate;
     static const QString getTemplate();
 };
 
