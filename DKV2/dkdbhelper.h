@@ -84,4 +84,6 @@ struct YZV
 };
 void berechneJahrZinsVerteilung( QVector<YZV>& yzv, QString con ="");
 
+QString LaufzeitenVerteilungHtml(QString con="");
+
 #endif // DKDBHELPER_H

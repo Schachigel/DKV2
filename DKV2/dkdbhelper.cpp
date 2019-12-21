@@ -314,6 +314,7 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
     QList <QPair<QString, QString>> Cities {{"68305", "Mannheim"}, {"69123", "Heidelberg"}, {"69123", "Karlsruhe"}, {"90345", "Hamburg"}};
     QRandomGenerator *rand = QRandomGenerator::system();
     int maxZinsIndex = ExecuteSingleValueSql("SELECT max(id) FROM Zinssaetze").toInt();
+
     for( int i = 0; i<AnzahlDatensaetze; i++)
     {
         Kreditor k;
@@ -341,7 +342,9 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
         bool active = rand->bounded(100)%6 ? true : false; // 85% inaktiv
         QDate vertragsdatum= QDate::currentDate().addDays(-1 * rand->bounded(365));
         QDate StartZinsberechnung = ( active) ? vertragsdatum.addDays(rand->bounded(15)) : QDate(9999, 12, 31);
-        QDate LaufzeitEnde = rand->bounded(100)%3 ? QDate(9999, 12, 31) : StartZinsberechnung.addDays( 500+ rand->bounded(0, 1000) );
+        QDate LaufzeitEnde = (rand->bounded(100)%8 == 1)
+                          ? (QDate(9999, 12, 31)) // kein Ende vereinbart
+                          : StartZinsberechnung.addDays( 500+ rand->bounded(0, 10000));
         Vertrag vertrag (neueKreditorId, ProposeKennung(),
                          betragUWert, betragUWert, zinsid,
                          vertragsdatum,
@@ -488,4 +491,50 @@ void berechneJahrZinsVerteilung( QVector<YZV>& yzv, QString con)
         yzv.push_back({r.value(1).toInt(), r.value(2).toReal(), r.value(0).toInt() });
     }
     return;
+}
+
+QString LaufzeitenVerteilungHtml(QString con)
+{
+    int AnzahlBisEinJahr=0, AnzahlBisFuenfJahre=0, AnzahlLaenger=0, AnzahlUnbegrenzet = 0;
+    double SummeBisEinJahr=0., SummeBisFuenfJahre=0., SummeLaenger=0., SummeUnbegrenzet = 0.;
+    QString sql = "SELECT [Betrag], [Wert], [Vertragsdatum], [LaufzeitEnde] FROM [Vertraege]";
+    QSqlQuery q (con);
+    q.exec(sql);
+    while( q.next())
+    {
+        double betrag = q.value("Betrag").toReal();
+        double wert =   q.value("Wert").toReal();
+        QDate von = q.value("Vertragsdatum").toDate();
+        QDate bis = q.value("LaufzeitEnde").toDate();
+        if(! bis.isValid() || bis == QDate(9999, 12, 31))
+        {
+            AnzahlUnbegrenzet++;
+            SummeUnbegrenzet += wert > betrag ? wert : betrag;
+        }
+        else if( von.addYears(5) < bis)
+        {
+            AnzahlLaenger++;
+            SummeLaenger+= wert > betrag ? wert : betrag;
+        }
+        else if( von.addYears(1) > bis)
+        {
+            AnzahlBisEinJahr++;
+            SummeBisEinJahr += wert > betrag ? wert : betrag;
+        }
+        else
+        {
+            AnzahlBisFuenfJahre ++;
+            SummeBisFuenfJahre += wert > betrag ? wert : betrag;
+        }
+    }
+    QString ret="<table><thead><tr><td>Zeitraum</td><td>Anzahl</td><td>Wert</td></tr></thead>";
+    ret += "<tr><td>Bis ein Jahr </td><td>"+ QString::number(AnzahlBisEinJahr) + "</td><td>";
+    ret += QString::number(SummeBisEinJahr) + "</td></tr>";
+    ret += "<tr><td>Ein bis fünf Jahre </td><td>"+ QString::number(AnzahlBisFuenfJahre) + "</td><td>";
+    ret += QString::number(SummeBisFuenfJahre) + "</td></tr>";
+    ret += "<tr><td>Länger als fünf Jahre </td><td>"+ QString::number(AnzahlLaenger) + "</td><td>";
+    ret += QString::number(SummeLaenger) + "</td></tr>";
+    ret += "<tr><td>Unbegrenzte Verträge </td><td>"+ QString::number(AnzahlUnbegrenzet) + "</td><td>";
+    ret += QString::number(SummeUnbegrenzet) + "</td></tr></table>";
+    return ret;
 }

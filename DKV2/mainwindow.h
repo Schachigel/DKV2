@@ -11,13 +11,21 @@ namespace Ui {
 class MainWindow;
 }
 
+enum Uebersichten
+{
+    UEBERSICHT = 0,
+    VERTRAGSENDE,
+    ZINSVERTEILUNG,
+    LAUFZEITEN
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    ~MainWindow() override;
     void setSplash(QSplashScreen* s);
 
     void FillKreditorDropdown();
@@ -94,6 +102,8 @@ private slots:
     void on_actionAktive_Vertraege_CSV_triggered();
 
 
+    void on_comboUebersicht_currentIndexChanged(int index);
+
 private:
     Ui::MainWindow *ui;
     QSplashScreen* splash;
@@ -117,6 +127,8 @@ private:
     void KreditorFormulardatenLoeschen();
     void KreditorFormulardatenBelegen(int id);
     void clearNewContractFields();
+
+
 protected:
     void timerEvent(QTimerEvent* te) override
     {

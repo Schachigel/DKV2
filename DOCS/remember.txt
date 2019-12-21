@@ -1,9 +1,12 @@
-?! tabellennamen prüfen beim öffnen der db funktioniert nicht?
+?! wenn currentdate > Vertragsende?
 
-?! Übersicht auf kl Bildschirm sieht schlecht aus:
-- breite auf 90% hauptfensterbreite, zentriert
-- tableviews auto resize
-- button pos resize, so dass sie immer rechts unten sichtbar sind
+?! Buchungen dem Anwender anzeigen?
+
+?! Auswertung: Vertragslängen: bis 1j, 1-5j, länger als 5, umbegrenzt
+
+?! MsgBox vor Programm Ende
+
+?! tabellennamen prüfen beim öffnen der db funktioniert nicht?
 
 ?! Übersicht drucken implementieren
 
@@ -59,6 +62,13 @@ next:
 ? P Liste r-click Menu anlegen
 
 DONE
+
+?! Übersicht auf kl Bildschirm sieht schlecht aus:
+- breite auf 90% hauptfensterbreite, zentriert
+- tableviews auto resize
+- button pos resize, so dass sie immer rechts unten sichtbar sind
+
+
 
 ?! Resize Jahresabschluss:
 - autom. Breite anpassen und pos d buttons ->OK

@@ -655,62 +655,94 @@ void MainWindow::on_actionVertrag_Beenden_triggered()
     prepareContractListView();
 }
 
-QString prepareOverviewPage()
+QString prepareOverviewPage(Uebersichten u)
 {LOG_ENTRY_and_EXIT;
-    // Summe der Direktkredite,
-    // versprochene DK (inaktive DK)
-    // Zinsen pa, davon auszuzahlen
-    DbSummary dbs;
-    berechneZusammenfassung(dbs);
+
+    QString lbl ("<html><body><style>h1 { padding: 2em }"
+                 "table, thead, td { padding: 4px}"
+                "</style>");
     QLocale locale;
-    QString lbl (QString("<html><body>"
-                        "<style>H1 { padding: 2em }"
-                        "table, thead, td { padding: 5px}"
-                        "</style>"
-                "<H2>Übersicht</H2>"
-                "<table>") +
-                "<tr><td>Anzahl der Direktkredite: </td><td align=right>" + QString::number(dbs.AnzahlAktive) +"</td></tr>" +
-                "<tr><td>Summe der  Direktkredite: </td><td align=right>" + locale.toCurrencyString(dbs.BetragAktive) +"</td></tr>" +
-                "<tr><td>Wert der DK inklusive erworbener Zinsen</td><td align=right>"+ locale.toCurrencyString(dbs.WertAktive) + "</td></tr>" +
-                "<tr><td>Anzahl noch ausstehender (inaktiven) DK </td><td align=right>" + QString::number(dbs.AnzahlPassive) +"</td></tr>" +
-                "<tr><td>Summe noch ausstehender (inaktiven) DK </td><td align=right>" + locale.toCurrencyString(dbs.BetragPassive) +"</td></tr>" +
-                "</table>");
 
-    QVector<ContractEnd> ce;
-    berechneVertragsenden(ce);
-    if( !ce.isEmpty())
+    switch( u )
     {
-        lbl += "<H2>Auslaufende Verträge</H2>";
-        lbl += "<table>";
-        lbl += "<thead><tr><td> Jahr </td><td> Anzahl </td><td> Summe </td></tr></thead>";
-        for( auto x: ce)
-        {
-            lbl += "<tr><td>" + QString::number(x.year) + "</td><td align=right>" +
-                   QString::number(x.count) + "</td><td align=right>" + locale.toCurrencyString(x.value) + "</td></tr>";
-        }
-        lbl += "</table>";
-    }
-    QVector<YZV> yzv;
-    berechneJahrZinsVerteilung( yzv);
-    if( !yzv.isEmpty())
+    case UEBERSICHT:
     {
-        lbl += "<H2>Verteilung der Zinssätze pro Jahr</H2>";
-        lbl += "<table>";
-        lbl += "<thead><tr><td style=\"padding:2px;\"> Jahr </td><td style=\"padding:2px;\"> Zinssatz </td><td style=\"padding:2px;\"> Anzahl</td></tr></thead>";
-        for( auto x: yzv)
-        {
-            lbl += "<tr><td style=\"padding:2px;\">" + QString::number(x.year) + "</td><td align=center style=\"padding:2px;\">" +
-                   QString::number(x.intrest) + "</td><td align=center style=\"padding:2px;\">" + QString::number(x.count) + "</td></tr>";
-        }
-        lbl += "</table>";
+        DbSummary dbs;
+        berechneZusammenfassung(dbs);
+        lbl += QString("<h2>Übersicht </h2> Stand: ") + QDate::currentDate().toString("dd.MM.yyyy") +
+          "<table>" +
+          "<tr><td>Anzahl der Direktkredite: </td><td align=right>" + QString::number(dbs.AnzahlAktive) +"</td></tr>" +
+          "<tr><td>Summe der  Direktkredite: </td><td align=right>" + locale.toCurrencyString(dbs.BetragAktive) +"</td></tr>" +
+          "<tr><td>Wert der DK inklusive erworbener Zinsen</td><td align=right>"+ locale.toCurrencyString(dbs.WertAktive) + "</td></tr>" +
+          "<tr><td>Anzahl noch ausstehender (inaktiven) DK </td><td align=right>" + QString::number(dbs.AnzahlPassive) +"</td></tr>" +
+          "<tr><td>Summe noch ausstehender (inaktiven) DK </td><td align=right>" + locale.toCurrencyString(dbs.BetragPassive) +"</td></tr>" +
+               "</table>";
+        break;
     }
-
+    case VERTRAGSENDE:
+    {
+        QVector<ContractEnd> ce;
+        berechneVertragsenden(ce);
+        if( !ce.isEmpty())
+        {
+            lbl += "<h2>Auslaufende Verträge </h2> Stand:"  + QDate::currentDate().toString("dd.MM.yyyy") +
+             "<table>" +
+            "<thead><tr><td> Jahr </td><td> Anzahl </td><td> Summe </td></tr></thead>";
+            for( auto x: ce)
+            {
+                lbl += "<tr><td>" + QString::number(x.year) + "</td><td align=right>" +
+                       QString::number(x.count) + "</td><td align=right>" + locale.toCurrencyString(x.value) + "</td></tr>";
+            }
+            lbl += "</table>";
+        }
+        break;
+    }
+    case ZINSVERTEILUNG:
+    {
+        QVector<YZV> yzv;
+        berechneJahrZinsVerteilung( yzv);
+        if( !yzv.isEmpty())
+        {
+            lbl += "<h2>Verteilung der Zinssätze pro Jahr </h2> Stand:"  + QDate::currentDate().toString("dd.MM.yyyy") +
+             "<table>" +
+             "<thead><tr><td style=\"padding:2px;\"> Jahr </td><td style=\"padding:2px;\"> Zinssatz </td><td style=\"padding:2px;\"> Anzahl</td></tr></thead>";
+            for( auto x: yzv)
+            {
+                lbl += "<tr><td style=\"padding:2px;\">" + QString::number(x.year) + "</td><td align=center style=\"padding:2px;\">" +
+                       QString::number(x.intrest) + "</td><td align=center style=\"padding:2px;\">" + QString::number(x.count) + "</td></tr>";
+            }
+            lbl += "</table>";
+        }
+        break;
+    }
+    case LAUFZEITEN:
+    {
+        lbl += "<h2>Vertragslaufzeiten</h2> Stand:" + QDate::currentDate().toString("dd.MM.yyyy");
+        lbl += "<br>" + LaufzeitenVerteilungHtml();
+    }
+//    default:
+//    {
+//        ;
+//    }
+    }
     lbl += "</body></html>";
     return lbl;
 }
+
 void MainWindow::on_action_Uebersicht_triggered()
 {LOG_ENTRY_and_EXIT;
-    ui->lblOverview->setText( prepareOverviewPage());
+    if(ui->comboUebersicht->count() == 0)
+    {
+        ui->comboUebersicht->clear();
+        ui->comboUebersicht->addItem("Übersicht aller Kredite", QVariant(UEBERSICHT));
+        ui->comboUebersicht->addItem("Anzahl auslaufender Verträge nach Jahr", QVariant(VERTRAGSENDE));
+        ui->comboUebersicht->addItem("Vertragszahl nach Zinssatz und Jahr", QVariant(ZINSVERTEILUNG));
+        ui->comboUebersicht->addItem("Vertragszahl nach Laufzeiten", QVariant(LAUFZEITEN));
+        ui->comboUebersicht->setCurrentIndex(0);
+    }
+    int currentIndex = ui->comboUebersicht->currentIndex();
+    Uebersichten u = static_cast<Uebersichten>( ui->comboUebersicht->itemData(currentIndex).toInt());
+    ui->txtOverview->setText( prepareOverviewPage(u));
     ui->stackedWidget->setCurrentIndex(OverviewIndex);
 }
 
@@ -773,4 +805,9 @@ void MainWindow::on_actionAusgabeverzeichnis_festlegen_triggered()
 void MainWindow::on_actionAktive_Vertraege_CSV_triggered()
 {
     CsvActiveContracts();
+}
+
+void MainWindow::on_comboUebersicht_currentIndexChanged(int index)
+{
+    on_action_Uebersicht_triggered();
 }
