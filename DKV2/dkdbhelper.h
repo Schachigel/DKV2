@@ -63,6 +63,14 @@ struct DbSummary
     int     AnzahlAktive;
     double  BetragAktive;
     double  WertAktive;
+
+    int     AnzahlAuszahlende;
+    double  BetragAuszahlende;
+
+    int     AnzahlThesaurierende;
+    double  WertThesaurierende;
+    double  BetragThesaurierende;
+
     int     AnzahlPassive;
     double  BetragPassive;
 };

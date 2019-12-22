@@ -661,7 +661,7 @@ QString MainWindow::prepareOverviewPage(Uebersichten u)
 {LOG_ENTRY_and_EXIT;
 
     QString lbl ("<html><body><style>h1 { padding: 2em; } "
-                 "table, td { padding: 5px; border-width: 3px; border-style: solid; border-color: black; } "
+                 "table, td { padding: 5px; border-width: 1px; border-style: solid; border-color: black; } "
                  "th { padding: 4px; border-width: 3px; border-style: solid; border-color: black; } "
                 "</style>");
     QLocale locale;
@@ -674,9 +674,20 @@ QString MainWindow::prepareOverviewPage(Uebersichten u)
         berechneZusammenfassung(dbs);
         lbl += QString("<h2>Übersicht </h2><br> Stand: ") + QDate::currentDate().toString("dd.MM.yyyy<br>") +
           "<table>" +
-          "<tr><td>Anzahl der Direktkredite: </td><td align=left>" + QString::number(dbs.AnzahlAktive) +"</td></tr>" +
-          "<tr><td>Summe der  Direktkredite: </td><td align=right>" + locale.toCurrencyString(dbs.BetragAktive) +"</td></tr>" +
+          "<tr><td>Anzahl aller Direktkredite: </td><td align=left>" + QString::number(dbs.AnzahlAktive) +"</td></tr>" +
+          "<tr><td>Summe aller Direktkredite:  </td><td align=right>" + locale.toCurrencyString(dbs.BetragAktive) +"</td></tr>" +
           "<tr><td>Wert der DK inklusive erworbener Zinsen</td><td align=right>"+ locale.toCurrencyString(dbs.WertAktive) + "</td></tr>" +
+
+          "<tr><td></td><td></td></tr>" +
+          "<tr><td>Anzahl der auszahlenden DK: </td><td align=left>" + QString::number(dbs.AnzahlAuszahlende) +"</td></tr>" +
+          "<tr><td>Summe der  auszahlenden DK: </td><td align=right>" + locale.toCurrencyString(dbs.BetragAuszahlende) +"</td></tr>" +
+          "<tr><td></td><td></td></tr>" +
+
+          "<tr><td>Anzahl der thesaurierenden DK: </td><td align=left>" + QString::number(dbs.AnzahlThesaurierende) +"</td></tr>" +
+          "<tr><td>Summe der  thesaurierenden DK: </td><td align=right>" + locale.toCurrencyString(dbs.BetragThesaurierende) +"</td></tr>" +
+          "<tr><td>Wert der  thesaurierenden DK: </td><td align=right>" + locale.toCurrencyString(dbs.WertThesaurierende) +"</td></tr>" +
+
+          "<tr><td></td><td></td></tr>" +
           "<tr><td>Anzahl noch ausstehender (inaktiven) DK </td><td align=left>" + QString::number(dbs.AnzahlPassive) +"</td></tr>" +
           "<tr><td>Summe noch ausstehender (inaktiven) DK </td><td align=right>" + locale.toCurrencyString(dbs.BetragPassive) +"</td></tr>" +
                "</table>";
