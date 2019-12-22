@@ -11,14 +11,6 @@ namespace Ui {
 class MainWindow;
 }
 
-enum Uebersichten
-{
-    UEBERSICHT = 0,
-    VERTRAGSENDE,
-    ZINSVERTEILUNG,
-    LAUFZEITEN
-};
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -104,6 +96,8 @@ private slots:
 
     void on_comboUebersicht_currentIndexChanged(int index);
 
+    void on_pbPrint_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSplashScreen* splash;
@@ -127,8 +121,20 @@ private:
     void KreditorFormulardatenLoeschen();
     void KreditorFormulardatenBelegen(int id);
     void clearNewContractFields();
-
-
+    enum Uebersichten
+    {
+        UEBERSICHT = 0,
+        VERTRAGSENDE,
+        ZINSVERTEILUNG,
+        LAUFZEITEN
+    };
+    QVector<QString> Uebersichten_kurz{
+        QString("Uebersicht"),
+        QString("Vertragsenden"),
+        QString("Zinsverteilungen"),
+        QString("Laufzeiten")
+    };
+    QString prepareOverviewPage(Uebersichten u);
 protected:
     void timerEvent(QTimerEvent* te) override
     {

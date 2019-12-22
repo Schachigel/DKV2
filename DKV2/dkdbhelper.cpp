@@ -527,14 +527,15 @@ QString LaufzeitenVerteilungHtml(QString con)
             SummeBisFuenfJahre += wert > betrag ? wert : betrag;
         }
     }
+    QLocale locale;
     QString ret="<table><thead><tr><td>Zeitraum</td><td>Anzahl</td><td>Wert</td></tr></thead>";
-    ret += "<tr><td>Bis ein Jahr </td><td>"+ QString::number(AnzahlBisEinJahr) + "</td><td>";
-    ret += QString::number(SummeBisEinJahr) + "</td></tr>";
-    ret += "<tr><td>Ein bis fünf Jahre </td><td>"+ QString::number(AnzahlBisFuenfJahre) + "</td><td>";
-    ret += QString::number(SummeBisFuenfJahre) + "</td></tr>";
-    ret += "<tr><td>Länger als fünf Jahre </td><td>"+ QString::number(AnzahlLaenger) + "</td><td>";
-    ret += QString::number(SummeLaenger) + "</td></tr>";
-    ret += "<tr><td>Unbegrenzte Verträge </td><td>"+ QString::number(AnzahlUnbegrenzet) + "</td><td>";
-    ret += QString::number(SummeUnbegrenzet) + "</td></tr></table>";
+    ret += "<tr><td align=left>Bis ein Jahr </td><td align=center>"+ QString::number(AnzahlBisEinJahr) + "</td><td align=right>";
+    ret += locale.toCurrencyString(SummeBisEinJahr) + "</td></tr>";
+    ret += "<tr><td align=left>Ein bis fünf Jahre </td><td align=center>"+ QString::number(AnzahlBisFuenfJahre) + "</td><td align=right>";
+    ret += locale.toCurrencyString(SummeBisFuenfJahre) + "</td></tr>";
+    ret += "<tr><td align=left>Länger als fünf Jahre </td><td align=center>"+ QString::number(AnzahlLaenger) + "</td><td align=right>";
+    ret += locale.toCurrencyString(SummeLaenger) + "</td></tr>";
+    ret += "<tr><td align=left>Unbegrenzte Verträge </td><td align=center>"+ QString::number(AnzahlUnbegrenzet) + "</td><td align=right>";
+    ret += locale.toCurrencyString(SummeUnbegrenzet) + "</td></tr></table>";
     return ret;
 }

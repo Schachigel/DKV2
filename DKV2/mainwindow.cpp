@@ -18,6 +18,8 @@
 #include <QSqlField>
 #include <QMap>
 
+#include <QPdfWriter>
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -655,11 +657,12 @@ void MainWindow::on_actionVertrag_Beenden_triggered()
     prepareContractListView();
 }
 
-QString prepareOverviewPage(Uebersichten u)
+QString MainWindow::prepareOverviewPage(Uebersichten u)
 {LOG_ENTRY_and_EXIT;
 
-    QString lbl ("<html><body><style>h1 { padding: 2em }"
-                 "table, thead, td { padding: 4px}"
+    QString lbl ("<html><body><style>h1 { padding: 2em; } "
+                 "table, td { padding: 5px; border-width: 3px; border-style: solid; border-color: black; } "
+                 "th { padding: 4px; border-width: 3px; border-style: solid; border-color: black; } "
                 "</style>");
     QLocale locale;
 
@@ -669,32 +672,33 @@ QString prepareOverviewPage(Uebersichten u)
     {
         DbSummary dbs;
         berechneZusammenfassung(dbs);
-        lbl += QString("<h2>Übersicht </h2> Stand: ") + QDate::currentDate().toString("dd.MM.yyyy") +
+        lbl += QString("<h2>Übersicht </h2><br> Stand: ") + QDate::currentDate().toString("dd.MM.yyyy<br>") +
           "<table>" +
-          "<tr><td>Anzahl der Direktkredite: </td><td align=right>" + QString::number(dbs.AnzahlAktive) +"</td></tr>" +
+          "<tr><td>Anzahl der Direktkredite: </td><td align=left>" + QString::number(dbs.AnzahlAktive) +"</td></tr>" +
           "<tr><td>Summe der  Direktkredite: </td><td align=right>" + locale.toCurrencyString(dbs.BetragAktive) +"</td></tr>" +
           "<tr><td>Wert der DK inklusive erworbener Zinsen</td><td align=right>"+ locale.toCurrencyString(dbs.WertAktive) + "</td></tr>" +
-          "<tr><td>Anzahl noch ausstehender (inaktiven) DK </td><td align=right>" + QString::number(dbs.AnzahlPassive) +"</td></tr>" +
+          "<tr><td>Anzahl noch ausstehender (inaktiven) DK </td><td align=left>" + QString::number(dbs.AnzahlPassive) +"</td></tr>" +
           "<tr><td>Summe noch ausstehender (inaktiven) DK </td><td align=right>" + locale.toCurrencyString(dbs.BetragPassive) +"</td></tr>" +
                "</table>";
         break;
     }
     case VERTRAGSENDE:
     {
+        lbl += "<h2>Auslaufende Verträge </h2> Stand:"  + QDate::currentDate().toString("dd.MM.yyyy<br>");
         QVector<ContractEnd> ce;
         berechneVertragsenden(ce);
         if( !ce.isEmpty())
         {
-            lbl += "<h2>Auslaufende Verträge </h2> Stand:"  + QDate::currentDate().toString("dd.MM.yyyy") +
-             "<table>" +
-            "<thead><tr><td> Jahr </td><td> Anzahl </td><td> Summe </td></tr></thead>";
+            lbl += "<table><thead><tr><td> Jahr </td><td> Anzahl </td><td> Summe </td></tr></thead>";
             for( auto x: ce)
             {
-                lbl += "<tr><td>" + QString::number(x.year) + "</td><td align=right>" +
+                lbl += "<tr><td align=left>" + QString::number(x.year) + "</td><td align=center>" +
                        QString::number(x.count) + "</td><td align=right>" + locale.toCurrencyString(x.value) + "</td></tr>";
             }
             lbl += "</table>";
         }
+        else
+            lbl += "<br><br><i>keine Verträge mit vorgemerktem Vertragsende</i>";
         break;
     }
     case ZINSVERTEILUNG:
@@ -703,7 +707,7 @@ QString prepareOverviewPage(Uebersichten u)
         berechneJahrZinsVerteilung( yzv);
         if( !yzv.isEmpty())
         {
-            lbl += "<h2>Verteilung der Zinssätze pro Jahr </h2> Stand:"  + QDate::currentDate().toString("dd.MM.yyyy") +
+            lbl += "<h2>Verteilung der Zinssätze pro Jahr </h2> Stand:"  + QDate::currentDate().toString("dd.MM.yyyy<br>") +
              "<table>" +
              "<thead><tr><td style=\"padding:2px;\"> Jahr </td><td style=\"padding:2px;\"> Zinssatz </td><td style=\"padding:2px;\"> Anzahl</td></tr></thead>";
             for( auto x: yzv)
@@ -717,7 +721,7 @@ QString prepareOverviewPage(Uebersichten u)
     }
     case LAUFZEITEN:
     {
-        lbl += "<h2>Vertragslaufzeiten</h2> Stand:" + QDate::currentDate().toString("dd.MM.yyyy");
+        lbl += "<h2>Vertragslaufzeiten</h2> Stand:" + QDate::currentDate().toString("dd.MM.yyyy<br>");
         lbl += "<br>" + LaufzeitenVerteilungHtml();
     }
 //    default:
@@ -807,7 +811,20 @@ void MainWindow::on_actionAktive_Vertraege_CSV_triggered()
     CsvActiveContracts();
 }
 
-void MainWindow::on_comboUebersicht_currentIndexChanged(int index)
+void MainWindow::on_comboUebersicht_currentIndexChanged(int )
 {
     on_action_Uebersicht_triggered();
+}
+
+void MainWindow::on_pbPrint_clicked()
+{
+    QSettings config;
+    QString filename = config.value("outdir").toString();
+
+    filename += "\\" + QDate::currentDate().toString("yyyy-MM-dd_");
+    filename += Uebersichten_kurz[ui->comboUebersicht->currentIndex()];
+    filename += ".pdf";
+    QPdfWriter write(filename);
+    ui->txtOverview->print(&write);
+    showFileInFolder(filename);
 }
