@@ -1,0 +1,27 @@
+[[PROJEKTADRESSE]]
+Esperanza Franklin GmbH | Turley-Platz 9 | 68167 Mannheim
+
+[[DATUM]]
+Mannheim, den <<Datum>>
+
+[[UNSERZEICHEN]]
+<<DK-Kennung>>
+
+[[BETREFF]]
+Kontoauszug Deiner / Ihrer Direktkredite an Esperanza Franklin GmbH
+
+[[ANREDE]]
+Liebe*r <<Vorname>> <<Nachname>>,
+
+[[TEXT]]
+die zuk&uuml;nftigen Bewohner*innen von Esperanza Mannheim w&uuml;nschen ein sch&ouml;nes neues Jahr und bedanken sich herzlich für die Unterst&uuml;tzung<br>
+Dies ist der Kontoauszug Deiner / Ihrer Direktkredite für das Jahr <<Jahr>> bei Esperanza Frankling GmbH.<br>
+Die Zinsen wurden wie vereinbart dem Direktkreditkonto gutgeschrieben.<br>
+Auf wunsch erstellen wir eine gesonderte Zinsbescheinigung f&uuml;r die Steuererkl&auml;rung. Wir bitten um &uuml;berpr&uuml;fung. Bei Fragen wenden Sie / wende Dich bitte an dk@esperanza-mannheim.de.<br>
+Wir hoffen auch im n&auml;chsten Jahr mit Deiner / Ihrer Solidarit&auml;t. Wir ben&ouml;tigen auch weiterhin neue Direktredite. Bitte empfehlen Sie / empfiehl uns an Freunde und Bekannte.<br>
+
+[[GRUSSFORMEL]]
+Mit herzlichen Gr&uuml;ßen
+
+[[Signum]]
+Gesch&auml;ftsf&uuml;hrung Evelyn Beyer, Gabriele Engl, Roland Staar 
