@@ -1,5 +1,3 @@
-?? Bug: Laufzeitende ungültig wenn LetzteZinsBerechnung ungültig = inactive?
-
 !!Laufzeitende editierbar machen
 
 ?! wenn currentdate > Vertragsende?
@@ -54,6 +52,9 @@ next:
 ? P Liste r-click Menu anlegen
 
 DONE
+
+?? Bug: Laufzeitende ungültig wenn LetzteZinsBerechnung ungültig = inactive?
+
 
 ?! Buchungsart: Zinsgutschrift
 
