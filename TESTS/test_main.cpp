@@ -1,6 +1,7 @@
 
 #include <qguiapplication.h>
 #include <qtest.h>
+#include "test_htmlbrief.h"
 #include "test_csv.h"
 #include "tst_db.h"
 #include "test_dkdbhelper.h"
@@ -25,6 +26,7 @@ int main(int argc, char *argv[])
       delete obj;
     };
 
+    ASSERT_TEST(new test_htmlbrief);
     ASSERT_TEST(new test_csv);
     ASSERT_TEST(new tst_db);
     ASSERT_TEST(new test_dkdbhelper);

@@ -75,6 +75,7 @@ void test_dkdbhelper::test_berechneZusammenfassung()
         .appendTable(dbtable("Vertraege")
             .append(dbfield("Betrag", QVariant::Double))
             .append(dbfield("Wert", QVariant::Double))
+            .append(dbfield("thesaurierend", QVariant::Bool))
             .append(dbfield("aktiv", QVariant::Bool)));
     s.createDb(QSqlDatabase::database(testCon));
 
@@ -82,18 +83,20 @@ void test_dkdbhelper::test_berechneZusammenfassung()
     tdi.setValue("Betrag", 100.);
     tdi.setValue("Wert", 101.);
     tdi.setValue("aktiv", true);
+    tdi.setValue("thesaurierend", true);
     tdi.InsertData(QSqlDatabase::database(testCon));
     tdi.InsertData(QSqlDatabase::database(testCon));
     tdi.setValue("Betrag", 200.);
     tdi.setValue("Wert", 201.);
     tdi.setValue("aktiv", false);
+    tdi.setValue("thesaurierend", true);
     tdi.InsertData(QSqlDatabase::database(testCon));
     tdi.InsertData(QSqlDatabase::database(testCon));
     DbSummary dbs;
     berechneZusammenfassung(dbs, testCon);
     QVERIFY(dbs.BetragAktive == 200.);
     QVERIFY(dbs.AnzahlAktive == 2);
-    QVERIFY(dbs.BetragPassive == 400.);
     QVERIFY(dbs.WertAktive == 202.);
+    QVERIFY(dbs.BetragPassive == 400.);
 
 }

@@ -1,11 +1,13 @@
 
-#include <qstring.h>
-#include <qlist.h>
+#include <QString>
+#include <QList>
 #include <QTextStream>
 #include <QFile>
 #include <QDir>
 #include <QFileInfo>
-#include <qdebug.h>
+#include <QDebug>
+#include <QSettings>
+
 #include "helper.h"
 #include "filehelper.h"
 
@@ -64,3 +66,9 @@ void showFileInFolder(const QString &path)
 #endif
 }
 
+QString getDbFolder()
+{
+    QSettings config;
+    QFileInfo db(config.value("db/last").toString());
+    return db.path();
+}

@@ -9,7 +9,7 @@ class test_csv : public QObject
     Q_OBJECT
 public:
     explicit test_csv(QObject *parent = nullptr);
-    ~test_csv(){}
+    virtual ~test_csv(){}
 private slots:
     //    void initTestCase();
     //    void cleanupTestCase();
@@ -29,7 +29,6 @@ private slots:
     //void test_csv_output();
 
 signals:
-
 public slots:
 };
 

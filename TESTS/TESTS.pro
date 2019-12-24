@@ -21,6 +21,7 @@ SOURCES +=  tst_db.cpp \
     test_csv.cpp \
     test_dkdbhelper.cpp \
     test_finance.cpp \
+    test_htmlbrief.cpp \
     test_main.cpp \
     test_sqlhelper.cpp \
     testhelper.cpp
@@ -29,6 +30,7 @@ HEADERS += \
     test_csv.h \
     test_dkdbhelper.h \
     test_finance.h \
+    test_htmlbrief.h \
     test_sqlhelper.h \
     testhelper.h \
     tst_db.h

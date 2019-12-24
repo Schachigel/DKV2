@@ -7,4 +7,6 @@ bool backupFile(const QString& filename);
 
 void showFileInFolder(const QString &path);
 
+QString getDbFolder();
+
 #endif // FILEHELPER_H

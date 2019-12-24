@@ -160,7 +160,7 @@ bool EigenschaftenEinfuegen(QSqlDatabase db)
     ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('Version', '1.0')");
     ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('IdOffset', '" + QString::number(rand->bounded(10000,20000)) + "')");
     ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('ProjektInitialen', 'ESP')");
-    ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('Lettertemplate', '" +htmlbrief::getTemplate() + "')");
+    // ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('Lettertemplate', '" +htmlbrief::getTemplate() + "')");
     return ret;
 }
 
