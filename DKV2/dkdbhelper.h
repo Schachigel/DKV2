@@ -60,6 +60,11 @@ void CsvActiveContracts();
 
 struct DbSummary
 {
+    int AnzahlDkGeber;
+    int AnzahlDkGeberEin;
+    int AnzahlDkGeberZwei;
+    int AnzahlDkGeberMehr;
+
     int     AnzahlAktive;
     double  BetragAktive;
     double  WertAktive;

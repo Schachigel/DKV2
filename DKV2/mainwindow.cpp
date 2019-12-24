@@ -672,11 +672,13 @@ QString MainWindow::prepareOverviewPage(Uebersichten u)
     {
         DbSummary dbs;
         berechneZusammenfassung(dbs);
-        lbl += QString("<h2>Übersicht </h2><br> Stand: ") + QDate::currentDate().toString("dd.MM.yyyy<br>") +
+        lbl += QString("<h2>Übersicht DKs und DK Geber</h2><br> Stand: ") + QDate::currentDate().toString("dd.MM.yyyy<br>") +
           "<table>" +
-          "<tr><td>Anzahl aller Direktkredite: </td><td align=left>" + QString::number(dbs.AnzahlAktive) +"</td></tr>" +
-          "<tr><td>Summe aller Direktkredite:  </td><td align=right>" + locale.toCurrencyString(dbs.BetragAktive) +"</td></tr>" +
-          "<tr><td>Wert der DK inklusive erworbener Zinsen</td><td align=right>"+ locale.toCurrencyString(dbs.WertAktive) + "</td></tr>" +
+
+          "<tr><td>Anzahl DK Geber*innen: </td><td align=left>" + QString::number(dbs.AnzahlDkGeber) +"</td></tr>" +
+          "<tr><td>Anzahl Direktkredite: </td><td align=left>" + QString::number(dbs.AnzahlAktive) +"</td></tr>" +
+          "<tr><td>Summe Direktkredite:  </td><td align=right>" + locale.toCurrencyString(dbs.BetragAktive) +"</td></tr>" +
+          "<tr><td>Wert der DK inklusive Zinsen</td><td align=right>"+ locale.toCurrencyString(dbs.WertAktive) + "</td></tr>" +
 
           "<tr><td></td><td></td></tr>" +
           "<tr><td>Anzahl der auszahlenden DK: </td><td align=left>" + QString::number(dbs.AnzahlAuszahlende) +"</td></tr>" +
@@ -723,8 +725,8 @@ QString MainWindow::prepareOverviewPage(Uebersichten u)
              "<thead><tr><td style=\"padding:2px;\"> Jahr </td><td style=\"padding:2px;\"> Zinssatz </td><td style=\"padding:2px;\"> Anzahl</td></tr></thead>";
             for( auto x: yzv)
             {
-                lbl += "<tr><td style=\"padding:2px;\">" + QString::number(x.year) + "</td><td align=center style=\"padding:2px;\">" +
-                       QString::number(x.intrest) + "</td><td align=center style=\"padding:2px;\">" + QString::number(x.count) + "</td></tr>";
+                lbl += "<tr><td>" + QString::number(x.year) + "</td><td align=center>" +
+                       QString::number(x.intrest) + "</td><td align=center>" + QString::number(x.count) + "</td></tr>";
             }
             lbl += "</table>";
         }
@@ -741,6 +743,7 @@ QString MainWindow::prepareOverviewPage(Uebersichten u)
 //    }
     }
     lbl += "</body></html>";
+    qDebug() << "\n" << lbl << endl;
     return lbl;
 }
 

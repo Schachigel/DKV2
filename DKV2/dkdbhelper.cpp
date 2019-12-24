@@ -426,6 +426,7 @@ QString ContractList_SQL(const QVector<dbfield>& fields, const QString& filter)
 
 void berechneZusammenfassung(DbSummary& dbs, QString con)
 {LOG_ENTRY_and_EXIT;
+    dbs.AnzahlDkGeber = ExecuteSingleValueSql("COUNT(*)", "[Kreditoren]", "1=1").toInt();
 
     dbs.AnzahlAuszahlende = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0", con).toInt();
     dbs.BetragAuszahlende = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0", con).toReal();
