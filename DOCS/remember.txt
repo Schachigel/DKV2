@@ -1,16 +1,12 @@
+?? Bug: Laufzeitende ungültig wenn LetzteZinsBerechnung ungültig = inactive?
+
+!!Laufzeitende editierbar machen
+
 ?! wenn currentdate > Vertragsende?
 
 ?! Buchungen dem Anwender anzeigen?
 
-?! Auswertung: Vertragslängen: bis 1j, 1-5j, länger als 5, umbegrenzt
-
 ?! MsgBox vor Programm Ende
-
-?! tabellennamen prüfen beim öffnen der db funktioniert nicht?
-
-?! Übersicht drucken implementieren
-
-?! Übersicht: Pro Jahr: wieviele Verträge / welche Summe pro Zinssatz bestehen?
 
 ?! Frank: gibt es eine alternative zum Löschen? Sind die Belege ausreichend?
 
@@ -22,16 +18,12 @@
 
 plausibilitätsbetrachtung beim Löschen (ende -datum vs. LetzteZinsberechnung
 
-default datum beim beenden / aktivieren?!
-
 Ausgabe Jahresabschluß:
- - Buchungen anzeigen
- - als csv speichern
- - drucken
+ - Buchungen anzeigen -> done
+ - als csv speichern -> done
+ - Briefe drucken
 
 Zinsen aus enum analog Buchungsarten
-
-?! Buchungsart: Zinsgutschrift
 
 ?! Memory leak: was muss beim öffnen einer Seite jedesmal gemacht werden, was nur einmal?
 
@@ -55,13 +47,25 @@ Menüeintrag "Datei"
 * MRU files handling (die letzten geöffneten Dateien öffnen)?
 * Fenster Position merken / beim Start setzen (Multi Screen)
 * revisit logging: remove dev logging, improve error logging
-* P Liste: Spalte "Anzahl Verträge"?
+* dk geber Liste: Spalte "Anzahl Verträge"?
 
 next:
 
 ? P Liste r-click Menu anlegen
 
 DONE
+
+?! Buchungsart: Zinsgutschrift
+
+bugfix default datum beim beenden / aktivieren?!
+
+?! Übersicht drucken implementieren
+
+?! tabellennamen prüfen beim öffnen der db funktioniert nicht?
+
+?! Auswertung: Vertragslängen: bis 1j, 1-5j, länger als 5, umbegrenzt
+
+Übersicht: Pro Jahr: wieviele Verträge / welche Summe pro Zinssatz bestehen?
 
 ?! Übersicht auf kl Bildschirm sieht schlecht aus:
 - breite auf 90% hauptfensterbreite, zentriert
