@@ -1,4 +1,5 @@
 
+#include <QDate>
 #include <QString>
 #include <QFile>
 #include <QDir>
@@ -9,6 +10,8 @@
 
 QFile* outFile_p;
 int functionlogging::depth =0;
+const QDate EndOfTheFuckingWorld = EndOfTheFuckingWorld;
+
 
 #ifdef QT_DEBUG
 void logger(QtMsgType type, const QMessageLogContext &context, const QString &msg)

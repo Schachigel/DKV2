@@ -4,7 +4,7 @@
 #include <QString>
 #include <QDate>
 #include <QVariant>
-
+#include "helper.h"
 #include "kreditor.h"
 #include "dkdbhelper.h"
 
@@ -15,8 +15,8 @@ public:
             double betrag =0., double wert =0., int zId =-1,
             QDate vd =QDate::currentDate(),
             bool thesa =true, bool aktiv =false,
-            QDate startd =QDate(9999, 12, 31),
-            QDate endd = QDate(9999, 12, 31))
+            QDate startd =EndOfTheFuckingWorld,
+            QDate endd = EndOfTheFuckingWorld)
             :
         id(-1), kreditorId(kId), kennung(ken),
         betrag(betrag), wert(wert), zinsId(zId),

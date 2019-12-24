@@ -92,12 +92,16 @@ int Vertrag::speichereNeuenVertrag() const
     ti.setValue(dkdbstructur["Vertraege"]["thesaurierend"].name(), thesaurierend);
     ti.setValue(dkdbstructur["Vertraege"]["Vertragsdatum"].name(), vertragsdatum);
     ti.setValue(dkdbstructur["Vertraege"]["aktiv"].name(), active);
-    ti.setValue(dkdbstructur["Vertraege"]["LaufzeitEnde"].name(), laufzeitEnde);
+    ti.setValue(dkdbstructur["Vertraege"]["LaufzeitEnde"].name(), laufzeitEnde.isValid()? laufzeitEnde : EndOfTheFuckingWorld);
     ti.setValue(dkdbstructur["Vertraege"]["LetzteZinsberechnung"].name(), startZinsberechnung);
     int lastid =ti.InsertData(QSqlDatabase::database());
-    if( lastid <0) return -1;
-    qDebug() << "Neuer Vertrag wurde eingefügt mit id:" << lastid;
-    return lastid;
+    if( lastid >= 0)
+    {
+        qDebug() << "Neuer Vertrag wurde eingefügt mit id:" << lastid;
+        return lastid;
+    }
+    qWarning() << "Fehler beim Einfügen eines neuen Vertrags";
+    return -1;
 }
 
 bool Vertrag::speichereBelegNeuerVertrag()

@@ -304,17 +304,35 @@ QString ProposeKennung()
     return PI + "-" + QString::number(QDate::currentDate().year()) + "-" + maxid;
 }
 
+void BeispielVertragsdaten( Vertrag& vertrag, int KId, int maxZinsIndex, QRandomGenerator* rand)
+{
+    // add a contract
+    double betragUWert = double(100) * rand->bounded(1,20);
+    int zinsid = rand->bounded(1,maxZinsIndex);
+    bool tesa = rand->bounded(100)%4 ? true : false;  // 75% thesaurierend
+    bool active = rand->bounded(100)%6 ? true : false; // 85% inaktiv
+    QDate vertragsdatum= QDate::currentDate().addDays(-1 * rand->bounded(365));
+    QDate StartZinsberechnung = ( active) ? vertragsdatum.addDays(rand->bounded(15)) : EndOfTheFuckingWorld;
+    QDate LaufzeitEnde = (rand->bounded(100)%8 == 1)
+                             ? (QDate(9999, 12, 31)) // kein Ende vereinbart
+                             : StartZinsberechnung.addDays( 500+ rand->bounded(0, 8000));
+    vertrag = Vertrag(KId, ProposeKennung(),
+                    betragUWert, betragUWert, zinsid,
+                    vertragsdatum,
+                    tesa, active, StartZinsberechnung, LaufzeitEnde);
+}
+
 void BeispieldatenAnlegen( int AnzahlDatensaetze)
 {LOG_ENTRY_and_EXIT;
 
-    QList<QString> Vornamen {"Holger", "Volker", "Peter", "Hans", "Susi", "Roland", "Claudia", "Emil", "Evelyn", "Ötzgür", "Thomas", "Elke", "Berta", "Malte", "Jori", "Paul", "Jonas", "Finn", "Leon", "Luca", "Emma", "Mia", "Lena", "Anna"};
-    QList<QString> Nachnamen {"Maier", "Müller", "Schmit", "Kramp", "Adams", "Häcker", "Maresch", "Beutl", "Chauchev", "Chen", "Kirk", "Ohura", "Gorbatschov", "Merkel", "Karrenbauer", "Tritin", "Schmidt", "Rao", "Lassen", "Hurgedü"};
-    QList<QString> Strassen {"Hauptstrasse", "Nebenstrasse", "Bahnhofstrasse", "Kirchstraße", "Dorfstrasse", "Süterlinweg", "Sorbenstrasse", "Kleines Gässchen", "Industriestrasse", "Sesamstrasse", "Lindenstrasse"};
-    QList<QString> emailprovider {"gmail.com", "googlemail.com", "mailbox.org", "t-online.de", "mail.de", "mail.com", "online.de", "yahoo.de", "yahoo.com", "telekom.de", "proivder.co.uk"};
+    QList<QString> Vornamen {"Holger", "Volker", "Peter", "Hans", "Susi", "Roland", "Claudia", "Emil", "Evelyn", "Ötzgür", "Thomas", "Elke", "Berta", "Malte", "Jori", "Paul", "Jonas", "Finn", "Leon", "Luca", "Emma", "Mia", "Lena", "Anna", "Anne", "Martha", "Ruth", "Rosemie", "Rosemarie", "Verena", "Ursula", "Erika", "Adrian", "Avan", "Anton", "Benno", "Karl", "Merlin", "Noah", "Oliver", "Olaf", "Pepe", "Zeno"};
+    QList<QString> Nachnamen {"Maier", "Müller", "Schmit", "Kramp", "Adams", "Häcker", "Maresch", "Beutl", "Chauchev", "Chen", "Kirk", "Ohura", "Gorbatschov", "Merkel", "Karrenbauer", "Tritin", "Schmidt", "Rao", "Lassen", "Hurgedü", "vom Dach", "Langstrumpf", "Lederstrumpf", "Potter", "Poppins", "Wisley", "Li", "Wang", "Ran"};
+    QList<QString> Strassen {"Hauptstrasse", "Nebenstrasse", "Bahnhofstrasse", "Kirchstraße", "Dorfstrasse", "Süterlinweg", "Sorbenstrasse", "Kleines Gässchen", "Industriestrasse", "Sesamstrasse", "Lindenstrasse", "Theaterstrasse", "Museumsstrasse", "Opernplatz", "Schillerstrasse", "Lessingstrasse", "Rathausplatz", "Parkstrasse", "Turmstrasse" };
+    QList<QString> emailprovider {"gmail.com", "googlemail.com", "mailbox.org", "t-online.de", "mail.de", "mail.com", "online.de", "yahoo.de", "yahoo.com", "telekom.de", "proivder.co.uk", "AOL.de", "outlook.com", "microsoft.com", "sap.com", "sap-ag.de", "abb.de"};
     QList <QPair<QString, QString>> Cities {{"68305", "Mannheim"}, {"69123", "Heidelberg"}, {"69123", "Karlsruhe"}, {"90345", "Hamburg"}};
     QRandomGenerator *rand = QRandomGenerator::system();
     int maxZinsIndex = ExecuteSingleValueSql("SELECT max(id) FROM Zinssaetze").toInt();
-
+    int neueKreditorId =0;
     for( int i = 0; i<AnzahlDatensaetze; i++)
     {
         Kreditor k;
@@ -329,27 +347,22 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
         k.setValue("IBAN", "DExx-xxxxx");
         k.setValue("BIC", "bic...");
 
-        int neueKreditorId =k.Speichern();
+        neueKreditorId =k.Speichern();
         if( -1 == neueKreditorId)
         {
             qCritical() << "No id from Kreditor.Speichern";
             Q_ASSERT(!bool("Verbuchung des neuen Vertrags gescheitert"));
         }
-        // add a contract
-        double betragUWert = double(100) * rand->bounded(1,20);
-        int zinsid = rand->bounded(1,maxZinsIndex);
-        bool tesa = rand->bounded(100)%4 ? true : false;  // 75% thesaurierend
-        bool active = rand->bounded(100)%6 ? true : false; // 85% inaktiv
-        QDate vertragsdatum= QDate::currentDate().addDays(-1 * rand->bounded(365));
-        QDate StartZinsberechnung = ( active) ? vertragsdatum.addDays(rand->bounded(15)) : QDate(9999, 12, 31);
-        QDate LaufzeitEnde = (rand->bounded(100)%8 == 1)
-                          ? (QDate(9999, 12, 31)) // kein Ende vereinbart
-                          : StartZinsberechnung.addDays( 500+ rand->bounded(0, 10000));
-        Vertrag vertrag (neueKreditorId, ProposeKennung(),
-                         betragUWert, betragUWert, zinsid,
-                         vertragsdatum,
-                         tesa, active, StartZinsberechnung, LaufzeitEnde);
-        vertrag.verbucheNeuenVertrag();
+        Vertrag v;
+        BeispielVertragsdaten(v, neueKreditorId, maxZinsIndex, rand);
+        v.verbucheNeuenVertrag();
+    }
+    for ( int i=0; i<AnzahlDatensaetze; i++)
+    {   // more contracts for existing customers
+        Vertrag v;
+        BeispielVertragsdaten(v, rand->bounded(1, neueKreditorId), maxZinsIndex, rand);
+        v.verbucheNeuenVertrag();
+
     }
 }
 
@@ -515,7 +528,7 @@ QString LaufzeitenVerteilungHtml(QString con)
         double wert =   q.value("Wert").toReal();
         QDate von = q.value("Vertragsdatum").toDate();
         QDate bis = q.value("LaufzeitEnde").toDate();
-        if(! bis.isValid() || bis == QDate(9999, 12, 31))
+        if(! bis.isValid() || bis == EndOfTheFuckingWorld)
         {
             AnzahlUnbegrenzet++;
             SummeUnbegrenzet += wert > betrag ? wert : betrag;

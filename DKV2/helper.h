@@ -31,6 +31,8 @@ public:
 #define LOG_ENTRY_EXIT_FOR(x)       functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
 #define LOG_ENTRY_and_EXIT              LOG_ENTRY_EXIT_FOR(__func__)
 
+extern const QDate EndOfTheFuckingWorld;
+
 extern QFile* outFile_p;
 
 void logger(QtMsgType type, const QMessageLogContext &context, const QString &msg);
