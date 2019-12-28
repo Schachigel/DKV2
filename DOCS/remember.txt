@@ -1,3 +1,8 @@
+!! NEXT: read Meta data from file into db for letters
+!! create editor for meta data for letters
+
+!! "manuell" angelegte Verträge -> Enddatum & "letzte Zinsberechnung" kaputt (wieder?)
+
 !!Laufzeitende editierbar machen
 
 ?! wenn currentdate > Vertragsende?

@@ -41,6 +41,7 @@ bool Vertrag::ausDb(int vId, bool mitBelegdaten)
         return false;
     id                  = rec.value("Vertraege.id").toInt();
     kreditorId          = rec.value("KreditorId").toInt();
+    kennung             = rec.value("Vertraege.Kennung").toString();
     betrag              = rec.value("Betrag").toDouble();
     wert                = rec.value("Wert").toDouble();
     thesaurierend       = rec.value("thesaurierend").toBool();

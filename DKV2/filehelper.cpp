@@ -2,11 +2,16 @@
 #include <QString>
 #include <QList>
 #include <QTextStream>
+#include <QTextDocument>
+
 #include <QFile>
 #include <QDir>
 #include <QFileInfo>
 #include <QDebug>
 #include <QSettings>
+// 4 html pdf generation
+#include <QPainter>
+#include <QPdfWriter>
 
 #include "helper.h"
 #include "filehelper.h"
@@ -64,6 +69,31 @@ void showFileInFolder(const QString &path)
     QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to reveal POSIX file \"" + path + "\""});
     QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to activate"});
 #endif
+}
+
+void printHtmlToPdf( QString html, QString fn)
+{
+    QTextDocument td;
+    td.setHtml(html);
+
+    QPdfWriter pdfw(fn);
+    pdfw.setCreator("Esperanza Franklin GmbH 4 MHS");
+    pdfw.setPageSize(QPagedPaintDevice::A4);
+    pdfw.setPageOrientation(QPageLayout::Portrait);
+    pdfw.setPdfVersion(QPagedPaintDevice::PdfVersion_1_6);
+    pdfw.setResolution(120 );
+
+    QPageSize ps(QPageSize::A4);
+    QMarginsF qmf( 40,50, 30, 50);
+    QPageLayout pl(ps, QPageLayout::Portrait, qmf, QPageLayout::Unit::Millimeter);
+    pl.setMode(QPageLayout::FullPageMode/*respect margins*/);
+
+    pdfw.setPageLayout(pl);
+    QPainter painter(&pdfw);
+    qDebug() << td.size();
+    td.adjustSize();
+    qDebug() << td.size();
+    td.drawContents(&painter);
 }
 
 QString getDbFolder()

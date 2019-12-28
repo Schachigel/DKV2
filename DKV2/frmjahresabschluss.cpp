@@ -4,8 +4,10 @@
 
 #include <helper.h>
 #include "filehelper.h"
+#include "sqlhelper.h"
 #include "csvwriter.h"
 #include "frmjahresabschluss.h"
+#include "htmlbrief.h"
 #include "ui_frmjahresabschluss.h"
 
 
@@ -94,8 +96,8 @@ void frmJahresabschluss::on_pbOK_clicked()
     close();
 }
 
-void writeCsv(QVector<Vertrag> vertraege, QString filename)
-{
+void writeCsv(const QVector<Vertrag>& vertraege, const QString& filename)
+{ LOG_ENTRY_and_EXIT;
     csvwriter csv;
     csv.addColumns("Vertrags Nr; Kreditsumme (Euro); Zins (Euro); Wert nach Zinsgutschrift (Euro); Vorname; Nachname; Strasse; Plz; Stadt; Email; IBAN; BIC");
     QLocale locale(QLocale::German, QLocale::LatinScript, QLocale::Germany);
@@ -132,4 +134,77 @@ void frmJahresabschluss::on_btnCsv_clicked()
                      + "-ausschuettend.csv"));
     writeCsv(ja.get_nThesaV(), fn_n_thesa);
     showFileInFolder(fn_thesa);
+}
+
+QString printableKreditorName(Vertrag v)
+{
+    QString Vorname = v.getKreditor().getValue("Vorname").toString();
+    QString Nachname = v.getKreditor().getValue("Nachname").toString();
+    return Vorname + "  " + Nachname;
+}
+
+QString printableKreditorStrasse(Vertrag v)
+{
+    return v.getKreditor().getValue("Strasse").toString();
+}
+
+QString printableKreditorPlzStadt( Vertrag v)
+{
+    return v.getKreditor().getValue("Plz").toString() + " " + v.getKreditor().getValue("Stadt").toString();
+}
+
+QString printableKennung( Vertrag v)
+{
+    return v.Kennung();
+}
+
+void frmJahresabschluss::on_pbKontoauszug_clicked()
+{ LOG_ENTRY_and_EXIT;
+
+#ifndef QT_DEBUG
+    qDebug() << "function not implemented";
+    return;
+#endif
+/*
+ * [[DATUM]]
+ * [[V_KREDITOR_NAME]]
+ * [[V_KREDITOR_STRASSE]]
+ * [[V_KREDITOR_PLZ_STADT]]
+ * [[V_KENNUNG]]
+
+ * [[DB_PROJEKTANSCHRIFT]]
+ * [[DB_BETREFF]]
+ * [[DB_ANREDE]]
+ * [[DB_TEXT]]
+ * [[DB_GRUSSFORMEL]]
+ * [[DB_SIGNUM]]
+*/
+
+    QSettings config;
+    QString dir(config.value("outdir").toString());
+    QString fnKa = dir + "\\" + QDate::currentDate().toString("yyyy-MM-dd_Kontoauszug-");
+    fnKa += QString::number(ja.jahr()) + "_";
+    QString fn;
+
+    const QVector<Vertrag>& Thesas = ja.getThesaV();
+    for( auto v: Thesas)
+    {
+        htmlTemplate brief;
+        brief.fromFile(":/res/letter.html");
+        brief.setPositionText("DATUM", QDate::currentDate().toString("dd.MM.yyyy"));
+        brief.setPositionText("V_KREDITOR_NAME", printableKreditorName(v));
+        brief.setPositionText("V_KREDITOR_STRASSE", printableKreditorStrasse(v));
+        brief.setPositionText("V_KREDITOR_PLZ_STADT", printableKreditorPlzStadt(v));
+        brief.setPositionText("V_KENNUNG", printableKennung(v));
+        brief.setPositionText("DB_PROJEKTANSCHRIFT", Eigenschaft("DB_PROJEKTANSCHRIFT").toString());
+        brief.setPositionText("DB_BETREFF", Eigenschaft("DB_BETREFF").toString());
+        brief.setPositionText("DB_ANREDE", Eigenschaft("DB_ANREDE").toString());
+        brief.setPositionText("DB_TEXT", Eigenschaft("DB_TEXT").toString());
+        brief.setPositionText("DB_GRUSSFORMEL", Eigenschaft("DB_GRUSSFORMEL").toString());
+        brief.setPositionText("DB_SIGNUM", Eigenschaft("DB_SIGNUM").toString());
+
+        fn = fnKa; fn += QString::number(v.getVid()) + ".pdf";
+        printHtmlToPdf(brief.out(), fn);
+    }
+    showFileInFolder(fn);
 }

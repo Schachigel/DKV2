@@ -76,7 +76,7 @@
       <widget class="QTableView" name="listN_Thesa"/>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout" stretch="5,0,0">
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="5,0,0,0">
        <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
@@ -89,6 +89,13 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pbKontoauszug">
+         <property name="text">
+          <string>Konto Info Pdf</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="btnCsv">
