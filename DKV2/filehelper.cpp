@@ -2,6 +2,9 @@
 #include <QString>
 #include <QList>
 #include <QTextStream>
+#include <QTextDocument>
+#include <QtPrintSupport/QPrinter>
+
 #include <QFile>
 #include <QDir>
 #include <QFileInfo>
@@ -64,6 +67,18 @@ void showFileInFolder(const QString &path)
     QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to reveal POSIX file \"" + path + "\""});
     QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to activate"});
 #endif
+}
+
+void printHtmlToPdf( QString html, QString fn)
+{
+    QPrinter printer(QPrinter::PrinterResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setPaperSize(QPrinter::A4);
+    printer.setOutputFileName(fn);
+
+    QTextDocument td;
+    td.setHtml(html);
+    td.print(&printer);
 }
 
 QString getDbFolder()

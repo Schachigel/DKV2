@@ -23,13 +23,12 @@ public:
 private slots:
     void on_pbOK_clicked();
     void on_btnCsv_clicked();
+    void on_pbKontoauszug_clicked();
 
 private:
     Ui::frmJahresabschluss *ui;
     const jahresabschluss& ja;
     QStandardItemModel* getModelFromContracts(const QVector<Vertrag>& vertraege) const;
-//    void fillTesaList();
-//    void fillnTesaList();
 };
 
 #endif // FRMJAHRESABSCHLUSS_H

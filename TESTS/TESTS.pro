@@ -1,5 +1,5 @@
-QT += testlib
-QT += sql
+
+QT += testlib sql printsupport
 
 CONFIG += qt warn_on depend_includepath testcase
 
