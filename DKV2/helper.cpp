@@ -10,7 +10,7 @@
 
 QFile* outFile_p;
 int functionlogging::depth =0;
-const QDate EndOfTheFuckingWorld = EndOfTheFuckingWorld;
+const QDate EndOfTheFuckingWorld = QDate(9999, 12, 31);
 
 
 #ifdef QT_DEBUG
