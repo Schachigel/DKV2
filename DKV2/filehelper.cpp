@@ -84,7 +84,7 @@ void printHtmlToPdf( QString html, QString fn)
     pdfw.setResolution(120 );
 
     QPageSize ps(QPageSize::A4);
-    QMarginsF qmf( 40,50, 30, 50);
+    QMarginsF qmf( 188,235, 141, 235);
     QPageLayout pl(ps, QPageLayout::Portrait, qmf, QPageLayout::Unit::Millimeter);
     pl.setMode(QPageLayout::FullPageMode/*respect margins*/);
 
