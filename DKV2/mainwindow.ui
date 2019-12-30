@@ -483,7 +483,7 @@
           <item row="6" column="1">
            <widget class="QCheckBox" name="chkbThesaurierend">
             <property name="text">
-             <string>Thesaurierend</string>
+             <string>ohne jährl. Zinsauszahlung</string>
             </property>
            </widget>
           </item>

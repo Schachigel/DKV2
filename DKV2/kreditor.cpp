@@ -50,7 +50,7 @@ void Kreditor::KreditorenMitId(QList<QPair<int,QString>> &entries) const
 
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare("SELECT id, Vorname, Nachname, Plz, Strasse FROM Kreditoren ORDER BY Nachname ASC, Vorname ASC");
+    query.prepare("SELECT id, Vorname, Nachname, Plz, Stadt, Strasse FROM Kreditoren ORDER BY Nachname ASC, Vorname ASC");
     if( !query.exec())
     {
         qCritical() << "Error reading DKGeber while creating a contract: " << QSqlDatabase::database().lastError().text();
@@ -58,7 +58,8 @@ void Kreditor::KreditorenMitId(QList<QPair<int,QString>> &entries) const
 
     while(query.next())
     {
-        QString Entry = query.value("Nachname").toString() + QString(", ") + query.value("Vorname").toString() + QString(", ") + query.value("Plz").toString();
+        QString Entry = query.value("Nachname").toString() + QString(", ") + query.value("Vorname").toString();
+        Entry += QString(", ") + query.value("Plz").toString() + "-" +query.value("Stadt").toString();
         Entry += QString(", ") + query.value("Strasse").toString();
         QList<QPair<int,QString>> entry {{query.value("id").toInt(), Entry}};
         entries.append(entry);
