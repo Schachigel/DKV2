@@ -250,7 +250,7 @@ void MainWindow::on_actionNeuer_DK_Geber_triggered()
 bool MainWindow::KreditgeberSpeichern()
 {LOG_ENTRY_and_EXIT;
 
-    if( ui->leVorname->text().isEmpty() || ui->leNachname->text().isEmpty()
+    if( (ui->leVorname->text().isEmpty() && ui->leNachname->text().isEmpty())
        || ui->leStrasse->text().isEmpty() || ui->lePlz->text().isEmpty() || ui->leStadt->text().isEmpty())
     {
         QMessageBox::information(this, "Daten nicht gespeichert", "Namens - und Adressfelder dürfen nicht leer sein");
