@@ -247,20 +247,20 @@ void MainWindow::on_actionNeuer_DK_Geber_triggered()
 {LOG_ENTRY_and_EXIT;
     ui->stackedWidget->setCurrentIndex(newPersonIndex);
 }
-bool MainWindow::KreditgeberSpeichern()
+int MainWindow::KreditgeberSpeichern()
 {LOG_ENTRY_and_EXIT;
 
     if( (ui->leVorname->text().isEmpty() && ui->leNachname->text().isEmpty())
        || ui->leStrasse->text().isEmpty() || ui->lePlz->text().isEmpty() || ui->leStadt->text().isEmpty())
     {
         QMessageBox::information(this, "Daten nicht gespeichert", "Namens - und Adressfelder dürfen nicht leer sein");
-        return false;
+        return -1;
     }
     if( !ui->leEMail->text().isEmpty())
         if( !ui->leEMail->hasAcceptableInput())
         {
             QMessageBox::information(this, "Daten nicht gespeichert", "Das Format der E-mail Adresse ist ungültig");
-            return false;
+            return -1;
         }
 
     Kreditor k;
@@ -275,20 +275,26 @@ bool MainWindow::KreditgeberSpeichern()
     k.setValue("IBAN", ui->leIban->text().trimmed());
     k.setValue("BIC", ui->leBic->text().trimmed());
 
+    int kid = -1;
     if( ui->lblPersId->text() != "")
-        k.setValue("Id", ui->lblPersId->text().toInt());     // update not insert
+    {
+        kid = ui->lblPersId->text().toInt();
+        k.setValue("Id", kid);     // update not insert
+        k.Update();
+    }
+    else
+       kid = k.Speichern();
 
-    bool failed = ( ui->lblPersId->text() == "") ? ( k.Speichern() == -1) : ( k.Update() == -1);
-    if(failed)
+    if(kid == -1)
     {
         QMessageBox::information( this, "Fehler", "Der Datensatz konnte nicht gespeichert werden. "
-                                                 "Ist die E-Mail Adresse einmalig? Gibt es die Adressdaten in der Datenbank bereits?"
-                                 "\nBitte überprüfen Sie ihre Eingaben");
+                     "Ist die E-Mail Adresse einmalig? Gibt es die Adressdaten in der Datenbank bereits?"
+                     "\nBitte überprüfen Sie ihre Eingaben");
         qCritical() << "Kreditgeber konnte nicht gespeichert werden";
-        return false;
+        return -1;
     }
 
-    return true;
+    return kid;
 }
 void MainWindow::KreditorFormulardatenLoeschen()
 {LOG_ENTRY_and_EXIT;
@@ -329,23 +335,25 @@ void MainWindow::on_actionDkGeberBearbeiten_triggered()
 
 void MainWindow::on_saveNew_clicked()
 {LOG_ENTRY_and_EXIT;
-    if( KreditgeberSpeichern())
+    if( KreditgeberSpeichern() != -1)
         KreditorFormulardatenLoeschen();
 }
 void MainWindow::on_saveList_clicked()
 {LOG_ENTRY_and_EXIT;
-    if( KreditgeberSpeichern())
+    if( KreditgeberSpeichern() != -1)
     {
         KreditorFormulardatenLoeschen();
         on_action_Liste_triggered();
     }
 }
-void MainWindow::on_saveExit_clicked()
+
+void MainWindow::on_saveExit_clicked() // speichern und zu "Vertrag anlegen"
 {LOG_ENTRY_and_EXIT;
-    if( KreditgeberSpeichern())
+    int kid = KreditgeberSpeichern();
+    if(  kid != -1)
     {
         KreditorFormulardatenLoeschen();
-        ui->stackedWidget->setCurrentIndex(emptyPageIndex);
+        on_actionVertrag_anlegen_triggered(kid);
     }
 }
 void MainWindow::on_cancel_clicked()
@@ -470,12 +478,12 @@ int MainWindow::getPersonIdFromKreditorenList()
     return -1;
 }
 
-void MainWindow::on_actionVertrag_anlegen_triggered()
+void MainWindow::on_actionVertrag_anlegen_triggered(int id)
 {LOG_ENTRY_and_EXIT;
     FillKreditorDropdown();
     FillRatesDropdown();
     ui->leKennung->setText( ProposeKennung());
-    comboKreditorenAnzeigeNachKreditorenId( getPersonIdFromKreditorenList());
+    comboKreditorenAnzeigeNachKreditorenId( id != -1 ? id : getPersonIdFromKreditorenList());
     Vertrag cd; // this is to get the defaults of the class definition
     ui->deLaufzeitEnde->setDate(cd.LaufzeitEnde());
     ui->deVertragsabschluss->setDate(cd.Vertragsabschluss());

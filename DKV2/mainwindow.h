@@ -36,7 +36,7 @@ private slots:
     void on_action_Liste_triggered();
     void on_actioncreateSampleData_triggered();
     void on_actionNeuer_DK_Geber_triggered();
-    void on_actionVertrag_anlegen_triggered();
+    void on_actionVertrag_anlegen_triggered(int id=-1);
     void on_saveExit_clicked();
     void on_saveNew_clicked();
 
@@ -105,7 +105,7 @@ private:
     void preparePersonTableView();
     void prepareContractListView();
     void DbInStatuszeileAnzeigen();
-    bool KreditgeberSpeichern();
+    int KreditgeberSpeichern();
     bool saveNewContract();
 
     enum stackedWidgedsIndex
