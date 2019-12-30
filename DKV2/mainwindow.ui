@@ -26,7 +26,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>5</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -447,7 +447,11 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QDateEdit" name="deVertragsabschluss"/>
+           <widget class="QDateEdit" name="deVertragsabschluss">
+            <property name="displayFormat">
+             <string notr="true">dd.MM.yyyy</string>
+            </property>
+           </widget>
           </item>
           <item row="5" column="0">
            <widget class="QLabel" name="label_7">
@@ -460,7 +464,11 @@
            </widget>
           </item>
           <item row="5" column="1">
-           <widget class="QDateEdit" name="deLaufzeitEnde"/>
+           <widget class="QDateEdit" name="deLaufzeitEnde">
+            <property name="displayFormat">
+             <string notr="true">dd.MM.yyyy</string>
+            </property>
+           </widget>
           </item>
           <item row="6" column="0">
            <widget class="QLabel" name="label_8">
