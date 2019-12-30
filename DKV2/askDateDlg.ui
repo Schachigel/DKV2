@@ -52,7 +52,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QDateEdit" name="dateEdit"/>
+       <widget class="QDateEdit" name="dateEdit">
+        <property name="displayFormat">
+         <string notr="true">dd.MM.yyyy</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
