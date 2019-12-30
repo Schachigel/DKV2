@@ -70,6 +70,7 @@ void initDKDBStruktur()
     Vertraege.append((dbfield("aktiv",         QVariant::Bool, "DEFAULT '0' NOT NULL")));
     Vertraege.append((dbfield("LaufzeitEnde",  QVariant::Date, "DEFAULT '3000-12-31' NOT NULL")));
     Vertraege.append((dbfield("LetzteZinsberechnung", QVariant::Date, "NULL")));
+    Vertraege.append((dbfield("Kfrist" ,    QVariant::Int, "DEFAULT '6' NOT NULL")));
     dkdbstructur.appendTable(Vertraege);
 
     dbtable Buchungsarten("Buchungsarten");

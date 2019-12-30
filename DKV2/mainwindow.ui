@@ -448,13 +448,6 @@
           </item>
           <item row="4" column="1">
            <widget class="QDateEdit" name="deVertragsabschluss">
-            <property name="minimumDate">
-             <date>
-              <year>1990</year>
-              <month>1</month>
-              <day>1</day>
-             </date>
-            </property>
             <property name="displayFormat">
              <string notr="true">dd.MM.yyyy</string>
             </property>
@@ -472,13 +465,6 @@
           </item>
           <item row="5" column="1">
            <widget class="QDateEdit" name="deLaufzeitEnde">
-            <property name="minimumDate">
-             <date>
-              <year>1990</year>
-              <month>9</month>
-              <day>14</day>
-             </date>
-            </property>
             <property name="displayFormat">
              <string notr="true">dd.MM.yyyy</string>
             </property>

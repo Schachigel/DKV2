@@ -27,7 +27,7 @@ public:
     }
 };
 
-//Define MACRO for easy use for end user.
+// create a log entry for entry and exit of function call
 #define LOG_ENTRY_EXIT_FOR(x)       functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
 #define LOG_ENTRY_and_EXIT              LOG_ENTRY_EXIT_FOR(__func__)
 
