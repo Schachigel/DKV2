@@ -82,6 +82,32 @@ bool Vertrag::BelegSpeichern(const int BArt, const QString& msg)
     return true;
 }
 
+bool Vertrag::pruefeNeuenVertrag(QString& meldung)
+{
+    meldung.clear();
+    if( Betrag() <=0)
+        meldung = "Der Kreditbetrag muss größer als null sein";
+    else if( KreditorId() <= 0 || ZinsId() <= 0)
+        meldung = "Wähle den Kreditgeber und die Zinsen aus der gegebenen Auswahl. Ist die Auswahl leer müssen zuerst Kreditgeber und Zinswerte eingegeben werden";
+    else if( Kennung() == "")
+        meldung= "Du solltest eine eindeutige Kennung vergeben, damit der Kredit besser zugeordnet werden kann";
+    else
+    {
+        IbanValidator iv;
+        int pos =0;
+        QString iban =dkGeber.getValue("IBAN").toString();
+        if( iv.validate(iban, pos) != IbanValidator::State::Acceptable)
+            meldung = "Die Iban ist ungültig. Bitte kontrolliere den Wert in den Daten des Kreditgebers";
+    }
+    if( !verbucheNeuenVertrag())
+        meldung = "Der Vertrag konnte nicht gespeichert werden. Ist die Kennung des Vertrags eindeutig?";
+
+    if( meldung.isEmpty())
+        return true;
+    else
+        return false;
+}
+
 int Vertrag::speichereNeuenVertrag() const
 {  LOG_ENTRY_and_EXIT;
     TableDataInserter ti(dkdbstructur["Vertraege"]);

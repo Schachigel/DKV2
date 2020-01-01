@@ -47,6 +47,7 @@ public:
 
     // interface
     bool ausDb(int id, bool mitBelegdaten= false);
+    bool pruefeNeuenVertrag(QString& meldung);
     bool verbucheNeuenVertrag();
     bool aktiviereVertrag(const QDate& aDate);
     bool verbucheJahreszins(const QDate& YearEnd);

@@ -54,9 +54,6 @@ MainWindow::MainWindow(QWidget *parent) :
     prepareWelcomeMsg();
 
     ui->txtAnmerkung->setTabChangesFocus(true);
-    QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b",
-       QRegularExpression::CaseInsensitiveOption);
-    ui->leEMail->setValidator(new QRegularExpressionValidator(rx, this));
 
     ui->cbKFrist->addItem("festes Vertragsende", QVariant(-1));
     for (int i=3; i<25; i++)
@@ -274,19 +271,6 @@ void MainWindow::on_actionNeuer_DK_Geber_triggered()
 int MainWindow::KreditgeberSpeichern()
 {LOG_ENTRY_and_EXIT;
 
-    if( (ui->leVorname->text().isEmpty() && ui->leNachname->text().isEmpty())
-       || ui->leStrasse->text().isEmpty() || ui->lePlz->text().isEmpty() || ui->leStadt->text().isEmpty())
-    {
-        QMessageBox::information(this, "Daten nicht gespeichert", "Namens - und Adressfelder dürfen nicht leer sein");
-        return -1;
-    }
-    if( !ui->leEMail->text().isEmpty())
-        if( !ui->leEMail->hasAcceptableInput())
-        {
-            QMessageBox::information(this, "Daten nicht gespeichert", "Das Format der E-mail Adresse ist ungültig");
-            return -1;
-        }
-
     Kreditor k;
     k.setValue("Vorname", ui->leVorname->text().trimmed());
     k.setValue("Nachname", ui->leNachname->text().trimmed());
@@ -299,6 +283,14 @@ int MainWindow::KreditgeberSpeichern()
     k.setValue("IBAN", ui->leIban->text().trimmed());
     k.setValue("BIC", ui->leBic->text().trimmed());
 
+    QString errortext;
+    if( !k.isValid(errortext))
+    {
+        errortext = "Die Daten konnten nicht gespeichert werden: <br>" + errortext;
+        QMessageBox::information(this, "Fehler", errortext );
+        qDebug() << "prüfung der Kreditor Daten:" << errortext;
+        return -1;
+    }
     int kid = -1;
     if( ui->lblPersId->text() != "")
     {
@@ -410,15 +402,7 @@ bool MainWindow::saveNewContract()
     Vertrag c =VertragsdatenAusFormular();
 
     QString errortext;
-    if( c.Betrag() <= 0)
-        errortext = "Der Kreditbetrag muss größer als null sein";
-    else if( c.KreditorId() <= 0 || c.ZinsId() <= 0)
-        errortext = "Wähle den Kreditgeber und die Zinsen aus der gegebenen Auswahl. Ist die Auswahl leer müssen zuerst Kreditgeber und Zinswerte eingegeben werden";
-    else if( c.Kennung() == "")
-        errortext = "Du solltest eine eindeutige Kennung vergeben, damit der Kredit besser zugeordnet werden kann";
-    else if( !c.verbucheNeuenVertrag())
-        errortext = "Der Vertrag konnte nicht gespeichert werden. Ist die Kennung des Vertrags eindeutig?";
-    if( errortext != "")
+    if( c.pruefeNeuenVertrag(errortext))
     {
         QMessageBox::information( this, "Fehler", errortext);
         return false;
