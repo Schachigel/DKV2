@@ -21,11 +21,11 @@ bool Kreditor::isValid( QString& errortext)
 {
     errortext.clear();
     if( (ti.getValue("Vorname").toString().isEmpty() && ti.getValue("Vorname").toString().isEmpty())
-        ||
-            ti.getValue("Strasse").toString().isEmpty()
-        ||
+         ||
+        ti.getValue("Strasse").toString().isEmpty()
+         ||
         ti.getValue("Plz").toString().isEmpty()
-        ||
+         ||
         ti.getValue("Stadt").toString().isEmpty())
         errortext = "Die Adressdaten sind unvollständig";
 
