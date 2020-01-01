@@ -38,6 +38,14 @@ public:
     QString displayText(const QVariant& value, const QLocale& )const override;
 };
 
+class KFristItemFormatter : public QStyledItemDelegate
+{
+    Q_OBJECT
+public:
+    KFristItemFormatter(QObject *parent = nullptr) : QStyledItemDelegate(parent){}
+    QString displayText(const QVariant &value, const QLocale &locale) const override;
+};
+
 class ActivatedItemFormatter : public QStyledItemDelegate
 {
     Q_OBJECT

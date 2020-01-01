@@ -93,10 +93,13 @@ private slots:
 
     void on_actionAktive_Vertraege_CSV_triggered();
 
-
     void on_comboUebersicht_currentIndexChanged(int index);
 
     void on_pbPrint_clicked();
+
+    void on_actionzur_ck_triggered();
+
+    void on_cbKFrist_currentIndexChanged(int index);
 
 private:
     Ui::MainWindow *ui;

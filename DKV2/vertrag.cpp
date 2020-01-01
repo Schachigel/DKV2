@@ -95,6 +95,7 @@ int Vertrag::speichereNeuenVertrag() const
     ti.setValue(dkdbstructur["Vertraege"]["aktiv"].name(), active);
     ti.setValue(dkdbstructur["Vertraege"]["LaufzeitEnde"].name(), laufzeitEnde.isValid()? laufzeitEnde : EndOfTheFuckingWorld);
     ti.setValue(dkdbstructur["Vertraege"]["LetzteZinsberechnung"].name(), startZinsberechnung);
+    ti.setValue(dkdbstructur["Vertraege"]["Kfrist"].name(), kFrist);
     int lastid =ti.InsertData(QSqlDatabase::database());
     if( lastid >= 0)
     {

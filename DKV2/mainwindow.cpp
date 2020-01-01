@@ -58,22 +58,13 @@ MainWindow::MainWindow(QWidget *parent) :
        QRegularExpression::CaseInsensitiveOption);
     ui->leEMail->setValidator(new QRegularExpressionValidator(rx, this));
 
+    ui->cbKFrist->addItem("festes Vertragsende", QVariant(-1));
+    for (int i=3; i<25; i++)
+        ui->cbKFrist->addItem(QString::number(i), QVariant(i));
+
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 
-void MainWindow::prepareWelcomeMsg()
-{
-    QString message="<H2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</H2>";
-
-    QStringList warnings;
-    CheckDbConsistency( warnings);
-
-    foreach(QString warning, warnings)
-    {
-        message += "<br><font color='red'>" +warning +"</font>";
-    }
-    ui->label->setText(message);
-}
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -91,6 +82,20 @@ void MainWindow::DbInStatuszeileAnzeigen()
     ui->statusLabel->setText(config.value("db/last").toString());
 }
 
+void MainWindow::prepareWelcomeMsg()
+{
+    QString message="<H2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</H2>";
+
+    QStringList warnings;
+    CheckDbConsistency( warnings);
+
+    foreach(QString warning, warnings)
+    {
+        message += "<br><font color='red'>" +warning +"</font>";
+    }
+    message += "<br><img src=':/res/Logo.PNG'>";
+    ui->label->setText(message);
+}
 // whenever the stackedWidget changes ...
 void MainWindow::on_stackedWidget_currentChanged(int arg1)
 {    LOG_ENTRY_and_EXIT;
@@ -135,6 +140,10 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
 }
 
 // file menu
+void MainWindow::on_actionzur_ck_triggered()
+{
+    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
+}
 void MainWindow::on_action_Neue_DB_anlegen_triggered()
 {LOG_ENTRY_and_EXIT;
     QString dbfile = QFileDialog::getSaveFileName(this, "Neue DkVerarbeitungs Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
@@ -390,9 +399,10 @@ Vertrag MainWindow::VertragsdatenAusFormular()
 
     QDate LaufzeitEnde = ui->deLaufzeitEnde->date();
     QDate StartZinsberechnung = LaufzeitEnde;
+    int kFrist = ui->cbKFrist->currentData().toInt();
 
     return Vertrag(KreditorId, Kennung, Betrag, Wert, ZinsId, Vertragsdatum,
-                   thesaurierend, false/*aktiv*/,StartZinsberechnung, LaufzeitEnde);
+                   thesaurierend, false/*aktiv*/,StartZinsberechnung, kFrist, LaufzeitEnde);
 }
 
 bool MainWindow::saveNewContract()
@@ -454,6 +464,20 @@ void MainWindow::comboKreditorenAnzeigeNachKreditorenId(int KreditorenId)
             ui->comboKreditoren->setCurrentIndex(i);
             break;
         }
+    }
+}
+void MainWindow::on_cbKFrist_currentIndexChanged(int index)
+{
+    if( -1 == ui->cbKFrist->itemData(index).toInt())
+    {   // Vertragsende wird fest vorgegeben
+        if( EndOfTheFuckingWorld == ui->deLaufzeitEnde->date())
+        {
+            ui->deLaufzeitEnde->setDate(QDate::currentDate().addYears(5));
+        }
+    }
+    else
+    {   // Vertragsende wird durch Kündigung eingeleitet
+        ui->deLaufzeitEnde->setDate(EndOfTheFuckingWorld);
     }
 }
 
@@ -528,6 +552,7 @@ void MainWindow::prepareContractListView()
     fields.append(dkdbstructur["Vertraege"]["LetzteZinsberechnung"]);
     fields.append(dkdbstructur["Vertraege"]["aktiv"]);
     fields.append(dkdbstructur["Vertraege"]["LaufzeitEnde"]);
+    fields.append(dkdbstructur["Vertraege"]["Kfrist"]);
     QSqlQueryModel* model = new QSqlQueryModel(ui->contractsTableView);
     model->setQuery(ContractList_SQL(fields, ui->leVertraegeFilter->text()));
 
@@ -544,6 +569,7 @@ void MainWindow::prepareContractListView()
     ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["LaufzeitEnde"]), new DateItemFormatter(ui->contractsTableView));
     ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["LetzteZinsberechnung"]), new DateItemFormatter(ui->contractsTableView));
     ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["aktiv"]), new ActivatedItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["Kfrist"]), new KFristItemFormatter(ui->contractsTableView));
     ui->contractsTableView->resizeColumnsToContents();
     ui->contractsTableView->hideColumn(0);
 
@@ -660,7 +686,7 @@ void MainWindow::on_actionVertrag_Beenden_triggered()
 
     askDateDlg dlg( this, QDate::currentDate());
     dlg.setMsg(getDateMsg);
-    dlg.setDateLabel("Ende der Zinsberechnung:");
+    dlg.setDateLabel("Ende der Zinsberechnung nach der Kündigungsfrist:");
     if( QDialog::Accepted != dlg.exec())
     {
         qDebug() << "Delete contract was aborted by the user";
@@ -704,13 +730,13 @@ QString MainWindow::prepareOverviewPage(Uebersichten u)
           "<tr><td>Wert der DK inklusive Zinsen</td><td align=right>"+ locale.toCurrencyString(dbs.WertAktive) + "</td></tr>" +
 
           "<tr><td></td><td></td></tr>" +
-          "<tr><td>Anzahl der auszahlenden DK: </td><td align=left>" + QString::number(dbs.AnzahlAuszahlende) +"</td></tr>" +
-          "<tr><td>Summe der  auszahlenden DK: </td><td align=right>" + locale.toCurrencyString(dbs.BetragAuszahlende) +"</td></tr>" +
+          "<tr><td>Anzahl der DK mit jährl. Zinsauszahlung: </td><td align=left>" + QString::number(dbs.AnzahlAuszahlende) +"</td></tr>" +
+          "<tr><td>Summe: </td><td align=right>" + locale.toCurrencyString(dbs.BetragAuszahlende) +"</td></tr>" +
           "<tr><td></td><td></td></tr>" +
 
-          "<tr><td>Anzahl der thesaurierenden DK: </td><td align=left>" + QString::number(dbs.AnzahlThesaurierende) +"</td></tr>" +
-          "<tr><td>Summe der  thesaurierenden DK: </td><td align=right>" + locale.toCurrencyString(dbs.BetragThesaurierende) +"</td></tr>" +
-          "<tr><td>Wert der  thesaurierenden DK: </td><td align=right>" + locale.toCurrencyString(dbs.WertThesaurierende) +"</td></tr>" +
+          "<tr><td>Anzahl der DK ohne jährl. Zinsauszahlung: </td><td align=left>" + QString::number(dbs.AnzahlThesaurierende) +"</td></tr>" +
+          "<tr><td>Summe: </td><td align=right>" + locale.toCurrencyString(dbs.BetragThesaurierende) +"</td></tr>" +
+          "<tr><td>Wert inkl. Zinsen: </td><td align=right>" + locale.toCurrencyString(dbs.WertThesaurierende) +"</td></tr>" +
 
           "<tr><td></td><td></td></tr>" +
           "<tr><td>Anzahl noch ausstehender (inaktiven) DK </td><td align=left>" + QString::number(dbs.AnzahlPassive) +"</td></tr>" +
@@ -777,8 +803,8 @@ void MainWindow::on_action_Uebersicht_triggered()
         ui->comboUebersicht->clear();
         ui->comboUebersicht->addItem("Übersicht aller Kredite", QVariant(UEBERSICHT));
         ui->comboUebersicht->addItem("Anzahl auslaufender Verträge nach Jahr", QVariant(VERTRAGSENDE));
-        ui->comboUebersicht->addItem("Vertragszahl nach Zinssatz und Jahr", QVariant(ZINSVERTEILUNG));
-        ui->comboUebersicht->addItem("Vertragszahl nach Laufzeiten", QVariant(LAUFZEITEN));
+        ui->comboUebersicht->addItem("Anzahl Verträge nach Zinssatz und Jahr", QVariant(ZINSVERTEILUNG));
+        ui->comboUebersicht->addItem("Anzahl Verträge nach Laufzeiten", QVariant(LAUFZEITEN));
         ui->comboUebersicht->setCurrentIndex(0);
     }
     int currentIndex = ui->comboUebersicht->currentIndex();
@@ -865,3 +891,4 @@ void MainWindow::on_pbPrint_clicked()
     ui->txtOverview->print(&write);
     showFileInFolder(filename);
 }
+

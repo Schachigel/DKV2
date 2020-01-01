@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>909</width>
-    <height>567</height>
+    <width>947</width>
+    <height>489</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,7 +26,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -337,6 +337,9 @@
        <layout class="QVBoxLayout" name="vlNeuerVertrag">
         <item>
          <layout class="QHBoxLayout" name="hlNeuerVertragButtons">
+          <property name="spacing">
+           <number>3</number>
+          </property>
           <item>
            <widget class="QPushButton" name="speichereVertragZurKreditorenListe">
             <property name="toolTip">
@@ -370,19 +373,6 @@
          </layout>
         </item>
         <item>
-         <spacer name="horizontalSpacer_3">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
          <layout class="QFormLayout" name="formLayout_2">
           <item row="0" column="0">
            <widget class="QLabel" name="label_2">
@@ -408,7 +398,11 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="leKennung"/>
+           <widget class="QLineEdit" name="leKennung">
+            <property name="toolTip">
+             <string>ein eindeutiger Wert, um den Vertrag zu identifizieren</string>
+            </property>
+           </widget>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_4">
@@ -421,7 +415,14 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QLineEdit" name="leBetrag"/>
+           <widget class="QLineEdit" name="leBetrag">
+            <property name="toolTip">
+             <string>nur ganzalige Werte eingeben</string>
+            </property>
+            <property name="inputMask">
+             <string notr="true"/>
+            </property>
+           </widget>
           </item>
           <item row="3" column="0">
            <widget class="QLabel" name="label_5">
@@ -454,6 +455,29 @@
            </widget>
           </item>
           <item row="5" column="0">
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>Kündigungsfrist</string>
+            </property>
+            <property name="buddy">
+             <cstring>cbKFrist</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QComboBox" name="cbKFrist">
+            <property name="toolTip">
+             <string>bei Verträgen ohne Laufzeitende sollte eine Kündigungsfrist in Monaten vereinbart sein</string>
+            </property>
+            <property name="currentText">
+             <string notr="true"/>
+            </property>
+            <property name="currentIndex">
+             <number>-1</number>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
            <widget class="QLabel" name="label_7">
             <property name="text">
              <string>Laufzeitende (Datum)</string>
@@ -463,27 +487,27 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="6" column="1">
            <widget class="QDateEdit" name="deLaufzeitEnde">
             <property name="displayFormat">
              <string notr="true">dd.MM.yyyy</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="0">
+          <item row="7" column="0">
            <widget class="QLabel" name="label_8">
             <property name="text">
-             <string>Zinsen werden aufgerechnet</string>
+             <string>Zinsenauszahlung</string>
             </property>
             <property name="buddy">
              <cstring>chkbThesaurierend</cstring>
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
+          <item row="7" column="1">
            <widget class="QCheckBox" name="chkbThesaurierend">
             <property name="text">
-             <string>ohne jährl. Zinsauszahlung</string>
+             <string>OHNE  jährl. Zinsauszahlung</string>
             </property>
            </widget>
           </item>
@@ -645,7 +669,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>909</width>
+     <width>947</width>
      <height>26</height>
     </rect>
    </property>
@@ -653,6 +677,8 @@
     <property name="title">
      <string>&amp;Datenbank</string>
     </property>
+    <addaction name="actionzur_ck"/>
+    <addaction name="separator"/>
     <addaction name="action_Neue_DB_anlegen"/>
     <addaction name="actionDBoeffnen"/>
     <addaction name="actionDB_schliessen"/>
@@ -872,32 +898,37 @@
     <string>Aktive Verträge (CSV)</string>
    </property>
   </action>
+  <action name="actionzur_ck">
+   <property name="text">
+    <string>Start</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
-  <tabstop>leVorname</tabstop>
-  <tabstop>leNachname</tabstop>
-  <tabstop>leStrasse</tabstop>
-  <tabstop>lePlz</tabstop>
-  <tabstop>leStadt</tabstop>
-  <tabstop>leEMail</tabstop>
-  <tabstop>txtAnmerkung</tabstop>
-  <tabstop>leIban</tabstop>
-  <tabstop>leBic</tabstop>
-  <tabstop>saveNew</tabstop>
-  <tabstop>saveList</tabstop>
-  <tabstop>saveExit</tabstop>
-  <tabstop>cancel</tabstop>
   <tabstop>comboKreditoren</tabstop>
   <tabstop>leKennung</tabstop>
   <tabstop>leBetrag</tabstop>
   <tabstop>cbZins</tabstop>
   <tabstop>deVertragsabschluss</tabstop>
+  <tabstop>cbKFrist</tabstop>
   <tabstop>deLaufzeitEnde</tabstop>
   <tabstop>chkbThesaurierend</tabstop>
   <tabstop>speichereVertragZurKreditorenListe</tabstop>
   <tabstop>saveContractGoContracts</tabstop>
   <tabstop>cancelCreateContract</tabstop>
+  <tabstop>saveExit</tabstop>
+  <tabstop>cancel</tabstop>
+  <tabstop>leVorname</tabstop>
+  <tabstop>leNachname</tabstop>
+  <tabstop>leStrasse</tabstop>
+  <tabstop>lePlz</tabstop>
+  <tabstop>leStadt</tabstop>
+  <tabstop>txtAnmerkung</tabstop>
+  <tabstop>leIban</tabstop>
+  <tabstop>leBic</tabstop>
+  <tabstop>saveNew</tabstop>
+  <tabstop>saveList</tabstop>
   <tabstop>leFilter</tabstop>
   <tabstop>pbPersonFilterZuruecksetzen</tabstop>
   <tabstop>PersonsTableView</tabstop>
@@ -907,6 +938,10 @@
   <tabstop>FilterVertraegeZuruecksetzen</tabstop>
   <tabstop>contractsTableView</tabstop>
   <tabstop>leVertraegeFilter</tabstop>
+  <tabstop>leEMail</tabstop>
+  <tabstop>comboUebersicht</tabstop>
+  <tabstop>pbPrint</tabstop>
+  <tabstop>txtOverview</tabstop>
  </tabstops>
  <resources/>
  <connections/>

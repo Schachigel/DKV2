@@ -16,13 +16,14 @@ public:
             QDate vd =QDate::currentDate(),
             bool thesa =true, bool aktiv =false,
             QDate startd =EndOfTheFuckingWorld,
+            int kfrist=-1,
             QDate endd = EndOfTheFuckingWorld)
             :
         id(-1), kreditorId(kId), kennung(ken),
         betrag(betrag), wert(wert), zinsId(zId),
         thesaurierend(thesa), active(aktiv),
         vertragsdatum(vd), startZinsberechnung(startd),
-        laufzeitEnde(endd), letzteZinsgutschrift(0.) {
+          laufzeitEnde(endd), kFrist(kfrist), letzteZinsgutschrift(0.) {
         if( !thesaurierend) this->wert = 0.;
     }
     // getter
@@ -72,6 +73,7 @@ private:
     QDate vertragsdatum;
     QDate startZinsberechnung;
     QDate laufzeitEnde;
+    int kFrist;
     // Belegdaten
     double zinsFuss;
     double letzteZinsgutschrift;

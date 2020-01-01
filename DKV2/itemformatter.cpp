@@ -29,6 +29,15 @@ QString WertEuroItemFormatter::displayText(const QVariant& value, const QLocale&
         return QString("(auszahlend)");
 };
 
+QString KFristItemFormatter ::displayText(const QVariant &value, const QLocale &) const
+{
+    int v = value.toInt();
+    if( v == -1)
+        return "(festes Laufzeitende)";
+    else
+        return QString("%L1 Monate").arg(v);
+}
+
 QString ActivatedItemFormatter::displayText(const QVariant &value, const QLocale &) const
 {
     // the view delivers strings like "true" and "false" for boolean values

@@ -299,10 +299,12 @@ void DatenbankZurAnwendungOeffnen( QString newDbFile)
 
 void CheckDbConsistency( QStringList& msg)
 {LOG_ENTRY_and_EXIT;
-    // temporary; fix data corupted by date edit control (1752 ...)
+    // temporary; fix data corrupted by date edit control (1752 ...)
     QSqlDatabase db = QSqlDatabase::database();
     db.exec("UPDATE [Vertraege] SET [LaufzeitEnde]='9999-12-31' WHERE [LaufzeitEnde]<[Vertragsdatum]");
     db.exec("UPDATE [Vertraege] SET [LetzteZinsberechnung]='9999-12-31' WHERE NOT([aktiv])");
+    db.exec("UPDATE [Vertraege] SET [LaufzeitEnde]='9999-12-31' WHERE [Kfrist] <> -1");
+    db.exec("UPDATE [Vertraege] SET [Kfrist]='6' WHERE [LaufzeitEnde]=='9999-12-31' AND [Kfrist] < 1");
 
     IbanValidator iv;
     QSqlQuery iban_q;
@@ -339,10 +341,15 @@ void BeispielVertragsdaten( Vertrag& vertrag, int KId, int maxZinsIndex, QRandom
     QDate LaufzeitEnde = (rand->bounded(100)%8 == 1)
                              ? (QDate(9999, 12, 31)) // kein Ende vereinbart
                              : StartZinsberechnung.addDays( 500+ rand->bounded(0, 8000));
+    int kFrist = -1;
+    if( LaufzeitEnde == QDate(9999, 12, 31))
+    {
+        kFrist = rand->bounded(3, 25);
+    }
     vertrag = Vertrag(KId, ProposeKennung(),
                     betragUWert, betragUWert, zinsid,
                     vertragsdatum,
-                    tesa, active, StartZinsberechnung, LaufzeitEnde);
+                    tesa, active, StartZinsberechnung, kFrist, LaufzeitEnde);
 }
 
 void BeispieldatenAnlegen( int AnzahlDatensaetze)
