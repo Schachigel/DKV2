@@ -23,10 +23,10 @@ private slots:
     void test_TageBisJahresende();
     void test_TageSeitJahresanfang_data();
     void test_TageSeitJahresanfang();
-//    void test_TageZwischen_data();
-//    void test_TageZwischen();
     void test_ZinsesZins_data();
     void test_ZinsesZins();
+    void test_IsValidIban_data();
+    void test_IsValidIban();
 };
 
 #endif // TEST_FINANCE_H

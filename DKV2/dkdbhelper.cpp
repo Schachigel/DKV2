@@ -297,6 +297,28 @@ void DatenbankZurAnwendungOeffnen( QString newDbFile)
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
 }
 
+void CheckDbConsistency( QStringList& msg)
+{LOG_ENTRY_and_EXIT;
+    // temporary; fix data corupted by date edit control (1752 ...)
+    QSqlDatabase db = QSqlDatabase::database();
+    db.exec("UPDATE [Vertraege] SET [LaufzeitEnde]='9999-12-31' WHERE [LaufzeitEnde]<[Vertragsdatum]");
+
+    IbanValidator iv;
+    QSqlQuery iban_q;
+    iban_q.exec("SELECT [id],[Vorname],[Nachname],[IBAN] FROM [Kreditoren]");
+    while(iban_q.next())
+    {
+        QString iban = iban_q.value("IBAN").toString();
+        if( iban.isEmpty()) continue;
+        int pos = 0;
+        if( iv.validate(iban, pos) == IbanValidator::State::Acceptable)
+            continue;
+        msg.append( QString("IBAN Prüfung fehlgeschlagen bei Kreditor ") +iban_q.value("id").toString() +": "
+                       +iban_q.value("Vorname").toString() +iban_q.value("Nachname").toString()
+                   +"\n: " +iban_q.value("IBAN").toString());
+    }
+}
+
 QString ProposeKennung()
 {LOG_ENTRY_and_EXIT;
     int idOffset = Eigenschaft("IdOffset").toInt();

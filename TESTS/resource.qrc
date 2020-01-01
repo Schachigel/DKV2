@@ -1,7 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>res/Logo.PNG</file>
-        <file>res/letter.html</file>
         <file>res/IbanRegExp.txt</file>
     </qresource>
 </RCC>

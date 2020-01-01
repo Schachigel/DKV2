@@ -1,3 +1,4 @@
+
 !! how to translate hmtl template from mm to px?
 -- hmtl should be converted to px
 -- default for QPdfWriter is 1200 dpi
@@ -64,6 +65,13 @@ next:
 ? P Liste r-click Menu anlegen
 
 DONE
+
+IBAN validierung, Fehlermeldung beim Start
+
+db reparatur: Endedatum 17xx
+UPDATE Vertraege SET LaufzeitEnde = "9999-12-31" WHERE LaufzeitEnde <= Vertragsdatum AND LaufzeitEnde <> ""
+?! was mit LetzteZinsberechnung`? -> Fehler nachstellen
+
 
 ?? Bug: Laufzeitende ungültig wenn LetzteZinsBerechnung ungültig = inactive?
 

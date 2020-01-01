@@ -36,6 +36,7 @@ bool DKDatenbankAnlegen(const QString& filename, QSqlDatabase db=QSqlDatabase())
 bool istValideDatenbank(const QString& filename);
 void DatenbankverbindungSchliessen();
 void DatenbankZurAnwendungOeffnen( QString newDbFile="");
+void CheckDbConsistency( QStringList& msg);
 
 QString ProposeKennung();
 void BeispieldatenAnlegen(int datensaetze =20);

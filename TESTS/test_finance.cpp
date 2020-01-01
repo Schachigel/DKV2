@@ -160,3 +160,33 @@ void test_finance::test_ZinsesZins()
     QCOMPARE(ZinsesZins(zinssatz, wert, von, bis, false), Zins);
 
 }
+
+void test_finance::test_IsValidIban_data()
+{
+    QTest::addColumn<QString>("IBAN");
+    QTest::addColumn<bool>("isValid");
+
+    QTest::newRow("Iban -2") << "" << false;
+    QTest::newRow("Iban -1") << "DE04500105175411049860" << false;
+    QTest::newRow("Iban 00") << "IT68D0300203280000400162854" << true;
+    QTest::newRow("Iban 01") << "DE68 2105 0170 0012 3456 78" << true;
+    QTest::newRow("Iban 02") << "DE27100777770209299700 " << true;
+    QTest::newRow("Iban 03") << "DE11 5205 1373 5120 7101 31 " << true;
+    QTest::newRow("Iban 04") << "AL90208110080000001039531801" << true;
+    QTest::newRow("Iban 05") << "BE68844010370034" << true;
+    QTest::newRow("Iban 06") << "DK5750510001322617" << true;
+    QTest::newRow("Iban 07") << "DE12500105170648489890" << true;
+    QTest::newRow("Iban 08") << "EE342200221034126658" << true;
+    QTest::newRow("Iban 09") << "FI9814283500171141" << true;
+    QTest::newRow("Iban 10") << "DE28 5001 0517 5407 5101 98" << true;
+    QTest::newRow("Iban 11") << "MC1112739000700011111000H79" << true;
+    QTest::newRow("Iban 12") << "NL18ABNA0484869868    " << true;
+}
+void test_finance::test_IsValidIban()
+{
+    QFETCH(QString, IBAN);
+    QFETCH(bool, isValid);
+    IbanValidator iv;
+    int pos = 0;
+    QCOMPARE(iv.validate(IBAN, pos) == IbanValidator::State::Acceptable, isValid);
+}

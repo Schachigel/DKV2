@@ -26,7 +26,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -97,7 +97,7 @@
              <string>Der Datensatz wird gespeichert und ein weiterer Datensatz angelegt</string>
             </property>
             <property name="text">
-             <string>Speichern und neu</string>
+             <string>Speichern und &amp;neu</string>
             </property>
            </widget>
           </item>
@@ -107,7 +107,7 @@
              <string>Der Datensatz wird gespeichert und die Liste der DK Geber wird angezeigt</string>
             </property>
             <property name="text">
-             <string>Speichern und zur Liste</string>
+             <string>Speichern und zur &amp;Liste</string>
             </property>
            </widget>
           </item>
@@ -117,7 +117,7 @@
              <string>Der Datensatz wird gespeichert und die Eingabe neuer DK Geber wird beendet</string>
             </property>
             <property name="text">
-             <string>Speichern und Vertrag anlegen</string>
+             <string>Speichern und &amp;Vertrag anlegen</string>
             </property>
            </widget>
           </item>
@@ -343,7 +343,7 @@
              <string>Speichert den Vertrag und kehrt zur Liste der DK Geber zurück</string>
             </property>
             <property name="text">
-             <string>Speichern, dann zur Kreditoren Liste</string>
+             <string>Speichern, dann zur &amp;Kreditoren Liste</string>
             </property>
            </widget>
           </item>
@@ -353,7 +353,7 @@
              <string>Speichert den Vertrag und geht zur Liste der Verträge</string>
             </property>
             <property name="text">
-             <string>Speichern zu Verträgen</string>
+             <string>Speichern zu &amp;Verträgen</string>
             </property>
            </widget>
           </item>

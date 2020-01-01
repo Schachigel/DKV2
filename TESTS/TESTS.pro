@@ -27,6 +27,7 @@ SOURCES +=  tst_db.cpp \
     testhelper.cpp
 
 HEADERS += \
+    ../DKV2/finhelper.h \
     test_csv.h \
     test_dkdbhelper.h \
     test_finance.h \
@@ -34,3 +35,6 @@ HEADERS += \
     test_sqlhelper.h \
     testhelper.h \
     tst_db.h
+
+RESOURCES += \
+    resource.qrc

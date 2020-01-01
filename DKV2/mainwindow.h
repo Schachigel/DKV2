@@ -104,6 +104,7 @@ private:
     int colIndexFieldActiveInContractList;
     void preparePersonTableView();
     void prepareContractListView();
+    void prepareWelcomeMsg();
     void DbInStatuszeileAnzeigen();
     int KreditgeberSpeichern();
     bool saveNewContract();

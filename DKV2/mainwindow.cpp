@@ -47,10 +47,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->leBetrag->setValidator(new QIntValidator(0,999999,this));
     ui->statusBar->addPermanentWidget(ui->statusLabel);
-    DbInStatuszeileAnzeigen();
 
     setCentralWidget(ui->stackedWidget);
     DatenbankZurAnwendungOeffnen();
+    DbInStatuszeileAnzeigen();
+    prepareWelcomeMsg();
 
     ui->txtAnmerkung->setTabChangesFocus(true);
     QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b",
@@ -60,6 +61,19 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 
+void MainWindow::prepareWelcomeMsg()
+{
+    QString message="<H2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</H2>";
+
+    QStringList warnings;
+    CheckDbConsistency( warnings);
+
+    foreach(QString warning, warnings)
+    {
+        message += "<br><font color='red'>" +warning +"</font>";
+    }
+    ui->label->setText(message);
+}
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -88,6 +102,7 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
     switch(arg1)
     {
     case emptyPageIndex:
+        prepareWelcomeMsg();
         ui->actionKreditgeber_loeschen->setEnabled(false);
         ui->actionVertrag_passiv_loeschen->setEnabled(false);
         break;
