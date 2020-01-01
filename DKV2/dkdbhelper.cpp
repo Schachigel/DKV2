@@ -302,14 +302,14 @@ void CheckDbConsistency( QStringList& msg)
     // temporary; fix data corupted by date edit control (1752 ...)
     QSqlDatabase db = QSqlDatabase::database();
     db.exec("UPDATE [Vertraege] SET [LaufzeitEnde]='9999-12-31' WHERE [LaufzeitEnde]<[Vertragsdatum]");
+    db.exec("UPDATE [Vertraege] SET [LetzteZinsberechnung]='9999-12-31' WHERE NOT([aktiv])");
 
     IbanValidator iv;
     QSqlQuery iban_q;
-    iban_q.exec("SELECT [id],[Vorname],[Nachname],[IBAN] FROM [Kreditoren]");
+    iban_q.exec("SELECT [id],[Vorname],[Nachname],[IBAN] FROM [Kreditoren] WHERE [IBAN] <> ''");
     while(iban_q.next())
     {
         QString iban = iban_q.value("IBAN").toString();
-        if( iban.isEmpty()) continue;
         int pos = 0;
         if( iv.validate(iban, pos) == IbanValidator::State::Acceptable)
             continue;
