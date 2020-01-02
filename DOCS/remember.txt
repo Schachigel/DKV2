@@ -10,8 +10,6 @@ x dots -> 10mm
 !! NEXT: read Meta data from file into db for letters
 !! create editor for meta data for letters
 
-!! "manuell" angelegte Verträge -> Enddatum & "letzte Zinsberechnung" kaputt (wieder?)
-
 !!Laufzeitende editierbar machen
 
 ?! wenn currentdate > Vertragsende?
@@ -75,6 +73,8 @@ DONE
 - Bugfix: tab order DkGeber anlegen
 
 IBAN validierung, Fehlermeldung beim Start
+
+!! "manuell" angelegte Verträge -> Enddatum & "letzte Zinsberechnung" kaputt (wieder?)
 
 db reparatur: Endedatum 17xx
 UPDATE Vertraege SET LaufzeitEnde = "9999-12-31" WHERE LaufzeitEnde <= Vertragsdatum AND LaufzeitEnde <> ""

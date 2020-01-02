@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
 
-SUBDIRS = DKV2 TESTS
+SUBDIRS = DKV2 TESTS \
+    htmlTest
 
 QT += network
