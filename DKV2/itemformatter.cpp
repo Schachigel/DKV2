@@ -1,4 +1,5 @@
 #include <qdebug.h>
+#include "finhelper.h"
 #include "itemformatter.h"
 
 QString DateItemFormatter::displayText(const QVariant& value, const QLocale& )const
@@ -15,16 +16,18 @@ QString PercentItemFormatter::displayText(const QVariant& value, const QLocale& 
     return value.toString()+"%";
 };
 
-QString EuroItemFormatter::displayText(const QVariant& value, const QLocale& )const
+QString EuroItemFormatter::displayText(const QVariant& value, const QLocale& locale)const
 {
-    return QString("%L1").arg(value.toDouble())+" Euro";
+    return locale.toCurrencyString(round2(value.toDouble()));
 };
 
-QString WertEuroItemFormatter::displayText(const QVariant& value, const QLocale& )const
+QString WertEuroItemFormatter::displayText(const QVariant& value, const QLocale& locale)const
 {
     double d = value.toDouble();
     if( d != 0.)
-        return QString("%L1").arg(value.toDouble())+" Euro";
+    {
+        return locale.toCurrencyString(round2(value.toDouble()));
+    }
     else
         return QString("(auszahlend)");
 };

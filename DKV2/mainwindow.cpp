@@ -54,6 +54,8 @@ MainWindow::MainWindow(QWidget *parent) :
     prepareWelcomeMsg();
 
     ui->txtAnmerkung->setTabChangesFocus(true);
+    ui->PersonsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 5px; }");
+    ui->contractsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 5px; }");
 
     ui->cbKFrist->addItem("festes Vertragsende", QVariant(-1));
     for (int i=3; i<25; i++)
@@ -182,6 +184,7 @@ void MainWindow::preparePersonTableView()
     model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model->select();
 
+    ui->PersonsTableView->setEditTriggers(QTableView::NoEditTriggers);
     ui->PersonsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->PersonsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->PersonsTableView->setAlternatingRowColors(true);
@@ -278,7 +281,7 @@ int MainWindow::KreditgeberSpeichern()
     k.setValue("Plz", ui->lePlz->text().trimmed());
     k.setValue("Stadt", ui->leStadt->text().trimmed());
     QString email = ui->leEMail->text().trimmed().toLower();
-    k.setValue("Email", email.isEmpty() ? "NULL_STRING" : email);
+    k.setValue("Email", email);
     k.setValue("Anmerkung", ui->txtAnmerkung->toPlainText());
     k.setValue("IBAN", ui->leIban->text().trimmed());
     k.setValue("BIC", ui->leBic->text().trimmed());
@@ -542,6 +545,7 @@ void MainWindow::prepareContractListView()
 
     colIndexFieldActiveInContractList = fields.indexOf(dkdbstructur["Vertraege"]["aktiv"]);
     ui->contractsTableView->setModel(model);
+    ui->contractsTableView->setEditTriggers(QTableView::NoEditTriggers);
     ui->contractsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->contractsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->contractsTableView->setAlternatingRowColors(true);

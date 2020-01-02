@@ -67,6 +67,13 @@ next:
 
 DONE
 
+- Bugfix: leere IBAN zulassen
+- Bugfix: leere E-Mail zulassen
+- Tabellen mit padding (lesbarkeit)
+- ToolTip Texte verbessert
+- Währungsformatierung / Rundung in Tabellen
+- Bugfix: tab order DkGeber anlegen
+
 IBAN validierung, Fehlermeldung beim Start
 
 db reparatur: Endedatum 17xx

@@ -29,16 +29,20 @@ bool Kreditor::isValid( QString& errortext)
         ti.getValue("Stadt").toString().isEmpty())
         errortext = "Die Adressdaten sind unvollständig";
 
-    QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b",
-    QRegularExpression::CaseInsensitiveOption);
     QString email = ti.getValue("Email").toString();
-    if( !rx.match(email).hasMatch())
-        errortext = "Das Format der e-mail Adresse ist ungültig";
+    if( !email.isEmpty() || email == "NULL_STRING")
+    {
+        QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b",
+                              QRegularExpression::CaseInsensitiveOption);
+        if( !rx.match(email).hasMatch())
+            errortext = "Das Format der e-mail Adresse ist ungültig";
+    }
 
     IbanValidator iv; int pos = 0;
     QString iban = ti.getValue("IBAN").toString();
-    if( iv.validate(iban, pos) != IbanValidator::State::Acceptable)
-        errortext = "Das Format der IBAN ist nicht korrekt";
+    if( !iban.isEmpty())
+        if( iv.validate(iban, pos) != IbanValidator::State::Acceptable)
+            errortext = "Das Format der IBAN ist nicht korrekt";
 
     if( errortext.isEmpty())
         return true;

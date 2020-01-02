@@ -26,7 +26,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -94,7 +94,7 @@
           <item>
            <widget class="QPushButton" name="saveNew">
             <property name="toolTip">
-             <string>Der Datensatz wird gespeichert und ein weiterer Datensatz angelegt</string>
+             <string>Der DK Geber wird gespeichert und ein weiterer Datensatz zur Eingabe angelegt</string>
             </property>
             <property name="text">
              <string>Speichern und &amp;neu</string>
@@ -104,7 +104,7 @@
           <item>
            <widget class="QPushButton" name="saveList">
             <property name="toolTip">
-             <string>Der Datensatz wird gespeichert und die Liste der DK Geber wird angezeigt</string>
+             <string>Der neue DK Geber wird gespeichert und die Liste aller DK Geber wird angezeigt</string>
             </property>
             <property name="text">
              <string>Speichern und zur &amp;Liste</string>
@@ -114,7 +114,7 @@
           <item>
            <widget class="QPushButton" name="saveExit">
             <property name="toolTip">
-             <string>Der Datensatz wird gespeichert und die Eingabe neuer DK Geber wird beendet</string>
+             <string>Der DK Geber wird gespeichert und zur Eingabe eines Vertrags gewechselt</string>
             </property>
             <property name="text">
              <string>Speichern und &amp;Vertrag anlegen</string>
@@ -124,7 +124,7 @@
           <item>
            <widget class="QPushButton" name="cancel">
             <property name="toolTip">
-             <string>Das Anlegen eines DK Gebers wird abgebrochen</string>
+             <string>Das Anlegen des DK Gebers wird abgebrochen</string>
             </property>
             <property name="text">
              <string>Abbrechen</string>
@@ -363,7 +363,7 @@
           <item>
            <widget class="QPushButton" name="cancelCreateContract">
             <property name="toolTip">
-             <string>Abbrechen und zurück</string>
+             <string>Abbrechen und zurück zur Start Seite</string>
             </property>
             <property name="text">
              <string>Abbrechen</string>
@@ -906,29 +906,29 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
-  <tabstop>comboKreditoren</tabstop>
-  <tabstop>leKennung</tabstop>
-  <tabstop>leBetrag</tabstop>
-  <tabstop>cbZins</tabstop>
-  <tabstop>deVertragsabschluss</tabstop>
-  <tabstop>cbKFrist</tabstop>
-  <tabstop>deLaufzeitEnde</tabstop>
-  <tabstop>chkbThesaurierend</tabstop>
-  <tabstop>speichereVertragZurKreditorenListe</tabstop>
-  <tabstop>saveContractGoContracts</tabstop>
-  <tabstop>cancelCreateContract</tabstop>
-  <tabstop>saveExit</tabstop>
-  <tabstop>cancel</tabstop>
   <tabstop>leVorname</tabstop>
   <tabstop>leNachname</tabstop>
   <tabstop>leStrasse</tabstop>
   <tabstop>lePlz</tabstop>
   <tabstop>leStadt</tabstop>
+  <tabstop>leEMail</tabstop>
   <tabstop>txtAnmerkung</tabstop>
   <tabstop>leIban</tabstop>
   <tabstop>leBic</tabstop>
   <tabstop>saveNew</tabstop>
   <tabstop>saveList</tabstop>
+  <tabstop>saveExit</tabstop>
+  <tabstop>cancel</tabstop>
+  <tabstop>comboKreditoren</tabstop>
+  <tabstop>leKennung</tabstop>
+  <tabstop>leBetrag</tabstop>
+  <tabstop>cbZins</tabstop>
+  <tabstop>deVertragsabschluss</tabstop>
+  <tabstop>deLaufzeitEnde</tabstop>
+  <tabstop>chkbThesaurierend</tabstop>
+  <tabstop>speichereVertragZurKreditorenListe</tabstop>
+  <tabstop>saveContractGoContracts</tabstop>
+  <tabstop>cancelCreateContract</tabstop>
   <tabstop>leFilter</tabstop>
   <tabstop>pbPersonFilterZuruecksetzen</tabstop>
   <tabstop>PersonsTableView</tabstop>
@@ -938,7 +938,7 @@
   <tabstop>FilterVertraegeZuruecksetzen</tabstop>
   <tabstop>contractsTableView</tabstop>
   <tabstop>leVertraegeFilter</tabstop>
-  <tabstop>leEMail</tabstop>
+  <tabstop>cbKFrist</tabstop>
   <tabstop>comboUebersicht</tabstop>
   <tabstop>pbPrint</tabstop>
   <tabstop>txtOverview</tabstop>
