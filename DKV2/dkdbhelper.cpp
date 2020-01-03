@@ -334,7 +334,7 @@ void BeispielVertragsdaten( Vertrag& vertrag, int KId, int maxZinsIndex, QRandom
     // add a contract
     double betragUWert = double(100) * rand->bounded(1,20);
     int zinsid = rand->bounded(1,maxZinsIndex);
-    bool tesa = rand->bounded(100)%4 ? true : false;  // 75% thesaurierend
+    bool thesa = rand->bounded(100)%4 ? true : false;  // 75% thesaurierend
     bool active = rand->bounded(100)%6 ? true : false; // 85% inaktiv
     QDate vertragsdatum= QDate::currentDate().addDays(-1 * rand->bounded(365));
     QDate StartZinsberechnung = ( active) ? vertragsdatum.addDays(rand->bounded(15)) : EndOfTheFuckingWorld;
@@ -349,7 +349,7 @@ void BeispielVertragsdaten( Vertrag& vertrag, int KId, int maxZinsIndex, QRandom
     vertrag = Vertrag(KId, ProposeKennung(),
                     betragUWert, betragUWert, zinsid,
                     vertragsdatum,
-                    tesa, active, StartZinsberechnung, kFrist, LaufzeitEnde);
+                    thesa, active, StartZinsberechnung, kFrist, LaufzeitEnde);
 }
 
 void BeispieldatenAnlegen( int AnzahlDatensaetze)
@@ -462,7 +462,7 @@ void berechneZusammenfassung(DbSummary& dbs, QString con)
     dbs.BetragAuszahlende = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0", con).toReal();
 
     dbs.AnzahlThesaurierende= ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0", con).toInt();
-    dbs.BetragThesaurierende= ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0", con).toInt();
+    dbs.BetragThesaurierende= ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0", con).toReal();
     dbs.WertThesaurierende  = ExecuteSingleValueSql("SUM([Wert])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0", con).toReal();
 
     dbs.AnzahlAktive  = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0", con).toInt();

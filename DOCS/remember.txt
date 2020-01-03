@@ -1,11 +1,16 @@
 -- Vertragsende und Kündigungsfrist ...
 
+-- Brief: Geldeingang bestätigen
+
 !! how to translate hmtl template from mm to px?
 -- hmtl should be converted to px
 -- default for QPdfWriter is 1200 dpi
 1200 dots -> 1 inch = 256mm
 x dots -> 10mm
 => 12000/256 = 47 dots per cm
+https://doc.qt.io/qt-5/richtext-html-subset.html
+https://doc.qt.io/qt-5/richtext-html-subset.html#block-attributes
+
 
 !! NEXT: read Meta data from file into db for letters
 !! create editor for meta data for letters
