@@ -742,8 +742,8 @@ QString MainWindow::prepareOverviewPage(Uebersichten u)
             lbl += "<table><thead><tr><td> Jahr </td><td> Anzahl </td><td> Summe </td></tr></thead>";
             for( auto x: ce)
             {
-                lbl += "<tr><td align=left>" + QString::number(x.year) + "</td><td align=center>" +
-                       QString::number(x.count) + "</td><td align=right>" + locale.toCurrencyString(x.value) + "</td></tr>";
+                lbl += "<tr><td align:left>" + QString::number(x.year) + "</td><td align:center>" +
+                       QString::number(x.count) + "</td><td align:right>" + locale.toCurrencyString(x.value) + "</td></tr>";
             }
             lbl += "</table>";
         }
@@ -753,17 +753,18 @@ QString MainWindow::prepareOverviewPage(Uebersichten u)
     }
     case ZINSVERTEILUNG:
     {
+        QLocale locale;
         QVector<YZV> yzv;
         berechneJahrZinsVerteilung( yzv);
         if( !yzv.isEmpty())
         {
             lbl += "<h2>Verteilung der Zinssätze pro Jahr </h2> Stand:"  + QDate::currentDate().toString("dd.MM.yyyy<br>") +
              "<table>" +
-             "<thead><tr><td style=\"padding:2px;\"> Jahr </td><td style=\"padding:2px;\"> Zinssatz </td><td style=\"padding:2px;\"> Anzahl</td></tr></thead>";
+             "<thead><tr><td style=\"padding:4px;\"> Jahr </td><td style=\"padding:4px;\"> Zinssatz </td><td style=\"padding:4px;\"> Anzahl</td><td style=\"padding:4px;\"> Summe </td></tr></thead>";
             for( auto x: yzv)
             {
-                lbl += "<tr><td>" + QString::number(x.year) + "</td><td align=center>" +
-                       QString::number(x.intrest) + "</td><td align=center>" + QString::number(x.count) + "</td></tr>";
+                lbl += "<tr><td>" + QString::number(x.year) + "</td><td align:center>" +
+                       QString::number(x.intrest) + " %</td><td align:center>" + QString::number(x.count) + "</td><td style='text-align:right'>" + locale.toCurrencyString(x.sum) + "</td></tr>";
             }
             lbl += "</table>";
         }

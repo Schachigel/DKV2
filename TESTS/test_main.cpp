@@ -26,10 +26,10 @@ int main(int argc, char *argv[])
       delete obj;
     };
 
+    ASSERT_TEST(new test_dkdbhelper);
+    ASSERT_TEST(new tst_db);
     ASSERT_TEST(new test_htmlbrief);
     ASSERT_TEST(new test_csv);
-    ASSERT_TEST(new tst_db);
-    ASSERT_TEST(new test_dkdbhelper);
     ASSERT_TEST(new test_finance);
     ASSERT_TEST(new test_sqlhelper);
 

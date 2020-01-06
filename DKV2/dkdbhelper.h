@@ -95,6 +95,7 @@ struct YZV
     int year;
     double intrest;
     int count;
+    double sum;
 };
 void berechneJahrZinsVerteilung( QVector<YZV>& yzv, QString con ="");
 

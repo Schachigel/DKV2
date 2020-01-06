@@ -1,3 +1,5 @@
+-- Teilauszahlung ermöglichen (damit DK Kennung erhalten bleibt)
+
 -- Vertragsende und Kündigungsfrist ...
 
 -- Brief: Geldeingang bestätigen

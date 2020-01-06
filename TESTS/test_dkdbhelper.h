@@ -2,6 +2,8 @@
 #define TEST_DKDBHELPER_H
 
 #include <QObject>
+#include <QDir>
+#include <QDebug>
 
 class test_dkdbhelper : public QObject
 {
@@ -11,7 +13,7 @@ public:
     ~test_dkdbhelper(){}
 
 private:
-    const QString filename = "..\\data\\testdb.sqlite";
+    const QString filename = "..\\..\\data\\testdb.sqlite";
     const QString testCon = "test_dkdb_connection";
 
 signals:
