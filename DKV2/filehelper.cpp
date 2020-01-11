@@ -16,49 +16,24 @@
 #include "helper.h"
 #include "filehelper.h"
 
-bool overwrite_copy(const QString& from, const QString& to)
-{
-    qDebug() << "overwrite_copy " << from << " to " << to;
-    if( QFile().exists(to))
-        QFile().remove(to);
-    return QFile().copy(from, to);
-}
-
 bool backupFile(const QString&  fn)
 {
-    // generate list of backup filenames
-    QList<QString> backupnames;
-    for(int i = 0; i<10; i++)
+    QString backupname{fn};
+    QFileInfo fi{fn}; QString suffix = fi.completeSuffix();
+    backupname.chop(suffix.size()+1/*dot*/);
+    backupname += "_" + QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss") + "." + suffix;
+    // copy the file
+    if(!QFile().copy(fn, backupname))
     {
-        QString backupname{fn};
-        QFileInfo fi{fn}; QString suffix = fi.completeSuffix();
-        backupname.chop(suffix.size()+1/*dot*/);
-        QString nbr(QString ("%1").arg(i,int(2),10, QLatin1Char('0')));
-        backupname +=  QString("-"+ nbr + "." + suffix + ".bak");
-        backupnames.append(backupname);
+        qDebug() << "Backup copy failed. File to be copied: " << backupname;
+        return false;
     }
-    // copy existing files to filename with next index from top to bottom
-    bool ret(true);
-    if( QFile().exists(backupnames[9]))
-        ret &= QFile().remove(backupnames[9]);
-    for(int i = 8; i>=0; i--)
-    {
-        if( !QFile().exists(backupnames[i]))
-            continue;
-        if( !overwrite_copy(backupnames[i], backupnames[i+1]))
-        {
-            ret = false;
-            qDebug() << "Backup copy failed. File to be copied: " << backupnames[i];
-        }
+    QString names(fi.baseName() + "_????????_??????." + suffix);
+    QDir backups(fi.absolutePath(), names, QDir::Name | QDir::Reversed, QDir::Files);
+    for (uint i = 10; i < backups.count(); i++) {
+        QFile().remove(backups[i]);
     }
-    // copy the last file: the one w the filename of the file you want to create
-    if( QFile().exists(fn))
-        if( !overwrite_copy(fn, backupnames[0]))
-        {
-            ret = false;
-            qDebug() << "Backup copy failed. File to be copied: " << backupnames[0];
-        }
-    return ret;
+    return true;
 }
 
 void showFileInFolder(const QString &path)
@@ -94,11 +69,4 @@ void printHtmlToPdf( QString html, QString fn)
     td.adjustSize();
     qDebug() << td.size();
     td.drawContents(&painter);
-}
-
-QString getDbFolder()
-{
-    QSettings config;
-    QFileInfo db(config.value("db/last").toString());
-    return db.path();
 }
