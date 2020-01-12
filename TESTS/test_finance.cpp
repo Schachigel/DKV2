@@ -5,6 +5,163 @@
 #include "../DKV2/finhelper.h"
 #include "test_finance.h"
 
+double Runden2(double Betrag)
+{
+   int temp = qRound(Betrag * 100);
+   double ret = ((double)temp / 100);
+   return ret;
+}
+
+double computeDkZinsen(double Betrag, double Zinssatz, int anzTage)
+{
+    double Zinsen = ((Betrag * Zinssatz) / 100.0);
+    Zinsen = Runden2(Zinsen * anzTage / 360);
+    // Zinsen = round2(double(anzTage)/360. *Zinssatz/100. *Betrag);
+    return Zinsen;
+}
+
+bool isLeapYear(int year)
+{
+    bool b = ((((year % 4) == 0) && ((year % 100) != 0)) || ((year % 400) == 0));
+    return b;
+}
+// https://stackoverflow.com/questions/30168056/what-is-the-exact-excel-days360-algorithm
+int dateDiff360(int startDay, int startMonth, int startYear, int endDay, int endMonth, int endYear, bool methodUS)
+{
+    if (startDay == 31) {
+        --startDay;
+    } else if (methodUS && (startMonth == 2 && (startDay == 29 || (startDay == 28 && !isLeapYear(startYear))))) {
+        startDay = 30;
+    }
+    if (endDay == 31) {
+        if (methodUS && startDay != 30) {
+            endDay = 1;
+            if (endMonth == 12) {
+                ++endYear;
+                endMonth = 1;
+            } else {
+                ++endMonth;
+            }
+        } else {
+            endDay = 30;
+        }
+    }
+    return endDay + endMonth * 30 + endYear * 360 - startDay - startMonth * 30 - startYear * 360;
+}
+
+int dateDiff360(const QDate &StartDate, const QDate &EndDate, bool methodUS)
+{
+   int startDay = StartDate.day();
+   int startMonth = StartDate.month();
+   int startYear = StartDate.year();
+   int endDay = EndDate.day();
+   int endMonth = EndDate.month();
+   int endYear = EndDate.year();
+   int ret = dateDiff360(startDay, startMonth, startYear, endDay, endMonth, endYear, methodUS);
+   return ret;
+}
+
+int getAnzTageZeitraum(const QDate &StartDate, const QDate &EndDate)
+{
+   int ret = dateDiff360(StartDate, EndDate, false);
+   return ret;
+}
+
+int getAnzTageUndJahreZeitraum(const QDate &dateFrom, const QDate &dateTo, int &tageBis, int &ganzeJahre, int &tageVon){
+   int ret = 0;
+   tageBis = 0;
+   ganzeJahre = 0;
+   tageVon = 0;
+   if( dateFrom.isValid() && dateTo.isValid() && (dateFrom <= dateTo))
+   {
+       if(dateFrom.year() == dateTo.year())
+       {
+           tageBis = getAnzTageZeitraum(dateFrom, dateTo);
+           return 0;
+       }
+      if(dateFrom.year() < dateTo.year())
+      {
+          tageBis = getAnzTageZeitraum(dateFrom, QDate(dateFrom.year(), 12, 31));
+      }
+      QDate startDate = dateFrom;
+      QDate endDate = dateTo;
+      startDate = QDate(startDate.year()+1, 1, 1);
+      while(startDate <= endDate)
+      {
+         if(startDate.year() < endDate.year())
+         {
+            ganzeJahre++;
+            startDate = QDate(startDate.year()+1, 1, 1);
+         }else{
+            tageVon = getAnzTageZeitraum(startDate, dateTo) + 1;
+            break;
+         }
+      }
+   }
+   return ret;
+}
+
+double computeDkZinsenZeitraum(double Betrag, double Zinssatz, const QDate &dateFrom, const QDate &dateTo)
+{
+    double Zinsen = 0;
+    if( dateFrom.isValid() && dateTo.isValid() && (dateFrom <= dateTo))
+    {
+        int tageBis = 0;
+        int ganzeJahre = 0;
+        int tageVon = 0;
+        getAnzTageUndJahreZeitraum(dateFrom, dateTo, tageBis, ganzeJahre, tageVon);
+        Zinsen += computeDkZinsen(Betrag + Zinsen, Zinssatz, tageBis);
+        for(int i=0;i<ganzeJahre;i++)
+        {
+            Zinsen += (Betrag + Zinsen) * Zinssatz / 100.0;
+        }
+        Zinsen += computeDkZinsen(Betrag + Zinsen, Zinssatz, tageVon);
+    }
+    return round2(Zinsen);
+}
+
+int TageImZeitraum(const QDate &von, const QDate &bis)
+{
+    if( von.year() == bis.year())
+    {
+        int TageZwischen(const QDate& von, const QDate& bis);
+        return TageZwischen(von, bis);
+    }
+   int ret = 0;
+   int TageImErstenJahr = TageBisJahresende(von); // first day no intrest
+   int jahre(0);
+   int TageDazwischen = 0;
+   for( jahre=0; jahre < bis.year()-von.year()-1; jahre++)
+   {
+       TageDazwischen += 360;
+   }
+   int TageImLetztenJahr = TageSeitJahresAnfang(bis);
+   ret = TageImErstenJahr + TageDazwischen + TageImLetztenJahr;
+   return ret;
+}
+
+int TageUndJahreImZeitraum(const QDate &von, const QDate &bis, int &TageImErstenJahr, int &JahreZwischen, int &TageImLetztenJahr){
+    int ret = 0;
+    TageImErstenJahr = 0;
+    JahreZwischen = 0;
+    TageImLetztenJahr = 0;
+    if( von.year() == bis.year())
+    {
+        int TageZwischen(const QDate& von, const QDate& bis);
+        TageImErstenJahr = TageZwischen(von, bis);
+        return 0;
+    }
+   TageImErstenJahr = TageBisJahresende(von); // first day no intrest
+   int jahre(0);
+   for( jahre=0; jahre < bis.year()-von.year()-1; jahre++)
+   {
+      JahreZwischen++;
+   }
+   TageImLetztenJahr = TageSeitJahresAnfang(bis);
+   return ret;
+
+}
+
 void test_finance::test_TageBisJahresende_data()
 {
     QTest::addColumn<QDate>("date");
@@ -145,6 +302,7 @@ void test_finance::test_ZinsesZins_data()
         l++;
     }while( d[l].von.isValid());
 }
+
 void test_finance::test_ZinsesZins()
 {
     QFETCH(QDate,  von);
@@ -158,7 +316,20 @@ void test_finance::test_ZinsesZins()
     qDebug().noquote() <<  msg;
     QCOMPARE(ZinsesZins(zinssatz, wert, von, bis, true ), ZinsThesauriert);
     QCOMPARE(ZinsesZins(zinssatz, wert, von, bis, false), Zins);
-
+    QCOMPARE(getAnzTageZeitraum(von, bis), TageImZeitraum(von, bis));
+    int TageImErstenJahr=0;
+    int JahreZwischen=0;
+    int TageImLetztenJahr=0;
+    TageUndJahreImZeitraum(von, bis, TageImErstenJahr, JahreZwischen, TageImLetztenJahr);
+    int tageBis = 0;
+    int ganzeJahre = 0;
+    int tageVon = 0;
+    getAnzTageUndJahreZeitraum(von, bis, tageBis, ganzeJahre, tageVon);
+    QCOMPARE(TageImErstenJahr, tageBis);
+    QCOMPARE(JahreZwischen, ganzeJahre);
+    QCOMPARE(TageImLetztenJahr, tageVon);
+    QCOMPARE(computeDkZinsen(wert, zinssatz, tageBis), round2(double(TageImErstenJahr)/360. *zinssatz/100. *wert));
+    QCOMPARE(computeDkZinsenZeitraum(wert, zinssatz, von, bis ), ZinsThesauriert);
 }
 
 void test_finance::test_IsValidIban_data()
