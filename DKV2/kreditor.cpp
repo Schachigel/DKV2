@@ -8,11 +8,11 @@
 bool Kreditor::fromDb( int i)
 {   LOG_ENTRY_and_EXIT;
 
-    QSqlRecord rec = ExecuteSingleRecordSql(kTable.Fields(), "id="+QString::number(i));
+    QSqlRecord rec = ExecuteSingleRecordSql(dkdbstructur["Kreditoren"].Fields(), "id="+QString::number(i));
     if( rec.isEmpty()) return false;
     for(int i=0; i<rec.count(); i++)
     {
-        ti.setValue(rec.field(i).name(), rec.field(1).value());
+        ti.setValue(rec.field(i).name(), rec.field(i).value());
     }
     return true;
 }

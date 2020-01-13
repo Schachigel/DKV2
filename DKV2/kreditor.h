@@ -23,7 +23,6 @@ public:
     void KreditorenMitId(QList<QPair<int,QString>> &entries) const;
     static bool Loeschen(int index);
 private:
-    dbtable kTable;
     TableDataInserter ti;
 //    QSqlRecord rec;
 };

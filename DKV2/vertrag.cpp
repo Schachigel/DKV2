@@ -65,6 +65,11 @@ bool Vertrag::ausDb(int vId, bool mitBelegdaten)
     return true;
 }
 
+void Vertrag::initKreditor()
+{
+    dkGeber.fromDb(kreditorId);
+}
+
 bool Vertrag::BelegSpeichern(const int BArt, const QString& msg)
 {   LOG_ENTRY_and_EXIT;
 
@@ -82,7 +87,7 @@ bool Vertrag::BelegSpeichern(const int BArt, const QString& msg)
     return true;
 }
 
-bool Vertrag::pruefeNeuenVertrag(QString& meldung)
+bool Vertrag::isNewContractValid(QString& meldung)
 {
     meldung.clear();
     if( Betrag() <=0)
@@ -97,7 +102,7 @@ bool Vertrag::pruefeNeuenVertrag(QString& meldung)
         int pos =0;
         QString iban =dkGeber.getValue("IBAN").toString();
         if( iv.validate(iban, pos) != IbanValidator::State::Acceptable)
-            meldung = "Die Iban ist ungültig. Bitte kontrolliere den Wert in den Daten des Kreditgebers";
+            meldung = "Die Iban ist ungültig. Bitte kontrolliere den Wert in den Daten des Kreditgebers. Der Vertrag wird trotzdem gewpeichert!";
     }
     if( !verbucheNeuenVertrag())
         meldung = "Der Vertrag konnte nicht gespeichert werden. Ist die Kennung des Vertrags eindeutig?";

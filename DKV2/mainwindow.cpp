@@ -54,8 +54,8 @@ MainWindow::MainWindow(QWidget *parent) :
     prepareWelcomeMsg();
 
     ui->txtAnmerkung->setTabChangesFocus(true);
-    ui->PersonsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 5px; }");
-    ui->contractsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 5px; }");
+    ui->PersonsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 15px; }");
+    ui->contractsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 15px; }");
 
     ui->cbKFrist->addItem("festes Vertragsende", QVariant(-1));
     for (int i=3; i<25; i++)
@@ -405,7 +405,7 @@ bool MainWindow::saveNewContract()
     Vertrag c =VertragsdatenAusFormular();
 
     QString errortext;
-    if( c.pruefeNeuenVertrag(errortext))
+    if( !c.isNewContractValid(errortext))
     {
         QMessageBox::information( this, "Fehler", errortext);
         return false;
@@ -698,7 +698,7 @@ QString MainWindow::prepareOverviewPage(Uebersichten u)
 {LOG_ENTRY_and_EXIT;
 
     QString lbl ("<html><body><style>h1 { padding: 2em; } "
-                 "table, td { padding: 5px; border-width: 1px; border-style: solid; border-color: black; } "
+                 "table, td { padding: 15px; border-width: 1px; border-style: solid; border-color: black; } "
                  "th { padding: 4px; border-width: 3px; border-style: solid; border-color: black; } "
                 "</style>");
     QLocale locale;
@@ -712,23 +712,23 @@ QString MainWindow::prepareOverviewPage(Uebersichten u)
         lbl += QString("<h2>Übersicht DKs und DK Geber</h2><br> Stand: ") + QDate::currentDate().toString("dd.MM.yyyy<br>") +
           "<table>" +
 
-          "<tr><td>Anzahl DK Geber*innen: </td><td align=left>" + QString::number(dbs.AnzahlDkGeber) +"</td></tr>" +
-          "<tr><td>Anzahl Direktkredite: </td><td align=left>" + QString::number(dbs.AnzahlAktive) +"</td></tr>" +
-          "<tr><td>Summe Direktkredite:  </td><td align=right>" + locale.toCurrencyString(dbs.BetragAktive) +"</td></tr>" +
-          "<tr><td>Wert der DK inklusive Zinsen</td><td align=right>"+ locale.toCurrencyString(dbs.WertAktive) + "</td></tr>" +
+          "<tr><td style='padding: 15px;'>Anzahl DK Geber*innen: </td><td style='text-align: left; padding: 15px;'>" + QString::number(dbs.AnzahlDkGeber) +"</td></tr>" +
+          "<tr><td style='padding: 15px;' >Anzahl Direktkredite: </td><td style='padding: 15px; text-align: left;'>" + QString::number(dbs.AnzahlAktive) +"</td></tr>" +
+          "<tr><td style='padding: 15px;'>Summe Direktkredite:  </td><td style='text-align: right:'>" + locale.toCurrencyString(dbs.BetragAktive) +"</td></tr>" +
+          "<tr><td style='padding: 15px;'>Wert der DK inklusive Zinsen</td><td style='text-align: right'>"+ locale.toCurrencyString(dbs.WertAktive) + "</td></tr>" +
 
           "<tr><td></td><td></td></tr>" +
-          "<tr><td>Anzahl der DK mit jährl. Zinsauszahlung: </td><td align=left>" + QString::number(dbs.AnzahlAuszahlende) +"</td></tr>" +
-          "<tr><td>Summe: </td><td align=right>" + locale.toCurrencyString(dbs.BetragAuszahlende) +"</td></tr>" +
+          "<tr><td>Anzahl der DK mit jährl. Zinsauszahlung: </td><td align:left>" + QString::number(dbs.AnzahlAuszahlende) +"</td></tr>" +
+          "<tr><td>Summe: </td><td align:right>" + locale.toCurrencyString(dbs.BetragAuszahlende) +"</td></tr>" +
           "<tr><td></td><td></td></tr>" +
 
-          "<tr><td>Anzahl der DK ohne jährl. Zinsauszahlung: </td><td align=left>" + QString::number(dbs.AnzahlThesaurierende) +"</td></tr>" +
-          "<tr><td>Summe: </td><td align=right>" + locale.toCurrencyString(dbs.BetragThesaurierende) +"</td></tr>" +
-          "<tr><td>Wert inkl. Zinsen: </td><td align=right>" + locale.toCurrencyString(dbs.WertThesaurierende) +"</td></tr>" +
+          "<tr><td>Anzahl der DK ohne jährl. Zinsauszahlung: </td><td align:left>" + QString::number(dbs.AnzahlThesaurierende) +"</td></tr>" +
+          "<tr><td>Summe: </td><td align:right>" + locale.toCurrencyString(dbs.BetragThesaurierende) +"</td></tr>" +
+          "<tr><td>Wert inkl. Zinsen: </td><td align:right>" + locale.toCurrencyString(dbs.WertThesaurierende) +"</td></tr>" +
 
           "<tr><td></td><td></td></tr>" +
-          "<tr><td>Anzahl noch ausstehender (inaktiven) DK </td><td align=left>" + QString::number(dbs.AnzahlPassive) +"</td></tr>" +
-          "<tr><td>Summe noch ausstehender (inaktiven) DK </td><td align=right>" + locale.toCurrencyString(dbs.BetragPassive) +"</td></tr>" +
+          "<tr><td>Anzahl noch ausstehender (inaktiven) DK </td><td align:left>" + QString::number(dbs.AnzahlPassive) +"</td></tr>" +
+          "<tr><td>Summe noch ausstehender (inaktiven) DK </td><td align:right>" + locale.toCurrencyString(dbs.BetragPassive) +"</td></tr>" +
                "</table>";
         break;
     }

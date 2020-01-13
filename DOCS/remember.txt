@@ -1,4 +1,12 @@
+-- einheitl. Layout für Übersichten / hilfsklasse zur Html erzeugung?
+
 -- Teilauszahlung ermöglichen (damit DK Kennung erhalten bleibt)
+?! Neuanlage auch -> "Vertrag ändern" ... 
+
+-- "Dauerauftragskredite"
+
+-- was tun mit alten (gelöschten/ beendeten Verträge?)
+!! extra liste/ Tabelle anlegen oder aus Buchungen rekonstruieren
 
 -- Vertragsende und Kündigungsfrist ...
 

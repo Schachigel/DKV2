@@ -24,6 +24,7 @@ public:
         thesaurierend(thesa), active(aktiv),
         vertragsdatum(vd), startZinsberechnung(startd),
           laufzeitEnde(endd), kFrist(kfrist), letzteZinsgutschrift(0.) {
+        if( kId != -1) initKreditor();
         if( !thesaurierend) this->wert = 0.;
     }
     // getter
@@ -47,7 +48,7 @@ public:
 
     // interface
     bool ausDb(int id, bool mitBelegdaten= false);
-    bool pruefeNeuenVertrag(QString& meldung);
+    bool isNewContractValid(QString& meldung);
     bool verbucheNeuenVertrag();
     bool aktiviereVertrag(const QDate& aDate);
     bool verbucheJahreszins(const QDate& YearEnd);
@@ -62,6 +63,7 @@ private:
     void updateAusDb(){ausDb(id, true);}
     bool speichereJahresabschluss(const QDate& end);
     bool speichereBelegJahresabschluss(const QDate& end);
+    void initKreditor();
     // data
     int id;
     int kreditorId;
