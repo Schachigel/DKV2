@@ -49,6 +49,20 @@ bool Kreditor::isValid( QString& errortext)
     return false;
 }
 
+void Kreditor::setValue(const QString& n, const QVariant& v)
+{
+    ti.setValue(n, v);
+}
+
+void Kreditor::setUniqueDbValue(const QString& n, const QVariant& v)
+{
+    if( v.isNull() || !v.isValid() ||
+        (v.type() == QVariant::Type::String && v.toString().isEmpty()))
+        ti.setValue(n, QVariant(QVariant::String));
+    else
+        ti.setValue(n, v);
+}
+
 int Kreditor::Speichern(QSqlDatabase db) const
 {   LOG_ENTRY_and_EXIT;
 

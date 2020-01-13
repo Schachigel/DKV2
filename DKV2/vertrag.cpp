@@ -90,27 +90,25 @@ bool Vertrag::BelegSpeichern(const int BArt, const QString& msg)
 bool Vertrag::isNewContractValid(QString& meldung)
 {
     meldung.clear();
+
     if( Betrag() <=0)
         meldung = "Der Kreditbetrag muss größer als null sein";
     else if( KreditorId() <= 0 || ZinsId() <= 0)
         meldung = "Wähle den Kreditgeber und die Zinsen aus der gegebenen Auswahl. Ist die Auswahl leer müssen zuerst Kreditgeber und Zinswerte eingegeben werden";
     else if( Kennung() == "")
         meldung= "Du solltest eine eindeutige Kennung vergeben, damit der Kredit besser zugeordnet werden kann";
-    else
-    {
-        IbanValidator iv;
-        int pos =0;
-        QString iban =dkGeber.getValue("IBAN").toString();
-        if( iv.validate(iban, pos) != IbanValidator::State::Acceptable)
-            meldung = "Die Iban ist ungültig. Bitte kontrolliere den Wert in den Daten des Kreditgebers. Der Vertrag wird trotzdem gewpeichert!";
-    }
-    if( !verbucheNeuenVertrag())
-        meldung = "Der Vertrag konnte nicht gespeichert werden. Ist die Kennung des Vertrags eindeutig?";
-
-    if( meldung.isEmpty())
-        return true;
-    else
+    if( !meldung.isEmpty())
         return false;
+
+    IbanValidator iv;
+    int pos =0;
+    QString iban =dkGeber.getValue("IBAN").toString();
+    if( iv.validate(iban, pos) != IbanValidator::State::Acceptable)
+        meldung = "Die Iban ist vermutlich ungültig. Bitte kontrolliere den Wert in den Daten des Kreditgebers. Der Vertrag wurde trotzdem gewpeichert!";
+    bool buchungserfolg = verbucheNeuenVertrag();
+    if( !buchungserfolg)
+        meldung = "Der Vertrag konnte nicht gespeichert werden. Ist die Kennung des Vertrags eindeutig?";
+    return buchungserfolg;
 }
 
 int Vertrag::speichereNeuenVertrag() const

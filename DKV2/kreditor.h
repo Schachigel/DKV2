@@ -15,7 +15,8 @@ public:
     Kreditor (int i){ fromDb(i);}
     // interface
     bool fromDb(int id);
-    void setValue(const QString& n, const QVariant& v){ti.setValue(n, v);}
+    void setUniqueDbValue(const QString& n, const QVariant& v);
+    void setValue(const QString& n, const QVariant& v);
     QVariant getValue(const QString& f) const { return ti.getValue(f);}
     bool isValid( QString& errortext);
     int Speichern(QSqlDatabase db=QSqlDatabase::database()) const;

@@ -78,6 +78,8 @@ void TableDataInserter::setValue(const QString& n, const QVariant& v)
 
 QString format4SQL(QVariant v)
 {
+    if( v.isNull())
+        return "NULL";
     QString s;
     switch(v.type())
     {
@@ -93,10 +95,7 @@ QString format4SQL(QVariant v)
     default:
         s = v.toString();
     }
-    if( s == "NULL_STRING")
-        return "(NULL)";
-    else
-        return "'" + s +"'";
+    return "'" + s +"'";
 }
 
 QString TableDataInserter::getInsertRecordSQL() const

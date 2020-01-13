@@ -280,8 +280,7 @@ int MainWindow::KreditgeberSpeichern()
     k.setValue("Strasse", ui->leStrasse->text().trimmed());
     k.setValue("Plz", ui->lePlz->text().trimmed());
     k.setValue("Stadt", ui->leStadt->text().trimmed());
-    QString email = ui->leEMail->text().trimmed().toLower();
-    k.setValue("Email", email);
+    k.setUniqueDbValue("Email", ui->leEMail->text().trimmed().toLower());
     k.setValue("Anmerkung", ui->txtAnmerkung->toPlainText());
     k.setValue("IBAN", ui->leIban->text().trimmed());
     k.setValue("BIC", ui->leBic->text().trimmed());
@@ -407,10 +406,14 @@ bool MainWindow::saveNewContract()
     QString errortext;
     if( !c.isNewContractValid(errortext))
     {
-        QMessageBox::information( this, "Fehler", errortext);
+        QMessageBox::critical( this, "Fehler", errortext);
         return false;
     }
-    return true;
+    else
+    {
+        QMessageBox::information(this, "Warnung", errortext);
+        return true;
+    }
 }
 void MainWindow::clearNewContractFields()
 {LOG_ENTRY_and_EXIT;
