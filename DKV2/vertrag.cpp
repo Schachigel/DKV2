@@ -87,7 +87,7 @@ bool Vertrag::BelegSpeichern(const int BArt, const QString& msg)
     return true;
 }
 
-bool Vertrag::isNewContractValid(QString& meldung)
+bool Vertrag::validateAndSaveNewContract(QString& meldung)
 {
     meldung.clear();
 

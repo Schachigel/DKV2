@@ -404,14 +404,15 @@ bool MainWindow::saveNewContract()
     Vertrag c =VertragsdatenAusFormular();
 
     QString errortext;
-    if( !c.isNewContractValid(errortext))
+    if( !c.validateAndSaveNewContract(errortext))
     {
         QMessageBox::critical( this, "Fehler", errortext);
         return false;
     }
     else
     {
-        QMessageBox::information(this, "Warnung", errortext);
+        if( !errortext.isEmpty())
+            QMessageBox::information(this, "Warnung", errortext);
         return true;
     }
 }
