@@ -9,6 +9,10 @@
 !! extra liste/ Tabelle anlegen oder aus Buchungen rekonstruieren
 
 -- Vertragsende und Kündigungsfrist ...
+?! Kündigungsfrist editierbar machen?
+ -> aktion "kündigen": setzt festes Laufzeit Ende Datum und KF auf "festesLaufzeitEnde"
+?! LaufzeitEnde editierbar machen ?
+  -> nur nach hinten, nicht nach vorne
 
 -- Brief: Geldeingang bestätigen
 
@@ -24,8 +28,6 @@ https://doc.qt.io/qt-5/richtext-html-subset.html#block-attributes
 
 !! NEXT: read Meta data from file into db for letters
 !! create editor for meta data for letters
-
-!!Laufzeitende editierbar machen
 
 ?! wenn currentdate > Vertragsende?
 

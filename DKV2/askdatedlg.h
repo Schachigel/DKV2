@@ -16,6 +16,7 @@ public:
     explicit askDateDlg(QWidget *parent = nullptr, QDate date=QDate::currentDate());
     ~askDateDlg();
     QDate getDate();
+    void setDate(QDate d);
     void setMsg(const QString& msg);
     void setDateLabel(const QString& msg);
 private:
