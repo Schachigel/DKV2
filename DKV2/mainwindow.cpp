@@ -674,23 +674,35 @@ void MainWindow::on_actionVertrag_Beenden_triggered()
                 " berechnet und der Auszahlungsbetrag ermittelt.<br></h2>"
                 "Um den Vertrag von %1 %2 mit dem aktuellen Wert %3 Euro jetzt zu beenden "
                 "wählen Sie das Datum des Vertragendes ein und klicken Sie OK");
-    getDateMsg = getDateMsg.arg(v.Vorname(), v.Nachname(), QString::number(WertBisHeute));
+    QLocale locale;
+    getDateMsg = getDateMsg.arg(v.Vorname(), v.Nachname(), locale.toCurrencyString(WertBisHeute));
 
-    askDateDlg dlg( this, QDate::currentDate());
+    // Vertragsende >! letzte Zinsberechnung
+    QDate Vorschlagswert = (QDate::currentDate()> v.StartZinsberechnung())?QDate::currentDate(): v.StartZinsberechnung();
+    askDateDlg dlg( this, Vorschlagswert);
     dlg.setMsg(getDateMsg);
     dlg.setDateLabel("Ende der Zinsberechnung nach der Kündigungsfrist:");
-    if( QDialog::Accepted != dlg.exec())
-    {
-        qDebug() << "Delete contract was aborted by the user";
-        return;
-    }
+    do {
+        if( QDialog::Accepted != dlg.exec())
+        {
+            qDebug() << "Delete contract was aborted by the user";
+            return;
+        }
+        if( dlg.getDate() < v.StartZinsberechnung())
+        {
+            dlg.setMsg( getDateMsg + "<br><b>Das Datum muss nach der letzten Zinsausschüttung liegen</b>");
+            dlg.setDate(Vorschlagswert);
+            continue;
+        }
+        break;
+    } while(true);
 
     double davonZins =ZinsesZins(v.Zinsfuss(), v.Wert(), v.StartZinsberechnung(), dlg.getDate(), v.Thesaurierend());
     double neuerWert =v.Wert() +davonZins;
 
     QString confirmDeleteMsg("<h3>Vertragsabschluß</h3><br>Wert zum Vertragsende: %1 Euro<br>Zins der letzten Zinsphase: %2 Euro<br>"\
                              "Soll der Vertrag gelöscht werden?");
-    confirmDeleteMsg = confirmDeleteMsg.arg(QString::number(neuerWert), QString::number(davonZins));
+    confirmDeleteMsg = confirmDeleteMsg.arg(locale.toCurrencyString(neuerWert), locale.toCurrencyString(davonZins));
     if( QMessageBox::Yes != QMessageBox::question(this, "Vertrag löschen?", confirmDeleteMsg))
         return;
     if( !v.aktivenVertragLoeschen(dlg.getDate()))

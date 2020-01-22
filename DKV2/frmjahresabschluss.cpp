@@ -99,7 +99,7 @@ void frmJahresabschluss::on_pbOK_clicked()
 void writeCsv(const QVector<Vertrag>& vertraege, const QString& filename)
 { LOG_ENTRY_and_EXIT;
     csvwriter csv;
-    csv.addColumns("Vertrags Nr; Kreditsumme (Euro); Zins (Euro); Wert nach Zinsgutschrift (Euro); Vorname; Nachname; Strasse; Plz; Stadt; Email; IBAN; BIC");
+    csv.addColumns("Vertrags Nr; Kreditsumme (Euro); Zins (Euro); Wert nach Zinsgutschrift (Euro); Vorname; Nachname; Kennung; Strasse; Plz; Stadt; Email; IBAN; BIC");
     QLocale locale(QLocale::German, QLocale::LatinScript, QLocale::Germany);
     for( auto vertrag: vertraege)
     {
@@ -109,6 +109,7 @@ void writeCsv(const QVector<Vertrag>& vertraege, const QString& filename)
         csv.appendToRow((vertrag.Thesaurierend() ? locale.toCurrencyString(vertrag.Wert(), " ") : "-"));
         csv.appendToRow(vertrag.Vorname());
         csv.appendToRow(vertrag.Nachname());
+        csv.appendToRow(vertrag.Kennung());
         csv.appendToRow(vertrag.getKreditor().getValue("Strasse").toString());
         csv.appendToRow(vertrag.getKreditor().getValue("Plz").toString());
         csv.appendToRow(vertrag.getKreditor().getValue("Stadt").toString());

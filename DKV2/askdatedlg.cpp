@@ -11,6 +11,10 @@ askDateDlg::askDateDlg(QWidget *parent, QDate date) :
     ui->lblDate->setText("Die Verzinsung beginnt am ");
     ui->dateEdit->setDate(date);
 }
+void askDateDlg::setDate(QDate d)
+{
+    ui->dateEdit->setDate(d);
+}
 
 askDateDlg::~askDateDlg()
 {
