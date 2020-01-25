@@ -95,7 +95,7 @@ QString initDb()
 
 QSplashScreen* doSplash()
 {
-    QPixmap pixmap(":/res/Logo.PNG");
+    QPixmap pixmap(":/res/splash.png");
     QSplashScreen *splash = new QSplashScreen(pixmap, Qt::SplashScreen|Qt::WindowStaysOnTopHint);
     splash->show();
     return splash;

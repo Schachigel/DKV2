@@ -92,7 +92,7 @@ void MainWindow::prepareWelcomeMsg()
     {
         message += "<br><font color='red'>" +warning +"</font>";
     }
-    message += "<br><img src=':/res/Logo.PNG'>";
+    message += "<br><img src=':/res/logo.png'>";
     ui->label->setText(message);
 }
 // whenever the stackedWidget changes ...
