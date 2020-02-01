@@ -6,6 +6,14 @@
 #include "helper.h"
 #include "sqlhelper.h"
 
+bool sqlEnsureTable(const QString& tablename, const QString& con)
+{
+    QSqlQuery query (con);
+    query.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'");
+    query.bindValue("table_name", tablename);
+    return query.next();
+}
+
 QString SelectQueryFromFields(const QVector<dbfield>& fields, const QString& where)
 {
     QString Select ("SELECT ");

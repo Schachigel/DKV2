@@ -8,6 +8,8 @@
 
 #include "dbfield.h"
 
+bool sqlEnsureTable(const QString& tablename, const QString& con="");
+
 QString SelectQueryFromFields(const QVector<dbfield>& fields, const QString& where);
 
 QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString& where, const QString& con="");

@@ -20,6 +20,7 @@
 #include "htmlbrief.h"
 
 dbstructure dkdbstructur;
+dbstructure dkdbAdditionalTables;
 
 QList<QPair<int, QString>> Buchungsarten;
 
@@ -59,18 +60,18 @@ void initDKDBStruktur()
     dkdbstructur.appendTable(Zinssaetze);
 
     dbtable Vertraege("Vertraege");
-    Vertraege.append((dbfield("id",         QVariant::Int, "PRIMARY KEY AUTOINCREMENT")));
-    Vertraege.append((dbfield("KreditorId", QVariant::Int, "", Kreditoren["id"], dbfield::refIntOption::onDeleteCascade )));
-    Vertraege.append((dbfield("Kennung",    QVariant::String, "UNIQUE")));
-    Vertraege.append((dbfield("Betrag",     QVariant::Double, "DEFAULT '0,0' NOT NULL")));
-    Vertraege.append((dbfield("Wert",       QVariant::Double, "DEFAULT '0,0' NULL")));
-    Vertraege.append((dbfield("ZSatz",      QVariant::Int, "", Zinssaetze["id"], dbfield::refIntOption::non)));
-    Vertraege.append((dbfield("thesaurierend", QVariant::Bool, "DEFAULT '1' NOT NULL")));
-    Vertraege.append((dbfield("Vertragsdatum", QVariant::Date, "DATE  NULL")));
-    Vertraege.append((dbfield("aktiv",         QVariant::Bool, "DEFAULT '0' NOT NULL")));
-    Vertraege.append((dbfield("LaufzeitEnde",  QVariant::Date, "DEFAULT '3000-12-31' NOT NULL")));
-    Vertraege.append((dbfield("LetzteZinsberechnung", QVariant::Date, "NULL")));
-    Vertraege.append((dbfield("Kfrist" ,    QVariant::Int, "DEFAULT '6' NOT NULL")));
+    Vertraege.append(dbfield("id",         QVariant::Int, "PRIMARY KEY AUTOINCREMENT"));
+    Vertraege.append(dbfield("KreditorId", QVariant::Int, "", Kreditoren["id"], dbfield::refIntOption::onDeleteCascade ));
+    Vertraege.append(dbfield("Kennung",    QVariant::String, "UNIQUE"));
+    Vertraege.append(dbfield("Betrag",     QVariant::Double, "DEFAULT '0,0' NOT NULL"));
+    Vertraege.append(dbfield("Wert",       QVariant::Double, "DEFAULT '0,0' NULL"));
+    Vertraege.append(dbfield("ZSatz",      QVariant::Int, "", Zinssaetze["id"], dbfield::refIntOption::non));
+    Vertraege.append(dbfield("thesaurierend", QVariant::Bool, "DEFAULT '1' NOT NULL"));
+    Vertraege.append(dbfield("Vertragsdatum", QVariant::Date, "DATE  NULL"));
+    Vertraege.append(dbfield("aktiv",         QVariant::Bool, "DEFAULT '0' NOT NULL"));
+    Vertraege.append(dbfield("LaufzeitEnde",  QVariant::Date, "DEFAULT '3000-12-31' NOT NULL"));
+    Vertraege.append(dbfield("LetzteZinsberechnung", QVariant::Date, "NULL"));
+    Vertraege.append(dbfield("Kfrist" ,    QVariant::Int, "DEFAULT '6' NOT NULL"));
     dkdbstructur.appendTable(Vertraege);
 
     dbtable Buchungsarten("Buchungsarten");
@@ -79,13 +80,13 @@ void initDKDBStruktur()
     dkdbstructur.appendTable(Buchungsarten);
 
     dbtable Buchungen("Buchungen");
-    Buchungen.append(((dbfield("id",           QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))));
-    Buchungen.append(((dbfield("VertragId",    QVariant::Int, "", Vertraege["id"], dbfield::refIntOption::onDeleteNull))));
-    Buchungen.append(((dbfield("Buchungsart",  QVariant::Int, "", Buchungsarten["id"], dbfield::refIntOption::non))));
-    Buchungen.append(((dbfield("Betrag",       QVariant::Double, "DEFAULT '0' NULL"))));
-    Buchungen.append(((dbfield("Datum",        QVariant::Date))));
-    Buchungen.append(((dbfield("Bemerkung",    QVariant::String))));
-    Buchungen.append(((dbfield("Buchungsdaten",    QVariant::String))));
+    Buchungen.append(dbfield("id",           QVariant::Int, "PRIMARY KEY AUTOINCREMENT"));
+    Buchungen.append(dbfield("VertragId",    QVariant::Int, "", Vertraege["id"], dbfield::refIntOption::onDeleteNull));
+    Buchungen.append(dbfield("Buchungsart",  QVariant::Int, "", Buchungsarten["id"], dbfield::refIntOption::non));
+    Buchungen.append(dbfield("Betrag",       QVariant::Double, "DEFAULT '0' NULL"));
+    Buchungen.append(dbfield("Datum",        QVariant::Date));
+    Buchungen.append(dbfield("Bemerkung",    QVariant::String));
+    Buchungen.append(dbfield("Buchungsdaten",    QVariant::String));
     dkdbstructur.appendTable(Buchungen);
 
     dbtable meta("Meta");
@@ -93,6 +94,14 @@ void initDKDBStruktur()
     meta.append(dbfield("Wert", QVariant::String, "NOT NULL"));
     dkdbstructur.appendTable(meta);
     done = true;
+}
+
+void initAdditionalTables()
+{LOG_ENTRY_and_EXIT;
+    dbtable briefe("BriefVorlagen");
+    briefe.append(dbfield("templateId", QVariant::Int));
+    briefe.append(dbfield("Eigenschaft"));
+    briefe.append(dbfield("Wert"));
 }
 
 void initBuchungsarten()

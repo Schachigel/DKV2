@@ -39,6 +39,7 @@ SOURCES += \
         itemformatter.cpp \
         jahresabschluss.cpp \
         kreditor.cpp \
+        letterTemplate.cpp \
         main.cpp \
         mainwindow.cpp \
         sqlhelper.cpp \
@@ -60,6 +61,7 @@ HEADERS += \
         itemformatter.h \
         jahresabschluss.h \
         kreditor.h \
+        letterTemplate.h \
         mainwindow.h \
         sqlhelper.h \
         vertrag.h

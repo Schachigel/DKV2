@@ -16,6 +16,8 @@
 #include "dbstructure.h"
 
 extern dbstructure dkdbstructur;
+extern dbstructure dkdbAddtionalTables;
+
 extern QList<QPair<int, QString>> Buchungsarten;
 
  enum Buchungsart_i
