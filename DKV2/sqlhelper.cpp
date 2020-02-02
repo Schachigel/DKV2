@@ -6,16 +6,38 @@
 #include "helper.h"
 #include "sqlhelper.h"
 
-bool sqlEnsureTable(const QString& tablename, const QString& con)
-{
-    QSqlQuery query (con);
-    query.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'");
-    query.bindValue("table_name", tablename);
-    return query.next();
+bool tableExists (const QString& tablename, const QString& con)
+{LOG_ENTRY_and_EXIT;
+    QSqlQuery query (QSqlDatabase::database(con));
+    query.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='" + tablename + "'");
+    if( !query.exec())
+    {
+        qDebug() << "query exec in tableExists failed " << query.lastError();
+        return false;
+    }
+    if( query.next())
+        return true;
+    return false;
+}
+
+QVector<QString> getFields(const QString& tablename, const QString& con)
+{LOG_ENTRY_and_EXIT;
+    QVector<QString> result;
+    QSqlQuery query(QSqlDatabase::database(con));
+    query.prepare("PRAGMA table_info( "+ tablename+ ")");
+    if( !query.exec())
+    {
+        qDebug() << "query exec in getFields failed " << query.lastError();
+        return result;
+    }
+    while (query.next()) {
+        result.append(query.value(1).toString());
+    }
+    return result;
 }
 
 QString SelectQueryFromFields(const QVector<dbfield>& fields, const QString& where)
-{
+{LOG_ENTRY_and_EXIT;
     QString Select ("SELECT ");
     QString From ("FROM ");
     QString Where("WHERE " + where);

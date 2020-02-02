@@ -1,7 +1,4 @@
-
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QString>
+#include <QtSql>
 #include <QtTest>
 
 #include "../DKV2/helper.h"
@@ -99,4 +96,32 @@ void test_dkdbhelper::test_berechneZusammenfassung()
     QVERIFY(dbs.WertAktive == 202.);
     QVERIFY(dbs.BetragPassive == 400.);
 
+}
+
+void test_dkdbhelper::test_ensureTable_existingTable()
+{
+    QSqlDatabase db =QSqlDatabase::database(testCon);
+    dbstructure s = dbstructure()
+        .appendTable(dbtable("t")
+            .append(dbfield("id", QVariant::Int))
+            .append(dbfield("f")));
+    s.createDb(db);
+
+    QVERIFY2(ensureTable(s["t"], db), "ensure table for existing table failed");
+}
+
+void test_dkdbhelper::test_ensureTable_notExistingTable()
+{
+    QSqlDatabase db =QSqlDatabase::database(testCon);
+    dbstructure s = dbstructure()
+        .appendTable(dbtable("t")
+            .append(dbfield("id", QVariant::Int))
+            .append(dbfield("f")));
+    s.createDb(db);
+
+    dbtable notExistingTable("s");
+    notExistingTable.append(dbfield("id"));
+
+    QVERIFY2( ensureTable(notExistingTable, db), "ensure table for not existing table failed");
+    QVERIFY2(tableExists("s", testCon), "ensure Table of not existing table did not create the table");
 }

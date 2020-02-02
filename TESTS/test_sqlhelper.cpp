@@ -63,6 +63,22 @@ void test_sqlhelper::cleanupTestCase()
     QVERIFY2( (QFile::exists(filename) == false), "destroy database failed." );
 }
 
+void test_sqlhelper::test_getFields()
+{
+    QVector<QString> fields = getFields("testSqlVal", testCon);
+    QVERIFY2(fields.count() == 5, "failed to getFields from test database");
+    QVERIFY2(fields.indexOf("id") != -1, "failed to getField 'id' from test database");
+    fields.clear();
+    fields = getFields("nonExistingTable", testCon);
+    QVERIFY2( fields.count() == 0, "failed to getFields from empty table");
+}
+
+void test_sqlhelper::test_tableExists()
+{
+    QVERIFY2(tableExists("testSqlVal", testCon), "test of tableExists faild on existing table");
+    QVERIFY2(!tableExists("notExistingTable", testCon), "test of tableExists faild on NOT existing table");
+}
+
 void test_sqlhelper::test_sqlValBool()
 {
     bool valBool = sqlVal<bool>(sqlValQuery, "valBool");

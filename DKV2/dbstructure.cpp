@@ -1,11 +1,12 @@
 #include <qdebug.h>
+#include "helper.h"
 #include <QSqlDatabase>
 #include <QSqlQuery>
 
 #include "dbstructure.h"
 
 dbstructure dbstructure::appendTable(dbtable t)
-{
+{LOG_ENTRY_and_EXIT;
     for (auto table: Tables)
         if( table.Name() == t.Name())
         {
@@ -17,7 +18,7 @@ dbstructure dbstructure::appendTable(dbtable t)
 }
 
 dbtable dbstructure::operator[](const QString& name) const
-{
+{LOG_ENTRY_and_EXIT;
     for( dbtable table : Tables)
     {
         if( table.Name() == name)
@@ -28,20 +29,15 @@ dbtable dbstructure::operator[](const QString& name) const
 }
 
 bool dbstructure::createDb(QSqlDatabase db) const
-{
+{LOG_ENTRY_and_EXIT;
     QSqlQuery q(db);
     bool ret{true};
     for(dbtable table :getTables())
     {
-        QString tableSql(table.CreateTableSQL());
-        ret &= q.exec(tableSql);
-        if(!ret)
-        {
-            qCritical() << "Table creation failed: " << q.lastError() << endl << tableSql << endl;
+        if(!table.create(db))
             break;
-        }
         else
-            qDebug() << "Created table:" << table.Name()  << endl << tableSql << endl;
+            qDebug() << "Created table:" << table.Name();
     }
     return ret;
 }

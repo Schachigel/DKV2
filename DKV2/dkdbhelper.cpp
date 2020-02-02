@@ -20,7 +20,7 @@
 #include "htmlbrief.h"
 
 dbstructure dkdbstructur;
-dbstructure dkdbAdditionalTables;
+dbstructure dkdbAddtionalTables;
 
 QList<QPair<int, QString>> Buchungsarten;
 
@@ -98,10 +98,11 @@ void initDKDBStruktur()
 
 void initAdditionalTables()
 {LOG_ENTRY_and_EXIT;
-    dbtable briefe("BriefVorlagen");
+    dbtable briefe("Briefvorlagen");
     briefe.append(dbfield("templateId", QVariant::Int));
-    briefe.append(dbfield("Eigenschaft"));
+    briefe.append(dbfield("Eigenschaft", QVariant::Int));
     briefe.append(dbfield("Wert"));
+    dkdbAddtionalTables.appendTable(briefe);
 }
 
 void initBuchungsarten()
@@ -247,6 +248,26 @@ bool hatAlleTabellenUndFelder(QSqlDatabase& db)
     }
     qDebug() << db.databaseName() << " has all tables expected";
     return true;
+}
+
+bool ensureTable( dbtable table, QSqlDatabase& db)
+{
+    if( tableExists(table.Name(), db.connectionName()))
+    {
+        QVector<QString> fields = getFields(table.Name(), db.connectionName());
+        for (int i=0; i < table.Fields().count(); i++)
+        {
+            QString expectedFieldName = table.Fields()[i].name();
+            if( fields.indexOf(expectedFieldName) == -1 )
+            {
+                qDebug() << "ensureTable() failed: table exists with wrong field" << expectedFieldName;
+                return false;
+            }
+        }
+        return true;
+    }
+    // create table
+    return table.create(db);
 }
 
 bool istValideDatenbank(const QString& filename)

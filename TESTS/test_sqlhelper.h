@@ -26,7 +26,8 @@ private slots:
     void test_sqlValDouble();
     void test_sqlValString();
     void test_sqlValDate();
-
+    void test_getFields();
+    void test_tableExists();
 };
 
 #endif // TEST_SQLHELPER_H

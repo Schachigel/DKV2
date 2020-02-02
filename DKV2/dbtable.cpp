@@ -1,4 +1,5 @@
 #include <QDebug>
+#include "helper.h"
 #include "dbtable.h"
 #include "dbfield.h"
 
@@ -31,8 +32,8 @@ void dbtable::setUnique( const QVector<dbfield>& fs)
     unique = ", UNIQUE (" +tmp +")";
 }
 
-QString dbtable::CreateTableSQL() const
-{
+QString dbtable::createSQL() const
+{LOG_ENTRY_and_EXIT;
     QString sql("CREATE TABLE [" + name + "] (");
     for( int i = 0; i< Fields().count(); i++)
     {
@@ -42,7 +43,21 @@ QString dbtable::CreateTableSQL() const
     if( !unique.isEmpty())
         sql.append(unique);
     sql.append(")");
+
     return sql;
+}
+
+bool dbtable::create(QSqlDatabase& db) const
+{LOG_ENTRY_and_EXIT;
+    QSqlQuery q(db);
+    q.prepare(createSQL());
+    if( !q.exec())
+    {
+        qCritical() << "dbtable::create failed" << q.lastError();
+        qDebug() << q.lastQuery();
+        return false;
+    }
+    return true;
 }
 
 TableDataInserter::TableDataInserter(const dbtable& t)
@@ -117,9 +132,27 @@ QString TableDataInserter::getInsertRecordSQL() const
     return sql;
 }
 
+QString TableDataInserter::getInsertOrReplaceRecordSQL() const
+{
+    if( record.isEmpty()) return QString();
+    QString sql("INSERT OR REPLACE INTO " + tablename +" VALUES (");
+
+    for( int i=0; i<record.count(); i++)
+    {
+        if( i>0) sql += ", ";
+        if( record.field(i).isAutoValue())
+            sql += "NULL";
+        else
+        {
+            sql += format4SQL(record.field(i).value());
+        }
+    }
+    sql +=")";
+    return sql;
+}
+
 QString TableDataInserter::getUpdateRecordSQL() const
 {
-//"UPDATE names SET firstname = 'Nisse', lastname = 'Svensson' WHERE id = 7"
     if( record.isEmpty()) return QString();
     QString sql("UPDATE " + tablename +" SET ");
     QString where(" WHERE ");
@@ -155,6 +188,22 @@ int TableDataInserter::InsertData(QSqlDatabase db) const
     return lastRecord;
 }
 
+int TableDataInserter::InsertOrReplaceData(QSqlDatabase db) const
+{
+    if( record.isEmpty()) return false;
+    QSqlQuery q(db);
+    bool ret = q.exec(getInsertOrReplaceRecordSQL());
+    int lastRecord = q.lastInsertId().toInt();
+    if( !ret)
+    {
+        qCritical() << "Insert/replace record failed: " << q.lastError() << endl << q.lastQuery() << endl;
+        return -1;
+    }
+    qDebug() << "successfully inserted Data at index " << q.lastInsertId().toInt() << endl <<  q.lastQuery() << endl;
+    return lastRecord;
+}
+
+
 int TableDataInserter::UpdateData(QSqlDatabase db) const
 {
     if( record.isEmpty()) return false;
@@ -163,7 +212,7 @@ int TableDataInserter::UpdateData(QSqlDatabase db) const
     int lastRecord = q.lastInsertId().toInt();
     if( !ret)
     {
-        qCritical() << "Insert record failed: " << q.lastError() << endl << q.lastQuery() << endl;
+        qCritical() << "Update record failed: " << q.lastError() << endl << q.lastQuery() << endl;
         return -1;
     }
     qDebug() << "successfully updated Data at index " << q.lastInsertId().toInt() << endl <<  q.lastQuery() << endl;

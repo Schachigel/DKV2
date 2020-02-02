@@ -32,6 +32,8 @@ extern QList<QPair<int, QString>> Buchungsarten;
 };
 
 void initDKDBStruktur();
+void initAdditionalTables();
+
 void initBuchungsarten();
 
 bool DKDatenbankAnlegen(const QString& filename, QSqlDatabase db=QSqlDatabase());
@@ -39,6 +41,8 @@ bool istValideDatenbank(const QString& filename);
 void DatenbankverbindungSchliessen();
 void DatenbankZurAnwendungOeffnen( QString newDbFile="");
 void CheckDbConsistency( QStringList& msg);
+
+bool ensureTable(dbtable table, QSqlDatabase& db);
 
 QString ProposeKennung();
 void BeispieldatenAnlegen(int datensaetze =20);

@@ -9,6 +9,7 @@ SOURCES +=  tst_db.cpp \
     ../DKV2/dkdbhelper.cpp \
     ../DKV2/finhelper.cpp \
     ../DKV2/kreditor.cpp \
+    ../DKV2/letterTemplate.cpp \
     ../DKV2/sqlhelper.cpp \
     ../DKV2/vertrag.cpp \
     ../DKV2/csvwriter.cpp \
@@ -22,6 +23,7 @@ SOURCES +=  tst_db.cpp \
     test_dkdbhelper.cpp \
     test_finance.cpp \
     test_htmlbrief.cpp \
+    test_lettertemplate.cpp \
     test_main.cpp \
     test_sqlhelper.cpp \
     testhelper.cpp
@@ -32,6 +34,7 @@ HEADERS += \
     test_dkdbhelper.h \
     test_finance.h \
     test_htmlbrief.h \
+    test_lettertemplate.h \
     test_sqlhelper.h \
     testhelper.h \
     tst_db.h
