@@ -236,8 +236,8 @@ void tst_db::newDbIsValid()
     // init
     initDKDBStruktur();
     // test
-    DKDatenbankAnlegen( QString(), QSqlDatabase::database(testCon));
-    QVERIFY(istValideDatenbank(filename));
+    DKDatenbankAnlegen( QSqlDatabase::database(testCon));
+    //QVERIFY(istValideDatenbank(filename)); // already done in DKDatenbankAnlegen
 }
 
 void tst_db::createKreditor()
@@ -245,7 +245,7 @@ void tst_db::createKreditor()
     // init
     initDKDBStruktur();
     // test
-    DKDatenbankAnlegen( QString(), QSqlDatabase::database(testCon));
+    DKDatenbankAnlegen(QSqlDatabase::database(testCon));
     Kreditor k;
     k.setValue("Vorname", "Hugo");
     k.setValue("Nachname", "Hurtig");
@@ -257,5 +257,4 @@ void tst_db::createKreditor()
 
     QVERIFY( -1 != k.Speichern(QSqlDatabase::database(testCon)));
     QVERIFY(tableRecordCount("Kreditoren") == 1);
-
 }

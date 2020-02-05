@@ -7,7 +7,7 @@
 #include "dkdbhelper.h"
 #include "vertrag.h"
 
-bool Vertrag::ausDb(int vId, bool mitBelegdaten)
+bool Vertrag::ausDb(qlonglong vId, bool mitBelegdaten)
 {   LOG_ENTRY_and_EXIT;
     QVector<dbfield>fields;
     fields.append(dkdbstructur["Vertraege"]["id"]);
@@ -70,7 +70,7 @@ void Vertrag::initKreditor()
     dkGeber.fromDb(kreditorId);
 }
 
-bool Vertrag::BelegSpeichern(const int BArt, const QString& msg)
+bool Vertrag::BelegSpeichern(const qlonglong BArt, const QString& msg)
 {   LOG_ENTRY_and_EXIT;
 
     updateAusDb();

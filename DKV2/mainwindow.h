@@ -1,13 +1,28 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <dkdbhelper.h>
+#include <QGuiApplication>
 #include <QItemSelection>
 #include <QSplashScreen>
 #include <QMainWindow>
+#include <dkdbhelper.h>
 #include "vertrag.h"
 
+struct busycursor
+{
+    busycursor()
+    {
+        QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    };
+    ~busycursor()
+    {
+        QGuiApplication::restoreOverrideCursor();
+    }
+};
+
 namespace Ui {
+
+
 class MainWindow;
 }
 
@@ -100,6 +115,10 @@ private slots:
     void on_actionzur_ck_triggered();
 
     void on_cbKFrist_currentIndexChanged(int index);
+
+    void on_actionDepersonalisierte_Kopie_triggered();
+
+    void on_actionKopie_anlegen_triggered();
 
 private:
     Ui::MainWindow *ui;

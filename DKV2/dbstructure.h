@@ -2,7 +2,7 @@
 #define DBSTRUCTURE_H
 
 #include <QString>
-#include <QList>
+#include <QVector>
 
 #include "dbtable.h"
 
@@ -11,13 +11,13 @@ class dbstructure
 public:
     // constr., destr. & access fu
     dbtable operator[](const QString& name) const;
-    QList<dbtable> getTables() const { return Tables;}
+    QVector<dbtable> getTables() const { return Tables;}
     // interface
     dbstructure appendTable(dbtable t);
     bool createDb(QSqlDatabase db) const;
 
 private:
-    QList<dbtable> Tables;
+    QVector<dbtable> Tables;
 };
 
 class dbCloser

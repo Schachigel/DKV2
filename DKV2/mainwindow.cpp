@@ -143,13 +143,16 @@ void MainWindow::on_actionzur_ck_triggered()
 {
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
+
 void MainWindow::on_action_Neue_DB_anlegen_triggered()
 {LOG_ENTRY_and_EXIT;
     QString dbfile = QFileDialog::getSaveFileName(this, "Neue DkVerarbeitungs Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
     if( dbfile == "")
         return;
 
-    DKDatenbankAnlegen(dbfile);
+    DatenbankverbindungSchliessen();
+    if( !DKDatenbankAnlegen(dbfile))
+        exit(0x80070020);
     QSettings config;
     config.setValue("db/last", dbfile);
     DatenbankZurAnwendungOeffnen();
@@ -897,3 +900,30 @@ void MainWindow::on_pbPrint_clicked()
     showFileInFolder(filename);
 }
 
+void MainWindow::on_actionDepersonalisierte_Kopie_triggered()
+{
+    QString dbfile = QFileDialog::getSaveFileName(this, "Neue DkVerarbeitungs Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
+    if( dbfile == "")
+        return;
+    busycursor b;
+    if( !createDbCopy(dbfile, true))
+    {
+        qDebug() << "creating depersonaliced copy failed";
+    }
+    return;
+}
+
+void MainWindow::on_actionKopie_anlegen_triggered()
+{
+    QString dbfile = QFileDialog::getSaveFileName(this, "Neue DkVerarbeitungs Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
+    if( dbfile == "")
+        return;
+
+    busycursor b;
+    if( !createDbCopy(dbfile, false))
+    {
+        qDebug() << "creating depersonaliced copy failed";
+    }
+    return;
+
+}

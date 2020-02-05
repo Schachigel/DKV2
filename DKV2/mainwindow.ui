@@ -683,8 +683,10 @@
     <addaction name="actionDBoeffnen"/>
     <addaction name="actionDB_schliessen"/>
     <addaction name="separator"/>
-    <addaction name="actionAusgabeverzeichnis_festlegen"/>
+    <addaction name="actionKopie_anlegen"/>
+    <addaction name="actionDepersonalisierte_Kopie"/>
     <addaction name="separator"/>
+    <addaction name="actionAusgabeverzeichnis_festlegen"/>
     <addaction name="actionProgramm_beenden"/>
    </widget>
    <widget class="QMenu" name="menuDK_Geber">
@@ -889,6 +891,12 @@
    </property>
   </action>
   <action name="actionAusgabeverzeichnis_festlegen">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Ausgabeverzeichnis festlegen</string>
    </property>
@@ -901,6 +909,16 @@
   <action name="actionzur_ck">
    <property name="text">
     <string>Start</string>
+   </property>
+  </action>
+  <action name="actionDepersonalisierte_Kopie">
+   <property name="text">
+    <string>De-personalisierte &amp;Kopie</string>
+   </property>
+  </action>
+  <action name="actionKopie_anlegen">
+   <property name="text">
+    <string>Kopie anlegen</string>
    </property>
   </action>
  </widget>

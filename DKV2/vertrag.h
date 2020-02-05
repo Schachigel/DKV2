@@ -11,8 +11,8 @@
 class Vertrag
 {
 public:
-    Vertrag(int kId = -1, QString ken = "",
-            double betrag =0., double wert =0., int zId =-1,
+    Vertrag(qlonglong kId = -1, QString ken = "",
+            double betrag =0., double wert =0., qlonglong zId =-1,
             QDate vd =QDate::currentDate(),
             bool thesa =true, bool aktiv =false,
             QDate startd =EndOfTheFuckingWorld,
@@ -28,12 +28,12 @@ public:
         if( !thesaurierend) this->wert = 0.;
     }
     // getter
-    int getVid() const { return id;}
+    qlonglong getVid() const { return id;}
     double Betrag() const { return betrag;}
     double Wert() const { return wert;}
-    int KreditorId() const { return kreditorId;}
+    qlonglong KreditorId() const { return kreditorId;}
     QString Kennung() const {return kennung;}
-    int ZinsId() const {return zinsId;}
+    qlonglong ZinsId() const {return zinsId;}
     double Zins() const {return letzteZinsgutschrift;}
     QDate Vertragsabschluss() const {return vertragsdatum;}
     QDate LaufzeitEnde() const {return laufzeitEnde;}
@@ -47,7 +47,7 @@ public:
     void setVid(int i){ id = i;}
 
     // interface
-    bool ausDb(int id, bool mitBelegdaten= false);
+    bool ausDb(qlonglong id, bool mitBelegdaten= false);
     bool validateAndSaveNewContract(QString& meldung);
     bool verbucheNeuenVertrag();
     bool aktiviereVertrag(const QDate& aDate);
@@ -57,7 +57,7 @@ public:
     bool aktivenVertragLoeschen(const QDate& termin);
 private:
     // helper
-    bool BelegSpeichern(const int BArt, const QString& msg);
+    bool BelegSpeichern(const qlonglong BArt, const QString& msg);
     int speichereNeuenVertrag() const;
     bool speichereBelegNeuerVertrag();
     void updateAusDb(){ausDb(id, true);}
@@ -65,12 +65,12 @@ private:
     bool speichereBelegJahresabschluss(const QDate& end);
     void initKreditor();
     // data
-    int id;
-    int kreditorId;
+    qlonglong id;
+    qlonglong kreditorId;
     QString kennung;
     double betrag;
     double wert;
-    int zinsId;
+    qlonglong zinsId;
     bool thesaurierend;
     bool active;
     QDate vertragsdatum;

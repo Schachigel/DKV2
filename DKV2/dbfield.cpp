@@ -24,6 +24,7 @@ QString dbTypeFromVariant(QVariant::Type t)
     case QVariant::String:
         return "STRING";
     case QVariant::Int:
+    case QVariant::LongLong:
         return "INTEGER";
     case QVariant::Double:
         return "REAL";

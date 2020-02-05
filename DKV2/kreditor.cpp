@@ -12,7 +12,15 @@ bool Kreditor::fromDb( int i)
     if( rec.isEmpty()) return false;
     for(int i=0; i<rec.count(); i++)
     {
-        ti.setValue(rec.field(i).name(), rec.field(i).value());
+        qDebug() << "reading Kreditor from db; Field:" << rec.field(i).name() << "-value:" << rec.field(i).value() << "(" << rec.field(i).value().type() << ")";
+        if( dkdbstructur["Kreditoren"][rec.field(i).name()].type() == QVariant::Type::String)
+            ti.setValue(rec.field(i).name(), rec.field(i).value().toString());
+        else if( dkdbstructur["Kreditoren"][rec.field(i).name()].type() == QVariant::Type::LongLong)
+            ti.setValue(rec.field(i).name(), rec.field(i).value().toLongLong());
+        else if( dkdbstructur["Kreditoren"][rec.field(i).name()].type() == QVariant::Type::Double)
+            ti.setValue(rec.field(i).name(), rec.field(i).value().toDouble());
+        else
+            ti.setValue(rec.field(i).name(), rec.field(i).value());
     }
     return true;
 }

@@ -30,7 +30,7 @@ bool backupFile(const QString&  fn)
     }
     QString names(fi.baseName() + "_????????_??????." + suffix);
     QDir backups(fi.absolutePath(), names, QDir::Name | QDir::Reversed, QDir::Files);
-    for (uint i = 10; i < backups.count(); i++) {
+    for (uint i = 15; i < backups.count(); i++) {
         QFile().remove(backups[i]);
     }
     return true;

@@ -2,14 +2,12 @@
 #define DKDBHELPER_H
 #include <qdebug.h>
 #include <QSqlDatabase>
-#include <qsqlquery.h>
-#include <qsqlerror.h>
-#include <qsqlrecord.h>
-#include <qsqlfield.h>
-#include <qvariant.h>
-#include <qdatetime.h>
-#include <qlist.h>
-#include <qstring.h>
+
+#include <QVariant>
+#include <QDateTime>
+#include <QList>
+#include <QString>
+
 
 #include "dbtable.h"
 #include "dbfield.h"
@@ -18,7 +16,7 @@
 extern dbstructure dkdbstructur;
 extern dbstructure dkdbAddtionalTables;
 
-extern QList<QPair<int, QString>> Buchungsarten;
+extern QList<QPair<qlonglong, QString>> Buchungsarten;
 
  enum Buchungsart_i
 {
@@ -36,13 +34,19 @@ void initAdditionalTables();
 
 void initBuchungsarten();
 
-bool DKDatenbankAnlegen(const QString& filename, QSqlDatabase db=QSqlDatabase());
+bool DKDatenbankAnlegen(const QString& filename);
+bool DKDatenbankAnlegen(QSqlDatabase db=QSqlDatabase::database());
+
 bool istValideDatenbank(const QString& filename);
-void DatenbankverbindungSchliessen();
+bool istValideDatenbank(QSqlDatabase db=QSqlDatabase::database());
+
+void DatenbankverbindungSchliessen(QString con = QLatin1String(QSqlDatabase::defaultConnection));
 void DatenbankZurAnwendungOeffnen( QString newDbFile="");
 void CheckDbConsistency( QStringList& msg);
 
 bool ensureTable(dbtable table, QSqlDatabase& db);
+
+bool createDbCopy(QString targetfn, bool deper);
 
 QString ProposeKennung();
 void BeispieldatenAnlegen(int datensaetze =20);
