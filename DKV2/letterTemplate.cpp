@@ -67,9 +67,9 @@ void letterTemplate::init_Kontoabschluss()
     length[overGreeting] = 10.;
     length[overSignee] = 10.;
 
-    html[about] = "Beendigung Deines Direktkredites <b> {{Kennung}} </b>";
-    html[mainText1] = "wunschgemäß beenden wir Deinen Direktkredit zum {{Buchungsdatum}}.<p>"
-                      "Der Kredit und die angelaufenen Zinsen werden in den kommenden Tagen auf das von Dir angegebene Konto mit der IBAN {{IBAN}} ausbezahlt. "
+    html[about] = "Beendigung Deines Direktkredites <b> {{Vertraege.Kennung}} </b>";
+    html[mainText1] = "wunschgemäß beenden wir Deinen Direktkredit zum {{Vertraege.Buchungsdatum}}.<p>"
+                      "Der Kredit und die angelaufenen Zinsen werden in den kommenden Tagen auf das von Dir angegebene Konto mit der IBAN {{Kerditoren.IBAN}} ausbezahlt. "
                       "Auf Wunsch erstellen wir eine gesonderte Zinsbescheinigung für die Steuererklärung.";
     html[tableHeaderKennung] = "<b> DK Kennung <b>";
     html[tableHeaderOldValue] = "<b> Vertragswert </b>";
@@ -93,8 +93,8 @@ void letterTemplate::init_geldeingang()
     length[overGreeting] = 10.;
     length[overSignee] = 10.;
 
-    html[about] = "Bestätigung Deines Direktkredites <b> {{Kennung}} </b>";
-    html[mainText1] = "Hiermit bestätigen wir den Geldeingang von {{Betrag}} zum {{Buchungsdatum}}.<p>"
+    html[about] = "Bestätigung Deines Direktkredites <b> {{Vertraege.Kennung}} </b>";
+    html[mainText1] = "Hiermit bestätigen wir den Geldeingang von {{Vertraege.Betrag}} zum {{Vertraege.Buchungsdatum}}.<p>"
                       "Herzlichen Dank für Deine Unterstützung. Wir werden Dich ab jetzt jährlich über die Zinsentwicklung Deines Kredits informieren.";
     html[tableHeaderKennung] = "NOT used";
     html[tableHeaderOldValue] = "NOT used";
@@ -111,8 +111,8 @@ letterTemplate::letterTemplate(letterTemplate::templateId id)
     html[sections::dateFormat] = "Mannheim, den {{datum}}";
     html[projectAddress] = "Esperanza Franklin GmbH<p>Turley-Platz 9<br><b>68169 </b> Mannheim<br><small>info@esperanza-mannheim.de</small>";
     html[projectUrl] = "<small>www.esperanza-mannheim.de</small>";
-    html[Address] ="{{vorname}} {{nachname}} <p> {{strasse}} <br><b> {{plz}} </b> {{stadt}} <br><small> {{email}} </small>";
-    html[salutation] = "Liebe(r) {{vorname}}, ";
+    html[Address] ="{{Kreditoren.Vorname}} {{Kreditoren.Nachname}} <p> {{Kreditoren.Strasse}} <br><b> {{Kreditoren.Plz}} </b> {{Kreditoren.Stadt}} <br><small> {{email}} </small>";
+    html[salutation] = "Liebe(r) {{Kreditoren.Vorname}}, ";
     html[greeting] = "Mit freundlichen Grüßen";
     html[signee] =  "Jutta Sichau<br><small>Direktkreditverwaltung</small>";
 

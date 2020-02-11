@@ -21,9 +21,9 @@ int main(int argc, char *argv[])
     app.setAttribute(Qt::AA_Use96Dpi, true);
     QTest::setMainSourcePath(__FILE__, "X:/home/dev/DKV2/TESTS");
 
-    int status = 0;
-    auto ASSERT_TEST = [&status, argc, argv](QObject* obj) {
-      status += QTest::qExec(obj, argc, argv);
+    int errCount = 0;
+    auto ASSERT_TEST = [&errCount, argc, argv](QObject* obj) {
+      errCount += QTest::qExec(obj, argc, argv);
       delete obj;
     };
 
@@ -36,9 +36,9 @@ int main(int argc, char *argv[])
     ASSERT_TEST(new test_sqlhelper);
 
 
-    if( status == 1) qDebug() << "\n>>>   There was an error   <<< ";
-    else if (status > 1) qDebug() << "\n>>>   There were " << status << " errors   <<<";
+    if( errCount == 1) qDebug() << "\n>>>   There was an error   <<< ";
+    else if (errCount > 1) qDebug() << "\n>>>   There were " << errCount << " errors   <<<";
     else qDebug() << "\n>>>   There were no errors   <<<";
 
-    return status;
+    return errCount;
 }

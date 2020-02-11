@@ -913,7 +913,7 @@
   </action>
   <action name="actionDepersonalisierte_Kopie">
    <property name="text">
-    <string>De-personalisierte &amp;Kopie</string>
+    <string>Anonymisierte &amp;Kopie</string>
    </property>
   </action>
   <action name="actionKopie_anlegen">

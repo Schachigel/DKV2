@@ -1,9 +1,3 @@
-#include "mainwindow.h"
-
-#include "filehelper.h"
-
-#include "dkdbhelper.h"
-
 #include <QDebug>
 #include <QDirIterator>
 #include <QTime>
@@ -12,10 +6,18 @@
 #include <QApplication>
 #include <QSettings>
 #include <QFileDialog>
+#include <QStandardPaths>
 #include <QMessageBox>
 #include <QSplashScreen>
 #include <QPixmap>
 #include <QTextStream>
+
+#include "filehelper.h"
+#include "dkdbhelper.h"
+#include "mainwindow.h"
+
+
+
 
 #if defined (Q_OS_WIN)
 #include <windows.h>
@@ -43,7 +45,7 @@ QString getInitialDb()
     {
         dbfile = QFileDialog::getSaveFileName(nullptr,
                                               "Wähle eine Datenbank oder gib einen Namen für eine Neue ein",
-                                              "..\\data", "dk-DB Dateien (*.dkdb)", nullptr,QFileDialog::DontConfirmOverwrite);
+                                              QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +"\\DKV2", "dk-DB Dateien (*.dkdb)", nullptr,QFileDialog::DontConfirmOverwrite);
 
         qDebug() << "DbFile from user: " << dbfile;
         if( dbfile == "") return QString();  // canceled by user

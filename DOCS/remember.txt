@@ -1,3 +1,5 @@
+-- MsgBox button Texts in german
+
 -- einheitl. Layout für Übersichten / hilfsklasse zur Html erzeugung?
 
 -- Teilauszahlung ermöglichen (damit DK Kennung erhalten bleibt)
