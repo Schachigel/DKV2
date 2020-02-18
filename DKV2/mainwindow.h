@@ -116,7 +116,7 @@ private slots:
 
     void on_cbKFrist_currentIndexChanged(int index);
 
-    void on_actionDepersonalisierte_Kopie_triggered();
+    void on_actionAnonymlisierte_Kopie_triggered();
 
     void on_actionKopie_anlegen_triggered();
 

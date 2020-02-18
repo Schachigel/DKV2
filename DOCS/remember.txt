@@ -1,3 +1,5 @@
+
+
 -- MsgBox button Texts in german
 
 -- einheitl. Layout für Übersichten / hilfsklasse zur Html erzeugung?
@@ -84,6 +86,8 @@ next:
 
 DONE
 
+-- Erweiterung Übersichten: Durchschnittlicher Zinssatz
+SELECT SUM( W ) / SUM( W * Z) FROM  (SELECT MAX(Betrag, Wert) AS W, Zinssaetze.Zinssatz AS Z FROM Vertraege, Zinssaetze WHERE Zinssaetze.id = Vertraege.ZSatz AND Vertraege.aktiv)
 - Bugfix: leere IBAN zulassen
 - Bugfix: leere E-Mail zulassen
 - Tabellen mit padding (lesbarkeit)

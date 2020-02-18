@@ -1,5 +1,5 @@
 
-QT += testlib sql
+QT += testlib sql printsupport
 
 CONFIG += qt warn_on depend_includepath testcase
 
@@ -18,11 +18,9 @@ SOURCES +=  tst_db.cpp \
     ../DKV2/dbtable.cpp \
     ../DKV2/filehelper.cpp \
     ../DKV2/helper.cpp \
-    ../DKV2/htmlbrief.cpp \
     test_csv.cpp \
     test_dkdbhelper.cpp \
     test_finance.cpp \
-    test_htmlbrief.cpp \
     test_lettertemplate.cpp \
     test_main.cpp \
     test_sqlhelper.cpp \
@@ -33,7 +31,6 @@ HEADERS += \
     test_csv.h \
     test_dkdbhelper.h \
     test_finance.h \
-    test_htmlbrief.h \
     test_lettertemplate.h \
     test_sqlhelper.h \
     testhelper.h \

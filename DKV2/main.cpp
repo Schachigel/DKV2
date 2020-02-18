@@ -123,6 +123,7 @@ int main(int argc, char *argv[])
 #endif
 
     initDKDBStruktur();
+    initAdditionalTables();
 
     QSettings config;
     config.setValue("db/last", initDb());

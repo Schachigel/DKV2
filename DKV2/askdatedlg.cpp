@@ -31,7 +31,12 @@ void askDateDlg::setDateLabel(const QString& msg)
     ui->lblDate->setText(msg);
 }
 
-QDate askDateDlg::getDate()
+QDate askDateDlg::getDate() const
 {
     return ui->dateEdit->date();
+}
+
+bool askDateDlg::shouldPrint() const
+{
+    return ui->cbPrint->checkState() == Qt::CheckState::Checked;
 }

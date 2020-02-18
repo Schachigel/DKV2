@@ -2,7 +2,6 @@
 #include <qguiapplication.h>
 #include <qtest.h>
 #include "test_lettertemplate.h"
-#include "test_htmlbrief.h"
 #include "test_csv.h"
 #include "tst_db.h"
 #include "test_dkdbhelper.h"
@@ -28,10 +27,9 @@ int main(int argc, char *argv[])
     };
 
     ASSERT_TEST(new test_letterTemplate);
-    ASSERT_TEST(new test_dkdbhelper);
     ASSERT_TEST(new tst_db);
-    ASSERT_TEST(new test_htmlbrief);
     ASSERT_TEST(new test_csv);
+    ASSERT_TEST(new test_dkdbhelper);
     ASSERT_TEST(new test_finance);
     ASSERT_TEST(new test_sqlhelper);
 

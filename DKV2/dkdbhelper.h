@@ -40,13 +40,14 @@ bool DKDatenbankAnlegen(QSqlDatabase db=QSqlDatabase::database());
 bool istValideDatenbank(const QString& filename);
 bool istValideDatenbank(QSqlDatabase db=QSqlDatabase::database());
 
-void DatenbankverbindungSchliessen(QString con = QLatin1String(QSqlDatabase::defaultConnection));
+void DatenbankverbindungSchliessen(QString connection= QLatin1String(QSqlDatabase::defaultConnection));
 void DatenbankZurAnwendungOeffnen( QString newDbFile="");
 void CheckDbConsistency( QStringList& msg);
 
-bool ensureTable(dbtable table, QSqlDatabase& db);
+bool ensureTable(const dbtable& table, const QString& connection= QLatin1String(QSqlDatabase::defaultConnection));
+bool ensureTable(const dbtable& table, QSqlDatabase& db);
 
-bool createDbCopy(QString targetfn, bool deper);
+bool createDbCopy(QString targetfn, bool anonym);
 
 QString ProposeKennung();
 void BeispieldatenAnlegen(int datensaetze =20);
@@ -65,7 +66,9 @@ QString ContractList_FROM();
 QString ContractList_WHERE(const QString& filter);
 QString ContractList_SQL(const QVector<dbfield>& f, const QString& filter);
 
-QVariant Eigenschaft(const QString& name);
+void initProperty( const QString& name, const QString& wert, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
+QString getProperty(const QString& name, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
+void setProperty(const QString& name, const QString& value, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
 
 void CsvActiveContracts();
 
@@ -75,6 +78,8 @@ struct DbSummary
     int AnzahlDkGeberEin;
     int AnzahlDkGeberZwei;
     int AnzahlDkGeberMehr;
+    double DurchschnittZins;
+    double MittlererZins;
 
     int     AnzahlAktive;
     double  BetragAktive;
@@ -97,8 +102,8 @@ struct ContractEnd
     int count;
     double value;
 };
-void berechneVertragsenden(QVector<ContractEnd>& ce, QString con="");
-void berechneZusammenfassung(DbSummary& dbs, QString con="");
+void berechneVertragsenden(QVector<ContractEnd>& ce, QString connection=QLatin1String(QSqlDatabase::defaultConnection));
+void berechneZusammenfassung(DbSummary& dbs, QString connection=QLatin1String(QSqlDatabase::defaultConnection));
 
 struct YZV
 {
@@ -107,8 +112,8 @@ struct YZV
     int count;
     double sum;
 };
-void berechneJahrZinsVerteilung( QVector<YZV>& yzv, QString con ="");
+void berechneJahrZinsVerteilung( QVector<YZV>& yzv, QString connection=QLatin1String(QSqlDatabase::defaultConnection));
 
-QString LaufzeitenVerteilungHtml(QString con="");
+QString LaufzeitenVerteilungHtml(QString connection=QLatin1String(QSqlDatabase::defaultConnection));
 
 #endif // DKDBHELPER_H

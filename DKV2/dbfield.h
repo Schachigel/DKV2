@@ -28,8 +28,13 @@ public: // types
     explicit dbfield() : QSqlField(){}
     dbfield(QString name,
             QVariant::Type type=QVariant::String,
-            QString td="", dbfield ref = dbfield(), refIntOption opt = refIntOption::non);
-//     :  QSqlField(name, type), SqlTypeDetails(td), option(opt);
+            QString td="", dbfield ref = dbfield(), refIntOption opt = refIntOption::non)
+     :  QSqlField(name, type), SqlTypeDetails(td), option(opt)
+    {
+        reference.tablename = ref.tableName();
+        reference.name = ref.name();
+    }
+
 
     bool operator ==(const dbfield &b) const;
     QString typeDetails()     const {return SqlTypeDetails;}

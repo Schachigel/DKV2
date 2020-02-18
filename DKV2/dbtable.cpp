@@ -34,7 +34,7 @@ void dbtable::setUnique( const QVector<dbfield>& fs)
 
 QString dbtable::createSQL() const
 {LOG_ENTRY_and_EXIT;
-    QString sql("CREATE TABLE [" + name + "] (");
+    QString sql("CREATE TABLE " + name + " (");
     for( int i = 0; i< Fields().count(); i++)
     {
         if( i>0) sql.append(", ");
@@ -57,6 +57,8 @@ bool dbtable::create(QSqlDatabase& db) const
         qDebug() << q.lastQuery();
         return false;
     }
+    else
+        qDebug() << "Table ceated with SQL " << q.lastQuery();
     return true;
 }
 

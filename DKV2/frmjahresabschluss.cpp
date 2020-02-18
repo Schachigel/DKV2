@@ -7,7 +7,6 @@
 #include "sqlhelper.h"
 #include "csvwriter.h"
 #include "frmjahresabschluss.h"
-#include "htmlbrief.h"
 #include "ui_frmjahresabschluss.h"
 
 
@@ -187,25 +186,25 @@ void frmJahresabschluss::on_pbKontoauszug_clicked()
     fnKa += QString::number(ja.jahr()) + "_";
     QString fn;
 
-    const QVector<Vertrag>& Thesas = ja.getThesaV();
-    for( auto v: Thesas)
-    {
-        htmlTemplate brief;
-        brief.fromFile(":/res/letter.html");
-        brief.setPositionText("DATUM", QDate::currentDate().toString("dd.MM.yyyy"));
-        brief.setPositionText("V_KREDITOR_NAME", printableKreditorName(v));
-        brief.setPositionText("V_KREDITOR_STRASSE", printableKreditorStrasse(v));
-        brief.setPositionText("V_KREDITOR_PLZ_STADT", printableKreditorPlzStadt(v));
-        brief.setPositionText("V_KENNUNG", printableKennung(v));
-        brief.setPositionText("DB_PROJEKTANSCHRIFT", Eigenschaft("DB_PROJEKTANSCHRIFT").toString());
-        brief.setPositionText("DB_BETREFF", Eigenschaft("DB_BETREFF").toString());
-        brief.setPositionText("DB_ANREDE", Eigenschaft("DB_ANREDE").toString());
-        brief.setPositionText("DB_TEXT", Eigenschaft("DB_TEXT").toString());
-        brief.setPositionText("DB_GRUSSFORMEL", Eigenschaft("DB_GRUSSFORMEL").toString());
-        brief.setPositionText("DB_SIGNUM", Eigenschaft("DB_SIGNUM").toString());
+//    const QVector<Vertrag>& Thesas = ja.getThesaV();
+//    for( auto v: Thesas)
+//    {
+//        htmlTemplate brief;
+//        brief.fromFile(":/res/letter.html");
+//        brief.setPositionText("DATUM", QDate::currentDate().toString("dd.MM.yyyy"));
+//        brief.setPositionText("V_KREDITOR_NAME", printableKreditorName(v));
+//        brief.setPositionText("V_KREDITOR_STRASSE", printableKreditorStrasse(v));
+//        brief.setPositionText("V_KREDITOR_PLZ_STADT", printableKreditorPlzStadt(v));
+//        brief.setPositionText("V_KENNUNG", printableKennung(v));
+//        brief.setPositionText("DB_PROJEKTANSCHRIFT", getProperty("DB_PROJEKTANSCHRIFT").toString());
+//        brief.setPositionText("DB_BETREFF", getProperty("DB_BETREFF").toString());
+//        brief.setPositionText("DB_ANREDE", getProperty("DB_ANREDE").toString());
+//        brief.setPositionText("DB_TEXT", getProperty("DB_TEXT").toString());
+//        brief.setPositionText("DB_GRUSSFORMEL", getProperty("DB_GRUSSFORMEL").toString());
+//        brief.setPositionText("DB_SIGNUM", getProperty("DB_SIGNUM").toString());
 
-        fn = fnKa; fn += QString::number(v.getVid()) + ".pdf";
-        printHtmlToPdf(brief.out(), fn);
-    }
+//        fn = fnKa; fn += QString::number(v.getVid()) + ".pdf";
+//        printHtmlToPdf(brief.out(), fn);
+//    }
     showFileInFolder(fn);
 }

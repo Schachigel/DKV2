@@ -21,6 +21,7 @@ private slots:
     void cleanup();
     void test_save_letter_template();
     void test_load_letter_template();
+    void test_applyPlaceholders();
 };
 
 #endif // TEST_LETTERTEMPLATE_H

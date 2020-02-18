@@ -15,10 +15,11 @@ class askDateDlg : public QDialog
 public:
     explicit askDateDlg(QWidget *parent = nullptr, QDate date=QDate::currentDate());
     ~askDateDlg();
-    QDate getDate();
+    QDate getDate() const;
     void setDate(QDate d);
     void setMsg(const QString& msg);
     void setDateLabel(const QString& msg);
+    bool shouldPrint() const;
 private:
     Ui::askDateDlg *ui;
 };

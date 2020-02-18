@@ -28,7 +28,7 @@
      <height>331</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout" stretch="7,2,2">
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="7,2,0,2">
     <item>
      <widget class="QLabel" name="lblMsg">
       <property name="text">
@@ -59,6 +59,16 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="cbPrint">
+      <property name="text">
+       <string>Bestätigungsbrief ausgeben</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QDialogButtonBox" name="buttonBox">

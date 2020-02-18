@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql
+QT       += core gui sql printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -35,11 +35,11 @@ SOURCES += \
         finhelper.cpp \
         frmjahresabschluss.cpp \
         helper.cpp \
-        htmlbrief.cpp \
         itemformatter.cpp \
         jahresabschluss.cpp \
         kreditor.cpp \
         letterTemplate.cpp \
+        letters.cpp \
         main.cpp \
         mainwindow.cpp \
         sqlhelper.cpp \
@@ -57,11 +57,11 @@ HEADERS += \
         finhelper.h \
         frmjahresabschluss.h \
         helper.h \
-        htmlbrief.h \
         itemformatter.h \
         jahresabschluss.h \
         kreditor.h \
         letterTemplate.h \
+        letters.h \
         mainwindow.h \
         sqlhelper.h \
         vertrag.h

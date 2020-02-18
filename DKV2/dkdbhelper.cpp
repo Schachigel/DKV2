@@ -17,7 +17,6 @@
 #include "dkdbhelper.h"
 #include "kreditor.h"
 #include "dbstructure.h"
-#include "htmlbrief.h"
 
 dbstructure dkdbstructur;
 dbstructure dkdbAddtionalTables;
@@ -100,9 +99,20 @@ void initAdditionalTables()
 {LOG_ENTRY_and_EXIT;
     dbtable briefe("Briefvorlagen");
     briefe.append(dbfield("templateId", QVariant::Int));
-    briefe.append(dbfield("Eigenschaft", QVariant::Int));
+    briefe.append(dbfield("EigenschaftId", QVariant::Int));
     briefe.append(dbfield("Wert"));
     dkdbAddtionalTables.appendTable(briefe);
+}
+
+void initGmbHData()
+{
+    initProperty("gmbh.address1", "Esperanza Franklin GmbH");
+    initProperty("gmbh.address2", "");
+    initProperty("gmbh.plz", "68167");
+    initProperty("gmbh.stadt", "Mannheim");
+    initProperty("gmbh.strasse", "Turley-Platz 9");
+    initProperty("gmbh.email","info@esperanza-mannheim.de");
+    initProperty("gmbh.url", "www.esperanza-mannheim.de");
 }
 
 void initBuchungsarten()
@@ -168,16 +178,29 @@ bool EigenschaftenEinfuegen(QSqlDatabase db)
     bool ret =true;
     QSqlQuery sql(db);
     QRandomGenerator *rand = QRandomGenerator::system();
-    ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('Version', '1.0')");
-    ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('IdOffset', '" + QString::number(rand->bounded(10000,20000)) + "')");
-    ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('ProjektInitialen', 'ESP')");
-    // ret &= sql.exec("INSERT INTO Meta (Name, Wert) VALUES ('Lettertemplate', '" +htmlbrief::getTemplate() + "')");
+    initProperty("Version", "1.0");
+    initProperty("IdOffset", QString::number(rand->bounded(10000,20000)));
+    initProperty("ProjektInitialen", "ESP");
+
     return ret;
 }
 
-QVariant Eigenschaft(const QString& name)
+void initProperty( const QString& name, const QString& wert, const QString& connection)
 {LOG_ENTRY_and_EXIT;
-    return ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'");
+    if( getProperty(name, connection)== "")
+        setProperty(name, wert, connection);
+}
+
+QString getProperty(const QString& name, const QString& connection)
+{LOG_ENTRY_and_EXIT;
+    return ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", connection).toString();
+}
+void setProperty(const QString& name, const QString& Wert, const QString& connection)
+{LOG_ENTRY_and_EXIT;
+    QSqlQuery q(QSqlDatabase::database(connection));
+    q.prepare("INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('" + name + "', '" + Wert +"')");
+    if( !q.exec())
+        qCritical() << "Failed to insert Meta information " << q.lastError() << endl << q.lastQuery();
 }
 
 bool DKDatenbankAnlegen(QSqlDatabase db)
@@ -260,7 +283,13 @@ bool hatAlleTabellenUndFelder(QSqlDatabase& db)
     return true;
 }
 
-bool ensureTable( dbtable table, QSqlDatabase& db)
+bool ensureTable( const dbtable& table, const QString& con)
+{
+    QSqlDatabase db = QSqlDatabase::database(con);
+    return ensureTable(table, db);
+}
+
+bool ensureTable( const dbtable& table, QSqlDatabase& db)
 {
     if( tableExists(table.Name(), db.connectionName()))
     {
@@ -345,6 +374,7 @@ void DatenbankZurAnwendungOeffnen( QString newDbFile)
     db.setDatabaseName(newDbFile);
     db.open();
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
+    initGmbHData();
 }
 
 void CheckDbConsistency( QStringList& msg)
@@ -553,9 +583,9 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
 
 QString ProposeKennung()
 {LOG_ENTRY_and_EXIT;
-    int idOffset = Eigenschaft("IdOffset").toInt();
+    int idOffset = getProperty("IdOffset").toInt();
     QString maxid = QString::number(idOffset + getHighestTableId("Vertraege")).rightJustified(6, '0');
-    QString PI = "DK-" + Eigenschaft("ProjektInitialen").toString();
+    QString PI = "DK-" + getProperty("ProjektInitialen");
     return PI + "-" + QString::number(QDate::currentDate().year()) + "-" + maxid;
 }
 
@@ -632,6 +662,8 @@ void berechneZusammenfassung(DbSummary& dbs, QString con)
     dbs.BetragAktive  = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0", con).toReal();
     dbs.WertAktive    = dbs.BetragAuszahlende+dbs.WertThesaurierende;
 
+    dbs.DurchschnittZins = ExecuteSingleValueSql("SELECT SUM( W ) / SUM( W * Z) FROM  (SELECT MAX(Betrag, Wert) AS W, Zinssaetze.Zinssatz AS Z FROM Vertraege, Zinssaetze WHERE Zinssaetze.id = Vertraege.ZSatz AND Vertraege.aktiv)").toReal();
+    dbs.MittlererZins = ExecuteSingleValueSql("SELECT AVG(Zinssaetze.Zinssatz) FROM Vertraege, Zinssaetze WHERE Zinssaetze.id = Vertraege.ZSatz AND Vertraege.aktiv").toDouble();
     dbs.AnzahlPassive = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] = 0", con).toInt();
     dbs.BetragPassive = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 0", con).toReal();
 }
@@ -657,14 +689,14 @@ void CsvActiveContracts()
     showFileInFolder(filename);
 }
 
-void berechneVertragsenden( QVector<ContractEnd>& ce, QString con)
+void berechneVertragsenden( QVector<ContractEnd>& ce, QString connection)
 {LOG_ENTRY_and_EXIT;
 
     QMap<int, int> m_count;
     QMap<int, double> m_sum;
     const int maxYear = QDate::currentDate().year() +99;
 
-    QSqlQuery sql(QSqlDatabase::database(con));
+    QSqlQuery sql(QSqlDatabase::database(connection));
     sql.setForwardOnly(true);
     sql.exec("SELECT * FROM [Vertraege] WHERE [aktiv] = 1");
     while( sql.next())
@@ -693,13 +725,13 @@ void berechneVertragsenden( QVector<ContractEnd>& ce, QString con)
     return;
 }
 
-void berechneJahrZinsVerteilung( QVector<YZV>& yzv, QString con)
+void berechneJahrZinsVerteilung( QVector<YZV>& yzv, QString connection)
 {
     QString sql = "SELECT Substr([Vertragsdatum], 0, 5), [Zinssaetze].[Zinssatz], count(*), sum([Betrag]) "
                   "FROM [Vertraege], [Zinssaetze] "
                   "WHERE [ZSatz] = [Zinssaetze].[id] "
                   "GROUP BY Substr([Vertragsdatum], 0, 4), [ZSatz]";
-    QSqlQuery query(con);
+    QSqlQuery query(connection);
     query.exec(sql);
     while( query.next())
     {
@@ -755,3 +787,4 @@ QString LaufzeitenVerteilungHtml(QString con)
     ret += locale.toCurrencyString(SummeUnbegrenzet) + "</td></tr></table>";
     return ret;
 }
+
