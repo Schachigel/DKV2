@@ -117,18 +117,14 @@ void initGmbHData()
 
 void initBuchungsarten()
 {LOG_ENTRY_and_EXIT;
-    //    "NOOP",
-    //    "Vertrag anlegen",
-    //    "Vertrag aktivieren",
-    //    "Passiven Vertrag löschen",
-    //    "Vertrag beenden",
-    //    "Zinsgutschrift"
+
     Buchungsarten.push_back(QPair<qlonglong, QString>(Buchungsart_i::NOOP, ""));
     Buchungsarten.push_back(QPair<qlonglong, QString>(Buchungsart_i::VERTRAG_ANLEGEN, "Vertrag anlegen"));
     Buchungsarten.push_back(QPair<qlonglong, QString>(Buchungsart_i::VERTRAG_AKTIVIEREN, "Vertrag aktivieren"));
     Buchungsarten.push_back(QPair<qlonglong, QString>(Buchungsart_i::PASSIVEN_VERTRAG_LOESCHEN, "Passiven Vertrag löschen"));
     Buchungsarten.push_back(QPair<qlonglong, QString>(Buchungsart_i::VERTRAG_BEENDEN, "Vertrag beenden"));
     Buchungsarten.push_back(QPair<qlonglong, QString>(Buchungsart_i::ZINSGUTSCHRIFT, "Zinsgutschrift"));
+    Buchungsarten.push_back(QPair<qlonglong, QString>(Buchungsart_i::KUENDIGUNG_FRIST, "Kuendigung mit Frist"));
 }
 
 bool ZinssaetzeEinfuegen(QSqlDatabase db)
@@ -159,7 +155,7 @@ bool ZinssaetzeEinfuegen(QSqlDatabase db)
     return ret;
 }
 
-bool BuchungsartenEinfuegen(QSqlDatabase db)
+bool BuchungsartenEinfuegen(QSqlDatabase db =QSqlDatabase::database())
 {LOG_ENTRY_and_EXIT;
     bool ret = true;
     for( auto art: Buchungsarten)
@@ -168,7 +164,7 @@ bool BuchungsartenEinfuegen(QSqlDatabase db)
         ti.setValue("id", QVariant(art.first));
         ti.setValue("Art", QVariant(art.second));
 
-        ret &= 0<= ti.InsertData(db);
+        ret &= 0<= ti.InsertOrReplaceData(db);
     }
     return ret;
 }
@@ -338,7 +334,6 @@ bool istValideDatenbank(QSqlDatabase db)
     return true;
 }
 
-
 void DatenbankverbindungSchliessen(QString con)
 {LOG_ENTRY_and_EXIT;
 
@@ -375,6 +370,7 @@ void DatenbankZurAnwendungOeffnen( QString newDbFile)
     db.open();
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     initGmbHData();
+    BuchungsartenEinfuegen();
 }
 
 void CheckDbConsistency( QStringList& msg)

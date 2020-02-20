@@ -40,3 +40,8 @@ bool askDateDlg::shouldPrint() const
 {
     return ui->cbPrint->checkState() == Qt::CheckState::Checked;
 }
+
+void askDateDlg::showPrintOption(bool show)
+{
+    ui->cbPrint->setVisible(show);
+}

@@ -43,6 +43,8 @@ public:
     QString Vorname() const {return dkGeber.getValue("Vorname").toString();}
     QString Nachname() const {return dkGeber.getValue("Nachname").toString();}
     Kreditor getKreditor() const { return dkGeber;}
+    bool isActive() const {return active;}
+    int Kuendigungsfrist() const { return kFrist;}
     // setter
     void setVid(int i){ id = i;}
 
@@ -53,11 +55,13 @@ public:
     bool aktiviereVertrag(const QDate& aDate);
     bool verbucheJahreszins(const QDate& YearEnd);
     // statics
-    bool passivenVertragLoeschen();
-    bool aktivenVertragLoeschen(const QDate& termin);
+    bool loeschePassivenVertrag();
+    bool kuendigeAktivenVertrag(const QDate& kTermin);
+    bool beendeAktivenVertrag(const QDate& termin);
 private:
     // helper
     bool BelegSpeichern(const qlonglong BArt, const QString& msg);
+    bool speichereBelegKuendigung();
     int speichereNeuenVertrag() const;
     bool speichereBelegNeuerVertrag();
     void updateAusDb(){ausDb(id, true);}

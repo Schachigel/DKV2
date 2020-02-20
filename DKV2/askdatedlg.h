@@ -20,6 +20,7 @@ public:
     void setMsg(const QString& msg);
     void setDateLabel(const QString& msg);
     bool shouldPrint() const;
+    void showPrintOption(bool show);
 private:
     Ui::askDateDlg *ui;
 };

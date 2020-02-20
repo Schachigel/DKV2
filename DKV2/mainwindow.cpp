@@ -35,6 +35,7 @@
 #include "letters.h"
 #include "jahresabschluss.h"
 #include "frmjahresabschluss.h"
+#include "transaktionen.h"
 
 // construction, destruction
 MainWindow::MainWindow(QWidget *parent) :
@@ -66,24 +67,24 @@ MainWindow::MainWindow(QWidget *parent) :
 }
 
 MainWindow::~MainWindow()
-{
+{LOG_ENTRY_and_EXIT;
     delete ui;
 }
 
 void MainWindow::setSplash(QSplashScreen* s)
-{
+{LOG_ENTRY_and_EXIT;
     splash = s;
     startTimer(3333);
 }
 
 void MainWindow::DbInStatuszeileAnzeigen()
-{
+{LOG_ENTRY_and_EXIT;
     QSettings config;
     ui->statusLabel->setText(config.value("db/last").toString());
 }
 
 void MainWindow::prepareWelcomeMsg()
-{
+{LOG_ENTRY_and_EXIT;
     QString message="<H2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</H2>";
 
     QStringList warnings;
@@ -98,7 +99,7 @@ void MainWindow::prepareWelcomeMsg()
 }
 // whenever the stackedWidget changes ...
 void MainWindow::on_stackedWidget_currentChanged(int arg1)
-{    LOG_ENTRY_and_EXIT;
+{LOG_ENTRY_and_EXIT;
     if( arg1 < 0)
     {
         qWarning() << "stackedWidget changed to non existing page";
@@ -141,16 +142,15 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
 
 // file menu
 void MainWindow::on_actionzur_ck_triggered()
-{
+{LOG_ENTRY_and_EXIT;
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
-
 void MainWindow::on_action_Neue_DB_anlegen_triggered()
 {LOG_ENTRY_and_EXIT;
     QString dbfile = QFileDialog::getSaveFileName(this, "Neue DkVerarbeitungs Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
     if( dbfile == "")
         return;
-
+    busycursor b;
     DatenbankverbindungSchliessen();
     if( !DKDatenbankAnlegen(dbfile))
         exit(0x80070020);
@@ -169,9 +169,46 @@ void MainWindow::on_actionDBoeffnen_triggered()
         qDebug() << "keine Datei wurde vom Anwender ausgewählt";
         return;
     }
+    busycursor b;
     DatenbankZurAnwendungOeffnen(dbfile);
-
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
+}
+void MainWindow::on_actionAnonymlisierte_Kopie_triggered()
+{LOG_ENTRY_and_EXIT;
+    QString dbfile = QFileDialog::getSaveFileName(this, "Anonymisierte Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
+    if( dbfile == "")
+        return;
+    busycursor b;
+    if( !createDbCopy(dbfile, true))
+    {
+        qDebug() << "creating depersonaliced copy failed";
+    }
+    return;
+}
+void MainWindow::on_actionKopie_anlegen_triggered()
+{LOG_ENTRY_and_EXIT;
+    QString dbfile = QFileDialog::getSaveFileName(this, "Kopie der Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
+    if( dbfile == "")
+        return;
+
+    busycursor b;
+    if( !createDbCopy(dbfile, false))
+    {
+        qDebug() << "creating depersonaliced copy failed";
+    }
+    return;
+
+}
+void MainWindow::on_actionAusgabeverzeichnis_festlegen_triggered()
+{LOG_ENTRY_and_EXIT;
+    QString dir;
+    QSettings config;
+    config.value("outdir", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+
+    dir = QFileDialog::getExistingDirectory(this, "Ausgabeverzeichnis", dir,
+                                        QFileDialog::ShowDirsOnly
+                                            | QFileDialog::DontResolveSymlinks);
+    config.setValue("outdir", dir);
 }
 void MainWindow::on_actionProgramm_beenden_triggered()
 {LOG_ENTRY_and_EXIT;
@@ -182,6 +219,7 @@ void MainWindow::on_actionProgramm_beenden_triggered()
 // person list page
 void MainWindow::preparePersonTableView()
 {LOG_ENTRY_and_EXIT;
+    busycursor b;
     QSqlTableModel* model = new QSqlTableModel(ui->PersonsTableView);
     model->setTable("Kreditoren");
     model->setFilter("Vorname LIKE '%" + ui->leFilter->text() + "%' OR Nachname LIKE '%" + ui->leFilter->text() + "%'");
@@ -199,36 +237,27 @@ void MainWindow::preparePersonTableView()
 }
 void MainWindow::on_action_Liste_triggered()
 {LOG_ENTRY_and_EXIT;
+    busycursor b;
     preparePersonTableView();
     if( !ui->PersonsTableView->currentIndex().isValid())
         ui->PersonsTableView->selectRow(0);
 
     ui->stackedWidget->setCurrentIndex(PersonListIndex);
 }
-void MainWindow::on_actionKreditgeber_loeschen_triggered()
+// helper fu
+int MainWindow::getPersonIdFromKreditorenList()
 {LOG_ENTRY_and_EXIT;
-    QString msg( "Soll der Kreditgeber ");
-    QModelIndex mi(ui->PersonsTableView->currentIndex());
-    QString Vorname = ui->PersonsTableView->model()->data(mi.siblingAtColumn(1)).toString();
-    QString Nachname = ui->PersonsTableView->model()->data(mi.siblingAtColumn(2)).toString();
-    QString index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0)).toString();
-    msg += Vorname + " " + Nachname + " (id " + index + ") mit allen Verträgen und Buchungen gelöscht werden?";
-    if( QMessageBox::Yes != QMessageBox::question(this, "Kreditgeber löschen?", msg))
-        return;
-
-    if( Kreditor::Loeschen(index.toInt()))
-        preparePersonTableView();
-    else
-        Q_ASSERT(!bool("could not remove kreditor and contracts"));
+    // What is the persId of the currently selected person in the person?
+    QModelIndex mi(ui->PersonsTableView->currentIndex().siblingAtColumn(0));
+    if( mi.isValid())
+    {
+        QVariant data(ui->PersonsTableView->model()->data(mi));
+        return data.toInt();
+    }
+    qCritical() << "Index der Personenliste konnte nicht bestimmt werden";
+    return -1;
 }
-
-void MainWindow::on_actionVertraege_zeigen_triggered()
-{
-    QModelIndex mi(ui->PersonsTableView->currentIndex());
-    QString index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0)).toString();
-    ui->leVertraegeFilter->setText(index);
-    on_actionListe_der_Vertraege_anzeigen_triggered();
-}
+// Kontext Menue in Kreditoren Tabelle
 void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &pos)
 {LOG_ENTRY_and_EXIT;
     QModelIndex index = ui->PersonsTableView->indexAt(pos).siblingAtColumn(0);
@@ -250,24 +279,64 @@ void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &po
         return;
     }
 }
+void MainWindow::on_actionDkGeberBearbeiten_triggered()
+{LOG_ENTRY_and_EXIT;
+    busycursor b;
+    QModelIndex mi(ui->PersonsTableView->currentIndex());
+    QVariant index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0));
+    ui->lblPersId->setText(index.toString());
 
-// debug funktions
-void MainWindow::on_actioncreateSampleData_triggered()
-{LOG_ENTRY_and_EXIT;
-    BeispieldatenAnlegen();
-    preparePersonTableView();
-    prepareContractListView();
-    if( ui->stackedWidget->currentIndex() == OverviewIndex)
-        on_action_Uebersicht_triggered();
+    KreditorFormulardatenBelegen(index.toInt());
+    ui->stackedWidget->setCurrentIndex(newPersonIndex);
 }
-void MainWindow::on_actionanzeigenLog_triggered()
+void MainWindow::on_actionVertrag_anlegen_triggered(int id)
 {LOG_ENTRY_and_EXIT;
-    #if defined(Q_OS_WIN)
-    ::ShellExecuteA(nullptr, "open", logFilePath().toUtf8(), "", QDir::currentPath().toUtf8(), 1);
-    #else
-    QString cmd = "open " + logFilePath().toUtf8();
-    system(cmd.toUtf8().constData());
-    #endif
+    busycursor b;
+    FillKreditorDropdown();
+    FillRatesDropdown();
+    ui->leKennung->setText( ProposeKennung());
+    comboKreditorenAnzeigeNachKreditorenId( id != -1 ? id : getPersonIdFromKreditorenList());
+    Vertrag cd; // this is to get the defaults of the class definition
+    ui->deLaufzeitEnde->setDate(cd.LaufzeitEnde());
+    ui->deVertragsabschluss->setDate(cd.Vertragsabschluss());
+    ui->chkbThesaurierend->setChecked(cd.Thesaurierend());
+
+    ui->stackedWidget->setCurrentIndex(newContractIndex);
+}
+void MainWindow::on_actionKreditgeber_loeschen_triggered()
+{LOG_ENTRY_and_EXIT;
+    QString msg( "Soll der Kreditgeber ");
+    QModelIndex mi(ui->PersonsTableView->currentIndex());
+    QString Vorname = ui->PersonsTableView->model()->data(mi.siblingAtColumn(1)).toString();
+    QString Nachname = ui->PersonsTableView->model()->data(mi.siblingAtColumn(2)).toString();
+    QString index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0)).toString();
+    msg += Vorname + " " + Nachname + " (id " + index + ") mit allen Verträgen und Buchungen gelöscht werden?";
+    if( QMessageBox::Yes != QMessageBox::question(this, "Kreditgeber löschen?", msg))
+        return;
+    busycursor b;
+    if( Kreditor::Loeschen(index.toInt()))
+        preparePersonTableView();
+    else
+        Q_ASSERT(!bool("could not remove kreditor and contracts"));
+}
+void MainWindow::on_actionVertraege_zeigen_triggered()
+{LOG_ENTRY_and_EXIT;
+    busycursor b;
+    QModelIndex mi(ui->PersonsTableView->currentIndex());
+    QString index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0)).toString();
+    ui->leVertraegeFilter->setText(index);
+    on_actionListe_der_Vertraege_anzeigen_triggered();
+}
+void MainWindow::on_leFilter_editingFinished()
+{LOG_ENTRY_and_EXIT;
+    busycursor b;
+    preparePersonTableView();
+}
+void MainWindow::on_pbPersonFilterZuruecksetzen_clicked()
+{LOG_ENTRY_and_EXIT;
+    busycursor b;
+    ui->leFilter->setText("");
+    preparePersonTableView();
 }
 
 // new DK Geber
@@ -332,7 +401,8 @@ void MainWindow::KreditorFormulardatenLoeschen()
     ui->lblPersId->setText("");
 }
 void MainWindow::KreditorFormulardatenBelegen(int id)
-{
+{LOG_ENTRY_and_EXIT;
+    busycursor b;
     QSqlRecord rec = ExecuteSingleRecordSql(dkdbstructur["Kreditoren"].Fields(), "Id=" +QString::number(id));
     ui->leVorname->setText(rec.field("Vorname").value().toString());
     ui->leNachname->setText(rec.field("Nachname").value().toString());
@@ -344,17 +414,6 @@ void MainWindow::KreditorFormulardatenBelegen(int id)
     ui->leIban  ->setText(rec.field("IBAN").value().toString());
     ui->leBic  ->setText(rec.field("BIC").value().toString());
 }
-void MainWindow::on_actionDkGeberBearbeiten_triggered()
-{LOG_ENTRY_and_EXIT;
-
-    QModelIndex mi(ui->PersonsTableView->currentIndex());
-    QVariant index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0));
-    ui->lblPersId->setText(index.toString());
-
-    KreditorFormulardatenBelegen(index.toInt());
-    ui->stackedWidget->setCurrentIndex(newPersonIndex);
-}
-
 void MainWindow::on_saveNew_clicked()
 {LOG_ENTRY_and_EXIT;
     if( KreditgeberSpeichern() != -1)
@@ -368,7 +427,6 @@ void MainWindow::on_saveList_clicked()
         on_action_Liste_triggered();
     }
 }
-
 void MainWindow::on_saveExit_clicked() // speichern und zu "Vertrag anlegen"
 {LOG_ENTRY_and_EXIT;
     int kid = KreditgeberSpeichern();
@@ -384,7 +442,7 @@ void MainWindow::on_cancel_clicked()
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 
-// new Contract
+// neuer Vertrag
 Vertrag MainWindow::VertragsdatenAusFormular()
 {LOG_ENTRY_and_EXIT;
     int KreditorId = ui->comboKreditoren->itemData(ui->comboKreditoren->currentIndex()).toInt();
@@ -402,7 +460,6 @@ Vertrag MainWindow::VertragsdatenAusFormular()
     return Vertrag(KreditorId, Kennung, Betrag, Wert, ZinsId, Vertragsdatum,
                    thesaurierend, false/*aktiv*/,StartZinsberechnung, kFrist, LaufzeitEnde);
 }
-
 bool MainWindow::saveNewContract()
 {LOG_ENTRY_and_EXIT;
     Vertrag c =VertragsdatenAusFormular();
@@ -426,7 +483,6 @@ void MainWindow::clearNewContractFields()
     ui->leBetrag->setText("");
     ui->chkbThesaurierend->setChecked(true);
 }
-
 // switch to "Vertrag anlegen"
 void MainWindow::FillKreditorDropdown()
 {LOG_ENTRY_and_EXIT;
@@ -462,7 +518,7 @@ void MainWindow::comboKreditorenAnzeigeNachKreditorenId(int KreditorenId)
     }
 }
 void MainWindow::on_cbKFrist_currentIndexChanged(int index)
-{
+{LOG_ENTRY_and_EXIT;
     if( -1 == ui->cbKFrist->itemData(index).toInt())
     {   // Vertragsende wird fest vorgegeben
         if( EndOfTheFuckingWorld == ui->deLaufzeitEnde->date())
@@ -475,7 +531,12 @@ void MainWindow::on_cbKFrist_currentIndexChanged(int index)
         ui->deLaufzeitEnde->setDate(EndOfTheFuckingWorld);
     }
 }
+void MainWindow::on_leBetrag_editingFinished()
+{LOG_ENTRY_and_EXIT;
+    ui->leBetrag->setText(QString("%L1").arg(ui->leBetrag->text().toDouble()));
+}
 
+// leave new contract
 void MainWindow::on_speichereVertragZurKreditorenListe_clicked()
 {LOG_ENTRY_and_EXIT;
     if( saveNewContract())
@@ -499,42 +560,10 @@ void MainWindow::on_cancelCreateContract_clicked()
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 
-int MainWindow::getPersonIdFromKreditorenList()
-{LOG_ENTRY_and_EXIT;
-    // What is the persId of the currently selected person in the person?
-    QModelIndex mi(ui->PersonsTableView->currentIndex().siblingAtColumn(0));
-    if( mi.isValid())
-    {
-        QVariant data(ui->PersonsTableView->model()->data(mi));
-        return data.toInt();
-    }
-    qCritical() << "Index der Personenliste konnte nicht bestimmt werden";
-    return -1;
-}
-
-void MainWindow::on_actionVertrag_anlegen_triggered(int id)
-{LOG_ENTRY_and_EXIT;
-    FillKreditorDropdown();
-    FillRatesDropdown();
-    ui->leKennung->setText( ProposeKennung());
-    comboKreditorenAnzeigeNachKreditorenId( id != -1 ? id : getPersonIdFromKreditorenList());
-    Vertrag cd; // this is to get the defaults of the class definition
-    ui->deLaufzeitEnde->setDate(cd.LaufzeitEnde());
-    ui->deVertragsabschluss->setDate(cd.Vertragsabschluss());
-    ui->chkbThesaurierend->setChecked(cd.Thesaurierend());
-
-    ui->stackedWidget->setCurrentIndex(newContractIndex);
-}
-
-
-void MainWindow::on_leBetrag_editingFinished()
-{
-    ui->leBetrag->setText(QString("%L1").arg(ui->leBetrag->text().toDouble()));
-}
-
-// List of contracts
+// Liste der Verträge
 void MainWindow::prepareContractListView()
 {LOG_ENTRY_and_EXIT;
+    busycursor b;
     QVector<dbfield> fields;
     fields.append(dkdbstructur["Vertraege"]["id"]);
     fields.append(dkdbstructur["Vertraege"]["Kennung"]);
@@ -612,115 +641,6 @@ int MainWindow::getContractIdFromContractsList()
     }
     return -1;
 }
-
-void MainWindow::on_actionactivateContract_triggered()
-{LOG_ENTRY_and_EXIT;
-    askDateDlg dlg( this, QDate::currentDate());
-    dlg.setMsg("<H3>Mit der Aktivierung des Vertrags beginnt die Zinsberechnung. <br>Bitte geben Sie das Datum des Geldeingangs ein:</H3>");
-    dlg.setDateLabel("Die Verzinsung beginnt am");
-    if( QDialog::Accepted == dlg.exec())
-    {
-        Vertrag v;
-        v.ausDb(getContractIdFromContractsList(), true);
-        if( v.aktiviereVertrag(dlg.getDate()))
-        {
-            if( dlg.shouldPrint())
-                printThankyouLetter(v);
-            prepareContractListView();
-        }
-
-    }
-}
-void MainWindow::on_actionVertrag_passiv_loeschen_triggered()
-{LOG_ENTRY_and_EXIT;
-    QModelIndex mi(ui->contractsTableView->currentIndex());
-    if( !mi.isValid()) return;
-    QString Vorname = ui->contractsTableView->model()->data(mi.siblingAtColumn(1)).toString();
-    QString Nachname = ui->contractsTableView->model()->data(mi.siblingAtColumn(2)).toString();
-    QString index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toString();
-
-    QString msg( "Soll der Vertrag von ");
-
-    msg += Vorname + " " + Nachname + " (id " + index + ") gelöscht werden?";
-    if( QMessageBox::Yes != QMessageBox::question(this, "Kreditvertrag löschen", msg))
-        return;
-
-    Vertrag v; v.setVid(index.toInt());
-    v.passivenVertragLoeschen();
-    prepareContractListView();
-}
-
-void MainWindow::on_leFilter_editingFinished()
-{LOG_ENTRY_and_EXIT;
-    preparePersonTableView();
-}
-
-void MainWindow::on_pbPersonFilterZuruecksetzen_clicked()
-{LOG_ENTRY_and_EXIT;
-    ui->leFilter->setText("");
-    preparePersonTableView();
-}
-
-void MainWindow::on_leVertraegeFilter_editingFinished()
-{LOG_ENTRY_and_EXIT;
-    prepareContractListView();
-}
-
-void MainWindow::on_FilterVertraegeZuruecksetzen_clicked()
-{LOG_ENTRY_and_EXIT;
-    ui->leVertraegeFilter->setText("");
-    prepareContractListView();
-}
-
-void MainWindow::on_actionVertrag_Beenden_triggered()
-{LOG_ENTRY_and_EXIT;
-    QModelIndex mi(ui->contractsTableView->currentIndex());
-    if( !mi.isValid()) return;
-    int index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toInt();
-    // Vertrag beenden -> Zins berechnen und m Auszahlungsbetrag anzeigen, dann löschen
-    Vertrag v;
-    v.ausDb(index, true);
-    double WertBisHeute = v.Wert() + ZinsesZins(v.Zinsfuss(), v.Wert(), v.StartZinsberechnung(), QDate::currentDate(), v.Thesaurierend());
-    QString getDateMsg("<h2>Wenn Sie einen Vertrag beenden wird der Zins abschließend"
-                " berechnet und der Auszahlungsbetrag ermittelt.<br></h2>"
-                "Um den Vertrag von %1 %2 mit dem aktuellen Wert %3 Euro jetzt zu beenden "
-                "wählen Sie das Datum des Vertragendes ein und klicken Sie OK");
-    QLocale locale;
-    getDateMsg = getDateMsg.arg(v.Vorname(), v.Nachname(), locale.toCurrencyString(WertBisHeute));
-
-    // Vertragsende >! letzte Zinsberechnung
-    QDate Vorschlagswert = (QDate::currentDate()> v.StartZinsberechnung())?QDate::currentDate(): v.StartZinsberechnung();
-    askDateDlg dlg( this, Vorschlagswert);
-    dlg.setMsg(getDateMsg);
-    dlg.setDateLabel("Ende der Zinsberechnung nach der Kündigungsfrist:");
-    do {
-        if( QDialog::Accepted != dlg.exec())
-        {
-            qDebug() << "Delete contract was aborted by the user";
-            return;
-        }
-        if( dlg.getDate() < v.StartZinsberechnung())
-        {
-            dlg.setMsg( getDateMsg + "<br><b>Das Datum muss nach der letzten Zinsausschüttung liegen</b>");
-            dlg.setDate(Vorschlagswert);
-            continue;
-        }
-        break;
-    } while(true);
-
-    double davonZins =ZinsesZins(v.Zinsfuss(), v.Wert(), v.StartZinsberechnung(), dlg.getDate(), v.Thesaurierend());
-    double neuerWert =v.Wert() +davonZins;
-
-    QString confirmDeleteMsg("<h3>Vertragsabschluß</h3><br>Wert zum Vertragsende: %1 Euro<br>Zins der letzten Zinsphase: %2 Euro<br>"\
-                             "Soll der Vertrag gelöscht werden?");
-    confirmDeleteMsg = confirmDeleteMsg.arg(locale.toCurrencyString(neuerWert), locale.toCurrencyString(davonZins));
-    if( QMessageBox::Yes != QMessageBox::question(this, "Vertrag löschen?", confirmDeleteMsg))
-        return;
-    if( !v.aktivenVertragLoeschen(dlg.getDate()))
-        qCritical() << "Deleting the contract failed";
-    prepareContractListView();
-}
-
 QString MainWindow::prepareOverviewPage(Uebersichten u)
 {LOG_ENTRY_and_EXIT;
 
@@ -813,7 +733,6 @@ QString MainWindow::prepareOverviewPage(Uebersichten u)
     qDebug() << "\n" << lbl << endl;
     return lbl;
 }
-
 void MainWindow::on_action_Uebersicht_triggered()
 {LOG_ENTRY_and_EXIT;
     if(ui->comboUebersicht->count() == 0)
@@ -830,7 +749,161 @@ void MainWindow::on_action_Uebersicht_triggered()
     ui->txtOverview->setText( prepareOverviewPage(u));
     ui->stackedWidget->setCurrentIndex(OverviewIndex);
 }
+void MainWindow::on_comboUebersicht_currentIndexChanged(int )
+{LOG_ENTRY_and_EXIT;
+    on_action_Uebersicht_triggered();
+}
+void MainWindow::on_pbPrint_clicked()
+{LOG_ENTRY_and_EXIT;
+    QSettings config;
+    QString filename = config.value("outdir").toString();
 
+    filename += "\\" + QDate::currentDate().toString("yyyy-MM-dd_");
+    filename += Uebersichten_kurz[ui->comboUebersicht->currentIndex()];
+    filename += ".pdf";
+    QPdfWriter write(filename);
+    ui->txtOverview->print(&write);
+    showFileInFolder(filename);
+}
+void MainWindow::on_actionJahreszinsabrechnung_triggered()
+{LOG_ENTRY_and_EXIT;
+    jahresabschluss Abschluss;
+
+    QString msg = "Der Jahresabschluss für das Jahr "
+                  + QString::number(Abschluss.abzuschliessendesJahr())
+                  + " kann gemacht werden\n\n";
+    msg += "Dabei werden die Zinsen für alle Verträge berechnet. Der Wert von thesaurierenden Verträgen wird angepasst\n";
+    msg += "Dieser Vorgang kann nicht rückgängig gemacht werden. Möchtest Du fortfahren?";
+
+    if( QMessageBox::Yes != QMessageBox::question(this, "Jahresabschluss", msg))
+        return;
+    Abschluss.execute();
+    frmJahresabschluss dlgJA(Abschluss, this);
+    dlgJA.exec();
+    on_actionListe_der_Vertraege_anzeigen_triggered( );
+}
+void MainWindow::on_actionAktive_Vertraege_CSV_triggered()
+{LOG_ENTRY_and_EXIT;
+    CsvActiveContracts();
+}
+// contract list context menu
+void MainWindow::on_actionactivateContract_triggered()
+{LOG_ENTRY_and_EXIT;
+    askDateDlg dlg( this, QDate::currentDate());
+    dlg.setMsg("<H3>Mit der Aktivierung des Vertrags beginnt die Zinsberechnung. <br>Bitte geben Sie das Datum des Geldeingangs ein:</H3>");
+    dlg.setDateLabel("Die Verzinsung beginnt am");
+    if( QDialog::Accepted == dlg.exec())
+    {
+        Vertrag v;
+        v.ausDb(getContractIdFromContractsList(), true);
+        if( v.aktiviereVertrag(dlg.getDate()))
+        {
+            if( dlg.shouldPrint())
+                printThankyouLetter(v);
+            prepareContractListView();
+        }
+
+    }
+}
+void MainWindow::on_actionVertrag_passiv_loeschen_triggered()
+{LOG_ENTRY_and_EXIT;
+    QModelIndex mi(ui->contractsTableView->currentIndex());
+    if( !mi.isValid()) return;
+
+    QString index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toString();
+    vertragBeenden(index.toInt());
+
+    prepareContractListView();
+}
+void MainWindow::on_leVertraegeFilter_editingFinished()
+{LOG_ENTRY_and_EXIT;
+    prepareContractListView();
+}
+void MainWindow::on_FilterVertraegeZuruecksetzen_clicked()
+{LOG_ENTRY_and_EXIT;
+    ui->leVertraegeFilter->setText("");
+    prepareContractListView();
+}
+void MainWindow::on_actionVertrag_Beenden_triggered()
+{LOG_ENTRY_and_EXIT;
+    QModelIndex mi(ui->contractsTableView->currentIndex());
+    if( !mi.isValid()) return;
+    int index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toInt();
+    bool ret = vertragBeenden(index);
+    if( !ret)
+    {
+        QMessageBox::information(nullptr, "Fehler beim Beenden des Vertrags", "Es ist ein Fehler aufgetreten, bitte überprüfen sie das LOG");
+    } else
+    {
+        QMessageBox::information(nullptr, "Beenden des Vertrags", "Das Beenden des Vertrags wurde erfolgreich gespeichert");
+    }
+// move to "transaktions":
+    // Vertrag beenden -> Zins berechnen und m Auszahlungsbetrag anzeigen, dann löschen
+//    Vertrag v;
+//    v.ausDb(index, true);
+
+
+//    double WertBisHeute = v.Wert() + ZinsesZins(v.Zinsfuss(), v.Wert(), v.StartZinsberechnung(), QDate::currentDate(), v.Thesaurierend());
+//    QString getDateMsg("<h2>Wenn Sie einen Vertrag beenden wird der Zins abschließend"
+//                " berechnet und der Auszahlungsbetrag ermittelt.<br></h2>"
+//                "Um den Vertrag von %1 %2 mit dem aktuellen Wert %3 Euro jetzt zu beenden "
+//                "wählen Sie das Datum des Vertragendes ein und klicken Sie OK");
+//    QLocale locale;
+//    getDateMsg = getDateMsg.arg(v.Vorname(), v.Nachname(), locale.toCurrencyString(WertBisHeute));
+
+//    // Vertragsende >! letzte Zinsberechnung
+//    QDate Vorschlagswert = (QDate::currentDate()> v.StartZinsberechnung())?QDate::currentDate(): v.StartZinsberechnung();
+//    askDateDlg dlg( this, Vorschlagswert);
+//    dlg.setMsg(getDateMsg);
+//    dlg.setDateLabel("Ende der Zinsberechnung nach der Kündigungsfrist:");
+//    do {
+//        if( QDialog::Accepted != dlg.exec())
+//        {
+//            qDebug() << "Delete contract was aborted by the user";
+//            return;
+//        }
+//        if( dlg.getDate() < v.StartZinsberechnung())
+//        {
+//            dlg.setMsg( getDateMsg + "<br><b>Das Datum muss nach der letzten Zinsausschüttung liegen</b>");
+//            dlg.setDate(v.StartZinsberechnung().addDays(1));
+//            continue;
+//        }
+//        break;
+//    } while(true);
+
+//    double davonZins =ZinsesZins(v.Zinsfuss(), v.Wert(), v.StartZinsberechnung(), dlg.getDate(), v.Thesaurierend());
+//    double neuerWert =v.Wert() +davonZins;
+
+//    QString confirmDeleteMsg("<h3>Vertragsabschluß</h3><br>Wert zum Vertragsende: %1 Euro<br>Zins der letzten Zinsphase: %2 Euro<br>"\
+//                             "Soll der Vertrag gelöscht werden?");
+//    confirmDeleteMsg = confirmDeleteMsg.arg(locale.toCurrencyString(neuerWert), locale.toCurrencyString(davonZins));
+//    if( QMessageBox::Yes != QMessageBox::question(this, "Vertrag löschen?", confirmDeleteMsg))
+//        return;
+//    if( !v.beendeAktivenVertrag(dlg.getDate()))
+//        qCritical() << "Deleting the contract failed";
+    prepareContractListView();
+}
+
+
+// debug funktions
+void MainWindow::on_actioncreateSampleData_triggered()
+{LOG_ENTRY_and_EXIT;
+    BeispieldatenAnlegen();
+    preparePersonTableView();
+    prepareContractListView();
+    if( ui->stackedWidget->currentIndex() == OverviewIndex)
+        on_action_Uebersicht_triggered();
+}
+void MainWindow::on_actionanzeigenLog_triggered()
+{LOG_ENTRY_and_EXIT;
+    #if defined(Q_OS_WIN)
+    ::ShellExecuteA(nullptr, "open", logFilePath().toUtf8(), "", QDir::currentPath().toUtf8(), 1);
+    #else
+    QString cmd = "open " + logFilePath().toUtf8();
+    system(cmd.toUtf8().constData());
+    #endif
+}
+// bookings- bisher Debug stuff
 void MainWindow::on_tblViewBookingsSelectionChanged(const QItemSelection& to, const QItemSelection& )
 {
     QString json =ui->tblViewBookings->model()->data(to.indexes().at(0).siblingAtColumn(6)).toString();
@@ -857,83 +930,4 @@ void MainWindow::on_actionShow_Bookings_triggered()
     ui->stackedWidget->setCurrentIndex(bookingsListIndex);
 }
 
-void MainWindow::on_actionJahreszinsabrechnung_triggered()
-{LOG_ENTRY_and_EXIT;
-    jahresabschluss Abschluss;
 
-    QString msg = "Der Jahresabschluss für das Jahr "
-                  + QString::number(Abschluss.abzuschliessendesJahr())
-                  + " kann gemacht werden\n\n";
-    msg += "Dabei werden die Zinsen für alle Verträge berechnet. Der Wert von thesaurierenden Verträgen wird angepasst\n";
-    msg += "Dieser Vorgang kann nicht rückgängig gemacht werden. Möchtest Du fortfahren?";
-
-    if( QMessageBox::Yes != QMessageBox::question(this, "Jahresabschluss", msg))
-        return;
-    Abschluss.execute();
-    frmJahresabschluss dlgJA(Abschluss, this);
-    dlgJA.exec();
-    on_actionListe_der_Vertraege_anzeigen_triggered( );
-}
-
-void MainWindow::on_actionAusgabeverzeichnis_festlegen_triggered()
-{
-    QString dir;
-    QSettings config;
-    config.value("outdir", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
-
-    dir = QFileDialog::getExistingDirectory(this, "Ausgabeverzeichnis", dir,
-                                        QFileDialog::ShowDirsOnly
-                                            | QFileDialog::DontResolveSymlinks);
-    config.setValue("outdir", dir);
-}
-
-void MainWindow::on_actionAktive_Vertraege_CSV_triggered()
-{
-    CsvActiveContracts();
-}
-
-void MainWindow::on_comboUebersicht_currentIndexChanged(int )
-{
-    on_action_Uebersicht_triggered();
-}
-
-void MainWindow::on_pbPrint_clicked()
-{
-    QSettings config;
-    QString filename = config.value("outdir").toString();
-
-    filename += "\\" + QDate::currentDate().toString("yyyy-MM-dd_");
-    filename += Uebersichten_kurz[ui->comboUebersicht->currentIndex()];
-    filename += ".pdf";
-    QPdfWriter write(filename);
-    ui->txtOverview->print(&write);
-    showFileInFolder(filename);
-}
-
-void MainWindow::on_actionAnonymlisierte_Kopie_triggered()
-{
-    QString dbfile = QFileDialog::getSaveFileName(this, "Neue DkVerarbeitungs Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
-    if( dbfile == "")
-        return;
-    busycursor b;
-    if( !createDbCopy(dbfile, true))
-    {
-        qDebug() << "creating depersonaliced copy failed";
-    }
-    return;
-}
-
-void MainWindow::on_actionKopie_anlegen_triggered()
-{
-    QString dbfile = QFileDialog::getSaveFileName(this, "Neue DkVerarbeitungs Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
-    if( dbfile == "")
-        return;
-
-    busycursor b;
-    if( !createDbCopy(dbfile, false))
-    {
-        qDebug() << "creating depersonaliced copy failed";
-    }
-    return;
-
-}

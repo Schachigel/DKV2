@@ -26,7 +26,8 @@ extern QList<QPair<qlonglong, QString>> Buchungsarten;
     PASSIVEN_VERTRAG_LOESCHEN =3,
     VERTRAG_BEENDEN =4,
     ZINSGUTSCHRIFT =5,
-    BART_NEXT =6
+    KUENDIGUNG_FRIST =6,
+    BART_NEXT =7
 };
 
 void initDKDBStruktur();

@@ -43,6 +43,7 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         sqlhelper.cpp \
+        transaktionen.cpp \
         vertrag.cpp
 
 HEADERS += \
@@ -64,6 +65,7 @@ HEADERS += \
         letters.h \
         mainwindow.h \
         sqlhelper.h \
+        transaktionen.h \
         vertrag.h
 
 FORMS += \

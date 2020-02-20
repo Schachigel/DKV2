@@ -196,7 +196,7 @@ bool Vertrag::aktiviereVertrag(const QDate& aDate)
     return ret;
 }
 
-bool Vertrag::passivenVertragLoeschen()
+bool Vertrag::loeschePassivenVertrag()
 {   LOG_ENTRY_and_EXIT;
     if( ExecuteSingleValueSql("SELECT [aktiv] FROM [Vertraege] WHERE id=" +QString::number(id)).toBool())
     {
@@ -226,7 +226,23 @@ bool Vertrag::passivenVertragLoeschen()
     return true;
 }
 
-bool Vertrag::aktivenVertragLoeschen( const QDate& termin)
+bool Vertrag::kuendigeAktivenVertrag(const QDate& kTermin)
+{   LOG_ENTRY_and_EXIT;
+
+    QSqlQuery updateQ;
+    updateQ.prepare("UPDATE Vertraege SET Kfrist = '-1', LaufzeitEnde = '" + kTermin.toString(Qt::ISODate) + "' WHERE id = :id");
+    updateQ.bindValue(":id", QVariant(id));
+    bool ret = updateQ.exec();
+    if( !ret)
+    {
+        qCritical() << "Error in Kuendingung " << updateQ.lastError() << endl << updateQ.lastQuery();
+        return false;
+    }
+    BelegSpeichern(Buchungsart_i::KUENDIGUNG_FRIST, "Kuendigung zum " + kTermin.toString());
+    return true;
+}
+
+bool Vertrag::beendeAktivenVertrag( const QDate& termin)
 {LOG_ENTRY_and_EXIT;
     if( !ExecuteSingleValueSql("SELECT [aktiv] FROM [Vertraege] WHERE id=" +QString::number(id)).toBool())
     {
