@@ -6,7 +6,8 @@
 #include "dbstructure.h"
 
 dbstructure dbstructure::appendTable(dbtable t)
-{LOG_ENTRY_and_EXIT;
+{
+    qDebug() << "adding table to db structure " << t.name;
     for (auto table: Tables)
         if( table.Name() == t.Name())
         {
@@ -18,7 +19,8 @@ dbstructure dbstructure::appendTable(dbtable t)
 }
 
 dbtable dbstructure::operator[](const QString& name) const
-{LOG_ENTRY_and_EXIT;
+{
+    qDebug() << "accessing db table " << name;
     for( dbtable table : Tables)
     {
         if( table.Name() == name)

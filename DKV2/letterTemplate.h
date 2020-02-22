@@ -53,7 +53,7 @@ public:
     QMap<int, QString>& Html(){ return html;};
 
 private:
-    QPrinter* printer = nullptr;
+    static QPrinter* printer;
     void initPrinter();
     bool createPdf(QString file, const QTextDocument& doc);
     templateId tid;

@@ -16,7 +16,7 @@ public:
             QDate vd =QDate::currentDate(),
             bool thesa =true, bool aktiv =false,
             QDate startd =EndOfTheFuckingWorld,
-            int kfrist=-1,
+            int kfrist=6,
             QDate endd = EndOfTheFuckingWorld)
             :
         id(-1), kreditorId(kId), kennung(ken),

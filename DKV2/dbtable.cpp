@@ -5,6 +5,7 @@
 
 dbfield dbtable::operator[](QString s) const
 {
+    qDebug() << "accessing dbtable " << s;
     for (auto f : fields)
     {
         if( f.name() == s)

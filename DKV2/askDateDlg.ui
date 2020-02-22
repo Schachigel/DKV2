@@ -32,7 +32,7 @@
     <item>
      <widget class="QLabel" name="lblMsg">
       <property name="text">
-       <string>&lt;H3&gt;Mit der Aktivierung des Vertrags beginnt die Zinsberechnung. &lt;br&gt;Bitte geben Sie das Datum des Geldeingangs ein:</string>
+       <string>&lt;h3&gt;Mit der Aktivierung des Vertrags beginnt die Zinsberechnung. &lt;/h3&gt;&lt;br&gt;Bitte geben Sie das Datum des Geldeingangs ein:</string>
       </property>
       <property name="scaledContents">
        <bool>false</bool>

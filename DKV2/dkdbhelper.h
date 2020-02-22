@@ -50,7 +50,7 @@ bool ensureTable(const dbtable& table, QSqlDatabase& db);
 
 bool createDbCopy(QString targetfn, bool anonym);
 
-QString ProposeKennung();
+QString proposeKennung();
 void BeispieldatenAnlegen(int datensaetze =20);
 
 typedef QPair<int, QString> ZinsAnzeigeMitId;

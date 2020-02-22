@@ -2,12 +2,15 @@
 #include <QTextDocument>
 #include <QImage>
 
+#include "helper.h"
 #include "letterTemplate.h"
 #include "dkdbhelper.h"
 #include "sqlhelper.h"
 
+QPrinter* letterTemplate::printer =nullptr;
+
 void letterTemplate::initPrinter()
-{
+{LOG_ENTRY_and_EXIT;
     static bool done = false;
     if( done) return;
     printer = new QPrinter(QPrinter::HighResolution);
@@ -22,7 +25,7 @@ void letterTemplate::initPrinter()
 }
 
 void letterTemplate::init_JA_thesa()
-{
+{LOG_ENTRY_and_EXIT;
     length[topmost] = 1.;
     length[overProjectAddress] = 10.;
     length[projectAddressHeight] = 42.;
@@ -43,12 +46,12 @@ void letterTemplate::init_JA_thesa()
     html[tableHeaderInterest] = "<b> {{tbh.zins}} {{abrechnungsjahr}} </b>";
     html[tableHeaderNewValue] = "<b> {{tbh.new}} </b>";
     html[mainText2] = "Wenn Du Fragen zu dieser Abrechnung hast, zögere bitte nicht, Dich bei uns per Post oder E-Mail zu melden<p>"
-                      "Wir hoffen auch in diesem Jahr auf Deine Solidarität. Für weitere Umschuldungen benötigen wir weiterhin Direktkredite."
-                      "Empfehle uns Deinen Freund*innen und Verwandthen.";
+                      "Wir hoffen auch in diesem Jahr auf Deine Solidarität. Für weitere Umschuldungen benötigen wir weiterhin Direktkredite. "
+                      "Empfehle uns Deinen Freund*innen und Verwandten.";
 }
 
 void letterTemplate::init_JA_auszahlend()
-{
+{LOG_ENTRY_and_EXIT;
     length[topmost] = 1.;
     length[overProjectAddress] = 10.;
     length[projectAddressHeight] = 42.;
@@ -69,12 +72,12 @@ void letterTemplate::init_JA_auszahlend()
     html[tableHeaderInterest] = "<b> {{tbh.Zins}} {{abrechnungsjahr}} </b>";
     html[tableHeaderNewValue] = "NOT used";
     html[mainText2] = "Wenn Du Fragen zu dieser Abrechnung hast, zögere bitte nicht, Dich bei uns per Post oder E-Mail zu melden<p>"
-                      "Wir hoffen auch in diesem Jahr auf Deine Solidarität. Für weitere Umschuldungen benötigen wir weiterhin Direktkredite."
-                      "Empfehle uns Deinen Freund*innen und Verwandthen.";
+                      "Wir hoffen auch in diesem Jahr auf Deine Solidarität. Für weitere Umschuldungen benötigen wir weiterhin Direktkredite. "
+                      "Empfehle uns Deinen Freund*innen und Verwandten.";
 }
 
 void letterTemplate::init_Kontoabschluss()
-{
+{LOG_ENTRY_and_EXIT;
     length[topmost] = 1.;
     length[overProjectAddress] = 10.;
     length[projectAddressHeight] = 42.;
@@ -95,12 +98,12 @@ void letterTemplate::init_Kontoabschluss()
     html[tableHeaderInterest] = "<b> {{thb.zins}} </b>";
     html[tableHeaderNewValue] = "<b> {{thb.new}} </b>";
     html[mainText2] = "Wenn Du Fragen zu dieser Abrechnung hast, zögere bitte nicht, Dich bei uns per Post oder E-Mail zu melden<p>"
-                      "Wir hoffen auch weiterhin auf Deine Solidarität und dass wir Dich bald wieder zu unseren Unterstüzern zählen können."
-                      " Denn für weitere Umschuldungen benötigen wir weiterhin Direktkredite.  Empfehle uns auch Deinen Freund*innen und Verwandthen.";
+                      "Wir hoffen auch weiterhin auf Deine Solidarität und dass wir Dich bald wieder zu unseren Unterstüzern zählen können. "
+                      "Denn für weitere Umschuldungen benötigen wir weiterhin Direktkredite.  Empfehle uns auch Deinen Freund*innen und Verwandten.";
 }
 
 void letterTemplate::init_geldeingang()
-{
+{LOG_ENTRY_and_EXIT;
     length[topmost] = 1.;
     length[overProjectAddress] = 10.;
     length[projectAddressHeight] = 42.;
@@ -120,12 +123,12 @@ void letterTemplate::init_geldeingang()
     html[tableHeaderInterest] = "NOT used";
     html[tableHeaderNewValue] = "NOT used";
     html[mainText2] = "Wenn Du Fragen zu Deinem Kredit hast, zögere bitte nicht, Dich bei uns per Post oder E-Mail zu melden<p>"
-                      "Wir hoffen auch weiterhin auf Deine Solidarität. Denn für weitere Umschuldungen benötigen wir auch weiterhin Direktkredite."
-                      "Empfehle uns auch Deinen Freund*innen und Verwandthen.";
+                      "Wir hoffen auch weiterhin auf Deine Solidarität. Denn für weitere Umschuldungen benötigen wir auch weiterhin Direktkredite. "
+                      "Empfehle uns auch Deinen Freund*innen und Verwandten.";
 }
 
 void letterTemplate::init_defaults()
-{
+{LOG_ENTRY_and_EXIT;
     html[sections::dateFormat] = "Mannheim, den {{datum}}";
     html[projectAddress] = "{{gmbh.address1}}<p>{{gmbh.address2}}<br>{{gmbh.strasse}}<br><b>{{gmbh.plz}}</b> {{gmbh.stadt}}<br><small>{{gmbh.email}}</small>";
     html[projectUrl] = "<small>{{gmbh.url}}</small>";
@@ -154,7 +157,7 @@ void letterTemplate::init_defaults()
 }
 
 letterTemplate::letterTemplate(letterTemplate::templateId id)
-{
+{LOG_ENTRY_and_EXIT;
     tid=id;
     initPrinter();
     if( !loadTemplate(id))
@@ -165,14 +168,14 @@ letterTemplate::letterTemplate(letterTemplate::templateId id)
 }
 
 void letterTemplate::setPlaceholder(QString var, QString val)
-{
+{LOG_ENTRY_and_EXIT;
     if( !placeholders.contains(var))
         qWarning() << "Unknown placeholder " << var << " set to value " << val;
     placeholders.insert (var, val);
 }
 
 QString letterTemplate::getNameFromId(templateId id)
-{
+{LOG_ENTRY_and_EXIT;
     switch(id)
     {
     case geldeingang:
@@ -195,7 +198,7 @@ QString letterTemplate::getNameFromId(templateId id)
 }
 
 letterTemplate::templateId letterTemplate::getIdFromName(QString n)
-{
+{LOG_ENTRY_and_EXIT;
     for( int i = 0; i < letterTemplate::templateId::maxTemplateId; i++)
     {
         letterTemplate::templateId id=(letterTemplate::templateId)i;
@@ -206,7 +209,7 @@ letterTemplate::templateId letterTemplate::getIdFromName(QString n)
 }
 
 bool letterTemplate::saveTemplate(const QString& con) const
-{
+{LOG_ENTRY_and_EXIT;
     QSqlDatabase db = QSqlDatabase::database(con);
     if( !ensureTable(dkdbAddtionalTables["Briefvorlagen"], db))
         return false;
@@ -238,7 +241,7 @@ bool letterTemplate::saveTemplate(const QString& con) const
     return true;
 }
 bool letterTemplate::loadTemplate(letterTemplate::templateId id, const QString& con)
-{
+{LOG_ENTRY_and_EXIT;
     if( !tableExists("Briefvorlagen", con))
     {
         qDebug() << "Tabelle mit Briefvorlagen existiert nicht, Template Daten können nicht gespeichert werden";
@@ -266,7 +269,7 @@ bool letterTemplate::loadTemplate(letterTemplate::templateId id, const QString& 
 }
 
 bool letterTemplate::operator ==(const letterTemplate &b) const
-{
+{LOG_ENTRY_and_EXIT;
     if(tid != b.tid) return false;
     if( length.count() != b.length.count()) return false;
     if( html.count()   != b.html.count()) return false;
@@ -282,7 +285,7 @@ bool letterTemplate::operator ==(const letterTemplate &b) const
 }
 
 bool letterTemplate::applyPlaceholders()
-{
+{LOG_ENTRY_and_EXIT;
     bool ret = true;
     for( int i=0; i < html.count(); i++)
     {
@@ -316,7 +319,7 @@ bool letterTemplate::applyPlaceholders()
 }
 
 bool letterTemplate::createDocument(QTextDocument& doc)
-{
+{LOG_ENTRY_and_EXIT;
     QImage img1(":/res/weiss.png");
     QImage img2(":/res/logo.png");
     static QVariant vImg1(img1);
@@ -339,8 +342,8 @@ bool letterTemplate::createDocument(QTextDocument& doc)
     QTextOption to(Qt::AlignJustify); to.setWrapMode(QTextOption::WordWrap);
     doc.setDefaultTextOption(to);
     // Font family
-    QFont font(fontFamily);
-    font.setPointSizeF(11 *fontOutputFactor);
+    QFont font(fontFamily, 11*fontOutputFactor);
+    font.setKerning(true);
     doc.setDefaultFont(font);
 
     // the documents content starts HERE
@@ -487,7 +490,7 @@ bool letterTemplate::createDocument(QTextDocument& doc)
 }
 
 bool letterTemplate::createPdf(QString file, const QTextDocument& doc)
-{
+{LOG_ENTRY_and_EXIT;
     QFile::remove(file);
     if( QFile::exists(file))
     {
@@ -501,7 +504,7 @@ bool letterTemplate::createPdf(QString file, const QTextDocument& doc)
 }
 
 bool letterTemplate::print(const QString& fileId)
-{
+{LOG_ENTRY_and_EXIT;
     QSettings config;
     QString outputfile = config.value("outdir").toString()+"\\";
     outputfile += QDate::currentDate().toString("yyyy-MM-dd_") + getNameFromId(tid) + "_" +fileId.trimmed() +".pdf";

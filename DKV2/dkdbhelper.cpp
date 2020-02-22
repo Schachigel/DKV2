@@ -188,8 +188,11 @@ void initProperty( const QString& name, const QString& wert, const QString& conn
 }
 
 QString getProperty(const QString& name, const QString& connection)
-{LOG_ENTRY_and_EXIT;
-    return ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", connection).toString();
+{
+    qDebug() << "Reading property... " << name;
+    QString value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", connection).toString();
+    qDebug() << "... value " << value;
+    return value;
 }
 void setProperty(const QString& name, const QString& Wert, const QString& connection)
 {LOG_ENTRY_and_EXIT;
@@ -525,7 +528,7 @@ void BeispielVertragsdaten( Vertrag& vertrag, int KId, int maxZinsIndex, QRandom
     {
         kFrist = rand->bounded(3, 25);
     }
-    vertrag = Vertrag(KId, ProposeKennung(),
+    vertrag = Vertrag(KId, proposeKennung(),
                     betragUWert, betragUWert, zinsid,
                     vertragsdatum,
                     thesa, active, StartZinsberechnung, kFrist, LaufzeitEnde);
@@ -577,7 +580,7 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
     }
 }
 
-QString ProposeKennung()
+QString proposeKennung()
 {LOG_ENTRY_and_EXIT;
     int idOffset = getProperty("IdOffset").toInt();
     QString maxid = QString::number(idOffset + getHighestTableId("Vertraege")).rightJustified(6, '0');

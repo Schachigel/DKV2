@@ -21,6 +21,7 @@ bool Vertrag::ausDb(qlonglong vId, bool mitBelegdaten)
     fields.append(dkdbstructur["Vertraege"]["aktiv"]);
     fields.append(dkdbstructur["Vertraege"]["LaufzeitEnde"]);
     fields.append(dkdbstructur["Vertraege"]["LetzteZinsberechnung"]);
+    fields.append(dkdbstructur["Vertraege"]["Kfrist"]);
     if( mitBelegdaten)
     {
         fields.append(dkdbstructur["Kreditoren"]["id"]);
@@ -44,11 +45,13 @@ bool Vertrag::ausDb(qlonglong vId, bool mitBelegdaten)
     kennung             = rec.value("Vertraege.Kennung").toString();
     betrag              = rec.value("Betrag").toDouble();
     wert                = rec.value("Wert").toDouble();
+    zinsId              = rec.value("Vertraege.ZSatz").toInt();
     thesaurierend       = rec.value("thesaurierend").toBool();
-    active              = rec.value("aktiv").toBool();
     vertragsdatum       = rec.value("Vertragsdatum").toDate();
+    active              = rec.value("aktiv").toBool();
     laufzeitEnde        = rec.value("LaufzeitEnde").toDate();
     startZinsberechnung = rec.value("LetzteZinsberechnung").toDate();
+    kFrist              = rec.value("Kfrist").toInt();
     if( mitBelegdaten)
     {
         buchungsdatenJson = JsonFromRecord(rec);
@@ -66,12 +69,12 @@ bool Vertrag::ausDb(qlonglong vId, bool mitBelegdaten)
 }
 
 void Vertrag::initKreditor()
-{
+{LOG_ENTRY_and_EXIT;
     dkGeber.fromDb(kreditorId);
 }
 
 bool Vertrag::BelegSpeichern(const qlonglong BArt, const QString& msg)
-{   LOG_ENTRY_and_EXIT;
+{LOG_ENTRY_and_EXIT;
 
     updateAusDb();
     TableDataInserter ti(dkdbstructur["Buchungen"]);
@@ -81,14 +84,18 @@ bool Vertrag::BelegSpeichern(const qlonglong BArt, const QString& msg)
     ti.setValue("Datum", QDate::currentDate());
     ti.setValue("Bemerkung", msg);
     ti.setValue("Buchungsdaten", buchungsdatenJson);
-    ti.InsertData();
+    if( -1 == ti.InsertData())
+    {
+        qCritical() << "BelegSpeichern fehlgeschalgen";
+        return false;
+    }
 
     qDebug().noquote() << msg << endl << buchungsdatenJson;
     return true;
 }
 
 bool Vertrag::validateAndSaveNewContract(QString& meldung)
-{
+{LOG_ENTRY_and_EXIT;
     meldung.clear();
 
     if( Betrag() <=0)
@@ -112,7 +119,7 @@ bool Vertrag::validateAndSaveNewContract(QString& meldung)
 }
 
 int Vertrag::speichereNeuenVertrag() const
-{  LOG_ENTRY_and_EXIT;
+{LOG_ENTRY_and_EXIT;
     TableDataInserter ti(dkdbstructur["Vertraege"]);
     ti.setValue(dkdbstructur["Vertraege"]["KreditorId"].name(), kreditorId);
     ti.setValue(dkdbstructur["Vertraege"]["Kennung"].name(), kennung);
@@ -136,7 +143,7 @@ int Vertrag::speichereNeuenVertrag() const
 }
 
 bool Vertrag::speichereBelegNeuerVertrag()
-{
+{LOG_ENTRY_and_EXIT;
     if( buchungsdatenJson.isEmpty())
     {
         ausDb(id, true);
@@ -147,7 +154,7 @@ bool Vertrag::speichereBelegNeuerVertrag()
 }
 
 bool Vertrag::verbucheNeuenVertrag()
-{   LOG_ENTRY_and_EXIT;
+{LOG_ENTRY_and_EXIT;
 
     QSqlDatabase::database().transaction();
     int nextId =speichereNeuenVertrag();
@@ -166,7 +173,8 @@ bool Vertrag::verbucheNeuenVertrag()
 }
 
 bool Vertrag::aktiviereVertrag(const QDate& aDate)
-{   LOG_ENTRY_and_EXIT;
+{LOG_ENTRY_and_EXIT;
+
     QSqlDatabase::database().transaction();
 
     QSqlQuery updateQ;
@@ -174,30 +182,35 @@ bool Vertrag::aktiviereVertrag(const QDate& aDate)
     updateQ.bindValue(":vdate",QVariant(aDate));
     updateQ.bindValue(":id", QVariant(id));
     updateQ.bindValue(":true", QVariant(true));
-    bool ret = updateQ.exec();
-    qDebug() << updateQ.lastQuery() << updateQ.lastError();
-    if( ret)
+
+    bool ret = true;
+    if( !updateQ.exec())
+    {
+        qCritical() << "Vertrag Aktivierung fehlgeschlagen " << updateQ.lastQuery() << updateQ.lastError();
+        ret = false;
+    }
+    else
+    {
+        QString BelegNachricht ("Vertrag %1 aktiviert zum %2");
+        BelegNachricht = BelegNachricht.arg(QString::number(id), aDate.toString());
+        ret = BelegSpeichern(VERTRAG_AKTIVIEREN, BelegNachricht);
+    }
+    if(ret)
     {
         active = true;
         startZinsberechnung = aDate;
-    }
-
-    QString BelegNachricht ("Vertrag %1 aktiviert zum %2");
-    BelegNachricht = BelegNachricht.arg(QString::number(id), aDate.toString());
-    ret &= BelegSpeichern(VERTRAG_AKTIVIEREN, BelegNachricht);
-
-    if(ret)
         QSqlDatabase::database().commit();
+    }
     else
     {
-        qDebug() << "Fehler beim aktivieren eines Vertrags";
+        qCritical() << "Aktivieren des Vertrags " << id << " fehlgeschlagen";
         QSqlDatabase::database().rollback();
     }
     return ret;
 }
 
 bool Vertrag::loeschePassivenVertrag()
-{   LOG_ENTRY_and_EXIT;
+{LOG_ENTRY_and_EXIT;
     if( ExecuteSingleValueSql("SELECT [aktiv] FROM [Vertraege] WHERE id=" +QString::number(id)).toBool())
     {
         qWarning() << "will not delete active contract w id:" << id;
@@ -227,7 +240,7 @@ bool Vertrag::loeschePassivenVertrag()
 }
 
 bool Vertrag::kuendigeAktivenVertrag(const QDate& kTermin)
-{   LOG_ENTRY_and_EXIT;
+{LOG_ENTRY_and_EXIT;
 
     QSqlQuery updateQ;
     updateQ.prepare("UPDATE Vertraege SET Kfrist = '-1', LaufzeitEnde = '" + kTermin.toString(Qt::ISODate) + "' WHERE id = :id");
@@ -278,7 +291,7 @@ bool Vertrag::beendeAktivenVertrag( const QDate& termin)
 }
 
 bool Vertrag::speichereJahresabschluss(const QDate& end)
-{
+{LOG_ENTRY_and_EXIT;
     letzteZinsgutschrift = ZinsesZins(Zinsfuss(), thesaurierend?Wert():Betrag(), StartZinsberechnung(), end, thesaurierend);
     qDebug() << "JA: berechneter Zins: " << letzteZinsgutschrift;
 
@@ -297,14 +310,14 @@ bool Vertrag::speichereJahresabschluss(const QDate& end)
 }
 
 bool Vertrag::speichereBelegJahresabschluss(const QDate &end)
-{
+{LOG_ENTRY_and_EXIT;
     QString msg = QString::number(letzteZinsgutschrift) + " Euro "
                     "Zinsgutschrift zum " + end.toString();
     return BelegSpeichern(ZINSGUTSCHRIFT, msg);
 }
 
 bool Vertrag::verbucheJahreszins(const QDate& end)
-{
+{LOG_ENTRY_and_EXIT;
     if( end < StartZinsberechnung())
     {
         qDebug() << "Begin der Zinsberechnung ist NACH dem Jahresabschlussdatum -> keine Abrechnung";

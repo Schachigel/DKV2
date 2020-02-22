@@ -28,9 +28,6 @@
 #include "filehelper.h"
 #include "itemformatter.h"
 #include "sqlhelper.h"
-#include "finhelper.h"
-#include "vertrag.h"
-#include "kreditor.h"
 #include "dkdbhelper.h"
 #include "letters.h"
 #include "jahresabschluss.h"
@@ -294,10 +291,11 @@ void MainWindow::on_actionVertrag_anlegen_triggered(int id)
     busycursor b;
     FillKreditorDropdown();
     FillRatesDropdown();
-    ui->leKennung->setText( ProposeKennung());
+    ui->leKennung->setText( proposeKennung());
     comboKreditorenAnzeigeNachKreditorenId( id != -1 ? id : getPersonIdFromKreditorenList());
     Vertrag cd; // this is to get the defaults of the class definition
     ui->deLaufzeitEnde->setDate(cd.LaufzeitEnde());
+    ui->cbKFrist->setCurrentIndex(ui->cbKFrist->findText("6"));
     ui->deVertragsabschluss->setDate(cd.Vertragsabschluss());
     ui->chkbThesaurierend->setChecked(cd.Thesaurierend());
 
@@ -453,9 +451,15 @@ Vertrag MainWindow::VertragsdatenAusFormular()
     int ZinsId = ui->cbZins->itemData(ui->cbZins->currentIndex()).toInt();
     QDate Vertragsdatum = ui->deVertragsabschluss->date();
 
-    QDate LaufzeitEnde = ui->deLaufzeitEnde->date();
-    QDate StartZinsberechnung = LaufzeitEnde;
     int kFrist = ui->cbKFrist->currentData().toInt();
+    QDate LaufzeitEnde = ui->deLaufzeitEnde->date();
+    if( kFrist == -1 && !LaufzeitEnde.isValid())
+    {
+        qDebug() << "LaufzeitEnde und Kündigungsfrist ungültig -> defaulting";
+        kFrist =6;
+        LaufzeitEnde = EndOfTheFuckingWorld;
+    }
+    QDate StartZinsberechnung = LaufzeitEnde;
 
     return Vertrag(KreditorId, Kennung, Betrag, Wert, ZinsId, Vertragsdatum,
                    thesaurierend, false/*aktiv*/,StartZinsberechnung, kFrist, LaufzeitEnde);
@@ -837,53 +841,8 @@ void MainWindow::on_actionVertrag_Beenden_triggered()
     {
         QMessageBox::information(nullptr, "Beenden des Vertrags", "Das Beenden des Vertrags wurde erfolgreich gespeichert");
     }
-// move to "transaktions":
-    // Vertrag beenden -> Zins berechnen und m Auszahlungsbetrag anzeigen, dann löschen
-//    Vertrag v;
-//    v.ausDb(index, true);
-
-
-//    double WertBisHeute = v.Wert() + ZinsesZins(v.Zinsfuss(), v.Wert(), v.StartZinsberechnung(), QDate::currentDate(), v.Thesaurierend());
-//    QString getDateMsg("<h2>Wenn Sie einen Vertrag beenden wird der Zins abschließend"
-//                " berechnet und der Auszahlungsbetrag ermittelt.<br></h2>"
-//                "Um den Vertrag von %1 %2 mit dem aktuellen Wert %3 Euro jetzt zu beenden "
-//                "wählen Sie das Datum des Vertragendes ein und klicken Sie OK");
-//    QLocale locale;
-//    getDateMsg = getDateMsg.arg(v.Vorname(), v.Nachname(), locale.toCurrencyString(WertBisHeute));
-
-//    // Vertragsende >! letzte Zinsberechnung
-//    QDate Vorschlagswert = (QDate::currentDate()> v.StartZinsberechnung())?QDate::currentDate(): v.StartZinsberechnung();
-//    askDateDlg dlg( this, Vorschlagswert);
-//    dlg.setMsg(getDateMsg);
-//    dlg.setDateLabel("Ende der Zinsberechnung nach der Kündigungsfrist:");
-//    do {
-//        if( QDialog::Accepted != dlg.exec())
-//        {
-//            qDebug() << "Delete contract was aborted by the user";
-//            return;
-//        }
-//        if( dlg.getDate() < v.StartZinsberechnung())
-//        {
-//            dlg.setMsg( getDateMsg + "<br><b>Das Datum muss nach der letzten Zinsausschüttung liegen</b>");
-//            dlg.setDate(v.StartZinsberechnung().addDays(1));
-//            continue;
-//        }
-//        break;
-//    } while(true);
-
-//    double davonZins =ZinsesZins(v.Zinsfuss(), v.Wert(), v.StartZinsberechnung(), dlg.getDate(), v.Thesaurierend());
-//    double neuerWert =v.Wert() +davonZins;
-
-//    QString confirmDeleteMsg("<h3>Vertragsabschluß</h3><br>Wert zum Vertragsende: %1 Euro<br>Zins der letzten Zinsphase: %2 Euro<br>"\
-//                             "Soll der Vertrag gelöscht werden?");
-//    confirmDeleteMsg = confirmDeleteMsg.arg(locale.toCurrencyString(neuerWert), locale.toCurrencyString(davonZins));
-//    if( QMessageBox::Yes != QMessageBox::question(this, "Vertrag löschen?", confirmDeleteMsg))
-//        return;
-//    if( !v.beendeAktivenVertrag(dlg.getDate()))
-//        qCritical() << "Deleting the contract failed";
     prepareContractListView();
 }
-
 
 // debug funktions
 void MainWindow::on_actioncreateSampleData_triggered()
