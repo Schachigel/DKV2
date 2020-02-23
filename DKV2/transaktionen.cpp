@@ -6,10 +6,33 @@
 #include "askdatedlg.h"
 #include "helper.h"
 #include "finhelper.h"
+#include "letters.h"
 #include "transaktionen.h"
 
 
-bool vertragBeenden(int vid)
+bool aktiviereVertrag(int vid)
+{
+    askDateDlg dlg( nullptr, QDate::currentDate());
+    dlg.setMsg("<H3>Mit der Aktivierung des Vertrags beginnt die Zinsberechnung. <br>Bitte geben Sie das Datum des Geldeingangs ein:</H3>");
+    dlg.setDateLabel("Die Verzinsung beginnt am");
+    if( QDialog::Accepted == dlg.exec())
+    {
+        Vertrag v;
+        v.ausDb(vid, true);
+        if( v.aktiviereVertrag(dlg.getDate()))
+        {
+            if( dlg.shouldPrint())
+                printThankyouLetter(v);
+        } else
+        {
+            qCritical() << "Das Aktivieren des Vertrags ist fehlgeschlagen";
+            return false;
+        }
+    }
+    return true;
+}
+
+bool beendeVertrag(int vid)
 {LOG_ENTRY_and_EXIT;
 
     Vertrag v;
@@ -31,7 +54,6 @@ bool vertragBeenden(int vid)
     }
     return false;
 }
-
 bool VertragsEnde_LaufzeitEnde( Vertrag& v)
 {LOG_ENTRY_and_EXIT;
 
@@ -79,7 +101,6 @@ bool VertragsEnde_LaufzeitEnde( Vertrag& v)
 
     return true;
 }
-
 bool VertragsEnde_MitKFrist( Vertrag& v)
 {LOG_ENTRY_and_EXIT;
 
@@ -88,7 +109,6 @@ bool VertragsEnde_MitKFrist( Vertrag& v)
     getDateMsg += "Geben Sie den <b>Kündigungszeitpunkt</b> ein. Das Vertragsende wird dann auf das Datum "
             + QString::number(KuendigungsMonate) + " Monate <b>nach diesem Datum<b> gesetzt.";
     askDateDlg dlg(nullptr, QDate::currentDate());
-    dlg.showPrintOption( false);
     dlg.setMsg(getDateMsg);
     dlg.setDateLabel("Zeitpunkt der Kündigung");
     QDate Vertragsende;
@@ -108,9 +128,17 @@ bool VertragsEnde_MitKFrist( Vertrag& v)
         break;
     } while(true);
 
-    return v.kuendigeAktivenVertrag( Vertragsende);
+    if( v.kuendigeAktivenVertrag( Vertragsende))
+    {
+        printTerminationLetter(v, dlg.getDate(), KuendigungsMonate);
+        return true;
+    }
+    else
+    {
+        qCritical() << "Fehler beim speichern der Kündigung";
+        return false;
+    }
 }
-
 bool VertragsEnde_PassiverV(Vertrag& v)
 {LOG_ENTRY_and_EXIT;
     QString Vorname = v.Vorname();
@@ -118,8 +146,9 @@ bool VertragsEnde_PassiverV(Vertrag& v)
     int index = v.getVid();
 
     QString msg( "Soll der Vertrag von ");
-    msg += Vorname + " " + Nachname + " (id " + index + ") gelöscht werden?";
+    msg += Vorname + " " + Nachname + " (id " + QString::number(index) + ") gelöscht werden?";
     if( QMessageBox::Yes != QMessageBox::question(nullptr, "Kreditvertrag löschen", msg))
         return true;  // valid decision, no error
     return v.loeschePassivenVertrag();
 }
+

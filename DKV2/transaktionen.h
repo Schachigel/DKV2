@@ -3,7 +3,9 @@
 
 #include "vertrag.h"
 
-bool vertragBeenden(int vid);
+bool aktiviereVertrag(int vid);
+
+bool beendeVertrag(int vid);
 bool VertragsEnde_LaufzeitEnde( Vertrag& v);
 bool VertragsEnde_MitKFrist( Vertrag& v);
 bool VertragsEnde_PassiverV( Vertrag& v);

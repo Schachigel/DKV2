@@ -670,24 +670,24 @@
      <x>0</x>
      <y>0</y>
      <width>947</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatenbank">
     <property name="title">
      <string>&amp;Datenbank</string>
     </property>
-    <addaction name="actionzur_ck"/>
+    <addaction name="action_zurueck"/>
     <addaction name="separator"/>
     <addaction name="action_Neue_DB_anlegen"/>
-    <addaction name="actionDBoeffnen"/>
+    <addaction name="action_DBoeffnen"/>
     <addaction name="actionDB_schliessen"/>
     <addaction name="separator"/>
-    <addaction name="actionKopie_anlegen"/>
-    <addaction name="actionDepersonalisierte_Kopie"/>
+    <addaction name="action_Kopie_anlegen"/>
+    <addaction name="action_Anonymisierte_Kopie"/>
     <addaction name="separator"/>
-    <addaction name="actionAusgabeverzeichnis_festlegen"/>
-    <addaction name="actionProgramm_beenden"/>
+    <addaction name="action_Ausgabeverzeichnis_festlegen"/>
+    <addaction name="action_Programm_beenden"/>
    </widget>
    <widget class="QMenu" name="menuDK_Geber">
     <property name="title">
@@ -695,8 +695,8 @@
     </property>
     <addaction name="action_Liste"/>
     <addaction name="separator"/>
-    <addaction name="actionNeuer_DK_Geber"/>
-    <addaction name="actionKreditgeber_loeschen"/>
+    <addaction name="action_Neuer_DK_Geber"/>
+    <addaction name="action_Kreditgeber_loeschen"/>
    </widget>
    <widget class="QMenu" name="menuVertr_ge">
     <property name="title">
@@ -706,12 +706,12 @@
      <property name="title">
       <string>Listen drucken</string>
      </property>
-     <addaction name="actionAktive_Vertraege_CSV"/>
+     <addaction name="action_Aktive_Vertraege_CSV"/>
     </widget>
-    <addaction name="actionListe_der_Vertraege_anzeigen"/>
-    <addaction name="actionVertrag_anlegen"/>
+    <addaction name="action_Liste_der_Vertraege_anzeigen"/>
+    <addaction name="action_Vertrag_anlegen"/>
     <addaction name="separator"/>
-    <addaction name="actionJahreszinsabrechnung"/>
+    <addaction name="action_Jahreszinsabrechnung"/>
     <addaction name="separator"/>
     <addaction name="action_Uebersicht"/>
     <addaction name="menuListen_drucken"/>
@@ -744,7 +744,7 @@
     <string>Ctrl+N</string>
    </property>
   </action>
-  <action name="actionDBoeffnen">
+  <action name="action_DBoeffnen">
    <property name="text">
     <string>&amp;Öffnen</string>
    </property>
@@ -783,12 +783,12 @@
     <string>Zeigt eine Liste aller DK Geber an</string>
    </property>
   </action>
-  <action name="actionProgramm_beenden">
+  <action name="action_Programm_beenden">
    <property name="text">
     <string>Programm beenden</string>
    </property>
   </action>
-  <action name="actionListe_der_Vertraege_anzeigen">
+  <action name="action_Liste_der_Vertraege_anzeigen">
    <property name="text">
     <string>Liste der Verträge anzeigen</string>
    </property>
@@ -801,12 +801,12 @@
     <bool>true</bool>
    </property>
   </action>
-  <action name="actionNeuer_DK_Geber">
+  <action name="action_Neuer_DK_Geber">
    <property name="text">
     <string>Anlegen</string>
    </property>
   </action>
-  <action name="actionVertrag_anlegen">
+  <action name="action_Vertrag_anlegen">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -817,7 +817,7 @@
     <string>Vertrag für ausgewählten DK Geber anlegen</string>
    </property>
   </action>
-  <action name="actionKreditgeber_loeschen">
+  <action name="action_Kreditgeber_loeschen">
    <property name="text">
     <string>Löschen</string>
    </property>
@@ -830,7 +830,7 @@
     <string>Show Log file</string>
    </property>
   </action>
-  <action name="actionactivateContract">
+  <action name="action_activateContract">
    <property name="text">
     <string>Vertrag Aktivieren</string>
    </property>
@@ -838,7 +838,7 @@
     <string>Zinszahlung des Vertrags aktivieren</string>
    </property>
   </action>
-  <action name="actionVertrag_passiv_loeschen">
+  <action name="action_loeschePassivenVertrag">
    <property name="text">
     <string>Vertrag &amp;Löschen</string>
    </property>
@@ -864,7 +864,7 @@
     <string>Übersicht über Vertragsdaten anzeigen</string>
    </property>
   </action>
-  <action name="actionVertraege_zeigen">
+  <action name="action_Vertraege_zeigen">
    <property name="text">
     <string>Verträge zeigen</string>
    </property>
@@ -877,7 +877,7 @@
     <string>Buchungen anzeigen</string>
    </property>
   </action>
-  <action name="actionDkGeberBearbeiten">
+  <action name="action_DkGeberBearbeiten">
    <property name="text">
     <string>Bearbeiten</string>
    </property>
@@ -885,12 +885,12 @@
     <string>Adressdaten und Bankdaten bearbeiten</string>
    </property>
   </action>
-  <action name="actionJahreszinsabrechnung">
+  <action name="action_Jahreszinsabrechnung">
    <property name="text">
     <string>Jahreszinsabrechnung</string>
    </property>
   </action>
-  <action name="actionAusgabeverzeichnis_festlegen">
+  <action name="action_Ausgabeverzeichnis_festlegen">
    <property name="checkable">
     <bool>false</bool>
    </property>
@@ -901,22 +901,22 @@
     <string>Ausgabeverzeichnis festlegen</string>
    </property>
   </action>
-  <action name="actionAktive_Vertraege_CSV">
+  <action name="action_Aktive_Vertraege_CSV">
    <property name="text">
     <string>Aktive Verträge (CSV)</string>
    </property>
   </action>
-  <action name="actionzur_ck">
+  <action name="action_zurueck">
    <property name="text">
     <string>Start</string>
    </property>
   </action>
-  <action name="actionDepersonalisierte_Kopie">
+  <action name="action_Anonymisierte_Kopie">
    <property name="text">
     <string>Anonymisierte &amp;Kopie</string>
    </property>
   </action>
-  <action name="actionKopie_anlegen">
+  <action name="action_Kopie_anlegen">
    <property name="text">
     <string>Kopie anlegen</string>
    </property>

@@ -45,19 +45,19 @@ public:
 private slots:
 
     void on_action_Neue_DB_anlegen_triggered();
-    void on_actionProgramm_beenden_triggered();
-    void on_actionDBoeffnen_triggered();
+    void on_action_Programm_beenden_triggered();
+    void on_action_DBoeffnen_triggered();
 
     void on_action_Liste_triggered();
     void on_actioncreateSampleData_triggered();
-    void on_actionNeuer_DK_Geber_triggered();
-    void on_actionVertrag_anlegen_triggered(int id=-1);
+    void on_action_Neuer_DK_Geber_triggered();
+    void on_action_Vertrag_anlegen_triggered(int id=-1);
     void on_saveExit_clicked();
     void on_saveNew_clicked();
 
     void on_saveList_clicked();
     void on_cancel_clicked();
-    void on_actionDkGeberBearbeiten_triggered();
+    void on_action_DkGeberBearbeiten_triggered();
 
     void on_stackedWidget_currentChanged(int arg1);
 
@@ -68,17 +68,17 @@ private slots:
 
     void on_saveContractGoContracts_clicked();
 
-    void on_actionListe_der_Vertraege_anzeigen_triggered();
+    void on_action_Liste_der_Vertraege_anzeigen_triggered();
 
     void on_PersonsTableView_customContextMenuRequested(const QPoint &pos);
 
-    void on_actionKreditgeber_loeschen_triggered();
+    void on_action_Kreditgeber_loeschen_triggered();
 
     void on_contractsTableView_customContextMenuRequested(const QPoint &pos);
 
-    void on_actionactivateContract_triggered();
+    void on_action_activateContract_triggered();
 
-    void on_actionVertrag_passiv_loeschen_triggered();
+    void on_action_loeschePassivenVertrag_triggered();
 
     void on_actionanzeigenLog_triggered();
 
@@ -94,31 +94,31 @@ private slots:
 
     void on_action_Uebersicht_triggered();
 
-    void on_actionVertraege_zeigen_triggered();
+    void on_action_Vertraege_zeigen_triggered();
 
     void on_tblViewBookingsSelectionChanged(const QItemSelection &, const QItemSelection &);
 
     void on_actionShow_Bookings_triggered();
 
-    void on_actionJahreszinsabrechnung_triggered();
+    void on_action_Jahreszinsabrechnung_triggered();
 
     void on_leBetrag_editingFinished();
 
-    void on_actionAusgabeverzeichnis_festlegen_triggered();
+    void on_action_Ausgabeverzeichnis_festlegen_triggered();
 
-    void on_actionAktive_Vertraege_CSV_triggered();
+    void on_action_Aktive_Vertraege_CSV_triggered();
 
     void on_comboUebersicht_currentIndexChanged(int index);
 
     void on_pbPrint_clicked();
 
-    void on_actionzur_ck_triggered();
+    void on_action_zurueck_triggered();
 
     void on_cbKFrist_currentIndexChanged(int index);
 
-    void on_actionAnonymlisierte_Kopie_triggered();
+    void on_action_Kopie_anlegen_triggered();
 
-    void on_actionKopie_anlegen_triggered();
+    void on_action_Anonymisierte_Kopie_triggered();
 
 private:
     Ui::MainWindow *ui;

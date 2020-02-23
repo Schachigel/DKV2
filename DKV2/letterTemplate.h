@@ -5,7 +5,7 @@
 #include <QDate>
 #include <QSqlDatabase>
 #include <QTextDocument>
-#include <QtPrintSupport/QtPrintSupport>
+#include <QPrinter>
 
 const double mmInPt {2.83465};
 
@@ -19,13 +19,13 @@ public:
     enum distances{ topmost= maxSection+1000, overProjectAddress, projectAddressHeight, logoWidth, overAbout,
                     overSalutation, overText, tableMargin, overGreeting, overSignee, maxDistance
     };
-    enum templateId{ geldeingang, JA_thesa, JA_auszahlend, Kontoabschluss, maxTemplateId
+    enum templateId{ Geldeingang, JA_thesa, JA_auszahlend, Kontoabschluss, Kuendigung, maxTemplateId
     };
     QMap<QString, QString> placeholders
-    {   {"datum",""}, {"abrechnungsjahr", "2020"},
+    {   {"datum",""}, {"abrechnungsjahr", "2020"}, {"kuendigungsdatum", ""},
         {"gmbh.address1","Esperanza Franklin GmbH"}, {"gmbh.address2",""}, {"gmbh.strasse","Turley-Platz 9"}, {"gmbh.plz", "68167"}, {"gmbh.stadt", "Mannheim"}, {"gmbh.email", "info@esperanza-mannheim.de"}, {"gmbh.url", "www.esperanza-mannheim.de"},{"gmbh.dkKontakt", "Jutta Sichau"},
         {"kreditoren.vorname", ""}, {"kreditoren.nachname", ""}, {"kreditoren.strasse", ""}, {"kreditoren.plz", ""}, {"kreditoren.stadt", ""}, {"kreditoren.email", ""}, {"kreditoren.iban", ""},
-        {"vertraege.kennung", ""}, {"vertraege.betrag", ""}, {"vertraege.buchungsdatum", ""},
+        {"vertraege.kennung", ""}, {"vertraege.betrag", ""}, {"vertraege.buchungsdatum", ""}, {"vertraege.kfrist", ""}, {"vertraege.laufzeitende", ""},
         {"tbh.kennung", "Vertragskennung"}, {"tbh.old", "Vorjahreswert"}, {"tbh.zins", "Zinssatz"}, {"tbh.new", "Neuer Wert"}
     };
 
@@ -36,10 +36,11 @@ public:
     bool saveTemplate(const QString& con =QSqlDatabase::defaultConnection) const;
     bool loadTemplate(letterTemplate::templateId id, const QString& con =QSqlDatabase::defaultConnection);
 
-    void init_geldeingang();
+    void init_Geldeingang();
     void init_JA_thesa();
     void init_JA_auszahlend();
     void init_Kontoabschluss();
+    void init_Kuendigung();
 
     void setPlaceholder(QString var, QString val);
     bool applyPlaceholders();

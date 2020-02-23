@@ -1,5 +1,9 @@
 #include <QSettings>
 #include <QTextDocument>
+#include <QTextImageFormat>
+#include <QTextFrame>
+#include <QTextCursor>
+#include <QTextTable>
 #include <QImage>
 
 #include "helper.h"
@@ -102,7 +106,7 @@ void letterTemplate::init_Kontoabschluss()
                       "Denn für weitere Umschuldungen benötigen wir weiterhin Direktkredite.  Empfehle uns auch Deinen Freund*innen und Verwandten.";
 }
 
-void letterTemplate::init_geldeingang()
+void letterTemplate::init_Geldeingang()
 {LOG_ENTRY_and_EXIT;
     length[topmost] = 1.;
     length[overProjectAddress] = 10.;
@@ -116,8 +120,33 @@ void letterTemplate::init_geldeingang()
     length[overSignee] = 10.;
 
     html[about] = "Bestätigung Deines Direktkredites <b> {{vertraege.kennung}} </b>";
-    html[mainText1] = "Hiermit bestätigen wir den Geldeingang von {{vertraege.betrag}} zum {{vertraege.buchungsdatum}}.<p>"
+    html[mainText1] = "Hiermit bestätigen wir den Geldeingang von {{vertraege.betrag}} zum {{vertraege.buchungsdatum}}. Dein Vertrag wird unter der Kennung {{vertraege.kennung}} geführt.<p>"
                       "Herzlichen Dank für Deine Unterstützung. Wir werden Dich ab jetzt jährlich über die Zinsentwicklung Deines Kredits informieren.";
+    html[tableHeaderKennung] = "NOT used";
+    html[tableHeaderOldValue] = "NOT used";
+    html[tableHeaderInterest] = "NOT used";
+    html[tableHeaderNewValue] = "NOT used";
+    html[mainText2] = "Wenn Du Fragen zu Deinem Kredit hast, zögere bitte nicht, Dich bei uns per Post oder E-Mail zu melden<p>"
+                      "Wir hoffen auch weiterhin auf Deine Solidarität. Denn für weitere Umschuldungen benötigen wir auch weiterhin Direktkredite. "
+                      "Empfehle uns auch Deinen Freund*innen und Verwandten.";
+}
+
+void letterTemplate::init_Kuendigung()
+{LOG_ENTRY_and_EXIT;
+    length[topmost] = 1.;
+    length[overProjectAddress] = 10.;
+    length[projectAddressHeight] = 42.;
+    length[logoWidth] = 80.;
+    length[overAbout] = 10.;
+    length[overSalutation] = 5.;
+    length[overText] = 5.;
+    length[tableMargin] = 4.;
+    length[overGreeting] = 10.;
+    length[overSignee] = 10.;
+
+    html[about] = "Bestätigung der Kündigung Deines Direktkredites <b> {{vertraege.kennung}} </b>";
+    html[mainText1] = "Hiermit bestätigen wir den Eingang der Kündigung des Vertrags {{vertraege.betrag}} zum {{kuendigungsdatum}}.<p>"
+                      "Das Vertragsende ergibt sich aus der Kündigungsfrist von {{vertraege.kfrist}} Monaten zum {{vertraege.laufzeitende}}";
     html[tableHeaderKennung] = "NOT used";
     html[tableHeaderOldValue] = "NOT used";
     html[tableHeaderInterest] = "NOT used";
@@ -139,8 +168,8 @@ void letterTemplate::init_defaults()
 
     switch(tid)
     {
-    case geldeingang:
-        init_geldeingang();
+    case Geldeingang:
+        init_Geldeingang();
         break;
     case JA_thesa:
         init_JA_thesa();
@@ -151,7 +180,11 @@ void letterTemplate::init_defaults()
     case Kontoabschluss:
         init_Kontoabschluss();
         break;
+    case Kuendigung:
+        init_Kuendigung();
+        break;
     default:
+        qCritical() << "invalid template id?!";
         break;
     }
 }
@@ -178,7 +211,7 @@ QString letterTemplate::getNameFromId(templateId id)
 {LOG_ENTRY_and_EXIT;
     switch(id)
     {
-    case geldeingang:
+    case Geldeingang:
         return "Geldeingang";
         break;
     case JA_thesa:
@@ -189,6 +222,9 @@ QString letterTemplate::getNameFromId(templateId id)
         break;
     case Kontoabschluss:
         return "Kontoabschluss";
+        break;
+    case Kuendigung:
+        return "Kuendigung";
         break;
     default:
         Q_ASSERT("false lettertemplate id");
@@ -343,7 +379,7 @@ bool letterTemplate::createDocument(QTextDocument& doc)
     doc.setDefaultTextOption(to);
     // Font family
     QFont font(fontFamily, 11*fontOutputFactor);
-    font.setKerning(true);
+    font.setKerning(false);
     doc.setDefaultFont(font);
 
     // the documents content starts HERE
