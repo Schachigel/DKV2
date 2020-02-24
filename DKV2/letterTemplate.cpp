@@ -15,8 +15,7 @@ QPrinter* letterTemplate::printer =nullptr;
 
 void letterTemplate::initPrinter()
 {LOG_ENTRY_and_EXIT;
-    static bool done = false;
-    if( done) return;
+    if( printer) return;
     printer = new QPrinter(QPrinter::HighResolution);
 
     printer->setOutputFormat(QPrinter::PdfFormat);
@@ -25,7 +24,6 @@ void letterTemplate::initPrinter()
     printer->setMargins({0.,0.,0.,0.});
     //QPagedPaintDevice::Margins m = printer.margins();
     printer->setFullPage(true);
-    done = true;
 }
 
 void letterTemplate::init_JA_thesa()
@@ -49,7 +47,7 @@ void letterTemplate::init_JA_thesa()
     html[tableHeaderOldValue] = "<b> {{tbh.old}} </b>";
     html[tableHeaderInterest] = "<b> {{tbh.zins}} {{abrechnungsjahr}} </b>";
     html[tableHeaderNewValue] = "<b> {{tbh.new}} </b>";
-    html[mainText2] = "Wenn Du Fragen zu dieser Abrechnung hast, zögere bitte nicht, Dich bei uns per Post oder E-Mail zu melden<p>"
+    html[mainText2] = "Wenn Du Fragen zu dieser Abrechnung hast, zögere bitte nicht, Dich bei uns per Post oder E-Mail zu melden.<p>"
                       "Wir hoffen auch in diesem Jahr auf Deine Solidarität. Für weitere Umschuldungen benötigen wir weiterhin Direktkredite. "
                       "Empfehle uns Deinen Freund*innen und Verwandten.";
 }
@@ -75,7 +73,7 @@ void letterTemplate::init_JA_auszahlend()
     html[tableHeaderOldValue] = "<b> {{tbh.old}} </b>";
     html[tableHeaderInterest] = "<b> {{tbh.Zins}} {{abrechnungsjahr}} </b>";
     html[tableHeaderNewValue] = "NOT used";
-    html[mainText2] = "Wenn Du Fragen zu dieser Abrechnung hast, zögere bitte nicht, Dich bei uns per Post oder E-Mail zu melden<p>"
+    html[mainText2] = "Wenn Du Fragen zu dieser Abrechnung hast, zögere bitte nicht, Dich bei uns per Post oder E-Mail zu melden.<p>"
                       "Wir hoffen auch in diesem Jahr auf Deine Solidarität. Für weitere Umschuldungen benötigen wir weiterhin Direktkredite. "
                       "Empfehle uns Deinen Freund*innen und Verwandten.";
 }
@@ -101,7 +99,7 @@ void letterTemplate::init_Kontoabschluss()
     html[tableHeaderOldValue] = "<b> {{tbh.old}} </b>";
     html[tableHeaderInterest] = "<b> {{thb.zins}} </b>";
     html[tableHeaderNewValue] = "<b> {{thb.new}} </b>";
-    html[mainText2] = "Wenn Du Fragen zu dieser Abrechnung hast, zögere bitte nicht, Dich bei uns per Post oder E-Mail zu melden<p>"
+    html[mainText2] = "Wenn Du Fragen zu dieser Abrechnung hast, zögere bitte nicht, Dich bei uns per Post oder E-Mail zu melden.<p>"
                       "Wir hoffen auch weiterhin auf Deine Solidarität und dass wir Dich bald wieder zu unseren Unterstüzern zählen können. "
                       "Denn für weitere Umschuldungen benötigen wir weiterhin Direktkredite.  Empfehle uns auch Deinen Freund*innen und Verwandten.";
 }
@@ -126,7 +124,7 @@ void letterTemplate::init_Geldeingang()
     html[tableHeaderOldValue] = "NOT used";
     html[tableHeaderInterest] = "NOT used";
     html[tableHeaderNewValue] = "NOT used";
-    html[mainText2] = "Wenn Du Fragen zu Deinem Kredit hast, zögere bitte nicht, Dich bei uns per Post oder E-Mail zu melden<p>"
+    html[mainText2] = "Wenn Du Fragen zu Deinem Kredit hast, zögere bitte nicht, Dich bei uns per Post oder E-Mail zu melden.<p>"
                       "Wir hoffen auch weiterhin auf Deine Solidarität. Denn für weitere Umschuldungen benötigen wir auch weiterhin Direktkredite. "
                       "Empfehle uns auch Deinen Freund*innen und Verwandten.";
 }
@@ -151,7 +149,7 @@ void letterTemplate::init_Kuendigung()
     html[tableHeaderOldValue] = "NOT used";
     html[tableHeaderInterest] = "NOT used";
     html[tableHeaderNewValue] = "NOT used";
-    html[mainText2] = "Wenn Du Fragen zu Deinem Kredit hast, zögere bitte nicht, Dich bei uns per Post oder E-Mail zu melden<p>"
+    html[mainText2] = "Wenn Du Fragen zu Deinem Kredit hast, zögere bitte nicht, Dich bei uns per Post oder E-Mail zu melden.<p>"
                       "Wir hoffen auch weiterhin auf Deine Solidarität. Denn für weitere Umschuldungen benötigen wir auch weiterhin Direktkredite. "
                       "Empfehle uns auch Deinen Freund*innen und Verwandten.";
 }
@@ -542,9 +540,10 @@ bool letterTemplate::createPdf(QString file, const QTextDocument& doc)
 bool letterTemplate::print(const QString& fileId)
 {LOG_ENTRY_and_EXIT;
     QSettings config;
-    QString outputfile = config.value("outdir").toString()+"\\";
+    QString outputfile = config.value("outdir").toString();
+    outputfile +=+"/";
     outputfile += QDate::currentDate().toString("yyyy-MM-dd_") + getNameFromId(tid) + "_" +fileId.trimmed() +".pdf";
-
+    qDebug() << "printing to " << outputfile;
     applyPlaceholders();
     QTextDocument doc;
     createDocument(doc);

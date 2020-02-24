@@ -15,21 +15,22 @@ bool aktiviereVertrag(int vid)
     askDateDlg dlg( nullptr, QDate::currentDate());
     dlg.setMsg("<H3>Mit der Aktivierung des Vertrags beginnt die Zinsberechnung. <br>Bitte geben Sie das Datum des Geldeingangs ein:</H3>");
     dlg.setDateLabel("Die Verzinsung beginnt am");
-    if( QDialog::Accepted == dlg.exec())
+    if( QDialog::Accepted != dlg.exec())
+        return true;
+
+    Vertrag v;
+    v.ausDb(vid, true);
+    if( v.aktiviereVertrag(dlg.getDate()))
     {
-        Vertrag v;
-        v.ausDb(vid, true);
-        if( v.aktiviereVertrag(dlg.getDate()))
-        {
-            if( dlg.shouldPrint())
-                printThankyouLetter(v);
-        } else
-        {
-            qCritical() << "Das Aktivieren des Vertrags ist fehlgeschlagen";
-            return false;
-        }
+        if( dlg.shouldPrint())
+            printThankyouLetter(v);
+        return true;
     }
-    return true;
+    else
+    {
+        qCritical() << "Das Aktivieren des Vertrags ist fehlgeschlagen";
+        return false;
+    }
 }
 
 bool beendeVertrag(int vid)

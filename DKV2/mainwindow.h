@@ -4,6 +4,7 @@
 #include <QGuiApplication>
 #include <QItemSelection>
 #include <QSplashScreen>
+#include <QSqlQueryModel>
 #include <QMainWindow>
 #include <dkdbhelper.h>
 #include "vertrag.h"
@@ -123,14 +124,13 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QSplashScreen* splash;
-    int colIndexFieldActiveInContractList;
     void preparePersonTableView();
     void prepareContractListView();
     void prepareWelcomeMsg();
     void DbInStatuszeileAnzeigen();
     int KreditgeberSpeichern();
     bool saveNewContract();
-
+    QSqlQueryModel* tmp_ContractsModel;
     enum stackedWidgedsIndex
     {
         emptyPageIndex =0,

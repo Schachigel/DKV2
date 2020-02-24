@@ -32,7 +32,7 @@ public:
 public:
     explicit letterTemplate(){ initPrinter();};
     letterTemplate(templateId type);
-    ~letterTemplate(){ if( printer) delete printer; printer=nullptr;}
+    ~letterTemplate(){ }
     bool saveTemplate(const QString& con =QSqlDatabase::defaultConnection) const;
     bool loadTemplate(letterTemplate::templateId id, const QString& con =QSqlDatabase::defaultConnection);
 

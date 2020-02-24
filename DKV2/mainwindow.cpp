@@ -13,7 +13,6 @@
 #include <QSqlError>
 #include <QSqlTableModel>
 #include <QSqlRelationalTableModel>
-#include <QSqlQueryModel>
 #include <QSqlRecord>
 #include <QSqlField>
 #include <QMap>
@@ -583,11 +582,9 @@ void MainWindow::prepareContractListView()
     fields.append(dkdbstructur["Vertraege"]["aktiv"]);
     fields.append(dkdbstructur["Vertraege"]["LaufzeitEnde"]);
     fields.append(dkdbstructur["Vertraege"]["Kfrist"]);
-    QSqlQueryModel* model = new QSqlQueryModel(ui->contractsTableView);
-    model->setQuery(ContractList_SQL(fields, ui->leVertraegeFilter->text()));
-
-    colIndexFieldActiveInContractList = fields.indexOf(dkdbstructur["Vertraege"]["aktiv"]);
-    ui->contractsTableView->setModel(model);
+    tmp_ContractsModel = new QSqlQueryModel(ui->contractsTableView);
+    tmp_ContractsModel->setQuery(ContractList_SQL(fields, ui->leVertraegeFilter->text()));
+    ui->contractsTableView->setModel(tmp_ContractsModel);
     ui->contractsTableView->setEditTriggers(QTableView::NoEditTriggers);
     ui->contractsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->contractsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -606,7 +603,7 @@ void MainWindow::prepareContractListView()
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel(this);
     m->setDynamicSortFilter(true);
-    m->setSourceModel(model);
+    m->setSourceModel(tmp_ContractsModel);
     ui->contractsTableView->setModel(m);
     ui->contractsTableView->setSortingEnabled(true);
 }
@@ -620,14 +617,29 @@ void MainWindow::on_action_Liste_der_Vertraege_anzeigen_triggered()
 }
 void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &pos)
 {LOG_ENTRY_and_EXIT;
+    QSqlRecord rec = tmp_ContractsModel->record(); // ugly, but qobject_cast does not work
+    int indedOf_active_inModel = rec.indexOf("aktiv");
+    int indexOf_kfrist_inModel = rec.indexOf("Kfrist");
+
     QModelIndex indexClickTarget = ui->contractsTableView->indexAt(pos);
-    QModelIndex indexActive = indexClickTarget.siblingAtColumn(colIndexFieldActiveInContractList); // contract active
+    QModelIndex index_IsActive = indexClickTarget.siblingAtColumn(indedOf_active_inModel); // contract active
+    QVariant ContractIsActive = ui->contractsTableView->model()->data(index_IsActive);
+    if( !ContractIsActive.isValid())
+        return; // clicked outside the used lines
+    QModelIndex index_Kfrist = indexClickTarget.siblingAtColumn(indexOf_kfrist_inModel);
+    QVariant Kfrist = ui->contractsTableView->model()->data(index_Kfrist);
+    bool hatLaufzeitende = false;
+    if( Kfrist == -1)
+        hatLaufzeitende = true;
 
     QMenu menu( "PersonContextMenu", this);
-    bool isActive (ui->contractsTableView->model()->data(indexActive).toInt() ? true : false);
-    if( isActive)
+    if(ContractIsActive.toBool())
     {
-        menu.addAction(ui->actionVertrag_Beenden);
+        if( hatLaufzeitende)
+            ui->actionVertrag_Beenden->setText("Vertrag beenden");
+        else
+            ui->actionVertrag_Beenden->setText("Vertrag kündigen");
+        menu.addAction(ui->actionVertrag_Beenden);        
     }
     else
     {
@@ -796,7 +808,7 @@ void MainWindow::on_action_Aktive_Vertraege_CSV_triggered()
 void MainWindow::on_action_activateContract_triggered()
 {LOG_ENTRY_and_EXIT;
 
-    if( aktiviereVertrag(getContractIdFromContractsList()))
+    if( !aktiviereVertrag(getContractIdFromContractsList()))
     {
         QMessageBox::information(nullptr, "Fehler beim Aktivieren des Vertrags",
            "Es ist ein Fehler bei der Aktivierung aufgetreten, bitte überprüfen sie das LOG");

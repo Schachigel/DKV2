@@ -850,7 +850,7 @@
   </action>
   <action name="actionVertrag_Beenden">
    <property name="text">
-    <string>Vertrag &amp;Beenden</string>
+    <string>Vertrag &amp;beenden</string>
    </property>
    <property name="toolTip">
     <string>Zins und Auszahlungsbetrag berechnen, Vertrag löschen</string>
