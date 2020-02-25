@@ -683,6 +683,7 @@ QString MainWindow::prepareOverviewPage(Uebersichten u)
           "<tr><td>Summe Direktkredite:  </td><td style='text-align: right:'>" + locale.toCurrencyString(dbs.BetragAktive) +"</td></tr>" +
           "<tr><td>Wert der DK inklusive Zinsen</td><td style='text-align: right'>"+ locale.toCurrencyString(dbs.WertAktive) + "</td></tr>" +
           "<tr><td>Durchschnittlicher Zinssatz <small>(Gewichtet mit Vertragswert)</small></td><td style='text-align: right'>"+ QString::number(dbs.DurchschnittZins, 'f', 3) + "%</td></tr>" +
+          "<tr><td>Jährliche Zinskosten</td><td style='text-align: right'>"+ locale.toCurrencyString(dbs.WertAktive * dbs.DurchschnittZins/100.) + "</td></tr>" +
           "<tr><td>Mittlerer Zinssatz</td><td style='text-align: right'>"+ QString::number(dbs.MittlererZins, 'f', 3) + "%</td></tr>" +
           "<tr></tr>" +
           "<tr><td>Anzahl der DK mit jährl. Zinsauszahlung: </td><td align:left>" + QString::number(dbs.AnzahlAuszahlende) +"</td></tr>" +

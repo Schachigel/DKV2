@@ -2,6 +2,8 @@
 QT += testlib sql printsupport
 
 CONFIG += qt warn_on depend_includepath testcase
+CONFIG += c++11
+CONFIG += c++14
 
 TEMPLATE = app
 
