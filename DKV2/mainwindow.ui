@@ -26,7 +26,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -92,32 +92,12 @@
         <item>
          <layout class="QHBoxLayout" name="hlNeuePersonButtons">
           <item>
-           <widget class="QPushButton" name="saveNew">
+           <widget class="CustomToolButton" name="saveAnd">
             <property name="toolTip">
              <string>Der DK Geber wird gespeichert und ein weiterer Datensatz zur Eingabe angelegt</string>
             </property>
             <property name="text">
-             <string>Speichern und &amp;neu</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="saveList">
-            <property name="toolTip">
-             <string>Der neue DK Geber wird gespeichert und die Liste aller DK Geber wird angezeigt</string>
-            </property>
-            <property name="text">
-             <string>Speichern und zur &amp;Liste</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="saveExit">
-            <property name="toolTip">
-             <string>Der DK Geber wird gespeichert und zur Eingabe eines Vertrags gewechselt</string>
-            </property>
-            <property name="text">
-             <string>Speichern und &amp;Vertrag anlegen</string>
+             <string>Speichern und ... </string>
             </property>
            </widget>
           </item>
@@ -670,7 +650,7 @@
      <x>0</x>
      <y>0</y>
      <width>947</width>
-     <height>25</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDatenbank">
@@ -921,8 +901,39 @@
     <string>Kopie anlegen</string>
    </property>
   </action>
+  <action name="action_save_contract_go_contract">
+   <property name="text">
+    <string>Speichern, dann Vertrag anlegen</string>
+   </property>
+   <property name="toolTip">
+    <string>Kontakt speichern und einen Vertrag zu diesem Kontakt anlegen</string>
+   </property>
+  </action>
+  <action name="action_save_contract_go_creditors">
+   <property name="text">
+    <string>Speichern, dann Kreditoren anzeigen</string>
+   </property>
+   <property name="toolTip">
+    <string>Speichern und die Liste der Kreditoren anzeigen</string>
+   </property>
+  </action>
+  <action name="action_save_contract_go_new_creditor">
+   <property name="text">
+    <string>Speichern, dann neuen K. anlegen</string>
+   </property>
+   <property name="toolTip">
+    <string>Speichern und dann weiteren Kreditor anlegen</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>CustomToolButton</class>
+   <extends>QToolButton</extends>
+   <header>customtoolbutton.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>leVorname</tabstop>
   <tabstop>leNachname</tabstop>
@@ -933,9 +944,7 @@
   <tabstop>txtAnmerkung</tabstop>
   <tabstop>leIban</tabstop>
   <tabstop>leBic</tabstop>
-  <tabstop>saveNew</tabstop>
-  <tabstop>saveList</tabstop>
-  <tabstop>saveExit</tabstop>
+  <tabstop>saveAnd</tabstop>
   <tabstop>cancel</tabstop>
   <tabstop>comboKreditoren</tabstop>
   <tabstop>leKennung</tabstop>

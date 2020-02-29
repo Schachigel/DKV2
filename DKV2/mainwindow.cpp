@@ -55,9 +55,18 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->PersonsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 15px; }");
     ui->contractsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 15px; }");
 
+    // combo box für Kündigungsfristen füllen
     ui->cbKFrist->addItem("festes Vertragsende", QVariant(-1));
     for (int i=3; i<25; i++)
         ui->cbKFrist->addItem(QString::number(i), QVariant(i));
+
+    // Kreditor anlegen: "Speichern und ..." Menü anlegen
+    menuSaveKreditorAnd = new QMenu;
+    menuSaveKreditorAnd->addAction(ui->action_save_contract_go_contract);
+    menuSaveKreditorAnd->addAction(ui->action_save_contract_go_creditors);
+    menuSaveKreditorAnd->addAction(ui->action_save_contract_go_new_creditor);
+    ui->saveAnd->setMenu(menuSaveKreditorAnd);
+    ui->saveAnd->setDefaultAction(ui->action_save_contract_go_contract);
 
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
@@ -169,7 +178,6 @@ void MainWindow::on_action_DBoeffnen_triggered()
     DatenbankZurAnwendungOeffnen(dbfile);
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
-
 void MainWindow::on_action_Anonymisierte_Kopie_triggered()
 {LOG_ENTRY_and_EXIT;
     QString dbfile = QFileDialog::getSaveFileName(this, "Anonymisierte Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
@@ -413,28 +421,29 @@ void MainWindow::KreditorFormulardatenBelegen(int id)
     ui->leIban  ->setText(rec.field("IBAN").value().toString());
     ui->leBic  ->setText(rec.field("BIC").value().toString());
 }
-void MainWindow::on_saveNew_clicked()
-{LOG_ENTRY_and_EXIT;
-    if( KreditgeberSpeichern() != -1)
-        KreditorFormulardatenLoeschen();
-}
-void MainWindow::on_saveList_clicked()
-{LOG_ENTRY_and_EXIT;
-    if( KreditgeberSpeichern() != -1)
-    {
-        KreditorFormulardatenLoeschen();
-        on_action_Liste_triggered();
-    }
-}
-void MainWindow::on_saveExit_clicked() // speichern und zu "Vertrag anlegen"
-{LOG_ENTRY_and_EXIT;
-    int kid = KreditgeberSpeichern();
-    if(  kid != -1)
-    {
-        KreditorFormulardatenLoeschen();
-        on_action_Vertrag_anlegen_triggered(kid);
-    }
-}
+
+//void MainWindow::on_saveNew_clicked()
+//{LOG_ENTRY_and_EXIT;
+//    if( KreditgeberSpeichern() != -1)
+//        KreditorFormulardatenLoeschen();
+//}
+//void MainWindow::on_saveList_clicked()
+//{LOG_ENTRY_and_EXIT;
+//    if( KreditgeberSpeichern() != -1)
+//    {
+//        KreditorFormulardatenLoeschen();
+//        on_action_Liste_triggered();
+//    }
+//}
+//void MainWindow::on_saveExit_clicked() // speichern und zu "Vertrag anlegen"
+//{LOG_ENTRY_and_EXIT;
+//    int kid = KreditgeberSpeichern();
+//    if(  kid != -1)
+//    {
+//        KreditorFormulardatenLoeschen();
+//        on_action_Vertrag_anlegen_triggered(kid);
+//    }
+//}
 void MainWindow::on_cancel_clicked()
 {LOG_ENTRY_and_EXIT;
     KreditorFormulardatenLoeschen();
@@ -897,3 +906,33 @@ void MainWindow::on_actionShow_Bookings_triggered()
 }
 
 
+
+void MainWindow::on_action_save_contract_go_contract_triggered()
+{LOG_ENTRY_and_EXIT;
+    int kid = KreditgeberSpeichern();
+    if(  kid != -1)
+    {
+        KreditorFormulardatenLoeschen();
+        on_action_Vertrag_anlegen_triggered(kid);
+    }
+}
+
+void MainWindow::on_action_save_contract_go_creditors_triggered()
+{LOG_ENTRY_and_EXIT;
+    if( KreditgeberSpeichern() != -1)
+    {
+        KreditorFormulardatenLoeschen();
+        on_action_Liste_triggered();
+    }
+}
+
+void MainWindow::on_action_save_contract_go_new_creditor_triggered()
+{LOG_ENTRY_and_EXIT;
+    if( KreditgeberSpeichern() != -1)
+        KreditorFormulardatenLoeschen();
+}
+
+void MainWindow::on_saveAnd_triggered(QAction *arg1)
+{
+
+}

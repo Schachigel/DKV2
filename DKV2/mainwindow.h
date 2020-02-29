@@ -53,10 +53,7 @@ private slots:
     void on_actioncreateSampleData_triggered();
     void on_action_Neuer_DK_Geber_triggered();
     void on_action_Vertrag_anlegen_triggered(int id=-1);
-    void on_saveExit_clicked();
-    void on_saveNew_clicked();
 
-    void on_saveList_clicked();
     void on_cancel_clicked();
     void on_action_DkGeberBearbeiten_triggered();
 
@@ -121,6 +118,14 @@ private slots:
 
     void on_action_Anonymisierte_Kopie_triggered();
 
+    void on_action_save_contract_go_contract_triggered();
+
+    void on_action_save_contract_go_creditors_triggered();
+
+    void on_action_save_contract_go_new_creditor_triggered();
+
+    void on_saveAnd_triggered(QAction *arg1);
+
 private:
     Ui::MainWindow *ui;
     QSplashScreen* splash;
@@ -158,6 +163,7 @@ private:
         QString("Laufzeiten")
     };
     QString prepareOverviewPage(Uebersichten u);
+    QMenu* menuSaveKreditorAnd;
 protected:
     void timerEvent(QTimerEvent* te) override
     {

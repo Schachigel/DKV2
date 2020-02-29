@@ -29,6 +29,7 @@ CONFIG += c++14
 SOURCES += \
         askdatedlg.cpp \
         csvwriter.cpp \
+        customtoolbutton.cpp \
         dbfield.cpp \
         dbstructure.cpp \
         dbtable.cpp \
@@ -51,6 +52,7 @@ SOURCES += \
 HEADERS += \
         askdatedlg.h \
         csvwriter.h \
+        customtoolbutton.h \
         dbfield.h \
         dbstructure.h \
         dbtable.h \
