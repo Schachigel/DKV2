@@ -62,10 +62,6 @@ private slots:
     // Buttons on the "Vertrag anlegen" page
     void on_cancelCreateContract_clicked();
 
-    void on_speichereVertragZurKreditorenListe_clicked();
-
-    void on_saveContractGoContracts_clicked();
-
     void on_action_Liste_der_Vertraege_anzeigen_triggered();
 
     void on_PersonsTableView_customContextMenuRequested(const QPoint &pos);
@@ -118,13 +114,17 @@ private slots:
 
     void on_action_Anonymisierte_Kopie_triggered();
 
-    void on_action_save_contract_go_contract_triggered();
+    void on_action_save_contact_go_contract_triggered();
 
-    void on_action_save_contract_go_creditors_triggered();
+    void on_action_save_contact_go_creditors_triggered();
 
-    void on_action_save_contract_go_new_creditor_triggered();
+    void on_action_save_contact_go_new_creditor_triggered();
 
-    void on_saveAnd_triggered(QAction *arg1);
+    void on_action_save_contract_go_contracts_triggered();
+
+    void on_action_save_contract_go_kreditors_triggered();
+
+    void on_action_save_contract_new_contract_triggered();
 
 private:
     Ui::MainWindow *ui;
@@ -164,6 +164,7 @@ private:
     };
     QString prepareOverviewPage(Uebersichten u);
     QMenu* menuSaveKreditorAnd;
+    QMenu* menuSaveContractAnd;
 protected:
     void timerEvent(QTimerEvent* te) override
     {

@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>947</width>
-    <height>489</height>
+    <height>490</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,7 +26,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -321,22 +321,12 @@
            <number>3</number>
           </property>
           <item>
-           <widget class="QPushButton" name="speichereVertragZurKreditorenListe">
+           <widget class="CustomToolButton" name="saveContractAnd">
             <property name="toolTip">
              <string>Speichert den Vertrag und kehrt zur Liste der DK Geber zurück</string>
             </property>
             <property name="text">
              <string>Speichern, dann zur &amp;Kreditoren Liste</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="saveContractGoContracts">
-            <property name="toolTip">
-             <string>Speichert den Vertrag und geht zur Liste der Verträge</string>
-            </property>
-            <property name="text">
-             <string>Speichern zu &amp;Verträgen</string>
             </property>
            </widget>
           </item>
@@ -901,7 +891,7 @@
     <string>Kopie anlegen</string>
    </property>
   </action>
-  <action name="action_save_contract_go_contract">
+  <action name="action_save_contact_go_contract">
    <property name="text">
     <string>Speichern, dann Vertrag anlegen</string>
    </property>
@@ -909,20 +899,44 @@
     <string>Kontakt speichern und einen Vertrag zu diesem Kontakt anlegen</string>
    </property>
   </action>
-  <action name="action_save_contract_go_creditors">
+  <action name="action_save_contact_go_creditors">
    <property name="text">
-    <string>Speichern, dann Kreditoren anzeigen</string>
+    <string>Speichern und zu Kreditoren</string>
    </property>
    <property name="toolTip">
     <string>Speichern und die Liste der Kreditoren anzeigen</string>
    </property>
   </action>
-  <action name="action_save_contract_go_new_creditor">
+  <action name="action_save_contact_go_new_creditor">
    <property name="text">
     <string>Speichern, dann neuen K. anlegen</string>
    </property>
    <property name="toolTip">
     <string>Speichern und dann weiteren Kreditor anlegen</string>
+   </property>
+  </action>
+  <action name="action_save_contract_go_contracts">
+   <property name="text">
+    <string>Speichern und zu Verträgen</string>
+   </property>
+   <property name="toolTip">
+    <string>Speichern und zur Liste der Verträgen wechseln</string>
+   </property>
+  </action>
+  <action name="action_save_contract_go_kreditors">
+   <property name="text">
+    <string>Speichern und zu Kreditoren</string>
+   </property>
+   <property name="toolTip">
+    <string>Speichern und zur Kreditor Liste wechseln</string>
+   </property>
+  </action>
+  <action name="action_save_contract_new_contract">
+   <property name="text">
+    <string>Speichern und Vertrag anlegen</string>
+   </property>
+   <property name="toolTip">
+    <string>Speichern und dann einen weiteren Vertrag anlegen</string>
    </property>
   </action>
  </widget>
@@ -953,8 +967,7 @@
   <tabstop>deVertragsabschluss</tabstop>
   <tabstop>deLaufzeitEnde</tabstop>
   <tabstop>chkbThesaurierend</tabstop>
-  <tabstop>speichereVertragZurKreditorenListe</tabstop>
-  <tabstop>saveContractGoContracts</tabstop>
+  <tabstop>saveContractAnd</tabstop>
   <tabstop>cancelCreateContract</tabstop>
   <tabstop>leFilter</tabstop>
   <tabstop>pbPersonFilterZuruecksetzen</tabstop>

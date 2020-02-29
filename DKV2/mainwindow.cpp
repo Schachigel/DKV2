@@ -62,11 +62,19 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Kreditor anlegen: "Speichern und ..." Menü anlegen
     menuSaveKreditorAnd = new QMenu;
-    menuSaveKreditorAnd->addAction(ui->action_save_contract_go_contract);
-    menuSaveKreditorAnd->addAction(ui->action_save_contract_go_creditors);
-    menuSaveKreditorAnd->addAction(ui->action_save_contract_go_new_creditor);
+    menuSaveKreditorAnd->addAction(ui->action_save_contact_go_contract);
+    menuSaveKreditorAnd->addAction(ui->action_save_contact_go_creditors);
+    menuSaveKreditorAnd->addAction(ui->action_save_contact_go_new_creditor);
     ui->saveAnd->setMenu(menuSaveKreditorAnd);
-    ui->saveAnd->setDefaultAction(ui->action_save_contract_go_contract);
+    ui->saveAnd->setDefaultAction(ui->action_save_contact_go_contract);
+
+    // Vertrag anlegen: "Speichern und ... " Menü anlegen
+    menuSaveContractAnd = new QMenu;
+    menuSaveContractAnd->addAction(ui->action_save_contract_new_contract);
+    menuSaveContractAnd->addAction(ui->action_save_contract_go_kreditors);
+    menuSaveContractAnd->addAction(ui->action_save_contract_go_contracts);
+    ui->saveContractAnd->setMenu(menuSaveContractAnd);
+    ui->saveContractAnd->setDefaultAction(ui->action_save_contract_go_kreditors);
 
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
@@ -421,33 +429,32 @@ void MainWindow::KreditorFormulardatenBelegen(int id)
     ui->leIban  ->setText(rec.field("IBAN").value().toString());
     ui->leBic  ->setText(rec.field("BIC").value().toString());
 }
-
-//void MainWindow::on_saveNew_clicked()
-//{LOG_ENTRY_and_EXIT;
-//    if( KreditgeberSpeichern() != -1)
-//        KreditorFormulardatenLoeschen();
-//}
-//void MainWindow::on_saveList_clicked()
-//{LOG_ENTRY_and_EXIT;
-//    if( KreditgeberSpeichern() != -1)
-//    {
-//        KreditorFormulardatenLoeschen();
-//        on_action_Liste_triggered();
-//    }
-//}
-//void MainWindow::on_saveExit_clicked() // speichern und zu "Vertrag anlegen"
-//{LOG_ENTRY_and_EXIT;
-//    int kid = KreditgeberSpeichern();
-//    if(  kid != -1)
-//    {
-//        KreditorFormulardatenLoeschen();
-//        on_action_Vertrag_anlegen_triggered(kid);
-//    }
-//}
 void MainWindow::on_cancel_clicked()
 {LOG_ENTRY_and_EXIT;
     KreditorFormulardatenLoeschen();
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
+}
+void MainWindow::on_action_save_contact_go_contract_triggered()
+{LOG_ENTRY_and_EXIT;
+    int kid = KreditgeberSpeichern();
+    if(  kid != -1)
+    {
+        KreditorFormulardatenLoeschen();
+        on_action_Vertrag_anlegen_triggered(kid);
+    }
+}
+void MainWindow::on_action_save_contact_go_creditors_triggered()
+{LOG_ENTRY_and_EXIT;
+    if( KreditgeberSpeichern() != -1)
+    {
+        KreditorFormulardatenLoeschen();
+        on_action_Liste_triggered();
+    }
+}
+void MainWindow::on_action_save_contact_go_new_creditor_triggered()
+{LOG_ENTRY_and_EXIT;
+    if( KreditgeberSpeichern() != -1)
+        KreditorFormulardatenLoeschen();
 }
 
 // neuer Vertrag
@@ -551,15 +558,12 @@ void MainWindow::on_leBetrag_editingFinished()
 }
 
 // leave new contract
-void MainWindow::on_speichereVertragZurKreditorenListe_clicked()
+void MainWindow::on_cancelCreateContract_clicked()
 {LOG_ENTRY_and_EXIT;
-    if( saveNewContract())
-    {
-        clearNewContractFields();
-        ui->stackedWidget->setCurrentIndex(PersonListIndex);
-    }
+    clearNewContractFields();
+    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
-void MainWindow::on_saveContractGoContracts_clicked()
+void MainWindow::on_action_save_contract_go_contracts_triggered()
 {LOG_ENTRY_and_EXIT;
     if( saveNewContract())
     {
@@ -568,10 +572,21 @@ void MainWindow::on_saveContractGoContracts_clicked()
         ui->stackedWidget->setCurrentIndex(ContractsListIndex);
     }
 }
-void MainWindow::on_cancelCreateContract_clicked()
+void MainWindow::on_action_save_contract_go_kreditors_triggered()
 {LOG_ENTRY_and_EXIT;
-    clearNewContractFields();
-    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
+    if( saveNewContract())
+    {
+        clearNewContractFields();
+        ui->stackedWidget->setCurrentIndex(PersonListIndex);
+    }
+}
+void MainWindow::on_action_save_contract_new_contract_triggered()
+{LOG_ENTRY_and_EXIT;
+    if( saveNewContract())
+    {
+        clearNewContractFields();
+        ui->stackedWidget->setCurrentIndex(newContractIndex);
+    }
 }
 
 // Liste der Verträge
@@ -905,34 +920,3 @@ void MainWindow::on_actionShow_Bookings_triggered()
     ui->stackedWidget->setCurrentIndex(bookingsListIndex);
 }
 
-
-
-void MainWindow::on_action_save_contract_go_contract_triggered()
-{LOG_ENTRY_and_EXIT;
-    int kid = KreditgeberSpeichern();
-    if(  kid != -1)
-    {
-        KreditorFormulardatenLoeschen();
-        on_action_Vertrag_anlegen_triggered(kid);
-    }
-}
-
-void MainWindow::on_action_save_contract_go_creditors_triggered()
-{LOG_ENTRY_and_EXIT;
-    if( KreditgeberSpeichern() != -1)
-    {
-        KreditorFormulardatenLoeschen();
-        on_action_Liste_triggered();
-    }
-}
-
-void MainWindow::on_action_save_contract_go_new_creditor_triggered()
-{LOG_ENTRY_and_EXIT;
-    if( KreditgeberSpeichern() != -1)
-        KreditorFormulardatenLoeschen();
-}
-
-void MainWindow::on_saveAnd_triggered(QAction *arg1)
-{
-
-}
