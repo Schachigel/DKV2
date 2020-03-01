@@ -577,7 +577,7 @@ void MainWindow::on_action_save_contract_go_kreditors_triggered()
     if( saveNewContract())
     {
         clearNewContractFields();
-        ui->stackedWidget->setCurrentIndex(PersonListIndex);
+        on_action_Liste_triggered();
     }
 }
 void MainWindow::on_action_save_contract_new_contract_triggered()
@@ -585,7 +585,7 @@ void MainWindow::on_action_save_contract_new_contract_triggered()
     if( saveNewContract())
     {
         clearNewContractFields();
-        ui->stackedWidget->setCurrentIndex(newContractIndex);
+        on_action_Vertrag_anlegen_triggered();
     }
 }
 

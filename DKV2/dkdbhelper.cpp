@@ -583,9 +583,20 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
 QString proposeKennung()
 {LOG_ENTRY_and_EXIT;
     int idOffset = getProperty("IdOffset").toInt();
-    QString maxid = QString::number(idOffset + getHighestTableId("Vertraege")).rightJustified(6, '0');
-    QString PI = "DK-" + getProperty("ProjektInitialen");
-    return PI + "-" + QString::number(QDate::currentDate().year()) + "-" + maxid;
+    int iMaxid = idOffset + getHighestTableId("Vertraege");
+    QString kennung;
+    do
+    {
+        QString maxid = QString::number(iMaxid).rightJustified(6, '0');
+        QString PI = "DK-" + getProperty("ProjektInitialen");
+        kennung = PI + "-" + QString::number(QDate::currentDate().year()) + "-" + maxid;
+        QVariant v = ExecuteSingleValueSql("id", "Vertraege", "Kennung='" + kennung + "'");
+        if( v.isValid())
+            iMaxid++;
+        else
+            break;
+    } while(1);
+    return kennung;
 }
 
 void ZinssaetzeFuerAuswahlliste(QList<ZinsAnzeigeMitId>& Rates)
