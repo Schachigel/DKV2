@@ -48,11 +48,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setCentralWidget(ui->stackedWidget);
     DatenbankZurAnwendungOeffnen();
-    DbInStatuszeileAnzeigen();
+    showDbInStatusbar();
     prepareWelcomeMsg();
 
     ui->txtAnmerkung->setTabChangesFocus(true);
-    ui->PersonsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 15px; }");
+    ui->CreditorsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 15px; }");
     ui->contractsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 15px; }");
 
     // combo box für Kündigungsfristen füllen
@@ -90,7 +90,7 @@ void MainWindow::setSplash(QSplashScreen* s)
     startTimer(3333);
 }
 
-void MainWindow::DbInStatuszeileAnzeigen()
+void MainWindow::showDbInStatusbar()
 {LOG_ENTRY_and_EXIT;
     QSettings config;
     ui->statusLabel->setText(config.value("db/last").toString());
@@ -122,27 +122,27 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
     {
     case emptyPageIndex:
         prepareWelcomeMsg();
-        ui->action_Kreditgeber_loeschen->setEnabled(false);
+        ui->action_delete_creditor->setEnabled(false);
         ui->action_loeschePassivenVertrag->setEnabled(false);
         break;
     case PersonListIndex:
-        ui->action_Kreditgeber_loeschen->setEnabled(true);
+        ui->action_delete_creditor->setEnabled(true);
         ui->action_loeschePassivenVertrag->setEnabled(false);
         break;
     case newPersonIndex:
-        ui->action_Kreditgeber_loeschen->setEnabled(false);
+        ui->action_delete_creditor->setEnabled(false);
         ui->action_loeschePassivenVertrag->setEnabled(false);
         break;
     case newContractIndex:
-        ui->action_Kreditgeber_loeschen->setEnabled(false);
+        ui->action_delete_creditor->setEnabled(false);
         ui->action_loeschePassivenVertrag->setEnabled(false);
         break;
     case ContractsListIndex:
-        ui->action_Kreditgeber_loeschen->setEnabled(false);
+        ui->action_delete_creditor->setEnabled(false);
         ui->action_loeschePassivenVertrag->setEnabled(true);
         break;
     case bookingsListIndex:
-        ui->action_Kreditgeber_loeschen->setEnabled(false);
+        ui->action_delete_creditor->setEnabled(false);
         ui->action_loeschePassivenVertrag->setEnabled(false);
         break;
     default:
@@ -154,11 +154,11 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
 }
 
 // file menu
-void MainWindow::on_action_zurueck_triggered()
+void MainWindow::on_action_back_triggered()
 {LOG_ENTRY_and_EXIT;
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
-void MainWindow::on_action_Neue_DB_anlegen_triggered()
+void MainWindow::on_action_create_new_DB_triggered()
 {LOG_ENTRY_and_EXIT;
     QString dbfile = QFileDialog::getSaveFileName(this, "Neue DkVerarbeitungs Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
     if( dbfile == "")
@@ -170,11 +170,11 @@ void MainWindow::on_action_Neue_DB_anlegen_triggered()
     QSettings config;
     config.setValue("db/last", dbfile);
     DatenbankZurAnwendungOeffnen();
-    DbInStatuszeileAnzeigen();
+    showDbInStatusbar();
 
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
-void MainWindow::on_action_DBoeffnen_triggered()
+void MainWindow::on_action_open_DB_triggered()
 {LOG_ENTRY_and_EXIT;
     QString dbfile = QFileDialog::getOpenFileName(this, "DkVerarbeitungs Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
     if( dbfile == "")
@@ -186,7 +186,7 @@ void MainWindow::on_action_DBoeffnen_triggered()
     DatenbankZurAnwendungOeffnen(dbfile);
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
-void MainWindow::on_action_Anonymisierte_Kopie_triggered()
+void MainWindow::on_action_create_anonymous_copy_triggered()
 {LOG_ENTRY_and_EXIT;
     QString dbfile = QFileDialog::getSaveFileName(this, "Anonymisierte Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
     if( dbfile == "")
@@ -194,11 +194,13 @@ void MainWindow::on_action_Anonymisierte_Kopie_triggered()
     busycursor b;
     if( !createDbCopy(dbfile, true))
     {
-        qDebug() << "creating depersonaliced copy failed";
+        QMessageBox::information(this, "Fehler beim Kopieren", "Die anonymisierte Datenbankkopie konnte nicht angelegt werden. "
+                                                               "Weitere Info befindet sich in der LOG Datei");
+        qCritical() << "creating depersonaliced copy failed";
     }
     return;
 }
-void MainWindow::on_action_Kopie_anlegen_triggered()
+void MainWindow::on_action_create_copy_triggered()
 {LOG_ENTRY_and_EXIT;
     QString dbfile = QFileDialog::getSaveFileName(this, "Kopie der Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
     if( dbfile == "")
@@ -207,109 +209,110 @@ void MainWindow::on_action_Kopie_anlegen_triggered()
     busycursor b;
     if( !createDbCopy(dbfile, false))
     {
-        qDebug() << "creating depersonaliced copy failed";
+        QMessageBox::information(this, "Fehler beim Kopieren", "Die Datenbankkopie konnte nicht angelegt werden. "
+                                                               "Weitere Info befindet sich in der LOG Datei");
+        qCritical() << "creating depersonaliced copy failed";
     }
     return;
 
 }
-void MainWindow::on_action_Ausgabeverzeichnis_festlegen_triggered()
+void MainWindow::on_action_store_output_directory_triggered()
 {LOG_ENTRY_and_EXIT;
     QString dir;
     QSettings config;
-    config.value("outdir", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
-
+    dir = config.value("outdir", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
     dir = QFileDialog::getExistingDirectory(this, "Ausgabeverzeichnis", dir,
                                         QFileDialog::ShowDirsOnly
                                             | QFileDialog::DontResolveSymlinks);
     config.setValue("outdir", dir);
 }
-void MainWindow::on_action_Programm_beenden_triggered()
+void MainWindow::on_action_exit_program_triggered()
 {LOG_ENTRY_and_EXIT;
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
     this->close();
 }
 
 // person list page
-void MainWindow::preparePersonTableView()
+void MainWindow::prepareCreditorsTableView()
 {LOG_ENTRY_and_EXIT;
     busycursor b;
-    QSqlTableModel* model = new QSqlTableModel(ui->PersonsTableView);
+    QSqlTableModel* model = new QSqlTableModel(ui->CreditorsTableView);
     model->setTable("Kreditoren");
     model->setFilter("Vorname LIKE '%" + ui->leFilter->text() + "%' OR Nachname LIKE '%" + ui->leFilter->text() + "%'");
     model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model->select();
 
-    ui->PersonsTableView->setEditTriggers(QTableView::NoEditTriggers);
-    ui->PersonsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->PersonsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui->PersonsTableView->setAlternatingRowColors(true);
-    ui->PersonsTableView->setSortingEnabled(true);
-    ui->PersonsTableView->setModel(model);
-    ui->PersonsTableView->hideColumn(0);
-    ui->PersonsTableView->resizeColumnsToContents();
+    ui->CreditorsTableView->setEditTriggers(QTableView::NoEditTriggers);
+    ui->CreditorsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->CreditorsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->CreditorsTableView->setAlternatingRowColors(true);
+    ui->CreditorsTableView->setSortingEnabled(true);
+    ui->CreditorsTableView->setModel(model);
+    ui->CreditorsTableView->hideColumn(0);
+    ui->CreditorsTableView->resizeColumnsToContents();
 }
 void MainWindow::on_action_Liste_triggered()
 {LOG_ENTRY_and_EXIT;
     busycursor b;
-    preparePersonTableView();
-    if( !ui->PersonsTableView->currentIndex().isValid())
-        ui->PersonsTableView->selectRow(0);
+    prepareCreditorsTableView();
+    if( !ui->CreditorsTableView->currentIndex().isValid())
+        ui->CreditorsTableView->selectRow(0);
 
     ui->stackedWidget->setCurrentIndex(PersonListIndex);
 }
 
 // helper fu
-int MainWindow::getPersonIdFromKreditorenList()
+int MainWindow::getIdFromCreditorsList()
 {LOG_ENTRY_and_EXIT;
     // What is the persId of the currently selected person in the person?
-    QModelIndex mi(ui->PersonsTableView->currentIndex().siblingAtColumn(0));
+    QModelIndex mi(ui->CreditorsTableView->currentIndex().siblingAtColumn(0));
     if( mi.isValid())
     {
-        QVariant data(ui->PersonsTableView->model()->data(mi));
+        QVariant data(ui->CreditorsTableView->model()->data(mi));
         return data.toInt();
     }
     qCritical() << "Index der Personenliste konnte nicht bestimmt werden";
     return -1;
 }
 // Kontext Menue in Kreditoren Tabelle
-void MainWindow::on_PersonsTableView_customContextMenuRequested(const QPoint &pos)
+void MainWindow::on_CreditorsTableView_customContextMenuRequested(const QPoint &pos)
 {LOG_ENTRY_and_EXIT;
-    QModelIndex index = ui->PersonsTableView->indexAt(pos).siblingAtColumn(0);
+    QModelIndex index = ui->CreditorsTableView->indexAt(pos).siblingAtColumn(0);
     if( index.isValid())
     {
-        QVariant data(ui->PersonsTableView->model()->data(index));
+        QVariant data(ui->CreditorsTableView->model()->data(index));
         bool canConvert(false); data.toInt(&canConvert);
         if( canConvert)
         {
             QMenu menu( "PersonContextMenu", this);
-            menu.addAction(ui->action_DkGeberBearbeiten);
-            menu.addAction(ui->action_Vertrag_anlegen);
-            menu.addAction( ui->action_Kreditgeber_loeschen);
-            menu.addAction(ui->action_Vertraege_zeigen);
-            menu.exec(ui->PersonsTableView->mapToGlobal(pos));
+            menu.addAction(ui->action_edit_Creditor);
+            menu.addAction(ui->action_create_contract_for_creditor);
+            menu.addAction( ui->action_delete_creditor);
+            menu.addAction(ui->action_show_contracts);
+            menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
         }
         else
             qCritical() << "Conversion error: model data is not int";
         return;
     }
 }
-void MainWindow::on_action_DkGeberBearbeiten_triggered()
+void MainWindow::on_action_edit_Creditor_triggered()
 {LOG_ENTRY_and_EXIT;
     busycursor b;
-    QModelIndex mi(ui->PersonsTableView->currentIndex());
-    QVariant index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0));
+    QModelIndex mi(ui->CreditorsTableView->currentIndex());
+    QVariant index = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(0));
     ui->lblPersId->setText(index.toString());
 
-    KreditorFormulardatenBelegen(index.toInt());
+    init_creditor_form(index.toInt());
     ui->stackedWidget->setCurrentIndex(newPersonIndex);
 }
-void MainWindow::on_action_Vertrag_anlegen_triggered(int id)
+void MainWindow::on_action_create_contract_for_creditor_triggered(int id)
 {LOG_ENTRY_and_EXIT;
     busycursor b;
-    FillKreditorDropdown();
-    FillRatesDropdown();
+    fill_creditors_dropdown();
+    fill_rates_dropdown();
     ui->leKennung->setText( proposeKennung());
-    comboKreditorenAnzeigeNachKreditorenId( id != -1 ? id : getPersonIdFromKreditorenList());
+    set_creditors_combo_by_id( id != -1 ? id : getIdFromCreditorsList());
     Vertrag cd; // this is to get the defaults of the class definition
     ui->deLaufzeitEnde->setDate(cd.LaufzeitEnde());
     ui->cbKFrist->setCurrentIndex(ui->cbKFrist->findText("6"));
@@ -318,48 +321,48 @@ void MainWindow::on_action_Vertrag_anlegen_triggered(int id)
 
     ui->stackedWidget->setCurrentIndex(newContractIndex);
 }
-void MainWindow::on_action_Kreditgeber_loeschen_triggered()
+void MainWindow::on_action_delete_creditor_triggered()
 {LOG_ENTRY_and_EXIT;
     QString msg( "Soll der Kreditgeber ");
-    QModelIndex mi(ui->PersonsTableView->currentIndex());
-    QString Vorname = ui->PersonsTableView->model()->data(mi.siblingAtColumn(1)).toString();
-    QString Nachname = ui->PersonsTableView->model()->data(mi.siblingAtColumn(2)).toString();
-    QString index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0)).toString();
+    QModelIndex mi(ui->CreditorsTableView->currentIndex());
+    QString Vorname = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(1)).toString();
+    QString Nachname = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(2)).toString();
+    QString index = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(0)).toString();
     msg += Vorname + " " + Nachname + " (id " + index + ") mit allen Verträgen und Buchungen gelöscht werden?";
     if( QMessageBox::Yes != QMessageBox::question(this, "Kreditgeber löschen?", msg))
         return;
     busycursor b;
     if( Kreditor::Loeschen(index.toInt()))
-        preparePersonTableView();
+        prepareCreditorsTableView();
     else
         Q_ASSERT(!bool("could not remove kreditor and contracts"));
 }
-void MainWindow::on_action_Vertraege_zeigen_triggered()
+void MainWindow::on_action_show_contracts_triggered()
 {LOG_ENTRY_and_EXIT;
     busycursor b;
-    QModelIndex mi(ui->PersonsTableView->currentIndex());
-    QString index = ui->PersonsTableView->model()->data(mi.siblingAtColumn(0)).toString();
+    QModelIndex mi(ui->CreditorsTableView->currentIndex());
+    QString index = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(0)).toString();
     ui->leVertraegeFilter->setText(index);
-    on_action_Liste_der_Vertraege_anzeigen_triggered();
+    on_action_show_list_of_contracts_triggered();
 }
 void MainWindow::on_leFilter_editingFinished()
 {LOG_ENTRY_and_EXIT;
     busycursor b;
-    preparePersonTableView();
+    prepareCreditorsTableView();
 }
 void MainWindow::on_pbPersonFilterZuruecksetzen_clicked()
 {LOG_ENTRY_and_EXIT;
     busycursor b;
     ui->leFilter->setText("");
-    preparePersonTableView();
+    prepareCreditorsTableView();
 }
 
 // new DK Geber
-void MainWindow::on_action_Neuer_DK_Geber_triggered()
+void MainWindow::on_action_create_new_creditor_triggered()
 {LOG_ENTRY_and_EXIT;
     ui->stackedWidget->setCurrentIndex(newPersonIndex);
 }
-int MainWindow::KreditgeberSpeichern()
+int  MainWindow::save_creditor()
 {LOG_ENTRY_and_EXIT;
 
     Kreditor k;
@@ -402,7 +405,7 @@ int MainWindow::KreditgeberSpeichern()
 
     return kid;
 }
-void MainWindow::KreditorFormulardatenLoeschen()
+void MainWindow::empty_create_creditor_form()
 {LOG_ENTRY_and_EXIT;
     ui->leVorname->setText("");
     ui->leNachname->setText("");
@@ -415,7 +418,7 @@ void MainWindow::KreditorFormulardatenLoeschen()
     ui->leBic->setText("");
     ui->lblPersId->setText("");
 }
-void MainWindow::KreditorFormulardatenBelegen(int id)
+void MainWindow::init_creditor_form(int id)
 {LOG_ENTRY_and_EXIT;
     busycursor b;
     QSqlRecord rec = ExecuteSingleRecordSql(dkdbstructur["Kreditoren"].Fields(), "Id=" +QString::number(id));
@@ -431,34 +434,34 @@ void MainWindow::KreditorFormulardatenBelegen(int id)
 }
 void MainWindow::on_cancel_clicked()
 {LOG_ENTRY_and_EXIT;
-    KreditorFormulardatenLoeschen();
+    empty_create_creditor_form();
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_action_save_contact_go_contract_triggered()
 {LOG_ENTRY_and_EXIT;
-    int kid = KreditgeberSpeichern();
+    int kid = save_creditor();
     if(  kid != -1)
     {
-        KreditorFormulardatenLoeschen();
-        on_action_Vertrag_anlegen_triggered(kid);
+        empty_create_creditor_form();
+        on_action_create_contract_for_creditor_triggered(kid);
     }
 }
 void MainWindow::on_action_save_contact_go_creditors_triggered()
 {LOG_ENTRY_and_EXIT;
-    if( KreditgeberSpeichern() != -1)
+    if( save_creditor() != -1)
     {
-        KreditorFormulardatenLoeschen();
+        empty_create_creditor_form();
         on_action_Liste_triggered();
     }
 }
 void MainWindow::on_action_save_contact_go_new_creditor_triggered()
 {LOG_ENTRY_and_EXIT;
-    if( KreditgeberSpeichern() != -1)
-        KreditorFormulardatenLoeschen();
+    if( save_creditor() != -1)
+        empty_create_creditor_form();
 }
 
 // neuer Vertrag
-Vertrag MainWindow::VertragsdatenAusFormular()
+Vertrag MainWindow::get_contract_data_from_form()
 {LOG_ENTRY_and_EXIT;
     int KreditorId = ui->comboKreditoren->itemData(ui->comboKreditoren->currentIndex()).toInt();
     QString Kennung = ui->leKennung->text();
@@ -481,9 +484,9 @@ Vertrag MainWindow::VertragsdatenAusFormular()
     return Vertrag(KreditorId, Kennung, Betrag, Wert, ZinsId, Vertragsdatum,
                    thesaurierend, false/*aktiv*/,StartZinsberechnung, kFrist, LaufzeitEnde);
 }
-bool MainWindow::saveNewContract()
+bool MainWindow::save_new_contract()
 {LOG_ENTRY_and_EXIT;
-    Vertrag c =VertragsdatenAusFormular();
+    Vertrag c =get_contract_data_from_form();
 
     QString errortext;
     if( !c.validateAndSaveNewContract(errortext))
@@ -498,14 +501,14 @@ bool MainWindow::saveNewContract()
         return true;
     }
 }
-void MainWindow::clearNewContractFields()
+void MainWindow::empty_new_contract_form()
 {LOG_ENTRY_and_EXIT;
     ui->leKennung->setText("");
     ui->leBetrag->setText("");
     ui->chkbThesaurierend->setChecked(true);
 }
 // helper: switch to "Vertrag anlegen"
-void MainWindow::FillKreditorDropdown()
+void MainWindow::fill_creditors_dropdown()
 {LOG_ENTRY_and_EXIT;
     ui->comboKreditoren->clear();
     QList<QPair<int, QString>> Personen;
@@ -515,7 +518,7 @@ void MainWindow::FillKreditorDropdown()
         ui->comboKreditoren->addItem( Entry.second, QVariant((Entry.first)));
     }
 }
-void MainWindow::FillRatesDropdown()
+void MainWindow::fill_rates_dropdown()
 {LOG_ENTRY_and_EXIT;
     QList<ZinsAnzeigeMitId> InterrestCbEntries; ZinssaetzeFuerAuswahlliste(InterrestCbEntries);
     ui->cbZins->clear();
@@ -525,7 +528,7 @@ void MainWindow::FillRatesDropdown()
     }
     ui->cbZins->setCurrentIndex(InterrestCbEntries.count()-1);
 }
-void MainWindow::comboKreditorenAnzeigeNachKreditorenId(int KreditorenId)
+void MainWindow::set_creditors_combo_by_id(int KreditorenId)
 {LOG_ENTRY_and_EXIT;
     if( KreditorenId < 0) return;
     // select the correct person
@@ -560,37 +563,37 @@ void MainWindow::on_leBetrag_editingFinished()
 // leave new contract
 void MainWindow::on_cancelCreateContract_clicked()
 {LOG_ENTRY_and_EXIT;
-    clearNewContractFields();
+    empty_new_contract_form();
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_action_save_contract_go_contracts_triggered()
 {LOG_ENTRY_and_EXIT;
-    if( saveNewContract())
+    if( save_new_contract())
     {
-        clearNewContractFields();
-        prepareContractListView();
+        empty_new_contract_form();
+        prepare_contracts_list_view();
         ui->stackedWidget->setCurrentIndex(ContractsListIndex);
     }
 }
 void MainWindow::on_action_save_contract_go_kreditors_triggered()
 {LOG_ENTRY_and_EXIT;
-    if( saveNewContract())
+    if( save_new_contract())
     {
-        clearNewContractFields();
+        empty_new_contract_form();
         on_action_Liste_triggered();
     }
 }
 void MainWindow::on_action_save_contract_new_contract_triggered()
 {LOG_ENTRY_and_EXIT;
-    if( saveNewContract())
+    if( save_new_contract())
     {
-        clearNewContractFields();
-        on_action_Vertrag_anlegen_triggered();
+        empty_new_contract_form();
+        on_action_create_contract_for_creditor_triggered();
     }
 }
 
 // Liste der Verträge
-void MainWindow::prepareContractListView()
+void MainWindow::prepare_contracts_list_view()
 {LOG_ENTRY_and_EXIT;
     busycursor b;
     QVector<dbfield> fields;
@@ -631,9 +634,9 @@ void MainWindow::prepareContractListView()
     ui->contractsTableView->setModel(m);
     ui->contractsTableView->setSortingEnabled(true);
 }
-void MainWindow::on_action_Liste_der_Vertraege_anzeigen_triggered()
+void MainWindow::on_action_show_list_of_contracts_triggered()
 {LOG_ENTRY_and_EXIT;
-    prepareContractListView();
+    prepare_contracts_list_view();
     if( !ui->contractsTableView->currentIndex().isValid())
         ui->contractsTableView->selectRow(0);
 
@@ -660,20 +663,20 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &
     if(ContractIsActive.toBool())
     {
         if( hatLaufzeitende)
-            ui->actionVertrag_Beenden->setText("Vertrag beenden");
+            ui->action_terminate_contract->setText("Vertrag beenden");
         else
-            ui->actionVertrag_Beenden->setText("Vertrag kündigen");
-        menu.addAction(ui->actionVertrag_Beenden);        
+            ui->action_terminate_contract->setText("Vertrag kündigen");
+        menu.addAction(ui->action_terminate_contract);
     }
     else
     {
-        menu.addAction(ui->action_activateContract);
+        menu.addAction(ui->action_activate_contract);
         menu.addAction(ui->action_loeschePassivenVertrag); // passive Verträge können gelöscht werden
     }
-    menu.exec(ui->PersonsTableView->mapToGlobal(pos));
+    menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
     return;
 }
-int MainWindow::getContractIdFromContractsList()
+int MainWindow::get_current_id_from_contracts_list()
 {LOG_ENTRY_and_EXIT;
     QModelIndex mi(ui->contractsTableView->currentIndex().siblingAtColumn(0));
     if( mi.isValid())
@@ -683,7 +686,7 @@ int MainWindow::getContractIdFromContractsList()
     }
     return -1;
 }
-QString MainWindow::prepareOverviewPage(Uebersichten u)
+QString MainWindow::prepare_overview_page(Uebersichten u)
 {LOG_ENTRY_and_EXIT;
 
     QString lbl ("<html><body>"
@@ -776,7 +779,7 @@ QString MainWindow::prepareOverviewPage(Uebersichten u)
     qDebug() << "\n" << lbl << endl;
     return lbl;
 }
-void MainWindow::on_action_Uebersicht_triggered()
+void MainWindow::on_action_contracts_statistics_triggered()
 {LOG_ENTRY_and_EXIT;
     if(ui->comboUebersicht->count() == 0)
     {
@@ -789,12 +792,12 @@ void MainWindow::on_action_Uebersicht_triggered()
     }
     int currentIndex = ui->comboUebersicht->currentIndex();
     Uebersichten u = static_cast<Uebersichten>( ui->comboUebersicht->itemData(currentIndex).toInt());
-    ui->txtOverview->setText( prepareOverviewPage(u));
+    ui->txtOverview->setText( prepare_overview_page(u));
     ui->stackedWidget->setCurrentIndex(OverviewIndex);
 }
 void MainWindow::on_comboUebersicht_currentIndexChanged(int )
 {LOG_ENTRY_and_EXIT;
-    on_action_Uebersicht_triggered();
+    on_action_contracts_statistics_triggered();
 }
 void MainWindow::on_pbPrint_clicked()
 {LOG_ENTRY_and_EXIT;
@@ -808,7 +811,7 @@ void MainWindow::on_pbPrint_clicked()
     ui->txtOverview->print(&write);
     showFileInFolder(filename);
 }
-void MainWindow::on_action_Jahreszinsabrechnung_triggered()
+void MainWindow::on_action_anual_interest_settlement_triggered()
 {LOG_ENTRY_and_EXIT;
     jahresabschluss Abschluss;
 
@@ -823,22 +826,22 @@ void MainWindow::on_action_Jahreszinsabrechnung_triggered()
     Abschluss.execute();
     frmJahresabschluss dlgJA(Abschluss, this);
     dlgJA.exec();
-    on_action_Liste_der_Vertraege_anzeigen_triggered( );
+    on_action_show_list_of_contracts_triggered( );
 }
-void MainWindow::on_action_Aktive_Vertraege_CSV_triggered()
+void MainWindow::on_action_create_active_contracts_csv_triggered()
 {LOG_ENTRY_and_EXIT;
     CsvActiveContracts();
 }
 // contract list context menu
-void MainWindow::on_action_activateContract_triggered()
+void MainWindow::on_action_activate_contract_triggered()
 {LOG_ENTRY_and_EXIT;
 
-    if( !aktiviereVertrag(getContractIdFromContractsList()))
+    if( !aktiviereVertrag(get_current_id_from_contracts_list()))
     {
         QMessageBox::information(nullptr, "Fehler beim Aktivieren des Vertrags",
            "Es ist ein Fehler bei der Aktivierung aufgetreten, bitte überprüfen sie das LOG");
     }
-    prepareContractListView();
+    prepare_contracts_list_view();
 }
 void MainWindow::on_action_loeschePassivenVertrag_triggered()
 {LOG_ENTRY_and_EXIT;
@@ -848,18 +851,18 @@ void MainWindow::on_action_loeschePassivenVertrag_triggered()
     QString index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toString();
     beendeVertrag(index.toInt());
 
-    prepareContractListView();
+    prepare_contracts_list_view();
 }
 void MainWindow::on_leVertraegeFilter_editingFinished()
 {LOG_ENTRY_and_EXIT;
-    prepareContractListView();
+    prepare_contracts_list_view();
 }
-void MainWindow::on_FilterVertraegeZuruecksetzen_clicked()
+void MainWindow::on_reset_contracts_filter_clicked()
 {LOG_ENTRY_and_EXIT;
     ui->leVertraegeFilter->setText("");
-    prepareContractListView();
+    prepare_contracts_list_view();
 }
-void MainWindow::on_actionVertrag_Beenden_triggered()
+void MainWindow::on_action_terminate_contract_triggered()
 {LOG_ENTRY_and_EXIT;
     QModelIndex mi(ui->contractsTableView->currentIndex());
     if( !mi.isValid()) return;
@@ -872,19 +875,19 @@ void MainWindow::on_actionVertrag_Beenden_triggered()
     {
         QMessageBox::information(nullptr, "Beenden des Vertrags", "Das Beenden des Vertrags wurde erfolgreich gespeichert");
     }
-    prepareContractListView();
+    prepare_contracts_list_view();
 }
 
 // debug funktions
-void MainWindow::on_actioncreateSampleData_triggered()
+void MainWindow::on_action_create_sample_data_triggered()
 {LOG_ENTRY_and_EXIT;
     BeispieldatenAnlegen();
-    preparePersonTableView();
-    prepareContractListView();
+    prepareCreditorsTableView();
+    prepare_contracts_list_view();
     if( ui->stackedWidget->currentIndex() == OverviewIndex)
-        on_action_Uebersicht_triggered();
+        on_action_contracts_statistics_triggered();
 }
-void MainWindow::on_actionanzeigenLog_triggered()
+void MainWindow::on_action_log_anzeigen_triggered()
 {LOG_ENTRY_and_EXIT;
     #if defined(Q_OS_WIN)
     ::ShellExecuteA(nullptr, "open", logFilePath().toUtf8(), "", QDir::currentPath().toUtf8(), 1);

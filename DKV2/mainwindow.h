@@ -36,83 +36,83 @@ public:
     ~MainWindow() override;
     void setSplash(QSplashScreen* s);
 
-    void FillKreditorDropdown();
-    void FillRatesDropdown();
-    void comboKreditorenAnzeigeNachKreditorenId(int id);
-    int getPersonIdFromKreditorenList();
-    int getContractIdFromContractsList();
-    Vertrag VertragsdatenAusFormular();
+    void fill_creditors_dropdown();
+    void fill_rates_dropdown();
+    void set_creditors_combo_by_id(int id);
+    int getIdFromCreditorsList();
+    int get_current_id_from_contracts_list();
+    Vertrag get_contract_data_from_form();
 
 private slots:
 
-    void on_action_Neue_DB_anlegen_triggered();
-    void on_action_Programm_beenden_triggered();
-    void on_action_DBoeffnen_triggered();
+    void on_action_create_new_DB_triggered();
+    void on_action_exit_program_triggered();
+    void on_action_open_DB_triggered();
 
     void on_action_Liste_triggered();
-    void on_actioncreateSampleData_triggered();
-    void on_action_Neuer_DK_Geber_triggered();
-    void on_action_Vertrag_anlegen_triggered(int id=-1);
+    void on_action_create_sample_data_triggered();
+    void on_action_create_new_creditor_triggered();
+    void on_action_create_contract_for_creditor_triggered(int id=-1);
 
     void on_cancel_clicked();
-    void on_action_DkGeberBearbeiten_triggered();
+    void on_action_edit_Creditor_triggered();
 
     void on_stackedWidget_currentChanged(int arg1);
 
     // Buttons on the "Vertrag anlegen" page
     void on_cancelCreateContract_clicked();
 
-    void on_action_Liste_der_Vertraege_anzeigen_triggered();
+    void on_action_show_list_of_contracts_triggered();
 
-    void on_PersonsTableView_customContextMenuRequested(const QPoint &pos);
+    void on_CreditorsTableView_customContextMenuRequested(const QPoint &pos);
 
-    void on_action_Kreditgeber_loeschen_triggered();
+    void on_action_delete_creditor_triggered();
 
     void on_contractsTableView_customContextMenuRequested(const QPoint &pos);
 
-    void on_action_activateContract_triggered();
+    void on_action_activate_contract_triggered();
 
     void on_action_loeschePassivenVertrag_triggered();
 
-    void on_actionanzeigenLog_triggered();
+    void on_action_log_anzeigen_triggered();
 
     void on_leFilter_editingFinished();
 
     void on_pbPersonFilterZuruecksetzen_clicked();
 
-    void on_FilterVertraegeZuruecksetzen_clicked();
+    void on_reset_contracts_filter_clicked();
 
     void on_leVertraegeFilter_editingFinished();
 
-    void on_actionVertrag_Beenden_triggered();
+    void on_action_terminate_contract_triggered();
 
-    void on_action_Uebersicht_triggered();
+    void on_action_contracts_statistics_triggered();
 
-    void on_action_Vertraege_zeigen_triggered();
+    void on_action_show_contracts_triggered();
 
     void on_tblViewBookingsSelectionChanged(const QItemSelection &, const QItemSelection &);
 
     void on_actionShow_Bookings_triggered();
 
-    void on_action_Jahreszinsabrechnung_triggered();
+    void on_action_anual_interest_settlement_triggered();
 
     void on_leBetrag_editingFinished();
 
-    void on_action_Ausgabeverzeichnis_festlegen_triggered();
+    void on_action_store_output_directory_triggered();
 
-    void on_action_Aktive_Vertraege_CSV_triggered();
+    void on_action_create_active_contracts_csv_triggered();
 
     void on_comboUebersicht_currentIndexChanged(int index);
 
     void on_pbPrint_clicked();
 
-    void on_action_zurueck_triggered();
+    void on_action_back_triggered();
 
     void on_cbKFrist_currentIndexChanged(int index);
 
-    void on_action_Kopie_anlegen_triggered();
+    void on_action_create_copy_triggered();
 
-    void on_action_Anonymisierte_Kopie_triggered();
+    void on_action_create_anonymous_copy_triggered();
 
     void on_action_save_contact_go_contract_triggered();
 
@@ -129,12 +129,12 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QSplashScreen* splash;
-    void preparePersonTableView();
-    void prepareContractListView();
+    void prepareCreditorsTableView();
+    void prepare_contracts_list_view();
     void prepareWelcomeMsg();
-    void DbInStatuszeileAnzeigen();
-    int KreditgeberSpeichern();
-    bool saveNewContract();
+    void showDbInStatusbar();
+    int save_creditor();
+    bool save_new_contract();
     QSqlQueryModel* tmp_ContractsModel;
     enum stackedWidgedsIndex
     {
@@ -146,9 +146,9 @@ private:
         OverviewIndex=5,
         bookingsListIndex=6
     };
-    void KreditorFormulardatenLoeschen();
-    void KreditorFormulardatenBelegen(int id);
-    void clearNewContractFields();
+    void empty_create_creditor_form();
+    void init_creditor_form(int id);
+    void empty_new_contract_form();
     enum Uebersichten
     {
         UEBERSICHT = 0,
@@ -162,7 +162,7 @@ private:
         QString("Zinsverteilungen"),
         QString("Laufzeiten")
     };
-    QString prepareOverviewPage(Uebersichten u);
+    QString prepare_overview_page(Uebersichten u);
     QMenu* menuSaveKreditorAnd;
     QMenu* menuSaveContractAnd;
 protected:

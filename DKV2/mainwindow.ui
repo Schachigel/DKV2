@@ -26,7 +26,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -39,7 +39,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="PersonsListPage">
+      <widget class="QWidget" name="CreditorsListPage">
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0">
@@ -70,7 +70,7 @@
          </layout>
         </item>
         <item>
-         <widget class="QTableView" name="PersonsTableView">
+         <widget class="QTableView" name="CreditorsTableView">
           <property name="contextMenuPolicy">
            <enum>Qt::CustomContextMenu</enum>
           </property>
@@ -510,7 +510,7 @@
            <widget class="QLineEdit" name="leVertraegeFilter"/>
           </item>
           <item>
-           <widget class="QPushButton" name="FilterVertraegeZuruecksetzen">
+           <widget class="QPushButton" name="reset_contracts_filter">
             <property name="text">
              <string>alle anzeigen</string>
             </property>
@@ -647,17 +647,17 @@
     <property name="title">
      <string>&amp;Datenbank</string>
     </property>
-    <addaction name="action_zurueck"/>
+    <addaction name="action_back"/>
     <addaction name="separator"/>
-    <addaction name="action_Neue_DB_anlegen"/>
-    <addaction name="action_DBoeffnen"/>
+    <addaction name="action_create_new_DB"/>
+    <addaction name="action_open_DB"/>
     <addaction name="actionDB_schliessen"/>
     <addaction name="separator"/>
-    <addaction name="action_Kopie_anlegen"/>
-    <addaction name="action_Anonymisierte_Kopie"/>
+    <addaction name="action_create_copy"/>
+    <addaction name="action_create_anonymous_copy"/>
     <addaction name="separator"/>
-    <addaction name="action_Ausgabeverzeichnis_festlegen"/>
-    <addaction name="action_Programm_beenden"/>
+    <addaction name="action_store_output_directory"/>
+    <addaction name="action_exit_program"/>
    </widget>
    <widget class="QMenu" name="menuDK_Geber">
     <property name="title">
@@ -665,8 +665,8 @@
     </property>
     <addaction name="action_Liste"/>
     <addaction name="separator"/>
-    <addaction name="action_Neuer_DK_Geber"/>
-    <addaction name="action_Kreditgeber_loeschen"/>
+    <addaction name="action_create_new_creditor"/>
+    <addaction name="action_delete_creditor"/>
    </widget>
    <widget class="QMenu" name="menuVertr_ge">
     <property name="title">
@@ -676,14 +676,14 @@
      <property name="title">
       <string>Listen drucken</string>
      </property>
-     <addaction name="action_Aktive_Vertraege_CSV"/>
+     <addaction name="action_create_active_contracts_csv"/>
     </widget>
-    <addaction name="action_Liste_der_Vertraege_anzeigen"/>
-    <addaction name="action_Vertrag_anlegen"/>
+    <addaction name="action_show_list_of_contracts"/>
+    <addaction name="action_create_contract_for_creditor"/>
     <addaction name="separator"/>
-    <addaction name="action_Jahreszinsabrechnung"/>
+    <addaction name="action_anual_interest_settlement"/>
     <addaction name="separator"/>
-    <addaction name="action_Uebersicht"/>
+    <addaction name="action_contracts_statistics"/>
     <addaction name="menuListen_drucken"/>
    </widget>
    <widget class="QMenu" name="menuDebug">
@@ -693,8 +693,8 @@
     <property name="title">
      <string>Debug</string>
     </property>
-    <addaction name="actioncreateSampleData"/>
-    <addaction name="actionanzeigenLog"/>
+    <addaction name="action_create_sample_data"/>
+    <addaction name="action_log_anzeigen"/>
     <addaction name="actionShow_Bookings"/>
    </widget>
    <addaction name="menuDatenbank"/>
@@ -703,9 +703,9 @@
    <addaction name="menuDebug"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="action_Neue_DB_anlegen">
+  <action name="action_create_new_DB">
    <property name="text">
-    <string>&amp;Neue Anlegen</string>
+    <string>&amp;Neue anlegen</string>
    </property>
    <property name="toolTip">
     <string>Legen Sie hiermit eine leere DK Datenbank an</string>
@@ -714,7 +714,7 @@
     <string>Ctrl+N</string>
    </property>
   </action>
-  <action name="action_DBoeffnen">
+  <action name="action_open_DB">
    <property name="text">
     <string>&amp;Öffnen</string>
    </property>
@@ -753,17 +753,17 @@
     <string>Zeigt eine Liste aller DK Geber an</string>
    </property>
   </action>
-  <action name="action_Programm_beenden">
+  <action name="action_exit_program">
    <property name="text">
     <string>Programm beenden</string>
    </property>
   </action>
-  <action name="action_Liste_der_Vertraege_anzeigen">
+  <action name="action_show_list_of_contracts">
    <property name="text">
     <string>Liste der Verträge anzeigen</string>
    </property>
   </action>
-  <action name="actioncreateSampleData">
+  <action name="action_create_sample_data">
    <property name="text">
     <string>Beispieldaten erstellen</string>
    </property>
@@ -771,23 +771,23 @@
     <bool>true</bool>
    </property>
   </action>
-  <action name="action_Neuer_DK_Geber">
+  <action name="action_create_new_creditor">
    <property name="text">
     <string>Anlegen</string>
    </property>
   </action>
-  <action name="action_Vertrag_anlegen">
+  <action name="action_create_contract_for_creditor">
    <property name="enabled">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Vertrag Anlegen</string>
+    <string>Vertrag anlegen</string>
    </property>
    <property name="toolTip">
     <string>Vertrag für ausgewählten DK Geber anlegen</string>
    </property>
   </action>
-  <action name="action_Kreditgeber_loeschen">
+  <action name="action_delete_creditor">
    <property name="text">
     <string>Löschen</string>
    </property>
@@ -800,9 +800,9 @@
     <string>Show Log file</string>
    </property>
   </action>
-  <action name="action_activateContract">
+  <action name="action_activate_contract">
    <property name="text">
-    <string>Vertrag Aktivieren</string>
+    <string>Vertrag aktivieren</string>
    </property>
    <property name="toolTip">
     <string>Zinszahlung des Vertrags aktivieren</string>
@@ -810,15 +810,15 @@
   </action>
   <action name="action_loeschePassivenVertrag">
    <property name="text">
-    <string>Vertrag &amp;Löschen</string>
+    <string>Vertrag &amp;löschen</string>
    </property>
   </action>
-  <action name="actionanzeigenLog">
+  <action name="action_log_anzeigen">
    <property name="text">
     <string>Log Datei öffnen</string>
    </property>
   </action>
-  <action name="actionVertrag_Beenden">
+  <action name="action_terminate_contract">
    <property name="text">
     <string>Vertrag &amp;beenden</string>
    </property>
@@ -826,7 +826,7 @@
     <string>Zins und Auszahlungsbetrag berechnen, Vertrag löschen</string>
    </property>
   </action>
-  <action name="action_Uebersicht">
+  <action name="action_contracts_statistics">
    <property name="text">
     <string>Übersicht</string>
    </property>
@@ -834,7 +834,7 @@
     <string>Übersicht über Vertragsdaten anzeigen</string>
    </property>
   </action>
-  <action name="action_Vertraege_zeigen">
+  <action name="action_show_contracts">
    <property name="text">
     <string>Verträge zeigen</string>
    </property>
@@ -847,7 +847,7 @@
     <string>Buchungen anzeigen</string>
    </property>
   </action>
-  <action name="action_DkGeberBearbeiten">
+  <action name="action_edit_Creditor">
    <property name="text">
     <string>Bearbeiten</string>
    </property>
@@ -855,12 +855,12 @@
     <string>Adressdaten und Bankdaten bearbeiten</string>
    </property>
   </action>
-  <action name="action_Jahreszinsabrechnung">
+  <action name="action_anual_interest_settlement">
    <property name="text">
     <string>Jahreszinsabrechnung</string>
    </property>
   </action>
-  <action name="action_Ausgabeverzeichnis_festlegen">
+  <action name="action_store_output_directory">
    <property name="checkable">
     <bool>false</bool>
    </property>
@@ -871,22 +871,22 @@
     <string>Ausgabeverzeichnis festlegen</string>
    </property>
   </action>
-  <action name="action_Aktive_Vertraege_CSV">
+  <action name="action_create_active_contracts_csv">
    <property name="text">
     <string>Aktive Verträge (CSV)</string>
    </property>
   </action>
-  <action name="action_zurueck">
+  <action name="action_back">
    <property name="text">
     <string>Start</string>
    </property>
   </action>
-  <action name="action_Anonymisierte_Kopie">
+  <action name="action_create_anonymous_copy">
    <property name="text">
     <string>Anonymisierte &amp;Kopie</string>
    </property>
   </action>
-  <action name="action_Kopie_anlegen">
+  <action name="action_create_copy">
    <property name="text">
     <string>Kopie anlegen</string>
    </property>
@@ -971,11 +971,11 @@
   <tabstop>cancelCreateContract</tabstop>
   <tabstop>leFilter</tabstop>
   <tabstop>pbPersonFilterZuruecksetzen</tabstop>
-  <tabstop>PersonsTableView</tabstop>
+  <tabstop>CreditorsTableView</tabstop>
   <tabstop>leFilterBookings</tabstop>
   <tabstop>pbPersonFilterZuruecksetzenBookings</tabstop>
   <tabstop>tblViewBookings</tabstop>
-  <tabstop>FilterVertraegeZuruecksetzen</tabstop>
+  <tabstop>reset_contracts_filter</tabstop>
   <tabstop>contractsTableView</tabstop>
   <tabstop>leVertraegeFilter</tabstop>
   <tabstop>cbKFrist</tabstop>
