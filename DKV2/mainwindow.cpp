@@ -47,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->statusBar->addPermanentWidget(ui->statusLabel);
 
     setCentralWidget(ui->stackedWidget);
-    DatenbankZurAnwendungOeffnen();
+    open_databaseForApplication();
     showDbInStatusbar();
     prepareWelcomeMsg();
 
@@ -101,7 +101,7 @@ void MainWindow::prepareWelcomeMsg()
     QString message="<H2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</H2>";
 
     QStringList warnings;
-    CheckDbConsistency( warnings);
+    check_DbConsistency( warnings);
 
     foreach(QString warning, warnings)
     {
@@ -164,12 +164,12 @@ void MainWindow::on_action_create_new_DB_triggered()
     if( dbfile == "")
         return;
     busycursor b;
-    DatenbankverbindungSchliessen();
-    if( !DKDatenbankAnlegen(dbfile))
+    closeDatabaseConnection();
+    if( !create_DK_database(dbfile))
         exit(0x80070020);
     QSettings config;
     config.setValue("db/last", dbfile);
-    DatenbankZurAnwendungOeffnen();
+    open_databaseForApplication();
     showDbInStatusbar();
 
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
@@ -183,7 +183,7 @@ void MainWindow::on_action_open_DB_triggered()
         return;
     }
     busycursor b;
-    DatenbankZurAnwendungOeffnen(dbfile);
+    open_databaseForApplication(dbfile);
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_action_create_anonymous_copy_triggered()
@@ -192,7 +192,7 @@ void MainWindow::on_action_create_anonymous_copy_triggered()
     if( dbfile == "")
         return;
     busycursor b;
-    if( !createDbCopy(dbfile, true))
+    if( !create_DB_copy(dbfile, true))
     {
         QMessageBox::information(this, "Fehler beim Kopieren", "Die anonymisierte Datenbankkopie konnte nicht angelegt werden. "
                                                                "Weitere Info befindet sich in der LOG Datei");
@@ -207,7 +207,7 @@ void MainWindow::on_action_create_copy_triggered()
         return;
 
     busycursor b;
-    if( !createDbCopy(dbfile, false))
+    if( !create_DB_copy(dbfile, false))
     {
         QMessageBox::information(this, "Fehler beim Kopieren", "Die Datenbankkopie konnte nicht angelegt werden. "
                                                                "Weitere Info befindet sich in der LOG Datei");
@@ -520,7 +520,7 @@ void MainWindow::fill_creditors_dropdown()
 }
 void MainWindow::fill_rates_dropdown()
 {LOG_ENTRY_and_EXIT;
-    QList<ZinsAnzeigeMitId> InterrestCbEntries; ZinssaetzeFuerAuswahlliste(InterrestCbEntries);
+    QList<ZinsAnzeigeMitId> InterrestCbEntries; interestRates_for_dropdown(InterrestCbEntries);
     ui->cbZins->clear();
     for(ZinsAnzeigeMitId Entry : InterrestCbEntries)
     {
@@ -610,7 +610,7 @@ void MainWindow::prepare_contracts_list_view()
     fields.append(dkdbstructur["Vertraege"]["LaufzeitEnde"]);
     fields.append(dkdbstructur["Vertraege"]["Kfrist"]);
     tmp_ContractsModel = new QSqlQueryModel(ui->contractsTableView);
-    tmp_ContractsModel->setQuery(ContractList_SQL(fields, ui->leVertraegeFilter->text()));
+    tmp_ContractsModel->setQuery(contractList_SQL(fields, ui->leVertraegeFilter->text()));
     ui->contractsTableView->setModel(tmp_ContractsModel);
     ui->contractsTableView->setEditTriggers(QTableView::NoEditTriggers);
     ui->contractsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -701,7 +701,7 @@ QString MainWindow::prepare_overview_page(Uebersichten u)
     case UEBERSICHT:
     {
         DbSummary dbs;
-        berechneZusammenfassung(dbs);
+        calculateSummary(dbs);
         lbl += QString("<h2>Übersicht DKs und DK Geber</h2><br> Stand: ") + QDate::currentDate().toString("dd.MM.yyyy<br>") +
           "<table>" +
 
@@ -731,7 +731,7 @@ QString MainWindow::prepare_overview_page(Uebersichten u)
     {
         lbl += "<h2>Auslaufende Verträge </h2> Stand:"  + QDate::currentDate().toString("dd.MM.yyyy<br>");
         QVector<ContractEnd> ce;
-        berechneVertragsenden(ce);
+        calc_contractEnd(ce);
         if( !ce.isEmpty())
         {
             lbl += "<table><thead><tr><td> Jahr </td><td> Anzahl </td><td> Summe </td></tr></thead>";
@@ -750,7 +750,7 @@ QString MainWindow::prepare_overview_page(Uebersichten u)
     {
         QLocale locale;
         QVector<YZV> yzv;
-        berechneJahrZinsVerteilung( yzv);
+        calc_anualInterestDistribution( yzv);
         if( !yzv.isEmpty())
         {
             lbl += "<h2>Verteilung der Zinssätze pro Jahr </h2> Stand:"  + QDate::currentDate().toString("dd.MM.yyyy<br>") +
@@ -768,7 +768,7 @@ QString MainWindow::prepare_overview_page(Uebersichten u)
     case LAUFZEITEN:
     {
         lbl += "<h2>Vertragslaufzeiten</h2> Stand:" + QDate::currentDate().toString("dd.MM.yyyy<br>");
-        lbl += "<br>" + LaufzeitenVerteilungHtml();
+        lbl += "<br>" + contractTerm_distirbution_html();
     }
 //    default:
 //    {
@@ -881,7 +881,7 @@ void MainWindow::on_action_terminate_contract_triggered()
 // debug funktions
 void MainWindow::on_action_create_sample_data_triggered()
 {LOG_ENTRY_and_EXIT;
-    BeispieldatenAnlegen();
+    create_sampleData();
     prepareCreditorsTableView();
     prepare_contracts_list_view();
     if( ui->stackedWidget->currentIndex() == OverviewIndex)

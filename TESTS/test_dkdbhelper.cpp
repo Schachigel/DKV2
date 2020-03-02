@@ -90,7 +90,7 @@ void test_dkdbhelper::test_berechneZusammenfassung()
     tdi.InsertData(QSqlDatabase::database(testCon));
     tdi.InsertData(QSqlDatabase::database(testCon));
     DbSummary dbs;
-    berechneZusammenfassung(dbs, testCon);
+    calculateSummary(dbs, testCon);
     QVERIFY(dbs.BetragAktive == 200.);
     QVERIFY(dbs.AnzahlAktive == 2);
     QVERIFY(dbs.WertAktive == 202.);

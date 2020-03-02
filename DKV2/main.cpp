@@ -39,7 +39,7 @@ QString getInitialDb()
     QSettings config;
     QString dbfile = config.value("db/last").toString();
     qDebug() << "DbFile from configuration: " << dbfile;
-    if(  dbfile != "" && QFile::exists(dbfile) && istValideDatenbank(dbfile))
+    if(  dbfile != "" && QFile::exists(dbfile) && isValidDatabase(dbfile))
         return dbfile;
     do
     {
@@ -52,14 +52,14 @@ QString getInitialDb()
 
         if( QFile::exists(dbfile))
         {
-            if( istValideDatenbank(dbfile))
+            if( isValidDatabase(dbfile))
                 return dbfile;
             else
             {
                 if( QMessageBox::Yes == QMessageBox::information(nullptr, "Die gewählte Datenbank ist ungültig", "Soll die Datei für eine neue DB überschrieben werden?"))
                 {
                     QFile::remove(dbfile);
-                    if( DKDatenbankAnlegen(dbfile))
+                    if( create_DK_database(dbfile))
                         return dbfile;
                     else
                     {
@@ -71,7 +71,7 @@ QString getInitialDb()
             }
         }
         // new file ...
-        if( DKDatenbankAnlegen(dbfile))
+        if( create_DK_database(dbfile))
             return dbfile;
         else
         {
@@ -122,8 +122,8 @@ int main(int argc, char *argv[])
     QSplashScreen* splash = nullptr;
 #endif
 
-    initDKDBStruktur();
-    initAdditionalTables();
+    init_DKDBStruct();
+    init_additionalTables();
 
     QSettings config;
     config.setValue("db/last", initDb());

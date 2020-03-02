@@ -30,31 +30,31 @@ extern QList<QPair<qlonglong, QString>> Buchungsarten;
     BART_NEXT =7
 };
 
-void initDKDBStruktur();
-void initAdditionalTables();
+void init_DKDBStruct();
+void init_additionalTables();
 
-void initBuchungsarten();
+void init_bookingTypes();
 
-bool DKDatenbankAnlegen(const QString& filename);
-bool DKDatenbankAnlegen(QSqlDatabase db=QSqlDatabase::database());
+bool create_DK_database(const QString& filename);
+bool create_DK_database(QSqlDatabase db=QSqlDatabase::database());
 
-bool istValideDatenbank(const QString& filename);
-bool istValideDatenbank(QSqlDatabase db=QSqlDatabase::database());
+bool isValidDatabase(const QString& filename);
+bool isValidDatabase(QSqlDatabase db=QSqlDatabase::database());
 
-void DatenbankverbindungSchliessen(QString connection= QLatin1String(QSqlDatabase::defaultConnection));
-void DatenbankZurAnwendungOeffnen( QString newDbFile="");
-void CheckDbConsistency( QStringList& msg);
+void closeDatabaseConnection(QString connection= QLatin1String(QSqlDatabase::defaultConnection));
+void open_databaseForApplication( QString newDbFile="");
+void check_DbConsistency( QStringList& msg);
 
 bool ensureTable(const dbtable& table, const QString& connection= QLatin1String(QSqlDatabase::defaultConnection));
 bool ensureTable(const dbtable& table, QSqlDatabase& db);
 
-bool createDbCopy(QString targetfn, bool anonym);
+bool create_DB_copy(QString targetfn, bool anonym);
 
 QString proposeKennung();
-void BeispieldatenAnlegen(int datensaetze =20);
+void create_sampleData(int datensaetze =20);
 
 typedef QPair<int, QString> ZinsAnzeigeMitId;
-void ZinssaetzeFuerAuswahlliste(QList<ZinsAnzeigeMitId>& Entries);
+void interestRates_for_dropdown(QList<ZinsAnzeigeMitId>& Entries);
 
 int BuchungsartIdFromArt(QString s);
 
@@ -62,12 +62,12 @@ bool VertragAktivieren( int ContractId, const QDate& activationDate);
 bool passivenVertragLoeschen(const QString& index);
 bool VertragsdatenZurLoeschung(const int index, const QDate endD, double& neuerWert, double& davonZins);
 
-QString ContractList_SELECT(QVector<dbfield>& f);
-QString ContractList_FROM();
-QString ContractList_WHERE(const QString& filter);
-QString ContractList_SQL(const QVector<dbfield>& f, const QString& filter);
+QString contractList_SELECT(QVector<dbfield>& f);
+QString contractList_FROM();
+QString contractList_WHERE(const QString& filter);
+QString contractList_SQL(const QVector<dbfield>& f, const QString& filter);
 
-void initProperty( const QString& name, const QString& wert, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
+void init_property( const QString& name, const QString& wert, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
 QString getProperty(const QString& name, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
 void setProperty(const QString& name, const QString& value, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
 
@@ -103,8 +103,8 @@ struct ContractEnd
     int count;
     double value;
 };
-void berechneVertragsenden(QVector<ContractEnd>& ce, QString connection=QLatin1String(QSqlDatabase::defaultConnection));
-void berechneZusammenfassung(DbSummary& dbs, QString connection=QLatin1String(QSqlDatabase::defaultConnection));
+void calc_contractEnd(QVector<ContractEnd>& ce, QString connection=QLatin1String(QSqlDatabase::defaultConnection));
+void calculateSummary(DbSummary& dbs, QString connection=QLatin1String(QSqlDatabase::defaultConnection));
 
 struct YZV
 {
@@ -113,8 +113,8 @@ struct YZV
     int count;
     double sum;
 };
-void berechneJahrZinsVerteilung( QVector<YZV>& yzv, QString connection=QLatin1String(QSqlDatabase::defaultConnection));
+void calc_anualInterestDistribution( QVector<YZV>& yzv, QString connection=QLatin1String(QSqlDatabase::defaultConnection));
 
-QString LaufzeitenVerteilungHtml(QString connection=QLatin1String(QSqlDatabase::defaultConnection));
+QString contractTerm_distirbution_html(QString connection=QLatin1String(QSqlDatabase::defaultConnection));
 
 #endif // DKDBHELPER_H

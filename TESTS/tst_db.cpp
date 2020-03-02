@@ -234,18 +234,18 @@ void tst_db::dbfieldCopyConst()
 void tst_db::newDbIsValid()
 {
     // init
-    initDKDBStruktur();
+    init_DKDBStruct();
     // test
-    DKDatenbankAnlegen( QSqlDatabase::database(testCon));
+    create_DK_database( QSqlDatabase::database(testCon));
     //QVERIFY(istValideDatenbank(filename)); // already done in DKDatenbankAnlegen
 }
 
 void tst_db::createKreditor()
 {
     // init
-    initDKDBStruktur();
+    init_DKDBStruct();
     // test
-    DKDatenbankAnlegen(QSqlDatabase::database(testCon));
+    create_DK_database(QSqlDatabase::database(testCon));
     Kreditor k;
     k.setValue("Vorname", "Hugo");
     k.setValue("Nachname", "Hurtig");

@@ -23,11 +23,11 @@ dbstructure dkdbAddtionalTables;
 
 QList<QPair<qlonglong, QString>> Buchungsarten;
 
-void initDKDBStruktur()
+void init_DKDBStruct()
 {LOG_ENTRY_and_EXIT;
     static bool done = false;
     if( done) return; // 4 tests
-    initBuchungsarten();
+    init_bookingTypes();
     static bool init_done = false;
     if( init_done) return;
     init_done = true;
@@ -95,7 +95,7 @@ void initDKDBStruktur()
     done = true;
 }
 
-void initAdditionalTables()
+void init_additionalTables()
 {LOG_ENTRY_and_EXIT;
     dbtable briefe("Briefvorlagen");
     briefe.append(dbfield("templateId", QVariant::Int));
@@ -104,18 +104,18 @@ void initAdditionalTables()
     dkdbAddtionalTables.appendTable(briefe);
 }
 
-void initGmbHData()
+void init_GmbHData()
 {
-    initProperty("gmbh.address1", "Esperanza Franklin GmbH");
-    initProperty("gmbh.address2", "");
-    initProperty("gmbh.plz", "68167");
-    initProperty("gmbh.stadt", "Mannheim");
-    initProperty("gmbh.strasse", "Turley-Platz 9");
-    initProperty("gmbh.email","info@esperanza-mannheim.de");
-    initProperty("gmbh.url", "www.esperanza-mannheim.de");
+    init_property("gmbh.address1", "Esperanza Franklin GmbH");
+    init_property("gmbh.address2", "");
+    init_property("gmbh.plz", "68167");
+    init_property("gmbh.stadt", "Mannheim");
+    init_property("gmbh.strasse", "Turley-Platz 9");
+    init_property("gmbh.email","info@esperanza-mannheim.de");
+    init_property("gmbh.url", "www.esperanza-mannheim.de");
 }
 
-void initBuchungsarten()
+void init_bookingTypes()
 {LOG_ENTRY_and_EXIT;
 
     Buchungsarten.push_back(QPair<qlonglong, QString>(Buchungsart_i::NOOP, ""));
@@ -127,7 +127,7 @@ void initBuchungsarten()
     Buchungsarten.push_back(QPair<qlonglong, QString>(Buchungsart_i::KUENDIGUNG_FRIST, "Kuendigung mit Frist"));
 }
 
-bool ZinssaetzeEinfuegen(QSqlDatabase db)
+bool insert_interestRates(QSqlDatabase db)
 {LOG_ENTRY_and_EXIT;
     double Zins = 0.;
     double ZinsIncrement = 0.01;
@@ -155,7 +155,7 @@ bool ZinssaetzeEinfuegen(QSqlDatabase db)
     return ret;
 }
 
-bool BuchungsartenEinfuegen(QSqlDatabase db =QSqlDatabase::database())
+bool insert_bookingTypes(QSqlDatabase db =QSqlDatabase::database())
 {LOG_ENTRY_and_EXIT;
     bool ret = true;
     for( auto art: Buchungsarten)
@@ -169,24 +169,23 @@ bool BuchungsartenEinfuegen(QSqlDatabase db =QSqlDatabase::database())
     return ret;
 }
 
-bool EigenschaftenEinfuegen(QSqlDatabase db)
+bool insert_Properties(QSqlDatabase db)
 {LOG_ENTRY_and_EXIT;
     bool ret =true;
     QSqlQuery sql(db);
     QRandomGenerator *rand = QRandomGenerator::system();
-    initProperty("Version", "1.0");
-    initProperty("IdOffset", QString::number(rand->bounded(10000,20000)));
-    initProperty("ProjektInitialen", "ESP");
+    init_property("Version", "1.0");
+    init_property("IdOffset", QString::number(rand->bounded(10000,20000)));
+    init_property("ProjektInitialen", "ESP");
 
     return ret;
 }
 
-void initProperty( const QString& name, const QString& wert, const QString& connection)
+void init_property( const QString& name, const QString& wert, const QString& connection)
 {LOG_ENTRY_and_EXIT;
     if( getProperty(name, connection)== "")
         setProperty(name, wert, connection);
 }
-
 QString getProperty(const QString& name, const QString& connection)
 {
     qDebug() << "Reading property... " << name;
@@ -202,16 +201,16 @@ void setProperty(const QString& name, const QString& Wert, const QString& connec
         qCritical() << "Failed to insert Meta information " << q.lastError() << endl << q.lastQuery();
 }
 
-bool DKDatenbankAnlegen(QSqlDatabase db)
+bool create_DK_database(QSqlDatabase db)
 {LOG_ENTRY_and_EXIT;
     bool ret = true;
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     {
     db.transaction();
     ret &= dkdbstructur.createDb(db);
-    ret &= ZinssaetzeEinfuegen(db);
-    ret &= BuchungsartenEinfuegen(db);
-    ret &= EigenschaftenEinfuegen(db);
+    ret &= insert_interestRates(db);
+    ret &= insert_bookingTypes(db);
+    ret &= insert_Properties(db);
     if( ret) db.commit(); else db.rollback();
     }
     if( !ret)
@@ -219,10 +218,9 @@ bool DKDatenbankAnlegen(QSqlDatabase db)
         qCritical() << "creating db structure in new database failed";
         return false;
     }
-    return istValideDatenbank(db);
+    return isValidDatabase(db);
 }
-
-bool DKDatenbankAnlegen(const QString& filename) /*in the default connection*/
+bool create_DK_database(const QString& filename) /*in the default connection*/
 {LOG_ENTRY_and_EXIT;
     if( filename.isEmpty())
     {
@@ -248,10 +246,10 @@ bool DKDatenbankAnlegen(const QString& filename) /*in the default connection*/
         qDebug() << "DkDatenbankAnlegen failed in db.open";
         return false;
     }
-    return DKDatenbankAnlegen(db);
+    return create_DK_database(db);
 }
 
-bool hatAlleTabellenUndFelder(QSqlDatabase& db)
+bool has_allTablesAndFields(QSqlDatabase& db)
 {LOG_ENTRY_and_EXIT;
     for( auto table : dkdbstructur.getTables())
     {
@@ -287,7 +285,6 @@ bool ensureTable( const dbtable& table, const QString& con)
     QSqlDatabase db = QSqlDatabase::database(con);
     return ensureTable(table, db);
 }
-
 bool ensureTable( const dbtable& table, QSqlDatabase& db)
 {
     if( tableExists(table.Name(), db.connectionName()))
@@ -308,7 +305,7 @@ bool ensureTable( const dbtable& table, QSqlDatabase& db)
     return table.create(db);
 }
 
-bool istValideDatenbank(const QString& filename)
+bool isValidDatabase(const QString& filename)
 {LOG_ENTRY_and_EXIT;
 
     if( filename == "") return false;
@@ -319,25 +316,24 @@ bool istValideDatenbank(const QString& filename)
     if( !db.open())
         return false;
     closer.set(&db);
-    bool ret = istValideDatenbank(db);
+    bool ret = isValidDatabase(db);
     if( !ret)
         qDebug() << "failed to validate databse " << filename;
     return ret;
 }
-
-bool istValideDatenbank(QSqlDatabase db)
+bool isValidDatabase(QSqlDatabase db)
 {LOG_ENTRY_and_EXIT;
 
     QSqlQuery enableRefInt(db);
     enableRefInt.exec("PRAGMA foreign_keys = ON");
-    if( !hatAlleTabellenUndFelder(db))
+    if( !has_allTablesAndFields(db))
         return false;
 
     qDebug() << db.databaseName() << " is a valid dk database";
     return true;
 }
 
-void DatenbankverbindungSchliessen(QString con)
+void closeDatabaseConnection(QString con)
 {LOG_ENTRY_and_EXIT;
 
     QSqlDatabase::removeDatabase(con);
@@ -353,10 +349,10 @@ void DatenbankverbindungSchliessen(QString con)
     qInfo() << "Database connection " << con << " removed";
 }
 
-void DatenbankZurAnwendungOeffnen( QString newDbFile)
+void open_databaseForApplication( QString newDbFile)
 {LOG_ENTRY_and_EXIT;
 
-    DatenbankverbindungSchliessen();
+    closeDatabaseConnection();
     QSettings config;
     if( newDbFile == "")
     {
@@ -372,11 +368,11 @@ void DatenbankZurAnwendungOeffnen( QString newDbFile)
     db.setDatabaseName(newDbFile);
     db.open();
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
-    initGmbHData();
-    BuchungsartenEinfuegen();
+    init_GmbHData();
+    insert_bookingTypes();
 }
 
-void CheckDbConsistency( QStringList& msg)
+void check_DbConsistency( QStringList& msg)
 {LOG_ENTRY_and_EXIT;
     // temporary; fix data corrupted by date edit control (1752 ...)
     QSqlDatabase db = QSqlDatabase::database();
@@ -400,7 +396,7 @@ void CheckDbConsistency( QStringList& msg)
     }
 }
 
-bool copyTable(QString table, QSqlDatabase targetDB)
+bool copy_Table(QString table, QSqlDatabase targetDB)
 {
     bool success = true;
     QSqlQuery q(QSqlDatabase::database(QLatin1String(QSqlDatabase::defaultConnection))); // default database connection -> active database
@@ -428,7 +424,7 @@ bool copyTable(QString table, QSqlDatabase targetDB)
     return success;
 }
 
-bool copyMangledKreditors(QSqlDatabase targetDB)
+bool copy_mangledCreditors(QSqlDatabase targetDB)
 {
     bool success = true;
     int recCount = 0;
@@ -458,7 +454,7 @@ bool copyMangledKreditors(QSqlDatabase targetDB)
     return success;
 }
 
-bool createDbCopy(QString targetfn, bool deper)
+bool create_DB_copy(QString targetfn, bool deper)
 {
     if( QFile::exists(targetfn))
     {
@@ -500,18 +496,18 @@ bool createDbCopy(QString targetfn, bool deper)
         qDebug() << "dePe Copy: working on table " << table.Name();
         if( deper && table.Name() == "Kreditoren")
         {
-            success = success && copyMangledKreditors(backupDB);
+            success = success && copy_mangledCreditors(backupDB);
         }
         else
         {
-            success = success && copyTable(table.Name(), backupDB);
+            success = success && copy_Table(table.Name(), backupDB);
         }
 
     }
     return success;
 }
 
-void BeispielVertragsdaten( Vertrag& vertrag, int KId, int maxZinsIndex, QRandomGenerator* rand)
+void create_sampleDataset( Vertrag& vertrag, int KId, int maxZinsIndex, QRandomGenerator* rand)
 {
     // add a contract
     double betragUWert = double(100) * rand->bounded(1,20);
@@ -534,7 +530,7 @@ void BeispielVertragsdaten( Vertrag& vertrag, int KId, int maxZinsIndex, QRandom
                     thesa, active, StartZinsberechnung, kFrist, LaufzeitEnde);
 }
 
-void BeispieldatenAnlegen( int AnzahlDatensaetze)
+void create_sampleData( int AnzahlDatensaetze)
 {LOG_ENTRY_and_EXIT;
 
     QList<QString> Vornamen {"Holger", "Volker", "Peter", "Hans", "Susi", "Roland", "Claudia", "Emil", "Evelyn", "Ötzgür", "Thomas", "Elke", "Berta", "Malte", "Jori", "Paul", "Jonas", "Finn", "Leon", "Luca", "Emma", "Mia", "Lena", "Anna", "Anne", "Martha", "Ruth", "Rosemie", "Rosemarie", "Verena", "Ursula", "Erika", "Adrian", "Avan", "Anton", "Benno", "Karl", "Merlin", "Noah", "Oliver", "Olaf", "Pepe", "Zeno"};
@@ -568,15 +564,14 @@ void BeispieldatenAnlegen( int AnzahlDatensaetze)
             Q_ASSERT(!bool("Verbuchung des neuen Vertrags gescheitert"));
         }
         Vertrag v;
-        BeispielVertragsdaten(v, neueKreditorId, maxZinsIndex, rand);
+        create_sampleDataset(v, neueKreditorId, maxZinsIndex, rand);
         v.verbucheNeuenVertrag();
     }
     for ( int i=0; i<AnzahlDatensaetze; i++)
     {   // more contracts for existing customers
         Vertrag v;
-        BeispielVertragsdaten(v, rand->bounded(1, neueKreditorId), maxZinsIndex, rand);
+        create_sampleDataset(v, rand->bounded(1, neueKreditorId), maxZinsIndex, rand);
         v.verbucheNeuenVertrag();
-
     }
 }
 
@@ -599,7 +594,7 @@ QString proposeKennung()
     return kennung;
 }
 
-void ZinssaetzeFuerAuswahlliste(QList<ZinsAnzeigeMitId>& Rates)
+void interestRates_for_dropdown(QList<ZinsAnzeigeMitId>& Rates)
 {LOG_ENTRY_and_EXIT;
 
     QSqlQuery query;
@@ -616,7 +611,7 @@ void ZinssaetzeFuerAuswahlliste(QList<ZinsAnzeigeMitId>& Rates)
     }
 }
 
-QString ContractList_SELECT(const QVector<dbfield>& fields)
+QString contractList_SELECT(const QVector<dbfield>& fields)
 {LOG_ENTRY_and_EXIT;
     QString sql("SELECT ");
     for( int i = 0; i < fields.size(); i++)
@@ -627,11 +622,11 @@ QString ContractList_SELECT(const QVector<dbfield>& fields)
     return sql;
 }
 
-QString ContractList_FROM()
+QString contractList_FROM()
 {LOG_ENTRY_and_EXIT;
     return  "FROM Vertraege, Kreditoren, Zinssaetze";
 }
-QString ContractList_WHERE(const QString& Filter)
+QString contractList_WHERE(const QString& Filter)
 {LOG_ENTRY_and_EXIT;
     QString s ("WHERE Kreditoren.id = Vertraege.KreditorId AND Vertraege.ZSatz = Zinssaetze.id");
     bool isNumber (false);
@@ -647,17 +642,17 @@ QString ContractList_WHERE(const QString& Filter)
     "Kennung  LIKE '%" + Filter + "%')";
     return s;
 }
-QString ContractList_SQL(const QVector<dbfield>& fields, const QString& filter)
+QString contractList_SQL(const QVector<dbfield>& fields, const QString& filter)
 {LOG_ENTRY_and_EXIT;
-    QString sql = ContractList_SELECT(fields) + " "
-            + ContractList_FROM() + " "
-            + ContractList_WHERE(filter);
+    QString sql = contractList_SELECT(fields) + " "
+            + contractList_FROM() + " "
+            + contractList_WHERE(filter);
     qDebug() << "ContractList SQL: \n" << sql;
     return sql;
 }
 
 
-void berechneZusammenfassung(DbSummary& dbs, QString con)
+void calculateSummary(DbSummary& dbs, QString con)
 {LOG_ENTRY_and_EXIT;
     dbs.AnzahlDkGeber = ExecuteSingleValueSql("COUNT(*)", "[Kreditoren]", "1=1").toInt();
 
@@ -677,7 +672,6 @@ void berechneZusammenfassung(DbSummary& dbs, QString con)
     dbs.AnzahlPassive = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] = 0", con).toInt();
     dbs.BetragPassive = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 0", con).toReal();
 }
-
 void CsvActiveContracts()
 {
     QDate today = QDate::currentDate();
@@ -698,8 +692,7 @@ void CsvActiveContracts()
     table2csv( fields, "[aktiv] = 1", filename);
     showFileInFolder(filename);
 }
-
-void berechneVertragsenden( QVector<ContractEnd>& ce, QString connection)
+void calc_contractEnd( QVector<ContractEnd>& ce, QString connection)
 {LOG_ENTRY_and_EXIT;
 
     QMap<int, int> m_count;
@@ -734,8 +727,7 @@ void berechneVertragsenden( QVector<ContractEnd>& ce, QString connection)
     }
     return;
 }
-
-void berechneJahrZinsVerteilung( QVector<YZV>& yzv, QString connection)
+void calc_anualInterestDistribution( QVector<YZV>& yzv, QString connection)
 {
     QString sql = "SELECT Substr([Vertragsdatum], 0, 5), [Zinssaetze].[Zinssatz], count(*), sum([Betrag]) "
                   "FROM [Vertraege], [Zinssaetze] "
@@ -750,8 +742,7 @@ void berechneJahrZinsVerteilung( QVector<YZV>& yzv, QString connection)
     }
     return;
 }
-
-QString LaufzeitenVerteilungHtml(QString con)
+QString contractTerm_distirbution_html(QString con)
 {
     int AnzahlBisEinJahr=0, AnzahlBisFuenfJahre=0, AnzahlLaenger=0, AnzahlUnbegrenzet = 0;
     double SummeBisEinJahr=0., SummeBisFuenfJahre=0., SummeLaenger=0., SummeUnbegrenzet = 0.;
