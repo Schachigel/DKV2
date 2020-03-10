@@ -88,7 +88,6 @@ DISTFILES += \
     ../DOCS/remember.txt \
     ../letter.html \
     DOKU \
-    einsetztexte-kontoauszug-t.txt \
     remember.txt
 
 RESOURCES += \

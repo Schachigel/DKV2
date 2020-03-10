@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QDir>
 #include <QApplication>
+#include <QTranslator>
 #include <QSettings>
 #include <QFileDialog>
 #include <QStandardPaths>
@@ -112,9 +113,16 @@ int main(int argc, char *argv[])
 
     qInfo() << "DKV2 started " << QDate::currentDate().toString("dd.MM.yyyy") << "-" << QTime::currentTime().toString();
 
+
     QApplication a(argc, argv);
     a.setOrganizationName("4-MHS"); // used to store our settings
     a.setApplicationName("DKV2");
+    QTranslator trans;
+    QString translationFile = QDir::currentPath() + "/translations/qt_de.qm";
+    if( trans.load(QLocale(),translationFile))
+        QCoreApplication::installTranslator(&trans);
+    else
+        qCritical() << "failed to load translations " << translationFile;
 
 #ifndef QT_DEBUG
     QSplashScreen* splash = doSplash(); // do only AFTER having an app. object
