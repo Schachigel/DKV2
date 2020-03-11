@@ -26,7 +26,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -949,26 +949,26 @@
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>leVorname</tabstop>
-  <tabstop>leNachname</tabstop>
-  <tabstop>leStrasse</tabstop>
-  <tabstop>lePlz</tabstop>
-  <tabstop>leStadt</tabstop>
-  <tabstop>leEMail</tabstop>
-  <tabstop>txtAnmerkung</tabstop>
-  <tabstop>leIban</tabstop>
-  <tabstop>leBic</tabstop>
-  <tabstop>saveAnd</tabstop>
-  <tabstop>cancel</tabstop>
+  <tabstop>saveContractAnd</tabstop>
+  <tabstop>cancelCreateContract</tabstop>
   <tabstop>comboKreditoren</tabstop>
   <tabstop>leKennung</tabstop>
   <tabstop>leBetrag</tabstop>
   <tabstop>cbZins</tabstop>
   <tabstop>deVertragsabschluss</tabstop>
+  <tabstop>cbKFrist</tabstop>
   <tabstop>deLaufzeitEnde</tabstop>
   <tabstop>chkbThesaurierend</tabstop>
-  <tabstop>saveContractAnd</tabstop>
-  <tabstop>cancelCreateContract</tabstop>
+  <tabstop>cancel</tabstop>
+  <tabstop>leStrasse</tabstop>
+  <tabstop>lePlz</tabstop>
+  <tabstop>leStadt</tabstop>
+  <tabstop>leEMail</tabstop>
+  <tabstop>txtAnmerkung</tabstop>
+  <tabstop>leBic</tabstop>
+  <tabstop>saveAnd</tabstop>
+  <tabstop>leVorname</tabstop>
+  <tabstop>leNachname</tabstop>
   <tabstop>leFilter</tabstop>
   <tabstop>pbPersonFilterZuruecksetzen</tabstop>
   <tabstop>CreditorsTableView</tabstop>
@@ -978,7 +978,7 @@
   <tabstop>reset_contracts_filter</tabstop>
   <tabstop>contractsTableView</tabstop>
   <tabstop>leVertraegeFilter</tabstop>
-  <tabstop>cbKFrist</tabstop>
+  <tabstop>leIban</tabstop>
   <tabstop>comboUebersicht</tabstop>
   <tabstop>pbPrint</tabstop>
   <tabstop>txtOverview</tabstop>

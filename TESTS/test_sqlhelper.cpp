@@ -65,11 +65,11 @@ void test_sqlhelper::cleanupTestCase()
 
 void test_sqlhelper::test_getFields()
 {
-    QVector<QString> fields = getFields("testSqlVal", testCon);
+    QVector<QString> fields = getFieldsFromTablename("testSqlVal", testCon);
     QVERIFY2(fields.count() == 5, "failed to getFields from test database");
     QVERIFY2(fields.indexOf("id") != -1, "failed to getField 'id' from test database");
     fields.clear();
-    fields = getFields("nonExistingTable", testCon);
+    fields = getFieldsFromTablename("nonExistingTable", testCon);
     QVERIFY2( fields.count() == 0, "failed to getFields from empty table");
 }
 

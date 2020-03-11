@@ -474,13 +474,23 @@ Contract MainWindow::get_contract_data_from_form()
 
     int kFrist = ui->cbKFrist->currentData().toInt();
     QDate LaufzeitEnde = ui->deLaufzeitEnde->date();
-    if( kFrist == -1 && !LaufzeitEnde.isValid())
+    // ensure consistency:
+    // kfrist == -1 -> LaufzeitEnde has to be valid and not 31.12.9999
+    // kfrist > 0 -> LaufzeitEnde == 31.12.9999
+    if( !LaufzeitEnde.isValid())
     {
-        qDebug() << "LaufzeitEnde und Kündigungsfrist ungültig -> defaulting";
-        kFrist =6;
-        LaufzeitEnde = EndOfTheFuckingWorld;
+        qDebug() << "LaufzeitEnde ungültig -> defaulting";
+        if( kFrist != -1)
+            LaufzeitEnde = EndOfTheFuckingWorld;
+        else
+            LaufzeitEnde = Vertragsdatum.addYears(5);
     }
-    QDate StartZinsberechnung = LaufzeitEnde;
+    if( kFrist != -1 && LaufzeitEnde.isValid() && LaufzeitEnde != EndOfTheFuckingWorld)
+    {
+        qDebug() << "LaufzeitEnde gesetzt, aber KFrist nicht -1 -> kfrist korrigiert";
+        kFrist = -1;
+    }
+    QDate StartZinsberechnung = EndOfTheFuckingWorld;
 
     return Contract(KreditorId, Kennung, Betrag, Wert, ZinsId, Vertragsdatum,
                    thesaurierend, false/*aktiv*/,StartZinsberechnung, kFrist, LaufzeitEnde);
@@ -924,3 +934,14 @@ void MainWindow::on_actionShow_Bookings_triggered()
     ui->stackedWidget->setCurrentIndex(bookingsListIndex);
 }
 
+
+void MainWindow::on_deLaufzeitEnde_userDateChanged(const QDate &date)
+{
+    if( date == EndOfTheFuckingWorld)
+    {
+        if( ui->cbKFrist->currentIndex() == 0)
+            ui->cbKFrist->setCurrentIndex(6);
+    }
+    else
+        ui->cbKFrist->setCurrentIndex(0);
+}

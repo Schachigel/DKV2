@@ -376,9 +376,15 @@ void check_DbConsistency( QStringList& msg)
 {LOG_ENTRY_and_EXIT;
     // temporary; fix data corrupted by date edit control (1752 ...)
     QSqlDatabase db = QSqlDatabase::database();
+    // Eingabefehler: Vertragsdatum nach Vertragsende
     db.exec("UPDATE [Vertraege] SET [LaufzeitEnde]='9999-12-31' WHERE [LaufzeitEnde]<[Vertragsdatum]");
+    // inaktive Verträge können kein Datum zur Zinsberechnung haben
     db.exec("UPDATE [Vertraege] SET [LetzteZinsberechnung]='9999-12-31' WHERE NOT([aktiv])");
+    // wenn Laufzeitende gesetzt wurde muss Kfrist -1 sein
+    db.exec("UPDATE [Vertraege] SET [Kfrist]=-1 WHERE [LaufzeitEnde]<>'9999-12-31'");
+    // wenn es eine KFrist gibt -> Laufzeit Ende setzten
     db.exec("UPDATE [Vertraege] SET [LaufzeitEnde]='9999-12-31' WHERE [Kfrist] <> -1");
+    // inkonsistente Datensätze: ende und KFrist sind nicht gesetzt
     db.exec("UPDATE [Vertraege] SET [Kfrist]='6' WHERE [LaufzeitEnde]=='9999-12-31' AND [Kfrist] < 1");
 
     IbanValidator iv;

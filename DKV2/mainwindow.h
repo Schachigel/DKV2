@@ -126,6 +126,8 @@ private slots:
 
     void on_action_save_contract_new_contract_triggered();
 
+    void on_deLaufzeitEnde_userDateChanged(const QDate &date);
+
 private:
     Ui::MainWindow *ui;
     QSplashScreen* splash;
