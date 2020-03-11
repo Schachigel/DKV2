@@ -10,7 +10,7 @@
 
 bool tableExists(const QString& tablename, const QString& con="");
 
-QVector<QString> getFields(const QString& tablename, const QString& con = "");
+QVector<QString> getFieldsFromTablename(const QString& tablename, const QString& con = "");
 
 QString SelectQueryFromFields(const QVector<dbfield>& fields, const QString& where);
 

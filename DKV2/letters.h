@@ -4,7 +4,7 @@
 #include "vertrag.h"
 #include "letterTemplate.h"
 
-void printThankyouLetter( const Vertrag& v);
-void printTerminationLetter( const Vertrag& v, QDate kDate, int kMonate);
+void printThankyouLetter( const Contract& v);
+void printTerminationLetter( const Contract& v, QDate kDate, int kMonate);
 
 #endif // LETTERS_H

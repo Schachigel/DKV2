@@ -8,10 +8,10 @@
 #include "kreditor.h"
 #include "dkdbhelper.h"
 
-class Vertrag
+class Contract
 {
 public:
-    Vertrag(qlonglong kId = -1, QString ken = "",
+    Contract(qlonglong kId = -1, QString ken = "",
             double betrag =0., double wert =0., qlonglong zId =-1,
             QDate vd =QDate::currentDate(),
             bool thesa =true, bool aktiv =false,
@@ -24,7 +24,7 @@ public:
         thesaurierend(thesa), active(aktiv),
         vertragsdatum(vd), startZinsberechnung(startd),
           laufzeitEnde(endd), kFrist(kfrist), letzteZinsgutschrift(0.) {
-        if( kId != -1) initKreditor();
+        if( kId != -1) initCreditor();
         if( !thesaurierend) this->wert = 0.;
     }
     // getter
@@ -49,25 +49,25 @@ public:
     void setVid(int i){ id = i;}
 
     // interface
-    bool ausDb(qlonglong id, bool mitBelegdaten= false);
+    bool loadContractFromDb(qlonglong id);
     bool validateAndSaveNewContract(QString& meldung);
-    bool verbucheNeuenVertrag();
-    bool aktiviereVertrag(const QDate& aDate);
-    bool verbucheJahreszins(const QDate& YearEnd);
+    bool bookNewContract();
+    bool activateContract(const QDate& aDate);
+    bool bookAnnualInterest(const QDate& YearEnd);
     // statics
-    bool loeschePassivenVertrag();
-    bool kuendigeAktivenVertrag(const QDate& kTermin);
-    bool beendeAktivenVertrag(const QDate& termin);
+    bool deleteInactiveContract();
+    bool cancelActiveContract(const QDate& kTermin);
+    bool terminateActiveContract(const QDate& termin);
 private:
     // helper
-    bool BelegSpeichern(const qlonglong BArt, const QString& msg);
+    bool saveRecord(const qlonglong BArt, const QString& msg);
     bool speichereBelegKuendigung();
-    int speichereNeuenVertrag() const;
-    bool speichereBelegNeuerVertrag();
-    void updateAusDb(){ausDb(id, true);}
-    bool speichereJahresabschluss(const QDate& end);
-    bool speichereBelegJahresabschluss(const QDate& end);
-    void initKreditor();
+    int saveNewContract() const;
+    bool saveRecordNewContract();
+    void updateAusDb(){loadContractFromDb(id);}
+    bool saveAnnualPayment(const QDate& end);
+    bool saveRecordAnnualPayment(const QDate& end);
+    void initCreditor();
     // data
     qlonglong id;
     qlonglong kreditorId;

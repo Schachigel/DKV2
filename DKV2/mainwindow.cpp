@@ -98,6 +98,7 @@ void MainWindow::showDbInStatusbar()
 
 void MainWindow::prepareWelcomeMsg()
 {LOG_ENTRY_and_EXIT;
+    busycursor b;
     QString message="<H2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</H2>";
 
     QStringList warnings;
@@ -313,7 +314,7 @@ void MainWindow::on_action_create_contract_for_creditor_triggered(int id)
     fill_rates_dropdown();
     ui->leKennung->setText( proposeKennung());
     set_creditors_combo_by_id( id != -1 ? id : getIdFromCreditorsList());
-    Vertrag cd; // this is to get the defaults of the class definition
+    Contract cd; // this is to get the defaults of the class definition
     ui->deLaufzeitEnde->setDate(cd.LaufzeitEnde());
     ui->cbKFrist->setCurrentIndex(ui->cbKFrist->findText("6"));
     ui->deVertragsabschluss->setDate(cd.Vertragsabschluss());
@@ -461,7 +462,7 @@ void MainWindow::on_action_save_contact_go_new_creditor_triggered()
 }
 
 // neuer Vertrag
-Vertrag MainWindow::get_contract_data_from_form()
+Contract MainWindow::get_contract_data_from_form()
 {LOG_ENTRY_and_EXIT;
     int KreditorId = ui->comboKreditoren->itemData(ui->comboKreditoren->currentIndex()).toInt();
     QString Kennung = ui->leKennung->text();
@@ -481,12 +482,12 @@ Vertrag MainWindow::get_contract_data_from_form()
     }
     QDate StartZinsberechnung = LaufzeitEnde;
 
-    return Vertrag(KreditorId, Kennung, Betrag, Wert, ZinsId, Vertragsdatum,
+    return Contract(KreditorId, Kennung, Betrag, Wert, ZinsId, Vertragsdatum,
                    thesaurierend, false/*aktiv*/,StartZinsberechnung, kFrist, LaufzeitEnde);
 }
 bool MainWindow::save_new_contract()
 {LOG_ENTRY_and_EXIT;
-    Vertrag c =get_contract_data_from_form();
+    Contract c =get_contract_data_from_form();
 
     QString errortext;
     if( !c.validateAndSaveNewContract(errortext))

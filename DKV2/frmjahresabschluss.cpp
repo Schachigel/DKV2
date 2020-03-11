@@ -35,7 +35,7 @@ frmJahresabschluss::~frmJahresabschluss()
     delete ui;
 }
 
-QStandardItemModel* frmJahresabschluss::getModelFromContracts(const QVector<Vertrag>&vertraege) const
+QStandardItemModel* frmJahresabschluss::getModelFromContracts(const QVector<Contract>&vertraege) const
 { LOG_ENTRY_and_EXIT;
     bool thesa {vertraege[0].Thesaurierend()};
     QStandardItemModel *model = new QStandardItemModel();
@@ -95,7 +95,7 @@ void frmJahresabschluss::on_pbOK_clicked()
     close();
 }
 
-void writeCsv(const QVector<Vertrag>& vertraege, const QString& filename)
+void writeCsv(const QVector<Contract>& vertraege, const QString& filename)
 { LOG_ENTRY_and_EXIT;
     csvwriter csv;
     csv.addColumns("Vertrags Nr; Kreditsumme (Euro); Zins (Euro); Wert nach Zinsgutschrift (Euro); Vorname; Nachname; Kennung; Strasse; Plz; Stadt; Email; IBAN; BIC");
@@ -136,24 +136,24 @@ void frmJahresabschluss::on_btnCsv_clicked()
     showFileInFolder(fn_thesa);
 }
 
-QString printableKreditorName(Vertrag v)
+QString printableKreditorName(Contract v)
 {
     QString Vorname = v.getKreditor().getValue("Vorname").toString();
     QString Nachname = v.getKreditor().getValue("Nachname").toString();
     return Vorname + "  " + Nachname;
 }
 
-QString printableKreditorStrasse(Vertrag v)
+QString printableKreditorStrasse(Contract v)
 {
     return v.getKreditor().getValue("Strasse").toString();
 }
 
-QString printableKreditorPlzStadt( Vertrag v)
+QString printableKreditorPlzStadt( Contract v)
 {
     return v.getKreditor().getValue("Plz").toString() + " " + v.getKreditor().getValue("Stadt").toString();
 }
 
-QString printableKennung( Vertrag v)
+QString printableKennung( Contract v)
 {
     return v.Kennung();
 }

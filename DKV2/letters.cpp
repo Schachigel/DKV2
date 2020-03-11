@@ -3,7 +3,7 @@
 #include <letters.h>
 
 
-void printThankyouLetter( const Vertrag& v)
+void printThankyouLetter( const Contract& v)
 {
     QLocale locale;
     letterTemplate tlate(letterTemplate::Geldeingang);
@@ -31,7 +31,7 @@ void printThankyouLetter( const Vertrag& v)
 
 }
 
-void printTerminationLetter( const Vertrag& v, QDate kDate, int kMonate)
+void printTerminationLetter( const Contract& v, QDate kDate, int kMonate)
 {
     QLocale locale;
     letterTemplate tlate(letterTemplate::Kuendigung);

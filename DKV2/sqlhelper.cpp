@@ -20,7 +20,7 @@ bool tableExists (const QString& tablename, const QString& con)
     return false;
 }
 
-QVector<QString> getFields(const QString& tablename, const QString& con)
+QVector<QString> getFieldsFromTablename(const QString& tablename, const QString& con)
 {LOG_ENTRY_and_EXIT;
     QVector<QString> result;
     QSqlQuery query(QSqlDatabase::database(con));
@@ -127,7 +127,6 @@ bool ExecuteUpdateSql(const QString& table, const QString& field, const QVariant
                 << endl << q.lastQuery();
     return false;
 }
-
 
 int getHighestTableId(const QString& tablename, const QString& con)
 {LOG_ENTRY_and_EXIT;

@@ -41,7 +41,7 @@ public:
     void set_creditors_combo_by_id(int id);
     int getIdFromCreditorsList();
     int get_current_id_from_contracts_list();
-    Vertrag get_contract_data_from_form();
+    Contract get_contract_data_from_form();
 
 private slots:
 

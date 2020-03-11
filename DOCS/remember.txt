@@ -1,6 +1,7 @@
 
-
--- MsgBox button Texts in german
+-- color code contracts:
+--- ends within 3 month -> yellow
+--- ends within 3 weeks -> red
 
 -- einheitl. Layout für Übersichten / hilfsklasse zur Html erzeugung?
 
@@ -12,13 +13,6 @@
 -- was tun mit alten (gelöschten/ beendeten Verträge?)
 !! extra liste/ Tabelle anlegen oder aus Buchungen rekonstruieren
 
--- Vertragsende und Kündigungsfrist ...
-?! Kündigungsfrist editierbar machen?
- -> aktion "kündigen": setzt festes Laufzeit Ende Datum und KF auf "festesLaufzeitEnde"
-?! LaufzeitEnde editierbar machen ?
-  -> nur nach hinten, nicht nach vorne
-
--- Brief: Geldeingang bestätigen
 
 !! how to translate hmtl template from mm to px?
 -- hmtl should be converted to px
@@ -84,7 +78,21 @@ next:
 
 ? P Liste r-click Menu anlegen
 
-DONE
+
+
+DONEDONEDONEDONEDONEDONEDONEDONE
+
+
+-- Brief: Geldeingang bestätigen
+
+-- Vertragsende und Kündigungsfrist ...
+?! Kündigungsfrist editierbar machen?
+ -> aktion "kündigen": setzt festes Laufzeit Ende Datum und KF auf "festesLaufzeitEnde"
+?! LaufzeitEnde editierbar machen ?
+  -> nur nach hinten, nicht nach vorne
+  -> erstmal nicht
+
+-- MsgBox button Texts in german
 
 -- Erweiterung Übersichten: Durchschnittlicher Zinssatz
 SELECT SUM( W ) / SUM( W * Z) FROM  (SELECT MAX(Betrag, Wert) AS W, Zinssaetze.Zinssatz AS Z FROM Vertraege, Zinssaetze WHERE Zinssaetze.id = Vertraege.ZSatz AND Vertraege.aktiv)
@@ -123,8 +131,6 @@ bugfix default datum beim beenden / aktivieren?!
 - breite auf 90% hauptfensterbreite, zentriert
 - tableviews auto resize
 - button pos resize, so dass sie immer rechts unten sichtbar sind
-
-
 
 ?! Resize Jahresabschluss:
 - autom. Breite anpassen und pos d buttons ->OK

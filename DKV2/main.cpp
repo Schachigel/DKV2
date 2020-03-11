@@ -35,18 +35,14 @@ void initLogging()
     qInstallMessageHandler(logger);
 }
 
-QString getInitialDb()
-{   LOG_ENTRY_and_EXIT;
-    QSettings config;
-    QString dbfile = config.value("db/last").toString();
-    qDebug() << "DbFile from configuration: " << dbfile;
-    if(  dbfile != "" && QFile::exists(dbfile) && isValidDatabase(dbfile))
-        return dbfile;
+QString interactW_UserForDB(QString dbfile)
+{LOG_ENTRY_and_EXIT;
+
     do
     {
         dbfile = QFileDialog::getSaveFileName(nullptr,
                                               "Wähle eine Datenbank oder gib einen Namen für eine Neue ein",
-                                              QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +"\\DKV2", "dk-DB Dateien (*.dkdb)", nullptr,QFileDialog::DontConfirmOverwrite);
+                                              QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +"/DKV2", "dk-DB Dateien (*.dkdb)", nullptr,QFileDialog::DontConfirmOverwrite);
 
         qDebug() << "DbFile from user: " << dbfile;
         if( dbfile == "") return QString();  // canceled by user
@@ -59,7 +55,6 @@ QString getInitialDb()
             {
                 if( QMessageBox::Yes == QMessageBox::information(nullptr, "Die gewählte Datenbank ist ungültig", "Soll die Datei für eine neue DB überschrieben werden?"))
                 {
-                    QFile::remove(dbfile);
                     if( create_DK_database(dbfile))
                         return dbfile;
                     else
@@ -85,8 +80,21 @@ QString getInitialDb()
     while(true);
 }
 
+QString getInitialDb()
+{LOG_ENTRY_and_EXIT;
+    QSettings config;
+    QString dbfile = config.value("db/last").toString();
+    if(  dbfile != "" && QFile::exists(dbfile) && isValidDatabase(dbfile))
+    {
+        qDebug() << "DbFile from configuration exists and is valid: " << dbfile;
+        return dbfile;
+    }
+
+    return interactW_UserForDB(dbfile);
+}
+
 QString initDb()
-{
+{LOG_ENTRY_and_EXIT;
     QString dbfile =getInitialDb();
     if( dbfile == "")
     {
@@ -97,11 +105,21 @@ QString initDb()
 }
 
 QSplashScreen* doSplash()
-{
+{LOG_ENTRY_and_EXIT;
     QPixmap pixmap(":/res/splash.png");
     QSplashScreen *splash = new QSplashScreen(pixmap, Qt::SplashScreen|Qt::WindowStaysOnTopHint);
     splash->show();
     return splash;
+}
+
+void setGermanUi()
+{LOG_ENTRY_and_EXIT;
+    QTranslator trans;
+    QString translationFile = QDir::currentPath() + "/translations/qt_de.qm";
+    if( trans.load(QLocale(),translationFile))
+        QCoreApplication::installTranslator(&trans);
+    else
+        qCritical() << "failed to load translations " << translationFile;
 }
 
 int main(int argc, char *argv[])
@@ -117,12 +135,8 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setOrganizationName("4-MHS"); // used to store our settings
     a.setApplicationName("DKV2");
-    QTranslator trans;
-    QString translationFile = QDir::currentPath() + "/translations/qt_de.qm";
-    if( trans.load(QLocale(),translationFile))
-        QCoreApplication::installTranslator(&trans);
-    else
-        qCritical() << "failed to load translations " << translationFile;
+
+    setGermanUi();
 
 #ifndef QT_DEBUG
     QSplashScreen* splash = doSplash(); // do only AFTER having an app. object

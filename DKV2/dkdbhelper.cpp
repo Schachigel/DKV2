@@ -289,7 +289,7 @@ bool ensureTable( const dbtable& table, QSqlDatabase& db)
 {
     if( tableExists(table.Name(), db.connectionName()))
     {
-        QVector<QString> fields = getFields(table.Name(), db.connectionName());
+        QVector<QString> fields = getFieldsFromTablename(table.Name(), db.connectionName());
         for (int i=0; i < table.Fields().count(); i++)
         {
             QString expectedFieldName = table.Fields()[i].name();
@@ -507,7 +507,7 @@ bool create_DB_copy(QString targetfn, bool deper)
     return success;
 }
 
-void create_sampleDataset( Vertrag& vertrag, int KId, int maxZinsIndex, QRandomGenerator* rand)
+void create_sampleDataset( Contract& vertrag, int KId, int maxZinsIndex, QRandomGenerator* rand)
 {
     // add a contract
     double betragUWert = double(100) * rand->bounded(1,20);
@@ -524,7 +524,7 @@ void create_sampleDataset( Vertrag& vertrag, int KId, int maxZinsIndex, QRandomG
     {
         kFrist = rand->bounded(3, 25);
     }
-    vertrag = Vertrag(KId, proposeKennung(),
+    vertrag = Contract(KId, proposeKennung(),
                     betragUWert, betragUWert, zinsid,
                     vertragsdatum,
                     thesa, active, StartZinsberechnung, kFrist, LaufzeitEnde);
@@ -563,15 +563,15 @@ void create_sampleData( int AnzahlDatensaetze)
             qCritical() << "No id from Kreditor.Speichern";
             Q_ASSERT(!bool("Verbuchung des neuen Vertrags gescheitert"));
         }
-        Vertrag v;
+        Contract v;
         create_sampleDataset(v, neueKreditorId, maxZinsIndex, rand);
-        v.verbucheNeuenVertrag();
+        v.bookNewContract();
     }
     for ( int i=0; i<AnzahlDatensaetze; i++)
     {   // more contracts for existing customers
-        Vertrag v;
+        Contract v;
         create_sampleDataset(v, rand->bounded(1, neueKreditorId), maxZinsIndex, rand);
-        v.verbucheNeuenVertrag();
+        v.bookNewContract();
     }
 }
 

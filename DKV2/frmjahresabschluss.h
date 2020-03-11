@@ -28,7 +28,7 @@ private slots:
 private:
     Ui::frmJahresabschluss *ui;
     const jahresabschluss& ja;
-    QStandardItemModel* getModelFromContracts(const QVector<Vertrag>& vertraege) const;
+    QStandardItemModel* getModelFromContracts(const QVector<Contract>& vertraege) const;
 };
 
 #endif // FRMJAHRESABSCHLUSS_H

@@ -32,8 +32,8 @@ bool jahresabschluss::execute()
 
     do
     {
-        Vertrag v; v.ausDb(sqlVal<int>(sql, "id"), true);
-        if( v.verbucheJahreszins(YearEnd))
+        Contract v; v.loadContractFromDb(sqlVal<int>(sql, "id"));
+        if( v.bookAnnualInterest(YearEnd))
         {
             if( v.Thesaurierend())
                 thesaV.push_back(v);
