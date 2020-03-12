@@ -518,6 +518,35 @@ void MainWindow::empty_new_contract_form()
     ui->leBetrag->setText("");
     ui->chkbThesaurierend->setChecked(true);
 }
+void MainWindow::on_deLaufzeitEnde_userDateChanged(const QDate &date)
+{
+    if( date == EndOfTheFuckingWorld)
+    {
+        if( ui->cbKFrist->currentIndex() == 0)
+            ui->cbKFrist->setCurrentIndex(6);
+    }
+    else
+        ui->cbKFrist->setCurrentIndex(0);
+}
+void MainWindow::on_cbKFrist_currentIndexChanged(int index)
+{LOG_ENTRY_and_EXIT;
+    if( -1 == ui->cbKFrist->itemData(index).toInt())
+    {   // Vertragsende wird fest vorgegeben
+        if( EndOfTheFuckingWorld == ui->deLaufzeitEnde->date())
+        {
+            ui->deLaufzeitEnde->setDate(QDate::currentDate().addYears(5));
+        }
+    }
+    else
+    {   // Vertragsende wird durch Kündigung eingeleitet
+        ui->deLaufzeitEnde->setDate(EndOfTheFuckingWorld);
+    }
+}
+void MainWindow::on_leBetrag_editingFinished()
+{LOG_ENTRY_and_EXIT;
+    ui->leBetrag->setText(QString("%L1").arg(ui->leBetrag->text().toDouble()));
+}
+
 // helper: switch to "Vertrag anlegen"
 void MainWindow::fill_creditors_dropdown()
 {LOG_ENTRY_and_EXIT;
@@ -551,24 +580,6 @@ void MainWindow::set_creditors_combo_by_id(int KreditorenId)
             break;
         }
     }
-}
-void MainWindow::on_cbKFrist_currentIndexChanged(int index)
-{LOG_ENTRY_and_EXIT;
-    if( -1 == ui->cbKFrist->itemData(index).toInt())
-    {   // Vertragsende wird fest vorgegeben
-        if( EndOfTheFuckingWorld == ui->deLaufzeitEnde->date())
-        {
-            ui->deLaufzeitEnde->setDate(QDate::currentDate().addYears(5));
-        }
-    }
-    else
-    {   // Vertragsende wird durch Kündigung eingeleitet
-        ui->deLaufzeitEnde->setDate(EndOfTheFuckingWorld);
-    }
-}
-void MainWindow::on_leBetrag_editingFinished()
-{LOG_ENTRY_and_EXIT;
-    ui->leBetrag->setText(QString("%L1").arg(ui->leBetrag->text().toDouble()));
 }
 
 // leave new contract
@@ -932,16 +943,4 @@ void MainWindow::on_actionShow_Bookings_triggered()
             this, SLOT(on_tblViewBookingsSelectionChanged(const QItemSelection&, const QItemSelection&)));
 
     ui->stackedWidget->setCurrentIndex(bookingsListIndex);
-}
-
-
-void MainWindow::on_deLaufzeitEnde_userDateChanged(const QDate &date)
-{
-    if( date == EndOfTheFuckingWorld)
-    {
-        if( ui->cbKFrist->currentIndex() == 0)
-            ui->cbKFrist->setCurrentIndex(6);
-    }
-    else
-        ui->cbKFrist->setCurrentIndex(0);
 }
