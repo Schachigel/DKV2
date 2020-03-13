@@ -4,6 +4,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVector>
+#include <QStringList>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
@@ -372,21 +373,24 @@ void open_databaseForApplication( QString newDbFile)
     insert_bookingTypes();
 }
 
-void check_DbConsistency( QStringList& msg)
-{LOG_ENTRY_and_EXIT;
+void check_KfristLaufzeitende(QStringList& msgs)
+{
     // temporary; fix data corrupted by date edit control (1752 ...)
-    QSqlDatabase db = QSqlDatabase::database();
-    // Eingabefehler: Vertragsdatum nach Vertragsende
-    db.exec("UPDATE [Vertraege] SET [LaufzeitEnde]='9999-12-31' WHERE [LaufzeitEnde]<[Vertragsdatum]");
     // inaktive Verträge können kein Datum zur Zinsberechnung haben
-    db.exec("UPDATE [Vertraege] SET [LetzteZinsberechnung]='9999-12-31' WHERE NOT([aktiv])");
-    // wenn Laufzeitende gesetzt wurde muss Kfrist -1 sein
-    db.exec("UPDATE [Vertraege] SET [Kfrist]=-1 WHERE [LaufzeitEnde]<>'9999-12-31'");
-    // wenn es eine KFrist gibt -> Laufzeit Ende setzten
-    db.exec("UPDATE [Vertraege] SET [LaufzeitEnde]='9999-12-31' WHERE [Kfrist] <> -1");
-    // inkonsistente Datensätze: ende und KFrist sind nicht gesetzt
-    db.exec("UPDATE [Vertraege] SET [Kfrist]='6' WHERE [LaufzeitEnde]=='9999-12-31' AND [Kfrist] < 1");
+    int i = ExecuteUpdateSql("[Vertraege]", "[LetzteZinsberechnung]", "9999-12-31",  "NOT([aktiv]) AND [LetzteZinsberechnung] <> '9999-12-31'");
+    if( i > 0) msgs.append("Inaktive Verträge mit Zinsberechnungsdatum wurden korrigiert");
 
+    // wenn Laufzeitende gültig gesetzt wurde muss Kfrist -1 sein
+    i = ExecuteUpdateSql("[Vertraege]", "[Kfrist]", "-1", "[LaufzeitEnde] <> '9999-12-31' AND [Kfrist] <> -1");
+    if( i > 0) msgs.append("Die Kündigungsfrist von Verträgen mit festem Laufzeitende wurde korrigiert ");
+
+    // inkonsistente Datensätze: ende und KFrist sind nicht gesetzt
+    i = ExecuteUpdateSql("[Vertraege]", "[Kfrist]", "6", "[LaufzeitEnde] == '9999-12-31' AND [Kfrist] < 3");
+    if( i > 0) msgs.append("Die Kündigungsfrist von Verträgen ohne gültigem Laufzeitende wurde angepasst");
+}
+
+void check_Ibans(QStringList& msg)
+{
     IbanValidator iv;
     QSqlQuery iban_q;
     iban_q.exec("SELECT [id],[Vorname],[Nachname],[IBAN] FROM [Kreditoren] WHERE [IBAN] <> ''");
@@ -400,6 +404,17 @@ void check_DbConsistency( QStringList& msg)
                        +iban_q.value("Vorname").toString() +iban_q.value("Nachname").toString()
                    +"\n: " +iban_q.value("IBAN").toString());
     }
+}
+
+QStringList check_DbConsistency( )
+{LOG_ENTRY_and_EXIT;
+    QStringList msgs;
+    check_KfristLaufzeitende(msgs);
+    check_Ibans(msgs);
+    if( msgs.size() > 0)
+        msgs.push_front("Prüfen Sie die LOG Datei! ");
+
+    return msgs;
 }
 
 bool copy_Table(QString table, QSqlDatabase targetDB)

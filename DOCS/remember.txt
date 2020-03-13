@@ -1,4 +1,10 @@
 
+-- Vertragsdaten Konsistenz
+Vertragsdatum nicht so wichtig, aber
+- anlegen: vertragsdatum < LaufzeitEnde
+- aktivierung:  LetzteZinsBerechnung < LaufzeitEnde
+- kündigen: Ende-datum > LetzteZinsBerechnung
+
 -- color code contracts:
 --- ends within 3 month -> yellow
 --- ends within 3 weeks -> red

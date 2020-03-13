@@ -111,21 +111,31 @@ QVariant ExecuteSingleValueSql( const QString& field, const QString& table, cons
     return ExecuteSingleValueSql(sql, con);
 }
 
-bool ExecuteUpdateSql(const QString& table, const QString& field, const QVariant& newValue, const QString& where, const QString& con)
+int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant& newValue, const QString& where, const QString& con)
 {LOG_ENTRY_and_EXIT;
     QString sql = "UPDATE " + table;
-    sql += " SET " + field + " = '" + newValue.toString();
-    sql += "' WHERE " + where;
+    sql += " SET " + field + " = ";
+
+    QString value (newValue.toString());
+    if( value[0] != "'") value.push_front("'");
+    if( value[value.size()-1] != "'") value.push_back("'");
+
+    sql += value;
+    sql += " WHERE " + where;
     QSqlQuery q(QSqlDatabase::database(con));
     q.prepare(sql);
     if( q.exec())
     {
         qDebug() << "successfully executed update sql " << q.lastQuery();
-        return true;
+        if( q.numRowsAffected())
+            qDebug() << q.numRowsAffected() << " record were modified";
+
+        return q.numRowsAffected();
+;
     }
     qCritical() << "faild to execute update sql: " << q.lastError()
                 << endl << q.lastQuery();
-    return false;
+    return -1;
 }
 
 int getHighestTableId(const QString& tablename, const QString& con)

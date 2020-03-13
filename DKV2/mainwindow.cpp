@@ -101,9 +101,7 @@ void MainWindow::prepareWelcomeMsg()
     busycursor b;
     QString message="<H2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</H2>";
 
-    QStringList warnings;
-    check_DbConsistency( warnings);
-
+    QStringList warnings = check_DbConsistency( );
     foreach(QString warning, warnings)
     {
         message += "<br><font color='red'>" +warning +"</font>";
@@ -155,21 +153,31 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
 }
 
 // file menu
+QString askUserDbFilename(QString title)
+{
+    QSettings config;
+    QString dir(config.value("outdir").toString());
+
+    return  QFileDialog::getSaveFileName(nullptr, title, dir, "dk-DB Dateien (*.dkdb)", nullptr);
+}
 void MainWindow::on_action_back_triggered()
 {LOG_ENTRY_and_EXIT;
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_action_create_new_DB_triggered()
 {LOG_ENTRY_and_EXIT;
-    QString dbfile = QFileDialog::getSaveFileName(this, "Neue DkVerarbeitungs Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
+    QString dbfile = askUserDbFilename("Neue DkVerarbeitungs Datenbank");
     if( dbfile == "")
         return;
     busycursor b;
     closeDatabaseConnection();
     if( !create_DK_database(dbfile))
         exit(0x80070020);
+
+    QFileInfo fiDbFile (dbfile);
     QSettings config;
     config.setValue("db/last", dbfile);
+    config.setValue("outdir", fiDbFile.path());
     open_databaseForApplication();
     showDbInStatusbar();
 
@@ -177,7 +185,9 @@ void MainWindow::on_action_create_new_DB_triggered()
 }
 void MainWindow::on_action_open_DB_triggered()
 {LOG_ENTRY_and_EXIT;
-    QString dbfile = QFileDialog::getOpenFileName(this, "DkVerarbeitungs Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
+    QSettings config;
+    QString dir(config.value("outdir").toString());
+    QString dbfile = QFileDialog::getOpenFileName(this, "DkVerarbeitungs Datenbank", dir, "dk-DB Dateien (*.dkdb)", nullptr);
     if( dbfile == "")
     {
         qDebug() << "keine Datei wurde vom Anwender ausgewählt";
@@ -189,7 +199,7 @@ void MainWindow::on_action_open_DB_triggered()
 }
 void MainWindow::on_action_create_anonymous_copy_triggered()
 {LOG_ENTRY_and_EXIT;
-    QString dbfile = QFileDialog::getSaveFileName(this, "Anonymisierte Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
+    QString dbfile = askUserDbFilename("Anonymisierte Datenbank");
     if( dbfile == "")
         return;
     busycursor b;
@@ -203,7 +213,7 @@ void MainWindow::on_action_create_anonymous_copy_triggered()
 }
 void MainWindow::on_action_create_copy_triggered()
 {LOG_ENTRY_and_EXIT;
-    QString dbfile = QFileDialog::getSaveFileName(this, "Kopie der Datenbank", "*.dkdb", "dk-DB Dateien (*.dkdb)", nullptr);
+    QString dbfile = askUserDbFilename( "Kopie der Datenbank");
     if( dbfile == "")
         return;
 

@@ -43,7 +43,7 @@ bool isValidDatabase(QSqlDatabase db=QSqlDatabase::database());
 
 void closeDatabaseConnection(QString connection= QLatin1String(QSqlDatabase::defaultConnection));
 void open_databaseForApplication( QString newDbFile="");
-void check_DbConsistency( QStringList& msg);
+QStringList check_DbConsistency( );
 
 bool ensureTable(const dbtable& table, const QString& connection= QLatin1String(QSqlDatabase::defaultConnection));
 bool ensureTable(const dbtable& table, QSqlDatabase& db);

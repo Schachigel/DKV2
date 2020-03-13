@@ -297,10 +297,10 @@ bool Contract::saveAnnualPayment(const QDate& end)
 
     QString where = "id = " + QString::number(id);
     bool ret =true;
-    ret &= ExecuteUpdateSql( "Vertraege", "Wert", QVariant(neuerWert), where);
+    ret &= -1 != ExecuteUpdateSql( "Vertraege", "Wert", QVariant(neuerWert), where);
     if( ret) wert = neuerWert;       // update this contract obj. in Memory
 
-    ret &= ExecuteUpdateSql( "Vertraege", "LetzteZinsberechnung", QVariant(end), where);
+    ret &= -1 != ExecuteUpdateSql( "Vertraege", "LetzteZinsberechnung", QVariant(end), where);
     if( ret) startZinsberechnung = end;       // update this contract obj. in Memory
 
     return ret;
