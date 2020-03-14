@@ -99,15 +99,16 @@ void MainWindow::showDbInStatusbar()
 void MainWindow::prepareWelcomeMsg()
 {LOG_ENTRY_and_EXIT;
     busycursor b;
-    QString message="<H2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</H2>";
+    QString message = "<table width='100%'><tr><td><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></td></tr>";
 
     QStringList warnings = check_DbConsistency( );
     foreach(QString warning, warnings)
     {
-        message += "<br><font color='red'>" +warning +"</font>";
+        message += "<tr><td><font color='red'>" +warning +"</font></td></tr>";
     }
-    message += "<br><img src=':/res/logo.png'>";
-    ui->label->setText(message);
+    message += "<tr><td><img src=\":/res/splash.png\"/></td></tr></table>";
+    qDebug() << endl << message << endl;
+    ui->teWelcome->setText(message);
 }
 // whenever the stackedWidget changes ...
 void MainWindow::on_stackedWidget_currentChanged(int arg1)
