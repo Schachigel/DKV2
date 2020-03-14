@@ -763,7 +763,7 @@ void calc_anualInterestDistribution( QVector<YZV>& yzv, QString connection)
     }
     return;
 }
-QString contractTerm_distirbution_html(QString con)
+QVector<rowData> contractRuntimeDistribution(QString con)
 {
     int AnzahlBisEinJahr=0, AnzahlBisFuenfJahre=0, AnzahlLaenger=0, AnzahlUnbegrenzet = 0;
     double SummeBisEinJahr=0., SummeBisFuenfJahre=0., SummeLaenger=0., SummeUnbegrenzet = 0.;
@@ -798,15 +798,12 @@ QString contractTerm_distirbution_html(QString con)
         }
     }
     QLocale locale;
-    QString ret="<table><thead><tr><td>Zeitraum</td><td>Anzahl</td><td>Wert</td></tr></thead>";
-    ret += "<tr><td align=left>Bis ein Jahr </td><td align=center>"+ QString::number(AnzahlBisEinJahr) + "</td><td align=right>";
-    ret += locale.toCurrencyString(SummeBisEinJahr) + "</td></tr>";
-    ret += "<tr><td align=left>Ein bis fünf Jahre </td><td align=center>"+ QString::number(AnzahlBisFuenfJahre) + "</td><td align=right>";
-    ret += locale.toCurrencyString(SummeBisFuenfJahre) + "</td></tr>";
-    ret += "<tr><td align=left>Länger als fünf Jahre </td><td align=center>"+ QString::number(AnzahlLaenger) + "</td><td align=right>";
-    ret += locale.toCurrencyString(SummeLaenger) + "</td></tr>";
-    ret += "<tr><td align=left>Unbegrenzte Verträge </td><td align=center>"+ QString::number(AnzahlUnbegrenzet) + "</td><td align=right>";
-    ret += locale.toCurrencyString(SummeUnbegrenzet) + "</td></tr></table>";
+    QVector<rowData> ret;
+    ret.push_back({"Zeitraum", "Anzahl", "Wert"});
+    ret.push_back({"Bis ein Jahr ", QString::number(AnzahlBisEinJahr), locale.toCurrencyString(SummeBisEinJahr)});
+    ret.push_back({"Ein bis fünf Jahre ", QString::number(AnzahlBisFuenfJahre), locale.toCurrencyString(SummeBisFuenfJahre)});
+    ret.push_back({"Länger als fünf Jahre ", QString::number(AnzahlLaenger), locale.toCurrencyString(SummeLaenger) });
+    ret.push_back({"Unbegrenzte Verträge ", QString::number(AnzahlUnbegrenzet), locale.toCurrencyString(SummeUnbegrenzet) });
     return ret;
 }
 

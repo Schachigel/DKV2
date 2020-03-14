@@ -114,7 +114,11 @@ struct YZV
     double sum;
 };
 void calc_anualInterestDistribution( QVector<YZV>& yzv, QString connection=QLatin1String(QSqlDatabase::defaultConnection));
+struct rowData
+{
+    QString text; QString number; QString value;
+};
 
-QString contractTerm_distirbution_html(QString connection=QLatin1String(QSqlDatabase::defaultConnection));
+QVector<rowData> contractRuntimeDistribution(QString connection=QLatin1String(QSqlDatabase::defaultConnection));
 
 #endif // DKDBHELPER_H
