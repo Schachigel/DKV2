@@ -708,7 +708,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &
     menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
     return;
 }
-int MainWindow::get_current_id_from_contracts_list()
+int  MainWindow::get_current_id_from_contracts_list()
 {LOG_ENTRY_and_EXIT;
     QModelIndex mi(ui->contractsTableView->currentIndex().siblingAtColumn(0));
     if( mi.isValid())
@@ -756,6 +756,31 @@ QString td( QString v)
 {
     return "<td>" + v + "</td>";
 }
+QString startTable()
+{
+    return "<table cellpadding='8' bgcolor=#DDD>";
+}
+QString endTable()
+{
+    return "</table>";
+}
+QString row( QString cont)
+{
+    return "<tr>" + cont + "</tr>";
+}
+QString startRow()
+{
+    return "<tr>";
+}
+QString endRow()
+{
+    return "</t>";
+}
+QString newLine(QString line)
+{
+    return "<br>" + line;
+}
+
 QString MainWindow::prepare_overview_page(Uebersichten u)
 {LOG_ENTRY_and_EXIT;
 
@@ -772,8 +797,8 @@ QString MainWindow::prepare_overview_page(Uebersichten u)
     {
         DbSummary dbs;
         calculateSummary(dbs);
-        lbl += h1("Übersicht DKs und DK Geber")+ " <br> Stand: " + QDate::currentDate().toString("dd.MM.yyyy<br>");
-        lbl +="<table cellpadding='8' bgcolor=#DDD>";
+        lbl += h1("Übersicht DKs und DK Geber")+ newLine( "Stand: " + QDate::currentDate().toString("dd.MM.yyyy<br>"));
+        lbl += startTable();
         lbl += tableRow("Anzahl DK Geber*innen:", QString::number(dbs.AnzahlDkGeber));
         lbl += tableRow("Anzahl Direktkredite:" , QString::number(dbs.AnzahlAktive));
         lbl += tableRow("Summe Direktkredite:"  , locale.toCurrencyString(dbs.BetragAktive));
@@ -791,23 +816,21 @@ QString MainWindow::prepare_overview_page(Uebersichten u)
         lbl += emptyRow();
         lbl += tableRow("Anzahl ausstehender (inaktiven) DK", QString::number(dbs.AnzahlPassive));
         lbl += tableRow("Summe ausstehender (inaktiven) DK", locale.toCurrencyString(dbs.BetragPassive));
-        lbl += "</table>";
+        lbl += endTable();
         break;
     }
     case VERTRAGSENDE:
     {
-        lbl += h1("Auslaufende Verträge") + " <br> Stand: "  + QDate::currentDate().toString("dd.MM.yyyy<br>");
+        lbl += h1("Auslaufende Verträge") + newLine( "Stand: "  + QDate::currentDate().toString("dd.MM.yyyy<br>"));
         QVector<ContractEnd> ce;
         calc_contractEnd(ce);
         if( !ce.isEmpty())
         {
-            lbl += "<table cellpadding='8' bgcolor=#DDD><tr>"+ td(h2("Jahr"));
-            lbl += td( h2( "Anzahl") + td( h2( "Summe"))) +"</tr>";
+            lbl += startTable();
+            lbl += tableRow( h2("Jahr"), h2( "Anzahl"),  h2( "Summe"));
             for( auto x: ce)
-            {
                 lbl += tableRow( QString::number(x.year), QString::number(x.count), locale.toCurrencyString(x.value));
-            }
-            lbl += "</table>";
+            lbl += endTable();
         }
         else
             lbl += "<br><br><i>keine Verträge mit vorgemerktem Vertragsende</i>";
@@ -821,27 +844,25 @@ QString MainWindow::prepare_overview_page(Uebersichten u)
         if( !yzv.isEmpty())
         {
             lbl += h1("Verteilung der Zinssätze pro Jahr") + "<br> Stand:"  + QDate::currentDate().toString("dd.MM.yyyy<br>");
-            lbl += "<table cellpadding='8' bgcolor=#DDD> <tr>";
-            lbl += td(h2("Jahr")) + td( h2( "Zinssatz")) +td(h2("Anzahl")) + td( h2( "Summe")) + "</tr>";
+            lbl += startTable() +  startRow();
+            lbl += td(h2("Jahr")) + td( h2( "Zinssatz")) +td(h2("Anzahl")) + td( h2( "Summe"));
+            lbl += endRow();
             for( auto x: yzv)
             {
                 lbl += tableRow( QString::number(x.year), QString::number(x.intrest), QString::number(x.count), locale.toCurrencyString(x.sum));
             }
-            lbl += "</table>";
+            lbl += endTable();
         }
         break;
     }
     case LAUFZEITEN:
     {
-        lbl += "<h1>Vertragslaufzeiten </h1> <br> Stand:" + QDate::currentDate().toString("dd.MM.yyyy<br>");
-        lbl += "<table cellpadding='8' bgcolor=#DDD>";
+        lbl += h1("Vertragslaufzeiten") + "<br> Stand:" + QDate::currentDate().toString("dd.MM.yyyy<br>");
+        lbl += startTable();
         QVector<rowData> rows = contractRuntimeDistribution();
         lbl += tableRow( h2(rows[0].text), h2(rows[0].value), h2(rows[0].number));
-
         for( int i = 1; i < rows.count(); i++)
-        {
             lbl += tableRow(rows[i].text, rows[i].value, rows[i].number);
-        }
     }
     }
     lbl += "</body></html>";
