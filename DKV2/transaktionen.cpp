@@ -10,13 +10,13 @@
 #include "transaktionen.h"
 
 
-bool aktiviereVertrag(int vid)
+void aktiviereVertrag(int vid)
 {LOG_ENTRY_and_EXIT;
     askDateDlg dlg( nullptr, QDate::currentDate());
     dlg.setMsg("<H3>Mit der Aktivierung des Vertrags beginnt die Zinsberechnung. <br>Bitte geben Sie das Datum des Geldeingangs ein:</H3>");
     dlg.setDateLabel("Die Verzinsung beginnt am");
     if( QDialog::Accepted != dlg.exec())
-        return true;
+        return;
 
     Contract v;
     v.loadContractFromDb(vid);
@@ -24,16 +24,19 @@ bool aktiviereVertrag(int vid)
     {
         if( dlg.shouldPrint())
             printThankyouLetter(v);
-        return true;
+        QMessageBox::information(nullptr, "Aktivieren des Vertrags",
+           "Der Vertrag wurde erfolgreich aktiviert");
+        return;
     }
     else
     {
+        QMessageBox::critical(nullptr, "Fehler beim Aktivieren des Vertrags",
+           "Es ist ein Fehler bei der Aktivierung aufgetreten, bitte überprüfen sie das LOG");
         qCritical() << "Das Aktivieren des Vertrags ist fehlgeschlagen";
-        return false;
     }
 }
 
-bool beendeVertrag(int vid)
+void beendeVertrag(int vid)
 {LOG_ENTRY_and_EXIT;
 
     Contract v;
@@ -42,20 +45,20 @@ bool beendeVertrag(int vid)
     {
         if( v.Kuendigungsfrist() == -1)
         {   // festes Vertragsende
-            return VertragsEnde_LaufzeitEnde(v);
+            VertragsEnde_LaufzeitEnde(v);
         }else
         {   // Vertragsende auf ende der kFrist setzten
-            return VertragsEnde_MitKFrist(v);
+            VertragsEnde_MitKFrist(v);
         }
     }
     else
     {
         // passiven Vertrag löschen
-        return VertragsEnde_PassiverV(v);
+        VertragsEnde_PassiverV(v);
     }
-    return false;
+    Q_ASSERT(true);
 }
-bool VertragsEnde_LaufzeitEnde( Contract& v)
+void VertragsEnde_LaufzeitEnde( Contract& v)
 {LOG_ENTRY_and_EXIT;
 
     // Vertragsende muss >= letzteZinsberechnung sein, sonst wäre zuviel Zins ausbezahlt worden
@@ -77,7 +80,7 @@ bool VertragsEnde_LaufzeitEnde( Contract& v)
         if( QDialog::Accepted != dlg.exec())
         {
             qDebug() << "Delete contract was aborted by the user";
-            return true;
+            return;
         }
         if( dlg.getDate() < v.StartZinsberechnung())
         {
@@ -96,13 +99,17 @@ bool VertragsEnde_LaufzeitEnde( Contract& v)
                              "Soll der Vertrag gelöscht werden?");
     confirmDeleteMsg = confirmDeleteMsg.arg(locale.toCurrencyString(neuerWert), locale.toCurrencyString(davonZins));
     if( QMessageBox::Yes != QMessageBox::question(nullptr, "Vertrag löschen?", confirmDeleteMsg))
-        return true;
+        return;
     if( !v.terminateActiveContract(Vertragsende))
+    {
+        QMessageBox::critical( nullptr, "Vertrag beenden", "Der Vertrag konnte nicht gelöscht werden");
         qCritical() << "Deleting the contract failed";
-
-    return true;
+        return;
+    }
+    QMessageBox::information( nullptr, "Vertrag beenden", "Der Vertrag wurde erfolgreich gelöscht");
+    return;
 }
-bool VertragsEnde_MitKFrist( Contract& v)
+void VertragsEnde_MitKFrist( Contract& v)
 {LOG_ENTRY_and_EXIT;
 
     int KuendigungsMonate = v.Kuendigungsfrist();
@@ -117,9 +124,9 @@ bool VertragsEnde_MitKFrist( Contract& v)
         if( QDialog::Accepted != dlg.exec())
         {
             qDebug() << "Delete contract was aborted by the user";
-            return true; // not an error
+            return; // not an error
         }
-        Vertragsende = dlg.getDate().addMonths(KuendigungsMonate);
+        Vertragsende = dlg.getDate().addMonths(KuendigungsMonate).addDays(1);
         if( Vertragsende < v.StartZinsberechnung())
         {
             dlg.setMsg( getDateMsg + "<br>Das Vertragsende muss <b>nach</b> der letzten Zinsausschüttung liegen");
@@ -132,15 +139,17 @@ bool VertragsEnde_MitKFrist( Contract& v)
     if( v.cancelActiveContract( Vertragsende))
     {
         printTerminationLetter(v, dlg.getDate(), KuendigungsMonate);
-        return true;
+        QMessageBox::information(nullptr, "Vertragskündigung", QString("Der Vertrag wurde erfolgreich zum ") + dlg.getDate().toString("dd.MM.yyyy") + "gekündigt");
+        return;
     }
     else
     {
+        QMessageBox::critical(nullptr, "Vertragskündigung", QString("Die Vertragskündigung konnte nicht gespeichert werden"));
         qCritical() << "Fehler beim speichern der Kündigung";
-        return false;
+        return;
     }
 }
-bool VertragsEnde_PassiverV(Contract& v)
+void VertragsEnde_PassiverV(Contract& v)
 {LOG_ENTRY_and_EXIT;
     QString Vorname = v.Vorname();
     QString Nachname = v.Nachname();
@@ -149,7 +158,16 @@ bool VertragsEnde_PassiverV(Contract& v)
     QString msg( "Soll der Vertrag von ");
     msg += Vorname + " " + Nachname + " (id " + QString::number(index) + ") gelöscht werden?";
     if( QMessageBox::Yes != QMessageBox::question(nullptr, "Kreditvertrag löschen", msg))
-        return true;  // valid decision, no error
-    return v.deleteInactiveContract();
+        return;  // valid decision, no error
+    if( v.deleteInactiveContract())
+    {
+        QMessageBox::information(nullptr, "Vertrag löschen", "Der inaktive Vertrag wurde erfolgreich gelöscht");
+        return;
+    }
+    else
+    {
+        QMessageBox::critical(nullptr, "Vertrag löschen", "Der inaktive Vertrag konnte nicht gelöscht werden");
+        return;
+    }
 }
 

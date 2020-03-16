@@ -926,11 +926,7 @@ void MainWindow::on_action_create_active_contracts_csv_triggered()
 void MainWindow::on_action_activate_contract_triggered()
 {LOG_ENTRY_and_EXIT;
 
-    if( !aktiviereVertrag(get_current_id_from_contracts_list()))
-    {
-        QMessageBox::information(nullptr, "Fehler beim Aktivieren des Vertrags",
-           "Es ist ein Fehler bei der Aktivierung aufgetreten, bitte überprüfen sie das LOG");
-    }
+    aktiviereVertrag(get_current_id_from_contracts_list());
     prepare_contracts_list_view();
 }
 void MainWindow::on_action_loeschePassivenVertrag_triggered()
@@ -957,14 +953,8 @@ void MainWindow::on_action_terminate_contract_triggered()
     QModelIndex mi(ui->contractsTableView->currentIndex());
     if( !mi.isValid()) return;
     int index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toInt();
-    bool ret = beendeVertrag(index);
-    if( !ret)
-    {
-        QMessageBox::information(nullptr, "Fehler beim Beenden des Vertrags", "Es ist ein Fehler aufgetreten, bitte überprüfen sie das LOG");
-    } else
-    {
-        QMessageBox::information(nullptr, "Beenden des Vertrags", "Das Beenden des Vertrags wurde erfolgreich gespeichert");
-    }
+    beendeVertrag(index);
+
     prepare_contracts_list_view();
 }
 
