@@ -1,3 +1,6 @@
+-- löschen -> abbrechen -> "erfolgreich gespeichert"?
+
+-- vorgeschl. Datum beim Vertrag löschen um 1 Tag falsch?!
 
 -- Vertragsdaten Konsistenz
 Vertragsdatum nicht so wichtig, aber
@@ -70,7 +73,6 @@ Zinsen aus enum analog Buchungsarten
 
 
 Menüeintrag "Unterstützung"
-- "entpersonalisierte" db kopie anlegen
 Menüeintrag "Datei"
 - Einstellungen (?)
 - Backup Kopie anlegen / Backup auf GDrive speichern
@@ -79,11 +81,6 @@ Menüeintrag "Datei"
 * Fenster Position merken / beim Start setzen (Multi Screen)
 * revisit logging: remove dev logging, improve error logging
 * dk geber Liste: Spalte "Anzahl Verträge"?
-
-next:
-
-? P Liste r-click Menu anlegen
-
 
 
 DONEDONEDONEDONEDONEDONEDONEDONE
@@ -211,3 +208,5 @@ Buchungen Refactoring:
 * P Liste: Suchen / Filtern Vorname.Nachname (OK)
 - verträge ändern? oder lieber nicht (NOT)
 - verträge u Belege pro person auflisten
+
+- "entpersonalisierte" db kopie anlegen

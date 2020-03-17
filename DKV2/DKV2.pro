@@ -9,6 +9,7 @@ QT       += core gui sql printsupport
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = DKV2
+RC_ICONS = "res/logo.ico"
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use

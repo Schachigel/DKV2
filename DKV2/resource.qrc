@@ -4,5 +4,9 @@
         <file>res/IbanRegExp.txt</file>
         <file>res/splash.png</file>
         <file>res/weiss.png</file>
+        <file>res/logo.ico</file>
+        <file>res/logo16.png</file>
+        <file>res/logo32.png</file>
+        <file>res/logo256.png</file>
     </qresource>
 </RCC>
