@@ -69,3 +69,13 @@ compile_commands.json
 
 # QtCreator local machine specific files for imported projects
 *creator.user*
+
+# msi creation
+DKV2/wix/*.msi
+DKV2/wix/*.bak
+DKV2/wix/*.wixobj
+DKV2/wix/*.wixpdb
+DKV2/wix/*.log
+
+# stuff
+DOCS/Screenshots

@@ -1,5 +1,3 @@
--- ?! session mit J: löschen löscht nicht (keine Meldung m Zinsberechnung)
-Verdacht: Jutta hat eine alte Version von DKV2.exe weil der MSI build nicht funktionierte
 
 -- output folder != db folder; search for db next to db
 
@@ -89,6 +87,10 @@ Menüeintrag "Datei"
 
 
 DONEDONEDONEDONEDONEDONEDONEDONE
+
+-- ?! session mit J: löschen löscht nicht (keine Meldung m Zinsberechnung)
+Verdacht: J. hat eine alte Version von DKV2.exe weil der MSI build nicht funktionierte
+OK
 
 -- vorgeschl. Datum beim Vertrag löschen um 1 Tag falsch?!
 

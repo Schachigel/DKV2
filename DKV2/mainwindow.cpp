@@ -47,8 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->statusBar->addPermanentWidget(ui->statusLabel);
 
     setCentralWidget(ui->stackedWidget);
-    open_databaseForApplication();
-    showDbInStatusbar();
+    useDb();
 
     ui->txtAnmerkung->setTabChangesFocus(true);
     ui->CreditorsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 15px; }");
@@ -87,6 +86,12 @@ void MainWindow::setSplash(QSplashScreen* s)
 {LOG_ENTRY_and_EXIT;
     splash = s;
     startTimer(3333);
+}
+
+void MainWindow::useDb(const QString& dbfile)
+{
+    open_databaseForApplication(dbfile);
+    showDbInStatusbar();
 }
 
 void MainWindow::showDbInStatusbar()
@@ -153,7 +158,7 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
 }
 
 // file menu
-QString askUserDbFilename(QString title)
+QString askUserDbFilename(QString title, bool existing=false)
 {
     QSettings config;
     QString folder;
@@ -166,7 +171,10 @@ QString askUserDbFilename(QString title)
     {
         folder = QStandardPaths::writableLocation((QStandardPaths::AppDataLocation));
     }
-    return  QFileDialog::getSaveFileName(nullptr, title, folder, "dk-DB Dateien (*.dkdb)", nullptr);
+    if( existing)
+        return QFileDialog::getOpenFileName(nullptr, title, folder, "dk-DB Dateien (*.dkdb)", nullptr);
+    else
+        return QFileDialog::getSaveFileName(nullptr, title, folder, "dk-DB Dateien (*.dkdb)", nullptr);
 }
 void MainWindow::on_action_back_triggered()
 {LOG_ENTRY_and_EXIT;
@@ -186,8 +194,7 @@ void MainWindow::on_action_create_new_DB_triggered()
     QSettings config;
     config.setValue("db/last", dbfile);
     config.setValue("outdir", fiDbFile.path());
-    open_databaseForApplication();
-    showDbInStatusbar();
+    useDb();
 
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
@@ -195,14 +202,14 @@ void MainWindow::on_action_open_DB_triggered()
 {LOG_ENTRY_and_EXIT;
     QSettings config;
     QString dir(config.value("outdir").toString());
-    QString dbfile = QFileDialog::getOpenFileName(this, "DkVerarbeitungs Datenbank", dir, "dk-DB Dateien (*.dkdb)", nullptr);
+    QString dbfile = askUserDbFilename("DkVerarbeitungs Datenbank", true);
     if( dbfile == "")
     {
         qDebug() << "keine Datei wurde vom Anwender ausgewählt";
         return;
     }
     busycursor b;
-    open_databaseForApplication(dbfile);
+    useDb(dbfile);
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_action_create_anonymous_copy_triggered()
