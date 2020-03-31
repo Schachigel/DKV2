@@ -539,13 +539,18 @@ bool letterTemplate::createPdf(QString file, const QTextDocument& doc)
     return true;
 }
 
-bool letterTemplate::print(const QString& fileId)
+QString letterTemplate::fileNameFromId(const QString& contractId)
 {LOG_ENTRY_and_EXIT;
     QSettings config;
     QString outputfile = config.value("outdir").toString();
-    outputfile +=+"/";
-    outputfile += QDate::currentDate().toString("yyyy-MM-dd_") + getNameFromId(tid) + "_" +fileId.trimmed() +".pdf";
+    outputfile += "/";
+    outputfile += QDate::currentDate().toString("yyyy-MM-dd_") + getNameFromId(tid) + "_" +contractId.trimmed() +".pdf";
     qDebug() << "printing to " << outputfile;
+    return outputfile;
+}
+
+bool letterTemplate::print(const QString& outputfile)
+{LOG_ENTRY_and_EXIT;
     applyPlaceholders();
     QTextDocument doc;
     createDocument(doc);

@@ -25,10 +25,9 @@ void printThankyouLetter( const Contract& v)
     tlate.setPlaceholder("kreditoren.stadt", v.getKreditor().getValue("Stadt").toString());
     tlate.setPlaceholder("kreditoren.email", v.getKreditor().getValue("Email").toString());
 
-    QString filename(v.Kennung());
+    QString filename = tlate.fileNameFromId(v.Kennung());
     if( tlate.print(filename))
         showFileInFolder(filename);
-
 }
 
 void printTerminationLetter( const Contract& v, QDate kDate, int kMonate)
@@ -54,10 +53,9 @@ void printTerminationLetter( const Contract& v, QDate kDate, int kMonate)
     tlate.setPlaceholder("kreditoren.stadt", v.getKreditor().getValue("Stadt").toString());
     tlate.setPlaceholder("kreditoren.email", v.getKreditor().getValue("Email").toString());
 
-    QString filename(v.Kennung());
+    QString filename = tlate.fileNameFromId(v.Kennung());
     if( tlate.print(filename))
         showFileInFolder(filename);
-
 }
 
 void printFinalLetter( const Contract& v, QDate contractEnd)
@@ -80,7 +78,7 @@ void printFinalLetter( const Contract& v, QDate contractEnd)
     tlate.setPlaceholder("thb.zins", "Zins");
     tlate.setPlaceholder("tbh.new", "Abschließender Wert");
 
-    QString filename(v.Kennung());
+    QString filename = tlate.fileNameFromId(v.Kennung());
     if( tlate.print(filename))
         showFileInFolder(filename);
 }

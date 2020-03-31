@@ -45,6 +45,7 @@ public:
     void setPlaceholder(QString var, QString val);
     bool applyPlaceholders();
     bool createDocument(QTextDocument& doc);
+    QString fileNameFromId(const QString& contractId);
     bool print( const QString& name);
 
     static QString getNameFromId(templateId id) ;

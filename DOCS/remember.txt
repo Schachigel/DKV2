@@ -1,4 +1,3 @@
--- übersicht: anzahl Verträge sollte inaktive nicht enthalten
 
 -- make this a SingltonApp
 
@@ -86,6 +85,9 @@ Menüeintrag "Datei"
 
 
 DONEDONEDONEDONEDONEDONEDONEDONE
+-- show pdf files in output folder repaired
+
+-- übersicht: anzahl dk geber von Verträgen sollte inaktive nicht enthalten
 
 -- Übersicht: #DK Geber nur für aktive Verträge
 
