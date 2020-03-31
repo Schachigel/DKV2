@@ -675,7 +675,7 @@ QString contractList_SQL(const QVector<dbfield>& fields, const QString& filter)
 
 void calculateSummary(DbSummary& dbs, QString con)
 {LOG_ENTRY_and_EXIT;
-    dbs.AnzahlDkGeber = ExecuteSingleValueSql("COUNT(*)", "[Kreditoren]", "1=1").toInt();
+    dbs.AnzahlDkGeber = ExecuteSingleValueSql("count(DISTINCT(KreditorId))", "[Kreditoren],[Vertraege]", "aktiv != 0 AND Kreditoren.id = Vertraege.KreditorId").toInt();
 
     dbs.AnzahlAuszahlende = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0", con).toInt();
     dbs.BetragAuszahlende = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0", con).toReal();

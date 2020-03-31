@@ -1,5 +1,4 @@
-
--- output folder != db folder; search for db next to db
+-- übersicht: anzahl Verträge sollte inaktive nicht enthalten
 
 -- make this a SingltonApp
 
@@ -87,6 +86,12 @@ Menüeintrag "Datei"
 
 
 DONEDONEDONEDONEDONEDONEDONEDONE
+
+-- Übersicht: #DK Geber nur für aktive Verträge
+
+-- output folder != db folder; search for db next to db
+
+-- statusbar update on "opendb" 
 
 -- ?! session mit J: löschen löscht nicht (keine Meldung m Zinsberechnung)
 Verdacht: J. hat eine alte Version von DKV2.exe weil der MSI build nicht funktionierte
