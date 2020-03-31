@@ -16,10 +16,17 @@
 #include "helper.h"
 #include "filehelper.h"
 
-bool backupFile(const QString&  fn)
+bool backupFile(const QString&  fn, const QString& subfolder)
 {
     QString backupname{fn};
-    QFileInfo fi{fn}; QString suffix = fi.completeSuffix();
+    QFileInfo fi{fn};
+    QString suffix = fi.completeSuffix();
+    QString path = fi.path();
+    if( subfolder.length()!= 0)
+    {
+        QDir d(path); d.mkdir(subfolder);
+        backupname =d.path() + "/" + subfolder + "/" + fi.fileName();
+    }
     backupname.chop(suffix.size()+1/*dot*/);
     backupname += "_" + QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss") + "." + suffix;
     // copy the file

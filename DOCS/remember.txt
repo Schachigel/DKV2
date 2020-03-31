@@ -1,6 +1,11 @@
--- löschen -> abbrechen -> "erfolgreich gespeichert"?
+-- ?! session mit J: löschen löscht nicht (keine Meldung m Zinsberechnung)
+Verdacht: Jutta hat eine alte Version von DKV2.exe weil der MSI build nicht funktionierte
 
--- vorgeschl. Datum beim Vertrag löschen um 1 Tag falsch?!
+-- output folder != db folder; search for db next to db
+
+-- make this a SingltonApp
+
+-- löschen -> abbrechen -> "erfolgreich gespeichert"?
 
 -- Vertragsdaten Konsistenz
 Vertragsdatum nicht so wichtig, aber
@@ -85,6 +90,13 @@ Menüeintrag "Datei"
 
 DONEDONEDONEDONEDONEDONEDONEDONE
 
+-- vorgeschl. Datum beim Vertrag löschen um 1 Tag falsch?!
+
+-- backup in subfolder?!
+
+
+-- remove debug menu, make tools menu instead
+OK
 
 -- Brief: Geldeingang bestätigen
 

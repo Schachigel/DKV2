@@ -3,7 +3,7 @@
 #include <QString>
 #include <QFile>
 
-bool backupFile(const QString& filename);
+bool backupFile(const QString& filename, const QString& subfolder="");
 
 void showFileInFolder(const QString &path);
 

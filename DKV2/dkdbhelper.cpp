@@ -230,7 +230,7 @@ bool create_DK_database(const QString& filename) /*in the default connection*/
     }
     if( QFile(filename).exists())
     {
-        backupFile(filename);
+        backupFile(filename, "db-bak");
         QFile(filename).remove();
         if( QFile(filename).exists())
         {
@@ -362,7 +362,7 @@ void open_databaseForApplication( QString newDbFile)
     }
     else
         config.setValue("db/last", newDbFile);
-    backupFile(newDbFile);
+    backupFile(newDbFile, "db-bak");
 
     // setting the default database for the application
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");

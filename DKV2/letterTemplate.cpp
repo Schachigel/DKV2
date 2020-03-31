@@ -464,40 +464,42 @@ bool letterTemplate::createDocument(QTextDocument& doc)
     QTextBlockFormat bfAlignCellCenter = c.blockFormat();
     bfAlignCellCenter.setAlignment(Qt::AlignCenter);
     c.setBlockFormat(bfAlignCellCenter);
-
-//    QTextTableFormat tfDks;
-//    tfDks.setBorder(0.);
-//    tfDks.setCellPadding(1 *mmInPt);
-//    tfDks.setMargin(tableMargin *mmInPt);
-//    tfDks.setLeftMargin(20 *mmInPt);
-//    c.insertTable(3, 4, tfDks);
-//    QTextTable* ttDks  = c.currentTable();
-//    c = ttDks->cellAt(0,0).firstCursorPosition(); c.setBlockFormat(bfAlignCellLeft);
-//    c.insertHtml(html[tableHeaderKennung]);
-//    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
-//    c.insertHtml(html[tableHeaderOldValue]);
-//    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
-//    c.insertHtml(html[tableHeaderInterest]);
-//    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
-//    c.insertHtml(html[tableHeaderNewValue]);
-//    c.movePosition(c.NextRow); c.setBlockFormat(bfAlignCellLeft);
-//    c.insertHtml("DK-ESP-2018-024");
-//    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
-//    c.insertHtml("12.300 Euro");
-//    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
-//    c.insertHtml("123 Euro");
-//    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
-//    c.insertHtml("12.423 Euro");
-//    c.movePosition(c.NextRow); c.setBlockFormat(bfAlignCellLeft);
-//    c.insertHtml("DK-ESP-2019-054");
-//    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
-//    c.insertHtml("10.100 Euro");
-//    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
-//    c.insertHtml("101 Euro");
-//    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
-//    c.insertHtml("10.201 Euro");
-//    // step out of inner table
-//    c.movePosition(c.NextBlock);
+    if( html[tableHeaderKennung].isEmpty() || html[tableHeaderKennung].compare("NOT used", Qt::CaseSensitivity::CaseInsensitive))
+    {
+        //    QTextTableFormat tfDks;
+        //    tfDks.setBorder(0.);
+        //    tfDks.setCellPadding(1 *mmInPt);
+        //    tfDks.setMargin(tableMargin *mmInPt);
+        //    tfDks.setLeftMargin(20 *mmInPt);
+        //    c.insertTable(3, 4, tfDks);
+        //    QTextTable* ttDks  = c.currentTable();
+        //    c = ttDks->cellAt(0,0).firstCursorPosition(); c.setBlockFormat(bfAlignCellLeft);
+        //    c.insertHtml(html[tableHeaderKennung]);
+        //    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
+        //    c.insertHtml(html[tableHeaderOldValue]);
+        //    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
+        //    c.insertHtml(html[tableHeaderInterest]);
+        //    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
+        //    c.insertHtml(html[tableHeaderNewValue]);
+        //    c.movePosition(c.NextRow); c.setBlockFormat(bfAlignCellLeft);
+        //    c.insertHtml("DK-ESP-2018-024");
+        //    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
+        //    c.insertHtml("12.300 Euro");
+        //    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
+        //    c.insertHtml("123 Euro");
+        //    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
+        //    c.insertHtml("12.423 Euro");
+        //    c.movePosition(c.NextRow); c.setBlockFormat(bfAlignCellLeft);
+        //    c.insertHtml("DK-ESP-2019-054");
+        //    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
+        //    c.insertHtml("10.100 Euro");
+        //    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
+        //    c.insertHtml("101 Euro");
+        //    c.movePosition(c.NextCell); c.setBlockFormat(bfAlignCellCenter);
+        //    c.insertHtml("10.201 Euro");
+        //    // step out of inner table
+        //    c.movePosition(c.NextBlock);
+    }
 
     c.movePosition(c.NextRow);
     // Row index 9: Main text after table

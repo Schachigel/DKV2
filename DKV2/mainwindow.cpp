@@ -39,9 +39,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {LOG_ENTRY_and_EXIT;
     ui->setupUi(this);
-//#ifdef QT_DEBUG
-    ui->menuDebug->setTitle("Debug");
-//#endif
+#ifndef QT_DEBUG
+    ui->action_create_sample_data->setVisible(false);
+#endif
 
     ui->leBetrag->setValidator(new QIntValidator(0,999999,this));
     ui->statusBar->addPermanentWidget(ui->statusLabel);
@@ -156,9 +156,17 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
 QString askUserDbFilename(QString title)
 {
     QSettings config;
-    QString dir(config.value("outdir").toString());
-
-    return  QFileDialog::getSaveFileName(nullptr, title, dir, "dk-DB Dateien (*.dkdb)", nullptr);
+    QString folder;
+    QFileInfo lastdb (config.value("db/last").toString());
+    if( lastdb.exists())
+    {
+        folder = lastdb.path();
+    }
+    else
+    {
+        folder = QStandardPaths::writableLocation((QStandardPaths::AppDataLocation));
+    }
+    return  QFileDialog::getSaveFileName(nullptr, title, folder, "dk-DB Dateien (*.dkdb)", nullptr);
 }
 void MainWindow::on_action_back_triggered()
 {LOG_ENTRY_and_EXIT;

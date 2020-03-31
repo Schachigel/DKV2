@@ -59,3 +59,28 @@ void printTerminationLetter( const Contract& v, QDate kDate, int kMonate)
         showFileInFolder(filename);
 
 }
+
+void printFinalLetter( const Contract& v, QDate contractEnd)
+{
+    QLocale locale;
+    letterTemplate tlate(letterTemplate::Kontoabschluss);
+    tlate.setPlaceholder("gmbh.address1", getProperty("gmbh.address1"));
+    tlate.setPlaceholder("gmbh.address2", getProperty("gmbh.address2"));
+    tlate.setPlaceholder("gmbh.plz", getProperty("gmbh.plz"));
+    tlate.setPlaceholder("gmbh.stadt", getProperty("gmbh.stadt"));
+    tlate.setPlaceholder("gmbh.strasse", getProperty("gmbh.strasse"));
+    tlate.setPlaceholder("gmbh.email", getProperty("gmbh.email"));
+    tlate.setPlaceholder("gmbh.url", getProperty("gmbh.url"));
+    tlate.setPlaceholder("vertraege.kennung", v.Kennung());
+    tlate.setPlaceholder("datum", QDate::currentDate().toString("dd. MMM yyyy"));
+    tlate.setPlaceholder("vertraege.buchungsdatum", contractEnd.toString("dd.MM.yyyy"));
+    tlate.setPlaceholder("kreditoren.iban", v.getKreditor().getValue("Iban").toString());
+    tlate.setPlaceholder("tbh.kennung", "Vertragskennung");
+    tlate.setPlaceholder("tbh.old", "Vorheriger Wert");
+    tlate.setPlaceholder("thb.zins", "Zins");
+    tlate.setPlaceholder("tbh.new", "Abschließender Wert");
+
+    QString filename(v.Kennung());
+    if( tlate.print(filename))
+        showFileInFolder(filename);
+}

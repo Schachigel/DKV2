@@ -698,7 +698,7 @@ p, li { white-space: pre-wrap; }
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>Debug</string>
+     <string>Extras</string>
     </property>
     <addaction name="action_create_sample_data"/>
     <addaction name="action_log_anzeigen"/>

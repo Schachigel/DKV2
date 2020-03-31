@@ -106,6 +106,8 @@ void VertragsEnde_LaufzeitEnde( Contract& v)
         qCritical() << "Deleting the contract failed";
         return;
     }
+    if( dlg.shouldPrint())
+        printFinalLetter(v, Vertragsende);
     QMessageBox::information( nullptr, "Vertrag beenden", "Der Vertrag wurde erfolgreich gelöscht");
     return;
 }
