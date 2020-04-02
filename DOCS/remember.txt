@@ -37,8 +37,6 @@ https://doc.qt.io/qt-5/richtext-html-subset.html#block-attributes
 !! NEXT: read Meta data from file into db for letters
 !! create editor for meta data for letters
 
-?! wenn currentdate > Vertragsende?
-
 ?! Buchungen dem Anwender anzeigen?
 
 ?! MsgBox vor Programm Ende
@@ -85,6 +83,10 @@ Menüeintrag "Datei"
 
 
 DONEDONEDONEDONEDONEDONEDONEDONE
+
+
+-?! wenn currentdate > Vertragsende? -> ignore
+
 -- show pdf files in output folder repaired
 
 -- übersicht: anzahl dk geber von Verträgen sollte inaktive nicht enthalten

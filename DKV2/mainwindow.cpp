@@ -1017,3 +1017,16 @@ void MainWindow::on_actionShow_Bookings_triggered()
 
     ui->stackedWidget->setCurrentIndex(bookingsListIndex);
 }
+// about
+void MainWindow::on_action_ber_DKV2_triggered()
+{
+    QString msg;
+    msg = "Lieber Anwender. \nDKV2 wird von seinen Entwicklern kostenlos zur Verfügung gestellt.\n";
+    msg += "Es wurde mit viel Arbeit und Sorgfalt entwickelt. Wenn Du es nützlich findest: Viel Spaß bei der Anwendung!!\n";
+    msg += "Allerdings darfst Du es nicht verkaufen oder bezahlte Dienste für Einrichtung oder Unterstützung anbieten.\n";
+    msg += "DKV2 könnte Fehler enthalten. Wenn Du sie uns mitteilst werden sie vielleicht ausgebessert.\n";
+    msg += "Aber aus der Verwendung kannst Du keine Rechte ableiten. Verwende DKV2 so, wie es ist - ";
+    msg += "sollten Fehler auftreten übernehmen wir weder Haftung noch Verantwortung - dafür hast Du sicher Verständnis.\n";
+    msg += "Viel Spaß mit DKV2 !";
+    QMessageBox::information(this, "I n f o", msg);
+}

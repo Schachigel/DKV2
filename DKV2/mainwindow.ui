@@ -698,11 +698,12 @@ p, li { white-space: pre-wrap; }
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>Extras</string>
+     <string>&amp;Extras</string>
     </property>
     <addaction name="action_create_sample_data"/>
     <addaction name="action_log_anzeigen"/>
     <addaction name="actionShow_Bookings"/>
+    <addaction name="action_ber_DKV2"/>
    </widget>
    <addaction name="menuDatenbank"/>
    <addaction name="menuDK_Geber"/>
@@ -944,6 +945,11 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="toolTip">
     <string>Speichern und dann einen weiteren Vertrag anlegen</string>
+   </property>
+  </action>
+  <action name="action_ber_DKV2">
+   <property name="text">
+    <string>Über DKV2</string>
    </property>
   </action>
  </widget>

@@ -128,6 +128,8 @@ private slots:
 
     void on_deLaufzeitEnde_userDateChanged(const QDate &date);
 
+    void on_action_ber_DKV2_triggered();
+
 private:
     Ui::MainWindow *ui;
     QSplashScreen* splash;
