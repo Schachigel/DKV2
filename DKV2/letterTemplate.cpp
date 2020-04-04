@@ -241,7 +241,8 @@ bool letterTemplate::loadTemplate(letterTemplate::templateId id, const QString& 
     QString q = SelectQueryFromFields( dkdbAddtionalTables["Briefvorlagen"].Fields(), "[templateId] == '" + QString::number(tid) + "'");
     QSqlQuery query(QSqlDatabase::database(con));
     query.prepare(q);
-    if( !query.exec())
+    if( !query.exec()
+        || query.size() <= 0)
     {
         qDebug() << "reading template from DB failed" << query.lastError();
         return false;
