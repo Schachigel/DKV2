@@ -60,7 +60,7 @@ void letterTemplate::init_Kontoabschluss()
 {LOG_ENTRY_and_EXIT;
     html[about] = "Beendigung Deines Direktkredites <b> {{vertraege.kennung}} </b>";
     html[mainText1] = "wunschgemäß beenden wir Deinen Direktkredit zum {{vertraege.buchungsdatum}}.<p>"
-                      "Der Kredit und die angelaufenen Zinsen werden in den kommenden Tagen auf das von Dir angegebene Konto mit der IBAN {{kerditoren.iban}} ausbezahlt. "
+                      "Der Kredit und die angelaufenen Zinsen werden in den kommenden Tagen auf das von Dir angegebene Konto mit der IBAN {{kreditoren.iban}} ausbezahlt. "
                       "Auf Wunsch erstellen wir eine gesonderte Zinsbescheinigung für die Steuererklärung.";
     html[tableHeaderKennung]  = "<b> {{tbh.kennung}} </b>";
     html[tableHeaderOldValue] = "<b> {{tbh.old}} </b>";
