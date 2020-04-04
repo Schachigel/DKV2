@@ -75,7 +75,7 @@ void printFinalLetter( const Contract& v, QDate contractEnd)
     tlate.setPlaceholder("kreditoren.iban", v.getKreditor().getValue("Iban").toString());
     tlate.setPlaceholder("tbh.kennung", "Vertragskennung");
     tlate.setPlaceholder("tbh.old", "Vorheriger Wert");
-    tlate.setPlaceholder("thb.zins", "Zins");
+    tlate.setPlaceholder("tbh.zins", "Zins");
     tlate.setPlaceholder("tbh.new", "Abschließender Wert");
 
     QString filename = tlate.fileNameFromId(v.Kennung());

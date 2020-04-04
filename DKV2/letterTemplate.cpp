@@ -97,8 +97,8 @@ void letterTemplate::init_Kontoabschluss()
                       "Auf Wunsch erstellen wir eine gesonderte Zinsbescheinigung für die Steuererklärung.";
     html[tableHeaderKennung]  = "<b> {{tbh.kennung}} </b>";
     html[tableHeaderOldValue] = "<b> {{tbh.old}} </b>";
-    html[tableHeaderInterest] = "<b> {{thb.zins}} </b>";
-    html[tableHeaderNewValue] = "<b> {{thb.new}} </b>";
+    html[tableHeaderInterest] = "<b> {{tbh.zins}} </b>";
+    html[tableHeaderNewValue] = "<b> {{tbh.new}} </b>";
     html[mainText2] = "Wenn Du Fragen zu dieser Abrechnung hast, zögere bitte nicht, Dich bei uns per Post oder E-Mail zu melden.<p>"
                       "Wir hoffen auch weiterhin auf Deine Solidarität und dass wir Dich bald wieder zu unseren Unterstüzern zählen können. "
                       "Denn für weitere Umschuldungen benötigen wir weiterhin Direktkredite.  Empfehle uns auch Deinen Freund*innen und Verwandten.";
