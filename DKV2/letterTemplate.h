@@ -30,7 +30,7 @@ public:
     };
 
 public:
-    explicit letterTemplate(){ initPrinter();};
+    //explicit letterTemplate(){ initPrinter();};
     letterTemplate(templateId type);
     ~letterTemplate(){ }
     bool saveTemplate(const QString& con =QSqlDatabase::defaultConnection) const;

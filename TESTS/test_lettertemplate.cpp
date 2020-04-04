@@ -50,7 +50,7 @@ void test_letterTemplate::test_load_letter_template()
 {LOG_ENTRY_and_EXIT;
     letterTemplate src(letterTemplate::templateId::JA_thesa);
     src.saveTemplate(testCon);
-    letterTemplate dst;
+    letterTemplate dst(letterTemplate::Kuendigung);
     dst.loadTemplate(letterTemplate::templateId::JA_thesa, testCon);
     QVERIFY2(src == dst, "save letter template: die Tabelle Briefvorlagen wurde nicht angelegt");
 }
@@ -59,7 +59,7 @@ void test_letterTemplate::test_applyPlaceholders()
 {LOG_ENTRY_and_EXIT;
     QMap<int, QString> result;
     QMap<int, bool> res;
-    letterTemplate tlate;
+    letterTemplate tlate(letterTemplate::Kuendigung);
     tlate.Html().insert(0, "{{");            result.insert(  0, "..");     res.insert( 0, false);
     tlate.Html().insert( 1, " {{");          result.insert( 1, " ..");     res.insert( 1, false);
     tlate.Html().insert( 2, " {{ ");         result.insert( 2, " .. ");    res.insert( 2, false);

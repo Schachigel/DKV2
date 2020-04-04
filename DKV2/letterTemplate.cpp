@@ -534,7 +534,16 @@ bool letterTemplate::createPdf(QString file, const QTextDocument& doc)
         return false;
     }
 
+#ifdef QT_DEBUG
+    QString testhtml = doc.toHtml();
+    QFile htmlfile(file + ".html");
+    htmlfile.open(QIODevice::WriteOnly);
+#endif
+
     printer->setOutputFileName(file);
+    int written = htmlfile.write(testhtml.toUtf8());
+    if( written <1)
+        qDebug() << "html not written" << htmlfile.errorString();
     doc.print(printer);
     return true;
 }
