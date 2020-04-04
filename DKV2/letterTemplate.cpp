@@ -28,17 +28,6 @@ void letterTemplate::initPrinter()
 
 void letterTemplate::init_JA_thesa()
 {LOG_ENTRY_and_EXIT;
-    length[topmost] = 1.;
-    length[overProjectAddress] = 10.;
-    length[projectAddressHeight] = 42.;
-    length[logoWidth] = 80.;
-    length[overAbout] = 10.;
-    length[overSalutation] = 5.;
-    length[overText] = 5.;
-    length[tableMargin] = 4.;
-    length[overGreeting] = 10.;
-    length[overSignee] = 10.;
-
     html[about] = "Kontoauszug Direktkredit(e) <b>Jahresabschluß {{abrechnungsjahr}} </b>";
     html[mainText1] = "die Mitglieder des Wohnprojektes Esperanza wünschen ein schönes neues Jahr und bedanken sich herzlich für Deine Unterstützung.<p>"
                       "Dies ist der Kontoauszug Deiner Direktkredite für das Jahr 2019 bei Esperanza Franklin GmbH. "
@@ -54,17 +43,6 @@ void letterTemplate::init_JA_thesa()
 
 void letterTemplate::init_JA_auszahlend()
 {LOG_ENTRY_and_EXIT;
-    length[topmost] = 1.;
-    length[overProjectAddress] = 10.;
-    length[projectAddressHeight] = 42.;
-    length[logoWidth] = 80.;
-    length[overAbout] = 10.;
-    length[overSalutation] = 5.;
-    length[overText] = 5.;
-    length[tableMargin] = 4.;
-    length[overGreeting] = 10.;
-    length[overSignee] = 10.;
-
     html[about] = "Kontoauszug Direktkredit(e) <b>Jahresabschluß {{abrechnungsjahr}} </b>";
     html[mainText1] = "die Mitglieder des Wohnprojektes Esperanza wünschen ein schönes neues Jahr und bedanken sich herzlich für Deine Unterstützung.<p>"
                       "Dies ist der Kontoauszug Deiner Direktkredite für das Jahr 2019 bei Esperanza Franklin GmbH. "
@@ -80,17 +58,6 @@ void letterTemplate::init_JA_auszahlend()
 
 void letterTemplate::init_Kontoabschluss()
 {LOG_ENTRY_and_EXIT;
-    length[topmost] = 1.;
-    length[overProjectAddress] = 10.;
-    length[projectAddressHeight] = 42.;
-    length[logoWidth] = 80.;
-    length[overAbout] = 10.;
-    length[overSalutation] = 5.;
-    length[overText] = 5.;
-    length[tableMargin] = 4.;
-    length[overGreeting] = 10.;
-    length[overSignee] = 10.;
-
     html[about] = "Beendigung Deines Direktkredites <b> {{vertraege.kennung}} </b>";
     html[mainText1] = "wunschgemäß beenden wir Deinen Direktkredit zum {{vertraege.buchungsdatum}}.<p>"
                       "Der Kredit und die angelaufenen Zinsen werden in den kommenden Tagen auf das von Dir angegebene Konto mit der IBAN {{kerditoren.iban}} ausbezahlt. "
@@ -106,17 +73,6 @@ void letterTemplate::init_Kontoabschluss()
 
 void letterTemplate::init_Geldeingang()
 {LOG_ENTRY_and_EXIT;
-    length[topmost] = 1.;
-    length[overProjectAddress] = 10.;
-    length[projectAddressHeight] = 42.;
-    length[logoWidth] = 80.;
-    length[overAbout] = 10.;
-    length[overSalutation] = 5.;
-    length[overText] = 5.;
-    length[tableMargin] = 4.;
-    length[overGreeting] = 10.;
-    length[overSignee] = 10.;
-
     html[about] = "Bestätigung Deines Direktkredites <b> {{vertraege.kennung}} </b>";
     html[mainText1] = "Hiermit bestätigen wir den Geldeingang von {{vertraege.betrag}} zum {{vertraege.buchungsdatum}}. Dein Vertrag wird unter der Kennung {{vertraege.kennung}} geführt.<p>"
                       "Herzlichen Dank für Deine Unterstützung. Wir werden Dich ab jetzt jährlich über die Zinsentwicklung Deines Kredits informieren.";
@@ -131,17 +87,6 @@ void letterTemplate::init_Geldeingang()
 
 void letterTemplate::init_Kuendigung()
 {LOG_ENTRY_and_EXIT;
-    length[topmost] = 1.;
-    length[overProjectAddress] = 10.;
-    length[projectAddressHeight] = 42.;
-    length[logoWidth] = 80.;
-    length[overAbout] = 10.;
-    length[overSalutation] = 5.;
-    length[overText] = 5.;
-    length[tableMargin] = 4.;
-    length[overGreeting] = 10.;
-    length[overSignee] = 10.;
-
     html[about] = "Bestätigung der Kündigung Deines Direktkredites <b> {{vertraege.kennung}} </b>";
     html[mainText1] = "Hiermit bestätigen wir den Eingang der Kündigung des Vertrags {{vertraege.betrag}} zum {{kuendigungsdatum}}.<p>"
                       "Das Vertragsende ergibt sich aus der Kündigungsfrist von {{vertraege.kfrist}} Monaten zum {{vertraege.laufzeitende}}";
@@ -163,6 +108,17 @@ void letterTemplate::init_defaults()
     html[salutation] = "Liebe(r) {{kreditoren.vorname}}, ";
     html[greeting] = "Mit freundlichen Grüßen";
     html[signee] =  "{{gmbh.dkKontakt}}<br><small>Direktkreditverwaltung</small>";
+
+    length[topmost] = 1.;
+    length[overProjectAddress] = 10.;
+    length[projectAddressHeight] = 42.;
+    length[logoWidth] = 80.;
+    length[overAbout] = 10.;
+    length[overSalutation] = 5.;
+    length[overText] = 5.;
+    length[tableMargin] = 4.;
+    length[overGreeting] = 10.;
+    length[overSignee] = 10.;
 
     switch(tid)
     {
