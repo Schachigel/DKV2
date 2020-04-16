@@ -697,6 +697,8 @@ void CsvActiveContracts()
 {
     QDate today = QDate::currentDate();
     QString filename(today.toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
+    QSettings config;
+    filename = config.value("outdir").toString() + "/" + filename;
 
     QVector<dbfield> fields;
     fields.append(dkdbstructur["Vertraege"]["id"]);
