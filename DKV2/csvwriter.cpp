@@ -79,16 +79,21 @@ QString csvwriter::out()
     return out;
 }
 
-void csvwriter::save(QString filename)
+bool csvwriter::save(QString filename)
 {
     backupFile(filename);
     QFile file(filename);
-    file.open(QIODevice::WriteOnly|QIODevice::Truncate);
+    if( !file.open(QIODevice::WriteOnly|QIODevice::Truncate))
+    {
+        qCritical() << "could not open csv file for writing: " << filename;
+        return false;
+    }
     QTextStream s(&file);
     s << out();
+    return true;
 }
 
-void table2csv(QVector<dbfield>& fields, QString where, QString filename, QString con)
+bool table2csv(QVector<dbfield>& fields, QString where, QString filename, QString con)
 {
     csvwriter csv;
     for(auto f : fields)
@@ -106,5 +111,54 @@ void table2csv(QVector<dbfield>& fields, QString where, QString filename, QStrin
         }
     }
 
-    csv.save(filename);
+    return csv.save(filename);
+}
+
+
+bool table2csv(QVector<dbfield>& fields, QVector<QVariant::Type>& types, QString where, QString filename, QString con)
+{
+    csvwriter csv;
+    for(auto f : fields)
+        csv.addColumn(f.name());
+
+    QString sql = SelectQueryFromFields(fields, where);
+    QSqlQuery q (con);
+    q.exec(sql);
+    qDebug() << sql << endl;
+    while( q.next())
+    {
+        for (int i = 0; i < fields.count(); i++)
+        {
+            switch(types[i])
+            {
+            case QVariant::Type::Int:
+            {
+                int v = q.record().value(fields[i].name()).toInt();
+                csv.appendToRow(QString::number(v));
+                break;
+            }
+            case QVariant::Type::String:
+            {
+                csv.appendToRow(q.record().value(fields[i].name()).toString());
+                break;
+            }
+            case QVariant::Type::Date:
+            {
+                QDate d = q.record().value(fields[i].name()).toDate();
+                csv.appendToRow(d.toString("dd.MM.yyyy"));
+                break;
+            }
+            case QVariant::Type::Double:
+            {
+                double d = q.record().value(fields[i].name()).toDouble();
+                csv.appendToRow(QString::number(d, 'f', 2));
+                break;
+            }
+            default:
+                csv.appendToRow(q.record().value(fields[i].name()).toString());
+            }
+        }
+    }
+
+    return csv.save(filename);
 }

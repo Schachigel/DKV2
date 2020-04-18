@@ -693,27 +693,41 @@ void calculateSummary(DbSummary& dbs, QString con)
     dbs.AnzahlPassive = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] = 0", con).toInt();
     dbs.BetragPassive = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 0", con).toReal();
 }
-void CsvActiveContracts()
+bool createCsvActiveContracts()
 {
     QDate today = QDate::currentDate();
     QString filename(today.toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
     QSettings config;
     filename = config.value("outdir").toString() + "/" + filename;
 
-    QVector<dbfield> fields;
+    QVector<dbfield> fields; QVector<QVariant::Type> types;
     fields.append(dkdbstructur["Vertraege"]["id"]);
+    types.append(QVariant::Int);
     fields.append(dkdbstructur["Vertraege"]["KreditorId"]);
+    types.append(QVariant::Int);
     fields.append(dkdbstructur["Kreditoren"]["Vorname"]);
+    types.append(QVariant::String);
     fields.append(dkdbstructur["Kreditoren"]["Nachname"]);
+    types.append(QVariant::String);
     fields.append(dkdbstructur["Kreditoren"]["Strasse"]);
+    types.append(QVariant::String);
     fields.append(dkdbstructur["Kreditoren"]["Stadt"]);
+    types.append(QVariant::String);
     fields.append(dkdbstructur["Kreditoren"]["Nachname"]);
+    types.append(QVariant::String);
     fields.append(dkdbstructur["Vertraege"]["Betrag"]);
+    types.append(QVariant::Double);
     fields.append(dkdbstructur["Vertraege"]["Wert"]);
+    types.append(QVariant::Double);
     fields.append(dkdbstructur["Vertraege"]["Vertragsdatum"]);
+    types.append(QVariant::Date);
 
-    table2csv( fields, "[aktiv] = 1", filename);
-    showFileInFolder(filename);
+    if( table2csv( fields, types, "[aktiv] = 1", filename))
+    {
+        showFileInFolder(filename);
+        return true;
+    }
+    return false;
 }
 void calc_contractEnd( QVector<ContractEnd>& ce, QString connection)
 {LOG_ENTRY_and_EXIT;

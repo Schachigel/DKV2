@@ -17,13 +17,14 @@ public:
     void addRow(QString row);
 
     QString out();
-    void save(QString filname);
+    bool save(QString filname);
 private:
     QList<QString> headers;
     QList<QList<QString>> rows;
     QList<QString> currentRow;
 };
 
-void table2csv(QVector<dbfield>& fields, QString where, QString filename, QString con = "");
+bool table2csv(QVector<dbfield>& fields, QString where, QString filename, QString con = "");
+bool table2csv(QVector<dbfield>& fields, QVector<QVariant::Type>& types, QString where, QString filename, QString con = "");
 
 #endif // CSVWRITER_H

@@ -935,7 +935,8 @@ void MainWindow::on_action_anual_interest_settlement_triggered()
 }
 void MainWindow::on_action_create_active_contracts_csv_triggered()
 {LOG_ENTRY_and_EXIT;
-    CsvActiveContracts();
+    if( !createCsvActiveContracts())
+        QMessageBox::critical(this, "Fehler", "Die Datei konnte nicht angelegt werden. Ist sie z.B. in Excel geöffnet?");
 }
 // contract list context menu
 void MainWindow::on_action_activate_contract_triggered()

@@ -71,7 +71,7 @@ void init_property( const QString& name, const QString& wert, const QString& con
 QString getProperty(const QString& name, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
 void setProperty(const QString& name, const QString& value, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
 
-void CsvActiveContracts();
+bool createCsvActiveContracts();
 
 struct DbSummary
 {
