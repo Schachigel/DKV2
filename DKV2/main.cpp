@@ -147,8 +147,9 @@ int main(int argc, char *argv[])
     init_DKDBStruct();
     init_additionalTables();
 
+    QString db = initDb();
     QSettings config;
-    config.setValue("db/last", initDb());
+    config.setValue("db/last", db);
 
     MainWindow w;
     w.setSplash(splash);

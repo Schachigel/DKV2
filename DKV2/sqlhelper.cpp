@@ -48,14 +48,14 @@ QString SelectQueryFromFields(const QVector<dbfield>& fields, const QString& whe
         const dbfield& f = fields[i];
         if( i!=0)
             Select += ", ";
-        Select += "[" + f.tableName() + "].[" + f.name() + "]";
+        Select += f.tableName() + "." + f.name();
 
         if( !usedTables.contains(f.tableName()))
         {
             if( usedTables.count()!= 0)
                 From += ", ";
             usedTables.push_back(f.tableName());
-            From += "[" + f.tableName() +"]";
+            From += f.tableName();
         }
 
         refFieldInfo ref = f.getReferenzeInfo();
@@ -64,7 +64,9 @@ QString SelectQueryFromFields(const QVector<dbfield>& fields, const QString& whe
             Where += " AND [" + ref.tablename + "].[" + ref.name + "]=[" + f.tableName() +"].[" + f.name() +"]";
         }
     }
-    return Select + " " + From + " " + Where;
+    QString Query = Select + " " + From + " " + Where;
+    qDebug() << "Created Query: " << Query;
+    return Query;
 }
 
 QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString& where, const QString& con)
@@ -87,9 +89,9 @@ QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString&
     return q.record();
 }
 
-QVariant ExecuteSingleValueSql(const QString& s, const QString& con)
+QVariant ExecuteSingleValueSql(const QString& s, QSqlDatabase db)
 {   LOG_ENTRY_and_EXIT;
-    QSqlQuery q(QSqlDatabase::database(con));
+    QSqlQuery q(db);
     q.prepare(s);
     if( !q.exec())
     {
@@ -97,12 +99,22 @@ QVariant ExecuteSingleValueSql(const QString& s, const QString& con)
         return QVariant();
     }
     q.last();
-    if(q.at() != 0)
+    if(q.at() > 0)
     {
-        qCritical() << "SingleValueSql returned more then one value\n" << q.lastQuery();
+        qDebug() << "SingleValueSql returned more than one value\n" << q.lastQuery();
+        return QVariant();
+    }
+    if(q.at() < 0)
+    {
+        qDebug() << "SingleValueSql returned no value\n" << q.lastQuery();
         return QVariant();
     }
     return q.value(0);
+}
+
+QVariant ExecuteSingleValueSql(const QString& s, const QString& con)
+{   LOG_ENTRY_and_EXIT;
+    return ExecuteSingleValueSql(s, QSqlDatabase::database(con));
 }
 
 QVariant ExecuteSingleValueSql( const QString& field, const QString& table, const QString& where, const QString& con)

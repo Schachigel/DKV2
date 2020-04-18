@@ -38,11 +38,13 @@ void init_bookingTypes();
 bool create_DK_database(const QString& filename);
 bool create_DK_database(QSqlDatabase db=QSqlDatabase::database());
 
+
+bool check_db_version(QSqlDatabase db=QSqlDatabase::database());
 bool isValidDatabase(const QString& filename);
 bool isValidDatabase(QSqlDatabase db=QSqlDatabase::database());
 
 void closeDatabaseConnection(QString connection= QLatin1String(QSqlDatabase::defaultConnection));
-void open_databaseForApplication( QString newDbFile="");
+bool open_databaseForApplication( QString newDbFile="");
 QStringList check_DbConsistency( );
 
 bool ensureTable(const dbtable& table, const QString& connection= QLatin1String(QSqlDatabase::defaultConnection));
@@ -67,9 +69,13 @@ QString contractList_FROM();
 QString contractList_WHERE(const QString& filter);
 QString contractList_SQL(const QVector<dbfield>& f, const QString& filter);
 
-void init_property( const QString& name, const QString& wert, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
-QString getProperty(const QString& name, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
-void setProperty(const QString& name, const QString& value, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
+void initMetaInfo( const QString& name, const QString& wert, const QString& con=QLatin1String(QSqlDatabase::defaultConnection));
+void initNumMetaInfo( const QString& name, const double& wert, const QString& con=QLatin1String(QSqlDatabase::defaultConnection));
+double getNumMetaInfo(const QString& name, QSqlDatabase db);
+double getNumMetaInfo(const QString& name, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
+QString getMetaInfo(const QString& name, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
+void setNumMetaInfo(const QString& name, const double Wert, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
+void setMetaInfo(const QString& name, const QString& value, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
 
 bool createCsvActiveContracts();
 

@@ -32,7 +32,7 @@ void letterTemplate::init_JA_thesa()
     html[mainText1] = "die Mitglieder des Wohnprojektes Esperanza wünschen ein schönes neues Jahr und bedanken sich herzlich für Deine Unterstützung.<p>"
                       "Dies ist der Kontoauszug Deiner Direktkredite für das Jahr 2019 bei Esperanza Franklin GmbH. "
                       "Vereinbarungsgemäß wurden die Zinsen Deinem Direktkredit Konto gut geschrieben. Auf Wunsch erstellen wir eine gesonderte Zinsbescheinigung für die Steuererklärung.";
-    html[tableHeaderKennung] = "<b> {{tbh.kennung}} <b>";
+    html[tableHeaderKennung] = "<b> {{tbh.kennung}} </b>";
     html[tableHeaderOldValue] = "<b> {{tbh.old}} </b>";
     html[tableHeaderInterest] = "<b> {{tbh.zins}} {{abrechnungsjahr}} </b>";
     html[tableHeaderNewValue] = "<b> {{tbh.new}} </b>";
@@ -238,15 +238,21 @@ bool letterTemplate::loadTemplate(letterTemplate::templateId id, const QString& 
         return false;
     }
     tid = id;
-    QString q = SelectQueryFromFields( dkdbAddtionalTables["Briefvorlagen"].Fields(), "[templateId] == '" + QString::number(tid) + "'");
+    QString q = SelectQueryFromFields( dkdbAddtionalTables["Briefvorlagen"].Fields(), "templateId = " + QString::number(tid));
     QSqlQuery query(QSqlDatabase::database(con));
     query.prepare(q);
-    if( !query.exec()
-        || query.size() <= 0)
+    if( !query.exec())
     {
-        qDebug() << "reading template from DB failed" << query.lastError();
+        qDebug() << "reading template from DB failed: " << query.lastError();
         return false;
     }
+    query.last();
+    if( query.at() <= 0)
+    {
+        qDebug() << "reading template from DB failed: " << "result size was " << query.size();
+        return false;
+    }
+    query.first();
     while(query.next())
     {
         int prop = query.value(dkdbAddtionalTables["Briefvorlagen"].Fields()[1].name()).toInt();
@@ -266,11 +272,13 @@ bool letterTemplate::operator ==(const letterTemplate &b) const
     if( html.count()   != b.html.count()) return false;
     for( int i = 0; i < maxDistance; i++)
     {
-        if( b.length[i] != length[i]) return false;
+        if( b.length[i] != length[i])
+            return false;
     }
     for( int i = 0; i < maxSection; i++)
     {
-        if( b.html[i] != html[i]) return false;
+        if( b.html[i] != html[i])
+            return false;
     }
     return true;
 }

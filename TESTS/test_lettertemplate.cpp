@@ -21,14 +21,13 @@ void test_letterTemplate::initTestCase()
 void test_letterTemplate::init()
 {LOG_ENTRY_and_EXIT;
     if (QFile::exists(filename))
-        QFile::remove(filename);
+        QVERIFY(QFile::remove(filename));
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", testCon);
     db.setDatabaseName(filename);
     QVERIFY(db.open());
     QSqlQuery enableRefInt(db);
     QVERIFY2(enableRefInt.exec("PRAGMA foreign_keys = ON"),
              enableRefInt.lastError().text().toLocal8Bit().data());
-
 }
 
 void test_letterTemplate::cleanup()
@@ -36,7 +35,7 @@ void test_letterTemplate::cleanup()
     QSqlDatabase::database().removeDatabase(testCon);
     QSqlDatabase::database().close();
     if (QFile::exists(filename))
-        QFile::remove(filename);
+        QVERIFY(QFile::remove(filename));
 }
 
 void test_letterTemplate::test_save_letter_template()
@@ -51,7 +50,7 @@ void test_letterTemplate::test_load_letter_template()
     letterTemplate src(letterTemplate::templateId::JA_thesa);
     src.saveTemplate(testCon);
     letterTemplate dst(letterTemplate::Kuendigung);
-    dst.loadTemplate(letterTemplate::templateId::JA_thesa, testCon);
+    QVERIFY(dst.loadTemplate(letterTemplate::templateId::JA_thesa, testCon));
     QVERIFY2(src == dst, "save letter template: die Tabelle Briefvorlagen wurde nicht angelegt");
 }
 

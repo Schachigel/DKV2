@@ -47,7 +47,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->statusBar->addPermanentWidget(ui->statusLabel);
 
     setCentralWidget(ui->stackedWidget);
-    useDb();
+    if( !useDb())
+        on_action_open_DB_triggered();
 
     ui->txtAnmerkung->setTabChangesFocus(true);
     ui->CreditorsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 15px; }");
@@ -88,10 +89,14 @@ void MainWindow::setSplash(QSplashScreen* s)
     startTimer(3333);
 }
 
-void MainWindow::useDb(const QString& dbfile)
+bool MainWindow::useDb(const QString& dbfile)
 {
-    open_databaseForApplication(dbfile);
-    showDbInStatusbar();
+    if( open_databaseForApplication(dbfile))
+    {
+        showDbInStatusbar();
+        return true;
+    }
+    return false;
 }
 
 void MainWindow::showDbInStatusbar()

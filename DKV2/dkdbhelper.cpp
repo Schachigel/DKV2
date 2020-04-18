@@ -1,3 +1,4 @@
+#include <float.h>
 #include <QtCore>
 #include <QSqlDatabase>
 #include <QSqlDriver>
@@ -18,6 +19,9 @@
 #include "dkdbhelper.h"
 #include "kreditor.h"
 #include "dbstructure.h"
+
+const double CURRENT_DB_VERSION {2.0};
+const QString DB_VERSION {"Version"};
 
 dbstructure dkdbstructur;
 dbstructure dkdbAddtionalTables;
@@ -98,22 +102,25 @@ void init_DKDBStruct()
 
 void init_additionalTables()
 {LOG_ENTRY_and_EXIT;
+    static bool done = false;
+    if( done) return; // 4 tests
     dbtable briefe("Briefvorlagen");
     briefe.append(dbfield("templateId", QVariant::Int));
     briefe.append(dbfield("EigenschaftId", QVariant::Int));
     briefe.append(dbfield("Wert"));
     dkdbAddtionalTables.appendTable(briefe);
+    done =true;
 }
 
 void init_GmbHData()
 {
-    init_property("gmbh.address1", "Esperanza Franklin GmbH");
-    init_property("gmbh.address2", "");
-    init_property("gmbh.plz", "68167");
-    init_property("gmbh.stadt", "Mannheim");
-    init_property("gmbh.strasse", "Turley-Platz 9");
-    init_property("gmbh.email","info@esperanza-mannheim.de");
-    init_property("gmbh.url", "www.esperanza-mannheim.de");
+    initMetaInfo("gmbh.address1", "Esperanza Franklin GmbH");
+    initMetaInfo("gmbh.address2", "");
+    initMetaInfo("gmbh.plz", "68167");
+    initMetaInfo("gmbh.stadt", "Mannheim");
+    initMetaInfo("gmbh.strasse", "Turley-Platz 9");
+    initMetaInfo("gmbh.email","info@esperanza-mannheim.de");
+    initMetaInfo("gmbh.url", "www.esperanza-mannheim.de");
 }
 
 void init_bookingTypes()
@@ -175,33 +182,65 @@ bool insert_Properties(QSqlDatabase db)
     bool ret =true;
     QSqlQuery sql(db);
     QRandomGenerator *rand = QRandomGenerator::system();
-    init_property("Version", "1.0");
-    init_property("IdOffset", QString::number(rand->bounded(10000,20000)));
-    init_property("ProjektInitialen", "ESP");
-
+    initNumMetaInfo(DB_VERSION, CURRENT_DB_VERSION);
+    initMetaInfo("IdOffset", QString::number(rand->bounded(10000,20000)));
+    initMetaInfo("ProjektInitialen", "ESP");
     return ret;
 }
 
-void init_property( const QString& name, const QString& wert, const QString& connection)
+void initMetaInfo( const QString& name, const QString& newValue, const QString& con)
 {LOG_ENTRY_and_EXIT;
-    if( getProperty(name, connection)== "")
-        setProperty(name, wert, connection);
+    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", con);
+    if( value.type() == QVariant::Type::Invalid)
+        setMetaInfo(name, newValue, con);
 }
-QString getProperty(const QString& name, const QString& connection)
-{
+void initNumMetaInfo( const QString& name, const double& newValue, const QString& con)
+{LOG_ENTRY_and_EXIT;
+    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", con);
+    if( value.type() == QVariant::Type::Invalid)
+        setNumMetaInfo(name, newValue, con);
+}
+double getNumMetaInfo(const QString& name, QSqlDatabase db)
+{LOG_ENTRY_and_EXIT;
     qDebug() << "Reading property... " << name;
-    QString value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", connection).toString();
-    qDebug() << "... value " << value;
-    return value;
+    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'",db);
+    if( value.type() == QVariant::Type::Invalid)
+    {
+        qDebug() << "getNumProperty read empty property " << name << " defaulted to 0.";
+        return 0.;
+    }
+    qDebug() << "... read value " << value.toDouble();
+    return value.toDouble();
 }
-void setProperty(const QString& name, const QString& Wert, const QString& connection)
+double getNumMetaInfo(const QString& name, const QString& connection)
+{LOG_ENTRY_and_EXIT;
+    return getNumMetaInfo(name, QSqlDatabase::database(connection));
+}
+QString getMetaInfo(const QString& name, const QString& connection)
+{LOG_ENTRY_and_EXIT;
+    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", connection).toString();
+    if( value.type() == QVariant::Type::Invalid)
+    {
+        qDebug() << "read empty property " << name << "; defaulted to empty string";
+        return "";
+    }
+    qDebug() << "Property " << name << ": " << value;
+    return value.toString();
+}
+void setMetaInfo(const QString& name, const QString& Wert, const QString& connection)
 {LOG_ENTRY_and_EXIT;
     QSqlQuery q(QSqlDatabase::database(connection));
     q.prepare("INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('" + name + "', '" + Wert +"')");
     if( !q.exec())
         qCritical() << "Failed to insert Meta information " << q.lastError() << endl << q.lastQuery();
 }
-
+void setNumMetaInfo(const QString& name, const double Wert, const QString& connection)
+{LOG_ENTRY_and_EXIT;
+    QSqlQuery q(QSqlDatabase::database(connection));
+    q.prepare("INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('" + name + "', '" + QString::number(Wert) +"')");
+    if( !q.exec())
+        qCritical() << "Failed to insert Meta information " << q.lastError() << endl << q.lastQuery();
+}
 bool create_DK_database(QSqlDatabase db)
 {LOG_ENTRY_and_EXIT;
     bool ret = true;
@@ -329,7 +368,11 @@ bool isValidDatabase(QSqlDatabase db)
     enableRefInt.exec("PRAGMA foreign_keys = ON");
     if( !has_allTablesAndFields(db))
         return false;
-
+    if( !check_db_version())
+    {
+        qCritical() << "database version check failed";
+        return false;
+    }
     qDebug() << db.databaseName() << " is a valid dk database";
     return true;
 }
@@ -350,7 +393,15 @@ void closeDatabaseConnection(QString con)
     qInfo() << "Database connection " << con << " removed";
 }
 
-void open_databaseForApplication( QString newDbFile)
+bool check_db_version(QSqlDatabase db)
+{
+    double d = getNumMetaInfo(DB_VERSION, db);
+    if( d < CURRENT_DB_VERSION)
+        return false;
+    return true;
+}
+
+bool open_databaseForApplication( QString newDbFile)
 {LOG_ENTRY_and_EXIT;
 
     closeDatabaseConnection();
@@ -368,9 +419,12 @@ void open_databaseForApplication( QString newDbFile)
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(newDbFile);
     db.open();
+    if( !check_db_version())
+        return false;
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     init_GmbHData();
     insert_bookingTypes();
+    return true;
 }
 
 void check_KfristLaufzeitende(QStringList& msgs)
@@ -598,13 +652,13 @@ void create_sampleData( int AnzahlDatensaetze)
 
 QString proposeKennung()
 {LOG_ENTRY_and_EXIT;
-    int idOffset = getProperty("IdOffset").toInt();
+    int idOffset = getMetaInfo("IdOffset").toInt();
     int iMaxid = idOffset + getHighestTableId("Vertraege");
     QString kennung;
     do
     {
         QString maxid = QString::number(iMaxid).rightJustified(6, '0');
-        QString PI = "DK-" + getProperty("ProjektInitialen");
+        QString PI = "DK-" + getMetaInfo("ProjektInitialen");
         kennung = PI + "-" + QString::number(QDate::currentDate().year()) + "-" + maxid;
         QVariant v = ExecuteSingleValueSql("id", "Vertraege", "Kennung='" + kennung + "'");
         if( v.isValid())

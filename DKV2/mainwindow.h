@@ -136,7 +136,7 @@ private:
     void prepareCreditorsTableView();
     void prepare_contracts_list_view();
     void prepareWelcomeMsg();
-    void useDb(const QString& dbfile="");
+    bool useDb(const QString& dbfile="");
     void showDbInStatusbar();
     int save_creditor();
     bool save_new_contract();

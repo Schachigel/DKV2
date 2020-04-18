@@ -1,4 +1,4 @@
-
+#include <QApplication>
 #include <QDate>
 #include <QString>
 #include <QFile>
@@ -7,6 +7,7 @@
 #include <QTime>
 #include <QDebug>
 #include "helper.h"
+#include "windows.h"
 
 QFile* outFile_p;
 int functionlogging::depth =0;
@@ -46,6 +47,15 @@ void logger(QtMsgType type, const QMessageLogContext &, const QString &msg)
 
 QString logFilePath()
 {
-    static QString logFilePath(QDir::toNativeSeparators(QDir::tempPath()) + QDir::separator() + "dkv2.log");
+    DWORD size=256;
+    WCHAR exe[size+1];
+    QString filename("qtexe");
+    if( GetModuleFileNameW(HMODULE(0), exe, size))
+    {
+        filename = QString::fromWCharArray(exe);
+    }
+    QFileInfo fi(filename);
+    filename = fi.completeBaseName() + ".log";
+    static QString logFilePath(QDir::toNativeSeparators(QDir::tempPath()) + QDir::separator() + filename);
     return logFilePath;
 }

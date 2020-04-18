@@ -1,3 +1,7 @@
+-- improve startup sequence with no db
+  we should have a wizard
+
+-- logging in tests ...
 
 -- make this a SingltonApp
 
