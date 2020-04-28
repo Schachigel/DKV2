@@ -9,12 +9,14 @@
 #include "dbfield.h"
 
 bool tableExists(const QString& tablename, const QString& con="");
+bool tableExists(const QString& tablename, QSqlDatabase db);
 
 QVector<QString> getFieldsFromTablename(const QString& tablename, const QString& con = "");
 
 QString SelectQueryFromFields(const QVector<dbfield>& fields, const QString& where);
 
-QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString& where, const QString& con="");
+//QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString& where, const QString& con="");
+QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString& where, QSqlDatabase db= QSqlDatabase::database(QLatin1String(QSqlDatabase::defaultConnection)));
 
 QVariant ExecuteSingleValueSql(const QString& s, QSqlDatabase db);
 QVariant   ExecuteSingleValueSql( const QString& s, const QString& connection="");

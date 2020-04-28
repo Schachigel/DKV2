@@ -28,8 +28,10 @@ public:
 };
 
 // create a log entry for entry and exit of function call
-#define LOG_ENTRY_EXIT_FOR(x)       functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
-#define LOG_ENTRY_and_EXIT              LOG_ENTRY_EXIT_FOR(__func__)
+
+#define LOG_ENTRY_EXIT_FOR(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
+#define LOG_CALL              LOG_ENTRY_EXIT_FOR(__func__)
+#define LOG_CALL_W(x)         LOG_ENTRY_EXIT_FOR(__func__ + QString("(\"") + x + QString("\")"))
 
 extern const QDate EndOfTheFuckingWorld;
 

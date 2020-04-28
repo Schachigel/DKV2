@@ -7,12 +7,12 @@
 #include "sqlhelper.h"
 
 bool tableExists (const QString& tablename, const QString& con)
-{LOG_CALL;
+{   LOG_CALL;
     return tableExists(tablename, QSqlDatabase::database(con));
 }
 
 bool tableExists (const QString& tablename, QSqlDatabase db)
-{//LOG_CALL_W(tablename);
+{   LOG_CALL_W(tablename);
     QSqlQuery query (db);
     query.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='" + tablename + "'");
     if( !query.exec())
@@ -81,7 +81,7 @@ QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString&
 {LOG_CALL;
     QString sql = SelectQueryFromFields(fields, where);
     qDebug() << "ExecuteSingleRecordSql:\n" << sql;
-    QSqlQuery q(QSqlDatabase::database(con));
+    QSqlQuery q(db);
     q.prepare(sql);
     if( !q.exec())
     {
