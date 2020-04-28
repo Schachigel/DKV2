@@ -7,6 +7,7 @@
 #include <QTextStream>
 #include <QSqlQuery>
 
+#include "helper.h"
 #include "sqlhelper.h"
 #include "filehelper.h"
 #include "csvwriter.h"
@@ -80,7 +81,7 @@ QString csvwriter::out()
 }
 
 bool csvwriter::save(QString filename)
-{
+{LOG_CALL;
     backupFile(filename);
     QFile file(filename);
     if( !file.open(QIODevice::WriteOnly|QIODevice::Truncate))
@@ -94,15 +95,19 @@ bool csvwriter::save(QString filename)
 }
 
 bool table2csv(QVector<dbfield>& fields, QString where, QString filename, QString con)
-{
+{LOG_CALL;
     csvwriter csv;
     for(auto f : fields)
         csv.addColumn(f.name());
 
     QString sql = SelectQueryFromFields(fields, where);
     QSqlQuery q (con);
-    q.exec(sql);
-    qDebug() << sql << endl;
+    if( !q.exec(sql))
+    {
+        qCritical() << "sql faild to execute" << q.lastError() << endl << "SQL: " << q.lastQuery();
+        return false;
+    }
+
     while( q.next())
     {
         for (auto f: fields)
@@ -116,15 +121,19 @@ bool table2csv(QVector<dbfield>& fields, QString where, QString filename, QStrin
 
 
 bool table2csv(QVector<dbfield>& fields, QVector<QVariant::Type>& types, QString where, QString filename, QString con)
-{
+{LOG_CALL;
     csvwriter csv;
     for(auto f : fields)
         csv.addColumn(f.name());
 
     QString sql = SelectQueryFromFields(fields, where);
     QSqlQuery q (con);
-    q.exec(sql);
-    qDebug() << sql << endl;
+    if( q.exec(sql))
+    {
+        qCritical() << "sql faild to execute" << q.lastError() << endl << "SQL: " << q.lastQuery();
+        return false;
+    }
+
     while( q.next())
     {
         for (int i = 0; i < fields.count(); i++)

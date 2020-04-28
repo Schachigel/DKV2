@@ -33,8 +33,8 @@ void dbtable::setUnique( const QVector<dbfield>& fs)
     unique = ", UNIQUE (" +tmp +")";
 }
 
-QString dbtable::createSQL() const
-{LOG_ENTRY_and_EXIT;
+QString dbtable::createTableSql() const
+{LOG_CALL;
     QString sql("CREATE TABLE " + name + " (");
     for( int i = 0; i< Fields().count(); i++)
     {
@@ -49,17 +49,16 @@ QString dbtable::createSQL() const
 }
 
 bool dbtable::create(QSqlDatabase& db) const
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL_W(name);
     QSqlQuery q(db);
-    q.prepare(createSQL());
+    q.prepare(createTableSql());
     if( !q.exec())
     {
-        qCritical() << "dbtable::create failed" << q.lastError();
-        qDebug() << q.lastQuery();
+        qCritical() << "dbtable::create failed" << q.lastError() << endl << "SQL: " << q.lastQuery();
         return false;
     }
     else
-        qDebug() << "Table ceated with SQL " << q.lastQuery();
+        qDebug() << "Successfully ceated Table (SQL: " << q.lastQuery() << ")";
     return true;
 }
 

@@ -11,7 +11,7 @@
 
 
 void aktiviereVertrag(int vid)
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     askDateDlg dlg( nullptr, QDate::currentDate());
     dlg.setMsg("<H3>Mit der Aktivierung des Vertrags beginnt die Zinsberechnung. <br>Bitte geben Sie das Datum des Geldeingangs ein:</H3>");
     dlg.setDateLabel("Die Verzinsung beginnt am");
@@ -37,7 +37,7 @@ void aktiviereVertrag(int vid)
 }
 
 void beendeVertrag(int vid)
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
 
     Contract v;
     v.loadContractFromDb(vid);
@@ -59,7 +59,7 @@ void beendeVertrag(int vid)
     Q_ASSERT(true);
 }
 void VertragsEnde_LaufzeitEnde( Contract& v)
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
 
     // Vertragsende muss >= letzteZinsberechnung sein, sonst wäre zuviel Zins ausbezahlt worden
     QDate moeglichesVertragsende = (v.LaufzeitEnde() > v.StartZinsberechnung()) ? v.LaufzeitEnde() : v.StartZinsberechnung();
@@ -112,7 +112,7 @@ void VertragsEnde_LaufzeitEnde( Contract& v)
     return;
 }
 void VertragsEnde_MitKFrist( Contract& v)
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
 
     int KuendigungsMonate = v.Kuendigungsfrist();
     QString getDateMsg("<h2>Kündigung eines Vertrages mit Kündigungsfrist<h2><p>");
@@ -152,7 +152,7 @@ void VertragsEnde_MitKFrist( Contract& v)
     }
 }
 void VertragsEnde_PassiverV(Contract& v)
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     QString Vorname = v.Vorname();
     QString Nachname = v.Nachname();
     int index = v.getVid();

@@ -16,7 +16,7 @@ test_sqlhelper::test_sqlhelper(QObject *parent) : QObject(parent)
 
 void test_sqlhelper::initTestCase()
 {
-    LOG_ENTRY_and_EXIT;
+    LOG_CALL;
     QDir().mkdir(QString("..\\data"));
     if (QFile::exists(filename))
         QFile::remove(filename);
@@ -54,7 +54,7 @@ void test_sqlhelper::initTestCase()
 
 void test_sqlhelper::cleanupTestCase()
 {
-    LOG_ENTRY_and_EXIT;
+    LOG_CALL;
     QSqlDatabase::database().removeDatabase(testCon);
     QSqlDatabase::database().close();
     if (QFile::exists(filename))

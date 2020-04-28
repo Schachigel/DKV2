@@ -8,7 +8,7 @@
 #include "vertrag.h"
 
 bool Contract::loadContractFromDb(qlonglong vId)
-{   LOG_ENTRY_and_EXIT;
+{   LOG_CALL;
     QVector<dbfield>fields;
     fields.append(dkdbstructur["Vertraege"]["id"]);
     fields.append(dkdbstructur["Vertraege"]["KreditorId"]);
@@ -66,12 +66,12 @@ bool Contract::loadContractFromDb(qlonglong vId)
 }
 
 void Contract::initCreditor()
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     dkGeber.fromDb(kreditorId);
 }
 
 bool Contract::saveRecord(const qlonglong BArt, const QString& msg)
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
 
     updateAusDb();
     TableDataInserter ti(dkdbstructur["Buchungen"]);
@@ -92,7 +92,7 @@ bool Contract::saveRecord(const qlonglong BArt, const QString& msg)
 }
 
 bool Contract::validateAndSaveNewContract(QString& meldung)
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     meldung.clear();
 
     if( Betrag() <=0)
@@ -116,7 +116,7 @@ bool Contract::validateAndSaveNewContract(QString& meldung)
 }
 
 int Contract::saveNewContract() const
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     TableDataInserter ti(dkdbstructur["Vertraege"]);
     ti.setValue(dkdbstructur["Vertraege"]["KreditorId"].name(), kreditorId);
     ti.setValue(dkdbstructur["Vertraege"]["Kennung"].name(), kennung);
@@ -140,7 +140,7 @@ int Contract::saveNewContract() const
 }
 
 bool Contract::saveRecordNewContract()
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     if( buchungsdatenJson.isEmpty())
     {
         loadContractFromDb(id);
@@ -151,7 +151,7 @@ bool Contract::saveRecordNewContract()
 }
 
 bool Contract::bookNewContract()
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
 
     QSqlDatabase::database().transaction();
     int nextId =saveNewContract();
@@ -170,7 +170,7 @@ bool Contract::bookNewContract()
 }
 
 bool Contract::activateContract(const QDate& aDate)
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
 
     QSqlDatabase::database().transaction();
 
@@ -207,7 +207,7 @@ bool Contract::activateContract(const QDate& aDate)
 }
 
 bool Contract::deleteInactiveContract()
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     if( ExecuteSingleValueSql("SELECT [aktiv] FROM [Vertraege] WHERE id=" +QString::number(id)).toBool())
     {
         qWarning() << "will not delete active contract w id:" << id;
@@ -237,7 +237,7 @@ bool Contract::deleteInactiveContract()
 }
 
 bool Contract::cancelActiveContract(const QDate& kTermin)
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
 
     QSqlQuery updateQ;
     updateQ.prepare("UPDATE Vertraege SET Kfrist = '-1', LaufzeitEnde = '" + kTermin.toString(Qt::ISODate) + "' WHERE id = :id");
@@ -253,7 +253,7 @@ bool Contract::cancelActiveContract(const QDate& kTermin)
 }
 
 bool Contract::terminateActiveContract( const QDate& termin)
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     if( !ExecuteSingleValueSql("SELECT [aktiv] FROM [Vertraege] WHERE id=" +QString::number(id)).toBool())
     {
         qWarning() << "will not delete non-activ contract w id:" << id;
@@ -288,7 +288,7 @@ bool Contract::terminateActiveContract( const QDate& termin)
 }
 
 bool Contract::saveAnnualPayment(const QDate& end)
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     letzteZinsgutschrift = ZinsesZins(Zinsfuss(), thesaurierend?Wert():Betrag(), StartZinsberechnung(), end, thesaurierend);
     qDebug() << "JA: berechneter Zins: " << letzteZinsgutschrift;
 
@@ -307,14 +307,14 @@ bool Contract::saveAnnualPayment(const QDate& end)
 }
 
 bool Contract::saveRecordAnnualPayment(const QDate &end)
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     QString msg = QString::number(letzteZinsgutschrift) + " Euro "
                     "Zinsgutschrift zum " + end.toString();
     return saveRecord(ZINSGUTSCHRIFT, msg);
 }
 
 bool Contract::bookAnnualInterest(const QDate& end)
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     if( end < StartZinsberechnung())
     {
         qDebug() << "Begin der Zinsberechnung ist NACH dem Jahresabschlussdatum -> keine Abrechnung";

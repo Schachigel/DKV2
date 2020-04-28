@@ -36,7 +36,7 @@ void initLogging()
 }
 
 QString interactW_UserForDB(QString dbfile)
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
 
     do
     {
@@ -81,7 +81,7 @@ QString interactW_UserForDB(QString dbfile)
 }
 
 QString getInitialDb()
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     QSettings config;
     QString dbfile = config.value("db/last").toString();
     if(  dbfile != "" && QFile::exists(dbfile) && isValidDatabase(dbfile))
@@ -94,7 +94,7 @@ QString getInitialDb()
 }
 
 QString initDb()
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     QString dbfile =getInitialDb();
     if( dbfile == "")
     {
@@ -105,7 +105,7 @@ QString initDb()
 }
 
 QSplashScreen* doSplash()
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     QPixmap pixmap(":/res/splash.png");
     QSplashScreen *splash = new QSplashScreen(pixmap, Qt::SplashScreen|Qt::WindowStaysOnTopHint);
     splash->show();
@@ -113,7 +113,7 @@ QSplashScreen* doSplash()
 }
 
 void setGermanUi()
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     QTranslator trans;
     QString translationFile = QDir::currentPath() + "/translations/qt_de.qm";
     if( trans.load(QLocale(),translationFile))
@@ -125,7 +125,7 @@ void setGermanUi()
 int main(int argc, char *argv[])
 {
     initLogging();
-    LOG_ENTRY_and_EXIT;
+    LOG_CALL;
     QLocale locale(QLocale::German, QLocale::LatinScript, QLocale::Germany);
     QLocale::setDefault(locale); // do before starting the event loop
 

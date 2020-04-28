@@ -31,7 +31,7 @@ private:
     QString unique;
     QVector<dbfield> fields;
     // helper
-    QString createSQL() const;
+    QString createTableSql() const;
 };
 
 class TableDataInserter

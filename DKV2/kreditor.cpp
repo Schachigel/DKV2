@@ -6,7 +6,7 @@
 #include "kreditor.h"
 
 bool Kreditor::fromDb( int i)
-{   LOG_ENTRY_and_EXIT;
+{   LOG_CALL;
 
     QSqlRecord rec = ExecuteSingleRecordSql(dkdbstructur["Kreditoren"].Fields(), "id="+QString::number(i));
     if( rec.isEmpty()) return false;
@@ -26,7 +26,7 @@ bool Kreditor::fromDb( int i)
 }
 
 bool Kreditor::isValid( QString& errortext)
-{
+{   LOG_CALL;
     errortext.clear();
     if( (ti.getValue("Vorname").toString().isEmpty() && ti.getValue("Vorname").toString().isEmpty())
          ||
@@ -58,12 +58,12 @@ bool Kreditor::isValid( QString& errortext)
 }
 
 void Kreditor::setValue(const QString& n, const QVariant& v)
-{
+{   LOG_CALL_W(n);
     ti.setValue(n, v);
 }
 
 void Kreditor::setUniqueDbValue(const QString& n, const QVariant& v)
-{
+{   LOG_CALL_W(n);
     if( v.isNull() || !v.isValid() ||
         (v.type() == QVariant::Type::String && v.toString().isEmpty()))
         ti.setValue(n, QVariant(QVariant::String));
@@ -72,7 +72,7 @@ void Kreditor::setUniqueDbValue(const QString& n, const QVariant& v)
 }
 
 int Kreditor::Speichern(QSqlDatabase db) const
-{   LOG_ENTRY_and_EXIT;
+{   LOG_CALL;
 
     if( ti.getRecord().isEmpty())
         return -1;
@@ -80,14 +80,14 @@ int Kreditor::Speichern(QSqlDatabase db) const
 }
 
 int Kreditor::Update(QSqlDatabase db) const
-{LOG_ENTRY_and_EXIT;
+{   LOG_CALL;
     if( ti.getRecord().isEmpty())
         return -1;
     return ti.UpdateData(db);
 }
 
 /* static */ bool Kreditor::Loeschen(int index)
-{   LOG_ENTRY_and_EXIT;
+{   LOG_CALL;
 
     // referential integrity will delete the contracts
     QSqlQuery deleteQ;
@@ -100,8 +100,8 @@ int Kreditor::Update(QSqlDatabase db) const
         return true;
 }
 
-void Kreditor::KreditorenMitId(QList<QPair<int,QString>> &entries) const
-{
+void Kreditor::KreditorenListeMitId(QList<QPair<int,QString>> &entries) const
+{   LOG_CALL;
 
     QSqlQuery query;
     query.setForwardOnly(true);
@@ -109,6 +109,7 @@ void Kreditor::KreditorenMitId(QList<QPair<int,QString>> &entries) const
     if( !query.exec())
     {
         qCritical() << "Error reading DKGeber while creating a contract: " << QSqlDatabase::database().lastError().text();
+        return;
     }
 
     while(query.next())

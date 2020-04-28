@@ -14,7 +14,7 @@ frmJahresabschluss::frmJahresabschluss(const jahresabschluss& JA, QWidget *paren
       QDialog(parent),
       ui(new Ui::frmJahresabschluss),
       ja (JA)
-{ LOG_ENTRY_and_EXIT;
+{ LOG_CALL;
     ui->setupUi(this);
 
     ui->lblThesa->setText("<h2>Jahresabschluss " + QString::number(ja.abzuschliessendesJahr()) + " für Verträge mit Zinsgutschrift</h1>");
@@ -36,7 +36,7 @@ frmJahresabschluss::~frmJahresabschluss()
 }
 
 QStandardItemModel* frmJahresabschluss::getModelFromContracts(const QVector<Contract>&vertraege) const
-{ LOG_ENTRY_and_EXIT;
+{ LOG_CALL;
     bool thesa {vertraege[0].Thesaurierend()};
     QStandardItemModel *model = new QStandardItemModel();
     int itemIndex {0};
@@ -96,7 +96,7 @@ void frmJahresabschluss::on_pbOK_clicked()
 }
 
 void writeCsv(const QVector<Contract>& vertraege, const QString& filename)
-{ LOG_ENTRY_and_EXIT;
+{ LOG_CALL;
     csvwriter csv;
     csv.addColumns("Vertrags Nr; Kreditsumme (Euro); Zins (Euro); Wert nach Zinsgutschrift (Euro); Vorname; Nachname; Kennung; Strasse; Plz; Stadt; Email; IBAN; BIC");
     QLocale locale(QLocale::German, QLocale::LatinScript, QLocale::Germany);
@@ -120,7 +120,7 @@ void writeCsv(const QVector<Contract>& vertraege, const QString& filename)
 }
 
 void frmJahresabschluss::on_btnCsv_clicked()
-{ LOG_ENTRY_and_EXIT;
+{ LOG_CALL;
     QSettings config;
     QString dir(config.value("outdir").toString());
 
@@ -159,7 +159,7 @@ QString printableKennung( Contract v)
 }
 
 void frmJahresabschluss::on_pbKontoauszug_clicked()
-{ LOG_ENTRY_and_EXIT;
+{ LOG_CALL;
 
 #ifndef QT_DEBUG
     qDebug() << "function not implemented";

@@ -16,7 +16,7 @@
 // add necessary includes here
 
 void tst_db::init()
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     QDir().mkdir(QString("..\\data"));
     if (QFile::exists(filename))
         QFile::remove(filename);
@@ -31,7 +31,7 @@ void tst_db::init()
 }
 
 void tst_db::cleanup()
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     QSqlDatabase::database().removeDatabase(testCon);
     QSqlDatabase::database().close();
     if (QFile::exists(filename))
@@ -85,7 +85,7 @@ void tst_db::test_SimpleTableAddData()
 
 void tst_db::test_createSimpleTable_wRefInt()
 {
-    LOG_ENTRY_and_EXIT;
+    LOG_CALL;
     dbstructure s;
     dbtable parent("p");
     dbfield id("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT");
@@ -109,7 +109,7 @@ void tst_db::test_createSimpleTable_wRefInt()
 
 void tst_db::test_createSimpleTable_wRefInt2()
 {
-    LOG_ENTRY_and_EXIT;
+    LOG_CALL;
     dbstructure s = dbstructure()
                     .appendTable(dbtable("p").append(
                         dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT")));
@@ -131,7 +131,7 @@ void tst_db::test_createSimpleTable_wRefInt2()
 
 void tst_db::test_addRecords_wDep()
 {
-    LOG_ENTRY_and_EXIT;
+    LOG_CALL;
     dbstructure s = dbstructure()
                         .appendTable(
                             dbtable("p")
@@ -165,7 +165,7 @@ void tst_db::test_addRecords_wDep()
 
 void tst_db::test_deleteRecord_wDep()
 {
-    LOG_ENTRY_and_EXIT;
+    LOG_CALL;
     dbstructure s = dbstructure()
                         .appendTable(
                             dbtable("p")
@@ -206,7 +206,7 @@ void tst_db::test_deleteRecord_wDep()
 
 void tst_db::dbfieldCopyConst()
 {
-    LOG_ENTRY_and_EXIT;
+    LOG_CALL;
     dbstructure s = dbstructure()
                         .appendTable(
                             dbtable("p")

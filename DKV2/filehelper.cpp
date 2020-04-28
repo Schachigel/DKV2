@@ -17,7 +17,7 @@
 #include "filehelper.h"
 
 bool backupFile(const QString&  fn, const QString& subfolder)
-{
+{LOG_CALL_W(fn);
     QString backupname{fn};
     QFileInfo fi{fn};
     QString suffix = fi.completeSuffix();

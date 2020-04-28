@@ -31,15 +31,12 @@ dbtable dbstructure::operator[](const QString& name) const
 }
 
 bool dbstructure::createDb(QSqlDatabase db) const
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL_W(db.databaseName());
     QSqlQuery q(db);
-    bool ret{true};
     for(dbtable table :getTables())
     {
         if(!table.create(db))
-            break;
-        else
-            qDebug() << "Created table:" << table.Name();
+            return false;
     }
-    return ret;
+    return true;
 }

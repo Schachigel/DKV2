@@ -14,7 +14,7 @@ void test_dkdbhelper::initTestCase()
 }
 
 void test_dkdbhelper::init()
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     if (QFile::exists(filename))
         QVERIFY(QFile::remove(filename));
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", testCon);
@@ -27,7 +27,7 @@ void test_dkdbhelper::init()
 }
 
 void test_dkdbhelper::cleanup()
-{LOG_ENTRY_and_EXIT;
+{LOG_CALL;
     QSqlDatabase::database().removeDatabase(testCon);
     QSqlDatabase::database().close();
     if (QFile::exists(filename))
