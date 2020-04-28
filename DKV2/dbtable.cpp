@@ -4,8 +4,7 @@
 #include "dbfield.h"
 
 dbfield dbtable::operator[](QString s) const
-{
-    qDebug() << "accessing dbtable " << s;
+{   LOG_CALL_W(s);
     for (auto f : fields)
     {
         if( f.name() == s)
@@ -15,7 +14,7 @@ dbfield dbtable::operator[](QString s) const
 }
 
 dbtable dbtable::append(const dbfield& f)
-{
+{   LOG_CALL;
     dbfield newf(f);
     newf.setTableName(Name());
     fields.append(newf);
@@ -23,7 +22,7 @@ dbtable dbtable::append(const dbfield& f)
 }
 
 void dbtable::setUnique( const QVector<dbfield>& fs)
-{
+{   LOG_CALL;
     QString tmp;
     for( int i =0; i < fs.count(); i++)
     {
@@ -34,7 +33,7 @@ void dbtable::setUnique( const QVector<dbfield>& fs)
 }
 
 QString dbtable::createTableSql() const
-{LOG_CALL;
+{   LOG_CALL;
     QString sql("CREATE TABLE " + name + " (");
     for( int i = 0; i< Fields().count(); i++)
     {
@@ -49,7 +48,7 @@ QString dbtable::createTableSql() const
 }
 
 bool dbtable::create(QSqlDatabase& db) const
-{LOG_CALL_W(name);
+{   LOG_CALL_W(name);
     QSqlQuery q(db);
     q.prepare(createTableSql());
     if( !q.exec())
@@ -68,7 +67,7 @@ TableDataInserter::TableDataInserter(const dbtable& t)
 }
 
 void TableDataInserter::init(const dbtable& t)
-{
+{   LOG_CALL;
     tablename = t.Name();
     for (auto dbfield : t.Fields())
     {
@@ -80,7 +79,7 @@ void TableDataInserter::init(const dbtable& t)
 }
 
 void TableDataInserter::setValue(const QString& n, const QVariant& v)
-{
+{   LOG_CALL_W(n);
     qDebug() << "tableinserter setValue: " << n << " -> " << v ;
     if( n.isEmpty()) return;
     if( record.contains(n))
@@ -122,7 +121,7 @@ QString format4SQL(QVariant v)
 }
 
 QString TableDataInserter::getInsertRecordSQL() const
-{
+{   LOG_CALL;
     if( record.isEmpty()) return QString();
     QString sql("INSERT INTO " + tablename +" VALUES (");
 
@@ -141,7 +140,7 @@ QString TableDataInserter::getInsertRecordSQL() const
 }
 
 QString TableDataInserter::getInsertOrReplaceRecordSQL() const
-{
+{   LOG_CALL;
     if( record.isEmpty()) return QString();
     QString sql("INSERT OR REPLACE INTO " + tablename +" VALUES (");
 
@@ -160,7 +159,7 @@ QString TableDataInserter::getInsertOrReplaceRecordSQL() const
 }
 
 QString TableDataInserter::getUpdateRecordSQL() const
-{
+{   LOG_CALL;
     if( record.isEmpty()) return QString();
     QString sql("UPDATE " + tablename +" SET ");
     QString where(" WHERE ");
@@ -182,7 +181,7 @@ QString TableDataInserter::getUpdateRecordSQL() const
 }
 
 int TableDataInserter::InsertData(QSqlDatabase db) const
-{
+{   LOG_CALL;
     if( record.isEmpty()) return false;
     QSqlQuery q(db);
     bool ret = q.exec(getInsertRecordSQL());
@@ -197,7 +196,7 @@ int TableDataInserter::InsertData(QSqlDatabase db) const
 }
 
 int TableDataInserter::InsertOrReplaceData(QSqlDatabase db) const
-{
+{   LOG_CALL;
     if( record.isEmpty()) return false;
     QSqlQuery q(db);
     bool ret = q.exec(getInsertOrReplaceRecordSQL());
@@ -211,9 +210,8 @@ int TableDataInserter::InsertOrReplaceData(QSqlDatabase db) const
     return lastRecord;
 }
 
-
 int TableDataInserter::UpdateData(QSqlDatabase db) const
-{
+{   LOG_CALL;
     if( record.isEmpty()) return false;
     QSqlQuery q(db);
     bool ret = q.exec(getUpdateRecordSQL());

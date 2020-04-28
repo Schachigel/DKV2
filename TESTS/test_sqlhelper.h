@@ -13,6 +13,7 @@ public:
 private:
     const QString filename = "..\\data\\testsqlhelperdb.sqlite";
     const QString testCon = "test_sqlhelperdb_connection";
+    QSqlDatabase testDb(){ return QSqlDatabase::database(testCon);}
     QSqlQuery sqlValQuery;
 
 signals:

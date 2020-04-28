@@ -16,7 +16,7 @@
 // add necessary includes here
 
 void tst_db::init()
-{LOG_CALL;
+{    LOG_CALL;
     QDir().mkdir(QString("..\\data"));
     if (QFile::exists(filename))
         QFile::remove(filename);
@@ -31,7 +31,7 @@ void tst_db::init()
 }
 
 void tst_db::cleanup()
-{LOG_CALL;
+{    LOG_CALL;
     QSqlDatabase::database().removeDatabase(testCon);
     QSqlDatabase::database().close();
     if (QFile::exists(filename))

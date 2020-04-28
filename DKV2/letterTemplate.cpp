@@ -14,7 +14,7 @@
 QPrinter* letterTemplate::printer =nullptr;
 
 void letterTemplate::initPrinter()
-{LOG_CALL;
+{   LOG_CALL;
     if( printer) return;
     printer = new QPrinter(QPrinter::HighResolution);
 
@@ -27,7 +27,7 @@ void letterTemplate::initPrinter()
 }
 
 void letterTemplate::init_JA_thesa()
-{LOG_CALL;
+{   LOG_CALL;
     html[about] = "Kontoauszug Direktkredit(e) <b>Jahresabschluß {{abrechnungsjahr}} </b>";
     html[mainText1] = "die Mitglieder des Wohnprojektes Esperanza wünschen ein schönes neues Jahr und bedanken sich herzlich für Deine Unterstützung.<p>"
                       "Dies ist der Kontoauszug Deiner Direktkredite für das Jahr 2019 bei Esperanza Franklin GmbH. "
@@ -42,7 +42,7 @@ void letterTemplate::init_JA_thesa()
 }
 
 void letterTemplate::init_JA_auszahlend()
-{LOG_CALL;
+{   LOG_CALL;
     html[about] = "Kontoauszug Direktkredit(e) <b>Jahresabschluß {{abrechnungsjahr}} </b>";
     html[mainText1] = "die Mitglieder des Wohnprojektes Esperanza wünschen ein schönes neues Jahr und bedanken sich herzlich für Deine Unterstützung.<p>"
                       "Dies ist der Kontoauszug Deiner Direktkredite für das Jahr 2019 bei Esperanza Franklin GmbH. "
@@ -57,7 +57,7 @@ void letterTemplate::init_JA_auszahlend()
 }
 
 void letterTemplate::init_Kontoabschluss()
-{LOG_CALL;
+{   LOG_CALL;
     html[about] = "Beendigung Deines Direktkredites <b> {{vertraege.kennung}} </b>";
     html[mainText1] = "wunschgemäß beenden wir Deinen Direktkredit zum {{vertraege.buchungsdatum}}.<p>"
                       "Der Kredit und die angelaufenen Zinsen werden in den kommenden Tagen auf das von Dir angegebene Konto mit der IBAN {{kreditoren.iban}} ausbezahlt. "
@@ -72,7 +72,7 @@ void letterTemplate::init_Kontoabschluss()
 }
 
 void letterTemplate::init_Geldeingang()
-{LOG_CALL;
+{   LOG_CALL;
     html[about] = "Bestätigung Deines Direktkredites <b> {{vertraege.kennung}} </b>";
     html[mainText1] = "Hiermit bestätigen wir den Geldeingang von {{vertraege.betrag}} zum {{vertraege.buchungsdatum}}. Dein Vertrag wird unter der Kennung {{vertraege.kennung}} geführt.<p>"
                       "Herzlichen Dank für Deine Unterstützung. Wir werden Dich ab jetzt jährlich über die Zinsentwicklung Deines Kredits informieren.";
@@ -86,7 +86,7 @@ void letterTemplate::init_Geldeingang()
 }
 
 void letterTemplate::init_Kuendigung()
-{LOG_CALL;
+{   LOG_CALL;
     html[about] = "Bestätigung der Kündigung Deines Direktkredites <b> {{vertraege.kennung}} </b>";
     html[mainText1] = "Hiermit bestätigen wir den Eingang der Kündigung des Vertrags {{vertraege.betrag}} zum {{kuendigungsdatum}}.<p>"
                       "Das Vertragsende ergibt sich aus der Kündigungsfrist von {{vertraege.kfrist}} Monaten zum {{vertraege.laufzeitende}}";
@@ -100,7 +100,7 @@ void letterTemplate::init_Kuendigung()
 }
 
 void letterTemplate::init_defaults()
-{LOG_CALL;
+{   LOG_CALL;
     html[sections::dateFormat] = "Mannheim, den {{datum}}";
     html[projectAddress] = "{{gmbh.address1}}<p>{{gmbh.address2}}<br>{{gmbh.strasse}}<br><b>{{gmbh.plz}}</b> {{gmbh.stadt}}<br><small>{{gmbh.email}}</small>";
     html[projectUrl] = "<small>{{gmbh.url}}</small>";
@@ -144,7 +144,7 @@ void letterTemplate::init_defaults()
 }
 
 letterTemplate::letterTemplate(letterTemplate::templateId id)
-{LOG_CALL;
+{   LOG_CALL;
     tid=id;
     initPrinter();
     if( !loadTemplate(id))
@@ -155,14 +155,14 @@ letterTemplate::letterTemplate(letterTemplate::templateId id)
 }
 
 void letterTemplate::setPlaceholder(QString var, QString val)
-{LOG_CALL;
+{   LOG_CALL;
     if( !placeholders.contains(var))
         qWarning() << "Unknown placeholder " << var << " set to value " << val;
     placeholders.insert (var, val);
 }
 
 QString letterTemplate::getNameFromId(templateId id)
-{LOG_CALL;
+{   LOG_CALL;
     switch(id)
     {
     case Geldeingang:
@@ -188,7 +188,7 @@ QString letterTemplate::getNameFromId(templateId id)
 }
 
 letterTemplate::templateId letterTemplate::getIdFromName(QString n)
-{LOG_CALL;
+{   LOG_CALL;
     for( int i = 0; i < letterTemplate::templateId::maxTemplateId; i++)
     {
         letterTemplate::templateId id=(letterTemplate::templateId)i;
@@ -198,9 +198,8 @@ letterTemplate::templateId letterTemplate::getIdFromName(QString n)
     return letterTemplate::templateId::maxTemplateId;
 }
 
-bool letterTemplate::saveTemplate(const QString& con) const
-{LOG_CALL;
-    QSqlDatabase db = QSqlDatabase::database(con);
+bool letterTemplate::saveTemplate(QSqlDatabase db) const
+{   LOG_CALL;
     if( !ensureTable(dkdbAddtionalTables["Briefvorlagen"], db))
         return false;
 
@@ -230,16 +229,16 @@ bool letterTemplate::saveTemplate(const QString& con) const
     }
     return true;
 }
-bool letterTemplate::loadTemplate(letterTemplate::templateId id, const QString& con)
-{LOG_CALL;
-    if( !tableExists("Briefvorlagen", con))
+bool letterTemplate::loadTemplate(letterTemplate::templateId id, QSqlDatabase db)
+{   LOG_CALL;
+    if( !tableExists("Briefvorlagen", db))
     {
         qDebug() << "Tabelle mit Briefvorlagen existiert nicht, Template Daten können nicht gespeichert werden";
         return false;
     }
     tid = id;
     QString q = SelectQueryFromFields( dkdbAddtionalTables["Briefvorlagen"].Fields(), "templateId = " + QString::number(tid));
-    QSqlQuery query(QSqlDatabase::database(con));
+    QSqlQuery query(db);
     query.prepare(q);
     if( !query.exec())
     {
@@ -266,7 +265,7 @@ bool letterTemplate::loadTemplate(letterTemplate::templateId id, const QString& 
 }
 
 bool letterTemplate::operator ==(const letterTemplate &b) const
-{LOG_CALL;
+{   LOG_CALL;
     if(tid != b.tid) return false;
     if( length.count() != b.length.count()) return false;
     if( html.count()   != b.html.count()) return false;
@@ -284,7 +283,7 @@ bool letterTemplate::operator ==(const letterTemplate &b) const
 }
 
 bool letterTemplate::applyPlaceholders()
-{LOG_CALL;
+{   LOG_CALL;
     bool ret = true;
     for( int i=0; i < html.count(); i++)
     {
@@ -318,7 +317,7 @@ bool letterTemplate::applyPlaceholders()
 }
 
 bool letterTemplate::createDocument(QTextDocument& doc)
-{LOG_CALL;
+{   LOG_CALL;
     QImage img1(":/res/weiss.png");
     QImage img2(":/res/logo.png");
     static QVariant vImg1(img1);
@@ -491,7 +490,7 @@ bool letterTemplate::createDocument(QTextDocument& doc)
 }
 
 bool letterTemplate::createPdf(QString file, const QTextDocument& doc)
-{LOG_CALL;
+{   LOG_CALL;
     QFile::remove(file);
     if( QFile::exists(file))
     {
@@ -514,7 +513,7 @@ bool letterTemplate::createPdf(QString file, const QTextDocument& doc)
 }
 
 QString letterTemplate::fileNameFromId(const QString& contractId)
-{LOG_CALL;
+{   LOG_CALL;
     QSettings config;
     QString outputfile = config.value("outdir").toString();
     outputfile += "/";
@@ -524,7 +523,7 @@ QString letterTemplate::fileNameFromId(const QString& contractId)
 }
 
 bool letterTemplate::print(const QString& outputfile)
-{LOG_CALL;
+{   LOG_CALL;
     applyPlaceholders();
     QTextDocument doc;
     createDocument(doc);

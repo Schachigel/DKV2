@@ -1,10 +1,10 @@
 #include <QLocale>
 
-#include <letters.h>
-
+#include"helper.h"
+#include "letters.h"
 
 void printThankyouLetter( const Contract& v)
-{
+{   LOG_CALL;
     QLocale locale;
     letterTemplate tlate(letterTemplate::Geldeingang);
     tlate.setPlaceholder("datum", QDate::currentDate().toString("dd. MMM yyyy"));
@@ -31,7 +31,7 @@ void printThankyouLetter( const Contract& v)
 }
 
 void printTerminationLetter( const Contract& v, QDate kDate, int kMonate)
-{
+{   LOG_CALL;
     QLocale locale;
     letterTemplate tlate(letterTemplate::Kuendigung);
     tlate.setPlaceholder("datum", QDate::currentDate().toString("dd. MMM yyyy"));
@@ -59,7 +59,7 @@ void printTerminationLetter( const Contract& v, QDate kDate, int kMonate)
 }
 
 void printFinalLetter( const Contract& v, QDate contractEnd)
-{
+{   LOG_CALL;
     QLocale locale;
     letterTemplate tlate(letterTemplate::Kontoabschluss);
     tlate.setPlaceholder("gmbh.address1", getMetaInfo("gmbh.address1"));

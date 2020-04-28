@@ -81,7 +81,6 @@ int TageBisJahresende(const QDate& d)
         QDate mapToKeyYear(2017, d.month(), d.day());
         return DateDiffLookup[mapToKeyYear].tillEoY;
     }
-
 }
 
 int TageSeitJahresAnfang_a(const QDate& d)
@@ -101,7 +100,6 @@ int TageSeitJahresAnfang(const QDate& d)
         QDate mapToKeyYear(2017, d.month(), d.day());
         return DateDiffLookup[mapToKeyYear].sinceBoY;
     }
-
 }
 
 double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)

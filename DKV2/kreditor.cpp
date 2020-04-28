@@ -88,7 +88,6 @@ int Kreditor::Update(QSqlDatabase db) const
 
 /* static */ bool Kreditor::Loeschen(int index)
 {   LOG_CALL;
-
     // referential integrity will delete the contracts
     QSqlQuery deleteQ;
     if( !deleteQ.exec("DELETE FROM [Kreditoren] WHERE [Id]=" +QString::number(index)))
@@ -102,7 +101,6 @@ int Kreditor::Update(QSqlDatabase db) const
 
 void Kreditor::KreditorenListeMitId(QList<QPair<int,QString>> &entries) const
 {   LOG_CALL;
-
     QSqlQuery query;
     query.setForwardOnly(true);
     query.prepare("SELECT id, Vorname, Nachname, Plz, Stadt, Strasse FROM Kreditoren ORDER BY Nachname ASC, Vorname ASC");

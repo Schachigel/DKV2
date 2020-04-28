@@ -29,7 +29,7 @@ dbstructure dkdbAddtionalTables;
 QList<QPair<qlonglong, QString>> Buchungsarten;
 
 void init_DKDBStruct()
-{LOG_CALL;
+{   LOG_CALL;
     static bool done = false;
     if( done) return; // 4 tests
     init_bookingTypes();
@@ -101,7 +101,7 @@ void init_DKDBStruct()
 }
 
 void init_additionalTables()
-{LOG_CALL;
+{   LOG_CALL;
     static bool done = false;
     if( done) return; // 4 tests
     dbtable briefe("Briefvorlagen");
@@ -113,7 +113,7 @@ void init_additionalTables()
 }
 
 void init_GmbHData()
-{
+{   LOG_CALL;
     initMetaInfo("gmbh.address1", "Esperanza Franklin GmbH");
     initMetaInfo("gmbh.address2", "");
     initMetaInfo("gmbh.plz", "68167");
@@ -124,7 +124,7 @@ void init_GmbHData()
 }
 
 void init_bookingTypes()
-{LOG_CALL;
+{   LOG_CALL;
 
     Buchungsarten.push_back(QPair<qlonglong, QString>(Buchungsart_i::NOOP, ""));
     Buchungsarten.push_back(QPair<qlonglong, QString>(Buchungsart_i::VERTRAG_ANLEGEN, "Vertrag anlegen"));
@@ -136,7 +136,7 @@ void init_bookingTypes()
 }
 
 bool insert_interestRates(QSqlDatabase db)
-{LOG_CALL;
+{   LOG_CALL;
     double Zins = 0.;
     double ZinsIncrement = 0.01;
     TableDataInserter ti(dkdbstructur["Zinssaetze"]);
@@ -164,7 +164,7 @@ bool insert_interestRates(QSqlDatabase db)
 }
 
 bool insert_bookingTypes(QSqlDatabase db =QSqlDatabase::database())
-{LOG_CALL;
+{   LOG_CALL;
     bool ret = true;
     for( auto art: Buchungsarten)
     {
@@ -178,7 +178,7 @@ bool insert_bookingTypes(QSqlDatabase db =QSqlDatabase::database())
 }
 
 bool insert_Properties(QSqlDatabase db)
-{LOG_CALL;
+{   LOG_CALL;
     bool ret =true;
     QSqlQuery sql(db);
     QRandomGenerator *rand = QRandomGenerator::system();
@@ -188,20 +188,31 @@ bool insert_Properties(QSqlDatabase db)
     return ret;
 }
 
-void initMetaInfo( const QString& name, const QString& newValue, const QString& con)
-{LOG_CALL;
-    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", con);
+void initMetaInfo( const QString& name, const QString& newValue, QSqlDatabase db)
+{   LOG_CALL;
+    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", db);
     if( value.type() == QVariant::Type::Invalid)
-        setMetaInfo(name, newValue, con);
+        setMetaInfo(name, newValue, db);
 }
-void initNumMetaInfo( const QString& name, const double& newValue, const QString& con)
-{LOG_CALL;
-    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", con);
+void initNumMetaInfo( const QString& name, const double& newValue, QSqlDatabase db)
+{   LOG_CALL;
+    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", db);
     if( value.type() == QVariant::Type::Invalid)
-        setNumMetaInfo(name, newValue, con);
+        setNumMetaInfo(name, newValue, db);
+}
+QString getMetaInfo(const QString& name, QSqlDatabase db)
+{   LOG_CALL_W(name);
+    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", db).toString();
+    if( value.type() == QVariant::Type::Invalid)
+    {
+        qDebug() << "read empty property " << name << "; defaulted to empty string";
+        return "";
+    }
+    qDebug() << "Property " << name << " : " << value;
+    return value.toString();
 }
 double getNumMetaInfo(const QString& name, QSqlDatabase db)
-{LOG_CALL_W(name);
+{   LOG_CALL_W(name);
 
     QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'",db);
     if( value.type() == QVariant::Type::Invalid)
@@ -212,37 +223,23 @@ double getNumMetaInfo(const QString& name, QSqlDatabase db)
     qDebug() << "Property " << name << " : " << value.toDouble();
     return value.toDouble();
 }
-double getNumMetaInfo(const QString& name, const QString& connection)
-{LOG_CALL_W(name);
-    return getNumMetaInfo(name, QSqlDatabase::database(connection));
-}
-QString getMetaInfo(const QString& name, const QString& connection)
-{LOG_CALL_W(name);
-    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", connection).toString();
-    if( value.type() == QVariant::Type::Invalid)
-    {
-        qDebug() << "read empty property " << name << "; defaulted to empty string";
-        return "";
-    }
-    qDebug() << "Property " << name << " : " << value;
-    return value.toString();
-}
-void setMetaInfo(const QString& name, const QString& Wert, const QString& connection)
-{LOG_CALL_W(name);
-    QSqlQuery q(QSqlDatabase::database(connection));
+void setMetaInfo(const QString& name, const QString& Wert, QSqlDatabase db)
+{   LOG_CALL_W(name);
+    QSqlQuery q(db);
     q.prepare("INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('" + name + "', '" + Wert +"')");
     if( !q.exec())
         qCritical() << "Failed to insert Meta information " << q.lastError() << endl << q.lastQuery();
 }
-void setNumMetaInfo(const QString& name, const double Wert, const QString& connection)
-{LOG_CALL_W(name);
-    QSqlQuery q(QSqlDatabase::database(connection));
+void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db)
+{   LOG_CALL_W(name);
+    QSqlQuery q(db);
     q.prepare("INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('" + name + "', '" + QString::number(Wert) +"')");
     if( !q.exec())
         qCritical() << "Failed to insert Meta information " << q.lastError() << endl << q.lastQuery();
 }
+
 bool create_DK_database(QSqlDatabase db)
-{LOG_CALL_W(db.databaseName());
+{   LOG_CALL_W(db.databaseName());
     bool ret = true;
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     {
@@ -261,7 +258,7 @@ bool create_DK_database(QSqlDatabase db)
     return isValidDatabase(db);
 }
 bool create_DK_database(const QString& filename) /*in the default connection*/
-{LOG_CALL_W("given filename: " + filename);
+{   LOG_CALL_W("given filename: " + filename);
     if( filename.isEmpty())
     {
         qCritical() << "call to DKDatenbankAnlegen w/o filename";
@@ -290,7 +287,7 @@ bool create_DK_database(const QString& filename) /*in the default connection*/
 }
 
 bool has_allTablesAndFields(QSqlDatabase& db)
-{LOG_CALL;
+{   LOG_CALL;
     for( auto table : dkdbstructur.getTables())
     {
         QSqlQuery sql(db);
@@ -320,16 +317,11 @@ bool has_allTablesAndFields(QSqlDatabase& db)
     return true;
 }
 
-bool ensureTable( const dbtable& table, const QString& con)
-{
-    QSqlDatabase db = QSqlDatabase::database(con);
-    return ensureTable(table, db);
-}
-bool ensureTable( const dbtable& table, QSqlDatabase& db)
-{LOG_CALL_W(table.Name());
-    if( tableExists(table.Name(), db.connectionName()))
+bool ensureTable( const dbtable& table, QSqlDatabase db)
+{   LOG_CALL_W(table.Name());
+    if( tableExists(table.Name(), db))
     {
-        QVector<QString> fields = getFieldsFromTablename(table.Name(), db.connectionName());
+        QVector<QString> fields = getFieldsFromTablename(table.Name(), db);
         for (int i=0; i < table.Fields().count(); i++)
         {
             QString expectedFieldName = table.Fields()[i].name();
@@ -346,7 +338,7 @@ bool ensureTable( const dbtable& table, QSqlDatabase& db)
 }
 
 bool isValidDatabase(const QString& filename)
-{LOG_CALL_W(filename);
+{   LOG_CALL_W(filename);
 
     QString msg;
     if( filename == "") msg = "empty filename";
@@ -370,7 +362,7 @@ bool isValidDatabase(const QString& filename)
     return false;
 }
 bool isValidDatabase(QSqlDatabase db)
-{LOG_CALL;
+{   LOG_CALL;
 
     QSqlQuery enableRefInt(db);
     enableRefInt.exec("PRAGMA foreign_keys = ON");
@@ -386,7 +378,7 @@ bool isValidDatabase(QSqlDatabase db)
 }
 
 void closeDatabaseConnection(QString con)
-{LOG_CALL;
+{   LOG_CALL_W(con);
 
     QSqlDatabase::removeDatabase(con);
     QList<QString> cl = QSqlDatabase::connectionNames();
@@ -402,7 +394,7 @@ void closeDatabaseConnection(QString con)
 }
 
 bool check_db_version(QSqlDatabase db)
-{LOG_CALL;
+{   LOG_CALL;
     double d = getNumMetaInfo(DB_VERSION, db);
     if( d < CURRENT_DB_VERSION)
         return false;
@@ -410,7 +402,7 @@ bool check_db_version(QSqlDatabase db)
 }
 
 bool open_databaseForApplication( QString newDbFile)
-{LOG_CALL;
+{   LOG_CALL;
 
     closeDatabaseConnection();
     QSettings config;
@@ -469,7 +461,7 @@ void check_Ibans(QStringList& msg)
 }
 
 QStringList check_DbConsistency( )
-{LOG_CALL;
+{   LOG_CALL;
     QStringList msgs;
     check_KfristLaufzeitende(msgs);
     check_Ibans(msgs);
@@ -480,7 +472,7 @@ QStringList check_DbConsistency( )
 }
 
 bool copy_Table(QString table, QSqlDatabase targetDB)
-{
+{   LOG_CALL_W(table);
     bool success = true;
     QSqlQuery q(QSqlDatabase::database(QLatin1String(QSqlDatabase::defaultConnection))); // default database connection -> active database
     q.prepare("SELECT * FROM " + table);
@@ -538,7 +530,7 @@ bool copy_mangledCreditors(QSqlDatabase targetDB)
 }
 
 bool create_DB_copy(QString targetfn, bool deper)
-{
+{   LOG_CALL_W(targetfn);
     if( QFile::exists(targetfn))
     {
         backupFile(targetfn);
@@ -591,7 +583,7 @@ bool create_DB_copy(QString targetfn, bool deper)
 }
 
 void create_sampleDataset( Contract& vertrag, int KId, int maxZinsIndex, QRandomGenerator* rand)
-{
+{   LOG_CALL;
     // add a contract
     double betragUWert = double(100) * rand->bounded(1,20);
     int zinsid = rand->bounded(1,maxZinsIndex);
@@ -614,7 +606,7 @@ void create_sampleDataset( Contract& vertrag, int KId, int maxZinsIndex, QRandom
 }
 
 void create_sampleData( int AnzahlDatensaetze)
-{LOG_CALL;
+{   LOG_CALL;
 
     QList<QString> Vornamen {"Holger", "Volker", "Peter", "Hans", "Susi", "Roland", "Claudia", "Emil", "Evelyn", "Ötzgür", "Thomas", "Elke", "Berta", "Malte", "Jori", "Paul", "Jonas", "Finn", "Leon", "Luca", "Emma", "Mia", "Lena", "Anna", "Anne", "Martha", "Ruth", "Rosemie", "Rosemarie", "Verena", "Ursula", "Erika", "Adrian", "Avan", "Anton", "Benno", "Karl", "Merlin", "Noah", "Oliver", "Olaf", "Pepe", "Zeno"};
     QList<QString> Nachnamen {"Maier", "Müller", "Schmit", "Kramp", "Adams", "Häcker", "Maresch", "Beutl", "Chauchev", "Chen", "Kirk", "Ohura", "Gorbatschov", "Merkel", "Karrenbauer", "Tritin", "Schmidt", "Rao", "Lassen", "Hurgedü", "vom Dach", "Langstrumpf", "Lederstrumpf", "Potter", "Poppins", "Wisley", "Li", "Wang", "Ran"};
@@ -659,7 +651,7 @@ void create_sampleData( int AnzahlDatensaetze)
 }
 
 QString proposeKennung()
-{LOG_CALL;
+{   LOG_CALL;
     int idOffset = getMetaInfo("IdOffset").toInt();
     int iMaxid = idOffset + getHighestTableId("Vertraege");
     QString kennung;
@@ -678,7 +670,7 @@ QString proposeKennung()
 }
 
 void interestRates_for_dropdown(QList<ZinsAnzeigeMitId>& Rates)
-{LOG_CALL;
+{   LOG_CALL;
 
     QSqlQuery query;
     query.setForwardOnly(true);
@@ -695,7 +687,7 @@ void interestRates_for_dropdown(QList<ZinsAnzeigeMitId>& Rates)
 }
 
 QString contractList_SELECT(const QVector<dbfield>& fields)
-{LOG_CALL;
+{   LOG_CALL;
     QString sql("SELECT ");
     for( int i = 0; i < fields.size(); i++)
     {
@@ -706,11 +698,11 @@ QString contractList_SELECT(const QVector<dbfield>& fields)
 }
 
 QString contractList_FROM()
-{LOG_CALL;
+{   LOG_CALL;
     return  "FROM Vertraege, Kreditoren, Zinssaetze";
 }
 QString contractList_WHERE(const QString& Filter)
-{LOG_CALL;
+{   LOG_CALL;
     QString s ("WHERE Kreditoren.id = Vertraege.KreditorId AND Vertraege.ZSatz = Zinssaetze.id");
     bool isNumber (false);
     int index = Filter.toInt(&isNumber);
@@ -726,7 +718,7 @@ QString contractList_WHERE(const QString& Filter)
     return s;
 }
 QString contractList_SQL(const QVector<dbfield>& fields, const QString& filter)
-{LOG_CALL;
+{   LOG_CALL;
     QString sql = contractList_SELECT(fields) + " "
             + contractList_FROM() + " "
             + contractList_WHERE(filter);
@@ -735,28 +727,28 @@ QString contractList_SQL(const QVector<dbfield>& fields, const QString& filter)
 }
 
 
-void calculateSummary(DbSummary& dbs, QString con)
-{LOG_CALL;
+void calculateSummary(DbSummary& dbs, QSqlDatabase db)
+{   LOG_CALL;
     dbs.AnzahlDkGeber = ExecuteSingleValueSql("count(DISTINCT(KreditorId))", "[Kreditoren],[Vertraege]", "aktiv != 0 AND Kreditoren.id = Vertraege.KreditorId").toInt();
 
-    dbs.AnzahlAuszahlende = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0", con).toInt();
-    dbs.BetragAuszahlende = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0", con).toReal();
+    dbs.AnzahlAuszahlende = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0", db).toInt();
+    dbs.BetragAuszahlende = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0", db).toReal();
 
-    dbs.AnzahlThesaurierende= ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0", con).toInt();
-    dbs.BetragThesaurierende= ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0", con).toReal();
-    dbs.WertThesaurierende  = ExecuteSingleValueSql("SUM([Wert])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0", con).toReal();
+    dbs.AnzahlThesaurierende= ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0", db).toInt();
+    dbs.BetragThesaurierende= ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0", db).toReal();
+    dbs.WertThesaurierende  = ExecuteSingleValueSql("SUM([Wert])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0", db).toReal();
 
-    dbs.AnzahlAktive  = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0", con).toInt();
-    dbs.BetragAktive  = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0", con).toReal();
+    dbs.AnzahlAktive  = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0", db).toInt();
+    dbs.BetragAktive  = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0", db).toReal();
     dbs.WertAktive    = dbs.BetragAuszahlende+dbs.WertThesaurierende;
 
     dbs.DurchschnittZins = ExecuteSingleValueSql("SELECT SUM( w*z ) / SUM( W ) FROM  (SELECT MAX(Betrag, Wert) AS W, Zinssaetze.Zinssatz AS Z FROM Vertraege, Zinssaetze WHERE Zinssaetze.id = Vertraege.ZSatz AND Vertraege.aktiv)").toReal();
     dbs.MittlererZins = ExecuteSingleValueSql("SELECT AVG(Zinssaetze.Zinssatz) FROM Vertraege, Zinssaetze WHERE Zinssaetze.id = Vertraege.ZSatz AND Vertraege.aktiv").toDouble();
-    dbs.AnzahlPassive = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] = 0", con).toInt();
-    dbs.BetragPassive = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 0", con).toReal();
+    dbs.AnzahlPassive = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] = 0", db).toInt();
+    dbs.BetragPassive = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 0", db).toReal();
 }
 bool createCsvActiveContracts()
-{
+{   LOG_CALL;
     QDate today = QDate::currentDate();
     QString filename(today.toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
     QSettings config;
@@ -791,14 +783,14 @@ bool createCsvActiveContracts()
     }
     return false;
 }
-void calc_contractEnd( QVector<ContractEnd>& ce, QString connection)
-{LOG_CALL;
+void calc_contractEnd( QVector<ContractEnd>& ce, QSqlDatabase db)
+{   LOG_CALL;
 
     QMap<int, int> m_count;
     QMap<int, double> m_sum;
     const int maxYear = QDate::currentDate().year() +99;
 
-    QSqlQuery sql(QSqlDatabase::database(connection));
+    QSqlQuery sql(db);
     sql.setForwardOnly(true);
     sql.exec("SELECT * FROM [Vertraege] WHERE [aktiv] = 1");
     while( sql.next())
@@ -826,13 +818,13 @@ void calc_contractEnd( QVector<ContractEnd>& ce, QString connection)
     }
     return;
 }
-void calc_anualInterestDistribution( QVector<YZV>& yzv, QString connection)
-{
+void calc_anualInterestDistribution( QVector<YZV>& yzv, QSqlDatabase db)
+{   LOG_CALL;
     QString sql = "SELECT Substr([Vertragsdatum], 0, 5), [Zinssaetze].[Zinssatz], count(*), sum([Betrag]) "
                   "FROM [Vertraege], [Zinssaetze] "
                   "WHERE [ZSatz] = [Zinssaetze].[id] "
                   "GROUP BY Substr([Vertragsdatum], 0, 4), [ZSatz]";
-    QSqlQuery query(connection);
+    QSqlQuery query(db);
     query.exec(sql);
     while( query.next())
     {
@@ -841,12 +833,12 @@ void calc_anualInterestDistribution( QVector<YZV>& yzv, QString connection)
     }
     return;
 }
-QVector<rowData> contractRuntimeDistribution(QString con)
+QVector<rowData> contractRuntimeDistribution(QSqlDatabase db)
 {
     int AnzahlBisEinJahr=0, AnzahlBisFuenfJahre=0, AnzahlLaenger=0, AnzahlUnbegrenzet = 0;
     double SummeBisEinJahr=0., SummeBisFuenfJahre=0., SummeLaenger=0., SummeUnbegrenzet = 0.;
     QString sql = "SELECT [Betrag], [Wert], [Vertragsdatum], [LaufzeitEnde] FROM [Vertraege]";
-    QSqlQuery q (con);
+    QSqlQuery q (db);
     q.exec(sql);
     while( q.next())
     {

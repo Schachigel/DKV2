@@ -37,7 +37,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
-{LOG_CALL;
+{   LOG_CALL;
     ui->setupUi(this);
 #ifndef QT_DEBUG
     ui->action_create_sample_data->setVisible(false);
@@ -79,18 +79,18 @@ MainWindow::MainWindow(QWidget *parent) :
 }
 
 MainWindow::~MainWindow()
-{LOG_CALL;
+{   LOG_CALL;
     delete ui;
 }
 
 void MainWindow::setSplash(QSplashScreen* s)
-{LOG_CALL;
+{   LOG_CALL;
     splash = s;
     startTimer(3333);
 }
 
 bool MainWindow::useDb(const QString& dbfile)
-{
+{   LOG_CALL;
     if( open_databaseForApplication(dbfile))
     {
         showDbInStatusbar();
@@ -100,13 +100,13 @@ bool MainWindow::useDb(const QString& dbfile)
 }
 
 void MainWindow::showDbInStatusbar()
-{LOG_CALL;
+{   LOG_CALL;
     QSettings config;
     ui->statusLabel->setText(config.value("db/last").toString());
 }
 
 void MainWindow::prepareWelcomeMsg()
-{LOG_CALL;
+{   LOG_CALL;
     busycursor b;
     QString message = "<table width='100%'><tr><td><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></td></tr>";
 
@@ -121,7 +121,7 @@ void MainWindow::prepareWelcomeMsg()
 }
 // whenever the stackedWidget changes ...
 void MainWindow::on_stackedWidget_currentChanged(int arg1)
-{LOG_CALL;
+{   LOG_CALL;
     if( arg1 < 0)
     {
         qWarning() << "stackedWidget changed to non existing page";
@@ -164,7 +164,7 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
 
 // file menu
 QString askUserDbFilename(QString title, bool existing=false)
-{
+{   LOG_CALL;
     QSettings config;
     QString folder;
     QFileInfo lastdb (config.value("db/last").toString());
@@ -182,11 +182,11 @@ QString askUserDbFilename(QString title, bool existing=false)
         return QFileDialog::getSaveFileName(nullptr, title, folder, "dk-DB Dateien (*.dkdb)", nullptr);
 }
 void MainWindow::on_action_back_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_action_create_new_DB_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     QString dbfile = askUserDbFilename("Neue DkVerarbeitungs Datenbank");
     if( dbfile == "")
         return;
@@ -204,7 +204,7 @@ void MainWindow::on_action_create_new_DB_triggered()
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_action_open_DB_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     QSettings config;
     QString dir(config.value("outdir").toString());
     QString dbfile = askUserDbFilename("DkVerarbeitungs Datenbank", true);
@@ -218,7 +218,7 @@ void MainWindow::on_action_open_DB_triggered()
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_action_create_anonymous_copy_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     QString dbfile = askUserDbFilename("Anonymisierte Datenbank");
     if( dbfile == "")
         return;
@@ -232,7 +232,7 @@ void MainWindow::on_action_create_anonymous_copy_triggered()
     return;
 }
 void MainWindow::on_action_create_copy_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     QString dbfile = askUserDbFilename( "Kopie der Datenbank");
     if( dbfile == "")
         return;
@@ -248,7 +248,7 @@ void MainWindow::on_action_create_copy_triggered()
 
 }
 void MainWindow::on_action_store_output_directory_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     QString dir;
     QSettings config;
     dir = config.value("outdir", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
@@ -258,14 +258,14 @@ void MainWindow::on_action_store_output_directory_triggered()
     config.setValue("outdir", dir);
 }
 void MainWindow::on_action_exit_program_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
     this->close();
 }
 
 // person list page
 void MainWindow::prepareCreditorsTableView()
-{LOG_CALL;
+{   LOG_CALL;
     busycursor b;
     QSqlTableModel* model = new QSqlTableModel(ui->CreditorsTableView);
     model->setTable("Kreditoren");
@@ -283,7 +283,7 @@ void MainWindow::prepareCreditorsTableView()
     ui->CreditorsTableView->resizeColumnsToContents();
 }
 void MainWindow::on_action_Liste_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     busycursor b;
     prepareCreditorsTableView();
     if( !ui->CreditorsTableView->currentIndex().isValid())
@@ -294,7 +294,7 @@ void MainWindow::on_action_Liste_triggered()
 
 // helper fu
 int MainWindow::getIdFromCreditorsList()
-{LOG_CALL;
+{   LOG_CALL;
     // What is the persId of the currently selected person in the person?
     QModelIndex mi(ui->CreditorsTableView->currentIndex().siblingAtColumn(0));
     if( mi.isValid())
@@ -307,7 +307,7 @@ int MainWindow::getIdFromCreditorsList()
 }
 // Kontext Menue in Kreditoren Tabelle
 void MainWindow::on_CreditorsTableView_customContextMenuRequested(const QPoint &pos)
-{LOG_CALL;
+{   LOG_CALL;
     QModelIndex index = ui->CreditorsTableView->indexAt(pos).siblingAtColumn(0);
     if( index.isValid())
     {
@@ -328,7 +328,7 @@ void MainWindow::on_CreditorsTableView_customContextMenuRequested(const QPoint &
     }
 }
 void MainWindow::on_action_edit_Creditor_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     busycursor b;
     QModelIndex mi(ui->CreditorsTableView->currentIndex());
     QVariant index = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(0));
@@ -338,7 +338,7 @@ void MainWindow::on_action_edit_Creditor_triggered()
     ui->stackedWidget->setCurrentIndex(newPersonIndex);
 }
 void MainWindow::on_action_create_contract_for_creditor_triggered(int id)
-{LOG_CALL;
+{   LOG_CALL;
     busycursor b;
     fill_creditors_dropdown();
     fill_rates_dropdown();
@@ -353,7 +353,7 @@ void MainWindow::on_action_create_contract_for_creditor_triggered(int id)
     ui->stackedWidget->setCurrentIndex(newContractIndex);
 }
 void MainWindow::on_action_delete_creditor_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     QString msg( "Soll der Kreditgeber ");
     QModelIndex mi(ui->CreditorsTableView->currentIndex());
     QString Vorname = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(1)).toString();
@@ -369,7 +369,7 @@ void MainWindow::on_action_delete_creditor_triggered()
         Q_ASSERT(!bool("could not remove kreditor and contracts"));
 }
 void MainWindow::on_action_show_contracts_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     busycursor b;
     QModelIndex mi(ui->CreditorsTableView->currentIndex());
     QString index = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(0)).toString();
@@ -377,12 +377,12 @@ void MainWindow::on_action_show_contracts_triggered()
     on_action_show_list_of_contracts_triggered();
 }
 void MainWindow::on_leFilter_editingFinished()
-{LOG_CALL;
+{   LOG_CALL;
     busycursor b;
     prepareCreditorsTableView();
 }
 void MainWindow::on_pbPersonFilterZuruecksetzen_clicked()
-{LOG_CALL;
+{   LOG_CALL;
     busycursor b;
     ui->leFilter->setText("");
     prepareCreditorsTableView();
@@ -390,11 +390,11 @@ void MainWindow::on_pbPersonFilterZuruecksetzen_clicked()
 
 // new DK Geber
 void MainWindow::on_action_create_new_creditor_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     ui->stackedWidget->setCurrentIndex(newPersonIndex);
 }
 int  MainWindow::save_creditor()
-{LOG_CALL;
+{   LOG_CALL;
 
     Kreditor k;
     k.setValue("Vorname", ui->leVorname->text().trimmed());
@@ -437,7 +437,7 @@ int  MainWindow::save_creditor()
     return kid;
 }
 void MainWindow::empty_create_creditor_form()
-{LOG_CALL;
+{   LOG_CALL;
     ui->leVorname->setText("");
     ui->leNachname->setText("");
     ui->leStrasse->setText("");
@@ -450,7 +450,7 @@ void MainWindow::empty_create_creditor_form()
     ui->lblPersId->setText("");
 }
 void MainWindow::init_creditor_form(int id)
-{LOG_CALL;
+{   LOG_CALL;
     busycursor b;
     QSqlRecord rec = ExecuteSingleRecordSql(dkdbstructur["Kreditoren"].Fields(), "Id=" +QString::number(id));
     ui->leVorname->setText(rec.field("Vorname").value().toString());
@@ -464,12 +464,12 @@ void MainWindow::init_creditor_form(int id)
     ui->leBic  ->setText(rec.field("BIC").value().toString());
 }
 void MainWindow::on_cancel_clicked()
-{LOG_CALL;
+{   LOG_CALL;
     empty_create_creditor_form();
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_action_save_contact_go_contract_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     int kid = save_creditor();
     if(  kid != -1)
     {
@@ -478,7 +478,7 @@ void MainWindow::on_action_save_contact_go_contract_triggered()
     }
 }
 void MainWindow::on_action_save_contact_go_creditors_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     if( save_creditor() != -1)
     {
         empty_create_creditor_form();
@@ -486,14 +486,14 @@ void MainWindow::on_action_save_contact_go_creditors_triggered()
     }
 }
 void MainWindow::on_action_save_contact_go_new_creditor_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     if( save_creditor() != -1)
         empty_create_creditor_form();
 }
 
 // neuer Vertrag
 Contract MainWindow::get_contract_data_from_form()
-{LOG_CALL;
+{   LOG_CALL;
     int KreditorId = ui->comboKreditoren->itemData(ui->comboKreditoren->currentIndex()).toInt();
     QString Kennung = ui->leKennung->text();
     double Betrag = ui->leBetrag->text().remove('.').toDouble();
@@ -526,7 +526,7 @@ Contract MainWindow::get_contract_data_from_form()
                    thesaurierend, false/*aktiv*/,StartZinsberechnung, kFrist, LaufzeitEnde);
 }
 bool MainWindow::save_new_contract()
-{LOG_CALL;
+{   LOG_CALL;
     Contract c =get_contract_data_from_form();
 
     QString errortext;
@@ -543,13 +543,13 @@ bool MainWindow::save_new_contract()
     }
 }
 void MainWindow::empty_new_contract_form()
-{LOG_CALL;
+{   LOG_CALL;
     ui->leKennung->setText("");
     ui->leBetrag->setText("");
     ui->chkbThesaurierend->setChecked(true);
 }
 void MainWindow::on_deLaufzeitEnde_userDateChanged(const QDate &date)
-{
+{   LOG_CALL;
     if( date == EndOfTheFuckingWorld)
     {
         if( ui->cbKFrist->currentIndex() == 0)
@@ -559,7 +559,7 @@ void MainWindow::on_deLaufzeitEnde_userDateChanged(const QDate &date)
         ui->cbKFrist->setCurrentIndex(0);
 }
 void MainWindow::on_cbKFrist_currentIndexChanged(int index)
-{LOG_CALL;
+{   LOG_CALL;
     if( -1 == ui->cbKFrist->itemData(index).toInt())
     {   // Vertragsende wird fest vorgegeben
         if( EndOfTheFuckingWorld == ui->deLaufzeitEnde->date())
@@ -573,13 +573,13 @@ void MainWindow::on_cbKFrist_currentIndexChanged(int index)
     }
 }
 void MainWindow::on_leBetrag_editingFinished()
-{LOG_CALL;
+{   LOG_CALL;
     ui->leBetrag->setText(QString("%L1").arg(ui->leBetrag->text().toDouble()));
 }
 
 // helper: switch to "Vertrag anlegen"
 void MainWindow::fill_creditors_dropdown()
-{LOG_CALL;
+{   LOG_CALL;
     ui->comboKreditoren->clear();
     QList<QPair<int, QString>> Personen;
     Kreditor k; k.KreditorenListeMitId(Personen);
@@ -589,7 +589,7 @@ void MainWindow::fill_creditors_dropdown()
     }
 }
 void MainWindow::fill_rates_dropdown()
-{LOG_CALL;
+{   LOG_CALL;
     QList<ZinsAnzeigeMitId> InterrestCbEntries; interestRates_for_dropdown(InterrestCbEntries);
     ui->cbZins->clear();
     for(ZinsAnzeigeMitId Entry : InterrestCbEntries)
@@ -599,7 +599,7 @@ void MainWindow::fill_rates_dropdown()
     ui->cbZins->setCurrentIndex(InterrestCbEntries.count()-1);
 }
 void MainWindow::set_creditors_combo_by_id(int KreditorenId)
-{LOG_CALL;
+{   LOG_CALL;
     if( KreditorenId < 0) return;
     // select the correct person
     for( int i = 0; i < ui->comboKreditoren->count(); i++)
@@ -614,12 +614,12 @@ void MainWindow::set_creditors_combo_by_id(int KreditorenId)
 
 // leave new contract
 void MainWindow::on_cancelCreateContract_clicked()
-{LOG_CALL;
+{   LOG_CALL;
     empty_new_contract_form();
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_action_save_contract_go_contracts_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     if( save_new_contract())
     {
         empty_new_contract_form();
@@ -628,7 +628,7 @@ void MainWindow::on_action_save_contract_go_contracts_triggered()
     }
 }
 void MainWindow::on_action_save_contract_go_kreditors_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     if( save_new_contract())
     {
         empty_new_contract_form();
@@ -636,7 +636,7 @@ void MainWindow::on_action_save_contract_go_kreditors_triggered()
     }
 }
 void MainWindow::on_action_save_contract_new_contract_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     if( save_new_contract())
     {
         empty_new_contract_form();
@@ -646,7 +646,7 @@ void MainWindow::on_action_save_contract_new_contract_triggered()
 
 // Liste der Verträge
 void MainWindow::prepare_contracts_list_view()
-{LOG_CALL;
+{   LOG_CALL;
     busycursor b;
     QVector<dbfield> fields;
     fields.append(dkdbstructur["Vertraege"]["id"]);
@@ -687,7 +687,7 @@ void MainWindow::prepare_contracts_list_view()
     ui->contractsTableView->setSortingEnabled(true);
 }
 void MainWindow::on_action_show_list_of_contracts_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     prepare_contracts_list_view();
     if( !ui->contractsTableView->currentIndex().isValid())
         ui->contractsTableView->selectRow(0);
@@ -695,7 +695,7 @@ void MainWindow::on_action_show_list_of_contracts_triggered()
     ui->stackedWidget->setCurrentIndex(ContractsListIndex);
 }
 void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &pos)
-{LOG_CALL;
+{   LOG_CALL;
     QSqlRecord rec = tmp_ContractsModel->record(); // ugly, but qobject_cast does not work
     int indedOf_active_inModel = rec.indexOf("aktiv");
     int indexOf_kfrist_inModel = rec.indexOf("Kfrist");
@@ -729,7 +729,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &
     return;
 }
 int  MainWindow::get_current_id_from_contracts_list()
-{LOG_CALL;
+{   LOG_CALL;
     QModelIndex mi(ui->contractsTableView->currentIndex().siblingAtColumn(0));
     if( mi.isValid())
     {
@@ -802,7 +802,7 @@ QString newLine(QString line)
 }
 
 QString MainWindow::prepare_overview_page(Uebersichten u)
-{LOG_CALL;
+{   LOG_CALL;
 
     QString lbl ("<html><body>"
                  "<style>"
@@ -890,7 +890,7 @@ QString MainWindow::prepare_overview_page(Uebersichten u)
     return lbl;
 }
 void MainWindow::on_action_contracts_statistics_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     if(ui->comboUebersicht->count() == 0)
     {
         ui->comboUebersicht->clear();
@@ -906,11 +906,11 @@ void MainWindow::on_action_contracts_statistics_triggered()
     ui->stackedWidget->setCurrentIndex(OverviewIndex);
 }
 void MainWindow::on_comboUebersicht_currentIndexChanged(int )
-{LOG_CALL;
+{   LOG_CALL;
     on_action_contracts_statistics_triggered();
 }
 void MainWindow::on_pbPrint_clicked()
-{LOG_CALL;
+{   LOG_CALL;
     QSettings config;
     QString filename = config.value("outdir").toString();
 
@@ -922,7 +922,7 @@ void MainWindow::on_pbPrint_clicked()
     showFileInFolder(filename);
 }
 void MainWindow::on_action_anual_interest_settlement_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     jahresabschluss Abschluss;
 
     QString msg = "Der Jahresabschluss für das Jahr "
@@ -939,19 +939,19 @@ void MainWindow::on_action_anual_interest_settlement_triggered()
     on_action_show_list_of_contracts_triggered( );
 }
 void MainWindow::on_action_create_active_contracts_csv_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     if( !createCsvActiveContracts())
         QMessageBox::critical(this, "Fehler", "Die Datei konnte nicht angelegt werden. Ist sie z.B. in Excel geöffnet?");
 }
 // contract list context menu
 void MainWindow::on_action_activate_contract_triggered()
-{LOG_CALL;
+{   LOG_CALL;
 
     aktiviereVertrag(get_current_id_from_contracts_list());
     prepare_contracts_list_view();
 }
 void MainWindow::on_action_loeschePassivenVertrag_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     QModelIndex mi(ui->contractsTableView->currentIndex());
     if( !mi.isValid()) return;
 
@@ -961,16 +961,16 @@ void MainWindow::on_action_loeschePassivenVertrag_triggered()
     prepare_contracts_list_view();
 }
 void MainWindow::on_leVertraegeFilter_editingFinished()
-{LOG_CALL;
+{   LOG_CALL;
     prepare_contracts_list_view();
 }
 void MainWindow::on_reset_contracts_filter_clicked()
-{LOG_CALL;
+{   LOG_CALL;
     ui->leVertraegeFilter->setText("");
     prepare_contracts_list_view();
 }
 void MainWindow::on_action_terminate_contract_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     QModelIndex mi(ui->contractsTableView->currentIndex());
     if( !mi.isValid()) return;
     int index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toInt();
@@ -981,7 +981,7 @@ void MainWindow::on_action_terminate_contract_triggered()
 
 // debug funktions
 void MainWindow::on_action_create_sample_data_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     create_sampleData();
     prepareCreditorsTableView();
     prepare_contracts_list_view();
@@ -989,7 +989,7 @@ void MainWindow::on_action_create_sample_data_triggered()
         on_action_contracts_statistics_triggered();
 }
 void MainWindow::on_action_log_anzeigen_triggered()
-{LOG_CALL;
+{   LOG_CALL;
     #if defined(Q_OS_WIN)
     ::ShellExecuteA(nullptr, "open", logFilePath().toUtf8(), "", QDir::currentPath().toUtf8(), 1);
     #else
@@ -999,12 +999,12 @@ void MainWindow::on_action_log_anzeigen_triggered()
 }
 // bookings- bisher Debug stuff
 void MainWindow::on_tblViewBookingsSelectionChanged(const QItemSelection& to, const QItemSelection& )
-{
+{   LOG_CALL;
     QString json =ui->tblViewBookings->model()->data(to.indexes().at(0).siblingAtColumn(6)).toString();
     ui->lblYson->setText(json);
 }
 void MainWindow::on_actionShow_Bookings_triggered()
-{LOG_CALL;
+{   LOG_CALL;
 
     QSqlRelationalTableModel* model = new QSqlRelationalTableModel(ui->tblViewBookings);
     model->setTable("Buchungen");
@@ -1025,7 +1025,7 @@ void MainWindow::on_actionShow_Bookings_triggered()
 }
 // about
 void MainWindow::on_action_ber_DKV2_triggered()
-{
+{   LOG_CALL;
     QString msg;
     msg = "Lieber Anwender. \nDKV2 wird von seinen Entwicklern kostenlos zur Verfügung gestellt.\n";
     msg += "Es wurde mit viel Arbeit und Sorgfalt entwickelt. Wenn Du es nützlich findest: Viel Spaß bei der Anwendung!!\n";

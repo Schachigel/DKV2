@@ -1,7 +1,9 @@
 #ifndef TEST_LETTERTEMPLATE_H
 #define TEST_LETTERTEMPLATE_H
 
+
 #include <QObject>
+#include <QSqlDatabase>
 #include <QTest>
 
 class test_letterTemplate : public QObject
@@ -14,6 +16,7 @@ public:
 private:
     const QString filename = "..\\..\\data\\testdb.sqlite";
     const QString testCon = "test_dkdb_connection";
+    QSqlDatabase testDb() {return QSqlDatabase::database(testCon);}
 
 private slots:
     void initTestCase();

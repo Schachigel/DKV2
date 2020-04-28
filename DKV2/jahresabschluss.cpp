@@ -12,7 +12,7 @@ jahresabschluss::jahresabschluss()
 }
 
 int jahresabschluss::JahreszahlFuerAbschluss()
-{LOG_CALL;
+{   LOG_CALL;
     QDate aeltesteZinszahlung = ExecuteSingleValueSql("SELECT min(LetzteZinsberechnung) FROM Vertraege WHERE aktiv != 0").toDate();
     if( aeltesteZinszahlung.month()==12 && aeltesteZinszahlung.day() == 31)
         return aeltesteZinszahlung.year() +1;
@@ -20,8 +20,9 @@ int jahresabschluss::JahreszahlFuerAbschluss()
 }
 
 bool jahresabschluss::execute()
-{LOG_CALL;
-    QSqlQuery sql; sql.prepare( "SELECT Vertraege.id "
+{   LOG_CALL;
+    QSqlQuery sql;
+    sql.prepare( "SELECT Vertraege.id "
                 "FROM Vertraege WHERE aktiv != 0");
     if( !(sql.exec() && sql.first()))
     {
@@ -29,7 +30,6 @@ bool jahresabschluss::execute()
         return false;
     }
     const QDate YearEnd= QDate(Jahr, 12, 31);
-
     do
     {
         Contract v; v.loadContractFromDb(sqlVal<int>(sql, "id"));

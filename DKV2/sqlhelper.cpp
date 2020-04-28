@@ -6,9 +6,9 @@
 #include "helper.h"
 #include "sqlhelper.h"
 
-bool tableExists (const QString& tablename, const QString& con)
-{   LOG_CALL;
-    return tableExists(tablename, QSqlDatabase::database(con));
+QSqlDatabase defaultDb()
+{
+    return QSqlDatabase::database(QSqlDatabase::defaultConnection);
 }
 
 bool tableExists (const QString& tablename, QSqlDatabase db)
@@ -28,10 +28,10 @@ bool tableExists (const QString& tablename, QSqlDatabase db)
     return false;
 }
 
-QVector<QString> getFieldsFromTablename(const QString& tablename, const QString& con)
-{LOG_CALL;
+QVector<QString> getFieldsFromTablename(const QString& tablename, QSqlDatabase db)
+{   LOG_CALL;
     QVector<QString> result;
-    QSqlQuery query(QSqlDatabase::database(con));
+    QSqlQuery query(db);
     query.prepare("PRAGMA table_info( "+ tablename+ ")");
     if( !query.exec())
     {
@@ -45,7 +45,7 @@ QVector<QString> getFieldsFromTablename(const QString& tablename, const QString&
 }
 
 QString SelectQueryFromFields(const QVector<dbfield>& fields, const QString& where)
-{LOG_CALL;
+{   LOG_CALL;
     QString Select ("SELECT ");
     QString From ("FROM ");
     QString Where("WHERE " + where);
@@ -78,7 +78,7 @@ QString SelectQueryFromFields(const QVector<dbfield>& fields, const QString& whe
 }
 
 QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString& where, QSqlDatabase db)
-{LOG_CALL;
+{   LOG_CALL;
     QString sql = SelectQueryFromFields(fields, where);
     qDebug() << "ExecuteSingleRecordSql:\n" << sql;
     QSqlQuery q(db);
@@ -120,19 +120,14 @@ QVariant ExecuteSingleValueSql(const QString& s, QSqlDatabase db)
     return q.value(0);
 }
 
-QVariant ExecuteSingleValueSql(const QString& s, const QString& con)
+QVariant ExecuteSingleValueSql( const QString& field, const QString& table, const QString& where, QSqlDatabase db)
 {   LOG_CALL;
-    return ExecuteSingleValueSql(s, QSqlDatabase::database(con));
-}
-
-QVariant ExecuteSingleValueSql( const QString& field, const QString& table, const QString& where, const QString& con)
-{LOG_CALL;
     QString sql = "SELECT " + field + " FROM " + table + " WHERE " + where;
-    return ExecuteSingleValueSql(sql, con);
+    return ExecuteSingleValueSql(sql, db);
 }
 
-int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant& newValue, const QString& where, const QString& con)
-{LOG_CALL;
+int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant& newValue, const QString& where, QSqlDatabase db)
+{   LOG_CALL;
     QString sql = "UPDATE " + table;
     sql += " SET " + field + " = ";
 
@@ -142,7 +137,7 @@ int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant&
 
     sql += value;
     sql += " WHERE " + where;
-    QSqlQuery q(QSqlDatabase::database(con));
+    QSqlQuery q(db);
     q.prepare(sql);
     if( q.exec())
     {
@@ -158,14 +153,14 @@ int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant&
     return -1;
 }
 
-int getHighestTableId(const QString& tablename, const QString& con)
-{LOG_CALL;
+int getHighestTableId(const QString& tablename, QSqlDatabase db)
+{   LOG_CALL;
     QString sql = "SELECT max(ROWID) FROM " + tablename;
-    return ExecuteSingleValueSql(sql, con).toInt();
+    return ExecuteSingleValueSql(sql, db).toInt();
 }
 
 QString JsonFromRecord( QSqlRecord r)
-{LOG_CALL;
+{   LOG_CALL;
     QMap<QString, QVariantMap> jRecord;
     for(int i=0; i< r.count(); i++)
     {

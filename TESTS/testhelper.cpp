@@ -5,13 +5,20 @@
 #include <qdebug.h>
 
 #include "testhelper.h"
+
+const QString testDbFilename = "..\\..\\data\\testdb.sqlite";
 const QString testCon = "test_connection";
+QSqlDatabase testDb()
+{
+    return QSqlDatabase::database(testCon);
+}
+
 
 int tableRecordCount(QString tname)
-{
-    QSqlQuery q(QSqlDatabase::database(testCon));
+{   LOG_CALL_W(tname);
+    QSqlQuery q(testDb());
     if (q.exec("SELECT COUNT(*) FROM " + tname)) {
-        q.next();
+        q.first();
         qDebug() << "#Datensätze: " << q.record().value(0);
         return q.record().value(0).toInt();
     } else {
@@ -21,13 +28,13 @@ int tableRecordCount(QString tname)
 }
 
 bool dbHasTable(const QString tname)
-{
-    return QSqlDatabase::database(testCon).tables().contains(tname);
+{   LOG_CALL_W(tname);
+    return testDb().tables().contains(tname);
 }
 
 bool dbTableHasField(const QString tname, const QString fname)
-{
-    QSqlRecord r = QSqlDatabase::database(testCon).record(tname);
+{   LOG_CALL_W(tname +": " +fname);
+    QSqlRecord r = testDb().record(tname);
     if( r.field(fname).isValid())
         return true;
     return false;

@@ -43,7 +43,7 @@ void test_sqlhelper::initTestCase()
                "'teststring', "
                "'2019-01-01 00:00:00.000')");
     QVERIFY( b ); // QCOMPARE( query.lastError().text(), QString(""));
-    sqlValQuery = QSqlQuery(db);
+    sqlValQuery  = QSqlQuery(db);
     b = sqlValQuery.exec("SELECT * FROM testSqlVal");
     QVERIFY( b ); // QCOMPARE( sqlValQuery.lastError().text(), QString(""));
     b = sqlValQuery.first();
@@ -65,18 +65,18 @@ void test_sqlhelper::cleanupTestCase()
 
 void test_sqlhelper::test_getFields()
 {
-    QVector<QString> fields = getFieldsFromTablename("testSqlVal", testCon);
+    QVector<QString> fields = getFieldsFromTablename("testSqlVal", testDb());
     QVERIFY2(fields.count() == 5, "failed to getFields from test database");
     QVERIFY2(fields.indexOf("id") != -1, "failed to getField 'id' from test database");
     fields.clear();
-    fields = getFieldsFromTablename("nonExistingTable", testCon);
+    fields = getFieldsFromTablename("nonExistingTable", testDb());
     QVERIFY2( fields.count() == 0, "failed to getFields from empty table");
 }
 
 void test_sqlhelper::test_tableExists()
 {
-    QVERIFY2(tableExists("testSqlVal", testCon), "test of tableExists faild on existing table");
-    QVERIFY2(!tableExists("notExistingTable", testCon), "test of tableExists faild on NOT existing table");
+    QVERIFY2(tableExists("testSqlVal", testDb()), "test of tableExists faild on existing table");
+    QVERIFY2(!tableExists("notExistingTable", testDb()), "test of tableExists faild on NOT existing table");
 }
 
 void test_sqlhelper::test_sqlValBool()

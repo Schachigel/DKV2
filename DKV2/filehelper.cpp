@@ -17,7 +17,7 @@
 #include "filehelper.h"
 
 bool backupFile(const QString&  fn, const QString& subfolder)
-{LOG_CALL_W(fn);
+{   LOG_CALL_W(fn);
     QString backupname{fn};
     QFileInfo fi{fn};
     QString suffix = fi.completeSuffix();
@@ -44,7 +44,7 @@ bool backupFile(const QString&  fn, const QString& subfolder)
 }
 
 void showFileInFolder(const QString &path)
-{
+{   LOG_CALL_W(path);
 #ifdef _WIN32    //Code for Windows
     QProcess::startDetached("explorer.exe", {"/select,", QDir::toNativeSeparators(path)});
 #elif defined(__APPLE__)    //Code for Mac
@@ -54,7 +54,7 @@ void showFileInFolder(const QString &path)
 }
 
 void printHtmlToPdf( QString html, QString fn)
-{
+{   LOG_CALL;
     QTextDocument td;
     td.setHtml(html);
 

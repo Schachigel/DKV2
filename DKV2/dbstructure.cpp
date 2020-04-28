@@ -6,7 +6,7 @@
 #include "dbstructure.h"
 
 dbstructure dbstructure::appendTable(dbtable t)
-{
+{   LOG_CALL;
     qDebug() << "adding table to db structure " << t.name;
     for (auto table: Tables)
         if( table.Name() == t.Name())
@@ -19,7 +19,7 @@ dbstructure dbstructure::appendTable(dbtable t)
 }
 
 dbtable dbstructure::operator[](const QString& name) const
-{
+{   LOG_CALL;
     qDebug() << "accessing db table " << name;
     for( dbtable table : Tables)
     {
@@ -31,7 +31,7 @@ dbtable dbstructure::operator[](const QString& name) const
 }
 
 bool dbstructure::createDb(QSqlDatabase db) const
-{LOG_CALL_W(db.databaseName());
+{   LOG_CALL_W(db.databaseName());
     QSqlQuery q(db);
     for(dbtable table :getTables())
     {

@@ -15,7 +15,7 @@ void test_properties::initTestCase()
     init_additionalTables();
 }
 void test_properties::init()
-{LOG_CALL;
+{    LOG_CALL;
     if (QFile::exists(filename))
         QVERIFY(QFile::remove(filename));
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", testCon);
@@ -30,7 +30,7 @@ void test_properties::init()
 }
 
 void test_properties::cleanup()
-{LOG_CALL;
+{    LOG_CALL;
     QSqlDatabase::database().removeDatabase(testCon);
     QSqlDatabase::database().close();
     if (QFile::exists(filename))
@@ -38,19 +38,19 @@ void test_properties::cleanup()
 }
 void test_properties::test_setProperty_getProperty()
 {
-    setMetaInfo("Hallo", "Welt", testCon);
-    QCOMPARE(getMetaInfo("Hallo", testCon), "Welt");
+    setMetaInfo("Hallo", "Welt", testDb());
+    QCOMPARE(getMetaInfo("Hallo", testDb()), "Welt");
 }
 void test_properties::test_initProperty_getProperty()
 {
-    initMetaInfo("Hallo", "Welt", testCon);
-    QCOMPARE(getMetaInfo("Hallo", testCon), "Welt");
+    initMetaInfo("Hallo", "Welt", testDb());
+    QCOMPARE(getMetaInfo("Hallo", testDb()), "Welt");
 }
 void test_properties::test_set_init_getProperty()
 {
-    setMetaInfo("Hallo", "Weltall", testCon);
-    initMetaInfo("Hallo", "Welt", testCon);
-    QCOMPARE(getMetaInfo("Hallo", testCon), "Weltall");
+    setMetaInfo("Hallo", "Weltall", testDb());
+    initMetaInfo("Hallo", "Welt", testDb());
+    QCOMPARE(getMetaInfo("Hallo", testDb()), "Weltall");
 }
 void test_properties::test_get_uninit()
 {
@@ -58,22 +58,22 @@ void test_properties::test_get_uninit()
 }
 void test_properties::test_set_get_num()
 {
-    setNumMetaInfo("Pi", 3.1415, testCon);
-    QCOMPARE(getNumMetaInfo("Pi", testCon)*10000, 31415);
+    setNumMetaInfo("Pi", 3.1415, testDb());
+    QCOMPARE(getNumMetaInfo("Pi", testDb())*10000, 31415);
 }
 void test_properties::test_init_get_num()
 {
-    initNumMetaInfo("twoPi", 6.243, testCon);
-    QCOMPARE(getNumMetaInfo("twoPi", testCon), 6.243);
+    initNumMetaInfo("twoPi", 6.243, testDb());
+    QCOMPARE(getNumMetaInfo("twoPi", testDb()), 6.243);
 }
 void test_properties::test_set_init_get_num()
 {
-    setNumMetaInfo("three", 3., testCon);
-    initNumMetaInfo("three", 4, testCon);
-    QCOMPARE( getNumMetaInfo("three", testCon), 3);
+    setNumMetaInfo("three", 3., testDb());
+    initNumMetaInfo("three", 4, testDb());
+    QCOMPARE( getNumMetaInfo("three", testDb()), 3);
 }
 void test_properties::test_get_uninit_num()
 {
-    QCOMPARE(getNumMetaInfo("null",testCon), 0.);
+    QCOMPARE(getNumMetaInfo("null",testDb()), 0.);
 }
 

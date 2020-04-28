@@ -19,7 +19,7 @@ void test_letterTemplate::initTestCase()
 }
 
 void test_letterTemplate::init()
-{LOG_CALL;
+{   LOG_CALL;
     if (QFile::exists(filename))
         QVERIFY(QFile::remove(filename));
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", testCon);
@@ -31,7 +31,7 @@ void test_letterTemplate::init()
 }
 
 void test_letterTemplate::cleanup()
-{LOG_CALL;
+{   LOG_CALL;
     QSqlDatabase::database().removeDatabase(testCon);
     QSqlDatabase::database().close();
     if (QFile::exists(filename))
@@ -39,23 +39,23 @@ void test_letterTemplate::cleanup()
 }
 
 void test_letterTemplate::test_save_letter_template()
-{LOG_CALL;
+{   LOG_CALL;
     letterTemplate temp(letterTemplate::templateId::JA_thesa);
-    temp.saveTemplate(testCon);
-    QVERIFY2(tableExists("Briefvorlagen", testCon), "save letter template: die Tabelle Briefvorlagen wurde nicht angelegt");
+    temp.saveTemplate(testDb());
+    QVERIFY2(tableExists("Briefvorlagen", testDb()), "save letter template: die Tabelle Briefvorlagen wurde nicht angelegt");
 }
 
 void test_letterTemplate::test_load_letter_template()
-{LOG_CALL;
+{   LOG_CALL;
     letterTemplate src(letterTemplate::templateId::JA_thesa);
-    src.saveTemplate(testCon);
+    src.saveTemplate(testDb());
     letterTemplate dst(letterTemplate::Kuendigung);
-    QVERIFY(dst.loadTemplate(letterTemplate::templateId::JA_thesa, testCon));
+    QVERIFY(dst.loadTemplate(letterTemplate::templateId::JA_thesa, testDb()));
     QVERIFY2(src == dst, "save letter template: die Tabelle Briefvorlagen wurde nicht angelegt");
 }
 
 void test_letterTemplate::test_applyPlaceholders()
-{LOG_CALL;
+{   LOG_CALL;
     QMap<int, QString> result;
     QMap<int, bool> res;
     letterTemplate tlate(letterTemplate::Kuendigung);

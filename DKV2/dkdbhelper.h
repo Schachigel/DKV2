@@ -12,6 +12,7 @@
 #include "dbtable.h"
 #include "dbfield.h"
 #include "dbstructure.h"
+#include "sqlhelper.h"
 
 extern dbstructure dkdbstructur;
 extern dbstructure dkdbAddtionalTables;
@@ -36,19 +37,18 @@ void init_additionalTables();
 void init_bookingTypes();
 
 bool create_DK_database(const QString& filename);
-bool create_DK_database(QSqlDatabase db=QSqlDatabase::database());
+bool create_DK_database(QSqlDatabase db=defaultDb());
 
 
-bool check_db_version(QSqlDatabase db=QSqlDatabase::database());
+bool check_db_version(QSqlDatabase db=defaultDb());
 bool isValidDatabase(const QString& filename);
-bool isValidDatabase(QSqlDatabase db=QSqlDatabase::database());
+bool isValidDatabase(QSqlDatabase db=defaultDb());
 
-void closeDatabaseConnection(QString connection= QLatin1String(QSqlDatabase::defaultConnection));
+void closeDatabaseConnection(QString connection= QSqlDatabase::defaultConnection);
 bool open_databaseForApplication( QString newDbFile="");
 QStringList check_DbConsistency( );
 
-bool ensureTable(const dbtable& table, const QString& connection= QLatin1String(QSqlDatabase::defaultConnection));
-bool ensureTable(const dbtable& table, QSqlDatabase& db);
+bool ensureTable(const dbtable& table, QSqlDatabase db = defaultDb());
 
 bool create_DB_copy(QString targetfn, bool anonym);
 
@@ -69,13 +69,12 @@ QString contractList_FROM();
 QString contractList_WHERE(const QString& filter);
 QString contractList_SQL(const QVector<dbfield>& f, const QString& filter);
 
-void initMetaInfo( const QString& name, const QString& wert, const QString& con=QLatin1String(QSqlDatabase::defaultConnection));
-void initNumMetaInfo( const QString& name, const double& wert, const QString& con=QLatin1String(QSqlDatabase::defaultConnection));
-double getNumMetaInfo(const QString& name, QSqlDatabase db);
-double getNumMetaInfo(const QString& name, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
-QString getMetaInfo(const QString& name, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
-void setNumMetaInfo(const QString& name, const double Wert, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
-void setMetaInfo(const QString& name, const QString& value, const QString& connection=QLatin1String(QSqlDatabase::defaultConnection));
+void initMetaInfo( const QString& name, const QString& wert, QSqlDatabase db = defaultDb());
+void initNumMetaInfo( const QString& name, const double& wert, QSqlDatabase db = defaultDb());
+QString getMetaInfo(const QString& name,QSqlDatabase db = defaultDb());
+double getNumMetaInfo(const QString& name, QSqlDatabase db = defaultDb());
+void setMetaInfo(const QString& name, const QString& value, QSqlDatabase db = defaultDb());
+void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db = defaultDb());
 
 bool createCsvActiveContracts();
 
@@ -109,8 +108,8 @@ struct ContractEnd
     int count;
     double value;
 };
-void calc_contractEnd(QVector<ContractEnd>& ce, QString connection=QLatin1String(QSqlDatabase::defaultConnection));
-void calculateSummary(DbSummary& dbs, QString connection=QLatin1String(QSqlDatabase::defaultConnection));
+void calc_contractEnd(QVector<ContractEnd>& ce, QSqlDatabase db = defaultDb());
+void calculateSummary(DbSummary& dbs, QSqlDatabase db = defaultDb());
 
 struct YZV
 {
@@ -119,12 +118,12 @@ struct YZV
     int count;
     double sum;
 };
-void calc_anualInterestDistribution( QVector<YZV>& yzv, QString connection=QLatin1String(QSqlDatabase::defaultConnection));
+void calc_anualInterestDistribution( QVector<YZV>& yzv, QSqlDatabase db = defaultDb());
 struct rowData
 {
     QString text; QString number; QString value;
 };
 
-QVector<rowData> contractRuntimeDistribution(QString connection=QLatin1String(QSqlDatabase::defaultConnection));
+QVector<rowData> contractRuntimeDistribution(QSqlDatabase db = defaultDb());
 
 #endif // DKDBHELPER_H

@@ -36,14 +36,12 @@ void initLogging()
 }
 
 QString interactW_UserForDB(QString dbfile)
-{LOG_CALL;
-
+{   LOG_CALL;
     do
     {
         dbfile = QFileDialog::getSaveFileName(nullptr,
                                               "Wähle eine Datenbank oder gib einen Namen für eine Neue ein",
                                               QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +"/DKV2", "dk-DB Dateien (*.dkdb)", nullptr,QFileDialog::DontConfirmOverwrite);
-
         qDebug() << "DbFile from user: " << dbfile;
         if( dbfile == "") return QString();  // canceled by user
 
@@ -81,7 +79,7 @@ QString interactW_UserForDB(QString dbfile)
 }
 
 QString getInitialDb()
-{LOG_CALL;
+{   LOG_CALL;
     QSettings config;
     QString dbfile = config.value("db/last").toString();
     if(  dbfile != "" && QFile::exists(dbfile) && isValidDatabase(dbfile))
@@ -94,7 +92,7 @@ QString getInitialDb()
 }
 
 QString initDb()
-{LOG_CALL;
+{   LOG_CALL;
     QString dbfile =getInitialDb();
     if( dbfile == "")
     {
@@ -105,7 +103,7 @@ QString initDb()
 }
 
 QSplashScreen* doSplash()
-{LOG_CALL;
+{    LOG_CALL;
     QPixmap pixmap(":/res/splash.png");
     QSplashScreen *splash = new QSplashScreen(pixmap, Qt::SplashScreen|Qt::WindowStaysOnTopHint);
     splash->show();
@@ -113,7 +111,7 @@ QSplashScreen* doSplash()
 }
 
 void setGermanUi()
-{LOG_CALL;
+{    LOG_CALL;
     QTranslator trans;
     QString translationFile = QDir::currentPath() + "/translations/qt_de.qm";
     if( trans.load(QLocale(),translationFile))

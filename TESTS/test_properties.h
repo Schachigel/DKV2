@@ -2,6 +2,7 @@
 #define TEST_PROPERTIES_H
 
 #include <QObject>
+#include <QSqlDatabase>
 #include <QTest>
 
 class test_properties : public QObject
@@ -14,6 +15,7 @@ public:
 private:
     const QString filename = "..\\..\\data\\testdb.sqlite";
     const QString testCon = "test_dkdb_connection";
+    QSqlDatabase testDb(){return QSqlDatabase::database("test_dkdb_connection");}
 
 private slots:
     void initTestCase();

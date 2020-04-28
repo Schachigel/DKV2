@@ -1,3 +1,7 @@
+-- jahresabschluss Briefe ...
+
+-- test berechne zusammenfassung ist leer
+
 -- improve startup sequence with no db
   we should have a wizard
 

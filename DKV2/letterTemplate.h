@@ -7,6 +7,8 @@
 #include <QTextDocument>
 #include <QPrinter>
 
+#include "sqlhelper.h"
+
 const double mmInPt {2.83465};
 
 class letterTemplate
@@ -33,8 +35,8 @@ public:
     //explicit letterTemplate(){ initPrinter();};
     letterTemplate(templateId type);
     ~letterTemplate(){ }
-    bool saveTemplate(const QString& con =QSqlDatabase::defaultConnection) const;
-    bool loadTemplate(letterTemplate::templateId id, const QString& con =QSqlDatabase::defaultConnection);
+    bool saveTemplate(QSqlDatabase db = defaultDb()) const;
+    bool loadTemplate(letterTemplate::templateId id, QSqlDatabase db= defaultDb());
 
     void init_Geldeingang();
     void init_JA_thesa();
