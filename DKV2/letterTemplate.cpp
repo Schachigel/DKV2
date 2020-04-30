@@ -505,9 +505,11 @@ bool letterTemplate::createPdf(QString file, const QTextDocument& doc)
 #endif
 
     printer->setOutputFileName(file);
+#ifdef QT_DEBUG
     int written = htmlfile.write(testhtml.toUtf8());
     if( written <1)
         qDebug() << "html not written" << htmlfile.errorString();
+#endif
     doc.print(printer);
     return true;
 }

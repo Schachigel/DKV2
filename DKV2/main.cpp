@@ -51,7 +51,7 @@ QString interactW_UserForDB(QString dbfile)
                 return dbfile;
             else
             {
-                if( QMessageBox::Yes == QMessageBox::information(nullptr, "Die gewählte Datenbank ist ungültig", "Soll die Datei für eine neue DB überschrieben werden?"))
+                if( QMessageBox::Yes == QMessageBox::question(nullptr, "Die gewählte Datenbank ist ungültig", "Soll die Datei für eine neue DB überschrieben werden?"))
                 {
                     if( create_DK_database(dbfile))
                         return dbfile;

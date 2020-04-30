@@ -368,7 +368,7 @@ bool isValidDatabase(QSqlDatabase db)
     enableRefInt.exec("PRAGMA foreign_keys = ON");
     if( !has_allTablesAndFields(db))
         return false;
-    if( !check_db_version())
+    if( !check_db_version(db))
     {
         qCritical() << "database version check failed";
         return false;
@@ -419,7 +419,7 @@ bool open_databaseForApplication( QString newDbFile)
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(newDbFile);
     db.open();
-    if( !check_db_version())
+    if( !check_db_version(db))
         return false;
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     init_GmbHData();
