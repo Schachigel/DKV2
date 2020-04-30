@@ -93,16 +93,21 @@ bool MainWindow::useDb(const QString& dbfile)
 {   LOG_CALL;
     if( open_databaseForApplication(dbfile))
     {
-        showDbInStatusbar();
+        showDbInStatusbar(dbfile);
         return true;
     }
+    qDebug() << "the databse could not be used for this application";
     return false;
 }
 
-void MainWindow::showDbInStatusbar()
+void MainWindow::showDbInStatusbar( QString filename)
 {   LOG_CALL;
-    QSettings config;
-    ui->statusLabel->setText(config.value("db/last").toString());
+    if( filename.isEmpty())
+    {
+        QSettings config;
+        filename = config.value("db/last").toString();
+    }
+    ui->statusLabel->setText( filename);
 }
 
 void MainWindow::prepareWelcomeMsg()
@@ -199,7 +204,11 @@ void MainWindow::on_action_create_new_DB_triggered()
     QSettings config;
     config.setValue("db/last", dbfile);
     config.setValue("outdir", fiDbFile.path());
-    useDb();
+    if( !useDb(dbfile))
+    {
+        QMessageBox::information(this, "Fehler", "Die neue Datenbankdatei konnte nicht geöffnet werden");
+        qDebug() << "use db failed";
+    }
 
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
@@ -211,10 +220,12 @@ void MainWindow::on_action_open_DB_triggered()
     if( dbfile == "")
     {
         qDebug() << "keine Datei wurde vom Anwender ausgewählt";
+        QMessageBox::information(this, "Abbruch", "Es wurde keine Datenbankdatei ausgewählt");
         return;
     }
     busycursor b;
     useDb(dbfile);
+
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_action_create_anonymous_copy_triggered()

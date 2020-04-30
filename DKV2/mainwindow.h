@@ -137,7 +137,7 @@ private:
     void prepare_contracts_list_view();
     void prepareWelcomeMsg();
     bool useDb(const QString& dbfile="");
-    void showDbInStatusbar();
+    void showDbInStatusbar(QString filename = "");
     int save_creditor();
     bool save_new_contract();
     QSqlQueryModel* tmp_ContractsModel;

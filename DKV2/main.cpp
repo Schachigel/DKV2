@@ -51,7 +51,11 @@ QString interactW_UserForDB(QString dbfile)
                 return dbfile;
             else
             {
-                if( QMessageBox::Yes == QMessageBox::question(nullptr, "Die gewählte Datenbank ist ungültig", "Soll die Datei für eine neue DB überschrieben werden?"))
+                QMessageBox::StandardButton sb = QMessageBox::question(nullptr, "Die gewählte Datenbank ist ungültig", "Soll die Datei für eine neue DB überschrieben werden?");
+                qDebug() << "users choice: replace file " << sb;
+                if( QMessageBox::Yes != sb)
+                    continue;
+                else
                 {
                     if( create_DK_database(dbfile))
                         return dbfile;
@@ -103,7 +107,7 @@ QString initDb()
 }
 
 QSplashScreen* doSplash()
-{    LOG_CALL;
+{   LOG_CALL;
     QPixmap pixmap(":/res/splash.png");
     QSplashScreen *splash = new QSplashScreen(pixmap, Qt::SplashScreen|Qt::WindowStaysOnTopHint);
     splash->show();
@@ -111,7 +115,7 @@ QSplashScreen* doSplash()
 }
 
 void setGermanUi()
-{    LOG_CALL;
+{   LOG_CALL;
     QTranslator trans;
     QString translationFile = QDir::currentPath() + "/translations/qt_de.qm";
     if( trans.load(QLocale(),translationFile))
@@ -136,18 +140,18 @@ int main(int argc, char *argv[])
 
     setGermanUi();
 
-#ifndef QT_DEBUG
-    QSplashScreen* splash = doSplash(); // do only AFTER having an app. object
-#else
-    QSplashScreen* splash = nullptr;
-#endif
-
     init_DKDBStruct();
     init_additionalTables();
 
     QString db = initDb();
     QSettings config;
     config.setValue("db/last", db);
+
+#ifndef QT_DEBUG
+    QSplashScreen* splash = doSplash(); // do only AFTER having an app. object
+#else
+    QSplashScreen* splash = nullptr;
+#endif
 
     MainWindow w;
     w.setSplash(splash);

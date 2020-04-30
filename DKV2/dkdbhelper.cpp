@@ -396,9 +396,10 @@ void closeDatabaseConnection(QString con)
 bool check_db_version(QSqlDatabase db)
 {   LOG_CALL;
     double d = getNumMetaInfo(DB_VERSION, db);
-    if( d < CURRENT_DB_VERSION)
-        return false;
-    return true;
+    if( d >= CURRENT_DB_VERSION)
+        return true;
+    qDebug() << "db version check failed: found version " << d << " needed version " << CURRENT_DB_VERSION;
+    return false;
 }
 
 bool open_databaseForApplication( QString newDbFile)
@@ -418,9 +419,13 @@ bool open_databaseForApplication( QString newDbFile)
     // setting the default database for the application
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(newDbFile);
-    db.open();
+    if( !db.open())
+    {   qDebug() << "open database file " << newDbFile << " failed";
+        return false;
+    }
     if( !check_db_version(db))
         return false;
+
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     init_GmbHData();
     insert_bookingTypes();
