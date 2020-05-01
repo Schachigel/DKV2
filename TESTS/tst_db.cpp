@@ -15,6 +15,12 @@
 #include "tst_db.h"
 // add necessary includes here
 
+void tst_db::initTestCase()
+{
+    // init
+    init_DKDBStruct();
+}
+
 void tst_db::init()
 {    LOG_CALL;
     QDir().mkdir(QString("..\\data"));
@@ -233,8 +239,6 @@ void tst_db::dbfieldCopyConst()
 
 void tst_db::newDbIsValid()
 {
-    // init
-    init_DKDBStruct();
     // test
     create_DK_database( QSqlDatabase::database(testCon));
     //QVERIFY(istValideDatenbank(filename)); // already done in DKDatenbankAnlegen
@@ -242,8 +246,6 @@ void tst_db::newDbIsValid()
 
 void tst_db::createKreditor()
 {
-    // init
-    init_DKDBStruct();
     // test
     create_DK_database(QSqlDatabase::database(testCon));
     Kreditor k;

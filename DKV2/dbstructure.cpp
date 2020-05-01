@@ -35,7 +35,10 @@ bool dbstructure::createDb(QSqlDatabase db) const
     QSqlQuery q(db);
     for(dbtable table :getTables())
     {
-        ensureTable(table, db);
+        if(ensureTable(table, db))
+            continue;
+        qCritical() << "could not create table " << table.name;
+        break;
     }
     return true;
 }

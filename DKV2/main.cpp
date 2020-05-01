@@ -84,7 +84,8 @@ QString interactW_UserForDB(QString dbfile)
 
 QString getInitialDb()
 {   LOG_CALL;
-    QString dbfile = QApplication::instance()->arguments().at(1);
+    QStringList args =QApplication::instance()->arguments();
+    QString dbfile = args.size() > 1 ? args.at(1) : QString();
 
     if( dbfile.isEmpty())
     {
