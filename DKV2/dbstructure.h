@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QVector>
+#include <QSqlDatabase>
 
 #include "dbtable.h"
 

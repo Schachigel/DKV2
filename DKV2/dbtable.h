@@ -11,6 +11,7 @@
 #include <QList>
 
 #include "dbfield.h"
+
 class dbstructure;
 
 class dbtable
@@ -45,9 +46,9 @@ public:
     QVariant getValue(const QString& f) const { return record.field(f).value();}
     QSqlRecord getRecord() const {return record;}
     // interface
-    int InsertData(     QSqlDatabase db =QSqlDatabase::database()) const;
-    int InsertOrReplaceData(QSqlDatabase db =QSqlDatabase::database()) const;
-    int UpdateData(     QSqlDatabase db =QSqlDatabase::database()) const;
+    int InsertData(     QSqlDatabase db =QSqlDatabase::database(QSqlDatabase::defaultConnection)) const;
+    int InsertOrReplaceData(QSqlDatabase db =QSqlDatabase::database(QSqlDatabase::defaultConnection)) const;
+    int UpdateData(     QSqlDatabase db =QSqlDatabase::database(QSqlDatabase::defaultConnection)) const;
     //int getInsertedRecordId() const {return lastRecord;}
 private:
     // data

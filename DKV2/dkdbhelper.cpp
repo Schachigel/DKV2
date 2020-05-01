@@ -163,7 +163,7 @@ bool insert_interestRates(QSqlDatabase db)
     return ret;
 }
 
-bool insert_bookingTypes(QSqlDatabase db =QSqlDatabase::database())
+bool insert_bookingTypes(QSqlDatabase db =defaultDb())
 {   LOG_CALL;
     bool ret = true;
     for( auto art: Buchungsarten)
@@ -463,7 +463,7 @@ QStringList check_DbConsistency( )
 bool copy_Table(QString table, QSqlDatabase targetDB)
 {   LOG_CALL_W(table);
     bool success = true;
-    QSqlQuery q(QSqlDatabase::database(QLatin1String(QSqlDatabase::defaultConnection))); // default database connection -> active database
+    QSqlQuery q(defaultDb()); // default database connection -> active database
     q.prepare("SELECT * FROM " + table);
     q.exec();
     while( q.next())
@@ -492,7 +492,7 @@ bool copy_mangledCreditors(QSqlDatabase targetDB)
 {
     bool success = true;
     int recCount = 0;
-    QSqlQuery q(QSqlDatabase::database(QLatin1String(QSqlDatabase::defaultConnection))); // default database connection -> active database
+    QSqlQuery q(defaultDb()); // default database connection -> active database
     q.prepare("SELECT * FROM Kreditoren");
     q.exec();
     while( q.next())
@@ -666,7 +666,7 @@ void interestRates_for_dropdown(QList<ZinsAnzeigeMitId>& Rates)
     query.prepare("SELECT id, Zinssatz, Bemerkung FROM Zinssaetze ORDER BY Zinssatz DESC");
     if( !query.exec())
     {
-        qCritical() << "Error reading Interrest Rates while creating a contract: " << QSqlDatabase::database().lastError().text();
+        qCritical() << "Error reading Interrest Rates while creating a contract: " << defaultDb().lastError().text();
     }
     while(query.next())
     {
