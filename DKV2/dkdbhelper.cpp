@@ -241,20 +241,24 @@ void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db)
 bool create_DK_database(QSqlDatabase db)
 {   LOG_CALL_W(db.databaseName());
     bool ret = true;
-    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
+    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
+
+    do{
+        db.transaction();
+        if(! (ret &= createTables( dkdbstructur, db))) break;
+        if(! (ret &= insert_interestRates(db))) break;
+        if(! (ret &= insert_bookingTypes(db))) break;
+        if(! (ret &= insert_Properties(db))) break;
+    }while(false);
+
+    if(!ret)
     {
-    db.transaction();
-    ret &= dkdbstructur.createDb(db);
-    ret &= insert_interestRates(db);
-    ret &= insert_bookingTypes(db);
-    ret &= insert_Properties(db);
-    if( ret) db.commit(); else db.rollback();
-    }
-    if( !ret)
-    {
+        db.rollback();
         qCritical() << "creating db structure in new database failed";
         return false;
     }
+
+    db.commit();
     return isValidDatabase(db);
 }
 bool create_DK_database(const QString& filename) /*in the default connection*/
@@ -315,26 +319,6 @@ bool has_allTablesAndFields(QSqlDatabase& db)
     }
     qDebug() << db.databaseName() << " has all tables expected";
     return true;
-}
-
-bool ensureTable( const dbtable& table, QSqlDatabase db)
-{   LOG_CALL_W(table.Name());
-    if( tableExists(table.Name(), db))
-    {
-        QVector<QString> fields = getFieldsFromTablename(table.Name(), db);
-        for (int i=0; i < table.Fields().count(); i++)
-        {
-            QString expectedFieldName = table.Fields()[i].name();
-            if( fields.indexOf(expectedFieldName) == -1 )
-            {
-                qDebug() << "ensureTable() failed: table exists with wrong field" << expectedFieldName;
-                return false;
-            }
-        }
-        return true;
-    }
-    // create table
-    return table.create(db);
 }
 
 bool isValidDatabase(const QString& filename)

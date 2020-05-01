@@ -48,8 +48,6 @@ void closeDatabaseConnection(QString connection= QSqlDatabase::defaultConnection
 bool open_databaseForApplication( QString newDbFile="");
 QStringList check_DbConsistency( );
 
-bool ensureTable(const dbtable& table, QSqlDatabase db = defaultDb());
-
 bool create_DB_copy(QString targetfn, bool anonym);
 
 QString proposeKennung();

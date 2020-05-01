@@ -229,6 +229,7 @@ bool letterTemplate::saveTemplate(QSqlDatabase db) const
     }
     return true;
 }
+
 bool letterTemplate::loadTemplate(letterTemplate::templateId id, QSqlDatabase db)
 {   LOG_CALL;
     if( !tableExists("Briefvorlagen", db))

@@ -12,20 +12,68 @@ QSqlDatabase defaultDb()
 }
 
 bool tableExists (const QString& tablename, QSqlDatabase db)
-{   LOG_CALL_W(tablename);
+{   // LOG_CALL_W(tablename);
     QSqlQuery query (db);
     query.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='" + tablename + "'");
     if( !query.exec())
     {
-        qDebug() << "query exec in tableExists failed " << query.lastError() << "  " << query.lastQuery();
+        qDebug() << "tableExists: query exec in tableExists failed " << query.lastError() << "  " << query.lastQuery();
         return false;
     }
     if( query.first())
     {
-        qDebug() << "tableExists succeded for table " << tablename;
+        qDebug() << "tableExists: succeded for table " << tablename;
         return true;
     }
     return false;
+}
+
+int rowCount(const QString& table, QSqlDatabase db)
+{
+    QSqlQuery q(db);
+    if( q.exec( "SELECT rowid FROM " + table))
+    {
+        q.last();
+        return q.at()+1; // zero based counting
+    }
+    else
+    {
+        qCritical() << "row counting query failed" << q.lastError() << endl << q.lastQuery();
+        return -1;
+    }
+}
+
+bool createTables( const dbstructure& structure, QSqlDatabase db)
+{   LOG_CALL;
+    bool ret = true;
+    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
+
+    db.transaction();
+    ret = structure.createDb(db);
+    if( ret) db.commit();
+    else db.rollback();
+
+    return ret;
+}
+
+bool ensureTable( const dbtable& table, QSqlDatabase db)
+{   LOG_CALL_W(table.Name());
+    if( tableExists(table.Name(), db))
+    {
+        QVector<QString> fields = getFieldsFromTablename(table.Name(), db);
+        for (int i=0; i < table.Fields().count(); i++)
+        {
+            QString expectedFieldName = table.Fields()[i].name();
+            if( fields.indexOf(expectedFieldName) == -1 )
+            {
+                qDebug() << "ensureTable() failed: table exists with wrong field" << expectedFieldName;
+                return false;
+            }
+        }
+        return true;
+    }
+    // create table
+    return table.create(db);
 }
 
 QVector<QString> getFieldsFromTablename(const QString& tablename, QSqlDatabase db)
@@ -146,7 +194,6 @@ int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant&
             qDebug() << q.numRowsAffected() << " record were modified";
 
         return q.numRowsAffected();
-;
     }
     qCritical() << "faild to execute update sql: " << q.lastError()
                 << endl << q.lastQuery();

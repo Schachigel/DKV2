@@ -5,12 +5,18 @@
 #include <QDate>
 #include <QSqlQuery>
 #include <QSqlRecord>
-
+#include "dbstructure.h"
 #include "dbfield.h"
 
 QSqlDatabase defaultDb();
 
 bool tableExists(const QString& tablename, QSqlDatabase db = defaultDb());
+
+int rowCount(const QString& table, QSqlDatabase db = defaultDb());
+
+bool createTables( const dbstructure& structure, QSqlDatabase db = defaultDb());
+
+bool ensureTable(const dbtable& table, QSqlDatabase db = defaultDb());
 
 QVector<QString> getFieldsFromTablename(const QString& tablename, QSqlDatabase db= defaultDb());
 

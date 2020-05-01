@@ -2,11 +2,11 @@
 #include "helper.h"
 #include <QSqlDatabase>
 #include <QSqlQuery>
-
+#include "sqlhelper.h"
 #include "dbstructure.h"
 
 dbstructure dbstructure::appendTable(dbtable t)
-{   LOG_CALL;
+{   // LOG_CALL;
     qDebug() << "adding table to db structure " << t.name;
     for (auto table: Tables)
         if( table.Name() == t.Name())
@@ -35,8 +35,7 @@ bool dbstructure::createDb(QSqlDatabase db) const
     QSqlQuery q(db);
     for(dbtable table :getTables())
     {
-        if(!table.create(db))
-            return false;
+        ensureTable(table, db);
     }
     return true;
 }
