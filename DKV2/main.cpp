@@ -84,8 +84,13 @@ QString interactW_UserForDB(QString dbfile)
 
 QString getInitialDb()
 {   LOG_CALL;
-    QSettings config;
-    QString dbfile = config.value("db/last").toString();
+    QString dbfile = QApplication::instance()->arguments().at(1);
+
+    if( dbfile.isEmpty())
+    {
+        QSettings config;
+        dbfile = config.value("db/last").toString();
+    }
     if(  dbfile != "" && QFile::exists(dbfile) && isValidDatabase(dbfile))
     {
         qDebug() << "DbFile from configuration exists and is valid: " << dbfile;

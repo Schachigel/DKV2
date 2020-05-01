@@ -20,7 +20,7 @@
 #include "kreditor.h"
 #include "dbstructure.h"
 
-const double CURRENT_DB_VERSION {2.0};
+const double CURRENT_DB_VERSION {1.0};
 const QString DB_VERSION {"Version"};
 
 dbstructure dkdbstructur;

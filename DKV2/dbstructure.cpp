@@ -19,8 +19,8 @@ dbstructure dbstructure::appendTable(dbtable t)
 }
 
 dbtable dbstructure::operator[](const QString& name) const
-{   LOG_CALL;
-    qDebug() << "accessing db table " << name;
+{   // LOG_CALL;
+    // qDebug() << "accessing db table " << name;
     for( dbtable table : Tables)
     {
         if( table.Name() == name)

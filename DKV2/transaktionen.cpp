@@ -95,6 +95,11 @@ void VertragsEnde_LaufzeitEnde( Contract& v)
     double davonZins =ZinsesZins(v.Zinsfuss(), aktuellerWert, v.StartZinsberechnung(), Vertragsende, v.Thesaurierend());
     double neuerWert =aktuellerWert +davonZins;
 
+    qDebug() << endl <<
+                "Vertragsende:" << endl <<
+                "Zeitraum: " << v.StartZinsberechnung() << " bis " << Vertragsende << endl <<
+                "alt: " << aktuellerWert << " + Zins: " << davonZins << "  ergibt " << neuerWert;
+
     QString confirmDeleteMsg("<h3>Vertragsabschluß</h3><br>Wert zum Vertragsende: %1 Euro<br>Zins der letzten Zinsphase: %2 Euro<br>"\
                              "Soll der Vertrag gelöscht werden?");
     confirmDeleteMsg = confirmDeleteMsg.arg(locale.toCurrencyString(neuerWert), locale.toCurrencyString(davonZins));
@@ -125,7 +130,7 @@ void VertragsEnde_MitKFrist( Contract& v)
     do {
         if( QDialog::Accepted != dlg.exec())
         {
-            qDebug() << "Delete contract was aborted by the user";
+            qDebug() << "Kündigung wurde abgebrochen ";
             return; // not an error
         }
         Vertragsende = dlg.getDate().addMonths(KuendigungsMonate).addDays(1);

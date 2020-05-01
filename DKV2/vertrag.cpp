@@ -264,8 +264,10 @@ bool Contract::terminateActiveContract( const QDate& termin)
     wert += davonZins;
 
     QSqlDatabase::database().transaction();
+    QLocale locale;
     QString Belegnachricht("Aktiven Vertrag " + QString::number(id) + " beenden. ");
-    Belegnachricht += QString::number(Wert()) + "Euro (" + QString::number(davonZins) + "Euro Zins)";
+    Belegnachricht += locale.toCurrencyString(Wert()) + " -> " + locale.toCurrencyString(wert) + " (" + locale.toCurrencyString(davonZins) + ")";
+
     if( !saveRecord(VERTRAG_BEENDEN, Belegnachricht))
     {
         qCritical() << "Belegdaten konnten nicht gespeichert werden";
@@ -314,9 +316,9 @@ bool Contract::saveRecordAnnualPayment(const QDate &end)
 }
 
 bool Contract::bookAnnualInterest(const QDate& end)
-{   LOG_CALL;
+{   LOG_CALL_W( QString::number(end.year()));
     if( end < StartZinsberechnung())
-    {
+    {   // Verträge, für die der Jahresabschluß bereits gemacht worden ist
         qDebug() << "Begin der Zinsberechnung ist NACH dem Jahresabschlussdatum -> keine Abrechnung";
         return false;
     }

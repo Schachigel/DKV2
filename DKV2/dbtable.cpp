@@ -4,7 +4,7 @@
 #include "dbfield.h"
 
 dbfield dbtable::operator[](QString s) const
-{   LOG_CALL_W(s);
+{   // LOG_CALL_W(s);
     for (auto f : fields)
     {
         if( f.name() == s)
@@ -14,7 +14,7 @@ dbfield dbtable::operator[](QString s) const
 }
 
 dbtable dbtable::append(const dbfield& f)
-{   LOG_CALL;
+{   // LOG_CALL;
     dbfield newf(f);
     newf.setTableName(Name());
     fields.append(newf);
@@ -79,7 +79,7 @@ void TableDataInserter::init(const dbtable& t)
 }
 
 void TableDataInserter::setValue(const QString& n, const QVariant& v)
-{   LOG_CALL_W(n);
+{   // LOG_CALL_W(n);
     qDebug() << "tableinserter setValue: " << n << " -> " << v ;
     if( n.isEmpty()) return;
     if( record.contains(n))
