@@ -29,7 +29,7 @@ dbstructure dkdbAddtionalTables;
 QList<QPair<qlonglong, QString>> Buchungsarten;
 
 void init_DKDBStruct()
-{   LOG_CALL;
+{   LOG_CALL_W("Setting up internal database structures");
     static bool done = false;
     if( done) return; // 4 tests
     init_bookingTypes();
@@ -262,12 +262,8 @@ bool create_DK_database(QSqlDatabase db)
     return isValidDatabase(db);
 }
 bool create_DK_database(const QString& filename) /*in the default connection*/
-{   LOG_CALL_W("given filename: " + filename);
-    if( filename.isEmpty())
-    {
-        qCritical() << "call to DKDatenbankAnlegen w/o filename";
-        return false;
-    }
+{   LOG_CALL_W("filename: " + filename);
+    Q_ASSERT(!filename.isEmpty());
     if( QFile(filename).exists())
     {
         backupFile(filename, "db-bak");
@@ -337,7 +333,7 @@ bool isValidDatabase(const QString& filename)
         {
             closer.set(&db);
             if( !isValidDatabase(db))
-                msg = "database not valid";
+                msg = "database was found to be NOT valid";
         }
     }
     if( msg.isEmpty())

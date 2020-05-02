@@ -40,19 +40,20 @@ QString interactW_UserForDB(QString dbfile)
     do
     {
         dbfile = QFileDialog::getSaveFileName(nullptr,
-                                              "Wähle eine Datenbank oder gib einen Namen für eine Neue ein",
-                                              QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +"/DKV2", "dk-DB Dateien (*.dkdb)", nullptr,QFileDialog::DontConfirmOverwrite);
+            "Wähle eine Datenbank oder gib einen Namen für eine Neue ein",
+            QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +"/DKV2", "dk-DB Dateien (*.dkdb)", nullptr,QFileDialog::DontConfirmOverwrite);
         qDebug() << "DbFile from user: " << dbfile;
-        if( dbfile == "") return QString();  // canceled by user
+        if( dbfile == "")
+            return QString();  // canceled by user
 
         if( QFile::exists(dbfile))
         {
             if( isValidDatabase(dbfile))
                 return dbfile;
             else
-            {
+            {   // overwrite?
                 QMessageBox::StandardButton sb = QMessageBox::question(nullptr, "Die gewählte Datenbank ist ungültig", "Soll die Datei für eine neue DB überschrieben werden?");
-                qDebug() << "users choice: replace file " << sb;
+                qDebug() << "users choice: replace file? " << sb;
                 if( QMessageBox::Yes != sb)
                     continue;
                 else
@@ -82,32 +83,32 @@ QString interactW_UserForDB(QString dbfile)
     while(true);
 }
 
-QString getInitialDb()
+QString getInitialDbFile(QString dbfileFromCmdline)
 {   LOG_CALL;
-    QStringList args =QApplication::instance()->arguments();
-    QString dbfile = args.size() > 1 ? args.at(1) : QString();
-
-    if( dbfile.isEmpty())
-    {
-        QSettings config;
-        dbfile = config.value("db/last").toString();
+    if( !dbfileFromCmdline.isEmpty())
+    {   // if there is a cmd line arg we will not try other
+        qDebug() << "DB file from commandline: " << dbfileFromCmdline;
+        if( isValidDatabase( dbfileFromCmdline))
+            return dbfileFromCmdline;
+        else
+            return QString();
     }
-    if(  dbfile != "" && QFile::exists(dbfile) && isValidDatabase(dbfile))
-    {
+
+    QString dbfile;
+    QSettings config;
+    dbfile = config.value("db/last").toString();
+    qDebug() << "DB file from configuration: " << dbfile;
+
+    if(  dbfile != "" && isValidDatabase(dbfile))
+    {   // all good then
         qDebug() << "DbFile from configuration exists and is valid: " << dbfile;
         return dbfile;
     }
-
-    return interactW_UserForDB(dbfile);
-}
-
-QString initDb()
-{   LOG_CALL;
-    QString dbfile =getInitialDb();
-    if( dbfile == "")
+    dbfile = interactW_UserForDB(dbfile);
+    if( dbfile.isEmpty())
     {
         qCritical() << "No valid DB -> abort";
-        exit (ERROR_FILE_NOT_FOUND);
+        return QString();
     }
     return dbfile;
 }
@@ -149,9 +150,21 @@ int main(int argc, char *argv[])
     init_DKDBStruct();
     init_additionalTables();
 
-    QString db = initDb();
-    QSettings config;
-    config.setValue("db/last", db);
+    // command line argument 1 has precedence
+    QStringList args =QApplication::instance()->arguments();
+    QString dbfileFromCmdline = args.size() > 1 ? args.at(1) : QString();
+
+    QString DatabaseFileName = getInitialDbFile(dbfileFromCmdline);
+    if( DatabaseFileName.isEmpty())
+    {   // qCritical() << "no valid database -> exiting";
+        exit (ERROR_FILE_NOT_FOUND);
+    }
+
+    if( dbfileFromCmdline.isEmpty())
+    {   // do not save config from cmd
+        QSettings config;
+        config.setValue("db/last", DatabaseFileName);
+    }
 
 #ifndef QT_DEBUG
     QSplashScreen* splash = doSplash(); // do only AFTER having an app. object

@@ -8,7 +8,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QDebug>
-#include <QSettings>
+//#include <QSettings>
 // 4 html pdf generation
 #include <QPainter>
 #include <QPdfWriter>
