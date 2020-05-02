@@ -28,6 +28,7 @@ void logger(QtMsgType type, const QMessageLogContext &, const QString &msg)
         if (!outFile_p->open(QIODevice::WriteOnly | QIODevice::Append))
             abort();
     }
+
     static QHash<QtMsgType, QString> msgLevelHash({{QtDebugMsg, "DBuG"}, {QtInfoMsg, "INFo"}, {QtWarningMsg, "WaRN"}, {QtCriticalMsg, "ERRo"}, {QtFatalMsg, "FaTl"}});
 
     QString endlCorrectedMsg (msg);

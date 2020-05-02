@@ -54,7 +54,7 @@ void test_properties::test_set_init_getProperty()
 }
 void test_properties::test_get_uninit()
 {
-    QCOMPARE(getMetaInfo("Hallo"), "");
+    QCOMPARE(getMetaInfo("Hallo", testDb()),"");
 }
 void test_properties::test_set_get_num()
 {

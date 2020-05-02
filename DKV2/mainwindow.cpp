@@ -25,6 +25,7 @@
 #include "askdatedlg.h"
 #include "helper.h"
 #include "filehelper.h"
+#include "appconfig.h"
 #include "itemformatter.h"
 #include "sqlhelper.h"
 #include "dkdbhelper.h"
@@ -93,6 +94,8 @@ bool MainWindow::useDb(const QString& dbfile)
 {   LOG_CALL;
     if( open_databaseForApplication(dbfile))
     {
+        appConfig::setCurrentDb(dbfile);
+        appConfig::setLastDb(dbfile);
         showDbInStatusbar(dbfile);
         return true;
     }
@@ -101,11 +104,10 @@ bool MainWindow::useDb(const QString& dbfile)
 }
 
 void MainWindow::showDbInStatusbar( QString filename)
-{   LOG_CALL;
+{   LOG_CALL_W (filename);
     if( filename.isEmpty())
     {
-        QSettings config;
-        filename = config.value("db/last").toString();
+        filename = appConfig::CurrentDb();
     }
     ui->statusLabel->setText( filename);
 }
@@ -170,9 +172,8 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
 // file menu
 QString askUserDbFilename(QString title, bool existing=false)
 {   LOG_CALL;
-    QSettings config;
     QString folder;
-    QFileInfo lastdb (config.value("db/last").toString());
+    QFileInfo lastdb (appConfig::LastDb());
     if( lastdb.exists())
     {
         folder = lastdb.path();
@@ -201,9 +202,6 @@ void MainWindow::on_action_create_new_DB_triggered()
         exit(0x80070020);
 
     QFileInfo fiDbFile (dbfile);
-    QSettings config;
-    config.setValue("db/last", dbfile);
-    config.setValue("outdir", fiDbFile.path());
     if( !useDb(dbfile))
     {
         QMessageBox::information(this, "Fehler", "Die neue Datenbankdatei konnte nicht geöffnet werden");
@@ -215,7 +213,8 @@ void MainWindow::on_action_create_new_DB_triggered()
 void MainWindow::on_action_open_DB_triggered()
 {   LOG_CALL;
     QSettings config;
-    QString dir(config.value("outdir").toString());
+    QFileInfo curDbDir (appConfig::CurrentDb());
+    QString dir(curDbDir.path());
     QString dbfile = askUserDbFilename("DkVerarbeitungs Datenbank", true);
     if( dbfile == "")
     {
@@ -261,12 +260,11 @@ void MainWindow::on_action_create_copy_triggered()
 void MainWindow::on_action_store_output_directory_triggered()
 {   LOG_CALL;
     QString dir;
-    QSettings config;
-    dir = config.value("outdir", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
+    dir = appConfig::Outdir();
     dir = QFileDialog::getExistingDirectory(this, "Ausgabeverzeichnis", dir,
                                         QFileDialog::ShowDirsOnly
                                             | QFileDialog::DontResolveSymlinks);
-    config.setValue("outdir", dir);
+    appConfig::setOutDir(dir);
 }
 void MainWindow::on_action_exit_program_triggered()
 {   LOG_CALL;
@@ -922,8 +920,7 @@ void MainWindow::on_comboUebersicht_currentIndexChanged(int )
 }
 void MainWindow::on_pbPrint_clicked()
 {   LOG_CALL;
-    QSettings config;
-    QString filename = config.value("outdir").toString();
+    QString filename = appConfig::Outdir();
 
     filename += "\\" + QDate::currentDate().toString("yyyy-MM-dd_");
     filename += Uebersichten_kurz[ui->comboUebersicht->currentIndex()];

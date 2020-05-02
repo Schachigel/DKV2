@@ -40,16 +40,16 @@ void test_letterTemplate::cleanup()
 
 void test_letterTemplate::test_save_letter_template()
 {   LOG_CALL;
-    letterTemplate temp(letterTemplate::templateId::JA_thesa);
+    letterTemplate temp(letterTemplate::templateId::JA_thesa, testDb());
     temp.saveTemplate(testDb());
     QVERIFY2(tableExists("Briefvorlagen", testDb()), "save letter template: die Tabelle Briefvorlagen wurde nicht angelegt");
 }
 
 void test_letterTemplate::test_load_letter_template()
 {   LOG_CALL;
-    letterTemplate src(letterTemplate::templateId::JA_thesa);
+    letterTemplate src(letterTemplate::templateId::JA_thesa, testDb());
     src.saveTemplate(testDb());
-    letterTemplate dst(letterTemplate::Kuendigung);
+    letterTemplate dst(letterTemplate::Kuendigung, testDb());
     QVERIFY(dst.loadTemplate(letterTemplate::templateId::JA_thesa, testDb()));
     QVERIFY2(src == dst, "save letter template: die Tabelle Briefvorlagen wurde nicht angelegt");
 }
@@ -58,7 +58,7 @@ void test_letterTemplate::test_applyPlaceholders()
 {   LOG_CALL;
     QMap<int, QString> result;
     QMap<int, bool> res;
-    letterTemplate tlate(letterTemplate::Kuendigung);
+    letterTemplate tlate(letterTemplate::Kuendigung, testDb());
     tlate.Html().insert(0, "{{");            result.insert(  0, "..");     res.insert( 0, false);
     tlate.Html().insert( 1, " {{");          result.insert( 1, " ..");     res.insert( 1, false);
     tlate.Html().insert( 2, " {{ ");         result.insert( 2, " .. ");    res.insert( 2, false);

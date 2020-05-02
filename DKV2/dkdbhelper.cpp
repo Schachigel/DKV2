@@ -12,6 +12,7 @@
 
 #include "helper.h"
 #include "filehelper.h"
+#include "appconfig.h"
 #include "sqlhelper.h"
 #include "csvwriter.h"
 #include "finhelper.h"
@@ -386,14 +387,11 @@ bool open_databaseForApplication( QString newDbFile)
 {   LOG_CALL;
 
     closeDatabaseConnection();
-    QSettings config;
     if( newDbFile == "")
     {
-        newDbFile = config.value("db/last").toString();
+        newDbFile = appConfig::CurrentDb();
         qInfo() << "opening DbFile read from configuration: " << newDbFile;
     }
-    else
-        config.setValue("db/last", newDbFile);
     backupFile(newDbFile, "db-bak");
 
     // setting the default database for the application
@@ -736,8 +734,8 @@ bool createCsvActiveContracts()
 {   LOG_CALL;
     QDate today = QDate::currentDate();
     QString filename(today.toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
-    QSettings config;
-    filename = config.value("outdir").toString() + "/" + filename;
+
+    filename = appConfig::Outdir() + "/" + filename;
 
     QVector<dbfield> fields; QVector<QVariant::Type> types;
     fields.append(dkdbstructur["Vertraege"]["id"]);

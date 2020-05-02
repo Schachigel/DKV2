@@ -33,7 +33,7 @@ public:
 
 public:
     //explicit letterTemplate(){ initPrinter();};
-    letterTemplate(templateId type);
+    letterTemplate(templateId type, QSqlDatabase db =defaultDb());
     ~letterTemplate(){ }
     bool saveTemplate(QSqlDatabase db = defaultDb()) const;
     bool loadTemplate(letterTemplate::templateId id, QSqlDatabase db= defaultDb());

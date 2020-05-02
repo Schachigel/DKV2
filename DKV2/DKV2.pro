@@ -28,6 +28,7 @@ CONFIG += c++11
 CONFIG += c++14
 
 SOURCES += \
+        appconfig.cpp \
         askdatedlg.cpp \
         csvwriter.cpp \
         customtoolbutton.cpp \
@@ -51,6 +52,7 @@ SOURCES += \
         vertrag.cpp
 
 HEADERS += \
+        appconfig.h \
         askdatedlg.h \
         csvwriter.h \
         customtoolbutton.h \

@@ -8,6 +8,7 @@ CONFIG += c++14
 TEMPLATE = app
 
 SOURCES +=  tst_db.cpp \
+    ../DKV2/appconfig.cpp \
     ../DKV2/dkdbhelper.cpp \
     ../DKV2/finhelper.cpp \
     ../DKV2/kreditor.cpp \
@@ -20,6 +21,7 @@ SOURCES +=  tst_db.cpp \
     ../DKV2/dbtable.cpp \
     ../DKV2/filehelper.cpp \
     ../DKV2/helper.cpp \
+    test_appconfig.cpp \
     test_csv.cpp \
     test_dkdbhelper.cpp \
     test_finance.cpp \
@@ -31,6 +33,7 @@ SOURCES +=  tst_db.cpp \
 
 HEADERS += \
     ../DKV2/finhelper.h \
+    test_appconfig.h \
     test_csv.h \
     test_dkdbhelper.h \
     test_finance.h \

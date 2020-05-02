@@ -5,7 +5,6 @@
 #include <QDir>
 #include <QApplication>
 #include <QTranslator>
-#include <QSettings>
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QMessageBox>
@@ -14,6 +13,7 @@
 #include <QTextStream>
 
 #include "filehelper.h"
+#include "appconfig.h"
 #include "dkdbhelper.h"
 #include "mainwindow.h"
 
@@ -83,23 +83,26 @@ QString interactW_UserForDB(QString dbfile)
     while(true);
 }
 
-QString getInitialDbFile(QString dbfileFromCmdline)
+QString getInitialDbFile()
 {   LOG_CALL;
+    // command line argument 1 has precedence
+    QStringList args =QApplication::instance()->arguments();
+    QString dbfileFromCmdline = args.size() > 1 ? args.at(1) : QString();
+
     if( !dbfileFromCmdline.isEmpty())
     {   // if there is a cmd line arg we will not try other
         qDebug() << "DB file from commandline: " << dbfileFromCmdline;
+        // and not store in appConfig::
         if( isValidDatabase( dbfileFromCmdline))
             return dbfileFromCmdline;
         else
             return QString();
     }
 
-    QString dbfile;
-    QSettings config;
-    dbfile = config.value("db/last").toString();
+    QString dbfile =appConfig::LastDb();
     qDebug() << "DB file from configuration: " << dbfile;
 
-    if(  dbfile != "" && isValidDatabase(dbfile))
+    if( isValidDatabase(dbfile))
     {   // all good then
         qDebug() << "DbFile from configuration exists and is valid: " << dbfile;
         return dbfile;
@@ -110,6 +113,7 @@ QString getInitialDbFile(QString dbfileFromCmdline)
         qCritical() << "No valid DB -> abort";
         return QString();
     }
+    appConfig::setLastDb(dbfile);
     return dbfile;
 }
 
@@ -150,21 +154,12 @@ int main(int argc, char *argv[])
     init_DKDBStruct();
     init_additionalTables();
 
-    // command line argument 1 has precedence
-    QStringList args =QApplication::instance()->arguments();
-    QString dbfileFromCmdline = args.size() > 1 ? args.at(1) : QString();
-
-    QString DatabaseFileName = getInitialDbFile(dbfileFromCmdline);
+    QString DatabaseFileName = getInitialDbFile();
     if( DatabaseFileName.isEmpty())
     {   // qCritical() << "no valid database -> exiting";
         exit (ERROR_FILE_NOT_FOUND);
     }
-
-    if( dbfileFromCmdline.isEmpty())
-    {   // do not save config from cmd
-        QSettings config;
-        config.setValue("db/last", DatabaseFileName);
-    }
+    appConfig::setCurrentDb(DatabaseFileName);
 
 #ifndef QT_DEBUG
     QSplashScreen* splash = doSplash(); // do only AFTER having an app. object

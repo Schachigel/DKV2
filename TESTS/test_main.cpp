@@ -9,6 +9,7 @@
 #include "test_dkdbhelper.h"
 #include "test_finance.h"
 #include "test_sqlhelper.h"
+#include "test_appconfig.h"
 
 #ifndef TESTLIB_SELFCOVERAGE_START
 #define TESTLIB_SELFCOVERAGE_START(a)
@@ -21,6 +22,8 @@ int main(int argc, char *argv[])
     TESTLIB_SELFCOVERAGE_START(#tst_db)
     QGuiApplication app(argc, argv);
     app.setAttribute(Qt::AA_Use96Dpi, true);
+    app.setOrganizationName("4-MHS");
+    app.setApplicationName("DKV2-tests");
 
     QTest::setMainSourcePath(__FILE__, "X:/home/dev/DKV2/TESTS");
 
@@ -30,13 +33,14 @@ int main(int argc, char *argv[])
       delete obj;
     };
 
+    ASSERT_TEST(new test_appConfig);
+    ASSERT_TEST(new test_dkdbhelper);
+    ASSERT_TEST(new test_sqlhelper);
+    ASSERT_TEST(new test_finance);
     ASSERT_TEST(new test_properties);
     ASSERT_TEST(new test_letterTemplate);
     ASSERT_TEST(new tst_db);
     ASSERT_TEST(new test_csv);
-    ASSERT_TEST(new test_dkdbhelper);
-    ASSERT_TEST(new test_finance);
-    ASSERT_TEST(new test_sqlhelper);
 
 
     if( errCount == 1) qDebug() << "\n>>>   There was an error   <<< ";

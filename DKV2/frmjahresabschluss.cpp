@@ -4,6 +4,7 @@
 
 #include <helper.h>
 #include "filehelper.h"
+#include "appconfig.h"
 #include "sqlhelper.h"
 #include "csvwriter.h"
 #include "frmjahresabschluss.h"
@@ -121,8 +122,7 @@ void writeCsv(const QVector<Contract>& vertraege, const QString& filename)
 
 void frmJahresabschluss::on_btnCsv_clicked()
 {   LOG_CALL;
-    QSettings config;
-    QString dir(config.value("outdir").toString());
+    QString dir(appConfig::Outdir());
 
     QString fn_thesa(QDir::cleanPath(dir + "/DKV2-JA-"
                     + QString::number(ja.abzuschliessendesJahr())
@@ -180,8 +180,7 @@ void frmJahresabschluss::on_pbKontoauszug_clicked()
  * [[DB_SIGNUM]]
 */
 
-    QSettings config;
-    QString dir(config.value("outdir").toString());
+    QString dir(appConfig::Outdir());
     QString fnKa = dir + "\\" + QDate::currentDate().toString("yyyy-MM-dd_Kontoauszug-");
     fnKa += QString::number(ja.jahr()) + "_";
     QString fn;

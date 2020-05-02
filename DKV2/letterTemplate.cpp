@@ -7,6 +7,7 @@
 #include <QImage>
 
 #include "helper.h"
+#include "appconfig.h"
 #include "letterTemplate.h"
 #include "dkdbhelper.h"
 #include "sqlhelper.h"
@@ -143,14 +144,14 @@ void letterTemplate::init_defaults()
     }
 }
 
-letterTemplate::letterTemplate(letterTemplate::templateId id)
+letterTemplate::letterTemplate(letterTemplate::templateId id, QSqlDatabase db)
 {   LOG_CALL;
     tid=id;
     initPrinter();
-    if( !loadTemplate(id))
+    if( !loadTemplate(id, db))
     {
         init_defaults();
-        saveTemplate();
+        saveTemplate(db);
     }
 }
 
@@ -205,7 +206,7 @@ bool letterTemplate::saveTemplate(QSqlDatabase db) const
 
     for( int i = 0; i < letterTemplate::sections::maxSection; i++)
     {
-        TableDataInserter tdi(  dkdbAddtionalTables["Briefvorlagen"]);
+        TableDataInserter tdi( dkdbAddtionalTables["Briefvorlagen"]);
         tdi.setValue(dkdbAddtionalTables["Briefvorlagen"].Fields()[0].name(), QVariant(tid) );
         tdi.setValue(dkdbAddtionalTables["Briefvorlagen"].Fields()[1].name(), QVariant(i));
         tdi.setValue(dkdbAddtionalTables["Briefvorlagen"].Fields()[2].name(), QVariant(html[i]));
@@ -517,8 +518,8 @@ bool letterTemplate::createPdf(QString file, const QTextDocument& doc)
 
 QString letterTemplate::fileNameFromId(const QString& contractId)
 {   LOG_CALL;
-    QSettings config;
-    QString outputfile = config.value("outdir").toString();
+
+    QString outputfile = appConfig::Outdir();
     outputfile += "/";
     outputfile += QDate::currentDate().toString("yyyy-MM-dd_") + getNameFromId(tid) + "_" +contractId.trimmed() +".pdf";
     qDebug() << "printing to " << outputfile;
