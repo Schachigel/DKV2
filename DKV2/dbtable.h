@@ -26,7 +26,7 @@ public:
     // interface
     dbtable append(const dbfield&);
     void setUnique(const QVector<dbfield>& fs);
-    bool create(QSqlDatabase& db) const;
+    bool create(QSqlDatabase db) const;
 private:
     QString name;
     QString unique;

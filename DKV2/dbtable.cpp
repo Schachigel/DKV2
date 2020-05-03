@@ -47,7 +47,7 @@ QString dbtable::createTableSql() const
     return sql;
 }
 
-bool dbtable::create(QSqlDatabase& db) const
+bool dbtable::create(QSqlDatabase db) const
 {   LOG_CALL_W(name);
     QSqlQuery q(db);
     q.prepare(createTableSql());
@@ -181,10 +181,12 @@ QString TableDataInserter::getUpdateRecordSQL() const
 }
 
 int TableDataInserter::InsertData(QSqlDatabase db) const
-{   LOG_CALL;
+{   // LOG_CALL;
     if( record.isEmpty()) return false;
+    QString insertSql = getInsertRecordSQL();
+    qDebug() << "TableDataInserter using " << insertSql;
     QSqlQuery q(db);
-    bool ret = q.exec(getInsertRecordSQL());
+    bool ret = q.exec(insertSql);
     qlonglong lastRecord = q.lastInsertId().toLongLong();
     if( !ret)
     {

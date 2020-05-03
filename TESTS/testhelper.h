@@ -3,12 +3,16 @@
 
 #include <QString>
 #include <QSqlDatabase>
+#include <QElapsedTimer>
 
 #include "../DKV2/helper.h"
 
-
 extern const QString testCon;
 extern const QString testDbFilename;
+
+void initTestDb();
+void cleanupTestDb();
+
 QSqlDatabase testDb();
 
 int tableRecordCount(QString table);

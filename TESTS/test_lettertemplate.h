@@ -14,9 +14,6 @@ public:
     virtual ~test_letterTemplate(){}
 
 private:
-    const QString filename = "..\\..\\data\\testdb.sqlite";
-    const QString testCon = "test_dkdb_connection";
-    QSqlDatabase testDb() {return QSqlDatabase::database(testCon);}
 
 private slots:
     void initTestCase();

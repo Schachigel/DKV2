@@ -44,16 +44,17 @@ int rowCount(const QString& table, QSqlDatabase db)
 }
 
 bool createTables( const dbstructure& structure, QSqlDatabase db)
-{   LOG_CALL;
-    bool ret = true;
+{   dbgTimer timer(__func__);
+
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
-
     db.transaction();
-    ret = structure.createDb(db);
-    if( ret) db.commit();
-    else db.rollback();
-
-    return ret;
+    if( structure.createDb(db))
+    {
+        db.commit();
+        return true;
+    }
+    db.rollback();
+    return false;
 }
 
 bool ensureTable( const dbtable& table, QSqlDatabase db)

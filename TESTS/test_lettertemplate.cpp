@@ -6,6 +6,8 @@
 #include "../DKV2/dkdbhelper.h"
 #include "../DKV2/letterTemplate.h"
 
+#include "testhelper.h"
+
 #include "test_lettertemplate.h"
 
 
@@ -20,22 +22,12 @@ void test_letterTemplate::initTestCase()
 
 void test_letterTemplate::init()
 {   LOG_CALL;
-    if (QFile::exists(filename))
-        QVERIFY(QFile::remove(filename));
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", testCon);
-    db.setDatabaseName(filename);
-    QVERIFY(db.open());
-    QSqlQuery enableRefInt(db);
-    QVERIFY2(enableRefInt.exec("PRAGMA foreign_keys = ON"),
-             enableRefInt.lastError().text().toLocal8Bit().data());
+    initTestDb();
 }
 
 void test_letterTemplate::cleanup()
 {   LOG_CALL;
-    QSqlDatabase::database().removeDatabase(testCon);
-    QSqlDatabase::database().close();
-    if (QFile::exists(filename))
-        QVERIFY(QFile::remove(filename));
+    cleanupTestDb();
 }
 
 void test_letterTemplate::test_save_letter_template()

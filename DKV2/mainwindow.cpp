@@ -198,7 +198,7 @@ void MainWindow::on_action_create_new_DB_triggered()
         return;
     busycursor b;
     closeDatabaseConnection();
-    if( !create_DK_database(dbfile))
+    if( !create_DK_databaseFile(dbfile))
         exit(0x80070020);
 
     QFileInfo fiDbFile (dbfile);

@@ -3,11 +3,38 @@
 #include <QSqlRecord>
 #include <QSqlField>
 #include <qdebug.h>
+#include <QTest>
 
 #include "testhelper.h"
 
-const QString testDbFilename = "..\\..\\data\\testdb.sqlite";
-const QString testCon = "test_connection";
+
+const QString testDbFilename = "..\\data\\testdb.sqlite";
+const QString testCon = "test_con";
+
+void initTestDb()
+{
+    QDir().mkdir(QString("..\\data"));
+    if (QFile::exists(testDbFilename))
+        QFile::remove(testDbFilename);
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", testCon);
+    db.setDatabaseName(testDbFilename);
+    QVERIFY(db.open());
+    QSqlQuery enableRefInt(db);
+    QVERIFY2(enableRefInt.exec("PRAGMA foreign_keys = ON"),
+             enableRefInt.lastError().text().toLocal8Bit().data());
+    QVERIFY2( QFile::exists(testDbFilename), "create database failed." );
+}
+
+void cleanupTestDb()
+{
+    QSqlDatabase::database().removeDatabase(testCon);
+    QSqlDatabase::database().close();
+    if (QFile::exists(testDbFilename))
+        QFile::remove(testDbFilename);
+    QDir().rmdir("..\\data");
+    QVERIFY2( (QFile::exists(testDbFilename) == false), "destroy database failed." );
+}
+
 QSqlDatabase testDb()
 {
     return QSqlDatabase::database(testCon);

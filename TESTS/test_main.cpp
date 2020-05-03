@@ -33,8 +33,8 @@ int main(int argc, char *argv[])
       delete obj;
     };
 
-    ASSERT_TEST(new test_appConfig);
     ASSERT_TEST(new test_dkdbhelper);
+    ASSERT_TEST(new test_appConfig);
     ASSERT_TEST(new test_sqlhelper);
     ASSERT_TEST(new test_finance);
     ASSERT_TEST(new test_properties);

@@ -1,6 +1,6 @@
 #include <QDebug>
 #include <QDirIterator>
-#include <QTime>
+#include <QDateTime>
 #include <QFile>
 #include <QDir>
 #include <QApplication>
@@ -58,7 +58,7 @@ QString interactW_UserForDB(QString dbfile)
                     continue;
                 else
                 {
-                    if( create_DK_database(dbfile))
+                    if( create_DK_databaseFile(dbfile))
                         return dbfile;
                     else
                     {
@@ -70,7 +70,7 @@ QString interactW_UserForDB(QString dbfile)
             }
         }
         // new file ...
-        if( create_DK_database(dbfile))
+        if( create_DK_databaseFile(dbfile))
             return dbfile;
         else
         {

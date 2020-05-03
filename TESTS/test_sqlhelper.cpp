@@ -1,13 +1,16 @@
-#include "test_sqlhelper.h"
-
-#include "../DKV2/sqlhelper.h"
-#include "../DKV2/helper.h"
-
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QString>
 #include <QtTest>
+
+#include "../DKV2/sqlhelper.h"
+#include "../DKV2/helper.h"
+#include "testhelper.h"
+
+#include "test_sqlhelper.h"
+
+
 
 test_sqlhelper::test_sqlhelper(QObject *parent) : QObject(parent)
 {
@@ -17,37 +20,29 @@ test_sqlhelper::test_sqlhelper(QObject *parent) : QObject(parent)
 void test_sqlhelper::initTestCase()
 {
     LOG_CALL;
-    QDir().mkdir(QString("..\\data"));
-    if (QFile::exists(filename))
-        QFile::remove(filename);
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", testCon);
-    db.setDatabaseName(filename);
-    QVERIFY(db.open());
-    QSqlQuery enableRefInt(db);
-    QVERIFY2(enableRefInt.exec("PRAGMA foreign_keys = ON"),
-             enableRefInt.lastError().text().toLocal8Bit().data());
-    QVERIFY2( (QFile::exists(filename) == true), "create database failed." );
+    initTestDb();
+
     bool b = false;
-    QSqlQuery query(db);
+    QSqlQuery query(testDb());
     b = query.exec("CREATE TABLE testSqlVal "
                "(id integer primary key, "
                "valBool INTEGER, "
                "valDouble REAL, "
                "valString STRING, "
                "valDate STRING)");
-    QVERIFY( b ); // QCOMPARE( query.lastError().text(), QString(""));
+    QVERIFY( b );
     b = query.exec("INSERT INTO testSqlVal VALUES "
                "(1, "
                "1, "
                "1.1, "
                "'teststring', "
                "'2019-01-01 00:00:00.000')");
-    QVERIFY( b ); // QCOMPARE( query.lastError().text(), QString(""));
-    sqlValQuery  = QSqlQuery(db);
+    QVERIFY( b );
+    sqlValQuery  = QSqlQuery(testDb());
     b = sqlValQuery.exec("SELECT * FROM testSqlVal");
-    QVERIFY( b ); // QCOMPARE( sqlValQuery.lastError().text(), QString(""));
+    QVERIFY( b );
     b = sqlValQuery.first();
-    QVERIFY( b ); // QCOMPARE( sqlValQuery.lastError().text(), QString(""));
+    QVERIFY( b );
     int id = sqlVal<int>(sqlValQuery, "id");
     QVERIFY( (id==1) );
 }
@@ -55,12 +50,7 @@ void test_sqlhelper::initTestCase()
 void test_sqlhelper::cleanupTestCase()
 {
     LOG_CALL;
-    QSqlDatabase::database().removeDatabase(testCon);
-    QSqlDatabase::database().close();
-    if (QFile::exists(filename))
-        QFile::remove(filename);
-    QDir().rmdir("..\\data");
-    QVERIFY2( (QFile::exists(filename) == false), "destroy database failed." );
+    cleanupTestDb();
 }
 
 void test_sqlhelper::test_getFields()

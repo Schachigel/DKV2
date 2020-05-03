@@ -1,9 +1,10 @@
 #include "../DKV2/helper.h"
 #include "../DKV2/dbtable.h"
-#include "test_properties.h"
 #include "../DKV2/dkdbhelper.h"
 #include "../DKV2/dkdbhelper.h"
 
+#include "testhelper.h"
+#include "test_properties.h"
 
 test_properties::test_properties(QObject *parent) : QObject(parent)
 {
@@ -16,25 +17,15 @@ void test_properties::initTestCase()
 }
 void test_properties::init()
 {    LOG_CALL;
-    if (QFile::exists(filename))
-        QVERIFY(QFile::remove(filename));
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", testCon);
-    db.setDatabaseName(filename);
-    QVERIFY(db.open());
-    QSqlQuery enableRefInt(db);
-    QVERIFY2(enableRefInt.exec("PRAGMA foreign_keys = ON"),
-             enableRefInt.lastError().text().toLocal8Bit().data());
+    initTestDb();
 
     dbtable table(dkdbstructur["Meta"]);
-    table.create(db);
+    table.create(testDb());
 }
 
 void test_properties::cleanup()
-{    LOG_CALL;
-    QSqlDatabase::database().removeDatabase(testCon);
-    QSqlDatabase::database().close();
-    if (QFile::exists(filename))
-        QVERIFY(QFile::remove(filename));
+{   LOG_CALL;
+    cleanupTestDb();
 }
 void test_properties::test_setProperty_getProperty()
 {

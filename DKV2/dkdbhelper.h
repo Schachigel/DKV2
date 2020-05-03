@@ -36,8 +36,8 @@ void init_additionalTables();
 
 void init_bookingTypes();
 
-bool create_DK_database(const QString& filename);
-bool create_DK_database(QSqlDatabase db=defaultDb());
+bool create_DK_databaseFile(const QString& filename);
+bool create_DK_databaseContent(QSqlDatabase db=defaultDb());
 
 
 bool check_db_version(QSqlDatabase db=defaultDb());
@@ -50,7 +50,7 @@ QStringList check_DbConsistency( );
 
 bool create_DB_copy(QString targetfn, bool anonym);
 
-QString proposeKennung();
+QString proposeKennung(QSqlDatabase db=defaultDb());
 void create_sampleData(int datensaetze =20);
 
 typedef QPair<int, QString> ZinsAnzeigeMitId;

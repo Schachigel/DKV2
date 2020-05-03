@@ -16,29 +16,21 @@ void test_dkdbhelper::initTestCase()
 
 void test_dkdbhelper::init()
 {   LOG_CALL;
-    if (QFile::exists(testDbFilename))
-        QVERIFY(QFile::remove(testDbFilename));
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", testCon);
-    db.setDatabaseName(testDbFilename);
-    QVERIFY(db.open());
-    QSqlQuery enableRefInt(db);
-    QVERIFY2(enableRefInt.exec("PRAGMA foreign_keys = ON"),
-             enableRefInt.lastError().text().toLocal8Bit().data());
-    create_DK_database(testDb());
+    initTestDb();
+    create_DK_databaseContent(testDb());
 }
 
 void test_dkdbhelper::cleanup()
 {   LOG_CALL;
-    QSqlDatabase::database().removeDatabase(testCon);
-    QSqlDatabase::database().close();
-    if (QFile::exists(testDbFilename))
-        QVERIFY(QFile::remove(testDbFilename));
+    cleanupTestDb();
 }
 
 void test_dkdbhelper::test_querySingleValueInvalidQuery()
 {   LOG_CALL;
     QString sql ("SELECT NOTEXISTINGFIELD FROM NOTEXISTINGTABLE WHERE NOTEXISTINGFIELD='0'");
-    QVERIFY2(QVariant::Invalid == ExecuteSingleValueSql(sql).type(),
+    QVariant result;
+    result = ExecuteSingleValueSql(sql, testDb());
+    QVERIFY2(QVariant::Invalid == result.type(),
              "Invalid single value sql has poditiv result");
 }
 

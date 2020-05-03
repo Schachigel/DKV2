@@ -7,8 +7,20 @@
 #include <QFile>
 #include <QDir>
 #include <QProcess>
+#include <QElapsedTimer>
 
 #include "filehelper.h"
+
+
+class dbgTimer
+{
+    QElapsedTimer t;
+    QString fname;
+public:
+    dbgTimer() {t.start();}
+    dbgTimer(QString fu) : fname(fu){t.start(); qInfo() << fname << " start";}
+    ~dbgTimer() {qInfo() << (fname.isEmpty() ? "" : fname+ " end" )<< endl << "Elapsed time: "<< t.elapsed();}
+};
 
 class functionlogging {
 private:

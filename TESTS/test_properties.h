@@ -13,9 +13,6 @@ public:
     virtual ~test_properties(){}
 
 private:
-    const QString filename = "..\\..\\data\\testdb.sqlite";
-    const QString testCon = "test_dkdb_connection";
-    QSqlDatabase testDb(){return QSqlDatabase::database("test_dkdb_connection");}
 
 private slots:
     void initTestCase();

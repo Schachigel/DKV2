@@ -113,15 +113,15 @@ void init_additionalTables()
     done =true;
 }
 
-void init_GmbHData()
+void init_GmbHData( QSqlDatabase db = defaultDb())
 {   LOG_CALL;
-    initMetaInfo("gmbh.address1", "Esperanza Franklin GmbH");
-    initMetaInfo("gmbh.address2", "");
-    initMetaInfo("gmbh.plz", "68167");
-    initMetaInfo("gmbh.stadt", "Mannheim");
-    initMetaInfo("gmbh.strasse", "Turley-Platz 9");
-    initMetaInfo("gmbh.email","info@esperanza-mannheim.de");
-    initMetaInfo("gmbh.url", "www.esperanza-mannheim.de");
+    initMetaInfo("gmbh.address1", "Esperanza Franklin GmbH", db);
+    initMetaInfo("gmbh.address2", "", db);
+    initMetaInfo("gmbh.plz", "68167", db);
+    initMetaInfo("gmbh.stadt", "Mannheim", db);
+    initMetaInfo("gmbh.strasse", "Turley-Platz 9", db);
+    initMetaInfo("gmbh.email","info@esperanza-mannheim.de", db);
+    initMetaInfo("gmbh.url", "www.esperanza-mannheim.de", db);
 }
 
 void init_bookingTypes()
@@ -136,8 +136,8 @@ void init_bookingTypes()
     Buchungsarten.push_back(QPair<qlonglong, QString>(Buchungsart_i::KUENDIGUNG_FRIST, "Kuendigung mit Frist"));
 }
 
-bool insert_interestRates(QSqlDatabase db)
-{   LOG_CALL;
+bool insert_interestRates(QSqlDatabase db =defaultDb())
+{   dbgTimer timer(__func__);
     double Zins = 0.;
     double ZinsIncrement = 0.01;
     TableDataInserter ti(dkdbstructur["Zinssaetze"]);
@@ -145,19 +145,47 @@ bool insert_interestRates(QSqlDatabase db)
     ti.setValue("Bemerkung", "Unser Held");
     bool ret = 0<= ti.InsertData(db);
 
+    QSqlQuery sql(db);
+    sql.prepare("INSERT INTO Zinssaetze VALUES (NULL, :z, :b)");
+
     for (Zins+=ZinsIncrement; ret && Zins < .6; Zins+=ZinsIncrement)
     {
-        ti.setValue("Zinssatz", Zins); ti.setValue("Bemerkung", "Unser Freund");
-        ret &= 0<=ti.InsertData(db);
+        dbgTimer t1("timer 1");
+        sql.bindValue(":z", Zins);
+        sql.bindValue(":b", "Unser Freund");
+        if( sql.exec())
+            ;//qInfo() << "inserted interest value " << Zins;
+        else
+        {
+            qCritical() << "failed to insert interest value " << Zins;
+            ret = false;
+        }
     }
-    for (; ret && Zins < 1.1; Zins+=ZinsIncrement){
-        ti.setValue("Zinssatz", Zins); ti.setValue("Bemerkung", "Unser Förderer");
-        ret &= 0<= ti.InsertData(db);
+    for (; ret && Zins < 1.1; Zins+=ZinsIncrement)
+    {
+        dbgTimer t1("timer 2");
+        sql.bindValue(":z", Zins);
+        sql.bindValue(":b", "Unser Förderer");
+        if( sql.exec())
+            ;//qInfo() << "inserted interest value " << Zins;
+        else
+        {
+            qCritical() << "failed to insert interest value " << Zins;
+            ret = false;
+        }
     }
     for (; ret && Zins < 2.; Zins+=ZinsIncrement)
     {
-        ti.setValue("Zinssatz", Zins); ti.setValue("Bemerkung", "Unser Investor");
-        ret &= 0<= ti.InsertData(db);
+        dbgTimer t1("timer 3");
+        sql.bindValue(":z", Zins);
+        sql.bindValue(":b", "Unser Investor");
+        if( sql.exec())
+            ;//qInfo() << "inserted interest value " << Zins;
+        else
+        {
+            qCritical() << "failed to insert interest value " << Zins;
+            ret = false;
+        }
     }
     if( !ret)
         qCritical() << "There was an error creating intrest values";
@@ -166,6 +194,7 @@ bool insert_interestRates(QSqlDatabase db)
 
 bool insert_bookingTypes(QSqlDatabase db =defaultDb())
 {   LOG_CALL;
+    dbgTimer timer (__func__);
     bool ret = true;
     for( auto art: Buchungsarten)
     {
@@ -178,14 +207,14 @@ bool insert_bookingTypes(QSqlDatabase db =defaultDb())
     return ret;
 }
 
-bool insert_Properties(QSqlDatabase db)
+bool insert_Properties(QSqlDatabase db =defaultDb())
 {   LOG_CALL;
     bool ret =true;
     QSqlQuery sql(db);
     QRandomGenerator *rand = QRandomGenerator::system();
-    initNumMetaInfo(DB_VERSION, CURRENT_DB_VERSION);
-    initMetaInfo("IdOffset", QString::number(rand->bounded(10000,20000)));
-    initMetaInfo("ProjektInitialen", "ESP");
+    initNumMetaInfo(DB_VERSION, CURRENT_DB_VERSION, db);
+    initMetaInfo("IdOffset", QString::number(rand->bounded(10000,20000)), db);
+    initMetaInfo("ProjektInitialen", "ESP", db);
     return ret;
 }
 
@@ -215,7 +244,7 @@ QString getMetaInfo(const QString& name, QSqlDatabase db)
 double getNumMetaInfo(const QString& name, QSqlDatabase db)
 {   LOG_CALL_W(name);
 
-    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'",db);
+    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", db);
     if( value.type() == QVariant::Type::Invalid)
     {
         qDebug() << "getNumProperty read empty property " << name << " defaulted to 0.";
@@ -239,13 +268,13 @@ void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db)
         qCritical() << "Failed to insert Meta information " << q.lastError() << endl << q.lastQuery();
 }
 
-bool create_DK_database(QSqlDatabase db)
+bool create_DK_databaseContent(QSqlDatabase db)
 {   LOG_CALL_W(db.databaseName());
     bool ret = true;
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
 
+    db.transaction();
     do{
-        db.transaction();
         if(! (ret &= createTables( dkdbstructur, db))) break;
         if(! (ret &= insert_interestRates(db))) break;
         if(! (ret &= insert_bookingTypes(db))) break;
@@ -262,9 +291,10 @@ bool create_DK_database(QSqlDatabase db)
     db.commit();
     return isValidDatabase(db);
 }
-bool create_DK_database(const QString& filename) /*in the default connection*/
-{   LOG_CALL_W("filename: " + filename);
+bool create_DK_databaseFile(const QString& filename) /*in the default connection*/
+{   //LOG_CALL_W("filename: " + filename);
     Q_ASSERT(!filename.isEmpty());
+    dbgTimer timer( QString(__func__) + QString(" (") + filename + QString(")"));
     if( QFile(filename).exists())
     {
         backupFile(filename, "db-bak");
@@ -284,10 +314,10 @@ bool create_DK_database(const QString& filename) /*in the default connection*/
         qDebug() << "DkDatenbankAnlegen failed in db.open";
         return false;
     }
-    return create_DK_database(db);
+    return create_DK_databaseContent(db);
 }
 
-bool has_allTablesAndFields(QSqlDatabase& db)
+bool has_allTablesAndFields(QSqlDatabase db)
 {   LOG_CALL;
     for( auto table : dkdbstructur.getTables())
     {
@@ -633,15 +663,15 @@ void create_sampleData( int AnzahlDatensaetze)
     }
 }
 
-QString proposeKennung()
+QString proposeKennung(QSqlDatabase db)
 {   LOG_CALL;
-    int idOffset = getMetaInfo("IdOffset").toInt();
+    int idOffset = getMetaInfo("IdOffset", db).toInt();
     int iMaxid = idOffset + getHighestTableId("Vertraege");
     QString kennung;
     do
     {
         QString maxid = QString::number(iMaxid).rightJustified(6, '0');
-        QString PI = "DK-" + getMetaInfo("ProjektInitialen");
+        QString PI = "DK-" + getMetaInfo("ProjektInitialen", db);
         kennung = PI + "-" + QString::number(QDate::currentDate().year()) + "-" + maxid;
         QVariant v = ExecuteSingleValueSql("id", "Vertraege", "Kennung='" + kennung + "'");
         if( v.isValid())
