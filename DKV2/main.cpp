@@ -91,28 +91,35 @@ QString getInitialDbFile()
 
     if( !dbfileFromCmdline.isEmpty())
     {   // if there is a cmd line arg we will not try other
-        qDebug() << "DB file from commandline: " << dbfileFromCmdline;
-        // and not store in appConfig::
+        // and not store in appConfig
         if( isValidDatabase( dbfileFromCmdline))
+        {
+            qInfo() << "valid dbfile from command line " << dbfileFromCmdline;
             return dbfileFromCmdline;
+        }
         else
+        {
+            qCritical() << "invalid dbfile from comman line" << dbfileFromCmdline;
             return QString();
+        }
     }
 
     QString dbfile =appConfig::LastDb();
-    qDebug() << "DB file from configuration: " << dbfile;
-
     if( isValidDatabase(dbfile))
     {   // all good then
-        qDebug() << "DbFile from configuration exists and is valid: " << dbfile;
-        return dbfile;
+        qInfo() << "DbFile from configuration exists and is valid: " << dbfile;
     }
-    dbfile = interactW_UserForDB(dbfile);
-    if( dbfile.isEmpty())
+    else
     {
-        qCritical() << "No valid DB -> abort";
-        return QString();
+        qInfo() << "invalid DB file from configuration: " << dbfile << endl << "going to ask user";
+        dbfile = interactW_UserForDB(dbfile);
+        if( dbfile.isEmpty())
+        {
+            qCritical() << "No valid DB -> abort";
+            return QString();
+        }
     }
+    // remember file that was opened (from user or config)
     appConfig::setLastDb(dbfile);
     return dbfile;
 }
@@ -159,6 +166,7 @@ int main(int argc, char *argv[])
     {   // qCritical() << "no valid database -> exiting";
         exit (ERROR_FILE_NOT_FOUND);
     }
+    // let main window know, which db to use
     appConfig::setCurrentDb(DatabaseFileName);
 
 #ifndef QT_DEBUG

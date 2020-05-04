@@ -409,19 +409,15 @@ bool check_db_version(QSqlDatabase db)
     double d = getNumMetaInfo(DB_VERSION, db);
     if( d >= CURRENT_DB_VERSION)
         return true;
-    qDebug() << "db version check failed: found version " << d << " needed version " << CURRENT_DB_VERSION;
+    qCritical() << "db version check failed: found version " << d << " needed version " << CURRENT_DB_VERSION;
     return false;
 }
 
 bool open_databaseForApplication( QString newDbFile)
-{   LOG_CALL;
+{   LOG_CALL_W(newDbFile);
+    Q_ASSERT(!newDbFile.isEmpty());
 
     closeDatabaseConnection();
-    if( newDbFile == "")
-    {
-        newDbFile = appConfig::CurrentDb();
-        qInfo() << "opening DbFile read from configuration: " << newDbFile;
-    }
     backupFile(newDbFile, "db-bak");
 
     // setting the default database for the application
@@ -431,10 +427,11 @@ bool open_databaseForApplication( QString newDbFile)
     {   qDebug() << "open database file " << newDbFile << " failed";
         return false;
     }
+
+    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     if( !check_db_version(db))
         return false;
 
-    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     init_GmbHData();
     insert_bookingTypes();
     return true;

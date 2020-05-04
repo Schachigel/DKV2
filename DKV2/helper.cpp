@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QTextStream>
 #include <QTime>
+#include <QMutex>
 #include <QDebug>
 #include "helper.h"
 #include "windows.h"
@@ -35,6 +36,10 @@ void logger(QtMsgType type, const QMessageLogContext &, const QString &msg)
     int lfCount = 0;
     while( endlCorrectedMsg.endsWith(QChar::LineFeed) || endlCorrectedMsg.endsWith(QChar::CarriageReturn) )
         {lfCount++; endlCorrectedMsg.chop(1);}
+
+//    static QMutex mutex;
+//    QMutexLocker lock(&mutex);
+
     QTextStream ts(outFile_p);
     ts << QTime::currentTime().toString("hh:mm:ss.zzz") << " " << msgLevelHash[type] << " : " << endlCorrectedMsg;
 #ifdef QT_DEBUG

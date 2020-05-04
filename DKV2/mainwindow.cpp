@@ -48,8 +48,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->statusBar->addPermanentWidget(ui->statusLabel);
 
     setCentralWidget(ui->stackedWidget);
-    if( !useDb())
-        on_action_open_DB_triggered();
+    if( !useDb(appConfig::CurrentDb()))
+        // there should be a valid DB - checked in main.cpp
+        Q_ASSERT(!"useDb failed in construcor of mainwindow");
 
     ui->txtAnmerkung->setTabChangesFocus(true);
     ui->CreditorsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 15px; }");
@@ -95,11 +96,10 @@ bool MainWindow::useDb(const QString& dbfile)
     if( open_databaseForApplication(dbfile))
     {
         appConfig::setCurrentDb(dbfile);
-        appConfig::setLastDb(dbfile);
         showDbInStatusbar(dbfile);
         return true;
     }
-    qDebug() << "the databse could not be used for this application";
+    qCritical() << "the databse could not be used for this application";
     return false;
 }
 
@@ -173,15 +173,12 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
 QString askUserDbFilename(QString title, bool existing=false)
 {   LOG_CALL;
     QString folder;
-    QFileInfo lastdb (appConfig::LastDb());
+    QFileInfo lastdb (appConfig::CurrentDb());
     if( lastdb.exists())
-    {
         folder = lastdb.path();
-    }
     else
-    {
         folder = QStandardPaths::writableLocation((QStandardPaths::AppDataLocation));
-    }
+
     if( existing)
         return QFileDialog::getOpenFileName(nullptr, title, folder, "dk-DB Dateien (*.dkdb)", nullptr);
     else
@@ -195,26 +192,24 @@ void MainWindow::on_action_create_new_DB_triggered()
 {   LOG_CALL;
     QString dbfile = askUserDbFilename("Neue DkVerarbeitungs Datenbank");
     if( dbfile == "")
+    {   qDebug() << "user canceled file selection";
         return;
+    }
     busycursor b;
     closeDatabaseConnection();
-    if( !create_DK_databaseFile(dbfile))
-        exit(0x80070020);
-
-    QFileInfo fiDbFile (dbfile);
-    if( !useDb(dbfile))
+    if( create_DK_databaseFile(dbfile) && useDb(dbfile))
     {
-        QMessageBox::information(this, "Fehler", "Die neue Datenbankdatei konnte nicht geöffnet werden");
-        qDebug() << "use db failed";
+        appConfig::setLastDb(dbfile);
     }
-
+    else
+    {
+        QMessageBox::information(this, "Fehler", "Die neue Datenbankdatei konnte nicht angelegt und geöffnet werden");
+        return;
+    }
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 void MainWindow::on_action_open_DB_triggered()
 {   LOG_CALL;
-    QSettings config;
-    QFileInfo curDbDir (appConfig::CurrentDb());
-    QString dir(curDbDir.path());
     QString dbfile = askUserDbFilename("DkVerarbeitungs Datenbank", true);
     if( dbfile == "")
     {
@@ -223,7 +218,17 @@ void MainWindow::on_action_open_DB_triggered()
         return;
     }
     busycursor b;
-    useDb(dbfile);
+    if( useDb(dbfile))
+        appConfig::setLastDb(dbfile);
+    else
+    {
+        QMessageBox::information(this, "Fehler", "Die Datenbank konnte nicht geöffnet werden");
+        if( !useDb(appConfig::CurrentDb()))
+        {
+            qFatal("alte und neue DB können nicht geöffnet werden -> abbruch");
+            exit( 1);
+        }
+    }
 
     ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
