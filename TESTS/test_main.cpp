@@ -1,6 +1,9 @@
 
-#include <qguiapplication.h>
-#include <qtest.h>
+#include <QGuiApplication>
+#include <QList>
+#include <QTest>
+
+#include <vector>
 #include "../DKV2/helper.h"
 #include "test_properties.h"
 #include "test_lettertemplate.h"
@@ -18,8 +21,6 @@
 // QTEST_MAIN(tst_db)
 int main(int argc, char *argv[])
 {
-//    qInstallMessageHandler(logger);
-    TESTLIB_SELFCOVERAGE_START(#tst_db)
     QGuiApplication app(argc, argv);
     app.setAttribute(Qt::AA_Use96Dpi, true);
     app.setOrganizationName("4-MHS");
@@ -28,20 +29,26 @@ int main(int argc, char *argv[])
     QTest::setMainSourcePath(__FILE__, "X:/home/dev/DKV2/TESTS");
 
     int errCount = 0;
-    auto ASSERT_TEST = [&errCount, argc, argv](QObject* obj) {
-      errCount += QTest::qExec(obj, argc, argv);
-      delete obj;
+    auto ASSERT_TEST = [&errCount, argc, argv](QObject* obj)
+    {
+        errCount += QTest::qExec(obj, argc, argv);
+        delete obj;
     };
 
-    ASSERT_TEST(new test_dkdbhelper);
-    ASSERT_TEST(new test_appConfig);
-    ASSERT_TEST(new test_sqlhelper);
-    ASSERT_TEST(new test_finance);
-    ASSERT_TEST(new test_properties);
-    ASSERT_TEST(new test_letterTemplate);
-    ASSERT_TEST(new tst_db);
-    ASSERT_TEST(new test_csv);
+    std::vector<QObject*> tests;
+    tests.push_back(new test_appConfig);
+    tests.push_back(new test_sqlhelper);
+    tests.push_back(new test_finance);
+    tests.push_back(new test_properties);
+    tests.push_back(new test_letterTemplate);
+    tests.push_back(new tst_db);
+    tests.push_back(new test_csv);
 
+    srand(time(0));
+    std::random_shuffle(tests.begin(), tests.end());
+
+    for( auto test: tests)
+        ASSERT_TEST(test);
 
     if( errCount == 1) qDebug() << "\n>>>   There was an error   <<< ";
     else if (errCount > 1) qDebug() << "\n>>>   There were " << errCount << " errors   <<<";
