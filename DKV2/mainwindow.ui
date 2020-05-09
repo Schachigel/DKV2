@@ -794,6 +794,9 @@ p, li { white-space: pre-wrap; }
    <property name="toolTip">
     <string>Vertrag für ausgewählten DK Geber anlegen</string>
    </property>
+   <property name="shortcut">
+    <string>Ins</string>
+   </property>
   </action>
   <action name="action_delete_creditor">
    <property name="text">

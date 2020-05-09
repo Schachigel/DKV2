@@ -52,7 +52,7 @@ private slots:
     void on_action_Liste_triggered();
     void on_action_create_sample_data_triggered();
     void on_action_create_new_creditor_triggered();
-    void on_action_create_contract_for_creditor_triggered(int id=-1);
+    void on_action_create_contract_for_creditor_triggered();
 
     void on_cancel_clicked();
     void on_action_edit_Creditor_triggered();

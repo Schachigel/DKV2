@@ -150,7 +150,6 @@ bool insert_interestRates(QSqlDatabase db =defaultDb())
 
     for (Zins+=ZinsIncrement; ret && Zins < .6; Zins+=ZinsIncrement)
     {
-        dbgTimer t1("timer 1");
         sql.bindValue(":z", Zins);
         sql.bindValue(":b", "Unser Freund");
         if( sql.exec())
@@ -163,7 +162,6 @@ bool insert_interestRates(QSqlDatabase db =defaultDb())
     }
     for (; ret && Zins < 1.1; Zins+=ZinsIncrement)
     {
-        dbgTimer t1("timer 2");
         sql.bindValue(":z", Zins);
         sql.bindValue(":b", "Unser Förderer");
         if( sql.exec())
@@ -176,7 +174,6 @@ bool insert_interestRates(QSqlDatabase db =defaultDb())
     }
     for (; ret && Zins < 2.; Zins+=ZinsIncrement)
     {
-        dbgTimer t1("timer 3");
         sql.bindValue(":z", Zins);
         sql.bindValue(":b", "Unser Investor");
         if( sql.exec())

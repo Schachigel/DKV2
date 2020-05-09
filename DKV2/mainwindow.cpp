@@ -319,6 +319,7 @@ int MainWindow::getIdFromCreditorsList()
     qCritical() << "Index der Personenliste konnte nicht bestimmt werden";
     return -1;
 }
+
 // Kontext Menue in Kreditoren Tabelle
 void MainWindow::on_CreditorsTableView_customContextMenuRequested(const QPoint &pos)
 {   LOG_CALL;
@@ -351,13 +352,16 @@ void MainWindow::on_action_edit_Creditor_triggered()
     init_creditor_form(index.toInt());
     ui->stackedWidget->setCurrentIndex(newPersonIndex);
 }
-void MainWindow::on_action_create_contract_for_creditor_triggered(int id)
+void MainWindow::on_action_create_contract_for_creditor_triggered()
 {   LOG_CALL;
     busycursor b;
     fill_creditors_dropdown();
     fill_rates_dropdown();
     ui->leKennung->setText( proposeKennung());
-    set_creditors_combo_by_id( id != -1 ? id : getIdFromCreditorsList());
+    if( ui->stackedWidget->currentIndex() == PersonListIndex)
+        set_creditors_combo_by_id(getIdFromCreditorsList());
+    else
+        set_creditors_combo_by_id(-1);
     Contract cd; // this is to get the defaults of the class definition
     ui->deLaufzeitEnde->setDate(cd.LaufzeitEnde());
     ui->cbKFrist->setCurrentIndex(ui->cbKFrist->findText("6"));
@@ -488,7 +492,7 @@ void MainWindow::on_action_save_contact_go_contract_triggered()
     if(  kid != -1)
     {
         empty_create_creditor_form();
-        on_action_create_contract_for_creditor_triggered(kid);
+        on_action_create_contract_for_creditor_triggered();
     }
 }
 void MainWindow::on_action_save_contact_go_creditors_triggered()

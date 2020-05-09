@@ -8,9 +8,15 @@
 #include "appconfig.h"
 
 /* statics */
+#ifndef QT_DEBUG
 QString appConfig::keyOutdir = "outdir";
 QString appConfig::keyLastDb = "db/last";
 QString appConfig::keyCurrentDb = "db/current";
+#else
+QString appConfig::keyOutdir = "dbg-outdir";
+QString appConfig::keyLastDb = "dbg-db/last";
+QString appConfig::keyCurrentDb = "dbg-db/current";
+#endif
 QMap<QString, QString> appConfig::runtimedata;
 
 /* static */
