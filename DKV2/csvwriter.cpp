@@ -94,7 +94,7 @@ bool csvwriter::save(QString filename)
     return true;
 }
 
-bool table2csv(QVector<dbfield>& fields, QString where, QString filename, QSqlDatabase db)
+bool table2csv(QVector<dbfield>& fields, QVector<QVariant::Type>& types, QString where, QString filename, QSqlDatabase db)
 {    LOG_CALL;
     csvwriter csv;
     for(auto f : fields)
@@ -108,31 +108,7 @@ bool table2csv(QVector<dbfield>& fields, QString where, QString filename, QSqlDa
         return false;
     }
 
-    while( q.next())
-    {
-        for (auto f: fields)
-        {
-            csv.appendToRow(q.record().value(f.name()).toString());
-        }
-    }
-
-    return csv.save(filename);
-}
-
-bool table2csv(QVector<dbfield>& fields, QVector<QVariant::Type>& types, QString where, QString filename, QSqlDatabase db)
-{    LOG_CALL;
-    csvwriter csv;
-    for(auto f : fields)
-        csv.addColumn(f.name());
-
-    QString sql = SelectQueryFromFields(fields, where);
-    QSqlQuery q (db);
-    if( q.exec(sql))
-    {
-        qCritical() << "sql faild to execute" << q.lastError() << endl << "SQL: " << q.lastQuery();
-        return false;
-    }
-
+    QLocale locale;
     while( q.next())
     {
         for (int i = 0; i < fields.count(); i++)
@@ -159,7 +135,7 @@ bool table2csv(QVector<dbfield>& fields, QVector<QVariant::Type>& types, QString
             case QVariant::Type::Double:
             {
                 double d = q.record().value(fields[i].name()).toDouble();
-                csv.appendToRow(QString::number(d, 'f', 2));
+                csv.appendToRow(locale.toString(d, 'f', 2));
                 break;
             }
             default:

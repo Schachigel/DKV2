@@ -25,7 +25,6 @@ private:
     QList<QString> currentRow;
 };
 
-bool table2csv(QVector<dbfield>& fields, QString where, QString filename, QSqlDatabase db = defaultDb());
 bool table2csv(QVector<dbfield>& fields, QVector<QVariant::Type>& types, QString where, QString filename, QSqlDatabase db = defaultDb());
 
 #endif // CSVWRITER_H
