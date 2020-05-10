@@ -5,21 +5,21 @@
 
 void test_appConfig::initTestCase()
 {
-    appConfig::setTestmode();
+//    appConfig::setTestmode();
     appConfig::setLastDb("c:\\temp\\data.dkdb");
-    appConfig::setOutDir("C:\\temp\\output");
-    appConfig::setCurrentDb("c:\\temp\\current.dkdb");
     QVERIFY(!appConfig::LastDb().isEmpty());
+    appConfig::setOutDir("C:\\temp\\output");
     QVERIFY(!appConfig::Outdir().isEmpty());
+    appConfig::setCurrentDb("c:\\temp\\current.dkdb");
     QVERIFY(!appConfig::CurrentDb().isEmpty());
 }
 void test_appConfig::cleanupTestCase()
 {
-    appConfig::deleteUserData("test-db/last");
-    appConfig::deleteUserData("test-outdir");
-    appConfig::deleteRuntimeData("test-db/current");
+    appConfig::delLastDb();
     QVERIFY(appConfig::LastDb().isEmpty());
+    appConfig::delOutDir();
     QVERIFY(appConfig::Outdir() == QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+    appConfig::delCurrentDb();
     QVERIFY(appConfig::CurrentDb().isEmpty());
 }
 

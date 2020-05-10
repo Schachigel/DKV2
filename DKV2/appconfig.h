@@ -7,27 +7,28 @@
 
 struct appConfig
 {
-    static void setTestmode()
-    {   /* not nice to have test specific code - however we do not want the
-            tests to modify the registry keys from the application  */
-        keyOutdir = "test-" + keyOutdir;
-        keyLastDb = "test-" + keyLastDb;
-        keyCurrentDb = "test-" + keyCurrentDb;
-    }
+//    static void setTestmode()
+//    {   /* not nice to have test specific code but tests have to stay noninteractive */
+//        testmode = true;
+//    }
     static void setOutDir(const QString& od);
     static void setOutDirInteractive(QWidget* parent =nullptr);
     static QString Outdir();
+    static void delOutDir();
 
     static void setLastDb(const QString&);
     static QString LastDb();
+    static void delLastDb();
 
     static void setCurrentDb(const QString&);
     static QString CurrentDb();
+    static void delCurrentDb();
 
     // for testing only
     static void deleteUserData(const QString& name);
     static void deleteRuntimeData(const QString& name);
 private:
+    static bool testmode;
     static QString keyOutdir;
     static QString keyLastDb;
     static QString keyCurrentDb;

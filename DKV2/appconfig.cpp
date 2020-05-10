@@ -4,11 +4,12 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QFileDialog>
+#include <QApplication>
 
 #include "helper.h"
 #include "appconfig.h"
 
-/* statics */
+/* static data */
 #ifndef QT_DEBUG
 QString appConfig::keyOutdir = "outdir";
 QString appConfig::keyLastDb = "db/last";
@@ -18,8 +19,11 @@ QString appConfig::keyOutdir = "dbg-outdir";
 QString appConfig::keyLastDb = "dbg-db/last";
 QString appConfig::keyCurrentDb = "dbg-db/current";
 #endif
+/* statics */
 QMap<QString, QString> appConfig::runtimedata;
+bool appConfig::testmode = false;
 
+/* static methods */
 /* static */
 void appConfig::setOutDir(const QString& od)
 {   LOG_CALL_W(od);
@@ -28,10 +32,13 @@ void appConfig::setOutDir(const QString& od)
 /* static */
 void appConfig::setOutDirInteractive(QWidget* parent)
 {   LOG_CALL;
+//    if( testmode){
+//        setOutDir(QDir::currentPath());
+//    }
     QString dir(getUserData(keyOutdir, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)));
     dir = QFileDialog::getExistingDirectory(parent, "Ausgabeverzeichnis", dir,
                QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    appConfig::setOutDir(dir);
+    setOutDir(dir);
 }
 /* static */
 QString appConfig::Outdir()
@@ -44,6 +51,12 @@ QString appConfig::Outdir()
             setOutDirInteractive();
     } while (od.isEmpty());
     return od;
+}
+/* static */ /* for testing puropose */
+void appConfig::delOutDir()
+{
+    QSettings set;
+    set.remove(keyOutdir);
 }
 
 /* static */
@@ -58,6 +71,11 @@ QString appConfig::LastDb()
     qDebug() << "lastDb read as " << ldb;
     return ldb;
 }
+/* static */ /* for testing puropose */
+void appConfig::delLastDb()
+{
+    deleteUserData(keyLastDb);
+}
 
 /* static */
 void appConfig::setCurrentDb(const QString& path)
@@ -69,6 +87,11 @@ QString appConfig::CurrentDb()
 {
     QString cdb = getRuntimeData(keyCurrentDb);
     return cdb;
+}
+/* static */ /* for testing puropose */
+void appConfig::delCurrentDb()
+{
+    deleteRuntimeData(keyCurrentDb);
 }
 
 /* private */
