@@ -3,6 +3,7 @@
 
 #include <Qt>
 #include <QMap>
+#include <QWidget>
 
 struct appConfig
 {
@@ -14,6 +15,7 @@ struct appConfig
         keyCurrentDb = "test-" + keyCurrentDb;
     }
     static void setOutDir(const QString& od);
+    static void setOutDirInteractive(QWidget* parent =nullptr);
     static QString Outdir();
 
     static void setLastDb(const QString&);

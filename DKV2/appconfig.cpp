@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QFileDialog>
 
 #include "helper.h"
 #include "appconfig.h"
@@ -25,10 +26,23 @@ void appConfig::setOutDir(const QString& od)
     setUserData(keyOutdir, od);
 }
 /* static */
+void appConfig::setOutDirInteractive(QWidget* parent)
+{   LOG_CALL;
+    QString dir(getUserData(keyOutdir, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)));
+    dir = QFileDialog::getExistingDirectory(parent, "Ausgabeverzeichnis", dir,
+               QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    appConfig::setOutDir(dir);
+}
+/* static */
 QString appConfig::Outdir()
 {
-    QString od = getUserData(keyOutdir, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
-    qDebug() << "outdir read as " << od;
+    QString od;
+
+    do {
+        od = getUserData(keyOutdir, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+        if( od.isEmpty())
+            setOutDirInteractive();
+    } while (od.isEmpty());
     return od;
 }
 

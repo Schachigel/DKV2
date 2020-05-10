@@ -264,12 +264,7 @@ void MainWindow::on_action_create_copy_triggered()
 }
 void MainWindow::on_action_store_output_directory_triggered()
 {   LOG_CALL;
-    QString dir;
-    dir = appConfig::Outdir();
-    dir = QFileDialog::getExistingDirectory(this, "Ausgabeverzeichnis", dir,
-                                        QFileDialog::ShowDirsOnly
-                                            | QFileDialog::DontResolveSymlinks);
-    appConfig::setOutDir(dir);
+    appConfig::setOutDirInteractive(this);
 }
 void MainWindow::on_action_exit_program_triggered()
 {   LOG_CALL;
