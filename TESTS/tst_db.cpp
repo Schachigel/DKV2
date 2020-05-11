@@ -45,6 +45,19 @@ void tst_db::test_createSimpleTable()
     QVERIFY2(dbTableHasField("t", "f"), "Field was not created");
 }
 
+void tst_db::test_failCreatingTable()
+{
+
+    dbstructure s;
+    dbtable t("t");
+    dbfield f("f");
+    t.append(f);
+    s.appendTable(t);
+    QVERIFY2(!s.createDb(QSqlDatabase::database("notexistingDb")), "Database was created but shouldn't");
+
+    QVERIFY2(!dbHasTable("t"), "Table was created but shouldn't");
+}
+
 void tst_db::test_createSimpleTable2()
 {
     dbstructure s = dbstructure()

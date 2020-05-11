@@ -21,6 +21,7 @@ private slots:
     void init();
     void cleanup();
     void test_createSimpleTable();
+    void test_failCreatingTable();
     void test_createSimpleTable2();
     void test_SimpleTableAddData();
     void test_createSimpleTable_wRefInt();
