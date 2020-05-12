@@ -30,6 +30,7 @@ CONFIG += c++14
 SOURCES += \
         appconfig.cpp \
         askdatedlg.cpp \
+        creditor.cpp \
         csvwriter.cpp \
         customtoolbutton.cpp \
         dbfield.cpp \
@@ -42,7 +43,6 @@ SOURCES += \
         helper.cpp \
         itemformatter.cpp \
         jahresabschluss.cpp \
-        kreditor.cpp \
         letterTemplate.cpp \
         letters.cpp \
         main.cpp \
@@ -54,6 +54,7 @@ SOURCES += \
 HEADERS += \
         appconfig.h \
         askdatedlg.h \
+        creditor.h \
         csvwriter.h \
         customtoolbutton.h \
         dbfield.h \
@@ -67,7 +68,6 @@ HEADERS += \
         helper.h \
         itemformatter.h \
         jahresabschluss.h \
-        kreditor.h \
         letterTemplate.h \
         letters.h \
         mainwindow.h \
@@ -79,11 +79,6 @@ FORMS += \
         askDateDlg.ui \
         frmjahresabschluss.ui \
         mainwindow.ui
-
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
 
 DISTFILES += \
     ../DOCS/Zinsberechnungsmethode.txt \

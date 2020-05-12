@@ -3,9 +3,9 @@
 #include "finhelper.h"
 #include "helper.h"
 #include "sqlhelper.h"
-#include "kreditor.h"
+#include "creditor.h"
 
-bool Kreditor::fromDb( int i)
+bool creditor::fromDb( int i)
 {   LOG_CALL;
 
     QSqlRecord rec = ExecuteSingleRecordSql(dkdbstructur["Kreditoren"].Fields(), "id="+QString::number(i));
@@ -25,7 +25,7 @@ bool Kreditor::fromDb( int i)
     return true;
 }
 
-bool Kreditor::isValid( QString& errortext)
+bool creditor::isValid( QString& errortext)
 {   LOG_CALL;
     errortext.clear();
     if( (ti.getValue("Vorname").toString().isEmpty() && ti.getValue("Vorname").toString().isEmpty())
@@ -57,12 +57,12 @@ bool Kreditor::isValid( QString& errortext)
     return false;
 }
 
-void Kreditor::setValue(const QString& n, const QVariant& v)
+void creditor::setValue(const QString& n, const QVariant& v)
 {   LOG_CALL_W(n);
     ti.setValue(n, v);
 }
 
-void Kreditor::setUniqueDbValue(const QString& n, const QVariant& v)
+void creditor::setUniqueDbValue(const QString& n, const QVariant& v)
 {   LOG_CALL_W(n);
     if( v.isNull() || !v.isValid() ||
         (v.type() == QVariant::Type::String && v.toString().isEmpty()))
@@ -71,7 +71,7 @@ void Kreditor::setUniqueDbValue(const QString& n, const QVariant& v)
         ti.setValue(n, v);
 }
 
-int Kreditor::Speichern(QSqlDatabase db) const
+int creditor::Speichern(QSqlDatabase db) const
 {   LOG_CALL;
 
     if( ti.getRecord().isEmpty())
@@ -79,14 +79,14 @@ int Kreditor::Speichern(QSqlDatabase db) const
     return ti.InsertData(db);
 }
 
-int Kreditor::Update(QSqlDatabase db) const
+int creditor::Update(QSqlDatabase db) const
 {   LOG_CALL;
     if( ti.getRecord().isEmpty())
         return -1;
     return ti.UpdateData(db);
 }
 
-/* static */ bool Kreditor::Loeschen(int index)
+/* static */ bool creditor::Loeschen(int index)
 {   LOG_CALL;
     // referential integrity will delete the contracts
     QSqlQuery deleteQ;
@@ -99,7 +99,7 @@ int Kreditor::Update(QSqlDatabase db) const
         return true;
 }
 
-void Kreditor::KreditorenListeMitId(QList<QPair<int,QString>> &entries) const
+void creditor::KreditorenListeMitId(QList<QPair<int,QString>> &entries) const
 {   LOG_CALL;
     QSqlQuery query;
     query.setForwardOnly(true);

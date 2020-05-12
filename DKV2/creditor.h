@@ -7,12 +7,12 @@
 
 #include "dkdbhelper.h"
 
-class Kreditor
+class creditor
 {
 public:
     // constructors
-    Kreditor(){ ti.init(dkdbstructur["Kreditoren"]);}
-    Kreditor (int i){ fromDb(i);}
+    creditor(){ ti.init(dkdbstructur["Kreditoren"]);}
+    creditor (int i){ fromDb(i);}
     // interface
     bool fromDb(int id);
     void setUniqueDbValue(const QString& n, const QVariant& v);

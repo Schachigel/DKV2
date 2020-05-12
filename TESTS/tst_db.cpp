@@ -7,7 +7,7 @@
 
 #include "../DKV2/dbstructure.h"
 #include "../DKV2/dbtable.h"
-#include "../DKV2/kreditor.h"
+#include "../DKV2/creditor.h"
 #include "../DKV2/dkdbhelper.h"
 #include "../DKV2/filehelper.h"
 #include "../DKV2/helper.h"
@@ -249,7 +249,7 @@ void tst_db::createKreditor()
 {
     // test
     create_DK_databaseContent(testDb());
-    Kreditor k;
+    creditor k;
     k.setValue("Vorname", "Hugo");
     k.setValue("Nachname", "Hurtig");
     k.setValue("Plz", "68305");

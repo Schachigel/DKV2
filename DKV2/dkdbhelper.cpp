@@ -17,7 +17,7 @@
 #include "finhelper.h"
 #include "vertrag.h"
 #include "dkdbhelper.h"
-#include "kreditor.h"
+#include "creditor.h"
 #include "dbstructure.h"
 
 const double CURRENT_DB_VERSION {1.0};
@@ -626,7 +626,7 @@ void create_sampleData( int AnzahlDatensaetze)
     int neueKreditorId =0;
     for( int i = 0; i<AnzahlDatensaetze; i++)
     {
-        Kreditor k;
+        creditor k;
         QString vn (Vornamen [rand->bounded(Vornamen.count ())]);
         QString nn (Nachnamen [rand->bounded(Nachnamen.count ())]);
         k.setValue("Vorname", vn);

@@ -376,7 +376,7 @@ void MainWindow::on_action_delete_creditor_triggered()
     if( QMessageBox::Yes != QMessageBox::question(this, "Kreditgeber löschen?", msg))
         return;
     busycursor b;
-    if( Kreditor::Loeschen(index.toInt()))
+    if( creditor::Loeschen(index.toInt()))
         prepareCreditorsTableView();
     else
         Q_ASSERT(!bool("could not remove kreditor and contracts"));
@@ -409,7 +409,7 @@ void MainWindow::on_action_create_new_creditor_triggered()
 int  MainWindow::save_creditor()
 {   LOG_CALL;
 
-    Kreditor k;
+    creditor k;
     k.setValue("Vorname", ui->leVorname->text().trimmed());
     k.setValue("Nachname", ui->leNachname->text().trimmed());
     k.setValue("Strasse", ui->leStrasse->text().trimmed());
@@ -595,7 +595,7 @@ void MainWindow::fill_creditors_dropdown()
 {   LOG_CALL;
     ui->comboKreditoren->clear();
     QList<QPair<int, QString>> Personen;
-    Kreditor k; k.KreditorenListeMitId(Personen);
+    creditor k; k.KreditorenListeMitId(Personen);
     for(auto Entry :Personen)
     {
         ui->comboKreditoren->addItem( Entry.second, QVariant((Entry.first)));

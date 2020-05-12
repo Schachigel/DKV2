@@ -6,7 +6,7 @@
 #include <QVariant>
 
 #include "helper.h"
-#include "kreditor.h"
+#include "creditor.h"
 #include "dkdbhelper.h"
 
 class Contract
@@ -43,7 +43,7 @@ public:
     QDate StartZinsberechnung() const {return startZinsberechnung;}
     QString Vorname() const {return dkGeber.getValue("Vorname").toString();}
     QString Nachname() const {return dkGeber.getValue("Nachname").toString();}
-    Kreditor getKreditor() const { return dkGeber;}
+    creditor getKreditor() const { return dkGeber;}
     bool isActive() const {return active;}
     int Kuendigungsfrist() const { return kFrist;}
     // setter
@@ -85,7 +85,7 @@ private:
     // Belegdaten
     double zinsFuss;
     double letzteZinsgutschrift;
-    Kreditor dkGeber;
+    creditor dkGeber;
     QString buchungsdatenJson;
 };
 
