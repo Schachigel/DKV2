@@ -18,22 +18,7 @@ extern dbstructure dkdbAddtionalTables;
 
 extern QList<QPair<qlonglong, QString>> Buchungsarten;
 
- enum Buchungsart_i
-{
-    NOOP =0,
-    VERTRAG_ANLEGEN =1,
-    VERTRAG_AKTIVIEREN =2,
-    PASSIVEN_VERTRAG_LOESCHEN =3,
-    VERTRAG_BEENDEN =4,
-    ZINSGUTSCHRIFT =5,
-    KUENDIGUNG_FRIST =6,
-    BART_NEXT =7
-};
-
 void init_DKDBStruct();
-void init_additionalTables();
-
-void init_bookingTypes();
 
 bool create_DK_databaseFile(const QString& filename);
 bool create_DK_databaseContent(QSqlDatabase db=defaultDb());

@@ -17,7 +17,6 @@ test_letterTemplate::test_letterTemplate(QObject *p) : QObject(p)
 
 void test_letterTemplate::initTestCase()
 {
-    init_additionalTables();
 }
 
 void test_letterTemplate::init()

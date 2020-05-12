@@ -13,7 +13,6 @@ test_properties::test_properties(QObject *parent) : QObject(parent)
 void test_properties::initTestCase()
 {
     init_DKDBStruct();
-    init_additionalTables();
 }
 void test_properties::init()
 {    LOG_CALL;

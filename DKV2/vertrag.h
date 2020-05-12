@@ -61,13 +61,10 @@ public:
     bool terminateActiveContract(const QDate& termin);
 private:
     // helper
-    bool saveRecord(const qlonglong BArt, const QString& msg);
     bool speichereBelegKuendigung();
     int saveNewContract() const;
-    bool saveRecordNewContract();
     void updateAusDb(){loadContractFromDb(id);}
     bool saveAnnualPayment(const QDate& end);
-    bool saveRecordAnnualPayment(const QDate& end);
     void initCreditor();
     // data
     qlonglong id;

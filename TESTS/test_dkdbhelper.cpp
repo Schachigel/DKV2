@@ -11,7 +11,6 @@
 void test_dkdbhelper::initTestCase()
 {   LOG_CALL;
     init_DKDBStruct();
-    init_additionalTables();
 }
 
 void test_dkdbhelper::init()

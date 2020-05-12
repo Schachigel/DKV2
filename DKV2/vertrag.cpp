@@ -70,27 +70,6 @@ void Contract::initCreditor()
     dkGeber.fromDb(kreditorId);
 }
 
-bool Contract::saveRecord(const qlonglong BArt, const QString& msg)
-{   LOG_CALL;
-
-    updateAusDb();
-    TableDataInserter ti(dkdbstructur["Buchungen"]);
-    ti.setValue("VertragId", id);
-    ti.setValue("Buchungsart", BArt);
-    ti.setValue("Betrag", betrag);
-    ti.setValue("Datum", QDate::currentDate());
-    ti.setValue("Bemerkung", msg);
-    ti.setValue("Buchungsdaten", buchungsdatenJson);
-    if( -1 == ti.InsertData())
-    {
-        qCritical() << "BelegSpeichern fehlgeschalgen";
-        return false;
-    }
-
-    qDebug().noquote() << msg << endl << buchungsdatenJson;
-    return true;
-}
-
 bool Contract::validateAndSaveNewContract(QString& meldung)
 {   LOG_CALL;
     meldung.clear();
@@ -139,17 +118,6 @@ int Contract::saveNewContract() const
     return -1;
 }
 
-bool Contract::saveRecordNewContract()
-{   LOG_CALL;
-    if( buchungsdatenJson.isEmpty())
-    {
-        loadContractFromDb(id);
-    }
-    QString msg("Neuer Vertrag #" +QString::number(id));
-
-    return saveRecord(VERTRAG_ANLEGEN, msg);
-}
-
 bool Contract::bookNewContract()
 {   LOG_CALL;
 
@@ -158,11 +126,8 @@ bool Contract::bookNewContract()
     if( nextId>0 )
     {
         setVid( nextId);
-        if( saveRecordNewContract())
-        {
-            QSqlDatabase::database().commit();
-            return true;
-        }
+        QSqlDatabase::database().commit();
+        return true;
     }
     qCritical() << "ein neuer Vertrag konnte nicht gespeichert werden";
     QSqlDatabase::database().rollback();
@@ -185,12 +150,6 @@ bool Contract::activateContract(const QDate& aDate)
     {
         qCritical() << "Vertrag Aktivierung fehlgeschlagen " << updateQ.lastQuery() << updateQ.lastError();
         ret = false;
-    }
-    else
-    {
-        QString BelegNachricht ("Vertrag %1 aktiviert zum %2");
-        BelegNachricht = BelegNachricht.arg(QString::number(id), aDate.toString());
-        ret = saveRecord(VERTRAG_AKTIVIEREN, BelegNachricht);
     }
     if(ret)
     {
@@ -215,15 +174,6 @@ bool Contract::deleteInactiveContract()
     }
 
     QSqlDatabase::database().transaction();
-    // wg der ref. integrit. muss ERST die Buchung gemacht werden, dann der Vertrag gelöscht
-    QString Belegnachricht("Passiver Vertrag %1 gelöscht");
-    Belegnachricht = Belegnachricht.arg(QString::number(id));
-    if( !saveRecord( PASSIVEN_VERTRAG_LOESCHEN, Belegnachricht))
-    {
-        qCritical() << "Belegdaten konnten nicht gespeichert werden";
-        QSqlDatabase::database().rollback();
-        return false;
-    }
     QSqlQuery deleteQ;
     if( !deleteQ.exec("DELETE FROM Vertraege WHERE id=" + QString::number(id)))
     {
@@ -248,7 +198,6 @@ bool Contract::cancelActiveContract(const QDate& kTermin)
         qCritical() << "Error in Kuendingung " << updateQ.lastError() << endl << updateQ.lastQuery();
         return false;
     }
-    saveRecord(Buchungsart_i::KUENDIGUNG_FRIST, "Kuendigung zum " + kTermin.toString());
     return true;
 }
 
@@ -264,17 +213,6 @@ bool Contract::terminateActiveContract( const QDate& termin)
     wert += davonZins;
 
     QSqlDatabase::database().transaction();
-    QLocale locale;
-    QString Belegnachricht("Aktiven Vertrag " + QString::number(id) + " beenden. ");
-    Belegnachricht += locale.toCurrencyString(Wert()) + " -> " + locale.toCurrencyString(wert) + " (" + locale.toCurrencyString(davonZins) + ")";
-
-    if( !saveRecord(VERTRAG_BEENDEN, Belegnachricht))
-    {
-        qCritical() << "Belegdaten konnten nicht gespeichert werden";
-        QSqlDatabase::database().rollback();
-        return false;
-    }
-
     QSqlQuery deleteQ;
     if( !deleteQ.exec("DELETE FROM Vertraege WHERE id=" + QString::number(id)))
     {
@@ -308,13 +246,6 @@ bool Contract::saveAnnualPayment(const QDate& end)
     return ret;
 }
 
-bool Contract::saveRecordAnnualPayment(const QDate &end)
-{   LOG_CALL;
-    QString msg = QString::number(letzteZinsgutschrift) + " Euro "
-                    "Zinsgutschrift zum " + end.toString();
-    return saveRecord(ZINSGUTSCHRIFT, msg);
-}
-
 bool Contract::bookAnnualInterest(const QDate& end)
 {   LOG_CALL_W( QString::number(end.year()));
     if( end < StartZinsberechnung())
@@ -329,12 +260,7 @@ bool Contract::bookAnnualInterest(const QDate& end)
         QSqlDatabase::database().rollback();
         return false;
     }
-    if( !saveRecordAnnualPayment(end))
-    {
-        qCritical() << "Jahresabschluss Beleg wurde nicht gespeichert";
-        QSqlDatabase::database().rollback();
-        return false;
-    }
+
     QSqlDatabase::database().commit();
     // Briefe Drucken
     return true;

@@ -159,7 +159,6 @@ int main(int argc, char *argv[])
     setGermanUi();
 
     init_DKDBStruct();
-    init_additionalTables();
 
     QString DatabaseFileName = getInitialDbFile();
     if( DatabaseFileName.isEmpty())
