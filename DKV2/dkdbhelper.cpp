@@ -24,7 +24,6 @@ const double CURRENT_DB_VERSION {2.0};
 const QString DB_VERSION {"Version"};
 
 dbstructure dkdbstructur;
-dbstructure dkdbAddtionalTables;
 
 QList<QPair<qlonglong, QString>> Buchungsarten;
 

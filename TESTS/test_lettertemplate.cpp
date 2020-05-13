@@ -17,6 +17,7 @@ test_letterTemplate::test_letterTemplate(QObject *p) : QObject(p)
 
 void test_letterTemplate::initTestCase()
 {
+    init_DKDBStruct();
 }
 
 void test_letterTemplate::init()

@@ -14,7 +14,6 @@
 #include "sqlhelper.h"
 
 extern dbstructure dkdbstructur;
-extern dbstructure dkdbAddtionalTables;
 
 extern QList<QPair<qlonglong, QString>> Buchungsarten;
 

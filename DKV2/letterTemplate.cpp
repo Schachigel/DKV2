@@ -201,15 +201,15 @@ letterTemplate::templateId letterTemplate::getIdFromName(QString n)
 
 bool letterTemplate::saveTemplate(QSqlDatabase db) const
 {   LOG_CALL;
-    if( !ensureTable(dkdbAddtionalTables["Briefvorlagen"], db))
+    if( !ensureTable(dkdbstructur["Briefvorlagen"], db))
         return false;
 
     for( int i = 0; i < letterTemplate::sections::maxSection; i++)
     {
-        TableDataInserter tdi( dkdbAddtionalTables["Briefvorlagen"]);
-        tdi.setValue(dkdbAddtionalTables["Briefvorlagen"].Fields()[0].name(), QVariant(tid) );
-        tdi.setValue(dkdbAddtionalTables["Briefvorlagen"].Fields()[1].name(), QVariant(i));
-        tdi.setValue(dkdbAddtionalTables["Briefvorlagen"].Fields()[2].name(), QVariant(html[i]));
+        TableDataInserter tdi(dkdbstructur["Briefvorlagen"]);
+        tdi.setValue(dkdbstructur["Briefvorlagen"].Fields()[0].name(), QVariant(tid) );
+        tdi.setValue(dkdbstructur["Briefvorlagen"].Fields()[1].name(), QVariant(i));
+        tdi.setValue(dkdbstructur["Briefvorlagen"].Fields()[2].name(), QVariant(html[i]));
         if( -1 == tdi.InsertOrReplaceData(db))
         {
             qDebug() << "failed to write template data: " << i << ": " << html[i];
@@ -218,10 +218,10 @@ bool letterTemplate::saveTemplate(QSqlDatabase db) const
     }
     for( int i = topmost; i < letterTemplate::distances::maxDistance; i++)
     {
-        TableDataInserter tdi(  dkdbAddtionalTables["Briefvorlagen"]);
-        tdi.setValue( dkdbAddtionalTables["Briefvorlagen"].Fields()[0].name(), QVariant(tid) );
-        tdi.setValue( dkdbAddtionalTables["Briefvorlagen"].Fields()[1].name(), QVariant(i));
-        tdi.setValue( dkdbAddtionalTables["Briefvorlagen"].Fields()[2].name(), QVariant(QString::number(length[i])));
+        TableDataInserter tdi(  dkdbstructur["Briefvorlagen"]);
+        tdi.setValue( dkdbstructur["Briefvorlagen"].Fields()[0].name(), QVariant(tid) );
+        tdi.setValue( dkdbstructur["Briefvorlagen"].Fields()[1].name(), QVariant(i));
+        tdi.setValue( dkdbstructur["Briefvorlagen"].Fields()[2].name(), QVariant(QString::number(length[i])));
         if( -1 == tdi.InsertOrReplaceData(db))
         {
             qDebug() << "failed to write template data: " << i << ": " << length[i];
@@ -239,7 +239,7 @@ bool letterTemplate::loadTemplate(letterTemplate::templateId id, QSqlDatabase db
         return false;
     }
     tid = id;
-    QString q = SelectQueryFromFields( dkdbAddtionalTables["Briefvorlagen"].Fields(), "templateId = " + QString::number(tid));
+    QString q = SelectQueryFromFields( dkdbstructur["Briefvorlagen"].Fields(), "templateId = " + QString::number(tid));
     QSqlQuery query(db);
     query.prepare(q);
     if( !query.exec())
@@ -256,8 +256,8 @@ bool letterTemplate::loadTemplate(letterTemplate::templateId id, QSqlDatabase db
     query.first();
     while(query.next())
     {
-        int prop = query.value(dkdbAddtionalTables["Briefvorlagen"].Fields()[1].name()).toInt();
-        QString sValue = query.value(dkdbAddtionalTables["Briefvorlagen"].Fields()[2].name()).toString();
+        int prop = query.value(dkdbstructur["Briefvorlagen"].Fields()[1].name()).toInt();
+        QString sValue = query.value(dkdbstructur["Briefvorlagen"].Fields()[2].name()).toString();
         if( prop >999)
             length[prop] = sValue.toInt();
         else

@@ -26,6 +26,7 @@ dbtable dbstructure::operator[](const QString& name) const
         if( table.Name() == name)
             return table;
     }
+    qCritical() << "trying to access unknown table " << name;
     Q_ASSERT(!bool("access to unknown database table"));
     return dbtable();
 }
