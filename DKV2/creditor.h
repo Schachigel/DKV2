@@ -25,7 +25,7 @@ public:
     static bool Loeschen(int index);
 private:
     TableDataInserter ti;
-//    QSqlRecord rec;
+//  QSqlRecord rec;
 };
 
 #endif // KREDITOR_H

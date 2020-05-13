@@ -58,8 +58,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // combo box für Kündigungsfristen füllen
     ui->cbKFrist->addItem("festes Vertragsende", QVariant(-1));
-    for (int i=3; i<25; i++)
-        ui->cbKFrist->addItem(QString::number(i), QVariant(i));
+    for (int i=3; i<12; i++)
+        ui->cbKFrist->addItem(QString::number(i) + " Monate", QVariant(i));
+    ui->cbKFrist->addItem("1 Jahr", QVariant(12));
+    ui->cbKFrist->addItem("1 Jahr und 1 Monat", QVariant(13));
+    for (int i=14; i<24; i++)
+        ui->cbKFrist->addItem("1 Jahr und " + QString::number( i-12) + " Monate", QVariant(i));
+    ui->cbKFrist->addItem("2 Jahre", QVariant(24));
+
 
     // Kreditor anlegen: "Speichern und ..." Menü anlegen
     menuSaveKreditorAnd = new QMenu;
