@@ -125,24 +125,22 @@ void initNumMetaInfo( const QString& name, const double& newValue, QSqlDatabase 
 QString getMetaInfo(const QString& name, QSqlDatabase db)
 {   LOG_CALL_W(name);
     QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", db).toString();
-    if( value.type() == QVariant::Type::Invalid)
-    {
-        qDebug() << "read empty property " << name << "; defaulted to empty string";
+    if( value.type() == QVariant::Type::Invalid) {
+        qInfo() << "read empty property " << name << "; defaulted to empty string";
         return "";
     }
-    qDebug() << "Property " << name << " : " << value;
+    qInfo() << "Property " << name << " : " << value;
     return value.toString();
 }
 double getNumMetaInfo(const QString& name, QSqlDatabase db)
 {   LOG_CALL_W(name);
 
     QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", db);
-    if( value.type() == QVariant::Type::Invalid)
-    {
-        qDebug() << "getNumProperty read empty property " << name << " defaulted to 0.";
+    if( value.type() == QVariant::Type::Invalid) {
+        qInfo() << "getNumProperty read empty property " << name << " defaulted to 0.";
         return 0.;
     }
-    qDebug() << "Property " << name << " : " << value.toDouble();
+    qInfo() << "Property " << name << " : " << value.toDouble();
     return value.toDouble();
 }
 void setMetaInfo(const QString& name, const QString& Wert, QSqlDatabase db)
@@ -166,13 +164,12 @@ bool create_DK_databaseContent(QSqlDatabase db)
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
 
     db.transaction();
-    do{
+    do {
         if(! (ret &= createTables( dkdbstructur, db))) break;
         if(! (ret &= insert_Properties(db))) break;
-    }while(false);
+    } while(false);
 
-    if(!ret)
-    {
+    if(!ret) {
         db.rollback();
         qCritical() << "creating db structure in new database failed";
         return false;
@@ -185,12 +182,10 @@ bool create_DK_databaseFile(const QString& filename) /*in the default connection
 {   //LOG_CALL_W("filename: " + filename);
     Q_ASSERT(!filename.isEmpty());
     dbgTimer timer( QString(__func__) + QString(" (") + filename + QString(")"));
-    if( QFile(filename).exists())
-    {
+    if( QFile(filename).exists()) {
         backupFile(filename, "db-bak");
         QFile(filename).remove();
-        if( QFile(filename).exists())
-        {
+        if( QFile(filename).exists()) {
             qCritical() << "file to be replaced can not be deleted";
             return false;
         }
@@ -199,9 +194,8 @@ bool create_DK_databaseFile(const QString& filename) /*in the default connection
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(filename);
 
-    if( !db.open())
-    {
-        qDebug() << "DkDatenbankAnlegen failed in db.open";
+    if( !db.open()) {
+        qCritical() << "DkDatenbankAnlegen failed in db.open";
         return false;
     }
     return create_DK_databaseContent(db);
@@ -209,49 +203,41 @@ bool create_DK_databaseFile(const QString& filename) /*in the default connection
 
 bool has_allTablesAndFields(QSqlDatabase db)
 {   LOG_CALL;
-    for( auto table : dkdbstructur.getTables())
-    {
+    for( auto table : dkdbstructur.getTables()) {
         QSqlQuery sql(db);
         sql.prepare(QString("SELECT * FROM ") + table.Name() +" LIMIT 0");
-        if( !sql.exec())
-        {
-            qDebug() << "testing for table " << table.Name() << " failed\n" << sql.lastError() << endl << sql.lastQuery();
+        if( !sql.exec()) {
+            qCritical() << "Testing for table " << table.Name() << " failed\n" << sql.lastError() << endl << sql.lastQuery();
+            return false;
+        }
+        if( table.Fields().count() != sql.record().count()) {
+            qCritical() << "Table " << table.Name() << " has the wrong number of fields ";
             return false;
         }
         QSqlRecord r=sql.record();
-        for(int i = 0; i< r.count(); i++ )
-        {
+        for(int i = 0; i< r.count(); i++ ) {
             QString fieldname = r.fieldName(i);
-            if( table[fieldname] == dbfield())
-            {
-                qDebug() << "testing for field" << fieldname << " failed\n" << sql.lastError() << endl << sql.lastQuery();
+            if( table[fieldname] == dbfield()) {
+                qCritical() << "testing for field" << fieldname << " failed\n" << sql.lastError() << endl << sql.lastQuery();
                 return false;
             }
         }
-        if( table.Fields().count() != sql.record().count())
-        {
-            qCritical() << "Tabelle " << table.Name() << " hat nicht die richtige Anzahl Felder";
-            return false;
-        }
     }
-    qDebug() << db.databaseName() << " has all tables expected";
+    qInfo() << db.databaseName() << " has all tables expected";
     return true;
 }
 
 bool isValidDatabase(const QString& filename)
 {   LOG_CALL_W(filename);
-
     QString msg;
     if( filename == "") msg = "empty filename";
     else if( !QFile::exists(filename)) msg = "file not found";
-    else
-    {
+    else {
         dbCloser closer;
         QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "validate");
         db.setDatabaseName(filename);
         if( !db.open()) msg = "open db failed";
-        else
-        {
+        else {
             closer.set(&db);
             if( !isValidDatabase(db))
                 msg = "database was found to be NOT valid";
@@ -269,12 +255,11 @@ bool isValidDatabase(QSqlDatabase db)
     enableRefInt.exec("PRAGMA foreign_keys = ON");
     if( !has_allTablesAndFields(db))
         return false;
-    if( !check_db_version(db))
-    {
+    if( !check_db_version(db)) {
         qCritical() << "database version check failed";
         return false;
     }
-    qDebug() << db.databaseName() << " is a valid dk database";
+    qInfo() << db.databaseName() << " is a valid dk database";
     return true;
 }
 
@@ -285,12 +270,10 @@ void closeDatabaseConnection(QString con)
     QList<QString> cl = QSqlDatabase::connectionNames();
     if( cl.count() == 0)
         return;
-    if( cl.count() > 0)
-    {
-        qDebug() << "Found " << cl.count() << "connections open, after closing  \"" + con +"\"";
+    if( cl.count() > 0) {
+        qInfo() << "Found " << cl.count() << "connections open, after closing  \"" + con +"\"";
         return;
     }
-
     qInfo() << "Database connection " << con << " removed";
 }
 
@@ -313,8 +296,8 @@ bool open_databaseForApplication( QString newDbFile)
     // setting the default database for the application
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(newDbFile);
-    if( !db.open())
-    {   qDebug() << "open database file " << newDbFile << " failed";
+    if( !db.open()) {
+        qCritical() << "open database file " << newDbFile << " failed";
         return false;
     }
 
@@ -347,8 +330,7 @@ void check_Ibans(QStringList& msg)
     IbanValidator iv;
     QSqlQuery iban_q;
     iban_q.exec("SELECT [id],[Vorname],[Nachname],[IBAN] FROM [Kreditoren] WHERE [IBAN] <> ''");
-    while(iban_q.next())
-    {
+    while(iban_q.next()) {
         QString iban = iban_q.value("IBAN").toString();
         int pos = 0;
         if( iv.validate(iban, pos) == IbanValidator::State::Acceptable)
@@ -376,20 +358,17 @@ bool copy_Table(QString table, QSqlDatabase targetDB)
     QSqlQuery q(defaultDb()); // default database connection -> active database
     q.prepare("SELECT * FROM " + table);
     q.exec();
-    while( q.next())
-    {
+    while( q.next()) {
         QSqlRecord rec = q.record();
         qDebug() << "dePe Copy: working on Record " << rec;
         TableDataInserter tdi( dkdbstructur[table]);
-        for( int iField = 0; iField < q.record().count(); iField++)
-        {
+        for( int iField = 0; iField < q.record().count(); iField++) {
             QString fieldname = rec.fieldName(iField);
             QVariant value = rec.value(iField);
             qDebug() << "Setting " << fieldname << " to " << value;
             tdi.setValue(fieldname, value);
         }
-        if( tdi.InsertData(targetDB) == -1)
-        {
+        if( tdi.InsertData(targetDB) == -1) {
             qDebug() << "Error inserting Data into deperso.Copy Table" << q.record();
             success = false;
             break;
@@ -405,8 +384,7 @@ bool copy_mangledCreditors(QSqlDatabase targetDB)
     QSqlQuery q(defaultDb()); // default database connection -> active database
     q.prepare("SELECT * FROM Kreditoren");
     q.exec();
-    while( q.next())
-    {
+    while( q.next()) {
         recCount++;
         QSqlRecord rec = q.record();
         qDebug() << "dePe Copy: working on Record " << rec;
@@ -418,8 +396,7 @@ bool copy_mangledCreditors(QSqlDatabase targetDB)
         tdi.setValue("Plz", QString("D-xxxxx"));
         tdi.setValue("Stadt", QString("Stadt"));
 
-        if( tdi.InsertData(targetDB) == -1)
-        {
+        if( tdi.InsertData(targetDB) == -1) {
             qDebug() << "Error inserting Data into deperso.Copy Table" << q.record();
             success = false;
             break;
@@ -430,12 +407,10 @@ bool copy_mangledCreditors(QSqlDatabase targetDB)
 
 bool create_DB_copy(QString targetfn, bool deper)
 {   LOG_CALL_W(targetfn);
-    if( QFile::exists(targetfn))
-    {
+    if( QFile::exists(targetfn)) {
         backupFile(targetfn);
         QFile::remove(targetfn);
-        if( QFile::exists(targetfn))
-        {
+        if( QFile::exists(targetfn)) {
             qCritical() << "could not remove target file";
             return false;
         }
@@ -445,35 +420,29 @@ bool create_DB_copy(QString targetfn, bool deper)
     QSqlDatabase backupDB = QSqlDatabase::addDatabase("QSQLITE", "backup");
     backupDB.setDatabaseName(targetfn);
 
-    if( !backupDB.open())
-    {
+    if( !backupDB.open()) {
         qDebug() << "faild to open backup database";
         return false;
     }
     else
         closer.set(&backupDB);
 
-    if( !dkdbstructur.createDb(backupDB))
-    {
+    if( !dkdbstructur.createDb(backupDB)) {
         qDebug() << "faild to create db schema";
         return false;
     }
     bool success = true;
     QVector<dbtable> tables = dkdbstructur.getTables();
-    for( auto table : tables)
-    {
-        if( deper && table.Name() == "Buchungen")
-        {
+    for( auto table : tables) {
+        if( deper && table.Name() == "Buchungen") {
             qDebug() << "de personalisation mode: skipping 'Buchungen' ";
             continue;
         }
         qDebug() << "dePe Copy: working on table " << table.Name();
-        if( deper && table.Name() == "Kreditoren")
-        {
+        if( deper && table.Name() == "Kreditoren") {
             success = success && copy_mangledCreditors(backupDB);
         }
-        else
-        {
+        else {
             success = success && copy_Table(table.Name(), backupDB);
         }
 
