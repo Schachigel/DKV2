@@ -134,6 +134,9 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QSplashScreen* splash;
+    void fillCombo_NoticePeriods();
+    void createButtonMenu_saveKreditorAnd();
+    void createButtonMenu_saveContractAnd();
     void prepareCreditorsTableView();
     void prepare_contracts_list_view();
     void prepareWelcomeMsg();

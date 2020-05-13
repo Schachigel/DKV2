@@ -1,3 +1,5 @@
+-- Welcome Screen mit Statistic Data?
+
 -- jahresabschluss Briefe ...
 
 -- test berechne zusammenfassung ist leer

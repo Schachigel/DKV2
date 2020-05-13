@@ -56,6 +56,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->CreditorsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 15px; }");
     ui->contractsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 15px; }");
 
+    fillCombo_NoticePeriods();
+    createButtonMenu_saveKreditorAnd();
+    createButtonMenu_saveContractAnd();
+
+    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
+}
+
+void MainWindow::fillCombo_NoticePeriods()
+{   LOG_CALL;
     // combo box für Kündigungsfristen füllen
     ui->cbKFrist->addItem("festes Vertragsende", QVariant(-1));
     for (int i=3; i<12; i++)
@@ -65,8 +74,10 @@ MainWindow::MainWindow(QWidget *parent) :
     for (int i=14; i<24; i++)
         ui->cbKFrist->addItem("1 Jahr und " + QString::number( i-12) + " Monate", QVariant(i));
     ui->cbKFrist->addItem("2 Jahre", QVariant(24));
+}
 
-
+void MainWindow::createButtonMenu_saveKreditorAnd()
+{   LOG_CALL;
     // Kreditor anlegen: "Speichern und ..." Menü anlegen
     menuSaveKreditorAnd = new QMenu;
     menuSaveKreditorAnd->addAction(ui->action_save_contact_go_contract);
@@ -74,7 +85,10 @@ MainWindow::MainWindow(QWidget *parent) :
     menuSaveKreditorAnd->addAction(ui->action_save_contact_go_new_creditor);
     ui->saveAnd->setMenu(menuSaveKreditorAnd);
     ui->saveAnd->setDefaultAction(ui->action_save_contact_go_contract);
+}
 
+void MainWindow::createButtonMenu_saveContractAnd()
+{   LOG_CALL;
     // Vertrag anlegen: "Speichern und ... " Menü anlegen
     menuSaveContractAnd = new QMenu;
     menuSaveContractAnd->addAction(ui->action_save_contract_new_contract);
@@ -82,8 +96,6 @@ MainWindow::MainWindow(QWidget *parent) :
     menuSaveContractAnd->addAction(ui->action_save_contract_go_contracts);
     ui->saveContractAnd->setMenu(menuSaveContractAnd);
     ui->saveContractAnd->setDefaultAction(ui->action_save_contract_go_kreditors);
-
-    ui->stackedWidget->setCurrentIndex(emptyPageIndex);
 }
 
 MainWindow::~MainWindow()
@@ -99,8 +111,7 @@ void MainWindow::setSplash(QSplashScreen* s)
 
 bool MainWindow::useDb(const QString& dbfile)
 {   LOG_CALL;
-    if( open_databaseForApplication(dbfile))
-    {
+    if( open_databaseForApplication(dbfile)) {
         appConfig::setCurrentDb(dbfile);
         showDbInStatusbar(dbfile);
         return true;
@@ -111,8 +122,7 @@ bool MainWindow::useDb(const QString& dbfile)
 
 void MainWindow::showDbInStatusbar( QString filename)
 {   LOG_CALL_W (filename);
-    if( filename.isEmpty())
-    {
+    if( filename.isEmpty()) {
         filename = appConfig::CurrentDb();
     }
     ui->statusLabel->setText( filename);
@@ -121,22 +131,20 @@ void MainWindow::showDbInStatusbar( QString filename)
 void MainWindow::prepareWelcomeMsg()
 {   LOG_CALL;
     busycursor b;
-    QString message = "<table width='100%'><tr><td><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></td></tr>";
+    QString messageHtml = "<table width='100%'><tr><td><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></td></tr>";
 
     QStringList warnings = check_DbConsistency( );
-    foreach(QString warning, warnings)
-    {
-        message += "<tr><td><font color='red'>" +warning +"</font></td></tr>";
+    foreach(QString warning, warnings) {
+        messageHtml += "<tr><td><font color='red'>" +warning +"</font></td></tr>";
     }
-    message += "<tr><td><img src=\":/res/splash.png\"/></td></tr></table>";
-    qDebug() << endl << message << endl;
-    ui->teWelcome->setText(message);
+    messageHtml += "<tr><td><img src=\":/res/splash.png\"/></td></tr></table>";
+    qDebug() <<"welcome Screen html: " << endl << messageHtml << endl;
+    ui->teWelcome->setText(messageHtml);
 }
 // whenever the stackedWidget changes ...
 void MainWindow::on_stackedWidget_currentChanged(int arg1)
 {   LOG_CALL;
-    if( arg1 < 0)
-    {
+    if( arg1 < 0) {
         qWarning() << "stackedWidget changed to non existing page";
         return;
     }
@@ -168,11 +176,9 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
         ui->action_loeschePassivenVertrag->setEnabled(false);
         break;
     default:
-    {
         qWarning() << "stackedWidget current change not implemented for this index";
-        return;
-    }
     }// e.o. switch
+    return;
 }
 
 // file menu
@@ -197,18 +203,16 @@ void MainWindow::on_action_back_triggered()
 void MainWindow::on_action_create_new_DB_triggered()
 {   LOG_CALL;
     QString dbfile = askUserDbFilename("Neue DkVerarbeitungs Datenbank");
-    if( dbfile == "")
-    {   qDebug() << "user canceled file selection";
+    if( dbfile == "") {
+        qDebug() << "user canceled file selection";
         return;
     }
     busycursor b;
     closeDatabaseConnection();
-    if( create_DK_databaseFile(dbfile) && useDb(dbfile))
-    {
+    if( create_DK_databaseFile(dbfile) && useDb(dbfile)) {
         appConfig::setLastDb(dbfile);
     }
-    else
-    {
+    else {
         QMessageBox::information(this, "Fehler", "Die neue Datenbankdatei konnte nicht angelegt und geöffnet werden");
         return;
     }
@@ -217,8 +221,7 @@ void MainWindow::on_action_create_new_DB_triggered()
 void MainWindow::on_action_open_DB_triggered()
 {   LOG_CALL;
     QString dbfile = askUserDbFilename("DkVerarbeitungs Datenbank", true);
-    if( dbfile == "")
-    {
+    if( dbfile == "") {
         qDebug() << "keine Datei wurde vom Anwender ausgewählt";
         QMessageBox::information(this, "Abbruch", "Es wurde keine Datenbankdatei ausgewählt");
         return;
@@ -226,11 +229,9 @@ void MainWindow::on_action_open_DB_triggered()
     busycursor b;
     if( useDb(dbfile))
         appConfig::setLastDb(dbfile);
-    else
-    {
+    else {
         QMessageBox::information(this, "Fehler", "Die Datenbank konnte nicht geöffnet werden");
-        if( !useDb(appConfig::CurrentDb()))
-        {
+        if( !useDb(appConfig::CurrentDb())) {
             qFatal("alte und neue DB können nicht geöffnet werden -> abbruch");
             exit( 1);
         }
@@ -244,8 +245,7 @@ void MainWindow::on_action_create_anonymous_copy_triggered()
     if( dbfile == "")
         return;
     busycursor b;
-    if( !create_DB_copy(dbfile, true))
-    {
+    if( !create_DB_copy(dbfile, true)) {
         QMessageBox::information(this, "Fehler beim Kopieren", "Die anonymisierte Datenbankkopie konnte nicht angelegt werden. "
                                                                "Weitere Info befindet sich in der LOG Datei");
         qCritical() << "creating depersonaliced copy failed";
@@ -259,14 +259,12 @@ void MainWindow::on_action_create_copy_triggered()
         return;
 
     busycursor b;
-    if( !create_DB_copy(dbfile, false))
-    {
+    if( !create_DB_copy(dbfile, false)) {
         QMessageBox::information(this, "Fehler beim Kopieren", "Die Datenbankkopie konnte nicht angelegt werden. "
                                                                "Weitere Info befindet sich in der LOG Datei");
         qCritical() << "creating depersonaliced copy failed";
     }
     return;
-
 }
 void MainWindow::on_action_store_output_directory_triggered()
 {   LOG_CALL;
@@ -312,8 +310,7 @@ int MainWindow::getIdFromCreditorsList()
 {   LOG_CALL;
     // What is the persId of the currently selected person in the person?
     QModelIndex mi(ui->CreditorsTableView->currentIndex().siblingAtColumn(0));
-    if( mi.isValid())
-    {
+    if( mi.isValid()) {
         QVariant data(ui->CreditorsTableView->model()->data(mi));
         return data.toInt();
     }
@@ -325,12 +322,10 @@ int MainWindow::getIdFromCreditorsList()
 void MainWindow::on_CreditorsTableView_customContextMenuRequested(const QPoint &pos)
 {   LOG_CALL;
     QModelIndex index = ui->CreditorsTableView->indexAt(pos).siblingAtColumn(0);
-    if( index.isValid())
-    {
+    if( index.isValid()) {
         QVariant data(ui->CreditorsTableView->model()->data(index));
         bool canConvert(false); data.toInt(&canConvert);
-        if( canConvert)
-        {
+        if( canConvert) {
             QMenu menu( "PersonContextMenu", this);
             menu.addAction(ui->action_edit_Creditor);
             menu.addAction(ui->action_create_contract_for_creditor);
@@ -414,7 +409,6 @@ void MainWindow::on_action_create_new_creditor_triggered()
 }
 int  MainWindow::save_creditor()
 {   LOG_CALL;
-
     creditor k;
     k.setValue("Vorname", ui->leVorname->text().trimmed());
     k.setValue("Nachname", ui->leNachname->text().trimmed());
@@ -427,16 +421,14 @@ int  MainWindow::save_creditor()
     k.setValue("BIC", ui->leBic->text().trimmed());
 
     QString errortext;
-    if( !k.isValid(errortext))
-    {
+    if( !k.isValid(errortext)) {
         errortext = "Die Daten konnten nicht gespeichert werden: <br>" + errortext;
         QMessageBox::information(this, "Fehler", errortext );
         qDebug() << "prüfung der Kreditor Daten:" << errortext;
         return -1;
     }
     int kid = -1;
-    if( ui->lblPersId->text() != "")
-    {
+    if( ui->lblPersId->text() != "") {
         kid = ui->lblPersId->text().toInt();
         k.setValue("Id", kid);     // update not insert
         k.Update();
@@ -444,8 +436,7 @@ int  MainWindow::save_creditor()
     else
        kid = k.Speichern();
 
-    if(kid == -1)
-    {
+    if(kid == -1) {
         QMessageBox::information( this, "Fehler", "Der Datensatz konnte nicht gespeichert werden. "
                      "Ist die E-Mail Adresse einmalig? Gibt es die Adressdaten in der Datenbank bereits?"
                      "\nBitte überprüfen Sie ihre Eingaben");
@@ -490,16 +481,14 @@ void MainWindow::on_cancel_clicked()
 void MainWindow::on_action_save_contact_go_contract_triggered()
 {   LOG_CALL;
     int kid = save_creditor();
-    if(  kid != -1)
-    {
+    if(  kid != -1) {
         empty_create_creditor_form();
         on_action_create_contract_for_creditor_triggered();
     }
 }
 void MainWindow::on_action_save_contact_go_creditors_triggered()
 {   LOG_CALL;
-    if( save_creditor() != -1)
-    {
+    if( save_creditor() != -1) {
         empty_create_creditor_form();
         on_action_Liste_triggered();
     }
@@ -526,16 +515,14 @@ Contract MainWindow::get_contract_data_from_form()
     // ensure consistency:
     // kfrist == -1 -> LaufzeitEnde has to be valid and not 31.12.9999
     // kfrist > 0 -> LaufzeitEnde == 31.12.9999
-    if( !LaufzeitEnde.isValid())
-    {
+    if( !LaufzeitEnde.isValid()) {
         qDebug() << "LaufzeitEnde ungültig -> defaulting";
         if( kFrist != -1)
             LaufzeitEnde = EndOfTheFuckingWorld;
         else
             LaufzeitEnde = Vertragsdatum.addYears(5);
     }
-    if( kFrist != -1 && LaufzeitEnde.isValid() && LaufzeitEnde != EndOfTheFuckingWorld)
-    {
+    if( kFrist != -1 && LaufzeitEnde.isValid() && LaufzeitEnde != EndOfTheFuckingWorld) {
         qDebug() << "LaufzeitEnde gesetzt, aber KFrist nicht -1 -> kfrist korrigiert";
         kFrist = -1;
     }
@@ -549,13 +536,11 @@ bool MainWindow::save_new_contract()
     Contract c =get_contract_data_from_form();
 
     QString errortext;
-    if( !c.validateAndSaveNewContract(errortext))
-    {
+    if( !c.validateAndSaveNewContract(errortext)) {
         QMessageBox::critical( this, "Fehler", errortext);
         return false;
     }
-    else
-    {
+    else {
         if( !errortext.isEmpty())
             QMessageBox::information(this, "Warnung", errortext);
         return true;
@@ -569,8 +554,7 @@ void MainWindow::empty_new_contract_form()
 }
 void MainWindow::on_deLaufzeitEnde_userDateChanged(const QDate &date)
 {   LOG_CALL;
-    if( date == EndOfTheFuckingWorld)
-    {
+    if( date == EndOfTheFuckingWorld) {
         if( ui->cbKFrist->currentIndex() == 0)
             ui->cbKFrist->setCurrentIndex(6);
     }
@@ -579,15 +563,13 @@ void MainWindow::on_deLaufzeitEnde_userDateChanged(const QDate &date)
 }
 void MainWindow::on_cbKFrist_currentIndexChanged(int index)
 {   LOG_CALL;
-    if( -1 == ui->cbKFrist->itemData(index).toInt())
-    {   // Vertragsende wird fest vorgegeben
+    if( -1 == ui->cbKFrist->itemData(index).toInt()) {
+        // Vertragsende wird fest vorgegeben
         if( EndOfTheFuckingWorld == ui->deLaufzeitEnde->date())
-        {
             ui->deLaufzeitEnde->setDate(QDate::currentDate().addYears(5));
-        }
     }
-    else
-    {   // Vertragsende wird durch Kündigung eingeleitet
+    else {
+        // Vertragsende wird durch Kündigung eingeleitet
         ui->deLaufzeitEnde->setDate(EndOfTheFuckingWorld);
     }
 }
@@ -602,8 +584,7 @@ void MainWindow::fill_creditors_dropdown()
     ui->comboKreditoren->clear();
     QList<QPair<int, QString>> Personen;
     creditor k; k.KreditorenListeMitId(Personen);
-    for(auto Entry :Personen)
-    {
+    for(auto Entry :Personen) {
         ui->comboKreditoren->addItem( Entry.second, QVariant((Entry.first)));
     }
 }
@@ -611,8 +592,7 @@ void MainWindow::fill_rates_dropdown()
 {   LOG_CALL;
     QList<ZinsAnzeigeMitId> InterrestCbEntries; interestRates_for_dropdown(InterrestCbEntries);
     ui->cbZins->clear();
-    for(ZinsAnzeigeMitId Entry : InterrestCbEntries)
-    {
+    for(ZinsAnzeigeMitId Entry : InterrestCbEntries) {
         ui->cbZins->addItem(Entry.second, QVariant(Entry.first));
     }
     ui->cbZins->setCurrentIndex(InterrestCbEntries.count()-1);
@@ -621,10 +601,8 @@ void MainWindow::set_creditors_combo_by_id(int KreditorenId)
 {   LOG_CALL;
     if( KreditorenId < 0) return;
     // select the correct person
-    for( int i = 0; i < ui->comboKreditoren->count(); i++)
-    {
-        if( KreditorenId == ui->comboKreditoren->itemData(i))
-        {
+    for( int i = 0; i < ui->comboKreditoren->count(); i++) {
+        if( KreditorenId == ui->comboKreditoren->itemData(i)) {
             ui->comboKreditoren->setCurrentIndex(i);
             break;
         }
@@ -639,8 +617,7 @@ void MainWindow::on_cancelCreateContract_clicked()
 }
 void MainWindow::on_action_save_contract_go_contracts_triggered()
 {   LOG_CALL;
-    if( save_new_contract())
-    {
+    if( save_new_contract()) {
         empty_new_contract_form();
         prepare_contracts_list_view();
         ui->stackedWidget->setCurrentIndex(ContractsListIndex);
@@ -648,16 +625,14 @@ void MainWindow::on_action_save_contract_go_contracts_triggered()
 }
 void MainWindow::on_action_save_contract_go_kreditors_triggered()
 {   LOG_CALL;
-    if( save_new_contract())
-    {
+    if( save_new_contract()) {
         empty_new_contract_form();
         on_action_Liste_triggered();
     }
 }
 void MainWindow::on_action_save_contract_new_contract_triggered()
 {   LOG_CALL;
-    if( save_new_contract())
-    {
+    if( save_new_contract()) {
         empty_new_contract_form();
         on_action_create_contract_for_creditor_triggered();
     }
@@ -863,8 +838,7 @@ QString MainWindow::prepare_overview_page(Uebersichten u)
         lbl += h1("Auslaufende Verträge") + newLine( "Stand: "  + QDate::currentDate().toString("dd.MM.yyyy<br>"));
         QVector<ContractEnd> ce;
         calc_contractEnd(ce);
-        if( !ce.isEmpty())
-        {
+        if( !ce.isEmpty()) {
             lbl += startTable();
             lbl += tableRow( h2("Jahr"), h2( "Anzahl"),  h2( "Summe"));
             for( auto x: ce)
@@ -880,14 +854,12 @@ QString MainWindow::prepare_overview_page(Uebersichten u)
         QLocale locale;
         QVector<YZV> yzv;
         calc_anualInterestDistribution( yzv);
-        if( !yzv.isEmpty())
-        {
+        if( !yzv.isEmpty()) {
             lbl += h1("Verteilung der Zinssätze pro Jahr") + "<br> Stand:"  + QDate::currentDate().toString("dd.MM.yyyy<br>");
             lbl += startTable() +  startRow();
             lbl += td(h2("Jahr")) + td( h2( "Zinssatz")) +td(h2("Anzahl")) + td( h2( "Summe"));
             lbl += endRow();
-            for( auto x: yzv)
-            {
+            for( auto x: yzv) {
                 lbl += tableRow( QString::number(x.year), QString::number(x.intrest), QString::number(x.count), locale.toCurrencyString(x.sum));
             }
             lbl += endTable();
