@@ -70,9 +70,9 @@ bool insert_Properties()
 {   LOG_CALL;
     bool ret =true;
     QSqlQuery sql;
-//    QRandomGenerator *rand = QRandomGenerator::system();
+    QRandomGenerator *rand = QRandomGenerator::system();
     initNumMetaInfo(DB_VERSION, CURRENT_DB_VERSION);
-//    initMetaInfo("IdOffset", QString::number(rand->bounded(10000,20000)), db);
+    initMetaInfo("IdOffset", QString::number(rand->bounded(10000,20000)));
     initMetaInfo("ProjektInitialen", "ESP");
     return ret;
 }
