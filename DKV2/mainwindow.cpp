@@ -542,7 +542,6 @@ contract MainWindow::get_contract_data_from_form()
     int interrestIndex= ui->cbZins->itemData(ui->cbZins->currentIndex()).toInt();
     c.setInterestRate(round2digits(double(interrestIndex)/100));
     c.setConclusionDate (ui->deVertragsabschluss->date());
-    c.setStatus (contract::contract_status::inactive);
 
     int kFrist = ui->cbKFrist->currentData().toInt();
     QDate LaufzeitEnde = ui->deLaufzeitEnde->date();  // QDateTimeEdit default: 2000/1/1

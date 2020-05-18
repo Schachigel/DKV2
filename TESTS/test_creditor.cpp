@@ -38,7 +38,7 @@ void test_creditor::test_createCreditor()
 
 void test_creditor::test_CreditorFromDb()
 {   LOG_CALL;
-    creditor c = creditor::randomCreditor();
+    creditor c = randomCreditor();
     QVERIFY2(c.isValid(), "randomly created creditor failed");
     QVERIFY2(c.save(), "failed to save creditor");
     creditor d;
@@ -74,12 +74,7 @@ void test_creditor::test_invalidCreditor()
 void test_creditor::test_saveManyRandomCreditors()
 {   LOG_CALL;
     dbgTimer t;
-    for( int i = 0; i< 100; i++)
-    {
-        creditor c = creditor::randomCreditor();
-        if( c.isValid())
-            QVERIFY( c.save() >= 0);
-        else
-            QFAIL("random creditor is invalid");
-    }
+    int numberOfCreditors = 50;
+    QVERIFY2( randomCreditors(numberOfCreditors), "creating random creditors failed");
+    QVERIFY2(rowCount("Kreditoren") == numberOfCreditors, "random creditor creation failed");
 }

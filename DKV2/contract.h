@@ -13,14 +13,8 @@
 
 struct contract
 {
-    // types
-    enum contract_status{
-        inactive = 1,
-        active,
-        //terminated
-    };
     // construction
-    contract() :td(getTableDef()) { setId(-1); setStatus(inactive);};
+    contract() :td(getTableDef()) { setId(-1);};
 
     // getter & setter
     void setId(qlonglong id) { td.setValue("id", id);}
@@ -29,21 +23,21 @@ struct contract
     qlonglong creditorId() const{ return td.getValue("KreditorId").toLongLong();}
     void setLabel(QString l) { return td.setValue("Kennung", l);}
     QString label() const { return td.getValue("Kennung").toString();};
-    void setInterestRate( int percentpercent) {td.setValue("ZSatz", round2digits(double(percentpercent)/100.));}
-    void setInterestRate( double percent) {td.setValue("ZSatz", round2digits(percent));}
-    double interestRate() const { return td.getValue("ZSatz").toDouble();}
+    void setInterestRate( int percentpercent) {td.setValue("ZSatz", percentpercent);}
+    void setInterestRate( double percent) {td.setValue("ZSatz", int(percent*100));}
+    double interestRate() const { return double(td.getValue("ZSatz").toInt())/100.;}
     int interestRateInt() const { return td.getValue("ZSatz").toDouble()*100;}
-    void setPlannedInvest(double i) { td.setValue("Betrag", i);}
-    double plannedInvest() const { return round2digits(td.getValue("Betrag").toDouble());}
-    void setReinvesting( bool b) { td.setValue("thesaurierend", b ? 1: 0);}
+    void setPlannedInvest(int i) { td.setValue("Betrag", i);}
+    int plannedInvest() const { return td.getValue("Betrag").toInt();}
+    void setReinvesting( bool b) { td.setValue("thesaurierend", b);}
     bool reinvesting() const { return (td.getValue("thesaurierend").toInt() != 0);}
-    void setStatus(contract_status c) { td.setValue("Status", c);}
-    contract_status status() const { return contract_status(td.getValue("Status").toInt());}
-    void setNoticePeriod(int m) { td.setValue("Kfrist", m);}
+//    void setStatus(contract_status c) { td.setValue("Status", c);}
+//    contract_status status() const { return contract_status(td.getValue("Status").toInt());}
+    void setNoticePeriod(int m) { td.setValue("Kfrist", m); if( -1 == m) setPlannedEndDate( EndOfTheFuckingWorld);}
     int noticePeriod() const { return td.getValue("Kfrist").toInt();}
     void setConclusionDate(QDate d) { td.setValue("Vertragsdatum", d);}
     QDate conclusionDate() const { return td.getValue("Vertragsdatum").toDate();}
-    void setPlannedEndDate( QDate d) { td.setValue("LaufzeitEnde", d);}
+    void setPlannedEndDate( QDate d) { td.setValue("LaufzeitEnde", d); if( d != EndOfTheFuckingWorld) setNoticePeriod(-1);}
     QDate plannedEndDate() const { return td.getValue("LaufzeitEnde").toDate();}
 
     // interface
@@ -57,10 +51,15 @@ struct contract
 //    bool cancelActiveContract(const QDate& kTermin);
 //    bool terminateActiveContract(const QDate& termin);
 //    bool deleteInactiveContract();
+
 private:
     // data
     TableDataInserter td;
     // helper
 };
+
+// for testing
+contract randomContract(qlonglong creditorId);
+
 
 #endif // VERTRAG_H

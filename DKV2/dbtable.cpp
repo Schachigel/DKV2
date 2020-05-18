@@ -83,7 +83,7 @@ void TableDataInserter::setValue(const QString& n, const QVariant& v)
         if( record.field(n).type() == v.type())
             record.setValue(n, v);
         else {
-            qDebug() << "wrong field type for insertion -> converting";
+            qDebug() << "wrong field type for insertion -> converting" << v.type() << " -> " << record.field(n).type();
             QVariant vf (v); vf.convert(record.field(n).type());
             record.setValue(n, vf);
         }

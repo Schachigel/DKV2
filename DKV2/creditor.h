@@ -7,13 +7,6 @@
 #include <QList>
 
 #include "dkdbhelper.h"
-// sample data for testing
-extern QList<QString> Vornamen;// {"Holger", "Volker", "Peter", "Hans", "Susi", "Roland", "Claudia", "Emil", "Evelyn", "Ötzgür", "Thomas", "Elke", "Berta", "Malte", "Jori", "Paul", "Jonas", "Finn", "Leon", "Luca", "Emma", "Mia", "Lena", "Anna", "Anne", "Martha", "Ruth", "Rosemie", "Rosemarie", "Verena", "Ursula", "Erika", "Adrian", "Avan", "Anton", "Benno", "Karl", "Merlin", "Noah", "Oliver","Olaf", "Pepe", "Zeno", "Apollo", "Edward", "Ronaldo", "Siegbert", "Thomas", "Michael"};
-extern QList<QString> Nachnamen;// {"Maier", "Müller", "Schmit", "Kramp", "Adams", "Häcker", "Maresch", "Beutl", "Chauchev", "Chen", "Kirk", "Ohura", "Gorbatschov", "Merkel", "Karrenbauer", "Tritin", "Schmidt", "Rao", "Lassen", "Hurgedü", "vom Dach", "Langstrumpf", "Lederstrumpf", "Potter", "Poppins", "Wisley", "Li", "Wang", "Ran", "vom Dach", "Eckrich", "Staar", "Funke", "Engelein", "Kruffel", "Calzone"};
-extern QList<QString> Strassen;// {"Hauptstrasse", "Nebenstrasse", "Bahnhofstrasse", "Kirchstraße", "Dorfstrasse", "Süterlinweg", "Sorbenstrasse", "Kleines Gässchen", "Industriestrasse", "Sesamstrasse", "Lindenstrasse", "Theaterstrasse", "Museumsstrasse", "Opernplatz", "Schillerstrasse", "Lessingstrasse", "Rathausplatz", "Parkstrasse", "Turmstrasse", "Neuer Weg", "Neuer Anfang", "Main Street", "Center Court" };
-extern QList<QString> emailprovider;// {"gmail.com", "googlemail.com", "mailbox.org", "t-online.de", "mail.de", "mail.com", "online.de", "yahoo.de", "yahoo.com", "telekom.de", "proivder.co.uk", "AOL.de", "outlook.com", "microsoft.com", "sap.com", "sap-ag.de", "abb.de", "skype.de", "provider.de", ""};
-extern QList<QString> ibans;//  {"BG80BNBG96611020345678", "DE38531742365852502530", "DE63364408232964251731", "DE38737364268384258531", "DE69037950954001627624", "DE63377045386819730665", "DE18851420444163951769", "DE77921850720298609321", "DE70402696485599313572", "DE70455395581860402838", "DE94045704387963352767", "DE30724236236062816411", "DE62772043290447861437", "DE33387723124963875990", "DE15867719874951165967", "DE96720348741083219766", "DE23152931057149592044", "DE13220161295670898833", "DE49737651031822324605", "DE38017168378078601588", "DE07717138875827514267"};
-extern QList <QPair<QString, QString>> Cities;// {{"68305", "Mannheim"}, {"69123", "Heidelberg"}, {"69123", "Karlsruhe"}, {"90345", "Hamburg"}, {"90334", "Rottenburg"}, {"23345", "Reinfeld"}, {"83475", "Dresden"}, {"35725", "Weissnich"}, {"23245", "Drieben"}};
 
 class creditor
 {
@@ -54,14 +47,21 @@ public:
     int update() const;
     void KreditorenListeMitId(QList<QPair<int,QString>> &entries) const;
     static bool Loeschen(int index);
-    // for testing
-    static creditor randomCreditor();
-    QVector<creditor> randomCreditor( int i);
 private:
     // data
     TableDataInserter ti;
     // helper
-    static QRandomGenerator *rand;
 };
+
+// sample data for testing
+extern QList<QString> Vornamen;// {"Holger", "Volker", "Peter", "Hans", "Susi", "Roland", "Claudia", "Emil", "Evelyn", "Ötzgür", "Thomas", "Elke", "Berta", "Malte", "Jori", "Paul", "Jonas", "Finn", "Leon", "Luca", "Emma", "Mia", "Lena", "Anna", "Anne", "Martha", "Ruth", "Rosemie", "Rosemarie", "Verena", "Ursula", "Erika", "Adrian", "Avan", "Anton", "Benno", "Karl", "Merlin", "Noah", "Oliver","Olaf", "Pepe", "Zeno", "Apollo", "Edward", "Ronaldo", "Siegbert", "Thomas", "Michael"};
+extern QList<QString> Nachnamen;// {"Maier", "Müller", "Schmit", "Kramp", "Adams", "Häcker", "Maresch", "Beutl", "Chauchev", "Chen", "Kirk", "Ohura", "Gorbatschov", "Merkel", "Karrenbauer", "Tritin", "Schmidt", "Rao", "Lassen", "Hurgedü", "vom Dach", "Langstrumpf", "Lederstrumpf", "Potter", "Poppins", "Wisley", "Li", "Wang", "Ran", "vom Dach", "Eckrich", "Staar", "Funke", "Engelein", "Kruffel", "Calzone"};
+extern QList<QString> Strassen;// {"Hauptstrasse", "Nebenstrasse", "Bahnhofstrasse", "Kirchstraße", "Dorfstrasse", "Süterlinweg", "Sorbenstrasse", "Kleines Gässchen", "Industriestrasse", "Sesamstrasse", "Lindenstrasse", "Theaterstrasse", "Museumsstrasse", "Opernplatz", "Schillerstrasse", "Lessingstrasse", "Rathausplatz", "Parkstrasse", "Turmstrasse", "Neuer Weg", "Neuer Anfang", "Main Street", "Center Court" };
+extern QList<QString> emailprovider;// {"gmail.com", "googlemail.com", "mailbox.org", "t-online.de", "mail.de", "mail.com", "online.de", "yahoo.de", "yahoo.com", "telekom.de", "proivder.co.uk", "AOL.de", "outlook.com", "microsoft.com", "sap.com", "sap-ag.de", "abb.de", "skype.de", "provider.de", ""};
+extern QList<QString> ibans;//  {"BG80BNBG96611020345678", "DE38531742365852502530", "DE63364408232964251731", "DE38737364268384258531", "DE69037950954001627624", "DE63377045386819730665", "DE18851420444163951769", "DE77921850720298609321", "DE70402696485599313572", "DE70455395581860402838", "DE94045704387963352767", "DE30724236236062816411", "DE62772043290447861437", "DE33387723124963875990", "DE15867719874951165967", "DE96720348741083219766", "DE23152931057149592044", "DE13220161295670898833", "DE49737651031822324605", "DE38017168378078601588", "DE07717138875827514267"};
+extern QList <QPair<QString, QString>> Cities;// {{"68305", "Mannheim"}, {"69123", "Heidelberg"}, {"69123", "Karlsruhe"}, {"90345", "Hamburg"}, {"90334", "Rottenburg"}, {"23345", "Reinfeld"}, {"83475", "Dresden"}, {"35725", "Weissnich"}, {"23245", "Drieben"}};
+// for testing
+creditor randomCreditor();
+bool randomCreditors( int i);
 
 #endif // KREDITOR_H

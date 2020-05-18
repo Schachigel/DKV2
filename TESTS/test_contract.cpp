@@ -3,6 +3,8 @@
 #include "../DKV2/helper.h"
 #include "../DKV2/sqlhelper.h"
 #include "../DKV2/dkdbhelper.h"
+#include "../DKV2/creditor.h"
+#include "../DKV2/contract.h"
 
 #include "test_contract.h"
 
@@ -26,4 +28,11 @@ void test_contract::cleanup()
 void test_contract::test_createContract()
 {   LOG_CALL;
 
+}
+
+void test_contract::test_randomContract()
+{   LOG_CALL;
+    creditor c(randomCreditor());
+    contract cont(randomContract(c.id()));
+    QCOMPARE(rowCount("Vertraege"), 1);
 }
