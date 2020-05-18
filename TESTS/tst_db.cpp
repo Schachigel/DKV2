@@ -5,7 +5,7 @@
 #include <QSqlQuery>
 #include <QString>
 
-#include "../DKV2/dbstructure.h"
+//#include "../DKV2/dbstructure.h"
 #include "../DKV2/dbtable.h"
 #include "../DKV2/creditor.h"
 #include "../DKV2/dkdbhelper.h"
@@ -18,7 +18,6 @@
 
 void tst_db::initTestCase()
 {
-    // init
     init_DKDBStruct();
 }
 
@@ -34,13 +33,12 @@ void tst_db::cleanup()
 
 void tst_db::test_createSimpleTable()
 {
-
     dbstructure s;
     dbtable t("t");
     dbfield f("f");
     t.append(f);
     s.appendTable(t);
-    QVERIFY2(s.createDb(testDb()), "Database was not created");
+    QVERIFY2(s.createDb(), "Database was not created");
 
     QVERIFY2(dbHasTable("t"), "Table was not created");
     QVERIFY2(dbTableHasField("t", "f"), "Field was not created");
@@ -54,7 +52,7 @@ void tst_db::test_failCreatingTable()
     dbfield f("f");
     t.append(f);
     s.appendTable(t);
-    QVERIFY2(!s.createDb(QSqlDatabase::database("notexistingDb")), "Database was created but shouldn't");
+//    QVERIFY2(!s.createDb(QSqlDatabase::database("notexistingDb")), "Database was created but shouldn't");
 
     QVERIFY2(!dbHasTable("t"), "Table was created but shouldn't");
 }
@@ -64,7 +62,7 @@ void tst_db::test_createSimpleTable2()
     dbstructure s = dbstructure()
                         .appendTable(dbtable("Ad").append(dbfield("vname")).append(dbfield("nname")))
                         .appendTable(dbtable("cities").append(dbfield("plz")));
-    QVERIFY2(s.createDb(testDb()), "Database was not created");
+    QVERIFY2(s.createDb(), "Database was not created");
 
     QVERIFY2(dbHasTable("Ad"), "Table Ad not found");
     QVERIFY2(dbTableHasField("Ad", "vname"), "Field not found");
@@ -79,13 +77,13 @@ void tst_db::test_SimpleTableAddData()
                         .appendTable(dbtable("Ad").append(dbfield("vname")).append(dbfield("nname")))
                         .appendTable(dbtable("cities").append(dbfield("plz")));
 
-    QVERIFY2(s.createDb(testDb()), "Database was not created");
+    QVERIFY2(s.createDb(), "Database was not created");
     QVERIFY2(QFile::exists(filename), "No database file found");
 
     TableDataInserter tdi(s["Ad"]);
     tdi.setValue("vname", QVariant("Holger"));
     tdi.setValue("nname", "Mairon");
-    QVERIFY( 0<= tdi.InsertData(testDb()));
+    QVERIFY( 0<= tdi.InsertData());
     QVERIFY(tableRecordCount("Ad") == 1);
 }
 
@@ -104,7 +102,7 @@ void tst_db::test_createSimpleTable_wRefInt()
     child.append(childId);
     child.append(parentId);
     s.appendTable(child);
-    QVERIFY2(s.createDb(testDb()), "Database was not created");
+    QVERIFY2(s.createDb(), "Database was not created");
 
     QVERIFY2(dbHasTable("p"), "table p was not created");
     QVERIFY2(dbTableHasField("p", "id"), "table p has no field id");
@@ -127,7 +125,7 @@ void tst_db::test_createSimpleTable_wRefInt2()
                 "",
                 s["p"]["id"],
                 dbfield::refIntOption::onDeleteCascade)));
-    QVERIFY2(s.createDb(testDb()), "Database was not created");
+    QVERIFY2(s.createDb(), "Database was not created");
 
     QVERIFY2(dbHasTable("p"), "table p was not created");
     QVERIFY2(dbTableHasField("p", "id"), "table p has no field id");
@@ -151,22 +149,22 @@ void tst_db::test_addRecords_wDep()
                 "",
                 s["p"]["id"],
                 dbfield::refIntOption::onDeleteCascade)));
-    QVERIFY2(s.createDb(testDb()), "Database was not created");
+    QVERIFY2(s.createDb(), "Database was not created");
 
     TableDataInserter tdi(s["p"]);
     tdi.setValue("name", "Holger");
-    QVERIFY( 0<= tdi.InsertData(testDb()));
+    QVERIFY( 0<= tdi.InsertData());
     QVERIFY(tableRecordCount("p") == 1);
 
     qDebug() << "add depending data sets" << endl;
     TableDataInserter tdiChild1(s["c"]);
     tdiChild1.setValue("pid", QVariant(1)); // should work
-    QVERIFY( 0<= tdiChild1.InsertData(testDb()));
+    QVERIFY( 0<= tdiChild1.InsertData());
 
     qDebug() << "add invalid depending data sets" << endl;
     TableDataInserter tdiChild2(s["c"]);
     tdiChild2.setValue("pid", 2); // should fail - no matching parent in table p
-    QVERIFY( 0> tdiChild2.InsertData(testDb()));
+    QVERIFY( 0> tdiChild2.InsertData());
 }
 
 void tst_db::test_deleteRecord_wDep()
@@ -185,26 +183,26 @@ void tst_db::test_deleteRecord_wDep()
                 "",
                 s["p"]["id"],
                 dbfield::refIntOption::onDeleteCascade)));
-    QVERIFY2(s.createDb(testDb()), "Database was not created");
+    QVERIFY2(s.createDb(), "Database was not created");
     QVERIFY2(QFile::exists(filename), "No database file found");
 
     TableDataInserter tdi(s["p"]);
     tdi.setValue("name", "Holger");
-    QVERIFY( 0<= tdi.InsertData(testDb()));
+    QVERIFY( 0<= tdi.InsertData());
     QVERIFY(tableRecordCount("p") == 1);
 
     qDebug() << "add depending data sets" << endl;
     TableDataInserter tdiChild1(s["c"]);
     tdiChild1.setValue("pid", QVariant(1)); // should work
-    QVERIFY( 0<= tdiChild1.InsertData(testDb()));
+    QVERIFY( 0<= tdiChild1.InsertData());
     TableDataInserter tdiChild2(s["c"]);
     tdiChild2.setValue("pid", QVariant(1)); // second child to matching parent in table p
-    QVERIFY( 0<= tdiChild2.InsertData(testDb()));
+    QVERIFY( 0<= tdiChild2.InsertData());
     QVERIFY(tableRecordCount("p") == 1);
     QVERIFY(tableRecordCount("c") == 2);
 
     qDebug() << "removing connected datasets" << endl;
-    QSqlQuery deleteQ(testDb());
+    QSqlQuery deleteQ;
     deleteQ.exec("DELETE FROM p WHERE id = 1");
     QVERIFY(tableRecordCount("p") == 0);
     QVERIFY(tableRecordCount("c") == 0);
@@ -226,11 +224,11 @@ void tst_db::dbfieldCopyConst()
                 "",
                 s["p"]["id"],
                 dbfield::refIntOption::onDeleteCascade)));
-    QVERIFY2(s.createDb(testDb()), "Database was not created");
+    QVERIFY2(s.createDb(), "Database was not created");
 
     TableDataInserter tdi(s["p"]);
     tdi.setValue("name", "Holger");
-    QVERIFY( 0<= tdi.InsertData(testDb()));
+    QVERIFY( 0<= tdi.InsertData());
     QVERIFY(tableRecordCount("p") == 1);
     dbfield cp(s["c"]["pid"]);
     QVERIFY(!cp.getReferenzeInfo().tablename.isEmpty());
@@ -241,23 +239,7 @@ void tst_db::newDbIsValid()
 {
     dbgTimer t;
     // test
-    create_DK_databaseContent( testDb());
+    create_DK_databaseContent();
     //QVERIFY(istValideDatenbank(filename)); // already done in DKDatenbankAnlegen
 }
 
-void tst_db::createKreditor()
-{
-    // test
-    create_DK_databaseContent(testDb());
-    creditor k;
-    k.setValue("Vorname", "Hugo");
-    k.setValue("Nachname", "Hurtig");
-    k.setValue("Plz", "68305");
-    k.setValue("Stadt", "Mannheim");
-    k.setValue("Strasse", "Pfungstadterstr. 1");
-    k.setValue("Email", "hugo@hurtig.com");
-    k.setValue("Anmerkung", "anmerkung");
-
-    QVERIFY( -1 != k.Speichern(testDb()));
-    QVERIFY(tableRecordCount("Kreditoren") == 1);
-}

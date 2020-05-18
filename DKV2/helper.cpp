@@ -10,7 +10,7 @@
 #include "helper.h"
 #include "windows.h"
 
-QFile* outFile_p;
+QFile* outFile_p{nullptr};
 int functionlogging::depth =0;
 const QDate EndOfTheFuckingWorld = QDate(9999, 12, 31);
 

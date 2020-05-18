@@ -15,9 +15,10 @@
 #include "sqlhelper.h"
 #include "csvwriter.h"
 #include "finhelper.h"
-#include "vertrag.h"
 #include "dkdbhelper.h"
 #include "creditor.h"
+#include "contract.h"
+#include "booking.h"
 #include "dbstructure.h"
 
 const double CURRENT_DB_VERSION {2.0};
@@ -30,49 +31,15 @@ QList<QPair<qlonglong, QString>> Buchungsarten;
 void init_DKDBStruct()
 {   LOG_CALL_W("Setting up internal database structures");
     static bool done = false;
-    if( done) return; // 4 tests
-    static bool init_done = false;
-    if( init_done) return;
-    init_done = true;
+    if( done) return; // for tests
     // DB date -> Variant String
     // DB bool -> Variant int
-    dbtable creditors("Kreditoren");
-    creditors.append(dbfield("id",       QVariant::LongLong,    "PRIMARY KEY AUTOINCREMENT"));
-    creditors.append(dbfield("Vorname",  QVariant::String, "NOT NULL"));
-    creditors.append(dbfield("Nachname", QVariant::String, "NOT NULL"));
-    creditors.append(dbfield("Strasse",  QVariant::String, "NOT NULL"));
-    creditors.append(dbfield("Plz",      QVariant::String, "NOT NULL"));
-    creditors.append(dbfield("Stadt",    QVariant::String, "NOT NULL"));
-    creditors.append(dbfield("Email"));
-    creditors.append(dbfield("Anmerkung"));
-    creditors.append(dbfield("IBAN"));
-    creditors.append(dbfield("BIC"));
-    QVector<dbfield> unique;
-    unique.append(creditors["Vorname"]);
-    unique.append(creditors["Nachname"]);
-    unique.append(creditors["Strasse"]);
-    unique.append(creditors["Stadt"]);
-    creditors.setUnique(unique);
-    dkdbstructur.appendTable(creditors);
 
-    dbtable contracts("Vertraege");
-    contracts.append(dbfield("id",         QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
-    contracts.append(dbfield("KreditorId", QVariant::LongLong, "", creditors["id"], dbfield::refIntOption::onDeleteCascade));
-    contracts.append(dbfield("Kennung",    QVariant::String, "UNIQUE"));
-    contracts.append(dbfield("ZSatz",      QVariant::LongLong, "DEFAULT 0 NOT NULL")); // 100-stel %; 100 entspricht 1%
-    contracts.append(dbfield("Betrag",     QVariant::Double, "DEFAULT '0.0' NOT NULL"));
-    contracts.append(dbfield("thesaurierend", QVariant::Bool, "DEFAULT '1' NOT NULL"));
-    contracts.append(dbfield("Vertragsdatum", QVariant::Date, "DATE  NULL"));
-    contracts.append(dbfield("Kfrist" ,    QVariant::Int, "DEFAULT '6' NOT NULL"));
-    contracts.append(dbfield("LaufzeitEnde",  QVariant::Date, "DEFAULT '9999-12-31' NOT NULL"));
-    dkdbstructur.appendTable(contracts);
+    dkdbstructur.appendTable(creditor::getTableDef());
 
-    dbtable bookings("Buchungen");
-    bookings.append(dbfield("id",  QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
-    bookings.append(dbfield("VertragsId", QVariant::LongLong, "", contracts["id"], dbfield::refIntOption::onDeleteCascade));
-    bookings.append(dbfield("BuchungsArt", QVariant::Int, "DEFAULT 0 NOT NULL")); // deposit, interestDeposit, outpayment, interestPayment
-    bookings.append(dbfield("Datum", QVariant::Date, "DEFAULT '9999-12-31' NOT NULL"));
-    bookings.append(dbfield("Betrag", QVariant::Double, "DEFAULT '0.0 NOT NULL"));
+    dkdbstructur.appendTable(contract::getTableDef());
+
+    dkdbstructur.appendTable(booking::getTableDef());
 
     dbtable meta("Meta");
     meta.append(dbfield("Name", QVariant::String, "NOT NULL"));
@@ -88,43 +55,43 @@ void init_DKDBStruct()
     done = true;
 }
 
-void init_GmbHData( QSqlDatabase db = defaultDb())
+void init_GmbHData( )
 {   LOG_CALL;
-    initMetaInfo("gmbh.address1", "Esperanza Franklin GmbH", db);
-    initMetaInfo("gmbh.address2", "", db);
-    initMetaInfo("gmbh.plz", "68167", db);
-    initMetaInfo("gmbh.stadt", "Mannheim", db);
-    initMetaInfo("gmbh.strasse", "Turley-Platz 9", db);
-    initMetaInfo("gmbh.email","info@esperanza-mannheim.de", db);
-    initMetaInfo("gmbh.url", "www.esperanza-mannheim.de", db);
+    initMetaInfo("gmbh.address1", "Esperanza Franklin GmbH");
+    initMetaInfo("gmbh.address2", "");
+    initMetaInfo("gmbh.plz", "68167");
+    initMetaInfo("gmbh.stadt", "Mannheim");
+    initMetaInfo("gmbh.strasse", "Turley-Platz 9");
+    initMetaInfo("gmbh.email","info@esperanza-mannheim.de");
+    initMetaInfo("gmbh.url", "www.esperanza-mannheim.de");
 }
 
-bool insert_Properties(QSqlDatabase db =defaultDb())
+bool insert_Properties()
 {   LOG_CALL;
     bool ret =true;
-    QSqlQuery sql(db);
-    QRandomGenerator *rand = QRandomGenerator::system();
-    initNumMetaInfo(DB_VERSION, CURRENT_DB_VERSION, db);
-    initMetaInfo("IdOffset", QString::number(rand->bounded(10000,20000)), db);
-    initMetaInfo("ProjektInitialen", "ESP", db);
+    QSqlQuery sql;
+//    QRandomGenerator *rand = QRandomGenerator::system();
+    initNumMetaInfo(DB_VERSION, CURRENT_DB_VERSION);
+//    initMetaInfo("IdOffset", QString::number(rand->bounded(10000,20000)), db);
+    initMetaInfo("ProjektInitialen", "ESP");
     return ret;
 }
 
-void initMetaInfo( const QString& name, const QString& newValue, QSqlDatabase db)
+void initMetaInfo( const QString& name, const QString& newValue)
 {   LOG_CALL;
-    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", db);
+    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'");
     if( value.type() == QVariant::Type::Invalid)
-        setMetaInfo(name, newValue, db);
+        setMetaInfo(name, newValue);
 }
-void initNumMetaInfo( const QString& name, const double& newValue, QSqlDatabase db)
+void initNumMetaInfo( const QString& name, const double& newValue)
 {   LOG_CALL;
-    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", db);
+    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'");
     if( value.type() == QVariant::Type::Invalid)
-        setNumMetaInfo(name, newValue, db);
+        setNumMetaInfo(name, newValue);
 }
-QString getMetaInfo(const QString& name, QSqlDatabase db)
+QString getMetaInfo(const QString& name)
 {   LOG_CALL_W(name);
-    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", db).toString();
+    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'").toString();
     if( value.type() == QVariant::Type::Invalid) {
         qInfo() << "read empty property " << name << "; defaulted to empty string";
         return "";
@@ -143,30 +110,30 @@ double getNumMetaInfo(const QString& name, QSqlDatabase db)
     qInfo() << "Property " << name << " : " << value.toDouble();
     return value.toDouble();
 }
-void setMetaInfo(const QString& name, const QString& Wert, QSqlDatabase db)
+void setMetaInfo(const QString& name, const QString& Wert)
 {   LOG_CALL_W(name);
-    QSqlQuery q(db);
+    QSqlQuery q;
     q.prepare("INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('" + name + "', '" + Wert +"')");
     if( !q.exec())
         qCritical() << "Failed to insert Meta information " << q.lastError() << endl << q.lastQuery();
 }
-void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db)
+void setNumMetaInfo(const QString& name, const double Wert)
 {   LOG_CALL_W(name);
-    QSqlQuery q(db);
+    QSqlQuery q;
     q.prepare("INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('" + name + "', '" + QString::number(Wert) +"')");
     if( !q.exec())
         qCritical() << "Failed to insert Meta information " << q.lastError() << endl << q.lastQuery();
 }
 
 bool create_DK_databaseContent(QSqlDatabase db)
-{   LOG_CALL_W(db.databaseName());
+{   LOG_CALL;
     bool ret = true;
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
 
     db.transaction();
     do {
-        if(! (ret &= createTables( dkdbstructur, db))) break;
-        if(! (ret &= insert_Properties(db))) break;
+        if(! (ret &= createTables(dkdbstructur, db))) break;
+        if(! (ret &= insert_Properties())) break;
     } while(false);
 
     if(!ret) {
@@ -176,7 +143,7 @@ bool create_DK_databaseContent(QSqlDatabase db)
     }
 
     db.commit();
-    return isValidDatabase(db);
+    return isValidDatabase();
 }
 bool create_DK_databaseFile(const QString& filename) /*in the default connection*/
 {   //LOG_CALL_W("filename: " + filename);
@@ -355,7 +322,7 @@ QStringList check_DbConsistency( )
 bool copy_Table(QString table, QSqlDatabase targetDB)
 {   LOG_CALL_W(table);
     bool success = true;
-    QSqlQuery q(defaultDb()); // default database connection -> active database
+    QSqlQuery q; // default database connection -> active database
     q.prepare("SELECT * FROM " + table);
     q.exec();
     while( q.next()) {
@@ -369,7 +336,7 @@ bool copy_Table(QString table, QSqlDatabase targetDB)
             tdi.setValue(fieldname, value);
         }
         if( tdi.InsertData(targetDB) == -1) {
-            qDebug() << "Error inserting Data into deperso.Copy Table" << q.record();
+            qCritical() << "Error inserting Data into deperso.Copy Table" << q.record();
             success = false;
             break;
         }
@@ -381,7 +348,7 @@ bool copy_mangledCreditors(QSqlDatabase targetDB)
 {
     bool success = true;
     int recCount = 0;
-    QSqlQuery q(defaultDb()); // default database connection -> active database
+    QSqlQuery q; // default database connection -> active database
     q.prepare("SELECT * FROM Kreditoren");
     q.exec();
     while( q.next()) {
@@ -427,106 +394,100 @@ bool create_DB_copy(QString targetfn, bool deper)
     else
         closer.set(&backupDB);
 
-    if( !dkdbstructur.createDb(backupDB)) {
-        qDebug() << "faild to create db schema";
-        return false;
-    }
     bool success = true;
     QVector<dbtable> tables = dkdbstructur.getTables();
     for( auto table : tables) {
+        ensureTable(table, backupDB);
         if( deper && table.Name() == "Buchungen") {
             qDebug() << "de personalisation mode: skipping 'Buchungen' ";
             continue;
         }
         qDebug() << "dePe Copy: working on table " << table.Name();
-        if( deper && table.Name() == "Kreditoren") {
+        if( deper && table.Name() == "Kreditoren")
             success = success && copy_mangledCreditors(backupDB);
-        }
-        else {
+        else
             success = success && copy_Table(table.Name(), backupDB);
-        }
-
     }
     return success;
 }
 
-void create_sampleDataset( Contract& vertrag, int KId, int maxZinsIndex, QRandomGenerator* rand)
+//void create_sampleDataset( contract& vertrag, int KId, int maxZinsIndex, QRandomGenerator* rand)
+//{   LOG_CALL;
+//    // add a contract
+//    double betragUWert = double(100) * rand->bounded(1,20);
+//    int zinsid = rand->bounded(1,maxZinsIndex);
+//    bool thesa = rand->bounded(100)%4 ? true : false;  // 75% thesaurierend
+//    bool active = rand->bounded(100)%6 ? true : false; // 85% inaktiv
+//    QDate vertragsdatum= QDate::currentDate().addDays(-1 * rand->bounded(365));
+//    QDate StartZinsberechnung = ( active) ? vertragsdatum.addDays(rand->bounded(15)) : EndOfTheFuckingWorld;
+//    QDate LaufzeitEnde = (rand->bounded(100)%8 == 1)
+//                             ? (QDate(9999, 12, 31)) // kein Ende vereinbart
+//                             : StartZinsberechnung.addDays( 500+ rand->bounded(0, 8000));
+//    int kFrist = -1;
+//    if( LaufzeitEnde == QDate(9999, 12, 31))
+//    {
+//        kFrist = rand->bounded(3, 25);
+//    }
+//    vertrag = Contract(KId, proposeKennung(),
+//                    betragUWert, betragUWert, zinsid,
+//                    vertragsdatum,
+//                    thesa, active, StartZinsberechnung, kFrist, LaufzeitEnde);
+//}
+
+//void create_sampleData( int AnzahlDatensaetze)
+//{   LOG_CALL;
+//Q_ASSERT(!"change");
+//    QList<QString> Vornamen {"Holger", "Volker", "Peter", "Hans", "Susi", "Roland", "Claudia", "Emil", "Evelyn", "Ötzgür", "Thomas", "Elke", "Berta", "Malte", "Jori", "Paul", "Jonas", "Finn", "Leon", "Luca", "Emma", "Mia", "Lena", "Anna", "Anne", "Martha", "Ruth", "Rosemie", "Rosemarie", "Verena", "Ursula", "Erika", "Adrian", "Avan", "Anton", "Benno", "Karl", "Merlin", "Noah", "Oliver", "Olaf", "Pepe", "Zeno"};
+//    QList<QString> Nachnamen {"Maier", "Müller", "Schmit", "Kramp", "Adams", "Häcker", "Maresch", "Beutl", "Chauchev", "Chen", "Kirk", "Ohura", "Gorbatschov", "Merkel", "Karrenbauer", "Tritin", "Schmidt", "Rao", "Lassen", "Hurgedü", "vom Dach", "Langstrumpf", "Lederstrumpf", "Potter", "Poppins", "Wisley", "Li", "Wang", "Ran"};
+//    QList<QString> Strassen {"Hauptstrasse", "Nebenstrasse", "Bahnhofstrasse", "Kirchstraße", "Dorfstrasse", "Süterlinweg", "Sorbenstrasse", "Kleines Gässchen", "Industriestrasse", "Sesamstrasse", "Lindenstrasse", "Theaterstrasse", "Museumsstrasse", "Opernplatz", "Schillerstrasse", "Lessingstrasse", "Rathausplatz", "Parkstrasse", "Turmstrasse" };
+//    QList<QString> emailprovider {"gmail.com", "googlemail.com", "mailbox.org", "t-online.de", "mail.de", "mail.com", "online.de", "yahoo.de", "yahoo.com", "telekom.de", "proivder.co.uk", "AOL.de", "outlook.com", "microsoft.com", "sap.com", "sap-ag.de", "abb.de"};
+//    QList<QString> ibans {"BG80BNBG96611020345678", "DE38531742365852502530", "DE63364408232964251731", "DE38737364268384258531", "DE69037950954001627624", "DE63377045386819730665", "DE18851420444163951769", "DE77921850720298609321", "DE70402696485599313572", "DE70455395581860402838", "DE94045704387963352767", "DE30724236236062816411", "DE62772043290447861437", "DE33387723124963875990", "DE15867719874951165967",
+//                          "DE96720348741083219766", "DE23152931057149592044", "DE13220161295670898833", "DE49737651031822324605", "DE38017168378078601588", "DE07717138875827514267"};
+//    QList <QPair<QString, QString>> Cities {{"68305", "Mannheim"}, {"69123", "Heidelberg"}, {"69123", "Karlsruhe"}, {"90345", "Hamburg"}};
+//    QRandomGenerator *rand = QRandomGenerator::system();
+//    int maxZinsIndex = ExecuteSingleValueSql("SELECT max(id) FROM Zinssaetze").toInt();
+//    int neueKreditorId =0;
+//    for( int i = 0; i<AnzahlDatensaetze; i++)
+//    {
+//        creditor k;
+//        QString vn (Vornamen [rand->bounded(Vornamen.count ())]);
+//        QString nn (Nachnamen [rand->bounded(Nachnamen.count ())]);
+//        k.setVorname(vn);
+//        k.setNachname(nn);
+//        k.setStrasse(Strassen[rand->bounded(Strassen.count())]);
+//        k.setPlz(Cities[rand->bounded(Cities.count())].first);
+//        k.setStadt(Cities[rand->bounded(Cities.count())].second);
+//        k.setEmail(vn+"."+nn+"@"+emailprovider[rand->bounded(emailprovider.count())]);
+//        k.setIban(ibans[rand->bounded(ibans.count())]);
+//        k.setBic("bic...");
+
+//        neueKreditorId =k.save();
+//        if( -1 == neueKreditorId)
+//        {
+//            qCritical() << "No id from Kreditor.Speichern";
+//            Q_ASSERT(!bool("Verbuchung des neuen Vertrags gescheitert"));
+//        }
+//        contract v;
+//        create_sampleDataset(v, neueKreditorId, maxZinsIndex, rand);
+////        v.bookNewContract();
+//    }
+//    for ( int i=0; i<AnzahlDatensaetze; i++)
+//    {   // more contracts for existing customers
+//        contract v;
+//        create_sampleDataset(v, rand->bounded(1, neueKreditorId), maxZinsIndex, rand);
+////        v.bookNewContract();
+//    }
+//}
+
+QString proposeKennung()
 {   LOG_CALL;
-    // add a contract
-    double betragUWert = double(100) * rand->bounded(1,20);
-    int zinsid = rand->bounded(1,maxZinsIndex);
-    bool thesa = rand->bounded(100)%4 ? true : false;  // 75% thesaurierend
-    bool active = rand->bounded(100)%6 ? true : false; // 85% inaktiv
-    QDate vertragsdatum= QDate::currentDate().addDays(-1 * rand->bounded(365));
-    QDate StartZinsberechnung = ( active) ? vertragsdatum.addDays(rand->bounded(15)) : EndOfTheFuckingWorld;
-    QDate LaufzeitEnde = (rand->bounded(100)%8 == 1)
-                             ? (QDate(9999, 12, 31)) // kein Ende vereinbart
-                             : StartZinsberechnung.addDays( 500+ rand->bounded(0, 8000));
-    int kFrist = -1;
-    if( LaufzeitEnde == QDate(9999, 12, 31))
-    {
-        kFrist = rand->bounded(3, 25);
-    }
-    vertrag = Contract(KId, proposeKennung(),
-                    betragUWert, betragUWert, zinsid,
-                    vertragsdatum,
-                    thesa, active, StartZinsberechnung, kFrist, LaufzeitEnde);
-}
-
-void create_sampleData( int AnzahlDatensaetze)
-{   LOG_CALL;
-
-    QList<QString> Vornamen {"Holger", "Volker", "Peter", "Hans", "Susi", "Roland", "Claudia", "Emil", "Evelyn", "Ötzgür", "Thomas", "Elke", "Berta", "Malte", "Jori", "Paul", "Jonas", "Finn", "Leon", "Luca", "Emma", "Mia", "Lena", "Anna", "Anne", "Martha", "Ruth", "Rosemie", "Rosemarie", "Verena", "Ursula", "Erika", "Adrian", "Avan", "Anton", "Benno", "Karl", "Merlin", "Noah", "Oliver", "Olaf", "Pepe", "Zeno"};
-    QList<QString> Nachnamen {"Maier", "Müller", "Schmit", "Kramp", "Adams", "Häcker", "Maresch", "Beutl", "Chauchev", "Chen", "Kirk", "Ohura", "Gorbatschov", "Merkel", "Karrenbauer", "Tritin", "Schmidt", "Rao", "Lassen", "Hurgedü", "vom Dach", "Langstrumpf", "Lederstrumpf", "Potter", "Poppins", "Wisley", "Li", "Wang", "Ran"};
-    QList<QString> Strassen {"Hauptstrasse", "Nebenstrasse", "Bahnhofstrasse", "Kirchstraße", "Dorfstrasse", "Süterlinweg", "Sorbenstrasse", "Kleines Gässchen", "Industriestrasse", "Sesamstrasse", "Lindenstrasse", "Theaterstrasse", "Museumsstrasse", "Opernplatz", "Schillerstrasse", "Lessingstrasse", "Rathausplatz", "Parkstrasse", "Turmstrasse" };
-    QList<QString> emailprovider {"gmail.com", "googlemail.com", "mailbox.org", "t-online.de", "mail.de", "mail.com", "online.de", "yahoo.de", "yahoo.com", "telekom.de", "proivder.co.uk", "AOL.de", "outlook.com", "microsoft.com", "sap.com", "sap-ag.de", "abb.de"};
-    QList<QString> ibans {"BG80BNBG96611020345678", "DE38531742365852502530", "DE63364408232964251731", "DE38737364268384258531", "DE69037950954001627624", "DE63377045386819730665", "DE18851420444163951769", "DE77921850720298609321", "DE70402696485599313572", "DE70455395581860402838", "DE94045704387963352767", "DE30724236236062816411", "DE62772043290447861437", "DE33387723124963875990", "DE15867719874951165967",
-                          "DE96720348741083219766", "DE23152931057149592044", "DE13220161295670898833", "DE49737651031822324605", "DE38017168378078601588", "DE07717138875827514267"};
-    QList <QPair<QString, QString>> Cities {{"68305", "Mannheim"}, {"69123", "Heidelberg"}, {"69123", "Karlsruhe"}, {"90345", "Hamburg"}};
-    QRandomGenerator *rand = QRandomGenerator::system();
-    int maxZinsIndex = ExecuteSingleValueSql("SELECT max(id) FROM Zinssaetze").toInt();
-    int neueKreditorId =0;
-    for( int i = 0; i<AnzahlDatensaetze; i++)
-    {
-        creditor k;
-        QString vn (Vornamen [rand->bounded(Vornamen.count ())]);
-        QString nn (Nachnamen [rand->bounded(Nachnamen.count ())]);
-        k.setValue("Vorname", vn);
-        k.setValue("Nachname", nn);
-        k.setValue("Strasse", Strassen[rand->bounded(Strassen.count())]);
-        k.setValue("Plz", Cities[rand->bounded(Cities.count())].first);
-        k.setValue("Stadt", Cities[rand->bounded(Cities.count())].second);
-        k.setValue("Email", vn+"."+nn+"@"+emailprovider[rand->bounded(emailprovider.count())]);
-        k.setValue("IBAN", ibans[rand->bounded(ibans.count())]);
-        k.setValue("BIC", "bic...");
-
-        neueKreditorId =k.Speichern();
-        if( -1 == neueKreditorId)
-        {
-            qCritical() << "No id from Kreditor.Speichern";
-            Q_ASSERT(!bool("Verbuchung des neuen Vertrags gescheitert"));
-        }
-        Contract v;
-        create_sampleDataset(v, neueKreditorId, maxZinsIndex, rand);
-        v.bookNewContract();
-    }
-    for ( int i=0; i<AnzahlDatensaetze; i++)
-    {   // more contracts for existing customers
-        Contract v;
-        create_sampleDataset(v, rand->bounded(1, neueKreditorId), maxZinsIndex, rand);
-        v.bookNewContract();
-    }
-}
-
-QString proposeKennung(QSqlDatabase db)
-{   LOG_CALL;
-    int idOffset = getMetaInfo("IdOffset", db).toInt();
+    int idOffset = getMetaInfo("IdOffset").toInt();
     int iMaxid = idOffset + getHighestTableId("Vertraege");
     QString kennung;
     do
     {
         QString maxid = QString::number(iMaxid).rightJustified(6, '0');
-        QString PI = "DK-" + getMetaInfo("ProjektInitialen", db);
+        QString PI = "DK-" + getMetaInfo("ProjektInitialen");
         kennung = PI + "-" + QString::number(QDate::currentDate().year()) + "-" + maxid;
         QVariant v = ExecuteSingleValueSql("id", "Vertraege", "Kennung='" + kennung + "'");
         if( v.isValid())
@@ -535,23 +496,6 @@ QString proposeKennung(QSqlDatabase db)
             break;
     } while(1);
     return kennung;
-}
-
-void interestRates_for_dropdown(QList<ZinsAnzeigeMitId>& Rates)
-{   LOG_CALL;
-
-    QSqlQuery query;
-    query.setForwardOnly(true);
-    query.prepare("SELECT id, Zinssatz, Bemerkung FROM Zinssaetze ORDER BY Zinssatz DESC");
-    if( !query.exec())
-    {
-        qCritical() << "Error reading Interrest Rates while creating a contract: " << defaultDb().lastError().text();
-    }
-    while(query.next())
-    {
-        ZinsAnzeigeMitId entry{ query.value("id").toInt(), (query.value("Zinssatz").toString() + "  (" + query.value("Bemerkung").toString() + ")  ")};
-        Rates.append(entry);
-    }
 }
 
 QString contractList_SELECT(const QVector<dbfield>& fields)
@@ -595,25 +539,25 @@ QString contractList_SQL(const QVector<dbfield>& fields, const QString& filter)
 }
 
 
-void calculateSummary(DbSummary& dbs, QSqlDatabase db)
+void calculateSummary(DbSummary& dbs)
 {   LOG_CALL;
     dbs.AnzahlDkGeber = ExecuteSingleValueSql("count(DISTINCT(KreditorId))", "[Kreditoren],[Vertraege]", "aktiv != 0 AND Kreditoren.id = Vertraege.KreditorId").toInt();
 
-    dbs.AnzahlAuszahlende = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0", db).toInt();
-    dbs.BetragAuszahlende = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0", db).toReal();
+    dbs.AnzahlAuszahlende = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0").toInt();
+    dbs.BetragAuszahlende = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0").toReal();
 
-    dbs.AnzahlThesaurierende= ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0", db).toInt();
-    dbs.BetragThesaurierende= ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0", db).toReal();
-    dbs.WertThesaurierende  = ExecuteSingleValueSql("SUM([Wert])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0", db).toReal();
+    dbs.AnzahlThesaurierende= ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0").toInt();
+    dbs.BetragThesaurierende= ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0").toReal();
+    dbs.WertThesaurierende  = ExecuteSingleValueSql("SUM([Wert])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0").toReal();
 
-    dbs.AnzahlAktive  = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0", db).toInt();
-    dbs.BetragAktive  = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0", db).toReal();
+    dbs.AnzahlAktive  = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0").toInt();
+    dbs.BetragAktive  = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0").toReal();
     dbs.WertAktive    = dbs.BetragAuszahlende+dbs.WertThesaurierende;
 
     dbs.DurchschnittZins = ExecuteSingleValueSql("SELECT SUM( w*z ) / SUM( W ) FROM  (SELECT MAX(Betrag, Wert) AS W, Zinssaetze.Zinssatz AS Z FROM Vertraege, Zinssaetze WHERE Zinssaetze.id = Vertraege.ZSatz AND Vertraege.aktiv)").toReal();
     dbs.MittlererZins = ExecuteSingleValueSql("SELECT AVG(Zinssaetze.Zinssatz) FROM Vertraege, Zinssaetze WHERE Zinssaetze.id = Vertraege.ZSatz AND Vertraege.aktiv").toDouble();
-    dbs.AnzahlPassive = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] = 0", db).toInt();
-    dbs.BetragPassive = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 0", db).toReal();
+    dbs.AnzahlPassive = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] = 0").toInt();
+    dbs.BetragPassive = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 0").toReal();
 }
 bool createCsvActiveContracts()
 {   LOG_CALL;
@@ -651,14 +595,14 @@ bool createCsvActiveContracts()
     }
     return false;
 }
-void calc_contractEnd( QVector<ContractEnd>& ce, QSqlDatabase db)
+void calc_contractEnd( QVector<ContractEnd>& ce)
 {   LOG_CALL;
 
     QMap<int, int> m_count;
     QMap<int, double> m_sum;
     const int maxYear = QDate::currentDate().year() +99;
 
-    QSqlQuery sql(db);
+    QSqlQuery sql;
     sql.setForwardOnly(true);
     sql.exec("SELECT * FROM [Vertraege] WHERE [aktiv] = 1");
     while( sql.next())
@@ -686,13 +630,13 @@ void calc_contractEnd( QVector<ContractEnd>& ce, QSqlDatabase db)
     }
     return;
 }
-void calc_anualInterestDistribution( QVector<YZV>& yzv, QSqlDatabase db)
+void calc_anualInterestDistribution( QVector<YZV>& yzv)
 {   LOG_CALL;
     QString sql = "SELECT Substr([Vertragsdatum], 0, 5), [Zinssaetze].[Zinssatz], count(*), sum([Betrag]) "
                   "FROM [Vertraege], [Zinssaetze] "
                   "WHERE [ZSatz] = [Zinssaetze].[id] "
                   "GROUP BY Substr([Vertragsdatum], 0, 4), [ZSatz]";
-    QSqlQuery query(db);
+    QSqlQuery query;
     query.exec(sql);
     while( query.next())
     {
@@ -701,12 +645,12 @@ void calc_anualInterestDistribution( QVector<YZV>& yzv, QSqlDatabase db)
     }
     return;
 }
-QVector<rowData> contractRuntimeDistribution(QSqlDatabase db)
+QVector<rowData> contractRuntimeDistribution()
 {
     int AnzahlBisEinJahr=0, AnzahlBisFuenfJahre=0, AnzahlLaenger=0, AnzahlUnbegrenzet = 0;
     double SummeBisEinJahr=0., SummeBisFuenfJahre=0., SummeLaenger=0., SummeUnbegrenzet = 0.;
     QString sql = "SELECT [Betrag], [Wert], [Vertragsdatum], [LaufzeitEnde] FROM [Vertraege]";
-    QSqlQuery q (db);
+    QSqlQuery q;
     q.exec(sql);
     while( q.next())
     {

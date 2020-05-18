@@ -3,7 +3,7 @@
 
 #include "helper.h"
 #include "sqlhelper.h"
-#include "vertrag.h"
+#include "contract.h"
 #include "jahresabschluss.h"
 
 jahresabschluss::jahresabschluss()
@@ -32,14 +32,15 @@ bool jahresabschluss::execute()
     const QDate YearEnd= QDate(Jahr, 12, 31);
     do
     {
-        Contract v; v.loadContractFromDb(sqlVal<int>(sql, "id"));
-        if( v.bookAnnualInterest(YearEnd))
-        {
-            if( v.Thesaurierend())
-                thesaV.push_back(v);
-            else
-                n_thesaV.append(v);
-        }
+Q_ASSERT(!"repair");
+//        Contract v; v.loadContractFromDb(sqlVal<int>(sql, "id"));
+//        if( v.bookAnnualInterest(YearEnd))
+//        {
+//            if( v.Thesaurierend())
+//                thesaV.push_back(v);
+//            else
+//                n_thesaV.append(v);
+//        }
 
     } while(sql.next());
 

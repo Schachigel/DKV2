@@ -1,11 +1,11 @@
 #ifndef LETTERS_H
 #define LETTERS_H
 
-#include "vertrag.h"
+#include "contract.h"
 #include "letterTemplate.h"
 
-void printThankyouLetter( const Contract& v, QSqlDatabase db = defaultDb());
-void printTerminationLetter( const Contract& v, QDate kDate, int kMonate, QSqlDatabase db = defaultDb());
-void printFinalLetter( const Contract& v, QDate contractEnd, QSqlDatabase db = defaultDb());
+void printThankyouLetter( const contract& v);
+void printTerminationLetter( const contract& v, QDate kDate, int kMonate);
+void printFinalLetter( const contract& v, QDate contractEnd);
 
 #endif // LETTERS_H

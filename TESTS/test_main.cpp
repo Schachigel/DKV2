@@ -13,6 +13,9 @@
 #include "test_finance.h"
 #include "test_sqlhelper.h"
 #include "test_appconfig.h"
+#include "test_creditor.h"
+#include "test_contract.h"
+#include "test_booking.h"
 
 #ifndef TESTLIB_SELFCOVERAGE_START
 #define TESTLIB_SELFCOVERAGE_START(a)
@@ -26,8 +29,7 @@ int main(int argc, char *argv[])
     app.setOrganizationName("4-MHS");
     app.setApplicationName("DKV2-tests");
 
-    QTest::setMainSourcePath(__FILE__, "X:/home/dev/DKV2/TESTS");
-
+//    QTest::setMainSourcePath(__FILE__, "X:/home/dev/DKV2/TESTS");
     int errCount = 0;
     auto ASSERT_TEST = [&errCount, argc, argv](QObject* obj)
     {
@@ -36,6 +38,8 @@ int main(int argc, char *argv[])
     };
 
     std::vector<QObject*> tests;
+    tests.push_back(new test_creditor);
+    tests.push_back(new test_contract);
     tests.push_back(new test_appConfig);
     tests.push_back(new test_sqlhelper);
     tests.push_back(new test_finance);

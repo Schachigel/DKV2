@@ -6,14 +6,9 @@
 #include "helper.h"
 #include "sqlhelper.h"
 
-QSqlDatabase defaultDb()
-{
-    return QSqlDatabase::database(QSqlDatabase::defaultConnection);
-}
-
 bool tableExists (const QString& tablename, QSqlDatabase db)
 {   // LOG_CALL_W(tablename);
-    QSqlQuery query (db);
+    QSqlQuery query(db);
     query.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='" + tablename + "'");
     if( !query.exec())
     {
@@ -28,9 +23,9 @@ bool tableExists (const QString& tablename, QSqlDatabase db)
     return false;
 }
 
-int rowCount(const QString& table, QSqlDatabase db)
+int rowCount(const QString& table)
 {
-    QSqlQuery q(db);
+    QSqlQuery q;
     if( q.exec( "SELECT rowid FROM " + table))
     {
         q.last();
@@ -48,7 +43,7 @@ bool createTables( const dbstructure& structure, QSqlDatabase db)
 
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
     db.transaction();
-    if( structure.createDb(db))
+    if( structure.createDb())
     {
         db.commit();
         return true;
@@ -126,11 +121,11 @@ QString SelectQueryFromFields(const QVector<dbfield>& fields, const QString& whe
     return Query;
 }
 
-QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString& where, QSqlDatabase db)
+QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString& where)
 {   LOG_CALL;
     QString sql = SelectQueryFromFields(fields, where);
     qDebug() << "ExecuteSingleRecordSql:\n" << sql;
-    QSqlQuery q(db);
+    QSqlQuery q;
     q.prepare(sql);
     if( !q.exec())
     {
@@ -147,23 +142,23 @@ QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString&
 }
 
 QVariant ExecuteSingleValueSql(const QString& s, QSqlDatabase db)
-{   LOG_CALL;
+{   LOG_CALL_W(s);
     QSqlQuery q(db);
     q.prepare(s);
     if( !q.exec())
     {
-        qCritical() << "SingleValueSql failed to execute: " << q.lastError() << endl << q.lastQuery();
+        qCritical() << "SingleValueSql failed to execute: " << q.lastError() << endl << q.lastQuery() << endl;;
         return QVariant();
     }
     q.last();
     if(q.at() > 0)
     {
-        qDebug() << "SingleValueSql returned more than one value\n" << q.lastQuery();
+        qDebug() << "SingleValueSql returned more than one value\n" << q.lastQuery() << endl;;
         return QVariant();
     }
     if(q.at() < 0)
     {
-        qDebug() << "SingleValueSql returned no value\n" << q.lastQuery();
+        qDebug() << "SingleValueSql returned no value\n" << q.lastQuery() << endl;;
         return QVariant();
     }
     return q.value(0);
@@ -172,10 +167,10 @@ QVariant ExecuteSingleValueSql(const QString& s, QSqlDatabase db)
 QVariant ExecuteSingleValueSql( const QString& field, const QString& table, const QString& where, QSqlDatabase db)
 {   LOG_CALL;
     QString sql = "SELECT " + field + " FROM " + table + " WHERE " + where;
-    return ExecuteSingleValueSql(sql, db);
+    return ExecuteSingleValueSql(sql);
 }
 
-int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant& newValue, const QString& where, QSqlDatabase db)
+int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant& newValue, const QString& where)
 {   LOG_CALL;
     QString sql = "UPDATE " + table;
     sql += " SET " + field + " = ";
@@ -186,7 +181,7 @@ int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant&
 
     sql += value;
     sql += " WHERE " + where;
-    QSqlQuery q(db);
+    QSqlQuery q;
     q.prepare(sql);
     if( q.exec())
     {
@@ -201,10 +196,10 @@ int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant&
     return -1;
 }
 
-int getHighestTableId(const QString& tablename, QSqlDatabase db)
+int getHighestTableId(const QString& tablename)
 {   LOG_CALL;
     QString sql = "SELECT max(ROWID) FROM " + tablename;
-    return ExecuteSingleValueSql(sql, db).toInt();
+    return ExecuteSingleValueSql(sql).toInt();
 }
 
 QString JsonFromRecord( QSqlRecord r)

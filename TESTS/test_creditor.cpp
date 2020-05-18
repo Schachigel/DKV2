@@ -1,0 +1,85 @@
+#include <QtTest>
+
+#include "../DKV2/helper.h"
+#include "../DKV2/sqlhelper.h"
+#include "../DKV2/dkdbhelper.h"
+#include "../DKV2/creditor.h"
+#include "test_creditor.h"
+
+void test_creditor::initTestCase()
+{   LOG_CALL;
+    init_DKDBStruct();
+}
+void test_creditor::init()
+{   LOG_CALL_W("test");
+    initTestDb();
+    create_DK_databaseContent();
+}
+void test_creditor::cleanup()
+{   LOG_CALL;
+    cleanupTestDb();
+}
+
+void test_creditor::test_createCreditor()
+{   LOG_CALL;
+    creditor c;
+    c.setFirstname("Holger");
+    c.setLastname("Mairon");
+    c.setStreet("Str.1");
+    c.setPostalCode("68205");
+    c.setCity("Mannheim");
+    c.setEmail("holger.mairon@test.de");
+    c.setComment("bester DK Geber");
+    c.setIban("DE02120300000000202051");
+    c.setBic("BYLADEM1001");
+    QVERIFY2(0 <= c.save(), "creating creditor failed");
+    QCOMPARE(tableRecordCount("Kreditoren"), 1);
+}
+
+void test_creditor::test_CreditorFromDb()
+{   LOG_CALL;
+    creditor c = creditor::randomCreditor();
+    QVERIFY2(c.isValid(), "randomly created creditor failed");
+    QVERIFY2(c.save(), "failed to save creditor");
+    creditor d;
+    d.fromDb(c.id());
+    QCOMPARE( c, d);
+}
+
+void test_creditor::test_invalidCreditor()
+{   LOG_CALL;
+    creditor c;
+    QString errortext;
+    QVERIFY2( ! c.isValid(errortext), errortext.toUtf8());
+    c.setFirstname("Holger");
+    QVERIFY2( ! c.isValid(errortext), errortext.toUtf8());
+    c.setLastname("Mairon");
+    QVERIFY2( ! c.isValid(errortext), errortext.toUtf8());
+    c.setStreet("Sesamstrasse");
+    QVERIFY2( ! c.isValid(errortext), errortext.toUtf8());
+    c.setPostalCode("49534");
+    QVERIFY2( ! c.isValid(errortext), errortext.toUtf8());
+    c.setCity("braunschweig"); // now all mandatory values are set
+    QVERIFY2( c.isValid(errortext), errortext.toUtf8());
+    c.setEmail("invalid_email");
+    QVERIFY2( ! c.isValid(errortext), errortext.toUtf8());
+    c.setEmail("holger@mairon.esp");
+    QVERIFY2( c.isValid(errortext), errortext.toUtf8());
+    c.setIban("invalid_iban");
+    QVERIFY2( ! c.isValid(errortext), errortext.toUtf8());
+    c.setIban("DE07123412341234123412");
+    QVERIFY2( c.isValid(errortext), errortext.toUtf8());
+}
+
+void test_creditor::test_saveManyRandomCreditors()
+{   LOG_CALL;
+    dbgTimer t;
+    for( int i = 0; i< 100; i++)
+    {
+        creditor c = creditor::randomCreditor();
+        if( c.isValid())
+            QVERIFY( c.save() >= 0);
+        else
+            QFAIL("random creditor is invalid");
+    }
+}

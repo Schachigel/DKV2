@@ -9,14 +9,13 @@
 
 
 const QString testDbFilename = "..\\data\\testdb.sqlite";
-const QString testCon = "test_con";
 
 void initTestDb()
 {
     QDir().mkdir(QString("..\\data"));
     if (QFile::exists(testDbFilename))
         QFile::remove(testDbFilename);
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", testCon);
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", QSqlDatabase::defaultConnection);
     db.setDatabaseName(testDbFilename);
     QVERIFY(db.open());
     QSqlQuery enableRefInt(db);
@@ -27,7 +26,7 @@ void initTestDb()
 
 void cleanupTestDb()
 {
-    QSqlDatabase::database().removeDatabase(testCon);
+    QSqlDatabase::database().removeDatabase(QSqlDatabase::defaultConnection);
     QSqlDatabase::database().close();
     if (QFile::exists(testDbFilename))
         QFile::remove(testDbFilename);
@@ -35,18 +34,12 @@ void cleanupTestDb()
     QVERIFY2( (QFile::exists(testDbFilename) == false), "destroy database failed." );
 }
 
-QSqlDatabase testDb()
-{
-    return QSqlDatabase::database(testCon);
-}
-
-
-int tableRecordCount(QString tname)
+int tableRecordCount( QString tname)
 {   LOG_CALL_W(tname);
-    QSqlQuery q(testDb());
+    QSqlQuery q;
     if (q.exec("SELECT COUNT(*) FROM " + tname)) {
         q.first();
-        qDebug() << "#Datensätze: " << q.record().value(0);
+        qDebug() << "#Datensätze: " << q.record().value(0).toInt();
         return q.record().value(0).toInt();
     } else {
         qCritical() << "selecting data failed " << q.lastError() << endl << q.lastQuery() << endl;
@@ -56,12 +49,12 @@ int tableRecordCount(QString tname)
 
 bool dbHasTable(const QString tname)
 {   LOG_CALL_W(tname);
-    return testDb().tables().contains(tname);
+    return QSqlDatabase::database().tables().contains(tname);
 }
 
 bool dbTableHasField(const QString tname, const QString fname)
 {   LOG_CALL_W(tname +": " +fname);
-    QSqlRecord r = testDb().record(tname);
+    QSqlRecord r = QSqlDatabase::database().record(tname);
     if( r.field(fname).isValid())
         return true;
     return false;

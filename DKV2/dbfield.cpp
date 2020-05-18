@@ -33,7 +33,6 @@ QString dbTypeFromVariant(QVariant::Type t)
 
 QString dbfield::getCreateSqlSnippet()
 {   //LOG_CALL_W(name());
-    qInfo() << "getCreateSqlSnippet(" << name() << ")";
     QString s( name() + " " + dbTypeFromVariant(type()) + " " +typeDetails());
     if( reference.name.isEmpty())
         return s;

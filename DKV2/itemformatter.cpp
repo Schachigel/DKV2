@@ -20,11 +20,6 @@ QString PercentItemFormatter::displayText(const QVariant& value, const QLocale& 
 
 QString EuroItemFormatter::displayText(const QVariant& value, const QLocale& locale)const
 {
-    return locale.toCurrencyString(auf2Stellen(value.toDouble()));
-};
-
-QString WertEuroItemFormatter::displayText(const QVariant& value, const QLocale& locale)const
-{
     double d = value.toDouble();
     if( d != 0.)
     {

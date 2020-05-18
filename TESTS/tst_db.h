@@ -30,7 +30,5 @@ private slots:
     void test_deleteRecord_wDep();
     void dbfieldCopyConst();
     void newDbIsValid();
-    void createKreditor();
-
 };
 #endif // TST_DB_H

@@ -31,11 +31,11 @@ dbtable dbstructure::operator[](const QString& name) const
     return dbtable();
 }
 
-bool dbstructure::createDb(QSqlDatabase db) const
-{   LOG_CALL_W(db.databaseName());
-    QSqlQuery q(db);
+bool dbstructure::createDb() const
+{   LOG_CALL;
+    QSqlQuery q;
     for(dbtable table :getTables()) {
-        if(!ensureTable(table, db)) {
+        if(!ensureTable(table)) {
             qCritical() << "could not create table " << table.name;
             return false;
         }

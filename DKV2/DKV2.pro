@@ -30,6 +30,8 @@ CONFIG += c++14
 SOURCES += \
         appconfig.cpp \
         askdatedlg.cpp \
+        booking.cpp \
+        contract.cpp \
         creditor.cpp \
         csvwriter.cpp \
         customtoolbutton.cpp \
@@ -48,12 +50,13 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         sqlhelper.cpp \
-        transaktionen.cpp \
-        vertrag.cpp
+        transaktionen.cpp
 
 HEADERS += \
         appconfig.h \
         askdatedlg.h \
+        booking.h \
+        contract.h \
         creditor.h \
         csvwriter.h \
         customtoolbutton.h \
@@ -72,8 +75,7 @@ HEADERS += \
         letters.h \
         mainwindow.h \
         sqlhelper.h \
-        transaktionen.h \
-        vertrag.h
+        transaktionen.h
 
 FORMS += \
         askDateDlg.ui \

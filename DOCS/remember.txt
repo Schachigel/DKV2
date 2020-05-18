@@ -1,3 +1,7 @@
+-- Zins Eingabe -> edit field? other?
+
+-- typ Buchungsarten löschen
+
 -- Welcome Screen mit Statistic Data?
 
 -- jahresabschluss Briefe ...

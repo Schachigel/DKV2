@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <QStandardItemModel>
 
-#include "vertrag.h"
+#include "contract.h"
 #include "jahresabschluss.h"
 
 
@@ -28,7 +28,7 @@ private slots:
 private:
     Ui::frmJahresabschluss *ui;
     const jahresabschluss& ja;
-    QStandardItemModel* getModelFromContracts(const QVector<Contract>& vertraege) const;
+    QStandardItemModel* getModelFromContracts(const QVector<contract>& vertraege) const;
 };
 
 #endif // FRMJAHRESABSCHLUSS_H

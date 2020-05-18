@@ -5,17 +5,10 @@
 #include "../DKV2/finhelper.h"
 #include "test_finance.h"
 
-double Runden2(double Betrag)
-{
-   int temp = qRound(Betrag * 100);
-   double ret = ((double)temp / 100);
-   return ret;
-}
-
 double computeDkZinsen(double Betrag, double Zinssatz, int anzTage)
 {
     double Zinsen = ((Betrag * Zinssatz) / 100.0);
-    Zinsen = Runden2(Zinsen * anzTage / 360);
+    Zinsen = round2digits(Zinsen * anzTage / 360);
     // Zinsen = round2(double(anzTage)/360. *Zinssatz/100. *Betrag);
     return Zinsen;
 }

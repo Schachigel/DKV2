@@ -94,14 +94,14 @@ bool csvwriter::save(QString filename)
     return true;
 }
 
-bool table2csv(QVector<dbfield>& fields, QVector<QVariant::Type>& types, QString where, QString filename, QSqlDatabase db)
+bool table2csv(QVector<dbfield>& fields, QVector<QVariant::Type>& types, QString where, QString filename)
 {    LOG_CALL;
     csvwriter csv;
     for(auto f : fields)
         csv.addColumn(f.name());
 
     QString sql = SelectQueryFromFields(fields, where);
-    QSqlQuery q (db);
+    QSqlQuery q;
     if( !q.exec(sql))
     {
         qCritical() << "sql faild to execute" << q.lastError() << endl << "SQL: " << q.lastQuery();

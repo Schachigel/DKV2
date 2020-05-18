@@ -30,17 +30,18 @@ public:
     functionlogging(QString x) :fname(x) {
         depth++;
         QString fill=QString(">").repeated(depth);
-        qDebug().noquote() << fill << fname;
+        qInfo().noquote() << fill << fname;
     }
     ~functionlogging(){
         QString fill=QString("<").repeated(depth);
         depth--;
-        qDebug().noquote() << fill << fname << endl;
+        qInfo().noquote() << fill << fname << endl;
     }
 };
 
 // create a log entry for entry and exit of function call
 
+//#define LOG_ENTRY_EXIT_FOR(x) // ;functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
 #define LOG_ENTRY_EXIT_FOR(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
 #define LOG_CALL              LOG_ENTRY_EXIT_FOR(__func__)
 #define LOG_CALL_W(x)         LOG_ENTRY_EXIT_FOR(__func__ + QString("(\"") + x + QString("\")"))

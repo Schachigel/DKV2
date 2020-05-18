@@ -1,13 +1,13 @@
 #ifndef TRANSAKTIONEN_H
 #define TRANSAKTIONEN_H
 
-#include "vertrag.h"
+#include "contract.h"
 
 void aktiviereVertrag(int vid);
 
 void beendeVertrag(int vid);
-void VertragsEnde_LaufzeitEnde( Contract& v);
-void VertragsEnde_MitKFrist( Contract& v);
-void VertragsEnde_PassiverV( Contract& v);
+void VertragsEnde_LaufzeitEnde( contract& v);
+void VertragsEnde_MitKFrist( contract& v);
+void VertragsEnde_PassiverV( contract& v);
 
 #endif // TRANSAKTIONEN_H

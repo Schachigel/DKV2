@@ -36,58 +36,10 @@ frmJahresabschluss::~frmJahresabschluss()
     delete ui;
 }
 
-QStandardItemModel* frmJahresabschluss::getModelFromContracts(const QVector<Contract>&vertraege) const
+QStandardItemModel* frmJahresabschluss::getModelFromContracts(const QVector<contract>&vertraege) const
 {   LOG_CALL;
-    bool thesa {vertraege[0].Thesaurierend()};
+    Q_ASSERT(!"repair");
     QStandardItemModel *model = new QStandardItemModel();
-    int itemIndex {0};
-    model->setHorizontalHeaderItem(itemIndex++, new QStandardItem("Vertrags Nr."));
-    model->setHorizontalHeaderItem(itemIndex++, new QStandardItem("Kreditbetrag"));
-    if( thesa)
-    {
-        model->setHorizontalHeaderItem(itemIndex++, new QStandardItem(" Zins lauf. Jahr"));
-        model->setHorizontalHeaderItem(itemIndex++, new QStandardItem("akt. Gesamtwert"));
-    }
-    else
-        model->setHorizontalHeaderItem(itemIndex++, new QStandardItem("auszuz. Zins "));
-    model->setHorizontalHeaderItem(itemIndex++, new QStandardItem("  Vorname  "));
-    model->setHorizontalHeaderItem(itemIndex++, new QStandardItem("  Nachname "));
-
-    int row {-1};
-    QStandardItem* item;
-    for( auto vertrag: vertraege)
-    {
-        row++;
-        itemIndex = 0;
-
-        // VertragsId, Betrag ,Zins, Wert (neu), Vorname, Nachname
-        item =new QStandardItem(QString::number(vertrag.getVid()));
-        item->setTextAlignment(Qt::AlignCenter);
-        model->setItem(row, itemIndex++, item);
-
-        item =new QStandardItem(QString::number(vertrag.Betrag())+" Euro");
-        item->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-        model->setItem(row, itemIndex++, item);
-
-        item =new QStandardItem(QString::number(vertrag.Zins())+" Euro");
-        item->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-        model->setItem(row, itemIndex++, item);
-
-        if( thesa)
-        {
-            item =new QStandardItem(QString::number(vertrag.Wert())+" Euro");
-            item->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-            model->setItem(row, itemIndex++, item);
-        }
-
-        item =new QStandardItem(vertrag.Vorname());
-        item->setTextAlignment(Qt::AlignCenter);
-        model->setItem(row, itemIndex++, item);
-
-        item =new QStandardItem(vertrag.Nachname());
-        item->setTextAlignment(Qt::AlignCenter);
-        model->setItem(row, itemIndex++, item);
-    }
     return model;
 }
 
@@ -96,27 +48,28 @@ void frmJahresabschluss::on_pbOK_clicked()
     close();
 }
 
-void writeCsv(const QVector<Contract>& vertraege, const QString& filename)
+void writeCsv(const QVector<contract>& vertraege, const QString& filename)
 {   LOG_CALL;
     csvwriter csv;
     csv.addColumns("Vertrags Nr; Kreditsumme (Euro); Zins (Euro); Wert nach Zinsgutschrift (Euro); Vorname; Nachname; Kennung; Strasse; Plz; Stadt; Email; IBAN; BIC");
     QLocale locale(QLocale::German, QLocale::LatinScript, QLocale::Germany);
-    for( auto vertrag: vertraege)
-    {
-        csv.appendToRow(QString::number(vertrag.getVid()));
-        csv.appendToRow(locale.toCurrencyString(vertrag.Betrag(), " "));
-        csv.appendToRow(locale.toCurrencyString(vertrag.Zins(), " "));
-        csv.appendToRow((vertrag.Thesaurierend() ? locale.toCurrencyString(vertrag.Wert(), " ") : "-"));
-        csv.appendToRow(vertrag.Vorname());
-        csv.appendToRow(vertrag.Nachname());
-        csv.appendToRow(vertrag.Kennung());
-        csv.appendToRow(vertrag.getKreditor().getValue("Strasse").toString());
-        csv.appendToRow(vertrag.getKreditor().getValue("Plz").toString());
-        csv.appendToRow(vertrag.getKreditor().getValue("Stadt").toString());
-        csv.appendToRow(vertrag.getKreditor().getValue("Email").toString());
-        csv.appendToRow(vertrag.getKreditor().getValue("IBAN").toString());
-        csv.appendToRow(vertrag.getKreditor().getValue("BIC").toString());
-    }
+    Q_ASSERT(!"repair");
+//    for( auto vertrag: vertraege)
+//    {
+//        csv.appendToRow(QString::number(vertrag.getVid()));
+//        csv.appendToRow(locale.toCurrencyString(vertrag.Betrag(), " "));
+//        csv.appendToRow(locale.toCurrencyString(vertrag.Zins(), " "));
+//        csv.appendToRow((vertrag.Thesaurierend() ? locale.toCurrencyString(vertrag.Wert(), " ") : "-"));
+//        csv.appendToRow(vertrag.Vorname());
+//        csv.appendToRow(vertrag.Nachname());
+//        csv.appendToRow(vertrag.Kennung());
+//        csv.appendToRow(vertrag.getKreditor().getValue("Strasse").toString());
+//        csv.appendToRow(vertrag.getKreditor().getValue("Plz").toString());
+//        csv.appendToRow(vertrag.getKreditor().getValue("Stadt").toString());
+//        csv.appendToRow(vertrag.getKreditor().getValue("Email").toString());
+//        csv.appendToRow(vertrag.getKreditor().getValue("IBAN").toString());
+//        csv.appendToRow(vertrag.getKreditor().getValue("BIC").toString());
+//    }
     csv.save(filename);
 }
 
@@ -136,26 +89,25 @@ void frmJahresabschluss::on_btnCsv_clicked()
     showFileInFolder(fn_thesa);
 }
 
-QString printableKreditorName(Contract v)
+QString printableKreditorName(contract v)
 {
-    QString Vorname = v.getKreditor().getValue("Vorname").toString();
-    QString Nachname = v.getKreditor().getValue("Nachname").toString();
-    return Vorname + "  " + Nachname;
+    Q_ASSERT(!"repair");
+    return QString();
 }
 
-QString printableKreditorStrasse(Contract v)
+QString printableKreditorStrasse(contract v)
 {
-    return v.getKreditor().getValue("Strasse").toString();
+    return QString();
 }
 
-QString printableKreditorPlzStadt( Contract v)
+QString printableKreditorPlzStadt( contract v)
 {
-    return v.getKreditor().getValue("Plz").toString() + " " + v.getKreditor().getValue("Stadt").toString();
+    return QString();
 }
 
-QString printableKennung( Contract v)
+QString printableKennung( contract v)
 {
-    return v.Kennung();
+    return QString();
 }
 
 void frmJahresabschluss::on_pbKontoauszug_clicked()

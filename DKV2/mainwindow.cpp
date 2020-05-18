@@ -1,17 +1,17 @@
-#include <QtCore>
-
+#include <QtGlobal>
 #if defined(Q_OS_WIN)
 #include "windows.h"
 #else
 #include <stdlib.h>
 #endif
 #include <QPair>
+#include <QStandardPaths>
 #include <QFileDialog>
-#include <QRandomGenerator>
 #include <QMessageBox>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QSqlTableModel>
+#include <QSortFilterProxyModel>
 #include <QSqlRelationalTableModel>
 #include <QSqlRecord>
 #include <QSqlField>
@@ -25,6 +25,7 @@
 #include "askdatedlg.h"
 #include "helper.h"
 #include "filehelper.h"
+#include "finhelper.h"
 #include "appconfig.h"
 #include "itemformatter.h"
 #include "sqlhelper.h"
@@ -86,7 +87,6 @@ void MainWindow::createButtonMenu_saveKreditorAnd()
     ui->saveAnd->setMenu(menuSaveKreditorAnd);
     ui->saveAnd->setDefaultAction(ui->action_save_contact_go_contract);
 }
-
 void MainWindow::createButtonMenu_saveContractAnd()
 {   LOG_CALL;
     // Vertrag anlegen: "Speichern und ... " Menü anlegen
@@ -106,7 +106,7 @@ MainWindow::~MainWindow()
 void MainWindow::setSplash(QSplashScreen* s)
 {   LOG_CALL;
     splash = s;
-    startTimer(3333);
+    startTimer(2333);
 }
 
 bool MainWindow::useDb(const QString& dbfile)
@@ -119,7 +119,6 @@ bool MainWindow::useDb(const QString& dbfile)
     qCritical() << "the databse could not be used for this application";
     return false;
 }
-
 void MainWindow::showDbInStatusbar( QString filename)
 {   LOG_CALL_W (filename);
     if( filename.isEmpty()) {
@@ -182,7 +181,7 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
 }
 
 // file menu
-QString askUserDbFilename(QString title, bool existing=false)
+QString askUserDbFilename(QString title, bool onlyExistingFiles=false)
 {   LOG_CALL;
     QString folder;
     QFileInfo lastdb (appConfig::CurrentDb());
@@ -191,7 +190,7 @@ QString askUserDbFilename(QString title, bool existing=false)
     else
         folder = QStandardPaths::writableLocation((QStandardPaths::AppDataLocation));
 
-    if( existing)
+    if( onlyExistingFiles)
         return QFileDialog::getOpenFileName(nullptr, title, folder, "dk-DB Dateien (*.dkdb)", nullptr);
     else
         return QFileDialog::getSaveFileName(nullptr, title, folder, "dk-DB Dateien (*.dkdb)", nullptr);
@@ -262,7 +261,7 @@ void MainWindow::on_action_create_copy_triggered()
     if( !create_DB_copy(dbfile, false)) {
         QMessageBox::information(this, "Fehler beim Kopieren", "Die Datenbankkopie konnte nicht angelegt werden. "
                                                                "Weitere Info befindet sich in der LOG Datei");
-        qCritical() << "creating depersonaliced copy failed";
+        qCritical() << "creating copy failed";
     }
     return;
 }
@@ -306,7 +305,7 @@ void MainWindow::on_action_Liste_triggered()
 }
 
 // helper fu
-int MainWindow::getIdFromCreditorsList()
+int MainWindow::currentIdFromCreditorsList()
 {   LOG_CALL;
     // What is the persId of the currently selected person in the person?
     QModelIndex mi(ui->CreditorsTableView->currentIndex().siblingAtColumn(0));
@@ -355,14 +354,14 @@ void MainWindow::on_action_create_contract_for_creditor_triggered()
     fill_rates_dropdown();
     ui->leKennung->setText( proposeKennung());
     if( ui->stackedWidget->currentIndex() == PersonListIndex)
-        set_creditors_combo_by_id(getIdFromCreditorsList());
+        set_creditors_combo_by_id(currentIdFromCreditorsList());
     else
         set_creditors_combo_by_id(-1);
-    Contract cd; // this is to get the defaults of the class definition
-    ui->deLaufzeitEnde->setDate(cd.LaufzeitEnde());
+    contract cd; // this is to get the defaults of the class definition
+    ui->deLaufzeitEnde->setDate(cd.plannedEndDate());
     ui->cbKFrist->setCurrentIndex(ui->cbKFrist->findText("6"));
-    ui->deVertragsabschluss->setDate(cd.Vertragsabschluss());
-    ui->chkbThesaurierend->setChecked(cd.Thesaurierend());
+    ui->deVertragsabschluss->setDate(cd.conclusionDate());
+    ui->chkbThesaurierend->setChecked(cd.reinvesting());
 
     ui->stackedWidget->setCurrentIndex(newContractIndex);
 }
@@ -409,20 +408,20 @@ void MainWindow::on_action_create_new_creditor_triggered()
 }
 int  MainWindow::save_creditor()
 {   LOG_CALL;
-    creditor k;
-    k.setValue("Vorname", ui->leVorname->text().trimmed());
-    k.setValue("Nachname", ui->leNachname->text().trimmed());
-    k.setValue("Strasse", ui->leStrasse->text().trimmed());
-    k.setValue("Plz", ui->lePlz->text().trimmed());
-    k.setValue("Stadt", ui->leStadt->text().trimmed());
-    k.setUniqueDbValue("Email", ui->leEMail->text().trimmed().toLower());
-    k.setValue("Anmerkung", ui->txtAnmerkung->toPlainText());
-    k.setValue("IBAN", ui->leIban->text().trimmed());
-    k.setValue("BIC", ui->leBic->text().trimmed());
+    creditor c;
+    c.setFirstname(ui->leVorname->text().trimmed());
+    c.setLastname(ui->leNachname->text().trimmed());
+    c.setStreet(ui->leStrasse->text().trimmed());
+    c.setPostalCode(ui->lePlz->text().trimmed());
+    c.setCity(ui->leStadt->text().trimmed());
+    c.setEmail(ui->leEMail->text().trimmed().toLower());
+    c.setComment(ui->txtAnmerkung->toPlainText());
+    c.setIban(ui->leIban->text().trimmed());
+    c.setBic(ui->leBic->text().trimmed());
 
     QString errortext;
-    if( !k.isValid(errortext)) {
-        errortext = "Die Daten konnten nicht gespeichert werden: <br>" + errortext;
+    if( !c.isValid(errortext)) {
+        errortext = "Die Daten können nicht gespeichert werden: <br>" + errortext;
         QMessageBox::information(this, "Fehler", errortext );
         qDebug() << "prüfung der Kreditor Daten:" << errortext;
         return -1;
@@ -430,11 +429,11 @@ int  MainWindow::save_creditor()
     int kid = -1;
     if( ui->lblPersId->text() != "") {
         kid = ui->lblPersId->text().toInt();
-        k.setValue("Id", kid);     // update not insert
-        k.Update();
+        c.setId(kid);     // update not insert
+        c.update();
     }
     else
-       kid = k.Speichern();
+       kid = c.save();
 
     if(kid == -1) {
         QMessageBox::information( this, "Fehler", "Der Datensatz konnte nicht gespeichert werden. "
@@ -500,40 +499,59 @@ void MainWindow::on_action_save_contact_go_new_creditor_triggered()
 }
 
 // neuer Vertrag
-Contract MainWindow::get_contract_data_from_form()
+void ensureConsistentContractEnding( int& monate, QDate& lze, const QDate contractdate)
 {   LOG_CALL;
-    int KreditorId = ui->comboKreditoren->itemData(ui->comboKreditoren->currentIndex()).toInt();
-    QString Kennung = ui->leKennung->text();
-    double Betrag = ui->leBetrag->text().remove('.').toDouble();
-    bool thesaurierend = ui->chkbThesaurierend->checkState() == Qt::Checked;
-    double Wert = thesaurierend ? Betrag : 0.;
-    int ZinsId = ui->cbZins->itemData(ui->cbZins->currentIndex()).toInt();
-    QDate Vertragsdatum = ui->deVertragsabschluss->date();
+    // ensure consistency:
+    // kfrist == -1 -> LaufzeitEnde has to be valid and NOT 31.12.9999
+    // kfrist > 0 -> LaufzeitEnde == 31.12.9999
+    if( !lze.isValid() || lze == QDate(2000,1,1)) // QDateEdit default
+        lze = EndOfTheFuckingWorld;
+
+    if( monate > 0) {
+        if( lze == EndOfTheFuckingWorld)
+            return;  // all good
+        else {
+            lze = EndOfTheFuckingWorld;
+            qCritical() << "inconsistent contract end date with valid notice period resolved to " << lze;
+            return;
+        }
+    }
+
+    if( monate < 0) {
+        monate = -1;
+        if( lze == EndOfTheFuckingWorld) {
+            // pathetic we have to choose
+            lze = EndOfTheFuckingWorld;
+            monate = 6;
+            qCritical() << "incnosistent contract end reslved. notice period now " << monate;
+            return;
+        }
+        else
+            return;
+    }
+}
+contract MainWindow::get_contract_data_from_form()
+{   LOG_CALL;
+    contract c;
+    c.setCreditorId (ui->comboKreditoren->itemData(ui->comboKreditoren->currentIndex()).toInt());
+    c.setLabel(ui->leKennung->text());
+    c.setPlannedInvest (ui->leBetrag->text().remove('.').toDouble());
+    c.setReinvesting (ui->chkbThesaurierend->checkState() == Qt::Checked);
+
+    // interface to comboBox -> 1/100th of the itemdata
+    int interrestIndex= ui->cbZins->itemData(ui->cbZins->currentIndex()).toInt();
+    c.setInterestRate(round2digits(double(interrestIndex)/100));
+    c.setConclusionDate (ui->deVertragsabschluss->date());
+    c.setStatus (contract::contract_status::inactive);
 
     int kFrist = ui->cbKFrist->currentData().toInt();
-    QDate LaufzeitEnde = ui->deLaufzeitEnde->date();
-    // ensure consistency:
-    // kfrist == -1 -> LaufzeitEnde has to be valid and not 31.12.9999
-    // kfrist > 0 -> LaufzeitEnde == 31.12.9999
-    if( !LaufzeitEnde.isValid()) {
-        qDebug() << "LaufzeitEnde ungültig -> defaulting";
-        if( kFrist != -1)
-            LaufzeitEnde = EndOfTheFuckingWorld;
-        else
-            LaufzeitEnde = Vertragsdatum.addYears(5);
-    }
-    if( kFrist != -1 && LaufzeitEnde.isValid() && LaufzeitEnde != EndOfTheFuckingWorld) {
-        qDebug() << "LaufzeitEnde gesetzt, aber KFrist nicht -1 -> kfrist korrigiert";
-        kFrist = -1;
-    }
-    QDate StartZinsberechnung = EndOfTheFuckingWorld;
-
-    return Contract(KreditorId, Kennung, Betrag, Wert, ZinsId, Vertragsdatum,
-                   thesaurierend, false/*aktiv*/,StartZinsberechnung, kFrist, LaufzeitEnde);
+    QDate LaufzeitEnde = ui->deLaufzeitEnde->date();  // QDateTimeEdit default: 2000/1/1
+    ensureConsistentContractEnding(kFrist, LaufzeitEnde, c.conclusionDate());
+    return c;
 }
 bool MainWindow::save_new_contract()
 {   LOG_CALL;
-    Contract c =get_contract_data_from_form();
+    contract c =get_contract_data_from_form();
 
     QString errortext;
     if( !c.validateAndSaveNewContract(errortext)) {
@@ -590,12 +608,11 @@ void MainWindow::fill_creditors_dropdown()
 }
 void MainWindow::fill_rates_dropdown()
 {   LOG_CALL;
-    QList<ZinsAnzeigeMitId> InterrestCbEntries; interestRates_for_dropdown(InterrestCbEntries);
     ui->cbZins->clear();
-    for(ZinsAnzeigeMitId Entry : InterrestCbEntries) {
-        ui->cbZins->addItem(Entry.second, QVariant(Entry.first));
+    for(int i = 0; i < 200; i++) {
+        ui->cbZins->addItem(QString::number(double(i)/100, 'f', 2), QVariant(i));
     }
-    ui->cbZins->setCurrentIndex(InterrestCbEntries.count()-1);
+    ui->cbZins->setCurrentIndex(101);
 }
 void MainWindow::set_creditors_combo_by_id(int KreditorenId)
 {   LOG_CALL;
@@ -972,7 +989,7 @@ void MainWindow::on_action_terminate_contract_triggered()
 // debug funktions
 void MainWindow::on_action_create_sample_data_triggered()
 {   LOG_CALL;
-    create_sampleData();
+    //create_sampleData();
     prepareCreditorsTableView();
     prepare_contracts_list_view();
     if( ui->stackedWidget->currentIndex() == OverviewIndex)

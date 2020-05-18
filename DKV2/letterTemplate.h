@@ -33,10 +33,10 @@ public:
 
 public:
     //explicit letterTemplate(){ initPrinter();};
-    letterTemplate(templateId type, QSqlDatabase db =defaultDb());
+    letterTemplate(templateId type);
     ~letterTemplate(){ }
-    bool saveTemplate(QSqlDatabase db = defaultDb()) const;
-    bool loadTemplate(letterTemplate::templateId id, QSqlDatabase db= defaultDb());
+    bool saveTemplate() const;
+    bool loadTemplate(letterTemplate::templateId id);
 
     void init_Geldeingang();
     void init_JA_thesa();

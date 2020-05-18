@@ -3,8 +3,7 @@
 
 #include <QString>
 #include <QVector>
-
-#include "vertrag.h"
+#include "contract.h"
 
 class jahresabschluss
 {
@@ -12,15 +11,15 @@ public:
     jahresabschluss();
     bool execute();
     int abzuschliessendesJahr() const {return Jahr;}
-    const QVector<Contract>& getThesaV() const {return thesaV;}
-    const QVector<Contract>& get_nThesaV() const {return n_thesaV;}
+    const QVector<contract>& getThesaV() const {return thesaV;}
+    const QVector<contract>& get_nThesaV() const {return n_thesaV;}
     int jahr() const {return Jahr;}
 
 private:
     int JahreszahlFuerAbschluss();
     int Jahr;
-    QVector<Contract> thesaV;
-    QVector<Contract> n_thesaV;
+    QVector<contract> thesaV;
+    QVector<contract> n_thesaV;
 };
 
 

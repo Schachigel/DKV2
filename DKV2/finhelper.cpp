@@ -133,10 +133,6 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
     double ZinsRestjahr = auf2Stellen(double(TageImLetztenJahr)/360. *zins/100. *zwischenWert);
     gesamtZins += ZinsRestjahr;
     qDebug().noquote()
-        << "\nErstes Jahr : " << ZinsImErstenJahr << "(" << TageImErstenJahr << " Tage)"
-        << "\nVolle Jahre : " << ZinsVolleJahre << "(" << jahre << " Jahre)"
-        << "\nLetztes Jahr: " << ZinsRestjahr << "(" << TageImLetztenJahr << " Tage)"
-        << "\nGesamtzins  : " << gesamtZins << endl;
     return auf2Stellen(gesamtZins);
 }
 

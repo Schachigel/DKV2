@@ -20,12 +20,12 @@ extern QList<QPair<qlonglong, QString>> Buchungsarten;
 void init_DKDBStruct();
 
 bool create_DK_databaseFile(const QString& filename);
-bool create_DK_databaseContent(QSqlDatabase db=defaultDb());
+bool create_DK_databaseContent(QSqlDatabase db = QSqlDatabase::database());
 
 
-bool check_db_version(QSqlDatabase db=defaultDb());
+bool check_db_version(QSqlDatabase db = QSqlDatabase::database());
 bool isValidDatabase(const QString& filename);
-bool isValidDatabase(QSqlDatabase db=defaultDb());
+bool isValidDatabase(QSqlDatabase db = QSqlDatabase::database());
 
 void closeDatabaseConnection(QString connection= QSqlDatabase::defaultConnection);
 bool open_databaseForApplication( QString newDbFile="");
@@ -33,11 +33,8 @@ QStringList check_DbConsistency( );
 
 bool create_DB_copy(QString targetfn, bool anonym);
 
-QString proposeKennung(QSqlDatabase db=defaultDb());
+QString proposeKennung();
 void create_sampleData(int datensaetze =20);
-
-typedef QPair<int, QString> ZinsAnzeigeMitId;
-void interestRates_for_dropdown(QList<ZinsAnzeigeMitId>& Entries);
 
 int BuchungsartIdFromArt(QString s);
 
@@ -50,12 +47,12 @@ QString contractList_FROM();
 QString contractList_WHERE(const QString& filter);
 QString contractList_SQL(const QVector<dbfield>& f, const QString& filter);
 
-void initMetaInfo( const QString& name, const QString& wert, QSqlDatabase db = defaultDb());
-void initNumMetaInfo( const QString& name, const double& wert, QSqlDatabase db = defaultDb());
-QString getMetaInfo(const QString& name,QSqlDatabase db = defaultDb());
-double getNumMetaInfo(const QString& name, QSqlDatabase db = defaultDb());
-void setMetaInfo(const QString& name, const QString& value, QSqlDatabase db = defaultDb());
-void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db = defaultDb());
+void initMetaInfo( const QString& name, const QString& wert);
+void initNumMetaInfo( const QString& name, const double& wert);
+QString getMetaInfo(const QString& name);
+double getNumMetaInfo(const QString& name, QSqlDatabase db = QSqlDatabase::database());
+void setMetaInfo(const QString& name, const QString& value);
+void setNumMetaInfo(const QString& name, const double Wert);
 
 bool createCsvActiveContracts();
 
@@ -89,8 +86,8 @@ struct ContractEnd
     int count;
     double value;
 };
-void calc_contractEnd(QVector<ContractEnd>& ce, QSqlDatabase db = defaultDb());
-void calculateSummary(DbSummary& dbs, QSqlDatabase db = defaultDb());
+void calc_contractEnd(QVector<ContractEnd>& ce);
+void calculateSummary(DbSummary& dbs);
 
 struct YZV
 {
@@ -99,12 +96,12 @@ struct YZV
     int count;
     double sum;
 };
-void calc_anualInterestDistribution( QVector<YZV>& yzv, QSqlDatabase db = defaultDb());
+void calc_anualInterestDistribution( QVector<YZV>& yzv);
 struct rowData
 {
     QString text; QString number; QString value;
 };
 
-QVector<rowData> contractRuntimeDistribution(QSqlDatabase db = defaultDb());
+QVector<rowData> contractRuntimeDistribution();
 
 #endif // DKDBHELPER_H

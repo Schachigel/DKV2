@@ -6,9 +6,8 @@
 #include <QSplashScreen>
 #include <QSqlQueryModel>
 #include <QMainWindow>
-
-#include "dkdbhelper.h"
-#include "vertrag.h"
+#include <dkdbhelper.h>
+#include "contract.h"
 
 struct busycursor
 {
@@ -40,9 +39,9 @@ public:
     void fill_creditors_dropdown();
     void fill_rates_dropdown();
     void set_creditors_combo_by_id(int id);
-    int getIdFromCreditorsList();
+    int currentIdFromCreditorsList();
     int get_current_id_from_contracts_list();
-    Contract get_contract_data_from_form();
+    contract get_contract_data_from_form();
 
 private slots:
 

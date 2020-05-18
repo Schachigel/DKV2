@@ -10,6 +10,7 @@
 #include <QSqlField>
 #include <QList>
 
+#include "sqlhelper.h"
 #include "dbfield.h"
 
 class dbstructure;
@@ -26,7 +27,7 @@ public:
     // interface
     dbtable append(const dbfield&);
     void setUnique(const QVector<dbfield>& fs);
-    bool create(QSqlDatabase db) const;
+    bool create(QSqlDatabase db = QSqlDatabase::database()) const;
 private:
     QString name;
     QString unique;
@@ -46,9 +47,9 @@ public:
     QVariant getValue(const QString& f) const { return record.field(f).value();}
     QSqlRecord getRecord() const {return record;}
     // interface
-    int InsertData(     QSqlDatabase db =QSqlDatabase::database(QSqlDatabase::defaultConnection)) const;
-    int InsertOrReplaceData(QSqlDatabase db =QSqlDatabase::database(QSqlDatabase::defaultConnection)) const;
-    int UpdateData(     QSqlDatabase db =QSqlDatabase::database(QSqlDatabase::defaultConnection)) const;
+    int InsertData(QSqlDatabase db = QSqlDatabase::database()) const;
+    int InsertOrReplaceData() const;
+    int UpdateData() const;
     //int getInsertedRecordId() const {return lastRecord;}
 private:
     // data

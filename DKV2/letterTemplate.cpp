@@ -144,14 +144,14 @@ void letterTemplate::init_defaults()
     }
 }
 
-letterTemplate::letterTemplate(letterTemplate::templateId id, QSqlDatabase db)
+letterTemplate::letterTemplate(letterTemplate::templateId id)
 {   LOG_CALL;
     tid=id;
     initPrinter();
-    if( !loadTemplate(id, db))
+    if( !loadTemplate(id))
     {
         init_defaults();
-        saveTemplate(db);
+        saveTemplate();
     }
 }
 
@@ -199,9 +199,9 @@ letterTemplate::templateId letterTemplate::getIdFromName(QString n)
     return letterTemplate::templateId::maxTemplateId;
 }
 
-bool letterTemplate::saveTemplate(QSqlDatabase db) const
+bool letterTemplate::saveTemplate() const
 {   LOG_CALL;
-    if( !ensureTable(dkdbstructur["Briefvorlagen"], db))
+    if( !ensureTable(dkdbstructur["Briefvorlagen"]))
         return false;
 
     for( int i = 0; i < letterTemplate::sections::maxSection; i++)
@@ -210,7 +210,7 @@ bool letterTemplate::saveTemplate(QSqlDatabase db) const
         tdi.setValue(dkdbstructur["Briefvorlagen"].Fields()[0].name(), QVariant(tid) );
         tdi.setValue(dkdbstructur["Briefvorlagen"].Fields()[1].name(), QVariant(i));
         tdi.setValue(dkdbstructur["Briefvorlagen"].Fields()[2].name(), QVariant(html[i]));
-        if( -1 == tdi.InsertOrReplaceData(db))
+        if( -1 == tdi.InsertOrReplaceData())
         {
             qDebug() << "failed to write template data: " << i << ": " << html[i];
             return false;
@@ -222,7 +222,7 @@ bool letterTemplate::saveTemplate(QSqlDatabase db) const
         tdi.setValue( dkdbstructur["Briefvorlagen"].Fields()[0].name(), QVariant(tid) );
         tdi.setValue( dkdbstructur["Briefvorlagen"].Fields()[1].name(), QVariant(i));
         tdi.setValue( dkdbstructur["Briefvorlagen"].Fields()[2].name(), QVariant(QString::number(length[i])));
-        if( -1 == tdi.InsertOrReplaceData(db))
+        if( -1 == tdi.InsertOrReplaceData())
         {
             qDebug() << "failed to write template data: " << i << ": " << length[i];
             return false;
@@ -231,16 +231,16 @@ bool letterTemplate::saveTemplate(QSqlDatabase db) const
     return true;
 }
 
-bool letterTemplate::loadTemplate(letterTemplate::templateId id, QSqlDatabase db)
+bool letterTemplate::loadTemplate(letterTemplate::templateId id)
 {   LOG_CALL;
-    if( !tableExists("Briefvorlagen", db))
+    if( !tableExists("Briefvorlagen"))
     {
         qDebug() << "Tabelle mit Briefvorlagen existiert nicht, Template Daten können nicht gespeichert werden";
         return false;
     }
     tid = id;
     QString q = SelectQueryFromFields( dkdbstructur["Briefvorlagen"].Fields(), "templateId = " + QString::number(tid));
-    QSqlQuery query(db);
+    QSqlQuery query;
     query.prepare(q);
     if( !query.exec())
     {

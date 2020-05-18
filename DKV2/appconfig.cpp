@@ -32,9 +32,6 @@ void appConfig::setOutDir(const QString& od)
 /* static */
 void appConfig::setOutDirInteractive(QWidget* parent)
 {   LOG_CALL;
-//    if( testmode){
-//        setOutDir(QDir::currentPath());
-//    }
     QString dir(getUserData(keyOutdir, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)));
     dir = QFileDialog::getExistingDirectory(parent, "Ausgabeverzeichnis", dir,
                QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
