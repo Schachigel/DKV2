@@ -4,9 +4,9 @@
 #include <QDate>
 #include <QRegExpValidator>
 
-double round(const double d, const int stellen = 2);
-double round2(const double d);
-double round6(const double d);
+double gerundet(const double d, const int stellen = 2);
+double auf2Stellen(const double d);
+double auf6Stellen(const double d);
 
 int TageBisJahresende_a(const QDate& d);
 int TageBisJahresende(const QDate& d);

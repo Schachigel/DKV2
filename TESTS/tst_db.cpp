@@ -1,8 +1,9 @@
 
+#include <QtTest>
+
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QString>
-#include <QtTest>
 
 #include "../DKV2/dbstructure.h"
 #include "../DKV2/dbtable.h"

@@ -5,6 +5,7 @@
 #include <QDate>
 #include <QSqlQuery>
 #include <QSqlRecord>
+
 #include "dbstructure.h"
 #include "dbfield.h"
 

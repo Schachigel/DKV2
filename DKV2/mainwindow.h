@@ -6,7 +6,8 @@
 #include <QSplashScreen>
 #include <QSqlQueryModel>
 #include <QMainWindow>
-#include <dkdbhelper.h>
+
+#include "dkdbhelper.h"
 #include "vertrag.h"
 
 struct busycursor

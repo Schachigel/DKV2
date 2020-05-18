@@ -1,16 +1,11 @@
 #ifndef APPCONFIG_H
 #define APPCONFIG_H
 
-#include <Qt>
 #include <QMap>
 #include <QWidget>
 
 struct appConfig
 {
-//    static void setTestmode()
-//    {   /* not nice to have test specific code but tests have to stay noninteractive */
-//        testmode = true;
-//    }
     static void setOutDir(const QString& od);
     static void setOutDirInteractive(QWidget* parent =nullptr);
     static QString Outdir();

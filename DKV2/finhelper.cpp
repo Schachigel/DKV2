@@ -6,17 +6,17 @@
 #include "finhelper.h"
 #include "financaltimespan.h"
 
-double round(const double d, const int stellen)
+double gerundet(const double d, const int stellen)
 {
     return qRound((d * pow(10,stellen)))/pow(10,stellen);
 }
-double round2(const double d)
+double auf2Stellen(const double d)
 {
-    return round( d, 2);
+    return gerundet( d, 2);
 }
-double round6(const double d)
+double auf6Stellen(const double d)
 {
-    return round( d, 6);
+    return gerundet( d, 6);
 }
 
 int TageBisMonatsende_exclusiv(const QDate& d)
@@ -113,10 +113,10 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
 
     if( von.year() == bis.year())
     {
-        return round2(double(TageZwischen(von, bis))/360. *zins/100. *wert);
+        return auf2Stellen(double(TageZwischen(von, bis))/360. *zins/100. *wert);
     }
     int TageImErstenJahr = TageBisJahresende(von); // first day no intrest
-    double ZinsImErstenJahr = round2(double(TageImErstenJahr)/360. *zins/100. *wert);
+    double ZinsImErstenJahr = auf2Stellen(double(TageImErstenJahr)/360. *zins/100. *wert);
     double gesamtZins (ZinsImErstenJahr);
 
     double zwischenWert = (thesa) ? (wert+ZinsImErstenJahr) : (wert);
@@ -128,16 +128,16 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
         gesamtZins += JahresZins; ZinsVolleJahre += JahresZins;
         zwischenWert = (thesa) ? (zwischenWert+JahresZins) : zwischenWert;
     }
-    gesamtZins = round2(gesamtZins);
+    gesamtZins = auf2Stellen(gesamtZins);
     int TageImLetztenJahr = TageSeitJahresAnfang(bis);
-    double ZinsRestjahr = round2(double(TageImLetztenJahr)/360. *zins/100. *zwischenWert);
+    double ZinsRestjahr = auf2Stellen(double(TageImLetztenJahr)/360. *zins/100. *zwischenWert);
     gesamtZins += ZinsRestjahr;
     qDebug().noquote()
         << "\nErstes Jahr : " << ZinsImErstenJahr << "(" << TageImErstenJahr << " Tage)"
         << "\nVolle Jahre : " << ZinsVolleJahre << "(" << jahre << " Jahre)"
         << "\nLetztes Jahr: " << ZinsRestjahr << "(" << TageImLetztenJahr << " Tage)"
         << "\nGesamtzins  : " << gesamtZins << endl;
-    return round2(gesamtZins);
+    return auf2Stellen(gesamtZins);
 }
 
 IbanValidator::IbanValidator() : QRegExpValidator()

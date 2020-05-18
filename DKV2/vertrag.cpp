@@ -294,7 +294,7 @@ bool Contract::saveAnnualPayment(const QDate& end)
     letzteZinsgutschrift = ZinsesZins(Zinsfuss(), thesaurierend?Wert():Betrag(), StartZinsberechnung(), end, thesaurierend);
     qDebug() << "JA: berechneter Zins: " << letzteZinsgutschrift;
 
-    double neuerWert =  Thesaurierend() ? round(wert +letzteZinsgutschrift) : 0.;
+    double neuerWert =  Thesaurierend() ? auf2Stellen(wert +letzteZinsgutschrift) : 0.;
     qDebug() << "JA: aktualisierter Wert: " << neuerWert;
 
     QString where = "id = " + QString::number(id);

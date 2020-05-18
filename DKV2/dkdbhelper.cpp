@@ -1,5 +1,4 @@
-#include <float.h>
-#include <QtCore>
+#include <QRandomGenerator64>
 #include <QSqlDatabase>
 #include <QSqlDriver>
 #include <QSqlError>

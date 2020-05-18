@@ -4,6 +4,7 @@
 #include <QString>
 #include <QDate>
 #include <QVariant>
+
 #include "helper.h"
 #include "kreditor.h"
 #include "dkdbhelper.h"

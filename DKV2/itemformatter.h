@@ -2,9 +2,9 @@
 #define DATEITEMFORMATTER_H
 
 #include <QObject>
-#include <qstring.h>
+#include <QString>
 #include <QDate>
-#include <qstyleditemdelegate.h>
+#include <QStyledItemDelegate>
 
 class DateItemFormatter : public QStyledItemDelegate
 {
