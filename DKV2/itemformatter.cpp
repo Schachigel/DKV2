@@ -13,17 +13,22 @@ QString DateItemFormatter::displayText(const QVariant& value, const QLocale& )co
 
 QString PercentItemFormatter::displayText(const QVariant& value, const QLocale& )const
 {
-    double percent = auf2Stellen(value.toDouble());
+    double percent = round2dig(value.toDouble());
     return QString::number(percent) + "%";
 //    return QString::number(percent, 'f', 2) +"%";
 };
 
 QString EuroItemFormatter::displayText(const QVariant& value, const QLocale& locale)const
 {
+    return locale.toCurrencyString(round2dig(value.toDouble()));
+};
+
+QString WertEuroItemFormatter::displayText(const QVariant& value, const QLocale& locale)const
+{
     double d = value.toDouble();
     if( d != 0.)
     {
-        return locale.toCurrencyString(auf2Stellen(value.toDouble()));
+        return locale.toCurrencyString(round2dig(value.toDouble()));
     }
     else
         return QString("(auszahlend)");

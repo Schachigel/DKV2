@@ -239,7 +239,7 @@ bool letterTemplate::loadTemplate(letterTemplate::templateId id)
         return false;
     }
     tid = id;
-    QString q = SelectQueryFromFields( dkdbstructur["Briefvorlagen"].Fields(), "templateId = " + QString::number(tid));
+    QString q = selectQueryFromFields( dkdbstructur["Briefvorlagen"].Fields(), "templateId = " + QString::number(tid));
     QSqlQuery query;
     query.prepare(q);
     if( !query.exec())

@@ -461,7 +461,7 @@ void MainWindow::empty_create_creditor_form()
 void MainWindow::init_creditor_form(int id)
 {   LOG_CALL;
     busycursor b;
-    QSqlRecord rec = ExecuteSingleRecordSql(dkdbstructur["Kreditoren"].Fields(), "Id=" +QString::number(id));
+    QSqlRecord rec = executeSingleRecordSql(dkdbstructur["Kreditoren"].Fields(), "Id=" +QString::number(id));
     ui->leVorname->setText(rec.field("Vorname").value().toString());
     ui->leNachname->setText(rec.field("Nachname").value().toString());
     ui->leStrasse->setText(rec.field("Strasse").value().toString());
@@ -540,7 +540,7 @@ contract MainWindow::get_contract_data_from_form()
 
     // interface to comboBox -> 1/100th of the itemdata
     int interrestIndex= ui->cbZins->itemData(ui->cbZins->currentIndex()).toInt();
-    c.setInterestRate(round2digits(double(interrestIndex)/100));
+    c.setInterestRate(round2dig(double(interrestIndex)/100));
     c.setConclusionDate (ui->deVertragsabschluss->date());
 
     int kFrist = ui->cbKFrist->currentData().toInt();

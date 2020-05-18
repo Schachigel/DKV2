@@ -28,7 +28,7 @@ void test_dkdbhelper::test_querySingleValueInvalidQuery()
 {   LOG_CALL;
     QString sql ("SELECT NOTEXISTINGFIELD FROM NOTEXISTINGTABLE WHERE NOTEXISTINGFIELD='0'");
     QVariant result;
-    result = ExecuteSingleValueSql(sql);
+    result = executeSingleValueSql(sql);
     QVERIFY2(QVariant::Invalid == result.type(),
              "Invalid single value sql has poditiv result");
 }
@@ -44,7 +44,7 @@ void test_dkdbhelper::test_querySingleValue()
     tdi.setValue("id", 1);
     tdi.setValue("f", "Hallo");
     tdi.InsertData();
-    QVariant hallo = ExecuteSingleValueSql("SELECT [f] FROM [t] WHERE id=1");
+    QVariant hallo = executeSingleValueSql("SELECT [f] FROM [t] WHERE id=1");
     QVERIFY2(hallo.toString() == "Hallo", "ExecuteSingleValueSql failed");
 }
 
@@ -62,7 +62,7 @@ void test_dkdbhelper::test_querySingleValue_multipleResults()
     tdi.setValue("id", 1);
     tdi.setValue("f", "Hallo1");
     tdi.InsertData();
-    QVariant hallo = ExecuteSingleValueSql("SELECT [f] FROM [t] WHERE id=1");
+    QVariant hallo = executeSingleValueSql("SELECT [f] FROM [t] WHERE id=1");
     QVERIFY2(hallo.type() == QVariant::Invalid , "ExecuteSingleValueSql failed");
 }
 

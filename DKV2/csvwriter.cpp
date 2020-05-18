@@ -100,7 +100,7 @@ bool table2csv(QVector<dbfield>& fields, QVector<QVariant::Type>& types, QString
     for(auto f : fields)
         csv.addColumn(f.name());
 
-    QString sql = SelectQueryFromFields(fields, where);
+    QString sql = selectQueryFromFields(fields, where);
     QSqlQuery q;
     if( !q.exec(sql))
     {

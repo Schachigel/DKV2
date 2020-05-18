@@ -31,14 +31,12 @@ struct contract
     int plannedInvest() const { return td.getValue("Betrag").toInt();}
     void setReinvesting( bool b) { td.setValue("thesaurierend", b);}
     bool reinvesting() const { return (td.getValue("thesaurierend").toInt() != 0);}
-//    void setStatus(contract_status c) { td.setValue("Status", c);}
-//    contract_status status() const { return contract_status(td.getValue("Status").toInt());}
-    void setNoticePeriod(int m) { td.setValue("Kfrist", m); if( -1 == m) setPlannedEndDate( EndOfTheFuckingWorld);}
+    void setNoticePeriod(int m) { td.setValue("Kfrist", m); if( -1 != m) setPlannedEndDate( EndOfTheFuckingWorld);}
     int noticePeriod() const { return td.getValue("Kfrist").toInt();}
-    void setConclusionDate(QDate d) { td.setValue("Vertragsdatum", d);}
-    QDate conclusionDate() const { return td.getValue("Vertragsdatum").toDate();}
     void setPlannedEndDate( QDate d) { td.setValue("LaufzeitEnde", d); if( d != EndOfTheFuckingWorld) setNoticePeriod(-1);}
     QDate plannedEndDate() const { return td.getValue("LaufzeitEnde").toDate();}
+    void setConclusionDate(QDate d) { td.setValue("Vertragsdatum", d);}
+    QDate conclusionDate() const { return td.getValue("Vertragsdatum").toDate();}
 
     // interface
     static const dbtable& getTableDef();
@@ -59,7 +57,7 @@ private:
 };
 
 // for testing
-contract randomContract(qlonglong creditorId);
-
+contract saveRandomContract(qlonglong creditorId);
+void saveRandomContracts(int count);
 
 #endif // VERTRAG_H

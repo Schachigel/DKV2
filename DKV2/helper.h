@@ -18,8 +18,8 @@ class dbgTimer
     QString fname;
 public:
     dbgTimer() {t.start();}
-    dbgTimer(QString fu) : fname(fu){t.start(); qInfo() << fname << " start";}
-    ~dbgTimer() {qInfo() << (fname.isEmpty() ? "" : fname+ " end" )<< endl << "Elapsed time: "<< t.elapsed();}
+    dbgTimer(QString fu) : fname(fu){t.start(); qInfo().noquote() << "Debug Timer " + fname << " start" << endl;}
+    ~dbgTimer() {qInfo().noquote() << endl << (fname.isEmpty() ? "" : fname+ " end" )<< endl << "Elapsed time: "<< t.elapsed() << endl;}
 };
 
 class functionlogging {

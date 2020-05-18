@@ -13,7 +13,7 @@ jahresabschluss::jahresabschluss()
 
 int jahresabschluss::JahreszahlFuerAbschluss()
 {   LOG_CALL;
-    QDate aeltesteZinszahlung = ExecuteSingleValueSql("SELECT min(LetzteZinsberechnung) FROM Vertraege WHERE aktiv != 0").toDate();
+    QDate aeltesteZinszahlung = executeSingleValueSql("SELECT min(LetzteZinsberechnung) FROM Vertraege WHERE aktiv != 0").toDate();
     if( aeltesteZinszahlung.month()==12 && aeltesteZinszahlung.day() == 31)
         return aeltesteZinszahlung.year() +1;
     return aeltesteZinszahlung.year();

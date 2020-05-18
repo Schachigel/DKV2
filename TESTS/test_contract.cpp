@@ -32,7 +32,16 @@ void test_contract::test_createContract()
 
 void test_contract::test_randomContract()
 {   LOG_CALL;
-    creditor c(randomCreditor());
-    contract cont(randomContract(c.id()));
+    creditor c(saveRandomCreditor());
+    contract cont(saveRandomContract(c.id()));
     QCOMPARE(rowCount("Vertraege"), 1);
+}
+
+void test_contract::test_randomContracts()
+{   LOG_CALL;
+    int count = 90;
+    dbgTimer t(QString::number(count) + " contracts");
+    saveRandomCreditors(50);
+    saveRandomContracts(count);
+    QCOMPARE(rowCount("Vertraege"), count);
 }

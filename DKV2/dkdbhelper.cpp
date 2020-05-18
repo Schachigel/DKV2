@@ -79,19 +79,19 @@ bool insert_Properties()
 
 void initMetaInfo( const QString& name, const QString& newValue)
 {   LOG_CALL;
-    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'");
+    QVariant value= executeSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'");
     if( value.type() == QVariant::Type::Invalid)
         setMetaInfo(name, newValue);
 }
 void initNumMetaInfo( const QString& name, const double& newValue)
 {   LOG_CALL;
-    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'");
+    QVariant value= executeSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'");
     if( value.type() == QVariant::Type::Invalid)
         setNumMetaInfo(name, newValue);
 }
 QString getMetaInfo(const QString& name)
 {   LOG_CALL_W(name);
-    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'").toString();
+    QVariant value= executeSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'").toString();
     if( value.type() == QVariant::Type::Invalid) {
         qInfo() << "read empty property " << name << "; defaulted to empty string";
         return "";
@@ -102,7 +102,7 @@ QString getMetaInfo(const QString& name)
 double getNumMetaInfo(const QString& name, QSqlDatabase db)
 {   LOG_CALL_W(name);
 
-    QVariant value= ExecuteSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", db);
+    QVariant value= executeSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", db);
     if( value.type() == QVariant::Type::Invalid) {
         qInfo() << "getNumProperty read empty property " << name << " defaulted to 0.";
         return 0.;
@@ -481,20 +481,21 @@ bool create_DB_copy(QString targetfn, bool deper)
 
 QString proposeKennung()
 {   LOG_CALL;
-    int idOffset = getMetaInfo("IdOffset").toInt();
-    int iMaxid = idOffset + getHighestTableId("Vertraege");
+    static int idOffset = getMetaInfo("IdOffset").toInt();
+    static int iMaxid = idOffset + getHighestTableId("Vertraege");
     QString kennung;
     do
     {
         QString maxid = QString::number(iMaxid).rightJustified(6, '0');
         QString PI = "DK-" + getMetaInfo("ProjektInitialen");
         kennung = PI + "-" + QString::number(QDate::currentDate().year()) + "-" + maxid;
-        QVariant v = ExecuteSingleValueSql("id", "Vertraege", "Kennung='" + kennung + "'");
+        QVariant v = executeSingleValueSql("id", "Vertraege", "Kennung='" + kennung + "'");
         if( v.isValid())
             iMaxid++;
         else
             break;
     } while(1);
+    iMaxid++; // prepare for next contract
     return kennung;
 }
 
@@ -541,23 +542,23 @@ QString contractList_SQL(const QVector<dbfield>& fields, const QString& filter)
 
 void calculateSummary(DbSummary& dbs)
 {   LOG_CALL;
-    dbs.AnzahlDkGeber = ExecuteSingleValueSql("count(DISTINCT(KreditorId))", "[Kreditoren],[Vertraege]", "aktiv != 0 AND Kreditoren.id = Vertraege.KreditorId").toInt();
+    dbs.AnzahlDkGeber = executeSingleValueSql("count(DISTINCT(KreditorId))", "[Kreditoren],[Vertraege]", "aktiv != 0 AND Kreditoren.id = Vertraege.KreditorId").toInt();
 
-    dbs.AnzahlAuszahlende = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0").toInt();
-    dbs.BetragAuszahlende = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0").toReal();
+    dbs.AnzahlAuszahlende = executeSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0").toInt();
+    dbs.BetragAuszahlende = executeSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0").toReal();
 
-    dbs.AnzahlThesaurierende= ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0").toInt();
-    dbs.BetragThesaurierende= ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0").toReal();
-    dbs.WertThesaurierende  = ExecuteSingleValueSql("SUM([Wert])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0").toReal();
+    dbs.AnzahlThesaurierende= executeSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0").toInt();
+    dbs.BetragThesaurierende= executeSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0").toReal();
+    dbs.WertThesaurierende  = executeSingleValueSql("SUM([Wert])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0").toReal();
 
-    dbs.AnzahlAktive  = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0").toInt();
-    dbs.BetragAktive  = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0").toReal();
+    dbs.AnzahlAktive  = executeSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0").toInt();
+    dbs.BetragAktive  = executeSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0").toReal();
     dbs.WertAktive    = dbs.BetragAuszahlende+dbs.WertThesaurierende;
 
-    dbs.DurchschnittZins = ExecuteSingleValueSql("SELECT SUM( w*z ) / SUM( W ) FROM  (SELECT MAX(Betrag, Wert) AS W, Zinssaetze.Zinssatz AS Z FROM Vertraege, Zinssaetze WHERE Zinssaetze.id = Vertraege.ZSatz AND Vertraege.aktiv)").toReal();
-    dbs.MittlererZins = ExecuteSingleValueSql("SELECT AVG(Zinssaetze.Zinssatz) FROM Vertraege, Zinssaetze WHERE Zinssaetze.id = Vertraege.ZSatz AND Vertraege.aktiv").toDouble();
-    dbs.AnzahlPassive = ExecuteSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] = 0").toInt();
-    dbs.BetragPassive = ExecuteSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 0").toReal();
+    dbs.DurchschnittZins = executeSingleValueSql("SELECT SUM( w*z ) / SUM( W ) FROM  (SELECT MAX(Betrag, Wert) AS W, Zinssaetze.Zinssatz AS Z FROM Vertraege, Zinssaetze WHERE Zinssaetze.id = Vertraege.ZSatz AND Vertraege.aktiv)").toReal();
+    dbs.MittlererZins = executeSingleValueSql("SELECT AVG(Zinssaetze.Zinssatz) FROM Vertraege, Zinssaetze WHERE Zinssaetze.id = Vertraege.ZSatz AND Vertraege.aktiv").toDouble();
+    dbs.AnzahlPassive = executeSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] = 0").toInt();
+    dbs.BetragPassive = executeSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 0").toReal();
 }
 bool createCsvActiveContracts()
 {   LOG_CALL;

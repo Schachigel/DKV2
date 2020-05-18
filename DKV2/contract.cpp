@@ -65,8 +65,8 @@ int contract::saveNewContract()
     return -1;
 }
 
-contract randomContract(qlonglong creditorId)
-{
+contract saveRandomContract(qlonglong creditorId)
+{   LOG_CALL;
     static QRandomGenerator *rand = QRandomGenerator::system();
 
     contract c;
@@ -75,19 +75,27 @@ contract randomContract(qlonglong creditorId)
     c.setReinvesting(rand->bounded(100)%4);
     c.setInterestRate(1 +rand->bounded(149));
     c.setPlannedInvest(rand->bounded(50)*1000. + rand->bounded(10)*100.);
+    c.setConclusionDate(QDate::currentDate().addYears(-2).addDays(rand->bounded(720)));
     if( rand->bounded(100)%3) {
-        QDate enddate;
-        do {
-        enddate = QDate(rand->bounded(4), rand->bounded(12), rand->bounded(31));
-        } while( !enddate.isValid());
-        c.setPlannedEndDate(enddate);
+        c.setPlannedEndDate(c.conclusionDate().addYears(rand->bounded(3)).addMonths(rand->bounded(12)));
     }
     else {
         c.setNoticePeriod(3 + rand->bounded(21));
     }
-    QDate cd{QDate::currentDate()};
-    cd = cd.addYears(-2).addDays(rand->bounded(720));
-    c.setConclusionDate(cd);
+    c.saveNewContract();
     return c;
+}
+void saveRandomContracts(int count)
+{   LOG_CALL;
+    static QRandomGenerator* rand = QRandomGenerator::system();
+    Q_ASSERT(count>0);
+    QVector<QVariant> creditorIds = executeSingleColumnSql("id", "Kreditoren");
+    if( creditorIds.size() == 0) {
+        qDebug() << "No Creditors to create contracts for";
+    }
+    for (int i = 0; i<count; i++)
+    {
+        saveRandomContract(creditorIds[rand->bounded(creditorIds.size())].toLongLong());
+    }
 }
 

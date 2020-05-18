@@ -34,7 +34,7 @@ bool creditor::operator==(const creditor& c) const
 bool creditor::fromDb( int i)
 {   LOG_CALL;
 
-    QSqlRecord rec = ExecuteSingleRecordSql(dkdbstructur["Kreditoren"].Fields(), "id="+QString::number(i));
+    QSqlRecord rec = executeSingleRecordSql(dkdbstructur["Kreditoren"].Fields(), "id="+QString::number(i));
     if( rec.isEmpty()) return false;
     for(int i=0; i<rec.count(); i++)
     {
@@ -164,7 +164,7 @@ void creditor::KreditorenListeMitId(QList<QPair<int,QString>> &entries) const
     }
 }
 
-creditor randomCreditor()
+creditor saveRandomCreditor()
 {
     static QRandomGenerator* rand { QRandomGenerator::system()};
     creditor c;
@@ -184,29 +184,14 @@ creditor randomCreditor()
     c.setEmail(email);
     c.setIban(ibans[rand->bounded(ibans.count())]);
     c.setBic("bic...         .");
-    QString error;
-    Q_ASSERT(c.isValid(error));
+    Q_ASSERT(c.isValid());
+    c.save();
     return c;
 }
 
-bool randomCreditors(int count)
+void saveRandomCreditors(int count)
 {
-    Q_ASSERT(count);
+    Q_ASSERT(count>0);
     for( int i = 0; i< count; i++)
-    {
-        bool creditorIsValidAndSaved = false;
-        creditor c = randomCreditor();
-        do {
-            if( !c.isValid()) break;
-            if( c.save() < 0) break;
-            creditorIsValidAndSaved = true;
-        } while(false);
-        if(creditorIsValidAndSaved)
-            continue;
-        else {
-            qCritical() << "mass creditor creation failed";
-            return false;
-        }
-    }
-    return true;
+        saveRandomCreditor();
 }

@@ -18,12 +18,14 @@ bool ensureTable(const dbtable& table, QSqlDatabase db = QSqlDatabase::database(
 
 QVector<QString> getFieldsFromTablename(const QString& tablename, QSqlDatabase db = QSqlDatabase::database());
 
-QString SelectQueryFromFields(const QVector<dbfield>& fields, const QString& where);
+QString selectQueryFromFields(const QVector<dbfield>& fields, const QString& where);
 
-QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString& where);
+QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where);
 
-QVariant ExecuteSingleValueSql(const QString& s, QSqlDatabase db = QSqlDatabase::database());
-QVariant   ExecuteSingleValueSql( const QString& field, const QString& table, const QString& where, QSqlDatabase db = QSqlDatabase::database());
+QVariant executeSingleValueSql(const QString& s, QSqlDatabase db = QSqlDatabase::database());
+QVariant executeSingleValueSql(const QString& field, const QString& table, const QString& where = "", QSqlDatabase db = QSqlDatabase::database());
+
+QVector<QVariant> executeSingleColumnSql( const QString& field, const QString& table, const QString& where="");
 
 int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant& newValue, const QString& where);
 

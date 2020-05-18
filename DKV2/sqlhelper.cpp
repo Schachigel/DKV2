@@ -88,8 +88,8 @@ QVector<QString> getFieldsFromTablename(const QString& tablename, QSqlDatabase d
     return result;
 }
 
-QString SelectQueryFromFields(const QVector<dbfield>& fields, const QString& where)
-{   LOG_CALL;
+QString selectQueryFromFields(const QVector<dbfield>& fields, const QString& where)
+{   //LOG_CALL;
     QString Select ("SELECT ");
     QString From ("FROM ");
     QString Where("WHERE " + where);
@@ -117,13 +117,13 @@ QString SelectQueryFromFields(const QVector<dbfield>& fields, const QString& whe
         }
     }
     QString Query = Select + " " + From + " " + Where;
-    qDebug() << "Created Query: " << Query;
+    qInfo() << "selectQueryFromFields created Query: " << Query;
     return Query;
 }
 
-QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString& where)
-{   LOG_CALL;
-    QString sql = SelectQueryFromFields(fields, where);
+QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where)
+{   //LOG_CALL;
+    QString sql = selectQueryFromFields(fields, where);
     qDebug() << "ExecuteSingleRecordSql:\n" << sql;
     QSqlQuery q;
     q.prepare(sql);
@@ -141,7 +141,7 @@ QSqlRecord ExecuteSingleRecordSql(const QVector<dbfield>& fields, const QString&
     return q.record();
 }
 
-QVariant ExecuteSingleValueSql(const QString& s, QSqlDatabase db)
+QVariant executeSingleValueSql(const QString& s, QSqlDatabase db)
 {   LOG_CALL_W(s);
     QSqlQuery q(db);
     q.prepare(s);
@@ -164,10 +164,24 @@ QVariant ExecuteSingleValueSql(const QString& s, QSqlDatabase db)
     return q.value(0);
 }
 
-QVariant ExecuteSingleValueSql( const QString& field, const QString& table, const QString& where, QSqlDatabase db)
+QVariant executeSingleValueSql( const QString& field, const QString& table, const QString& where, QSqlDatabase db)
+{//   LOG_CALL;
+    QString sql = "SELECT " + field + " FROM " + table + (where.isEmpty()? "" : (" WHERE " + where));
+    return executeSingleValueSql(sql, db);
+}
+
+QVector<QVariant> executeSingleColumnSql( const QString& field, const QString& table, const QString& where)
 {   LOG_CALL;
-    QString sql = "SELECT " + field + " FROM " + table + " WHERE " + where;
-    return ExecuteSingleValueSql(sql);
+    QVector<QVariant> result;
+    QSqlQuery q;
+    if( q.exec("SELECT " + field + " FROM " + table + (where.isEmpty()? "" : (" WHERE " + where))))
+        while( q.next()) {
+            result.push_back(q.record().value(0));
+        }
+    else
+        qCritical() << "SingleColumnSql failed " << q.lastError() << endl << q.lastQuery();
+
+    return result;
 }
 
 int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant& newValue, const QString& where)
@@ -199,7 +213,7 @@ int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant&
 int getHighestTableId(const QString& tablename)
 {   LOG_CALL;
     QString sql = "SELECT max(ROWID) FROM " + tablename;
-    return ExecuteSingleValueSql(sql).toInt();
+    return executeSingleValueSql(sql).toInt();
 }
 
 QString JsonFromRecord( QSqlRecord r)

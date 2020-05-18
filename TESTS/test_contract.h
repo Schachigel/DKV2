@@ -23,6 +23,7 @@ private slots:
     // the actual tests
     void test_createContract();
     void test_randomContract();
+    void test_randomContracts();
 };
 
 #endif // TEST_CONTRACT_H

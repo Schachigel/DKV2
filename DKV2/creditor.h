@@ -61,7 +61,7 @@ extern QList<QString> emailprovider;// {"gmail.com", "googlemail.com", "mailbox.
 extern QList<QString> ibans;//  {"BG80BNBG96611020345678", "DE38531742365852502530", "DE63364408232964251731", "DE38737364268384258531", "DE69037950954001627624", "DE63377045386819730665", "DE18851420444163951769", "DE77921850720298609321", "DE70402696485599313572", "DE70455395581860402838", "DE94045704387963352767", "DE30724236236062816411", "DE62772043290447861437", "DE33387723124963875990", "DE15867719874951165967", "DE96720348741083219766", "DE23152931057149592044", "DE13220161295670898833", "DE49737651031822324605", "DE38017168378078601588", "DE07717138875827514267"};
 extern QList <QPair<QString, QString>> Cities;// {{"68305", "Mannheim"}, {"69123", "Heidelberg"}, {"69123", "Karlsruhe"}, {"90345", "Hamburg"}, {"90334", "Rottenburg"}, {"23345", "Reinfeld"}, {"83475", "Dresden"}, {"35725", "Weissnich"}, {"23245", "Drieben"}};
 // for testing
-creditor randomCreditor();
-bool randomCreditors( int i);
+creditor saveRandomCreditor();
+void saveRandomCreditors( int i);
 
 #endif // KREDITOR_H
