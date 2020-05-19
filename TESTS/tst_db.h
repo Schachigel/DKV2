@@ -11,7 +11,6 @@ public:
     ~tst_db() {}
 
 private:
-    const QString filename = "..\\data\\testdb.sqlite";
 
 signals:
 
@@ -20,6 +19,7 @@ private slots:
     //    void cleanupTestCase();
     void init();
     void cleanup();
+    void test_init_and_cleanup();
     void test_createSimpleTable();
     void test_failCreatingTable();
     void test_createSimpleTable2();

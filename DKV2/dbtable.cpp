@@ -65,7 +65,7 @@ TableDataInserter::TableDataInserter(const dbtable& t)
 }
 
 void TableDataInserter::init(const dbtable& t)
-{   LOG_CALL;
+{   //LOG_CALL;
     tablename = t.Name();
     for (auto dbfield : t.Fields()) {
         QSqlField sqlField(dbfield.name(), dbfield.type(), tablename);

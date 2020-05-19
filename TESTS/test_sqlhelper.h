@@ -11,7 +11,6 @@ public:
     explicit test_sqlhelper(QObject *parent = nullptr);
 
 private:
-    QSqlQuery sqlValQuery;
 
 signals:
 
@@ -20,6 +19,7 @@ private slots:
     void cleanupTestCase();
     // void init();
     // void cleanup();
+    void test_sqlValInt();
     void test_sqlValBool();
     void test_sqlValDouble();
     void test_sqlValString();

@@ -10,11 +10,8 @@
 
 #include "test_sqlhelper.h"
 
-
-
 test_sqlhelper::test_sqlhelper(QObject *parent) : QObject(parent)
 {
-
 }
 
 void test_sqlhelper::initTestCase()
@@ -22,29 +19,19 @@ void test_sqlhelper::initTestCase()
     LOG_CALL;
     initTestDb();
 
-    bool b = false;
     QSqlQuery query;
-    b = query.exec("CREATE TABLE testSqlVal "
+    QVERIFY( query.exec("CREATE TABLE testSqlVal "
                "(id integer primary key, "
                "valBool INTEGER, "
                "valDouble REAL, "
                "valString STRING, "
-               "valDate STRING)");
-    QVERIFY( b );
-    b = query.exec("INSERT INTO testSqlVal VALUES "
+               "valDate STRING)"));
+    QVERIFY( query.exec("INSERT INTO testSqlVal VALUES "
                "(1, "
                "1, "
                "1.1, "
                "'teststring', "
-               "'2019-01-01 00:00:00.000')");
-    QVERIFY( b );
-    sqlValQuery  = QSqlQuery();
-    b = sqlValQuery.exec("SELECT * FROM testSqlVal");
-    QVERIFY( b );
-    b = sqlValQuery.first();
-    QVERIFY( b );
-    int id = sqlVal<int>(sqlValQuery, "id");
-    QVERIFY( (id==1) );
+               "'2019-01-01 00:00:00.000')"));
 }
 
 void test_sqlhelper::cleanupTestCase()
@@ -69,28 +56,38 @@ void test_sqlhelper::test_tableExists()
     QVERIFY2(!tableExists("notExistingTable"), "test of tableExists faild on NOT existing table");
 }
 
+void test_sqlhelper::test_sqlValInt()
+{
+    QSqlQuery sqlValQuery("SELECT * FROM testSqlVal");
+    QVERIFY( sqlValQuery.first());
+    QVERIFY( 1 == sqlVal<int>(sqlValQuery, "id"));
+}
+
 void test_sqlhelper::test_sqlValBool()
 {
-    bool valBool = sqlVal<bool>(sqlValQuery, "valBool");
-    QCOMPARE( valBool, true );
+    QSqlQuery sqlValQuery("SELECT * FROM testSqlVal");
+    QVERIFY( sqlValQuery.first());
+    QVERIFY(sqlVal<bool>(sqlValQuery, "valBool"));
 };
 
 void test_sqlhelper::test_sqlValDouble()
 {
-    double valDouble = sqlVal<double>(sqlValQuery, "valDouble");
-    QCOMPARE( valDouble, 1.1 );
+    QSqlQuery sqlValQuery("SELECT * FROM testSqlVal");
+    QVERIFY( sqlValQuery.first());
+    QCOMPARE( sqlVal<double>(sqlValQuery, "valDouble"), 1.1 );
 };
 
 void test_sqlhelper::test_sqlValString()
 {
-    QString valString = sqlVal<QString>(sqlValQuery, "valString");
-    QCOMPARE( valString, QString("teststring") );
-
+    QSqlQuery sqlValQuery("SELECT * FROM testSqlVal");
+    QVERIFY( sqlValQuery.first());
+    QCOMPARE( sqlVal<QString>(sqlValQuery, "valString"), QString("teststring") );
 };
 
 void test_sqlhelper::test_sqlValDate()
 {
-    QDate valDate = sqlVal<QDate>(sqlValQuery, "valDate");
-    QCOMPARE( valDate, QDate(2019, 1, 1) );
+    QSqlQuery sqlValQuery("SELECT * FROM testSqlVal");
+    QVERIFY( sqlValQuery.first());
+    QCOMPARE( sqlVal<QDate>(sqlValQuery, "valDate"), QDate(2019, 1, 1) );
 };
 

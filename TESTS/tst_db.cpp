@@ -5,7 +5,6 @@
 #include <QSqlQuery>
 #include <QString>
 
-//#include "../DKV2/dbstructure.h"
 #include "../DKV2/dbtable.h"
 #include "../DKV2/creditor.h"
 #include "../DKV2/dkdbhelper.h"
@@ -18,7 +17,6 @@
 
 void tst_db::initTestCase()
 {
-    init_DKDBStruct();
 }
 
 void tst_db::init()
@@ -29,6 +27,10 @@ void tst_db::init()
 void tst_db::cleanup()
 {   LOG_CALL;
     cleanupTestDb();
+}
+
+void tst_db::test_init_and_cleanup()
+{
 }
 
 void tst_db::test_createSimpleTable()
@@ -78,7 +80,7 @@ void tst_db::test_SimpleTableAddData()
                         .appendTable(dbtable("cities").append(dbfield("plz")));
 
     QVERIFY2(s.createDb(), "Database was not created");
-    QVERIFY2(QFile::exists(filename), "No database file found");
+    QVERIFY2(QFile::exists(testDbFilename), "No database file found");
 
     TableDataInserter tdi(s["Ad"]);
     tdi.setValue("vname", QVariant("Holger"));
@@ -161,7 +163,7 @@ void tst_db::test_addRecords_wDep()
     tdiChild1.setValue("pid", QVariant(1)); // should work
     QVERIFY( 0<= tdiChild1.InsertData());
 
-    qDebug() << "add invalid depending data sets" << endl;
+    qDebug() << "add INVALID depending data sets" << endl;
     TableDataInserter tdiChild2(s["c"]);
     tdiChild2.setValue("pid", 2); // should fail - no matching parent in table p
     QVERIFY( 0> tdiChild2.InsertData());
@@ -184,7 +186,7 @@ void tst_db::test_deleteRecord_wDep()
                 s["p"]["id"],
                 dbfield::refIntOption::onDeleteCascade)));
     QVERIFY2(s.createDb(), "Database was not created");
-    QVERIFY2(QFile::exists(filename), "No database file found");
+    QVERIFY2(QFile::exists(testDbFilename), "No database file found");
 
     TableDataInserter tdi(s["p"]);
     tdi.setValue("name", "Holger");
