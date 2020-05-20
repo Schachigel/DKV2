@@ -15,25 +15,25 @@
 #include "tst_db.h"
 // add necessary includes here
 
-void tst_db::initTestCase()
+void test_db::initTestCase()
 {
 }
 
-void tst_db::init()
+void test_db::init()
 {   LOG_CALL;
     initTestDb();
 }
 
-void tst_db::cleanup()
+void test_db::cleanup()
 {   LOG_CALL;
     cleanupTestDb();
 }
 
-void tst_db::test_init_and_cleanup()
+void test_db::test_init_and_cleanup()
 {
 }
 
-void tst_db::test_createSimpleTable()
+void test_db::test_createSimpleTable()
 {
     dbstructure s;
     dbtable t("t");
@@ -46,7 +46,7 @@ void tst_db::test_createSimpleTable()
     QVERIFY2(dbTableHasField("t", "f"), "Field was not created");
 }
 
-void tst_db::test_failCreatingTable()
+void test_db::test_failCreatingTable()
 {
 
     dbstructure s;
@@ -59,7 +59,7 @@ void tst_db::test_failCreatingTable()
     QVERIFY2(!dbHasTable("t"), "Table was created but shouldn't");
 }
 
-void tst_db::test_createSimpleTable2()
+void test_db::test_createSimpleTable2()
 {
     dbstructure s = dbstructure()
                         .appendTable(dbtable("Ad").append(dbfield("vname")).append(dbfield("nname")))
@@ -73,7 +73,7 @@ void tst_db::test_createSimpleTable2()
     QVERIFY2(dbTableHasField("cities", "plz"), "Field not found");
 }
 
-void tst_db::test_SimpleTableAddData()
+void test_db::test_SimpleTableAddData()
 {
     dbstructure s = dbstructure()
                         .appendTable(dbtable("Ad").append(dbfield("vname")).append(dbfield("nname")))
@@ -89,7 +89,7 @@ void tst_db::test_SimpleTableAddData()
     QVERIFY(tableRecordCount("Ad") == 1);
 }
 
-void tst_db::test_createSimpleTable_wRefInt()
+void test_db::test_createSimpleTable_wRefInt()
 {
     LOG_CALL;
     dbstructure s;
@@ -113,7 +113,7 @@ void tst_db::test_createSimpleTable_wRefInt()
     QVERIFY2(dbTableHasField("c", "parent"), "table c has no field parent");
 }
 
-void tst_db::test_createSimpleTable_wRefInt2()
+void test_db::test_createSimpleTable_wRefInt2()
 {
     LOG_CALL;
     dbstructure s = dbstructure()
@@ -135,7 +135,7 @@ void tst_db::test_createSimpleTable_wRefInt2()
     QVERIFY2(dbTableHasField("c", "id"), "table c has no field id");
     QVERIFY2(dbTableHasField("c", "pid"), "table c has no field pid");}
 
-void tst_db::test_addRecords_wDep()
+void test_db::test_addRecords_wDep()
 {
     LOG_CALL;
     dbstructure s = dbstructure()
@@ -169,7 +169,7 @@ void tst_db::test_addRecords_wDep()
     QVERIFY( 0> tdiChild2.InsertData());
 }
 
-void tst_db::test_deleteRecord_wDep()
+void test_db::test_deleteRecord_wDep()
 {
     LOG_CALL;
     dbstructure s = dbstructure()
@@ -210,7 +210,7 @@ void tst_db::test_deleteRecord_wDep()
     QVERIFY(tableRecordCount("c") == 0);
 }
 
-void tst_db::dbfieldCopyConst()
+void test_db::dbfieldCopyConst()
 {
     LOG_CALL;
     dbstructure s = dbstructure()
@@ -237,11 +237,9 @@ void tst_db::dbfieldCopyConst()
     QVERIFY(!cp.getReferenzeInfo().name.isEmpty());
 }
 
-void tst_db::newDbIsValid()
+void test_db::newDbIsValid()
 {
     dbgTimer t;
-    // test
     create_DK_databaseContent();
-    //QVERIFY(istValideDatenbank(filename)); // already done in DKDatenbankAnlegen
 }
 

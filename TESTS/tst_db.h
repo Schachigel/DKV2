@@ -3,12 +3,12 @@
 //
 #include <qobject.h>
 
-class tst_db : public QObject
+class test_db : public QObject
 {
     Q_OBJECT
 public:
-    tst_db() {}
-    ~tst_db() {}
+    test_db() {}
+    ~test_db() {}
 
 private:
 
