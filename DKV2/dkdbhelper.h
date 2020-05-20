@@ -20,7 +20,7 @@ extern QList<QPair<qlonglong, QString>> Buchungsarten;
 void init_DKDBStruct();
 
 bool create_DK_databaseFile(const QString& filename);
-bool create_DK_databaseContent(QSqlDatabase db = QSqlDatabase::database());
+bool create_DK_TablesAndContent(QSqlDatabase db = QSqlDatabase::database());
 
 
 bool check_db_version(QSqlDatabase db = QSqlDatabase::database());

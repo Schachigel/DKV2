@@ -125,7 +125,7 @@ void setNumMetaInfo(const QString& name, const double Wert)
         qCritical() << "Failed to insert Meta information " << q.lastError() << endl << q.lastQuery();
 }
 
-bool create_DK_databaseContent(QSqlDatabase db)
+bool create_DK_TablesAndContent(QSqlDatabase db)
 {   LOG_CALL;
     bool ret = true;
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
@@ -165,7 +165,7 @@ bool create_DK_databaseFile(const QString& filename) /*in the default connection
         qCritical() << "DkDatenbankAnlegen failed in db.open";
         return false;
     }
-    return create_DK_databaseContent(db);
+    return create_DK_TablesAndContent(db);
 }
 
 bool has_allTablesAndFields(QSqlDatabase db)

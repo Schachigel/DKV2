@@ -153,14 +153,15 @@ QString TableDataInserter::getUpdateRecordSQL() const
     QString sql("UPDATE " + tablename +" SET ");
     QString where(" WHERE ");
 
-    int alreadySetFields = 0;
+    bool firstField = true;
     for( int i=0; i<record.count(); i++) {
-        if( alreadySetFields>0) sql += ", ";
+        if( ! firstField) sql += ", ";
+        // WARN ! THIS will not work with multiple AutoValues
         if( record.field(i).isAutoValue())
             where += record.field(i).name() + " = " + record.field(i).value().toString();
         else {
             sql += record.field(i).name() + " = " + format4SQL(record.field(i).value());
-            alreadySetFields++;
+            firstField = false;
         }
     }
     sql += where;
@@ -171,7 +172,7 @@ int TableDataInserter::InsertData(QSqlDatabase db) const
 {   // LOG_CALL;
     if( record.isEmpty()) return false;
     QString insertSql = getInsertRecordSQL();
-    qDebug() << "TableDataInserter using " << insertSql;
+    // qDebug() << "TableDataInserter using " << insertSql;
     QSqlQuery q(db);
     bool ret = q.exec(insertSql);
     qlonglong lastRecord = q.lastInsertId().toLongLong();
@@ -179,7 +180,7 @@ int TableDataInserter::InsertData(QSqlDatabase db) const
         qCritical() << "Insert record failed: " << q.lastError() << endl << q.lastQuery() << endl;
         return -1;
     }
-    qDebug() << "successfully inserted Data at index " << q.lastInsertId().toLongLong() << endl <<  q.lastQuery() << endl;
+    qInfo() << "Successfully inserted Data into " << tablename << " at index " << q.lastInsertId().toLongLong() << endl <<  q.lastQuery() << endl;
     return lastRecord;
 }
 

@@ -240,6 +240,6 @@ void test_db::dbfieldCopyConst()
 void test_db::newDbIsValid()
 {
     dbgTimer t;
-    create_DK_databaseContent();
+    create_DK_TablesAndContent();
 }
 

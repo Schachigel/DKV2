@@ -16,7 +16,7 @@ void test_dkdbhelper::initTestCase()
 void test_dkdbhelper::init()
 {   LOG_CALL;
     initTestDb();
-    create_DK_databaseContent();
+    create_DK_TablesAndContent();
 }
 
 void test_dkdbhelper::cleanup()

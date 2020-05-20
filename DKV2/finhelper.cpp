@@ -14,7 +14,7 @@
 //{
 //    return (qRound(d * 1000000))/1000000;
 //}
-double round2dig(const double d)
+double round2(const double d)
 {
     return (qRound(d * 100.))/100.;
 }
@@ -113,10 +113,10 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
 
     if( von.year() == bis.year())
     {
-        return round2dig(double(TageZwischen(von, bis))/360. *zins/100. *wert);
+        return round2(double(TageZwischen(von, bis))/360. *zins/100. *wert);
     }
     int TageImErstenJahr = TageBisJahresende(von); // first day no intrest
-    double ZinsImErstenJahr = round2dig(double(TageImErstenJahr)/360. *zins/100. *wert);
+    double ZinsImErstenJahr = round2(double(TageImErstenJahr)/360. *zins/100. *wert);
     double gesamtZins (ZinsImErstenJahr);
 
     double zwischenWert = (thesa) ? (wert+ZinsImErstenJahr) : (wert);
@@ -128,16 +128,16 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
         gesamtZins += JahresZins; ZinsVolleJahre += JahresZins;
         zwischenWert = (thesa) ? (zwischenWert+JahresZins) : zwischenWert;
     }
-    gesamtZins = round2dig(gesamtZins);
+    gesamtZins = round2(gesamtZins);
     int TageImLetztenJahr = TageSeitJahresAnfang(bis);
-    double ZinsRestjahr = round2dig(double(TageImLetztenJahr)/360. *zins/100. *zwischenWert);
+    double ZinsRestjahr = round2(double(TageImLetztenJahr)/360. *zins/100. *zwischenWert);
     gesamtZins += ZinsRestjahr;
     qDebug().noquote()
         << "\nErstes Jahr : " << ZinsImErstenJahr << "(" << TageImErstenJahr << " Tage)"
         << "\nVolle Jahre : " << ZinsVolleJahre << "(" << jahre << " Jahre)"
         << "\nLetztes Jahr: " << ZinsRestjahr << "(" << TageImLetztenJahr << " Tage)"
         << "\nGesamtzins  : " << gesamtZins << endl;
-    return round2dig(gesamtZins);
+    return round2(gesamtZins);
 }
 
 IbanValidator::IbanValidator() : QRegExpValidator()

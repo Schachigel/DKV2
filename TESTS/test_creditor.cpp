@@ -13,7 +13,7 @@ void test_creditor::initTestCase()
 void test_creditor::init()
 {   LOG_CALL_W("test");
     initTestDb();
-    create_DK_databaseContent();
+    create_DK_TablesAndContent();
 }
 void test_creditor::cleanup()
 {   LOG_CALL;

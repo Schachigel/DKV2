@@ -18,7 +18,7 @@ void test_contract::cleanupTestCase()
 void test_contract::init()
 {   LOG_CALL;
     initTestDb();
-    QVERIFY(create_DK_databaseContent());
+    QVERIFY(create_DK_TablesAndContent());
 }
 void test_contract::cleanup()
 {   LOG_CALL;

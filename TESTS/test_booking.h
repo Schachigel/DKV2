@@ -3,7 +3,7 @@
 
 #include <QSqlDatabase>
 #include <QObject>
-
+#include <QTest>
 #include "testhelper.h"
 
 class test_booking : public QObject
@@ -17,11 +17,12 @@ private:
 signals:
 private slots:
     void initTestCase();
-    void cleanupTestCase();
+    // void cleanupTestCase();
     void init();
     void cleanup();
     // the actual tests
-    void test_createCreditor();
+    void test_createBooking();
+    void test_createDeposits();
 
 };
 
