@@ -2,6 +2,7 @@
 #include <QtTest>
 
 #include "../DKV2/helper.h"
+#include "../DKV2/tabledatainserter.h"
 #include "../DKV2/sqlhelper.h"
 #include "../DKV2/dkdbhelper.h"
 
@@ -22,6 +23,16 @@ void test_dkdbhelper::init()
 void test_dkdbhelper::cleanup()
 {   LOG_CALL;
     cleanupTestDb();
+}
+
+void test_dkdbhelper::test_selectQueryFromFields()
+{   /* this test should be in test_sqlhelper
+    but as the dkdbstructur is useful for this
+    the test was moved here */
+    QVector<dbfield> fields = dkdbstructur["Buchungen"].Fields();
+    QString sql = selectQueryFromFields(fields);
+    qInfo() << sql << endl;
+    QCOMPARE(sql,  "SELECT Buchungen.id, Buchungen.VertragsId, Buchungen.BuchungsArt, Buchungen.Betrag, Buchungen.Datum FROM Buchungen WHERE Vertraege.id=Buchungen.VertragsId");
 }
 
 void test_dkdbhelper::test_querySingleValueInvalidQuery()
@@ -66,61 +77,5 @@ void test_dkdbhelper::test_querySingleValue_multipleResults()
     QVERIFY2(hallo.type() == QVariant::Invalid , "ExecuteSingleValueSql failed");
 }
 
-void test_dkdbhelper::test_berechneZusammenfassung()
-{
-//    dbstructure s = dbstructure()
-//        .appendTable(dbtable("Vertraege")
-//            .append(dbfield("Betrag", QVariant::Double))
-//            .append(dbfield("Wert", QVariant::Double))
-//            .append(dbfield("thesaurierend", QVariant::Bool))
-//            .append(dbfield("aktiv", QVariant::Bool)));
-//    s.createDb(QSqlDatabase::database());
 
-//    TableDataInserter tdi(dkdbstructur["Vertraege"]);
-//    tdi.setValue("Betrag", 100.);
-//    tdi.setValue("Wert", 101.);
-//    tdi.setValue("aktiv", true);
-//    tdi.setValue("thesaurierend", true);
-//    tdi.InsertData(QSqlDatabase::database());
-//    tdi.InsertData(QSqlDatabase::database());
-//    tdi.setValue("Betrag", 200.);
-//    tdi.setValue("Wert", 201.);
-//    tdi.setValue("aktiv", false);
-//    tdi.setValue("thesaurierend", true);
-//    tdi.InsertData(QSqlDatabase::database());
-//    tdi.InsertData(QSqlDatabase::database());
-//    DbSummary dbs;
-//    calculateSummary(dbs);
-//    QCOMPARE(dbs.BetragAktive, 200);
-//    QVERIFY2(dbs.BetragAktive == 100., "Betrag der Aktiven Verträge ist falsch");
-//    QVERIFY(dbs.AnzahlAktive == 2);
-//    QVERIFY(dbs.WertAktive == 202.);
-//    QVERIFY(dbs.BetragPassive == 400.);
 
-}
-
-void test_dkdbhelper::test_ensureTable_existingTable()
-{   LOG_CALL;
-    dbstructure s = dbstructure()
-        .appendTable(dbtable("t")
-            .append(dbfield("id", QVariant::Int))
-            .append(dbfield("f")));
-    s.createDb();
-
-    QVERIFY2(ensureTable(s["t"]), "ensure table for existing table failed");
-}
-
-void test_dkdbhelper::test_ensureTable_notExistingTable()
-{   LOG_CALL;
-    dbstructure s = dbstructure()
-        .appendTable(dbtable("t")
-            .append(dbfield("id", QVariant::Int))
-            .append(dbfield("f")));
-    s.createDb();
-
-    dbtable notExistingTable("notExistingTable");
-    notExistingTable.append(dbfield("id"));
-
-    QVERIFY2(ensureTable(notExistingTable), "ensure table for not existing table failed");
-    QVERIFY2(tableExists("notExistingTable"), "ensure Table of not existing table did not create the table");
-}

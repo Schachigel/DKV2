@@ -1,13 +1,15 @@
+# Project created by me
 
-QT += core testlib sql printsupport
-
-
+QT += core testlib
+QT += sql printsupport
 
 TARGET = tests
 
 TEMPLATE = app
 
-CONFIG += qt warn_on depend_includepath testcase
+CONFIG += qt warn_on testcase
+# CONFIG += depend_includepath # by default anyways
+
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -38,6 +40,7 @@ SOURCES +=  tst_db.cpp \
     ../DKV2/dbtable.cpp \
     ../DKV2/filehelper.cpp \
     ../DKV2/helper.cpp \
+    ../DKV2/tabledatainserter.cpp \
     test_appconfig.cpp \
     test_booking.cpp \
     test_contract.cpp \

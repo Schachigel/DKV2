@@ -6,6 +6,7 @@
 #include <QPair>
 #include <QList>
 
+#include "tabledatainserter.h"
 #include "dkdbhelper.h"
 
 class creditor

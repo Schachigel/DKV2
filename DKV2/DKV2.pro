@@ -1,15 +1,11 @@
-#-------------------------------------------------
-#
 # Project created by QtCreator 2019-09-04T21:33:31
-#
-#-------------------------------------------------
 
-QT       += core gui sql printsupport
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += core
+QT += gui widgets sql printsupport
 
 TARGET = DKV2
 RC_ICONS = "res/logo.ico"
+
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -50,6 +46,7 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         sqlhelper.cpp \
+        tabledatainserter.cpp \
         transaktionen.cpp
 
 HEADERS += \
@@ -75,6 +72,7 @@ HEADERS += \
         letters.h \
         mainwindow.h \
         sqlhelper.h \
+        tabledatainserter.h \
         transaktionen.h
 
 FORMS += \

@@ -8,9 +8,10 @@
 
 #include "helper.h"
 #include "appconfig.h"
-#include "letterTemplate.h"
 #include "dkdbhelper.h"
+#include "tabledatainserter.h"
 #include "sqlhelper.h"
+#include "letterTemplate.h"
 
 QPrinter* letterTemplate::printer =nullptr;
 

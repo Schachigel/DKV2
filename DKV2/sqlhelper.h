@@ -8,17 +8,15 @@
 #include "dbfield.h"
 #include "dbstructure.h"
 
+bool typesAreDbCompatible( QVariant::Type t1, QVariant::Type t2);
+
 bool tableExists(const QString& tablename, QSqlDatabase db = QSqlDatabase::database());
 
 int rowCount(const QString& table);
 
-bool createTables( const dbstructure& structure, QSqlDatabase db = QSqlDatabase::database());
-
 bool ensureTable(const dbtable& table, QSqlDatabase db = QSqlDatabase::database());
 
-QVector<QString> getFieldsFromTablename(const QString& tablename, QSqlDatabase db = QSqlDatabase::database());
-
-QString selectQueryFromFields(const QVector<dbfield>& fields, const QString& where);
+QString selectQueryFromFields(const QVector<dbfield>& fields, const QString& where = "");
 
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where);
 
@@ -27,7 +25,7 @@ QVariant executeSingleValueSql(const QString& field, const QString& table, const
 
 QVector<QVariant> executeSingleColumnSql( const QString& field, const QString& table, const QString& where="");
 
-int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant& newValue, const QString& where);
+//int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant& newValue, const QString& where);
 
 int getHighestTableId(const QString& tablename);
 

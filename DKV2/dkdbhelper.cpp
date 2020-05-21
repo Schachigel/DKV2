@@ -12,6 +12,7 @@
 #include "helper.h"
 #include "filehelper.h"
 #include "appconfig.h"
+#include "tabledatainserter.h"
 #include "sqlhelper.h"
 #include "csvwriter.h"
 #include "finhelper.h"
@@ -36,9 +37,7 @@ void init_DKDBStruct()
     // DB bool -> Variant int
 
     dkdbstructur.appendTable(creditor::getTableDef());
-
     dkdbstructur.appendTable(contract::getTableDef());
-
     dkdbstructur.appendTable(booking::getTableDef());
 
     dbtable meta("Meta");
@@ -132,7 +131,7 @@ bool create_DK_TablesAndContent(QSqlDatabase db)
 
     db.transaction();
     do {
-        if(! (ret &= createTables(dkdbstructur, db))) break;
+        if(! (ret &= dkdbstructur.createDb(db))) break;
         if(! (ret &= insert_Properties())) break;
     } while(false);
 
@@ -276,22 +275,6 @@ bool open_databaseForApplication( QString newDbFile)
     return true;
 }
 
-void check_KfristLaufzeitende(QStringList& msgs)
-{
-    // temporary; fix data corrupted by date edit control (1752 ...)
-    // inaktive Verträge können kein Datum zur Zinsberechnung haben
-    int i = ExecuteUpdateSql("[Vertraege]", "[LetzteZinsberechnung]", "9999-12-31",  "NOT([aktiv]) AND [LetzteZinsberechnung] <> '9999-12-31'");
-    if( i > 0) msgs.append("Inaktive Verträge mit Zinsberechnungsdatum wurden korrigiert");
-
-    // wenn Laufzeitende gültig gesetzt wurde muss Kfrist -1 sein
-    i = ExecuteUpdateSql("[Vertraege]", "[Kfrist]", "-1", "[LaufzeitEnde] <> '9999-12-31' AND [Kfrist] <> -1");
-    if( i > 0) msgs.append("Die Kündigungsfrist von Verträgen mit festem Laufzeitende wurde korrigiert ");
-
-    // inkonsistente Datensätze: ende und KFrist sind nicht gesetzt
-    i = ExecuteUpdateSql("[Vertraege]", "[Kfrist]", "6", "[LaufzeitEnde] == '9999-12-31' AND [Kfrist] < 3");
-    if( i > 0) msgs.append("Die Kündigungsfrist von Verträgen ohne gültigem Laufzeitende wurde angepasst");
-}
-
 void check_Ibans(QStringList& msg)
 {
     IbanValidator iv;
@@ -311,7 +294,6 @@ void check_Ibans(QStringList& msg)
 QStringList check_DbConsistency( )
 {   LOG_CALL;
     QStringList msgs;
-    check_KfristLaufzeitende(msgs);
     check_Ibans(msgs);
     if( msgs.size() > 0)
         msgs.push_front("Prüfen Sie die LOG Datei! ");

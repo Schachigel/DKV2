@@ -5,6 +5,7 @@
 #include <QSqlQuery>
 #include <QString>
 
+#include "../DKV2/tabledatainserter.h"
 #include "../DKV2/dbtable.h"
 #include "../DKV2/creditor.h"
 #include "../DKV2/dkdbhelper.h"
@@ -44,19 +45,6 @@ void test_db::test_createSimpleTable()
 
     QVERIFY2(dbHasTable("t"), "Table was not created");
     QVERIFY2(dbTableHasField("t", "f"), "Field was not created");
-}
-
-void test_db::test_failCreatingTable()
-{
-
-    dbstructure s;
-    dbtable t("t");
-    dbfield f("f");
-    t.append(f);
-    s.appendTable(t);
-//    QVERIFY2(!s.createDb(QSqlDatabase::database("notexistingDb")), "Database was created but shouldn't");
-
-    QVERIFY2(!dbHasTable("t"), "Table was created but shouldn't");
 }
 
 void test_db::test_createSimpleTable2()

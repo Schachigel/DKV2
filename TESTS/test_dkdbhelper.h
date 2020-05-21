@@ -24,12 +24,13 @@ private slots:
     //    void cleanupTestCase();
     void init();
     void cleanup();
+
+    void test_selectQueryFromFields();
+
     void test_querySingleValueInvalidQuery();
     void test_querySingleValue();
     void test_querySingleValue_multipleResults();
-    void test_berechneZusammenfassung();
-    void test_ensureTable_existingTable();
-    void test_ensureTable_notExistingTable();
+
 };
 
 #endif // TEST_DKDBHELPER_H

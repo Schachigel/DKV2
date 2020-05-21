@@ -6,30 +6,32 @@
 #include "helper.h"
 #include "sqlhelper.h"
 
-bool tableExists (const QString& tablename, QSqlDatabase db)
-{   // LOG_CALL_W(tablename);
-    QSqlQuery query(db);
-    query.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='" + tablename + "'");
-    if( !query.exec())
-    {
-        qDebug() << "tableExists: query exec in tableExists failed " << query.lastError() << "  " << query.lastQuery();
-        return false;
-    }
-    if( query.first())
-    {
-        qDebug() << "tableExists: succeded for table " << tablename;
-        return true;
-    }
+bool typesAreDbCompatible( QVariant::Type t1, QVariant::Type t2)
+{
+    if( t1 == t2) return true;
+    if( t1 == QVariant::LongLong) t1 = QVariant::Int;
+    if( t2 == QVariant::LongLong) t2 = QVariant::Int;
+    if( t1 == QVariant::Date) t1 = QVariant::String;
+    if( t2 == QVariant::Date) t2 = QVariant::String;
+    if( t1 == QVariant::Bool) t1 = QVariant::Int;
+    if( t2 == QVariant::Bool) t2 = QVariant::Int;
+    if( t2 == QVariant::Bool) t2 = QVariant::Int;
+    if( t1 == t2) return true;
     return false;
+}
+
+bool tableExists(const QString& tablename, QSqlDatabase db)
+{
+    return db.tables().contains(tablename);
 }
 
 int rowCount(const QString& table)
 {
     QSqlQuery q;
-    if( q.exec( "SELECT rowid FROM " + table))
+    if( q.exec( "SELECT count(*) FROM " + table))
     {
-        q.last();
-        return q.at()+1; // zero based counting
+        q.first();
+        return q.value(0).toInt();
     }
     else
     {
@@ -38,31 +40,29 @@ int rowCount(const QString& table)
     }
 }
 
-bool createTables( const dbstructure& structure, QSqlDatabase db)
-{   dbgTimer timer(__func__);
-
-    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
-    db.transaction();
-    if( structure.createDb())
-    {
-        db.commit();
-        return true;
-    }
-    db.rollback();
-    return false;
-}
-
 bool ensureTable( const dbtable& table, QSqlDatabase db)
 {   LOG_CALL_W(table.Name());
     if( tableExists(table.Name(), db))
     {
-        QVector<QString> fields = getFieldsFromTablename(table.Name(), db);
+        QSqlRecord recordGiven = db.record(table.Name());
+        if( recordGiven.count() != table.Fields().count())
+        {
+            qDebug() << "ensureTable() failed: number of fields mismatch. expected / actual: " << table.Fields().count() << " / " << recordGiven.count();
+            return false;
+        }
         for (int i=0; i < table.Fields().count(); i++)
         {
             QString expectedFieldName = table.Fields()[i].name();
-            if( fields.indexOf(expectedFieldName) == -1 )
+            if( recordGiven.indexOf(expectedFieldName) == -1 )
             {
                 qDebug() << "ensureTable() failed: table exists with wrong field" << expectedFieldName;
+                return false;
+            }
+            QVariant::Type expectedType = table.Fields()[i].type();
+            QVariant::Type  givenType = recordGiven.value(table.Fields()[i].name()).type();
+            if( ! typesAreDbCompatible(expectedType, givenType))
+            {
+                qDebug() << "ensureTable() failed: field type mismatch. expected / actual: " << expectedType << " / " << givenType;
                 return false;
             }
         }
@@ -72,32 +72,21 @@ bool ensureTable( const dbtable& table, QSqlDatabase db)
     return table.create(db);
 }
 
-QVector<QString> getFieldsFromTablename(const QString& tablename, QSqlDatabase db)
-{   LOG_CALL;
-    QVector<QString> result;
-    QSqlQuery query(db);
-    query.prepare("PRAGMA table_info( "+ tablename+ ")");
-    if( !query.exec())
-    {
-        qDebug() << "query exec in getFields failed " << query.lastError();
-        return result;
-    }
-    while (query.next()) {
-        result.append(query.value(1).toString());
-    }
-    return result;
-}
-
-QString selectQueryFromFields(const QVector<dbfield>& fields, const QString& where)
+QString selectQueryFromFields(const QVector<dbfield>& fields, const QString& incomingWhere)
 {   //LOG_CALL;
+
     QString Select ("SELECT ");
     QString From ("FROM ");
-    QString Where("WHERE " + where);
+    QString calculatedWhere;
 
     QStringList usedTables;
     for(int i=0; i < fields.count(); i++)
     {
         const dbfield& f = fields[i];
+        if( f.tableName().isEmpty())
+            qCritical() << "selectQueryFromFields: missing table name";
+        if( f.name().isEmpty())
+            qCritical() << "selectQueryFromFields: missing field name";
         if( i!=0)
             Select += ", ";
         Select += f.tableName() + "." + f.name();
@@ -113,9 +102,20 @@ QString selectQueryFromFields(const QVector<dbfield>& fields, const QString& whe
         refFieldInfo ref = f.getReferenzeInfo();
         if( !ref.tablename.isEmpty())
         {
-            Where += " AND [" + ref.tablename + "].[" + ref.name + "]=[" + f.tableName() +"].[" + f.name() +"]";
+            if( ! calculatedWhere.isEmpty()) calculatedWhere += " AND ";
+            calculatedWhere += ref.tablename + "." + ref.name + "=" + f.tableName() +"." + f.name();
         }
     }
+    QString Where;
+    if( incomingWhere.isEmpty() && calculatedWhere.isEmpty())
+        Where = "";
+    else if( incomingWhere.isEmpty())
+        Where = "WHERE " + calculatedWhere;
+    else if( calculatedWhere.isEmpty())
+        Where = "WHERE " + incomingWhere;
+    else
+        Where = "WHERE " + incomingWhere + " AND " + calculatedWhere;
+
     QString Query = Select + " " + From + " " + Where;
     qInfo() << "selectQueryFromFields created Query: " << Query;
     return Query;
@@ -141,11 +141,10 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
     return q.record();
 }
 
-QVariant executeSingleValueSql(const QString& s, QSqlDatabase db)
-{   LOG_CALL_W(s);
+QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db)
+{   LOG_CALL_W(sql);
     QSqlQuery q(db);
-    q.prepare(s);
-    if( !q.exec())
+    if( !q.exec(sql))
     {
         qCritical() << "SingleValueSql failed to execute: " << q.lastError() << endl << q.lastQuery() << endl;;
         return QVariant();
@@ -184,31 +183,31 @@ QVector<QVariant> executeSingleColumnSql( const QString& field, const QString& t
     return result;
 }
 
-int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant& newValue, const QString& where)
-{   LOG_CALL;
-    QString sql = "UPDATE " + table;
-    sql += " SET " + field + " = ";
+//int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant& newValue, const QString& where)
+//{   LOG_CALL;
+//    QString sql = "UPDATE " + table;
+//    sql += " SET " + field + " = ";
 
-    QString value (newValue.toString());
-    if( value[0] != "'") value.push_front("'");
-    if( value[value.size()-1] != "'") value.push_back("'");
+//    QString value (newValue.toString());
+//    if( value[0] != "'") value.push_front("'");
+//    if( value[value.size()-1] != "'") value.push_back("'");
 
-    sql += value;
-    sql += " WHERE " + where;
-    QSqlQuery q;
-    q.prepare(sql);
-    if( q.exec())
-    {
-        qDebug() << "successfully executed update sql " << q.lastQuery();
-        if( q.numRowsAffected())
-            qDebug() << q.numRowsAffected() << " record were modified";
+//    sql += value;
+//    sql += " WHERE " + where;
+//    QSqlQuery q;
+//    q.prepare(sql);
+//    if( q.exec())
+//    {
+//        qDebug() << "successfully executed update sql " << q.lastQuery();
+//        if( q.numRowsAffected())
+//            qDebug() << q.numRowsAffected() << " record were modified";
 
-        return q.numRowsAffected();
-    }
-    qCritical() << "faild to execute update sql: " << q.lastError()
-                << endl << q.lastQuery();
-    return -1;
-}
+//        return q.numRowsAffected();
+//    }
+//    qCritical() << "faild to execute update sql: " << q.lastError()
+//                << endl << q.lastQuery();
+//    return -1;
+//}
 
 int getHighestTableId(const QString& tablename)
 {   LOG_CALL;
