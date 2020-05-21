@@ -14,14 +14,22 @@
 #include "sqlhelper.h"
 
 extern dbstructure dkdbstructur;
-
-extern QList<QPair<qlonglong, QString>> Buchungsarten;
-
+// THE structure of our database the single source of truth
 void init_DKDBStruct();
+
+// db config info in 'meta' table
+// init = write only if not set
+void initMetaInfo( const QString& name, const QString& wert);
+void initNumMetaInfo( const QString& name, const double& wert);
+// reading
+QString getMetaInfo(const QString& name);
+double getNumMetaInfo(const QString& name, QSqlDatabase db = QSqlDatabase::database());
+// writing
+void setMetaInfo(const QString& name, const QString& value);
+void setNumMetaInfo(const QString& name, const double Wert);
 
 bool create_DK_databaseFile(const QString& filename);
 bool create_DK_TablesAndContent(QSqlDatabase db = QSqlDatabase::database());
-
 
 bool check_db_version(QSqlDatabase db = QSqlDatabase::database());
 bool isValidDatabase(const QString& filename);
@@ -29,7 +37,6 @@ bool isValidDatabase(QSqlDatabase db = QSqlDatabase::database());
 
 void closeDatabaseConnection(QString connection= QSqlDatabase::defaultConnection);
 bool open_databaseForApplication( QString newDbFile="");
-QStringList check_DbConsistency( );
 
 bool create_DB_copy(QString targetfn, bool anonym);
 
@@ -46,13 +53,6 @@ QString contractList_SELECT(QVector<dbfield>& f);
 QString contractList_FROM();
 QString contractList_WHERE(const QString& filter);
 QString contractList_SQL(const QVector<dbfield>& f, const QString& filter);
-
-void initMetaInfo( const QString& name, const QString& wert);
-void initNumMetaInfo( const QString& name, const double& wert);
-QString getMetaInfo(const QString& name);
-double getNumMetaInfo(const QString& name, QSqlDatabase db = QSqlDatabase::database());
-void setMetaInfo(const QString& name, const QString& value);
-void setNumMetaInfo(const QString& name, const double Wert);
 
 bool createCsvActiveContracts();
 

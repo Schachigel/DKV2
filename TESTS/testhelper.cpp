@@ -5,6 +5,7 @@
 #include <qdebug.h>
 #include <QTest>
 
+#include "../DKV2/dkdbhelper.h"
 #include "testhelper.h"
 
 
@@ -18,16 +19,12 @@ void initTestDb()
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(testDbFilename);
     QVERIFY(db.open());
-    QSqlQuery enableRefInt;
-    QVERIFY2(enableRefInt.exec("PRAGMA foreign_keys = ON"),
-             enableRefInt.lastError().text().toLocal8Bit().data());
     QVERIFY2( QFile::exists(testDbFilename), "create database failed." );
 }
 
 void cleanupTestDb()
 {
-    QSqlDatabase::database().close();
-    QSqlDatabase::removeDatabase("qt_sql_default_connection");
+    closeDatabaseConnection();
     if (QFile::exists(testDbFilename))
         QFile::remove(testDbFilename);
     QDir().rmdir("..\\data");

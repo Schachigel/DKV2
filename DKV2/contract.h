@@ -21,22 +21,31 @@ struct contract
     // getter & setter
     void setId(qlonglong id) { td.setValue("id", id);}
     qlonglong id() const{ return td.getValue("id").toLongLong();}
+
     void setCreditorId(qlonglong kid) {td.setValue("kreditorId", kid);}
     qlonglong creditorId() const{ return td.getValue("KreditorId").toLongLong();}
+
     void setLabel(QString l) { return td.setValue("Kennung", l);}
     QString label() const { return td.getValue("Kennung").toString();};
+
     void setInterestRate( int percentpercent) {td.setValue("ZSatz", percentpercent);}
     void setInterestRate( double percent) {td.setValue("ZSatz", int(percent*100));}
+
     double interestRate() const { return double(td.getValue("ZSatz").toInt())/100.;}
-    int interestRateInt() const { return td.getValue("ZSatz").toDouble()*100;}
+    int interestRateInt() const { return td.getValue("ZSatz").toInt()*100;}
+
     void setPlannedInvest(int i) { td.setValue("Betrag", i);}
     int plannedInvest() const { return td.getValue("Betrag").toInt();}
+
     void setReinvesting( bool b) { td.setValue("thesaurierend", b);}
     bool reinvesting() const { return (td.getValue("thesaurierend").toInt() != 0);}
+
     void setNoticePeriod(int m) { td.setValue("Kfrist", m); if( -1 != m) setPlannedEndDate( EndOfTheFuckingWorld);}
     int noticePeriod() const { return td.getValue("Kfrist").toInt();}
+
     void setPlannedEndDate( QDate d) { td.setValue("LaufzeitEnde", d); if( d != EndOfTheFuckingWorld) setNoticePeriod(-1);}
     QDate plannedEndDate() const { return td.getValue("LaufzeitEnde").toDate();}
+
     void setConclusionDate(QDate d) { td.setValue("Vertragsdatum", d);}
     QDate conclusionDate() const { return td.getValue("Vertragsdatum").toDate();}
 

@@ -131,11 +131,7 @@ void MainWindow::prepareWelcomeMsg()
 {   LOG_CALL;
     busycursor b;
     QString messageHtml = "<table width='100%'><tr><td><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></td></tr>";
-
-    QStringList warnings = check_DbConsistency( );
-    foreach(QString warning, warnings) {
-        messageHtml += "<tr><td><font color='red'>" +warning +"</font></td></tr>";
-    }
+// todo: add DK status information
     messageHtml += "<tr><td><img src=\":/res/splash.png\"/></td></tr></table>";
     qDebug() <<"welcome Screen html: " << endl << messageHtml << endl;
     ui->teWelcome->setText(messageHtml);
