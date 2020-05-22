@@ -8,22 +8,25 @@
 
 class dbstructure;
 
-class dbtable
+struct dbtable
 {
     friend class dbstructure;
-public:
     // constr. destr. & access fu
     dbtable(QString n="") : name(n) {}
     QString Name() const {return name;}
     QVector<dbfield> Fields() const { return fields;}
+    QVector<dbForeignKey> ForeignKeys() const {return foreignKeys;}
     dbfield operator[](QString s) const;
     // interface
     dbtable append(const dbfield&);
+    dbtable append(const dbForeignKey&);
     void setUnique(const QVector<dbfield>& fs);
     bool create(QSqlDatabase db = QSqlDatabase::database()) const;
 private:
     QString name;
     QString unique;
+    // QVector<QString> uniqueSet;
+    QVector<dbForeignKey> foreignKeys;
     QVector<dbfield> fields;
     // helper
     QString createTableSql() const;

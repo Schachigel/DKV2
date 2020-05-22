@@ -20,7 +20,7 @@ void TableDataInserter::init(const dbtable& t)
 
 void TableDataInserter::setValue(const QString& n, const QVariant& v)
 {   // LOG_CALL_W(n);
-    qInfo() << "tableinserter setValue: " << n << " -> " << v ;
+    qInfo() << "tableDataInserter setValue: " << n << " -> " << v ;
     if( n.isEmpty()) return;
     if( record.contains(n)) {
         if( record.field(n).type() == v.type())
@@ -38,20 +38,29 @@ void TableDataInserter::setValue(const QString& n, const QVariant& v)
 QString format4SQL(QVariant v)
 {
     if( v.isNull() || !v.isValid())
-        return "NULL";
+        return "''";
     QString s;
     switch(v.type())
     {
-    case QVariant::Double:
-    {   double d(v.toDouble());
-        s = QString::number(d, 'f', 2);
+    case QVariant::Date: {
+        s = v.toDate().toString(Qt::ISODate);
+    }
+    case QVariant::Double: {
+        s = QString::number(v.toDouble(), 'f', 2);
         break;
     }
     case QVariant::Bool:
-        s = (v.toBool())? "1" : "0";
+        s = (v.toBool()) ? "1" : "0";
+        break;
+    case QVariant::Int:
+    case QVariant::LongLong:
+        s = QString::number(v.toInt());
         break;
     case QVariant::String:
+        s = v.toString();
+        break;
     default:
+        qDebug() << "format4SQL defaulted " << v;
         s = v.toString();
     }
     return "'" + s +"'";
@@ -60,17 +69,27 @@ QString format4SQL(QVariant v)
 QString TableDataInserter::getInsertRecordSQL() const
 {//   LOG_CALL;
     if( record.isEmpty()) return QString();
-    QString sql("INSERT INTO " + tablename +" VALUES (");
+    QString FieldList;
+    QString ValueList;
 
     for( int i=0; i<record.count(); i++) {
-        if( i>0) sql += ", ";
-        if( record.field(i).isAutoValue())
-            sql += "NULL";
+        if( i==0)
+            FieldList = ValueList = "(";
         else {
-            sql += format4SQL(record.field(i).value());
+            FieldList +=", ";
+            ValueList +=", ";
+        }
+        FieldList += record.field(i).name();
+        if( record.field(i).isAutoValue())
+            ValueList += "NULL";
+        else {
+            ValueList += format4SQL(record.field(i).value());
         }
     }
-    sql +=")";
+    QString sql("INSERT INTO " + tablename + " ");
+    sql += FieldList +  ") VALUES ";
+    sql += ValueList + ")";
+    qDebug() << "insertRecordSql: " << sql;
     return sql;
 }
 
@@ -115,7 +134,6 @@ int TableDataInserter::InsertData(QSqlDatabase db) const
 {   // LOG_CALL;
     if( record.isEmpty()) return false;
     QString insertSql = getInsertRecordSQL();
-    // qDebug() << "TableDataInserter using " << insertSql;
     QSqlQuery q(db);
     bool ret = q.exec(insertSql);
     qlonglong lastRecord = q.lastInsertId().toLongLong();

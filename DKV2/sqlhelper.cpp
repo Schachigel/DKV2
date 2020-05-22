@@ -55,14 +55,13 @@ bool verifyTable( const dbtable& tableDef, QSqlDatabase db)
             qDebug() << "verifyTable() failed: table exists but field is missing" << expectedFieldName;
             return false;
         }
-// todo: repair type comparison (Vertraege.KreditorId fails)
-//        QSqlField givenField = givenRecord.field(tableDef.Fields()[i].name());
-//        QVariant::Type givenType = givenField.type();
-//        if( ! typesAreDbCompatible(expectedType, givenType))
-//        {
-//            qDebug() << "ensureTable() failed: field " << expectedFieldName << " type mismatch. expected / actual: " << expectedType << " / " << givenType;
-//            return false;
-//        }
+        QSqlField givenField = givenRecord.field(tableDef.Fields()[i].name());
+        QVariant::Type givenType = givenField.type();
+        if( ! typesAreDbCompatible(expectedType, givenType))
+        {
+            qDebug() << "ensureTable() failed: field " << expectedFieldName << " type mismatch. expected / actual: " << expectedType << " / " << givenType;
+            return false;
+        }
     }
     return true;
 }
@@ -76,58 +75,56 @@ bool ensureTable( const dbtable& table, QSqlDatabase db)
     return table.create(db);
 }
 
-QString selectQueryFromFields(const QVector<dbfield>& fields, const QString& incomingWhere)
+QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbForeignKey> keys, const QString& incomingWhere)
 {   //LOG_CALL;
 
-    QString Select ("SELECT ");
-    QString From ("FROM ");
+    QString Select;
+    QString From;
     QString calculatedWhere;
+    QSet<QString> usedTables;
 
-    QStringList usedTables;
-    for(int i=0; i < fields.count(); i++)
-    {
-        const dbfield& f = fields[i];
+    for( auto f : fields) {
         if( f.tableName().isEmpty())
             qCritical() << "selectQueryFromFields: missing table name";
         if( f.name().isEmpty())
             qCritical() << "selectQueryFromFields: missing field name";
-        if( i!=0)
+        if( ! Select.isEmpty())
             Select += ", ";
         Select += f.tableName() + "." + f.name();
 
-        if( !usedTables.contains(f.tableName()))
+        if( ! usedTables.contains(f.tableName()))
         {
-            if( usedTables.count()!= 0)
+            usedTables.insert(f.tableName());
+            if( ! From.isEmpty())
                 From += ", ";
-            usedTables.push_back(f.tableName());
             From += f.tableName();
         }
-
-        refFieldInfo ref = f.getReferenzeInfo();
-        if( !ref.tablename.isEmpty())
-        {
-            if( ! calculatedWhere.isEmpty()) calculatedWhere += " AND ";
-            calculatedWhere += ref.tablename + "." + ref.name + "=" + f.tableName() +"." + f.name();
-        }
+    }
+    for( auto key: keys) {
+        if( ! calculatedWhere.isEmpty()) calculatedWhere += " AND ";
+        calculatedWhere += key.get_SelectSqpSnippet();
     }
     QString Where;
     if( incomingWhere.isEmpty() && calculatedWhere.isEmpty())
         Where = "";
-    else if( incomingWhere.isEmpty())
-        Where = "WHERE " + calculatedWhere;
-    else if( calculatedWhere.isEmpty())
-        Where = "WHERE " + incomingWhere;
     else
-        Where = "WHERE " + incomingWhere + " AND " + calculatedWhere;
+        Where = " WHERE ";
 
-    QString Query = Select + " " + From + " " + Where;
+    if( incomingWhere.isEmpty())
+        Where += calculatedWhere;
+    else if( calculatedWhere.isEmpty())
+        Where += incomingWhere;
+    else
+        Where += incomingWhere + " AND " + calculatedWhere;
+
+    QString Query = "SELECT " + Select + " FROM " + From + Where;
     qInfo() << "selectQueryFromFields created Query: " << Query;
     return Query;
 }
 
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where)
 {   //LOG_CALL;
-    QString sql = selectQueryFromFields(fields, where);
+    QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where);
     qDebug() << "ExecuteSingleRecordSql:\n" << sql;
     QSqlQuery q;
     q.prepare(sql);

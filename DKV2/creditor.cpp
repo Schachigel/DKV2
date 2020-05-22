@@ -123,16 +123,16 @@ int creditor::update() const
     static dbtable creditortable("Kreditoren");
     if( 0 == creditortable.Fields().size())
     {
-        creditortable.append(dbfield("id",       QVariant::LongLong,    "PRIMARY KEY AUTOINCREMENT"));
+        creditortable.append(dbfield("id",       QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
         creditortable.append(dbfield("Vorname",  QVariant::String, "NOT NULL"));
         creditortable.append(dbfield("Nachname", QVariant::String, "NOT NULL"));
         creditortable.append(dbfield("Strasse",  QVariant::String, "NOT NULL"));
         creditortable.append(dbfield("Plz",      QVariant::String, "NOT NULL"));
         creditortable.append(dbfield("Stadt",    QVariant::String, "NOT NULL"));
         creditortable.append(dbfield("Email",    QVariant::String, "NOT NULL"));
-        creditortable.append(dbfield("Anmerkung"));
-        creditortable.append(dbfield("IBAN"));
-        creditortable.append(dbfield("BIC"));
+        creditortable.append(dbfield("Anmerkung", QVariant::String, "NOT NULL"));
+        creditortable.append(dbfield("IBAN",     QVariant::String, "NOT NULL"));
+        creditortable.append(dbfield("BIC",      QVariant::String, "NOT NULL"));
         QVector<dbfield> unique;
         unique.append(creditortable["Vorname"]);
         unique.append(creditortable["Nachname"]);

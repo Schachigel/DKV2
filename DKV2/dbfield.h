@@ -28,26 +28,44 @@ public: // types
     explicit dbfield() : QSqlField(){}
     dbfield(QString name,
             QVariant::Type type=QVariant::String,
-            QString td="", dbfield ref = dbfield(), refIntOption opt = refIntOption::non)
-     :  QSqlField(name, type), SqlTypeDetails(td), option(opt)
+            QString td="")
+     :  QSqlField(name, type), SqlTypeDetails(td)
     {
-        reference.tablename = ref.tableName();
-        reference.name = ref.name();
+        td = td.toUpper();
     }
-
-
     bool operator ==(const dbfield &b) const;
     QString typeDetails()     const {return SqlTypeDetails;}
     refFieldInfo getReferenzeInfo() const;
     // interface
-    QString getCreateSqlSnippet();
+    QString get_CreateSqlSnippet();
 
 private:
     // data
     QString SqlTypeDetails;
-    refFieldInfo reference;
-    refIntOption option;
 };
 
+struct dbForeignKey
+{
+    // const. destr. & access fu
+    dbForeignKey(dbfield local, dbfield parent, QString onDelete ="", QString onUpdate="")
+        : onDelete(onDelete), onUpdate( onUpdate)
+    {
+        table = local.tableName();
+        field = local.name();
+        refTable = parent.tableName();
+        refField = parent.name();
+    }
+    // interface
+    QString get_CreateSqlSnippet();
+    QString get_SelectSqpSnippet();
+
+private:
+    QString table;
+    QString field;
+    QString refTable;
+    QString refField;
+    QString onDelete;
+    QString onUpdate;
+};
 
 #endif // DBFIELD_H

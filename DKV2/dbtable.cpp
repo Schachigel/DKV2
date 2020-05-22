@@ -20,13 +20,19 @@ dbtable dbtable::append(const dbfield& f)
     return *this;
 }
 
+dbtable dbtable::append(const dbForeignKey& fk)
+{
+    foreignKeys.append(fk);
+    return *this;
+}
+
 void dbtable::setUnique( const QVector<dbfield>& fs)
 {   // LOG_CALL;
     QString tmp;
-    for( int i =0; i < fs.count(); i++)
+    for( auto f : fs)
     {
-        if( i>0) tmp += ", ";
-        tmp += fs[i].name();
+        if( ! tmp.isEmpty()) tmp += ", ";
+        tmp += f.name();
     }
     unique = ", UNIQUE (" +tmp +")";
 }
@@ -36,7 +42,11 @@ QString dbtable::createTableSql() const
     QString sql("CREATE TABLE " + name + " (");
     for( int i = 0; i< Fields().count(); i++) {
         if( i>0) sql.append(", ");
-        sql.append(Fields()[i].getCreateSqlSnippet());
+        sql.append(Fields()[i].get_CreateSqlSnippet());
+    }
+    for( auto fk : foreignKeys) {
+        sql.append(", ");
+        sql.append(fk.get_CreateSqlSnippet());
     }
     if( !unique.isEmpty())
         sql.append(unique);
@@ -48,8 +58,7 @@ QString dbtable::createTableSql() const
 bool dbtable::create(QSqlDatabase db) const
 {   LOG_CALL_W(name);
     QSqlQuery q(db);
-    q.prepare(createTableSql());
-    if( !q.exec())
+    if( !q.exec(createTableSql()))
     {
         qCritical() << "dbtable::create failed" << q.lastError() << endl << "SQL: " << q.lastQuery();
         return false;

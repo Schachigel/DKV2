@@ -99,8 +99,8 @@ bool table2csv(QVector<dbfield>& fields, QVector<QVariant::Type>& types, QString
     csvwriter csv;
     for(auto f : fields)
         csv.addColumn(f.name());
-
-    QString sql = selectQueryFromFields(fields, where);
+// todo: do we need csv files from tables with foreign keys?
+    QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where);
     QSqlQuery q;
     if( !q.exec(sql))
     {

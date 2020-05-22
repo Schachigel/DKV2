@@ -53,11 +53,10 @@ void init_DKDBStruct()
     dkdbstructur.appendTable(meta);
 
     dbtable letters("Briefvorlagen");
-    letters.append(dbfield("templateId", QVariant::Int));
-    letters.append(dbfield("EigenschaftId", QVariant::Int));
-    letters.append(dbfield("Wert"));
+    letters.append(dbfield("templateId",    QVariant::Int, "NOT NULL"));
+    letters.append(dbfield("EigenschaftId", QVariant::Int, "NOT NULL"));
+    letters.append(dbfield("Wert",          QVariant::String, "NOT NULL"));
     dkdbstructur.appendTable(letters);
-
     done = true;
 }
 

@@ -12,7 +12,7 @@
 const QString testDbFilename = "..\\data\\testdb.sqlite";
 
 void initTestDb()
-{
+{   LOG_CALL;
     QDir().mkdir(QString("..\\data"));
     if (QFile::exists(testDbFilename))
         QFile::remove(testDbFilename);
@@ -23,7 +23,7 @@ void initTestDb()
 }
 
 void cleanupTestDb()
-{
+{   LOG_CALL;
     closeDatabaseConnection();
     if (QFile::exists(testDbFilename))
         QFile::remove(testDbFilename);
@@ -32,14 +32,14 @@ void cleanupTestDb()
 }
 
 int tableRecordCount( QString tname)
-{   LOG_CALL_W(tname);
+{   // LOG_CALL_W(tname);
     QSqlQuery q;
     if (q.exec("SELECT COUNT(*) FROM " + tname)) {
         q.first();
         qDebug() << "#Datensätze: " << q.record().value(0).toInt();
         return q.record().value(0).toInt();
     } else {
-        qCritical() << "selecting data failed " << q.lastError() << endl << q.lastQuery() << endl;
+        qCritical() << "tableRecordCount: SELECT failed " << q.lastError() << endl << q.lastQuery() << endl;
         return -1;
     }
 }

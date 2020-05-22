@@ -18,6 +18,7 @@
 
 void test_db::initTestCase()
 {
+    init_DKDBStruct();
 }
 
 void test_db::init()
@@ -87,10 +88,11 @@ void test_db::test_createSimpleTable_wRefInt()
     s.appendTable(parent);
     dbtable child("c");
     dbfield childId("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT");
-    dbfield parentId("parent", QVariant::Int, "", parent["id"],
-                     dbfield::refIntOption::onDeleteCascade);
+    dbfield parentId("parent", QVariant::Int, "");
     child.append(childId);
     child.append(parentId);
+    dbForeignKey fk(childId, parent["id"], "ON DELETE CASCADE", "");
+    child.append(fk);
     s.appendTable(child);
     QVERIFY2(s.createDb(), "Database was not created");
 
@@ -105,16 +107,14 @@ void test_db::test_createSimpleTable_wRefInt2()
 {
     LOG_CALL;
     dbstructure s = dbstructure()
-                    .appendTable(dbtable("p").append(
-                        dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT")));
-    s.appendTable(
-        dbtable("c")
-            .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
-            .append(dbfield("pid",
-                QVariant::Int,
-                "",
-                s["p"]["id"],
-                dbfield::refIntOption::onDeleteCascade)));
+                    .appendTable(dbtable("p")
+                    .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT")));
+    dbtable c("c");
+    c.append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"));
+    c.append(dbfield("pid", QVariant::Int));
+    c.append(dbForeignKey(c["pid"], s["p"]["id"], "ON DELETE CASCADE", ""));
+    s.appendTable( c);
+
     QVERIFY2(s.createDb(), "Database was not created");
 
     QVERIFY2(dbHasTable("p"), "table p was not created");
@@ -131,14 +131,13 @@ void test_db::test_addRecords_wDep()
                             dbtable("p")
                                 .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
                                 .append(dbfield("name")));
-    s.appendTable(
-        dbtable("c")
-            .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
-            .append(dbfield("pid",
-                QVariant::Int,
-                "",
-                s["p"]["id"],
-                dbfield::refIntOption::onDeleteCascade)));
+
+    dbtable c("c");
+    c.append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"));
+    c.append(dbfield("pid", QVariant::Int));
+    c.append(dbForeignKey(c["pid"], s["p"]["id"], "ON DELETE CASCADE", ""));
+    s.appendTable( c);
+
     QVERIFY2(s.createDb(), "Database was not created");
 
     TableDataInserter tdi(s["p"]);
@@ -165,14 +164,12 @@ void test_db::test_deleteRecord_wDep()
                             dbtable("p")
                                 .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
                                 .append(dbfield("name")));
-    s.appendTable(
-        dbtable("c")
-            .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
-            .append(dbfield("pid",
-                QVariant::Int,
-                "",
-                s["p"]["id"],
-                dbfield::refIntOption::onDeleteCascade)));
+    dbtable c("c");
+    c.append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"));
+    c.append(dbfield("pid", QVariant::Int));
+    c.append(dbForeignKey(c["pid"], s["p"]["id"], "ON DELETE CASCADE", ""));
+    s.appendTable( c);
+
     QVERIFY2(s.createDb(), "Database was not created");
     QVERIFY2(QFile::exists(testDbFilename), "No database file found");
 
@@ -198,36 +195,9 @@ void test_db::test_deleteRecord_wDep()
     QVERIFY(tableRecordCount("c") == 0);
 }
 
-void test_db::dbfieldCopyConst()
-{
-    LOG_CALL;
-    dbstructure s = dbstructure()
-                        .appendTable(
-                            dbtable("p")
-                                .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
-                                .append(dbfield("name")));
-    s.appendTable(
-        dbtable("c")
-            .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
-            .append(dbfield("pid",
-                QVariant::Int,
-                "",
-                s["p"]["id"],
-                dbfield::refIntOption::onDeleteCascade)));
-    QVERIFY2(s.createDb(), "Database was not created");
-
-    TableDataInserter tdi(s["p"]);
-    tdi.setValue("name", "Holger");
-    QVERIFY( 0<= tdi.InsertData());
-    QVERIFY(tableRecordCount("p") == 1);
-    dbfield cp(s["c"]["pid"]);
-    QVERIFY(!cp.getReferenzeInfo().tablename.isEmpty());
-    QVERIFY(!cp.getReferenzeInfo().name.isEmpty());
-}
-
 void test_db::newDbIsValid()
 {
     dbgTimer t;
-    create_DK_TablesAndContent();
+    QVERIFY(create_DK_TablesAndContent());
 }
 

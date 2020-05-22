@@ -17,7 +17,7 @@ int rowCount(const QString& table);
 bool verifyTable( const dbtable& table, QSqlDatabase db);
 bool ensureTable(const dbtable& table, QSqlDatabase db = QSqlDatabase::database());
 
-QString selectQueryFromFields(const QVector<dbfield>& fields, const QString& where = "");
+QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbForeignKey> keys =QVector<dbForeignKey>(), const QString& where = "");
 
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where ="");
 

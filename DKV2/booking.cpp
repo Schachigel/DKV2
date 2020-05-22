@@ -12,11 +12,12 @@ booking::booking()
     static dbtable bookings("Buchungen");
     if( 0 == bookings.Fields().size())
     {
-        bookings.append(dbfield("id",  QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
-        bookings.append(dbfield("VertragsId", QVariant::LongLong, "", contract::getTableDef()["id"], dbfield::refIntOption::onDeleteCascade));
-        bookings.append(dbfield("BuchungsArt", QVariant::Int, "DEFAULT 0 NOT NULL")); // deposit, interestDeposit, outpayment, interestPayment
-        bookings.append(dbfield("Betrag", QVariant::Double, "DEFAULT '0.0' NOT NULL"));
-        bookings.append(dbfield("Datum", QVariant::Date, "DEFAULT '9999-12-31' NOT NULL"));
+        bookings.append(dbfield("id",          QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
+        bookings.append(dbfield("VertragsId",  QVariant::LongLong, "DEFAULT 0 NOT NULL"));
+        bookings.append(dbForeignKey(bookings["VertragsId"], dkdbstructur["Vertraege"]["id"]));
+        bookings.append(dbfield("BuchungsArt", QVariant::Int,    "DEFAULT 0 NOT NULL")); // deposit, interestDeposit, outpayment, interestPayment
+        bookings.append(dbfield("Betrag",      QVariant::Double, "DEFAULT '0.0' NOT NULL"));
+        bookings.append(dbfield("Datum",       QVariant::Date,   "DEFAULT '9999-12-31' NOT NULL"));
     }
     return bookings;
 }

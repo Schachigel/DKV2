@@ -173,7 +173,7 @@ void test_sqlhelper::test_selectQueryFromFields_withWhere()
     q.exec("INSERT INTO " + tname + " VALUES( NULL, 'Hallo ')");
     q.exec("INSERT INTO " + tname + " VALUES( NULL, 'Welt!')");
     // test
-    QString sql = selectQueryFromFields(simple.Fields(), "id=2");
+    QString sql = selectQueryFromFields(simple.Fields(), QVector<dbForeignKey>(), "id=2");
     QSqlQuery probe;
     QVERIFY( probe.exec(sql));
     probe.first();
@@ -194,7 +194,8 @@ void test_sqlhelper::test_selectQueryFromFields_wReference()
 
     QString tname2{"t2"};
     dbtable referencing(tname2);
-    referencing.append(dbfield("refId", QVariant::LongLong, "", referenced["id"], dbfield::refIntOption::onDeleteCascade));
+    referencing.append(dbfield("refId", QVariant::LongLong));
+    referencing.append(dbForeignKey(referencing["refId"], referenced["id"]));
     referencing.append(dbfield("other"));
     ensureTable(referencing);
     inserter.exec("INSERT INTO " + tname2 + " VALUES( 1, 'Hut')");
@@ -205,7 +206,7 @@ void test_sqlhelper::test_selectQueryFromFields_wReference()
     QVector<dbfield> selected{referenced.Fields()};
     selected.append(referencing["refId"]);
     selected.append(referencing["other"]);
-    QString sql = selectQueryFromFields(selected);
+    QString sql = selectQueryFromFields(selected, referencing.ForeignKeys());
     QSqlQuery probe;
     QVERIFY(probe.exec(sql));
     probe.first();
@@ -234,7 +235,8 @@ void test_sqlhelper::test_selectQueryFromFields_wRefwWhere()
 
     QString tname2{"t2"};
     dbtable referencing(tname2);
-    referencing.append(dbfield("refId", QVariant::LongLong, "", referenced["id"], dbfield::refIntOption::onDeleteCascade));
+    referencing.append(dbfield("refId", QVariant::LongLong));
+    referencing.append(dbForeignKey(referencing["refId"], referenced["id"]));
     referencing.append(dbfield("other"));
     ensureTable(referencing);
     inserter.exec("INSERT INTO " + tname2 + " VALUES( 1, 'Hut')");
@@ -245,7 +247,7 @@ void test_sqlhelper::test_selectQueryFromFields_wRefwWhere()
     QVector<dbfield> selected{referenced.Fields()};
     selected.append(referencing["refId"]);
     selected.append(referencing["other"]);
-    QString sql = selectQueryFromFields(selected, "t1.id=2");
+    QString sql = selectQueryFromFields(selected, referencing.ForeignKeys(), "t1.id=2");
     QSqlQuery probe;
     QVERIFY(probe.exec(sql));
     probe.first();
