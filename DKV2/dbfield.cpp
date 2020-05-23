@@ -10,30 +10,19 @@ bool dbfield::operator ==(const dbfield &b) const
             && (type() == b.type()));
 }
 
-QString dbTypeFromVariant(QVariant::Type t)
-{
-    switch( t)
-    {
-    case QVariant::String:
-        return "TEXT";
-    case QVariant::Date:
-        return "DATE";
-    case QVariant::Int:
-    case QVariant::LongLong:
-    case QVariant::Bool:
-        return "INTEGER";
-    case QVariant::Double:
-        return "FLOAT";
-    default:
-        Q_ASSERT(!bool("invalid database type"));
-        return "INVALID";
-    }
-}
-
 QString dbfield::get_CreateSqlSnippet()
 {   //LOG_CALL_W(name());
-    return name() + " " + dbTypeFromVariant(type()) + " " +typeDetails();
+    return name()
+            + " " + dbTypeFromVariantType(type())
+            + (!typeDetails().isEmpty() ? " " + typeDetails() : "")
+            + (isAutoValue()? " AUTOINCREMENT" : "")
+            + ((requiredStatus()==Required)? " NOT NULL" : "")
+            + (defaultValue().isValid() ? " DEFAULT "+ dbInsertableStringFromVariant(defaultValue()) : "");
 }
+
+//////////////////////
+/// dbForeignKey
+//////////////////////
 
 QString dbForeignKey::get_CreateSqlSnippet()
 {

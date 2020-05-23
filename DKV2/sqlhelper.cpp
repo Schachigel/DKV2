@@ -6,60 +6,102 @@
 #include "helper.h"
 #include "sqlhelper.h"
 
-bool typesAreDbCompatible( QVariant::Type t1, QVariant::Type t2)
+bool vTypesShareDbType( QVariant::Type t1, QVariant::Type t2)
 {
-    if( t1 == t2) return true;
-    if( t1 == QVariant::LongLong) t1 = QVariant::Int;
-    if( t2 == QVariant::LongLong) t2 = QVariant::Int;
-    if( t1 == QVariant::Date) t1 = QVariant::String;
-    if( t2 == QVariant::Date) t2 = QVariant::String;
-    if( t1 == QVariant::Bool) t1 = QVariant::Int;
-    if( t2 == QVariant::Bool) t2 = QVariant::Int;
-    if( t1 == t2) return true;
-    return false;
+    return dbTypeFromVariantType(t1) == dbTypeFromVariantType(t2);
+}
+QString dbInsertableStringFromVariant(QVariant v)
+{
+    if( v.isNull() || !v.isValid())
+        return "''";
+    QString s;
+    switch(v.type())
+    {
+    case QVariant::Date: {
+        s = v.toDate().toString(Qt::ISODate);
+        break;
+    }
+    case QVariant::Double: {
+        s = QString::number(v.toDouble(), 'f', 2);
+        break;
+    }
+    case QVariant::Bool:
+        s = (v.toBool()) ? "1" : "0";
+        break;
+    case QVariant::Int:
+    case QVariant::UInt:
+    case QVariant::LongLong:
+    case QVariant::ULongLong:
+        s = QString::number(v.toInt());
+        break;
+    case QVariant::String:
+    case QVariant::Char:
+        s = v.toString();
+        break;
+    default:
+        qDebug() << "vTypeToDbType defaulted " << v;
+        s = v.toString();
+    }
+    return "'" + s +"'";
+}
+QString dbTypeFromVariantType(QVariant::Type t)
+{
+    switch( t)
+    {
+    case QVariant::String:
+    case QVariant::Char:
+        return "TEXT";
+    case QVariant::Date:
+        return "TEXTDATE";
+    case QVariant::Int:
+    case QVariant::LongLong:
+    case QVariant::UInt:
+    case QVariant::ULongLong:
+        return "INTEGER";
+    case QVariant::Bool:
+        return "BOOLEAN";
+    case QVariant::Double:
+        return "FLOAT";
+    default:
+        Q_ASSERT(!bool("invalid database type"));
+        return "INVALID";
+    }
+}
+
+int rowCount(const QString& table)
+{
+    QSqlQuery q("SELECT count(*) FROM " + table);
+    if( q.first())
+        return q.value(0).toInt();
+    else {
+        qCritical() << "row counting query failed" << q.lastError() << endl << q.lastQuery();
+        return -1;
+    }
 }
 
 bool tableExists(const QString& tablename, QSqlDatabase db)
 {
     return db.tables().contains(tablename);
 }
-
-int rowCount(const QString& table)
-{
-    QSqlQuery q;
-    if( q.exec( "SELECT count(*) FROM " + table))
-    {
-        q.first();
-        return q.value(0).toInt();
-    }
-    else
-    {
-        qCritical() << "row counting query failed" << q.lastError() << endl << q.lastQuery();
-        return -1;
-    }
-}
-
 bool verifyTable( const dbtable& tableDef, QSqlDatabase db)
 {
-    QSqlRecord givenRecord = db.record(tableDef.Name());
-//    qDebug() << "record from database: " << givenRecord;
-    if( givenRecord.count() != tableDef.Fields().count()) {
-        qDebug() << "verifyTable() failed: number of fields mismatch. expected / actual: " << tableDef.Fields().count() << " / " << givenRecord.count();
+    QSqlRecord recordFromDb = db.record(tableDef.Name());
+    if( recordFromDb.count() != tableDef.Fields().count()) {
+        qDebug() << "verifyTable() failed: number of fields mismatch. expected / actual: " << tableDef.Fields().count() << " / " << recordFromDb.count();
         return false;
     }
     for (int i=0; i < tableDef.Fields().count(); i++) {
-        QString expectedFieldName = tableDef.Fields()[i].name();
-        QVariant::Type expectedType = tableDef.Fields()[i].type();
-
-        if( ! givenRecord.contains(expectedFieldName)) {
-            qDebug() << "verifyTable() failed: table exists but field is missing" << expectedFieldName;
+        dbfield fieldFromTableDef = tableDef.Fields()[i];
+        if( ! recordFromDb.contains(fieldFromTableDef.name())) {
+            qDebug() << "verifyTable() failed: table exists but field is missing" << fieldFromTableDef.name();
             return false;
         }
-        QSqlField givenField = givenRecord.field(tableDef.Fields()[i].name());
-        QVariant::Type givenType = givenField.type();
-        if( ! typesAreDbCompatible(expectedType, givenType))
+        QVariant::Type typeFromDb = recordFromDb.field(fieldFromTableDef.name()).type();
+        QVariant::Type typeFromTableDef = fieldFromTableDef.type();
+        if( ! vTypesShareDbType(typeFromTableDef, typeFromDb))
         {
-            qDebug() << "ensureTable() failed: field " << expectedFieldName << " type mismatch. expected / actual: " << expectedType << " / " << givenType;
+            qDebug() << "ensureTable() failed: field " << fieldFromTableDef.name() <<
+                        " type mismatch. expected / actual: " << fieldFromTableDef.type() << " / " << typeFromDb;
             return false;
         }
     }

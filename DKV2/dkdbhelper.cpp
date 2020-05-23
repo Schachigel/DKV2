@@ -48,14 +48,14 @@ void init_DKDBStruct()
     dkdbstructur.appendTable(booking::getTableDef());
 
     dbtable meta("Meta");
-    meta.append(dbfield("Name", QVariant::String, "NOT NULL"));
-    meta.append(dbfield("Wert", QVariant::String, "NOT NULL"));
+    meta.append(dbfield("Name", QVariant::String).setNotNull());
+    meta.append(dbfield("Wert", QVariant::String).setNotNull());
     dkdbstructur.appendTable(meta);
 
     dbtable letters("Briefvorlagen");
-    letters.append(dbfield("templateId",    QVariant::Int, "NOT NULL"));
-    letters.append(dbfield("EigenschaftId", QVariant::Int, "NOT NULL"));
-    letters.append(dbfield("Wert",          QVariant::String, "NOT NULL"));
+    letters.append(dbfield("templateId",    QVariant::Int).setNotNull());
+    letters.append(dbfield("EigenschaftId", QVariant::Int).setNotNull());
+    letters.append(dbfield("Wert",          QVariant::String).setNotNull());
     dkdbstructur.appendTable(letters);
     done = true;
 }

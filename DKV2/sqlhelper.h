@@ -8,12 +8,13 @@
 #include "dbfield.h"
 #include "dbstructure.h"
 
-bool typesAreDbCompatible( QVariant::Type t1, QVariant::Type t2);
-
-bool tableExists(const QString& tablename, QSqlDatabase db = QSqlDatabase::database());
+bool vTypesShareDbType( QVariant::Type t1, QVariant::Type t2);
+QString dbInsertableStringFromVariant(QVariant v);
+QString dbTypeFromVariantType(QVariant::Type t);
 
 int rowCount(const QString& table);
 
+bool tableExists(const QString& tablename, QSqlDatabase db = QSqlDatabase::database());
 bool verifyTable( const dbtable& table, QSqlDatabase db);
 bool ensureTable(const dbtable& table, QSqlDatabase db = QSqlDatabase::database());
 

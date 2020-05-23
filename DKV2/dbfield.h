@@ -19,26 +19,29 @@ struct refFieldInfo
 class dbfield : public QSqlField
 {
 public: // types
-    enum refIntOption {
-        non = 0,
-        onDeleteCascade,
-        onDeleteNull
-    };
     // constr. destr. & access fu
     explicit dbfield() : QSqlField(){}
     dbfield(QString name,
             QVariant::Type type=QVariant::String,
             QString td="")
-     :  QSqlField(name, type), SqlTypeDetails(td)
+     :  QSqlField(name), SqlTypeDetails(td)
     {
-        td = td.toUpper();
+        if( type == QVariant::Date) // no date support in sqlite
+            type = QVariant::String;
+        setType(type);
+        SqlTypeDetails = SqlTypeDetails.toUpper();
+        setAutoValue(SqlTypeDetails.contains("AUTOINCREMENT"));
+        SqlTypeDetails = SqlTypeDetails.replace("AUTOINCREMENT", "").trimmed();
+        setRequired(SqlTypeDetails.contains("NOT NULL"));
+        SqlTypeDetails = SqlTypeDetails.replace("NOT NULL", "").trimmed();
     }
     bool operator ==(const dbfield &b) const;
     QString typeDetails()     const {return SqlTypeDetails;}
-    refFieldInfo getReferenzeInfo() const;
     // interface
     QString get_CreateSqlSnippet();
-
+    dbfield setNotNull(){ setRequired(true); return *this;}
+    dbfield setDefault(QVariant v){ setDefaultValue(v); return *this;}
+    dbfield setAutoInc(){ setAutoValue(true); return *this;}
 private:
     // data
     QString SqlTypeDetails;

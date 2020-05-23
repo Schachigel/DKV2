@@ -12,12 +12,12 @@ booking::booking()
     static dbtable bookings("Buchungen");
     if( 0 == bookings.Fields().size())
     {
-        bookings.append(dbfield("id",          QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
-        bookings.append(dbfield("VertragsId",  QVariant::LongLong, "DEFAULT 0 NOT NULL"));
-        bookings.append(dbForeignKey(bookings["VertragsId"], dkdbstructur["Vertraege"]["id"]));
-        bookings.append(dbfield("BuchungsArt", QVariant::Int,    "DEFAULT 0 NOT NULL")); // deposit, interestDeposit, outpayment, interestPayment
-        bookings.append(dbfield("Betrag",      QVariant::Double, "DEFAULT '0.0' NOT NULL"));
-        bookings.append(dbfield("Datum",       QVariant::Date,   "DEFAULT '9999-12-31' NOT NULL"));
+        bookings.append(dbfield("id",          QVariant::LongLong, "PRIMARY KEY").setAutoInc());
+        bookings.append(dbfield("VertragsId",  QVariant::LongLong).setDefault(0).setNotNull());
+        bookings.append(dbForeignKey(bookings["VertragsId"], dkdbstructur["Vertraege"]["id"], "ON DELETE RESTRICT"));
+        bookings.append(dbfield("BuchungsArt", QVariant::Int).setDefault(0).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
+        bookings.append(dbfield("Betrag",      QVariant::Int).setDefault(0).setNotNull()); // in cent
+        bookings.append(dbfield("Datum",       QVariant::Date).setDefault("9999-12-31").setNotNull());
     }
     return bookings;
 }

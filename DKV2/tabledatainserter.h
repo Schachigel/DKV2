@@ -13,6 +13,7 @@ public:
     TableDataInserter(const dbtable& t);
     void init(const dbtable& t);
     void setValue(const QString& field, const QVariant& v);
+    void setValues(const QSqlRecord rec);
     QVariant getValue(const QString& f) const { return record.field(f).value();}
     QSqlRecord getRecord() const {return record;}
     // interface

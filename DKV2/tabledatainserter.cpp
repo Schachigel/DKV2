@@ -12,7 +12,7 @@ void TableDataInserter::init(const dbtable& t)
     tablename = t.Name();
     for (auto dbfield : t.Fields()) {
         QSqlField sqlField(dbfield.name(), dbfield.type(), tablename);
-        if( dbfield.typeDetails().contains("AUTOINCREMENT", Qt::CaseInsensitive) )
+        if( dbfield.isAutoValue())
             sqlField.setAutoValue(true);
         record.append(sqlField);
     }
@@ -35,35 +35,14 @@ void TableDataInserter::setValue(const QString& n, const QVariant& v)
         qCritical() << "wrong field name for insertion " << n;
 }
 
-QString format4SQL(QVariant v)
-{
-    if( v.isNull() || !v.isValid())
-        return "''";
-    QString s;
-    switch(v.type())
-    {
-    case QVariant::Date: {
-        s = v.toDate().toString(Qt::ISODate);
+void TableDataInserter::setValues(const QSqlRecord input)
+{   LOG_CALL;
+    if( input.count() != record.count()) {
+        qCritical() << "TableDataInserter setValues faild: wrong sqlRecord size (actual / expected): " << input.count() << " / " << record.count();
+        return;
     }
-    case QVariant::Double: {
-        s = QString::number(v.toDouble(), 'f', 2);
-        break;
-    }
-    case QVariant::Bool:
-        s = (v.toBool()) ? "1" : "0";
-        break;
-    case QVariant::Int:
-    case QVariant::LongLong:
-        s = QString::number(v.toInt());
-        break;
-    case QVariant::String:
-        s = v.toString();
-        break;
-    default:
-        qDebug() << "format4SQL defaulted " << v;
-        s = v.toString();
-    }
-    return "'" + s +"'";
+    // check compatibility
+
 }
 
 QString TableDataInserter::getInsertRecordSQL() const
@@ -83,7 +62,7 @@ QString TableDataInserter::getInsertRecordSQL() const
         if( record.field(i).isAutoValue())
             ValueList += "NULL";
         else {
-            ValueList += format4SQL(record.field(i).value());
+            ValueList += dbInsertableStringFromVariant(record.field(i).value());
         }
     }
     QString sql("INSERT INTO " + tablename + " ");
@@ -103,7 +82,7 @@ QString TableDataInserter::getInsertOrReplaceRecordSQL() const
         if( record.field(i).isAutoValue())
             sql += "NULL";
         else
-            sql += format4SQL(record.field(i).value());
+            sql += dbInsertableStringFromVariant(record.field(i).value());
     }
     sql +=")";
     return sql;
@@ -122,7 +101,7 @@ QString TableDataInserter::getUpdateRecordSQL() const
         if( record.field(i).isAutoValue())
             where += record.field(i).name() + " = " + record.field(i).value().toString();
         else {
-            sql += record.field(i).name() + " = " + format4SQL(record.field(i).value());
+            sql += record.field(i).name() + " = " + dbInsertableStringFromVariant(record.field(i).value());
             firstField = false;
         }
     }

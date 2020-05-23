@@ -64,6 +64,6 @@ void test_properties::test_set_init_get_num()
 }
 void test_properties::test_get_uninit_num()
 {
-    QCOMPARE(getNumMetaInfo("null"), 0.);
+    QCOMPARE(getNumMetaInfo("nix"), 0.);
 }
 

@@ -40,8 +40,8 @@ void test_creditor::test_CreditorFromDb()
 {   LOG_CALL;
     creditor c = saveRandomCreditor();
     QVERIFY2(c.isValid(), "randomly create creditor failed");
-    creditor d;
-    d.fromDb(c.id());
+
+    creditor d(c.id());
     QCOMPARE( c, d);
 }
 

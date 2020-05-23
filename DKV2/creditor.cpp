@@ -36,6 +36,7 @@ bool creditor::fromDb( int i)
 
     QSqlRecord rec = executeSingleRecordSql(dkdbstructur["Kreditoren"].Fields(), "id="+QString::number(i));
     if( rec.isEmpty()) return false;
+
     for(int i=0; i<rec.count(); i++)
     {
         qDebug() << "reading Kreditor from db; Field:" << rec.field(i).name() << "-value:" << rec.field(i).value() << "(" << rec.field(i).value().type() << ")";
@@ -52,7 +53,7 @@ bool creditor::fromDb( int i)
 }
 
 bool creditor::isValid() const
-{//   LOG_CALL;
+{
     QString ignoredMsg;
     return isValid(ignoredMsg);
 }
@@ -109,8 +110,7 @@ int creditor::update() const
 {   LOG_CALL;
     // referential integrity will delete the contracts
     QSqlQuery deleteQ;
-    if( !deleteQ.exec("DELETE FROM [Kreditoren] WHERE [Id]=" +QString::number(index)))
-    {
+    if( !deleteQ.exec("DELETE FROM Kreditoren WHERE Id=" +QString::number(index))) {
         qCritical() << "Delete Kreditor failed "<< deleteQ.lastError() << endl << deleteQ.lastQuery();
         return false;
     }
@@ -123,16 +123,16 @@ int creditor::update() const
     static dbtable creditortable("Kreditoren");
     if( 0 == creditortable.Fields().size())
     {
-        creditortable.append(dbfield("id",       QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
-        creditortable.append(dbfield("Vorname",  QVariant::String, "NOT NULL"));
-        creditortable.append(dbfield("Nachname", QVariant::String, "NOT NULL"));
-        creditortable.append(dbfield("Strasse",  QVariant::String, "NOT NULL"));
-        creditortable.append(dbfield("Plz",      QVariant::String, "NOT NULL"));
-        creditortable.append(dbfield("Stadt",    QVariant::String, "NOT NULL"));
-        creditortable.append(dbfield("Email",    QVariant::String, "NOT NULL"));
-        creditortable.append(dbfield("Anmerkung", QVariant::String, "NOT NULL"));
-        creditortable.append(dbfield("IBAN",     QVariant::String, "NOT NULL"));
-        creditortable.append(dbfield("BIC",      QVariant::String, "NOT NULL"));
+        creditortable.append(dbfield("id",       QVariant::LongLong, "PRIMARY KEY").setAutoInc());
+        creditortable.append(dbfield("Vorname",  QVariant::String).setNotNull());
+        creditortable.append(dbfield("Nachname", QVariant::String).setNotNull());
+        creditortable.append(dbfield("Strasse",  QVariant::String).setNotNull());
+        creditortable.append(dbfield("Plz",      QVariant::String).setNotNull());
+        creditortable.append(dbfield("Stadt",    QVariant::String).setNotNull());
+        creditortable.append(dbfield("Email",    QVariant::String).setNotNull());
+        creditortable.append(dbfield("Anmerkung", QVariant::String).setNotNull());
+        creditortable.append(dbfield("IBAN",     QVariant::String).setNotNull());
+        creditortable.append(dbfield("BIC",      QVariant::String).setNotNull());
         QVector<dbfield> unique;
         unique.append(creditortable["Vorname"]);
         unique.append(creditortable["Nachname"]);

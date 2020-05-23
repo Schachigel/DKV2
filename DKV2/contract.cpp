@@ -12,16 +12,16 @@
     static dbtable contracttable("Vertraege");
     if( 0 == contracttable.Fields().size())
     {
-        contracttable.append(dbfield("id",         QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
-        contracttable.append(dbfield("KreditorId", QVariant::LongLong, "NOT NULL"));
-        contracttable.append(dbForeignKey(contracttable["KreditorId"], dkdbstructur["Kreditoren"]["id"], "ON DELETE CASCADE"));
+        contracttable.append(dbfield("id",         QVariant::LongLong, "PRIMARY KEY").setAutoInc());
+        contracttable.append(dbfield("KreditorId", QVariant::LongLong).setNotNull());
+        contracttable.append(dbForeignKey(contracttable["KreditorId"], dkdbstructur["Kreditoren"]["id"], "ON DELETE RESTRICT"));
         contracttable.append(dbfield("Kennung",    QVariant::String, "UNIQUE"));
-        contracttable.append(dbfield("ZSatz",      QVariant::Int, "DEFAULT 0 NOT NULL")); // 100-stel %; 100 entspricht 1%
-        contracttable.append(dbfield("Betrag",     QVariant::Int, "DEFAULT 0 NOT NULL"));
-        contracttable.append(dbfield("thesaurierend", QVariant::Bool, "DEFAULT 1 NOT NULL"));
-        contracttable.append(dbfield("Vertragsdatum", QVariant::Date, "NOT NULL"));
-        contracttable.append(dbfield("Kfrist" ,    QVariant::Int, "DEFAULT 6 NOT NULL"));
-        contracttable.append(dbfield("LaufzeitEnde",  QVariant::Date, "DEFAULT '9999-12-31' NOT NULL"));
+        contracttable.append(dbfield("ZSatz",      QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
+        contracttable.append(dbfield("Betrag",     QVariant::Int).setNotNull().setDefault(0)); // Euro
+        contracttable.append(dbfield("thesaurierend", QVariant::Bool).setNotNull().setDefault(1));
+        contracttable.append(dbfield("Vertragsdatum", QVariant::Date).setNotNull());
+        contracttable.append(dbfield("Kfrist" ,    QVariant::Int).setNotNull().setDefault(6));
+        contracttable.append(dbfield("LaufzeitEnde",  QVariant::Date).setNotNull().setDefault("9999-12-31"));
     }
     return contracttable;
 }
