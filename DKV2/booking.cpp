@@ -72,19 +72,22 @@ booking::booking()
     return doBooking(type::interestPayout, contractId, amount, date);
 }
 
+/*
+ * BookingS is about getting collections of bookings
+*/
+
 QVector<bookings::data> bookings::getBookings()
 {   LOG_CALL;
-    QSqlQuery q;
-    if( !q.exec("SELECT * FROM Buchungen "
-              "WHERE VertragsId=" + QString::number(contractId)
-              + " AND BuchungsArt=" + QString::number(type)))
-    {
+    QVector<QSqlRecord> rec = executeSql(dkdbstructur["Buchungen"].Fields(),
+            "VertragsId=" + QString::number(contractId) + " AND BuchungsArt=" + QString::number(type));
+    if( rec.isEmpty()) {
         qDebug() << "could not query bookings for " << contractId << " type " << booking::typeName(type);
         return QVector<bookings::data>();
     }
     QVector<bookings::data> result;
-    while( q.next())
-        result.push_back({q.value("Betrag").toDouble(), q.value("Datum").toDate()});
+    for( auto r : rec) {
+        result.push_back({r.value("Betrag").toDouble(), r.value("Datum").toDate()});
+    }
     return result;
 }
 

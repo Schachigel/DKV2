@@ -21,6 +21,7 @@ bool ensureTable(const dbtable& table, QSqlDatabase db = QSqlDatabase::database(
 
 QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbForeignKey> keys =QVector<dbForeignKey>(), const QString& where = "");
 
+QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where);
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where ="");
 
 QVariant executeSingleValueSql(const QString& s, QSqlDatabase db = QSqlDatabase::database());

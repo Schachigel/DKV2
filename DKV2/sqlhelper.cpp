@@ -238,6 +238,31 @@ QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db)
     return q.value(0);
 }
 
+QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where)
+{
+    QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where);
+    qDebug() << "executeSql:\n" << sql;
+
+    QSqlQuery q; q.setForwardOnly(true);
+    if( !q.exec(sql)) {
+        qCritical() << "SingleRecordSql failed " << q.lastError() << endl << q.lastQuery();
+        return QVector<QSqlRecord>();
+    }
+    QVector<QSqlRecord> result;
+    while( q.next()) {
+        // adjust the database types to the expected types
+        QSqlRecord oneRecord;
+        for( auto dbFieldEntry : fields) {
+            // adjust to original variant data type
+            QSqlField tmpField =q.record().field(dbFieldEntry.name());
+            tmpField.setType(dbFieldEntry.type());
+            oneRecord.append(tmpField);
+        }
+        result.push_back(oneRecord);
+    }
+    return result;
+}
+
 QVariant executeSingleValueSql( const QString& field, const QString& table, const QString& where, QSqlDatabase db)
 {//   LOG_CALL;
     QString sql = "SELECT " + field + " FROM " + table + (where.isEmpty()? "" : (" WHERE " + where));
