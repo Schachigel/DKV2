@@ -8,9 +8,9 @@
 
 bool vTypesShareDbType( QVariant::Type t1, QVariant::Type t2)
 {
-    return dbTypeFromVariantType(t1) == dbTypeFromVariantType(t2);
+    return dbAffinityType(t1) == dbAffinityType(t2);
 }
-QString dbInsertableStringFromVariant(QVariant v)
+QString dbInsertableString(QVariant v)
 {
     if( v.isNull() || !v.isValid())
         return "''";
@@ -44,24 +44,49 @@ QString dbInsertableStringFromVariant(QVariant v)
     }
     return "'" + s +"'";
 }
-QString dbTypeFromVariantType(QVariant::Type t)
-{
+
+QString dbCreateTable_type(QVariant::Type t)
+{   // these are the strings we use in data definition
+    // so that they are expressive, but are still close
+    // to the actual affinity data types
     switch( t)
     {
     case QVariant::String:
     case QVariant::Char:
-        return "TEXT";
+        return "TEXT"; // affinity: TEXT
     case QVariant::Date:
-        return "TEXTDATE";
+        return "TEXTDATE"; // affinity: TEXT
     case QVariant::Int:
     case QVariant::LongLong:
     case QVariant::UInt:
     case QVariant::ULongLong:
-        return "INTEGER";
+        return "INTEGER"; // affinity: INTEGER
     case QVariant::Bool:
         return "BOOLEAN";
     case QVariant::Double:
-        return "FLOAT";
+        return "DOUBLE"; // affinity: REAL
+    default:
+        Q_ASSERT(!bool("invalid database type"));
+        return "INVALID";
+    }
+}
+QString dbAffinityType(QVariant::Type t)
+{   // affinities are, what the database actually uses
+    // as a "preferred" type of data stored in a column
+    switch( t)
+    {
+    case QVariant::String:
+    case QVariant::Char:
+    case QVariant::Date:
+        return "TEXT";
+    case QVariant::Int:
+    case QVariant::LongLong:
+    case QVariant::UInt:
+    case QVariant::ULongLong:
+    case QVariant::Bool:
+        return "INTEGER";
+    case QVariant::Double:
+        return "REAL";
     default:
         Q_ASSERT(!bool("invalid database type"));
         return "INVALID";
@@ -90,20 +115,19 @@ bool verifyTable( const dbtable& tableDef, QSqlDatabase db)
         qDebug() << "verifyTable() failed: number of fields mismatch. expected / actual: " << tableDef.Fields().count() << " / " << recordFromDb.count();
         return false;
     }
-    for (int i=0; i < tableDef.Fields().count(); i++) {
-        dbfield fieldFromTableDef = tableDef.Fields()[i];
-        if( ! recordFromDb.contains(fieldFromTableDef.name())) {
-            qDebug() << "verifyTable() failed: table exists but field is missing" << fieldFromTableDef.name();
+    for( auto field: tableDef.Fields()) {
+        QSqlField FieldFromDb = recordFromDb.field(field.name());
+        if( ! FieldFromDb.isValid()) {
+            qDebug() << "verifyTable() failed: table exists but field is missing" << field.name();
             return false;
         }
-        QVariant::Type typeFromDb = recordFromDb.field(fieldFromTableDef.name()).type();
-        QVariant::Type typeFromTableDef = fieldFromTableDef.type();
-        if( ! vTypesShareDbType(typeFromTableDef, typeFromDb))
+        if( ! vTypesShareDbType(field.type(), recordFromDb.field(field.name()).type()))
         {
-            qDebug() << "ensureTable() failed: field " << fieldFromTableDef.name() <<
-                        " type mismatch. expected / actual: " << fieldFromTableDef.type() << " / " << typeFromDb;
+            qDebug() << "ensureTable() failed: field " << field.name() <<
+                        " type mismatch. expected / actual: " << field.type() << " / " << recordFromDb.field(field.name()).type();
             return false;
         }
+
     }
     return true;
 }
@@ -165,23 +189,31 @@ QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbFo
 }
 
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where)
-{   //LOG_CALL;
+{
     QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where);
     qDebug() << "ExecuteSingleRecordSql:\n" << sql;
+
     QSqlQuery q;
-    q.prepare(sql);
-    if( !q.exec())
-    {
+    if( !q.exec(sql)) {
         qCritical() << "SingleRecordSql failed " << q.lastError() << endl << q.lastQuery();
         return QSqlRecord();
     }
     q.last();
-    if(q.at() != 0)
-    {
+    if(q.at() != 0) {
         qCritical() << "SingleRecordSql returned more then one value\n" << q.lastQuery();
         return QSqlRecord();
     }
-    return q.record();
+    // adjust the database types to the expected types
+    QSqlRecord result;
+    for( auto dbFieldEntry : fields) {
+
+        QSqlField tmpField =q.record().field(dbFieldEntry.name());
+        tmpField.setType(dbFieldEntry.type());
+        result.append(tmpField);
+    }
+    qDebug() << "record from db   : " << q.record()<< endl;
+    qDebug() << "calculated result: " << result << endl;
+    return result;
 }
 
 QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db)

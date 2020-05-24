@@ -62,7 +62,7 @@ QString TableDataInserter::getInsertRecordSQL() const
         if( record.field(i).isAutoValue())
             ValueList += "NULL";
         else {
-            ValueList += dbInsertableStringFromVariant(record.field(i).value());
+            ValueList += dbInsertableString(record.field(i).value());
         }
     }
     QString sql("INSERT INTO " + tablename + " ");
@@ -82,7 +82,7 @@ QString TableDataInserter::getInsertOrReplaceRecordSQL() const
         if( record.field(i).isAutoValue())
             sql += "NULL";
         else
-            sql += dbInsertableStringFromVariant(record.field(i).value());
+            sql += dbInsertableString(record.field(i).value());
     }
     sql +=")";
     return sql;
@@ -101,7 +101,7 @@ QString TableDataInserter::getUpdateRecordSQL() const
         if( record.field(i).isAutoValue())
             where += record.field(i).name() + " = " + record.field(i).value().toString();
         else {
-            sql += record.field(i).name() + " = " + dbInsertableStringFromVariant(record.field(i).value());
+            sql += record.field(i).name() + " = " + dbInsertableString(record.field(i).value());
             firstField = false;
         }
     }

@@ -123,7 +123,7 @@ int creditor::update() const
     static dbtable creditortable("Kreditoren");
     if( 0 == creditortable.Fields().size())
     {
-        creditortable.append(dbfield("id",       QVariant::LongLong, "PRIMARY KEY").setAutoInc());
+        creditortable.append(dbfield("id",       QVariant::LongLong).setPrimaryKey().setAutoInc());
         creditortable.append(dbfield("Vorname",  QVariant::String).setNotNull());
         creditortable.append(dbfield("Nachname", QVariant::String).setNotNull());
         creditortable.append(dbfield("Strasse",  QVariant::String).setNotNull());

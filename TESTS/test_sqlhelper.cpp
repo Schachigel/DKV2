@@ -288,3 +288,69 @@ void test_sqlhelper::test_eSingleValueSql_OK()
 
     QVERIFY(QSqlQuery().exec("DROP TABLE " +tablename));
 }
+
+void test_sqlhelper::test_variantTypeConservation()
+{
+/* This test is to document, how Varaint and Database types should
+ * work together in this application.
+ * The dbtable / dbfield classes care about the table creation using
+ * fife QVariant types;
+ * the execuetxxxSqp functions take care of data retrieval. they take
+ * the expected datatypes from dbfield and convert back from what the
+ * database has done to the data.
+*/
+    QString tablename("testTable_variantVsDbTypes");
+    dbtable t(tablename);
+    t.append(dbfield("col_index", QVariant::LongLong, "PRIMARY KEY").setAutoInc());
+    t.append(dbfield("col_ll", QVariant::LongLong));
+    t.append(dbfield("col_I", QVariant::Int));
+    t.append(dbfield("col_S", QVariant::String));
+    t.append(dbfield("col_D", QVariant::Date));
+    t.append(dbfield("col_B", QVariant::Bool));
+    dbstructure db; db.appendTable(t); db.createDb();
+/* from CREATE TABLE sql:
+   col_index INTEGER PRIMARY KEY AUTOINCREMENT
+   col_ll INTEGER,
+   col_I  INTEGER,
+   col_S  TEXT,
+   col_D  TEXT,
+   col_B  INTEGER
+*/
+    // input data
+    QVariant ll = QVariant(qlonglong(42));
+    QVariant i  = QVariant(int(13));
+    QVariant s  = QVariant(QString("Hallo Welt!"));
+    QVariant d  = QVariant(QDate(1965, 5, 6));
+    QVariant b  = QVariant(true);
+
+    QString sql= "INSERT INTO " + tablename + " VALUES (NULL, ";
+    sql += dbInsertableString(ll) +", ";
+    sql += dbInsertableString(i) + ", ";
+    sql += dbInsertableString(s) +", ";
+    sql += dbInsertableString(d) +", ";
+    sql += dbInsertableString(b) +")";
+
+    QSqlQuery q;
+    if( ! q.exec(sql)) {
+        qDebug() << q.lastError() << endl << q.lastQuery();
+        QFAIL("query execution failed");
+    }
+//    this is how the record looks:
+//    0: QSqlField("col_index", int, ..., generated: yes, typeID: 1, autoValue: false, ro: false) "1"
+//    1: QSqlField("col_ll",    int, ..., generated: yes, typeID: 1, autoValue: false, ro: false) "42"
+//    2: QSqlField("col_I",     int, ..., generated: yes, typeID: 1, autoValue: false, ro: false) "13"
+//    3: QSqlField("col_S", QString, ..., generated: yes, typeID: 3, autoValue: false, ro: false) "Hallo Welt!"
+//    4: QSqlField("col_D", QString, ..., generated: yes, typeID: 3, autoValue: false, ro: false) "1965-05-06"
+//    5: QSqlField("col_B",     int, ..., generated: yes, typeID: 1, autoValue: false, ro: false) "1"
+
+    // TEST: will this record contain the right data and right types?
+    QSqlRecord record = executeSingleRecordSql(t.Fields());
+    qDebug() << record;
+
+    // data types are back to what we put in
+    QCOMPARE( ll, record.value("col_ll"));
+    QCOMPARE(  i, record.value("col_I"));
+    QCOMPARE(  s, record.value("col_S"));
+    QCOMPARE(  d, record.value("col_D"));
+    QCOMPARE(  b, record.value("col_B"));
+}

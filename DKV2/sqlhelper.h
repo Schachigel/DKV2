@@ -9,8 +9,9 @@
 #include "dbstructure.h"
 
 bool vTypesShareDbType( QVariant::Type t1, QVariant::Type t2);
-QString dbInsertableStringFromVariant(QVariant v);
-QString dbTypeFromVariantType(QVariant::Type t);
+QString dbInsertableString(QVariant v);
+QString dbCreateTable_type(QVariant::Type t);
+QString dbAffinityType(QVariant::Type t);
 
 int rowCount(const QString& table);
 

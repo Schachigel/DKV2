@@ -12,7 +12,7 @@
     static dbtable contracttable("Vertraege");
     if( 0 == contracttable.Fields().size())
     {
-        contracttable.append(dbfield("id",         QVariant::LongLong, "PRIMARY KEY").setAutoInc());
+        contracttable.append(dbfield("id",         QVariant::LongLong).setPrimaryKey().setAutoInc());
         contracttable.append(dbfield("KreditorId", QVariant::LongLong).setNotNull());
         contracttable.append(dbForeignKey(contracttable["KreditorId"], dkdbstructur["Kreditoren"]["id"], "ON DELETE RESTRICT"));
         contracttable.append(dbfield("Kennung",    QVariant::String, "UNIQUE"));

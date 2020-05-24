@@ -35,6 +35,7 @@ private slots:
     void test_selectQueryFromFields_wReference();
     void test_selectQueryFromFields_wRefwWhere();
     void test_eSingleValueSql_OK();
+    void test_variantTypeConservation();
 };
 
 #endif // TEST_SQLHELPER_H

@@ -10,12 +10,6 @@
 
 struct dbtable;
 
-struct refFieldInfo
-{
-    QString tablename;
-    QString name;
-};
-
 class dbfield : public QSqlField
 {
 public: // types
@@ -26,25 +20,34 @@ public: // types
             QString td="")
      :  QSqlField(name), SqlTypeDetails(td)
     {
-        if( type == QVariant::Date) // no date support in sqlite
-            type = QVariant::String;
+        Q_ASSERT(isSupportedType(type));
+        Q_ASSERT( ! name.contains("-"));
+        outputType = type;
         setType(type);
+
         SqlTypeDetails = SqlTypeDetails.toUpper();
         setAutoValue(SqlTypeDetails.contains("AUTOINCREMENT"));
         SqlTypeDetails = SqlTypeDetails.replace("AUTOINCREMENT", "").trimmed();
         setRequired(SqlTypeDetails.contains("NOT NULL"));
         SqlTypeDetails = SqlTypeDetails.replace("NOT NULL", "").trimmed();
+        if( SqlTypeDetails.contains("PRIMARY KEY"))
+            setPrimaryKey(), SqlTypeDetails = SqlTypeDetails.replace("PRIMARY KEY", "").trimmed();
     }
     bool operator ==(const dbfield &b) const;
     QString typeDetails()     const {return SqlTypeDetails;}
     // interface
     QString get_CreateSqlSnippet();
+    dbfield setPrimaryKey(){ primaryKey = true; return *this;}
     dbfield setNotNull(){ setRequired(true); return *this;}
     dbfield setDefault(QVariant v){ setDefaultValue(v); return *this;}
     dbfield setAutoInc(){ setAutoValue(true); return *this;}
-private:
+    // somewhat a helper
+    static bool isSupportedType(QVariant::Type t);
+    private:
     // data
+    bool primaryKey=false;
     QString SqlTypeDetails;
+    QVariant::Type outputType;
 };
 
 struct dbForeignKey

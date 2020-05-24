@@ -3,6 +3,16 @@
 #include "dbfield.h"
 #include "dbtable.h"
 
+/* static */ bool dbfield::isSupportedType(QVariant::Type t)
+{
+    if( t == QVariant::LongLong) return true; // index col
+    if( t == QVariant::Int)      return true; // money in ct
+    if( t == QVariant::Date)     return true;
+    if( t == QVariant::String)   return true;
+    if( t == QVariant::Bool)     return true;
+    return false;
+}
+
 bool dbfield::operator ==(const dbfield &b) const
 {
     return ((tableName() == b.tableName())
@@ -13,11 +23,12 @@ bool dbfield::operator ==(const dbfield &b) const
 QString dbfield::get_CreateSqlSnippet()
 {   //LOG_CALL_W(name());
     return name()
-            + " " + dbTypeFromVariantType(type())
+            + " " + dbAffinityType(type())
+            + (primaryKey ? " PRIMARY KEY" : "")
             + (!typeDetails().isEmpty() ? " " + typeDetails() : "")
             + (isAutoValue()? " AUTOINCREMENT" : "")
             + ((requiredStatus()==Required)? " NOT NULL" : "")
-            + (defaultValue().isValid() ? " DEFAULT "+ dbInsertableStringFromVariant(defaultValue()) : "");
+            + (defaultValue().isValid() ? " DEFAULT "+ dbInsertableString(defaultValue()) : "");
 }
 
 //////////////////////

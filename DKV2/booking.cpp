@@ -12,7 +12,7 @@ booking::booking()
     static dbtable bookings("Buchungen");
     if( 0 == bookings.Fields().size())
     {
-        bookings.append(dbfield("id",          QVariant::LongLong, "PRIMARY KEY").setAutoInc());
+        bookings.append(dbfield("id",          QVariant::LongLong).setPrimaryKey().setAutoInc());
         bookings.append(dbfield("VertragsId",  QVariant::LongLong).setDefault(0).setNotNull());
         bookings.append(dbForeignKey(bookings["VertragsId"], dkdbstructur["Vertraege"]["id"], "ON DELETE RESTRICT"));
         bookings.append(dbfield("BuchungsArt", QVariant::Int).setDefault(0).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
