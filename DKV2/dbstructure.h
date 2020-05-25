@@ -1,9 +1,9 @@
 #ifndef DBSTRUCTURE_H
 #define DBSTRUCTURE_H
 
+#include <QSqlDatabase>
 #include <QString>
 #include <QVector>
-#include <QSqlDatabase>
 
 #include "dbtable.h"
 

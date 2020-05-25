@@ -2,7 +2,6 @@
 #define CUSTOMTOOLBUTTON_H
 
 #include <QToolButton>
-#include <QDebug>
 
 class CustomToolButton : public QToolButton
 {

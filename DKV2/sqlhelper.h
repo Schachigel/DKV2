@@ -1,10 +1,12 @@
 #ifndef SQLHELPER_H
 #define SQLHELPER_H
 
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QSqlRecord>
 #include <QVariant>
 #include <QDate>
-#include <QSqlQuery>
-#include <QSqlRecord>
+
 #include "dbfield.h"
 #include "dbstructure.h"
 
@@ -32,10 +34,5 @@ QVector<QVariant> executeSingleColumnSql( const QString& field, const QString& t
 //int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant& newValue, const QString& where);
 
 int getHighestTableId(const QString& tablename);
-
-QString JsonFromRecord( QSqlRecord r);
-
-template <class T>
-T sqlVal(QSqlQuery sql, QString fname);
 
 #endif // SQLHELPER_H

@@ -1,7 +1,8 @@
 #include "helper.h"
+#include "sqlhelper.h"
 
 #include "dbfield.h"
-#include "dbtable.h"
+// #include "dbtable.h"
 
 /* static */ bool dbfield::isSupportedType(QVariant::Type t)
 {

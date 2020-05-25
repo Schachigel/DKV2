@@ -1,22 +1,13 @@
-#include <QRandomGenerator64>
+#include <QRandomGenerator>
 #include <QSqlDatabase>
-#include <QSqlDriver>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QSqlRecord>
 #include <QVector>
-#include <QStringList>
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QJsonObject>
 
 #include "helper.h"
-#include "filehelper.h"
 #include "appconfig.h"
-#include "tabledatainserter.h"
-#include "sqlhelper.h"
 #include "csvwriter.h"
-#include "finhelper.h"
-#include "dkdbhelper.h"
 #include "creditor.h"
 #include "contract.h"
 #include "booking.h"

@@ -1,4 +1,3 @@
-#include <QSettings>
 #include <QTextDocument>
 #include <QTextImageFormat>
 #include <QTextFrame>
@@ -10,7 +9,6 @@
 #include "appconfig.h"
 #include "dkdbhelper.h"
 #include "tabledatainserter.h"
-#include "sqlhelper.h"
 #include "letterTemplate.h"
 
 QPrinter* letterTemplate::printer =nullptr;

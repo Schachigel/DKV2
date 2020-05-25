@@ -1,12 +1,11 @@
-#include <QApplication>
 #include <QDate>
 #include <QString>
 #include <QFile>
 #include <QDir>
 #include <QTextStream>
 #include <QTime>
-#include <QMutex>
-#include <QDebug>
+// #include <QMutex>
+
 #include "helper.h"
 #include "windows.h"
 

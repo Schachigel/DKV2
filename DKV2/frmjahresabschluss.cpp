@@ -1,11 +1,7 @@
 #include <QDir>
-#include <QSettings>
-#include <QStandardItem>
 
-#include <helper.h>
-#include "filehelper.h"
+#include "helper.h"
 #include "appconfig.h"
-#include "sqlhelper.h"
 #include "csvwriter.h"
 #include "frmjahresabschluss.h"
 #include "ui_frmjahresabschluss.h"
@@ -36,7 +32,7 @@ frmJahresabschluss::~frmJahresabschluss()
     delete ui;
 }
 
-QStandardItemModel* frmJahresabschluss::getModelFromContracts(const QVector<contract>&vertraege) const
+QStandardItemModel* frmJahresabschluss::getModelFromContracts(const QVector<contract>&) const
 {   LOG_CALL;
     Q_ASSERT(!"repair");
     QStandardItemModel *model = new QStandardItemModel();
@@ -48,7 +44,7 @@ void frmJahresabschluss::on_pbOK_clicked()
     close();
 }
 
-void writeCsv(const QVector<contract>& vertraege, const QString& filename)
+void writeCsv(const QVector<contract>& , const QString& filename)
 {   LOG_CALL;
     csvwriter csv;
     csv.addColumns("Vertrags Nr; Kreditsumme (Euro); Zins (Euro); Wert nach Zinsgutschrift (Euro); Vorname; Nachname; Kennung; Strasse; Plz; Stadt; Email; IBAN; BIC");
@@ -89,23 +85,23 @@ void frmJahresabschluss::on_btnCsv_clicked()
     showFileInFolder(fn_thesa);
 }
 
-QString printableKreditorName(contract v)
+QString printableKreditorName(contract )
 {
     Q_ASSERT(!"repair");
     return QString();
 }
 
-QString printableKreditorStrasse(contract v)
+QString printableKreditorStrasse(contract )
 {
     return QString();
 }
 
-QString printableKreditorPlzStadt( contract v)
+QString printableKreditorPlzStadt( contract )
 {
     return QString();
 }
 
-QString printableKennung( contract v)
+QString printableKennung( contract )
 {
     return QString();
 }

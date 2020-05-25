@@ -1,10 +1,7 @@
 #include <QVector>
+#include <QRandomGenerator>
 
 #include "helper.h"
-#include "dbfield.h"
-#include "sqlhelper.h"
-#include "finhelper.h"
-#include "dkdbhelper.h"
 #include "contract.h"
 
 /* static */ const dbtable& contract::getTableDef()

@@ -1,5 +1,5 @@
 #include <QSqlQuery>
-#include <QVector>
+#include <QSqlError>
 
 #include "helper.h"
 #include "sqlhelper.h"
@@ -29,7 +29,7 @@ bool jahresabschluss::execute()
         qCritical() << "faild to select contracts: " << sql.lastError() << endl << "in " << sql.lastQuery();
         return false;
     }
-    const QDate YearEnd= QDate(Jahr, 12, 31);
+    // const QDate YearEnd= QDate(Jahr, 12, 31);
     do
     {
 Q_ASSERT(!"repair");

@@ -1,10 +1,8 @@
 #ifndef VERTRAG_H
 #define VERTRAG_H
 
-//#include <QtCore>
 #include <QString>
 #include <QDate>
-#include <QVariant>
 
 #include "helper.h"
 #include "finhelper.h"

@@ -1,12 +1,8 @@
 #ifndef DBFIELD_H
 #define DBFIELD_H
 
-#include <QString>
-#include <QVariant>
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QSqlError>
 #include <QSqlField>
+#include <QString>
 
 struct dbtable;
 

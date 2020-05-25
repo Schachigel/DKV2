@@ -6,14 +6,6 @@
 #include "finhelper.h"
 #include "financaltimespan.h"
 
-//double rounded(const double d, const int stellen)
-//{
-//    return qRound((d * pow(10,stellen)))/pow(10,stellen);
-//}
-//double rounded6dig(const double d)
-//{
-//    return (qRound(d * 1000000))/1000000;
-//}
 double round2(const double d)
 {
     return (qRound(d * 100.))/100.;

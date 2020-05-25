@@ -1,12 +1,11 @@
 #ifndef FINHELPER_H
 #define FINHELPER_H
-#include <QMap>
+
 #include <QDate>
 #include <QRegExpValidator>
 
 double rounded(const double d, const int stellen = 2);
 double round2(const double d);
-// double round6dig(const double d);
 
 int TageBisJahresende_a(const QDate& d);
 int TageBisJahresende(const QDate& d);

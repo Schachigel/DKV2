@@ -1,13 +1,10 @@
 
-#include <QString>
-#include <QList>
-#include <QTextStream>
-#include <QTextDocument>
-
+#include <QDateTime>
 #include <QFile>
 #include <QDir>
 #include <QFileInfo>
-#include <QDebug>
+#include <QProcess>
+#include <QTextDocument>
 // 4 html pdf generation
 #include <QPainter>
 #include <QPdfWriter>

@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QString>
-#include <QDate>
 #include <QStyledItemDelegate>
 
 class DateItemFormatter : public QStyledItemDelegate

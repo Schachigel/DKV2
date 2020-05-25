@@ -3,7 +3,6 @@
 
 #include <QMap>
 #include <QDate>
-#include <QSqlDatabase>
 #include <QTextDocument>
 #include <QPrinter>
 

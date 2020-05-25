@@ -1,4 +1,6 @@
-#include <QDebug>
+#include <QSqlQuery>
+#include <QSqlError>
+
 #include "helper.h"
 #include "dbtable.h"
 #include "dbfield.h"

@@ -3,7 +3,6 @@
 
 #include <QString>
 #include <QList>
-#include <QStringList>
 
 #include "sqlhelper.h"
 #include "dbfield.h"

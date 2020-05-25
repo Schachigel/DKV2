@@ -1,10 +1,8 @@
 
 #include <QString>
-#include <QDebug>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QFileDialog>
-#include <QApplication>
 
 #include "helper.h"
 #include "appconfig.h"

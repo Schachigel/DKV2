@@ -2,6 +2,7 @@
 #define TABLEDATAINSERTER_H
 
 #include <QSqlDatabase>
+#include <QSqlRecord>
 
 #include "dbtable.h"
 

@@ -19,11 +19,6 @@ private slots:
     void cleanupTestCase();
     // void init();
     // void cleanup();
-    void test_sqlValInt();
-    void test_sqlValBool();
-    void test_sqlValDouble();
-    void test_sqlValString();
-    void test_sqlValDate();
     void test_tableExists();
     void test_rowCount();
     void test_ensureTable_existingTableOK();

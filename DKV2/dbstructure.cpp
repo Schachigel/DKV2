@@ -1,7 +1,6 @@
-#include <qdebug.h>
-#include "helper.h"
 #include <QSqlDatabase>
-#include <QSqlQuery>
+
+#include "helper.h"
 #include "sqlhelper.h"
 #include "dbstructure.h"
 

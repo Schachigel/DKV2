@@ -18,6 +18,16 @@ test_sqlhelper::test_sqlhelper(QObject *parent) : QObject(parent)
 void test_sqlhelper::initTestCase()
 {   LOG_CALL;
     initTestDb();
+}
+
+void test_sqlhelper::cleanupTestCase()
+{
+    LOG_CALL;
+    cleanupTestDb();
+}
+
+void test_sqlhelper::test_tableExists()
+{
     QVERIFY( QSqlQuery().exec("CREATE TABLE testSqlVal "
                "(id integer primary key, "
                "valBool INTEGER, "
@@ -30,53 +40,9 @@ void test_sqlhelper::initTestCase()
                "1.1, "
                "'teststring', "
                "'2019-01-01 00:00:00.000')"));
-}
-
-void test_sqlhelper::cleanupTestCase()
-{
-    LOG_CALL;
-    cleanupTestDb();
-}
-
-void test_sqlhelper::test_sqlValInt()
-{
-    QSqlQuery sqlValQuery("SELECT * FROM testSqlVal");
-    QVERIFY( sqlValQuery.first());
-    QVERIFY( 1 == sqlVal<int>(sqlValQuery, "id"));
-}
-
-void test_sqlhelper::test_sqlValBool()
-{
-    QSqlQuery sqlValQuery("SELECT * FROM testSqlVal");
-    QVERIFY( sqlValQuery.first());
-    QVERIFY(sqlVal<bool>(sqlValQuery, "valBool"));
-};
-
-void test_sqlhelper::test_sqlValDouble()
-{
-    QSqlQuery sqlValQuery("SELECT * FROM testSqlVal");
-    QVERIFY( sqlValQuery.first());
-    QCOMPARE( sqlVal<double>(sqlValQuery, "valDouble"), 1.1 );
-};
-
-void test_sqlhelper::test_sqlValString()
-{
-    QSqlQuery sqlValQuery("SELECT * FROM testSqlVal");
-    QVERIFY( sqlValQuery.first());
-    QCOMPARE( sqlVal<QString>(sqlValQuery, "valString"), QString("teststring") );
-};
-
-void test_sqlhelper::test_sqlValDate()
-{
-    QSqlQuery sqlValQuery("SELECT * FROM testSqlVal");
-    QVERIFY( sqlValQuery.first());
-    QCOMPARE( sqlVal<QDate>(sqlValQuery, "valDate"), QDate(2019, 1, 1) );
-};
-
-void test_sqlhelper::test_tableExists()
-{
     QVERIFY2(tableExists("testSqlVal"), "test of tableExists faild on existing table");
     QVERIFY2(!tableExists("notExistingTable"), "test of tableExists faild on NOT existing table");
+    QSqlQuery("DROP TABLE testSqlVal");
 }
 
 void test_sqlhelper::test_rowCount()

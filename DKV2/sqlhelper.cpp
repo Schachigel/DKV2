@@ -1,8 +1,3 @@
-#include <QDebug>
-#include <QSqlRecord>
-#include <QJsonDocument>
-#include <QJsonObject>
-
 #include "helper.h"
 #include "sqlhelper.h"
 
@@ -283,85 +278,8 @@ QVector<QVariant> executeSingleColumnSql( const QString& field, const QString& t
     return result;
 }
 
-//int ExecuteUpdateSql(const QString& table, const QString& field, const QVariant& newValue, const QString& where)
-//{   LOG_CALL;
-//    QString sql = "UPDATE " + table;
-//    sql += " SET " + field + " = ";
-
-//    QString value (newValue.toString());
-//    if( value[0] != "'") value.push_front("'");
-//    if( value[value.size()-1] != "'") value.push_back("'");
-
-//    sql += value;
-//    sql += " WHERE " + where;
-//    QSqlQuery q;
-//    q.prepare(sql);
-//    if( q.exec())
-//    {
-//        qDebug() << "successfully executed update sql " << q.lastQuery();
-//        if( q.numRowsAffected())
-//            qDebug() << q.numRowsAffected() << " record were modified";
-
-//        return q.numRowsAffected();
-//    }
-//    qCritical() << "faild to execute update sql: " << q.lastError()
-//                << endl << q.lastQuery();
-//    return -1;
-//}
-
 int getHighestTableId(const QString& tablename)
 {   LOG_CALL;
     QString sql = "SELECT max(ROWID) FROM " + tablename;
     return executeSingleValueSql(sql).toInt();
-}
-
-QString JsonFromRecord( QSqlRecord r)
-{   LOG_CALL;
-    QMap<QString, QVariantMap> jRecord;
-    for(int i=0; i< r.count(); i++)
-    {
-        QSqlField f(r.field(i));
-        QVariantMap& vMap = jRecord[f.tableName()];
-        vMap[f.name()] = f.value();
-    }
-    QJsonObject root;
-    for( auto table : jRecord.keys())
-    {
-        QString tablename(table);
-        QVariantMap map = jRecord.value(table);
-        root.insert(table, QJsonObject::fromVariantMap(map));
-    }
-    QJsonDocument doc;
-    doc.setObject(root);
-    return doc.toJson();
-}
-
-template<>
-bool sqlVal(QSqlQuery sql, QString fname)
-{
-    return sql.record().value(fname).toBool();
-}
-
-template <>
-int sqlVal(QSqlQuery sql, QString fname)
-{
-    return sql.record().value(fname).toInt();
-}
-
-template <>
-double sqlVal(QSqlQuery sql, QString fname)
-{
-    return sql.record().value(fname).toDouble();
-}
-
-template <>
-QString sqlVal(QSqlQuery sql, QString fname)
-{
-    return sql.record().value(fname).toString();
-}
-
-template<>
-QDate sqlVal(QSqlQuery sql, QString fname)
-{
-    return sql.record().value(fname).toDate();
 }

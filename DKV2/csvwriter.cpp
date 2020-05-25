@@ -1,12 +1,4 @@
 
-#include <QtGlobal>
-#include <QDebug>
-#include <QString>
-#include <QList>
-#include <QStringList>
-#include <QTextStream>
-#include <QSqlQuery>
-
 #include "helper.h"
 #include "sqlhelper.h"
 #include "filehelper.h"

@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QVector>
+
 #include "contract.h"
 
 class jahresabschluss

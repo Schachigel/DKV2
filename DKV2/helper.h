@@ -2,12 +2,9 @@
 #define HELPER_H
 
 #include <QString>
-#include <QTime>
-#include <QDebug>
-#include <QFile>
-#include <QDir>
-#include <QProcess>
 #include <QElapsedTimer>
+#include <QFile>
+#include <QDebug>
 
 #include "filehelper.h"
 

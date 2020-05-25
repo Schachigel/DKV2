@@ -22,21 +22,21 @@ void aktiviereVertrag(int vid)
 Q_ASSERT(!"repair");
 }
 
-void beendeVertrag(int vid)
+void beendeVertrag(int )
 {   LOG_CALL;
 Q_ASSERT(!"repair");
     contract v;
 }
-void VertragsEnde_LaufzeitEnde( contract& v)
+void VertragsEnde_LaufzeitEnde( contract& )
 {   LOG_CALL;
 Q_ASSERT(!"repair");
     return;
 }
-void VertragsEnde_MitKFrist( contract& v)
+void VertragsEnde_MitKFrist( contract& )
 {   LOG_CALL;
 Q_ASSERT(!"repair");
 }
-void VertragsEnde_PassiverV(contract& v)
+void VertragsEnde_PassiverV(contract& )
 {   LOG_CALL;
 Q_ASSERT(!"repair");
 }

@@ -3,7 +3,6 @@
 
 #include <QSqlDatabase>
 
-#include "sqlhelper.h"
 #include "dbfield.h"
 
 class dbstructure;

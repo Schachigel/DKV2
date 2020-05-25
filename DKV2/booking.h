@@ -1,10 +1,9 @@
 #ifndef BOOKING_H
 #define BOOKING_H
 
-#include "helper.h"
-#include "tabledatainserter.h"
-#include "dkdbhelper.h"
+#include <QDate>
 
+#include "dbtable.h"
 
 struct booking
 {

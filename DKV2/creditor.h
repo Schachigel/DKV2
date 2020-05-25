@@ -1,13 +1,13 @@
 #ifndef KREDITOR_H
 #define KREDITOR_H
 
-#include <QRandomGenerator64>
 #include <QString>
 #include <QPair>
 #include <QList>
 
 #include "tabledatainserter.h"
 #include "dkdbhelper.h"
+
 
 class creditor
 {

@@ -1,8 +1,8 @@
 #ifndef DKDBHELPER_H
 #define DKDBHELPER_H
-#include <QDebug>
+
 #include <QSqlDatabase>
-#include <QVariant>
+
 #include <QDateTime>
 #include <QList>
 #include <QString>

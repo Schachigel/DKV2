@@ -4,31 +4,21 @@
 #else
 #include <stdlib.h>
 #endif
-#include <QPair>
+
 #include <QStandardPaths>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QSqlQuery>
-#include <QSqlError>
 #include <QSqlTableModel>
 #include <QSortFilterProxyModel>
 #include <QSqlRelationalTableModel>
-#include <QSqlRecord>
-#include <QSqlField>
-#include <QMap>
-
 #include <QPdfWriter>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
 #include "askdatedlg.h"
-#include "helper.h"
-#include "filehelper.h"
-#include "finhelper.h"
 #include "appconfig.h"
 #include "itemformatter.h"
-#include "sqlhelper.h"
 #include "dkdbhelper.h"
 #include "letters.h"
 #include "jahresabschluss.h"
@@ -495,7 +485,7 @@ void MainWindow::on_action_save_contact_go_new_creditor_triggered()
 }
 
 // neuer Vertrag
-void ensureConsistentContractEnding( int& monate, QDate& lze, const QDate contractdate)
+void ensureConsistentContractEnding( int& monate, QDate& lze, const QDate )
 {   LOG_CALL;
     // ensure consistency:
     // kfrist == -1 -> LaufzeitEnde has to be valid and NOT 31.12.9999

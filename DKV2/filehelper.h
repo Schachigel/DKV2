@@ -1,7 +1,6 @@
 #ifndef FILEHELPER_H
 #define FILEHELPER_H
 #include <QString>
-#include <QFile>
 
 bool backupFile(const QString& filename, const QString& subfolder="");
 

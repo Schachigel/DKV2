@@ -1,4 +1,6 @@
-#include <qdebug.h>
+//#include "finhelper.h"
+#include <QDate>
+
 #include "finhelper.h"
 #include "itemformatter.h"
 
