@@ -10,7 +10,7 @@
 #include "transaktionen.h"
 
 
-void aktiviereVertrag(int vid)
+void aktiviereVertrag(int )
 {   LOG_CALL;
     askDateDlg dlg( nullptr, QDate::currentDate());
     dlg.setMsg("<H3>Mit der Aktivierung des Vertrags beginnt die Zinsberechnung. <br>Bitte geben Sie das Datum des Geldeingangs ein:</H3>");

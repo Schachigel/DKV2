@@ -23,6 +23,7 @@ private slots:
     // the actual tests
     void test_createBooking();
     void test_createDeposits();
+    void test_randomActivations();
 
 };
 

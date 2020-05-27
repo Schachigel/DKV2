@@ -3,10 +3,6 @@
 #include "contract.h"
 #include "booking.h"
 
-booking::booking()
-{
-}
-
 /* static */ const dbtable& booking::getTableDef()
 {
     static dbtable bookings("Buchungen");
@@ -22,24 +18,24 @@ booking::booking()
     return bookings;
 }
 
-/* static */ const QString booking::typeName( booking::type t)
+/* static */ const QString booking::typeName( booking::Type t)
 {
     switch (t)
     {
-    case booking::type::deposit:
+    case booking::Type::deposit:
         return "deposit";
-    case booking::type::payout:
+    case booking::Type::payout:
         return "payout";
-    case booking::type::interestDeposit:
+    case booking::Type::interestDeposit:
         return "reinvestment";
-    case booking::type::interestPayout:
+    case booking::Type::interestPayout:
         return "interest payout";
     default:
         return "invalid booking type";
     }
 }
 
-/* static */ bool booking::doBooking( const booking::type t, const qlonglong contractId, const double amount, const QDate date)
+/* static */ bool booking::doBooking( const booking::Type t, const qlonglong contractId, const QDate date, const double amount)
 {   LOG_CALL_W(typeName(t));
     TableDataInserter tdi(dkdbstructur["Buchungen"]);
     tdi.setValue("VertragsId", contractId);
@@ -49,44 +45,44 @@ booking::booking()
     return tdi.InsertData();
 }
 
-/* static */ bool booking::makeDeposit(const qlonglong contractId, const double amount, const QDate date)
+/* static */ bool booking::makeDeposit(const qlonglong contractId, const QDate date, const double amount)
 {
     Q_ASSERT( amount > 0.);
-    return doBooking( type::deposit, contractId, amount, date);
+    return doBooking( Type::deposit, contractId, date, amount);
 }
-/* static */ bool booking::makePayout(qlonglong contractId, double amount, QDate date)
+/* static */ bool booking::makePayout(qlonglong contractId, QDate date, double amount)
 {
     if( amount > 0. ) amount = -1. * amount;
     // todo: check account
-    return doBooking(type::payout, contractId, amount, date);
+    return doBooking(Type::payout, contractId, date, amount);
 
 }
-/* static */ bool booking::investInterest(qlonglong contractId, double amount, QDate date)
+/* static */ bool booking::investInterest(qlonglong contractId, QDate date, double amount)
 {
     Q_ASSERT( amount > 0.);
-    return doBooking(type::interestDeposit, contractId, amount, date);
+    return doBooking(Type::interestDeposit, contractId, date, amount);
 }
-/* static */ bool booking::payoutInterest(qlonglong contractId, double amount, QDate date)
+/* static */ bool booking::payoutInterest(qlonglong contractId, QDate date, double amount)
 {
     Q_ASSERT( amount > 0.);
-    return doBooking(type::interestPayout, contractId, amount, date);
+    return doBooking(Type::interestPayout, contractId, date, amount);
 }
 
 /*
  * BookingS is about getting collections of bookings
 */
 
-QVector<bookings::data> bookings::getBookings()
+QVector<booking> bookings::getBookings()
 {   LOG_CALL;
     QVector<QSqlRecord> rec = executeSql(dkdbstructur["Buchungen"].Fields(),
             "VertragsId=" + QString::number(contractId) + " AND BuchungsArt=" + QString::number(type));
     if( rec.isEmpty()) {
         qDebug() << "could not query bookings for " << contractId << " type " << booking::typeName(type);
-        return QVector<bookings::data>();
+        return QVector<booking>();
     }
-    QVector<bookings::data> result;
+    QVector<booking> result;
     for( auto r : rec) {
-        result.push_back({r.value("Betrag").toDouble(), r.value("Datum").toDate()});
+        result.push_back(booking(type, r.value("Datum").toDate(), r.value("Betrag").toDouble()));
     }
     return result;
 }

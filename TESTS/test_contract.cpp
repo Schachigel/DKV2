@@ -25,6 +25,19 @@ void test_contract::cleanup()
     cleanupTestDb();
 }
 
+void test_contract::test_set_get_interest()
+{   LOG_CALL;
+    contract c;
+    c.setInterestRate(1.5);
+    QCOMPARE( c.interestRate(), 1.5);
+    c.setInterest100th(149);
+    QCOMPARE( c.interestRate(), 1.49);
+    creditor cre = saveRandomCreditor();
+    c.setCreditorId(cre.id());
+    c.saveNewContract();
+    contract d(c.id());
+}
+
 void test_contract::test_createContract()
 {   LOG_CALL;
 

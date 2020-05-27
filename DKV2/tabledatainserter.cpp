@@ -19,31 +19,45 @@ void TableDataInserter::init(const dbtable& t)
     }
 }
 
-void TableDataInserter::setValue(const QString& n, const QVariant& v)
-{   // LOG_CALL_W(n);
-    qInfo() << "tableDataInserter setValue: " << n << " -> " << v ;
-    if( n.isEmpty()) return;
-    if( record.contains(n)) {
-        if( record.field(n).type() == v.type())
-            record.setValue(n, v);
-        else {
-            qDebug() << "wrong field type for insertion -> converting" << v.type() << " -> " << record.field(n).type();
-            QVariant vf (v); vf.convert(record.field(n).type());
-            record.setValue(n, vf);
-        }
-    }
-    else
+bool TableDataInserter::setValue(const QString& n, const QVariant& v)
+{
+    if( ! record.contains(n)) {
         qCritical() << "wrong field name for insertion " << n;
+        return false;
+    }
+    if( record.field(n).type() == v.type()) {
+        qInfo() << "tableDataInserter setValue: " << n << " -> " << v ;
+        record.setValue(n, v);
+        return true;
+    }
+    qDebug() << "wrong field type for insertion -> converting" << v.type() << " -> " << record.field(n).type();
+    QVariant vf (v);
+    if( vf.convert(record.field(n).type())){
+        record.setValue(n, vf);
+        return true;
+    }
+    qCritical() << "type conversion failed" << n;
+    return false;
 }
 
-void TableDataInserter::setValues(const QSqlRecord input)
+bool TableDataInserter::setValues(const QSqlRecord input)
 {   LOG_CALL;
     if( input.count() != record.count()) {
         qCritical() << "TableDataInserter setValues faild: wrong sqlRecord size (actual / expected): " << input.count() << " / " << record.count();
-        return;
+        return false;
     }
     // check compatibility
+    for( int i=0; i< input.count(); i++) {
+        QSqlField inputf = input.field(i);
+        QSqlField recordf = record.field(inputf.name());
+        if( inputf.type() != recordf.type())
+            return false;
+    }
 
+    for( int i=0; i< input.count(); i++) {
+        setValue(input.fieldName(i), input.value(i));
+    }
+    return true;
 }
 
 QString TableDataInserter::getInsertRecordSQL() const

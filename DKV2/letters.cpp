@@ -3,7 +3,7 @@
 #include"helper.h"
 #include "letters.h"
 
-void printThankyouLetter( const contract& v)
+void printThankyouLetter( const contract& )
 {   LOG_CALL;
     QLocale locale;
     letterTemplate tlate(letterTemplate::Geldeingang);
@@ -32,7 +32,7 @@ Q_ASSERT(!"repair");
 //        showFileInFolder(filename);
 }
 
-void printTerminationLetter( const contract& v, QDate kDate, int kMonate)
+void printTerminationLetter( const contract& , QDate kDate, int )
 {   LOG_CALL;
     QLocale locale;
     letterTemplate tlate(letterTemplate::Kuendigung);
@@ -61,7 +61,7 @@ Q_ASSERT(!"repair");
 //        showFileInFolder(filename);
 }
 
-void printFinalLetter( const contract& v, QDate contractEnd)
+void printFinalLetter( const contract& , QDate )
 {   LOG_CALL;
     QLocale locale;
     letterTemplate tlate(letterTemplate::Kontoabschluss);

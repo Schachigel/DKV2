@@ -526,7 +526,7 @@ contract MainWindow::get_contract_data_from_form()
 
     // interface to comboBox -> 1/100th of the itemdata
     int interrestIndex= ui->cbZins->itemData(ui->cbZins->currentIndex()).toInt();
-    c.setInterestRate(round2(double(interrestIndex)/100));
+    c.setInterest100th(round2(double(interrestIndex)/100));
     c.setConclusionDate (ui->deVertragsabschluss->date());
 
     int kFrist = ui->cbKFrist->currentData().toInt();

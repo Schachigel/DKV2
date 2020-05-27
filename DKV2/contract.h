@@ -15,6 +15,7 @@ struct contract
 {
     // construction
     contract() :td(getTableDef()) { setId(-1);};
+    contract(qlonglong id) : td(getTableDef()) { fromDb(id); };
 
     // getter & setter
     void setId(qlonglong id) { td.setValue("id", id);}
@@ -23,14 +24,14 @@ struct contract
     void setCreditorId(qlonglong kid) {td.setValue("kreditorId", kid);}
     qlonglong creditorId() const{ return td.getValue("KreditorId").toLongLong();}
 
-    void setLabel(QString l) { return td.setValue("Kennung", l);}
+    void setLabel(QString l) { td.setValue("Kennung", l);}
     QString label() const { return td.getValue("Kennung").toString();};
 
-    void setInterestRate( int percentpercent) {td.setValue("ZSatz", percentpercent);}
+    void setInterest100th( int percentpercent) {td.setValue("ZSatz", percentpercent);}
     void setInterestRate( double percent) {td.setValue("ZSatz", int(percent*100));}
 
     double interestRate() const { return double(td.getValue("ZSatz").toInt())/100.;}
-    int interestRateInt() const { return td.getValue("ZSatz").toInt()*100;}
+    //int interestRate100th() const { return td.getValue("ZSatz").toInt()*100;}
 
     void setPlannedInvest(int i) { td.setValue("Betrag", i);}
     int plannedInvest() const { return td.getValue("Betrag").toInt();}
@@ -53,7 +54,7 @@ struct contract
     int saveNewContract();
 
 //    bool loadContractFromDb(qlonglong id);
-//    bool activateContract(const QDate& aDate);
+    bool activate(const QDate& aDate, int amount);
 //    bool bookAnnualInterest(const QDate& YearEnd);
 //    bool cancelActiveContract(const QDate& kTermin);
 //    bool terminateActiveContract(const QDate& termin);
@@ -63,10 +64,12 @@ private:
     // data
     TableDataInserter td;
     // helper
+    bool fromDb(qlonglong i);
 };
 
 // for testing
 contract saveRandomContract(qlonglong creditorId);
 void saveRandomContracts(int count);
+void activateRandomContracts(int percent);
 
 #endif // VERTRAG_H
