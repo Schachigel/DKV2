@@ -26,7 +26,7 @@ QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbFo
 QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where="");
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where ="");
 
-QVariant executeSingleValueSql(const QString& s, QSqlDatabase db = QSqlDatabase::database());
+QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db = QSqlDatabase::database());
 QVariant executeSingleValueSql(const QString& field, const QString& table, const QString& where = "", QSqlDatabase db = QSqlDatabase::database());
 
 QVector<QVariant> executeSingleColumnSql( const QString& field, const QString& table, const QString& where="");

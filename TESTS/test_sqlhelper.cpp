@@ -12,8 +12,7 @@
 #include "test_sqlhelper.h"
 
 test_sqlhelper::test_sqlhelper(QObject *parent) : QObject(parent)
-{
-}
+{}
 
 void test_sqlhelper::initTestCase()
 {   LOG_CALL;
@@ -21,8 +20,7 @@ void test_sqlhelper::initTestCase()
 }
 
 void test_sqlhelper::cleanupTestCase()
-{
-    LOG_CALL;
+{   LOG_CALL;
     cleanupTestDb();
 }
 

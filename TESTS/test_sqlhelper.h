@@ -2,7 +2,6 @@
 #define TEST_SQLHELPER_H
 
 #include <QObject>
-#include <QSqlQuery>
 
 class test_sqlhelper : public QObject
 {

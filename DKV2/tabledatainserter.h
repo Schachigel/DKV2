@@ -10,7 +10,7 @@ class TableDataInserter
 {
 public:
     // constr. destrc. & access fu
-    TableDataInserter(){}
+    //TableDataInserter(){}
     TableDataInserter(const dbtable& t);
     void init(const dbtable& t);
     bool setValue(const QString& field, const QVariant& v);
@@ -21,7 +21,7 @@ public:
     int InsertData(QSqlDatabase db = QSqlDatabase::database()) const;
     int InsertOrReplaceData() const;
     int UpdateData() const;
-    //int getInsertedRecordId() const {return lastRecord;}
+
 private:
     // data
     QString tablename;

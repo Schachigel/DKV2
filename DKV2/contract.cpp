@@ -88,7 +88,7 @@ contract saveRandomContract(qlonglong creditorId)
     c.setCreditorId(creditorId);
     c.setReinvesting(rand->bounded(100)%4);
     c.setInterest100th(1 +rand->bounded(149));
-    c.setPlannedInvest(rand->bounded(50)*1000. + rand->bounded(10)*100.);
+    c.setPlannedInvest(rand->bounded(50)*1000. + rand->bounded(1,101)*100.);
     c.setConclusionDate(QDate::currentDate().addYears(-2).addDays(rand->bounded(720)));
     if( rand->bounded(100)%3) {
         c.setPlannedEndDate(c.conclusionDate().addYears(rand->bounded(3)).addMonths(rand->bounded(12)));

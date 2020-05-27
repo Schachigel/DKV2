@@ -182,7 +182,14 @@ QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbFo
     qInfo() << "selectQueryFromFields created Query: " << Query;
     return Query;
 }
-
+QSqlField adjustedType(const QSqlField& f, QVariant::Type t)
+{
+    QVariant tmpV = f.value();
+    tmpV.convert(t);
+    QSqlField ret (f);
+    ret.setValue(tmpV);
+    return ret;
+}
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where)
 {
     QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where);
@@ -201,18 +208,15 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
     // adjust the database types to the expected types
     QSqlRecord result;
     for( auto dbFieldEntry : fields) {
-
         QSqlField tmpField =q.record().field(dbFieldEntry.name());
-        tmpField.setType(dbFieldEntry.type());
-        result.append(tmpField);
+        result.append(adjustedType(tmpField,dbFieldEntry.type()));
     }
     qDebug() << "record from db   : " << q.record()<< endl;
     qDebug() << "calculated result: " << result << endl;
     return result;
 }
-
 QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db)
-{   LOG_CALL_W(sql);
+{
     QSqlQuery q(db);
     if( !q.exec(sql))
     {
@@ -230,6 +234,7 @@ QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db)
         qDebug() << "SingleValueSql returned no value\n" << q.lastQuery() << endl;;
         return QVariant();
     }
+    qInfo() << "sql " << sql << " returned " << q.value(0);
     return q.value(0);
 }
 
@@ -249,8 +254,7 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
         QSqlRecord oneRecord;
         for( auto dbFieldEntry : fields) {
             // adjust to original variant data type
-            QSqlField tmpField =q.record().field(dbFieldEntry.name());
-            tmpField.setType(dbFieldEntry.type());
+            QSqlField tmpField {adjustedType(q.record().field(dbFieldEntry.name()), dbFieldEntry.type())};
             oneRecord.append(tmpField);
         }
         result.push_back(oneRecord);

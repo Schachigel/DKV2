@@ -112,11 +112,11 @@ QString TableDataInserter::getUpdateRecordSQL() const
     bool firstField = true;
     for( int i=0; i<record.count(); i++) {
         if( ! firstField) sql += ", ";
-        // WARN ! THIS will not work with multiple AutoValues
+        // WARN ! THIS will work with exactly 1 AutoValue
         if( record.field(i).isAutoValue())
-            where += record.field(i).name() + " = " + record.field(i).value().toString();
+            where += record.field(i).name() + "=" + record.field(i).value().toString();
         else {
-            sql += record.field(i).name() + " = " + dbInsertableString(record.field(i).value());
+            sql += record.field(i).name() + "=" + dbInsertableString(record.field(i).value());
             firstField = false;
         }
     }
@@ -154,16 +154,16 @@ int TableDataInserter::InsertOrReplaceData() const
 }
 
 int TableDataInserter::UpdateData() const
-{   LOG_CALL;
+{
     if( record.isEmpty()) return false;
     QSqlQuery q;
     bool ret = q.exec(getUpdateRecordSQL());
     int lastRecord = q.lastInsertId().toInt();
     if( !ret) {
-        qCritical() << "Update record failed: " << q.lastError() << endl << q.lastQuery() << endl;
+        qCritical() << "TDI.Update record failed: " << q.lastError() << endl << q.lastQuery() << endl;
         return -1;
     }
-    qDebug() << "successfully updated Data at index " << q.lastInsertId().toInt() << endl <<  q.lastQuery() << endl;
+    qDebug() << "TDI.Update: successfull at index " << q.lastInsertId().toInt() << endl <<  q.lastQuery() << endl;
     return lastRecord;
 }
 

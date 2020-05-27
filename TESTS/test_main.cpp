@@ -16,6 +16,7 @@
 #include "test_creditor.h"
 #include "test_contract.h"
 #include "test_booking.h"
+#include "test_tabledatainserter.h"
 
 #ifndef TESTLIB_SELFCOVERAGE_START
 #define TESTLIB_SELFCOVERAGE_START(a)
@@ -49,6 +50,7 @@ int main(int argc, char *argv[])
     tests.push_back(new test_properties);
     tests.push_back(new test_finance);
     tests.push_back(new test_sqlhelper);
+    tests.push_back(new test_tableDataInserter);
 
     srand(time(0));
     std::random_shuffle(tests.begin(), tests.end());
