@@ -136,6 +136,34 @@ bool ensureTable( const dbtable& table, QSqlDatabase db)
     return table.create(db);
 }
 
+QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db)
+{
+    QSqlQuery q(db);
+    if( !q.exec(sql))
+    {
+        qCritical() << "SingleValueSql failed to execute: " << q.lastError() << endl << q.lastQuery() << endl;;
+        return QVariant();
+    }
+    q.last();
+    if(q.at() > 0)
+    {
+        qDebug() << "SingleValueSql returned more than one value\n" << q.lastQuery() << endl;;
+        return QVariant();
+    }
+    if(q.at() < 0)
+    {
+        qDebug() << "SingleValueSql returned no value\n" << q.lastQuery() << endl;;
+        return QVariant();
+    }
+    qInfo() << "sql " << sql << " returned " << q.value(0);
+    return q.value(0);
+}
+QVariant executeSingleValueSql( const QString& field, const QString& table, const QString& where, QSqlDatabase db)
+{//   LOG_CALL;
+    QString sql = "SELECT " + field + " FROM " + table + (where.isEmpty()? "" : (" WHERE " + where));
+    return executeSingleValueSql(sql, db);
+}
+
 QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbForeignKey> keys, const QString& incomingWhere)
 {   //LOG_CALL;
 
@@ -190,6 +218,36 @@ QSqlField adjustedType(const QSqlField& f, QVariant::Type t)
     ret.setValue(tmpV);
     return ret;
 }
+QVector<QVariant> executeSingleColumnSql( const dbfield field, const QString& where)
+{   LOG_CALL;
+    QVector<QVariant> result;
+    if( field.tableName().isEmpty() || field.name().isEmpty()) {
+        qCritical() << "incomplete dbfield";
+        return result;
+    }
+    QSqlQuery q;
+    if( q.exec("SELECT " + field.name() + " FROM " + field.tableName() + (where.isEmpty()? "" : (" WHERE " + where))))
+        while( q.next()) {
+            result.push_back(adjustedType(q.record().field(0), field.type()).value());
+        }
+    else
+        qCritical() << "SingleColumnSql failed " << q.lastError() << endl << q.lastQuery();
+
+    return result;
+}
+QVector<QVariant> executeSingleColumnSql( const QString& field, const QString& table, const QString& where)
+{   LOG_CALL;
+    QVector<QVariant> result;
+    QSqlQuery q;
+    if( q.exec("SELECT " + field + " FROM " + table + (where.isEmpty()? "" : (" WHERE " + where))))
+        while( q.next()) {
+            result.push_back(q.record().value(0));
+        }
+    else
+        qCritical() << "SingleColumnSql failed " << q.lastError() << endl << q.lastQuery();
+
+    return result;
+}
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where)
 {
     QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where);
@@ -211,33 +269,8 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
         QSqlField tmpField =q.record().field(dbFieldEntry.name());
         result.append(adjustedType(tmpField,dbFieldEntry.type()));
     }
-    qDebug() << "record from db   : " << q.record()<< endl;
-    qDebug() << "calculated result: " << result << endl;
     return result;
 }
-QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db)
-{
-    QSqlQuery q(db);
-    if( !q.exec(sql))
-    {
-        qCritical() << "SingleValueSql failed to execute: " << q.lastError() << endl << q.lastQuery() << endl;;
-        return QVariant();
-    }
-    q.last();
-    if(q.at() > 0)
-    {
-        qDebug() << "SingleValueSql returned more than one value\n" << q.lastQuery() << endl;;
-        return QVariant();
-    }
-    if(q.at() < 0)
-    {
-        qDebug() << "SingleValueSql returned no value\n" << q.lastQuery() << endl;;
-        return QVariant();
-    }
-    qInfo() << "sql " << sql << " returned " << q.value(0);
-    return q.value(0);
-}
-
 QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where)
 {
     QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where);
@@ -259,26 +292,6 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
         }
         result.push_back(oneRecord);
     }
-    return result;
-}
-
-QVariant executeSingleValueSql( const QString& field, const QString& table, const QString& where, QSqlDatabase db)
-{//   LOG_CALL;
-    QString sql = "SELECT " + field + " FROM " + table + (where.isEmpty()? "" : (" WHERE " + where));
-    return executeSingleValueSql(sql, db);
-}
-
-QVector<QVariant> executeSingleColumnSql( const QString& field, const QString& table, const QString& where)
-{   LOG_CALL;
-    QVector<QVariant> result;
-    QSqlQuery q;
-    if( q.exec("SELECT " + field + " FROM " + table + (where.isEmpty()? "" : (" WHERE " + where))))
-        while( q.next()) {
-            result.push_back(q.record().value(0));
-        }
-    else
-        qCritical() << "SingleColumnSql failed " << q.lastError() << endl << q.lastQuery();
-
     return result;
 }
 

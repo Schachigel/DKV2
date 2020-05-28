@@ -102,7 +102,7 @@ contract saveRandomContract(qlonglong creditorId)
 void saveRandomContracts(int count)
 {   LOG_CALL;
     Q_ASSERT(count>0);
-    QVector<QVariant> creditorIds = executeSingleColumnSql("id", "Kreditoren");
+    QVector<QVariant> creditorIds = executeSingleColumnSql(dkdbstructur["Kreditoren"]["id"]);
     if( creditorIds.size() == 0)
         qDebug() << "No Creditors to create contracts for";
 

@@ -24,25 +24,6 @@ void test_sqlhelper::cleanupTestCase()
     cleanupTestDb();
 }
 
-void test_sqlhelper::test_tableExists()
-{
-    QVERIFY( QSqlQuery().exec("CREATE TABLE testSqlVal "
-               "(id integer primary key, "
-               "valBool INTEGER, "
-               "valDouble REAL, "
-               "valString STRING, "
-               "valDate STRING)"));
-    QVERIFY( QSqlQuery().exec("INSERT INTO testSqlVal VALUES "
-               "(1, "
-               "1, "
-               "1.1, "
-               "'teststring', "
-               "'2019-01-01 00:00:00.000')"));
-    QVERIFY2(tableExists("testSqlVal"), "test of tableExists faild on existing table");
-    QVERIFY2(!tableExists("notExistingTable"), "test of tableExists faild on NOT existing table");
-    QSqlQuery("DROP TABLE testSqlVal");
-}
-
 void test_sqlhelper::test_rowCount()
 {   LOG_CALL;
     QSqlQuery q;
@@ -56,6 +37,19 @@ void test_sqlhelper::test_rowCount()
         QVERIFY( q.exec(QString() + "DELETE FROM testRowCount01 WHERE (id=" + QString::number(i) +")"));
     QCOMPARE(rowCount("testRowCount01"), maxRows/2);
     QVERIFY (q.exec("DROP TABLE testRowCount01"));
+}
+
+void test_sqlhelper::test_tableExists()
+{
+    QVERIFY( QSqlQuery().exec("CREATE TABLE testSqlVal "
+               "(id integer primary key, "
+               "valBool INTEGER, valDouble REAL, "
+               "valString STRING, valDate STRING)"));
+    QVERIFY( QSqlQuery().exec("INSERT INTO testSqlVal VALUES "
+               "(1, 1, 1.1, 'teststring', '2019-01-01 00:00:00.000')"));
+    QVERIFY2(tableExists("testSqlVal"), "test of tableExists faild on existing table");
+    QVERIFY2(!tableExists("notExistingTable"), "test of tableExists faild on NOT existing table");
+    QSqlQuery("DROP TABLE testSqlVal");
 }
 
 void test_sqlhelper::test_ensureTable_existingTableOK()
@@ -102,6 +96,40 @@ void test_sqlhelper::test_ensureTable_nonexistingTable()
     t.append(dbfield("id"));
     QVERIFY(ensureTable(t));
     QSqlQuery("DROP TABLE tableThatDoesNotExist");
+}
+
+void test_sqlhelper::test_eSingleValueSqlPreservsValue()
+{
+    QString tablename("testTable");
+    dbtable t(tablename);
+    t.append(dbfield("id",      QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
+    t.append(dbfield("aDate",   QVariant::Date));
+    t.append(dbfield("anInt",   QVariant::Int));
+    t.append(dbfield("aString", QVariant::String));
+    t.append(dbfield("aBool",   QVariant::Bool));
+    QVERIFY(ensureTable(t));
+
+    QString string{"Hallo Welt!"};
+    QDate date{1965, 5, 6};
+    int i {42};
+    bool b = true;
+    QString createSql{ QString("INSERT INTO " +tablename+  " VALUES( "
+                 + "NULL, "
+                 + "'" + date.toString(Qt::ISODate) + "', "
+                 + QString::number(i) + ", "
+                 +  "'" + string + "', "
+                 +  (b ? "1" : "0")
+                 + ")")};
+
+    QVERIFY(QSqlQuery().exec(createSql));
+    // note: types are assumed. the actual variant type could be different
+    QCOMPARE(executeSingleValueSql("id", "testtable", "id=1").toLongLong(), 1);
+    QCOMPARE(executeSingleValueSql("aDate", "testtable", "id=1").toDate(), date);
+    QCOMPARE(executeSingleValueSql("anInt", "testtable", "id=1").toInt(), i);
+    QCOMPARE(executeSingleValueSql("aString", "testtable", "id=1").toString(), string);
+    QCOMPARE(executeSingleValueSql("aBool", "testtable", "id=1").toBool(), b);
+
+    QVERIFY(QSqlQuery().exec("DROP TABLE " +tablename));
 }
 
 void test_sqlhelper::test_selectQueryFromFields_noWhere()
@@ -193,9 +221,9 @@ void test_sqlhelper::test_selectQueryFromFields_wRefwWhere()
     referenced.append(dbfield("id", QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
     referenced.append(dbfield("col"));
     ensureTable(referenced);
-    QSqlQuery inserter;
-    inserter.exec("INSERT INTO " + tname + " VALUES( NULL, 'Hugo')");
-    inserter.exec("INSERT INTO " + tname + " VALUES( NULL, 'Franz')");
+    QSqlQuery insertQ;
+    insertQ.exec("INSERT INTO " + tname + " VALUES( NULL, 'Hugo')");
+    insertQ.exec("INSERT INTO " + tname + " VALUES( NULL, 'Franz')");
 
     QString tname2{"t2"};
     dbtable referencing(tname2);
@@ -203,10 +231,10 @@ void test_sqlhelper::test_selectQueryFromFields_wRefwWhere()
     referencing.append(dbForeignKey(referencing["refId"], referenced["id"]));
     referencing.append(dbfield("other"));
     ensureTable(referencing);
-    inserter.exec("INSERT INTO " + tname2 + " VALUES( 1, 'Hut')");
-    qDebug() << inserter.lastError() << endl << inserter.lastQuery();
-    inserter.exec("INSERT INTO " + tname2 + " VALUES( 1, 'Schuh')");
-    inserter.exec("INSERT INTO " + tname2 + " VALUES( 2, 'Hemd')");
+    insertQ.exec("INSERT INTO " + tname2 + " VALUES( 1, 'Hut')");
+    qDebug() << insertQ.lastError() << endl << insertQ.lastQuery();
+    insertQ.exec("INSERT INTO " + tname2 + " VALUES( 1, 'Schuh')");
+    insertQ.exec("INSERT INTO " + tname2 + " VALUES( 2, 'Hemd')");
     // test
     QVector<dbfield> selected{referenced.Fields()};
     selected.append(referencing["refId"]);
@@ -217,40 +245,58 @@ void test_sqlhelper::test_selectQueryFromFields_wRefwWhere()
     probe.first();
     QCOMPARE( probe.record().value("t1.col").toString(), "Franz");
     QCOMPARE( probe.record().value("t2.other").toString(), "Hemd");
+    QSqlQuery("DROP TABLE " + tname);
+    QSqlQuery("DROP TABLE " + tname2);
 }
 
-void test_sqlhelper::test_eSingleValueSql_OK()
+void test_sqlhelper::test_executeSingleColumnSql()
 {
-    QString tablename("testTable");
+    QString tablename("test_executeSingleColumnSql");
     dbtable t(tablename);
-    t.append(dbfield("id",      QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
-    t.append(dbfield("aDate",   QVariant::Date));
-    t.append(dbfield("anInt",   QVariant::Int));
-    t.append(dbfield("aString", QVariant::String));
-    t.append(dbfield("aBool",   QVariant::Bool));
-    QVERIFY(ensureTable(t));
+    t.append(dbfield("col_index", QVariant::LongLong, "PRIMARY KEY").setAutoInc());
+    t.append(dbfield("col_ll", QVariant::LongLong));
+    t.append(dbfield("col_I", QVariant::Int));
+    t.append(dbfield("col_S", QVariant::String));
+    t.append(dbfield("col_D", QVariant::Date));
+    t.append(dbfield("col_B", QVariant::Bool));
+    dbstructure db; db.appendTable(t); db.createDb();
 
-    QString string{"Hallo Welt!"};
-    QDate date{1965, 5, 6};
-    int i {42};
-    bool b = true;
-    QString createSql{ QString("INSERT INTO " +tablename+  " VALUES( "
-                 + "NULL, "
-                 + "'" + date.toString(Qt::ISODate) + "', "
-                 + QString::number(i) + ", "
-                 +  "'" + string + "', "
-                 +  (b ? "1" : "0")
-                 + ")")};
-
-    QVERIFY(QSqlQuery().exec(createSql));
-
-    QCOMPARE(executeSingleValueSql("id", "testtable", "id=1").toLongLong(), 1);
-    QCOMPARE(executeSingleValueSql("aDate", "testtable", "id=1").toDate(), date);
-    QCOMPARE(executeSingleValueSql("anInt", "testtable", "id=1").toInt(), i);
-    QCOMPARE(executeSingleValueSql("aString", "testtable", "id=1").toString(), string);
-    QCOMPARE(executeSingleValueSql("aBool", "testtable", "id=1").toBool(), b);
-
-    QVERIFY(QSqlQuery().exec("DROP TABLE " +tablename));
+    QVERIFY( executeSingleColumnSql(t["col_ll"]).isEmpty());
+    QSqlQuery insertQ;
+    insertQ.prepare("INSERT INTO " + tablename + " VALUES (NULL, ?, ?, ?, ?, ?)");
+    for ( int i = 0; i < 16; i++) {
+        insertQ.addBindValue(i);
+        insertQ.addBindValue(-i);
+        insertQ.addBindValue(QString::number(i));
+        insertQ.addBindValue(QDate::currentDate());
+        insertQ.addBindValue(i%2==0);
+        insertQ.exec();
+    }
+    QVector<QVariant> result = executeSingleColumnSql(t["col_ll"]);
+    QCOMPARE( result.count(), 16);
+    for ( auto v : result) {
+        QVERIFY(v.type() == t["col_ll"].type());
+    }
+    result = executeSingleColumnSql(t["col_I"]);
+    QCOMPARE( result.count(), 16);
+    for ( auto v : result) {
+        QVERIFY(v.type() == t["col_I"].type());
+    }
+    result = executeSingleColumnSql(t["col_S"]);
+    QCOMPARE( result.count(), 16);
+    for ( auto v : result) {
+        QVERIFY(v.type() == t["col_S"].type());
+    }
+    result = executeSingleColumnSql(t["col_D"]);
+    QCOMPARE( result.count(), 16);
+    for ( auto v : result) {
+        QVERIFY(v.type() == t["col_D"].type());
+    }
+    result = executeSingleColumnSql(t["col_B"]);
+    QCOMPARE( result.count(), 16);
+    for ( auto v : result) {
+        QVERIFY(v.type() == t["col_B"].type());
+    }
 }
 
 void test_sqlhelper::test_variantTypeConservation()
@@ -258,7 +304,7 @@ void test_sqlhelper::test_variantTypeConservation()
 /* This test is to document, how Varaint and Database types should
  * work together in this application.
  * The dbtable / dbfield classes care about the table creation using
- * fife QVariant types;
+ * five QVariant types;
  * the execuetxxxSqp functions take care of data retrieval. they take
  * the expected datatypes from dbfield and convert back from what the
  * database has done to the data.
@@ -307,14 +353,19 @@ void test_sqlhelper::test_variantTypeConservation()
 //    4: QSqlField("col_D", QString, ..., generated: yes, typeID: 3, autoValue: false, ro: false) "1965-05-06"
 //    5: QSqlField("col_B",     int, ..., generated: yes, typeID: 1, autoValue: false, ro: false) "1"
 
-    // TEST: will this record contain the right data and right types?
+    // TEST: will this record contain the right data AND right types?
     QSqlRecord record = executeSingleRecordSql(t.Fields());
     qDebug() << record;
 
     // data types are back to what we put in
     QCOMPARE( ll, record.value("col_ll"));
+    QCOMPARE( ll.type(), record.value("col_ll").type());
     QCOMPARE(  i, record.value("col_I"));
+    QCOMPARE(  i.type(), record.value("col_I").type());
     QCOMPARE(  s, record.value("col_S"));
+    QCOMPARE(  s.type(), record.value("col_S").type());
     QCOMPARE(  d, record.value("col_D"));
+    QCOMPARE(  d.type(), record.value("col_D").type());
     QCOMPARE(  b, record.value("col_B"));
+    QCOMPARE(  b.type(), record.value("col_B").type());
 }
