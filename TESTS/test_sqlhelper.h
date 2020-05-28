@@ -24,6 +24,7 @@ private slots:
     void test_ensureTable_existingTable_tableSizeMismatch();
     void test_ensureTable_existingtable_fieldTypeMismatch();
     void test_ensureTable_nonexistingTable();
+    void test_eSingleValueSql_not_PreservsValue();
     void test_eSingleValueSqlPreservsValue();
     void test_selectQueryFromFields_noWhere();
     void test_selectQueryFromFields_withWhere();
@@ -31,6 +32,7 @@ private slots:
     void test_selectQueryFromFields_wRefwWhere();
     void test_executeSingleColumnSql();
     void test_variantTypeConservation();
+    void test_getHighestRowId();
 };
 
 #endif // TEST_SQLHELPER_H

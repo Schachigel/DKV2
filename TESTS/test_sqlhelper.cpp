@@ -37,6 +37,7 @@ void test_sqlhelper::test_rowCount()
         QVERIFY( q.exec(QString() + "DELETE FROM testRowCount01 WHERE (id=" + QString::number(i) +")"));
     QCOMPARE(rowCount("testRowCount01"), maxRows/2);
     QVERIFY (q.exec("DROP TABLE testRowCount01"));
+    QSqlQuery("DROP TABLE testRowCount01");
 }
 
 void test_sqlhelper::test_tableExists()
@@ -98,7 +99,7 @@ void test_sqlhelper::test_ensureTable_nonexistingTable()
     QSqlQuery("DROP TABLE tableThatDoesNotExist");
 }
 
-void test_sqlhelper::test_eSingleValueSqlPreservsValue()
+void test_sqlhelper::test_eSingleValueSql_not_PreservsValue()
 {
     QString tablename("testTable");
     dbtable t(tablename);
@@ -128,6 +129,38 @@ void test_sqlhelper::test_eSingleValueSqlPreservsValue()
     QCOMPARE(executeSingleValueSql("anInt", "testtable", "id=1").toInt(), i);
     QCOMPARE(executeSingleValueSql("aString", "testtable", "id=1").toString(), string);
     QCOMPARE(executeSingleValueSql("aBool", "testtable", "id=1").toBool(), b);
+
+    QVERIFY(QSqlQuery().exec("DROP TABLE " +tablename));
+}
+
+void test_sqlhelper::test_eSingleValueSqlPreservsValue()
+{
+    QString tablename("testTable");
+    dbtable t(tablename);
+    t.append(dbfield("id",      QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
+    t.append(dbfield("aDate",   QVariant::Date));
+    t.append(dbfield("anInt",   QVariant::Int));
+    t.append(dbfield("aString", QVariant::String));
+    t.append(dbfield("aBool",   QVariant::Bool));
+    QVERIFY(ensureTable(t));
+
+    QVariant string{"Hallo Welt!"};
+    QVariant date{QDate (1965, 5, 6)};
+    QVariant i {int(42)};
+    QVariant b (true);
+    QString createSql{ QString("INSERT INTO " +tablename+  " VALUES( NULL, "
+                 + dbInsertableString(date) +", "
+                 + dbInsertableString(i) +", "
+                 + dbInsertableString(string) + ", "
+                 + dbInsertableString(b) + ")")};
+
+    QVERIFY(QSqlQuery().exec(createSql));
+    // note: types could be enforced, they are known to
+    QCOMPARE(executeSingleValueSql(t["id"], "id=1"), 1);
+    QCOMPARE(executeSingleValueSql(t["aDate"], "id=1"), date);
+    QCOMPARE(executeSingleValueSql(t["anInt"], "id=1"), i);
+    QCOMPARE(executeSingleValueSql(t["aString"], "id=1"), string);
+    QCOMPARE(executeSingleValueSql(t["aBool"], "id=1"), b);
 
     QVERIFY(QSqlQuery().exec("DROP TABLE " +tablename));
 }
@@ -368,4 +401,27 @@ void test_sqlhelper::test_variantTypeConservation()
     QCOMPARE(  d.type(), record.value("col_D").type());
     QCOMPARE(  b, record.value("col_B"));
     QCOMPARE(  b.type(), record.value("col_B").type());
+}
+
+void test_sqlhelper::test_getHighestRowId()
+{
+    QString tablename("test_getHighestRowId");
+    dbtable t(tablename);
+    t.append(dbfield("col_index", QVariant::LongLong, "PRIMARY KEY").setAutoInc());
+    t.append(dbfield("col_S", QVariant::String));
+    QVERIFY(ensureTable(t));
+    QSqlQuery q; q.prepare("INSERT INTO "+ tablename + " (col_S) VALUES (?)");
+    int maxrow = 100;
+    for( int i = 0; i<maxrow; i++) {
+        q.addBindValue(QString::number(i));
+        if( !q.exec()) qDebug() << q.lastError() << endl << q.lastQuery();
+    }
+    QCOMPARE( getHighestRowId(tablename), maxrow);
+    q.prepare("DELETE FROM " + tablename + " WHERE col_S=?");
+    for( int i = 0; i<maxrow; i+=2) {
+        q.addBindValue(QString::number(i));
+        if( !q.exec()) qDebug() << q.lastError() << endl << q.lastQuery();
+    }
+    QCOMPARE( getHighestRowId(tablename), maxrow);
+    QCOMPARE(rowCount(tablename), maxrow/2);
 }

@@ -22,9 +22,8 @@ bool dbfield::operator ==(const dbfield &b) const
 }
 
 QString dbfield::get_CreateSqlSnippet()
-{   //LOG_CALL_W(name());
+{
     return name()
-//            + " " + dbAffinityType(type())
             + " " + dbCreateTable_type(type())
             + (primaryKey ? " PRIMARY KEY" : "")
             + (!typeDetails().isEmpty() ? " " + typeDetails() : "")

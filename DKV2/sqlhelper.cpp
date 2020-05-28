@@ -158,10 +158,22 @@ QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db)
     qInfo() << "sql " << sql << " returned " << q.value(0);
     return q.value(0);
 }
-QVariant executeSingleValueSql( const QString& field, const QString& table, const QString& where, QSqlDatabase db)
-{//   LOG_CALL;
-    QString sql = "SELECT " + field + " FROM " + table + (where.isEmpty()? "" : (" WHERE " + where));
+QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where, QSqlDatabase db)
+{
+    QString sql = "SELECT " + fieldName + " FROM " + tableName + (where.isEmpty()? "" : (" WHERE " + where));
     return executeSingleValueSql(sql, db);
+}
+QVariant executeSingleValueSql(const dbfield& field, const QString& where, QSqlDatabase db)
+{
+    if( field.name().isEmpty() || field.tableName().isEmpty())
+        return QVariant();
+    QVariant result = executeSingleValueSql(field.name(), field.tableName(), where, db);
+    if(result.convert(field.type()))
+        return result;
+    else {
+        qCritical() << "executeSingleValueSql(): variant type conversion failed";
+        return QVariant();
+    }
 }
 
 QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbForeignKey> keys, const QString& incomingWhere)
@@ -218,6 +230,7 @@ QSqlField adjustedType(const QSqlField& f, QVariant::Type t)
     ret.setValue(tmpV);
     return ret;
 }
+
 QVector<QVariant> executeSingleColumnSql( const dbfield field, const QString& where)
 {   LOG_CALL;
     QVector<QVariant> result;
@@ -235,11 +248,12 @@ QVector<QVariant> executeSingleColumnSql( const dbfield field, const QString& wh
 
     return result;
 }
-QVector<QVariant> executeSingleColumnSql( const QString& field, const QString& table, const QString& where)
+
+QVector<QVariant> executeSingleColumnSql( const QString& fname, const QString& table, const QString& where)
 {   LOG_CALL;
     QVector<QVariant> result;
     QSqlQuery q;
-    if( q.exec("SELECT " + field + " FROM " + table + (where.isEmpty()? "" : (" WHERE " + where))))
+    if( q.exec("SELECT " + fname + " FROM " + table + (where.isEmpty()? "" : (" WHERE " + where))))
         while( q.next()) {
             result.push_back(q.record().value(0));
         }
@@ -295,8 +309,7 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
     return result;
 }
 
-int getHighestTableId(const QString& tablename)
+int getHighestRowId(const QString& tablename)
 {   LOG_CALL;
-    QString sql = "SELECT max(ROWID) FROM " + tablename;
-    return executeSingleValueSql(sql).toInt();
+    return executeSingleValueSql("max(rowid)", tablename).toInt();
 }

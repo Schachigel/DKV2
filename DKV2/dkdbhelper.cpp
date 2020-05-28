@@ -54,19 +54,19 @@ void init_DKDBStruct()
 // db config info in 'meta' table
 void initMetaInfo( const QString& name, const QString& initialValue)
 {   LOG_CALL;
-    QVariant value= executeSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'");
+    QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'");
     if( value.type() == QVariant::Type::Invalid)
         setMetaInfo(name, initialValue);
 }
 void initNumMetaInfo( const QString& name, const double& newValue)
 {   LOG_CALL;
-    QVariant value= executeSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'");
+    QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'");
     if( value.type() == QVariant::Type::Invalid)
         setNumMetaInfo(name, newValue);
 }
 QString getMetaInfo(const QString& name)
 {   LOG_CALL_W(name);
-    QVariant value= executeSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'").toString();
+    QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'");
     if( value.type() == QVariant::Type::Invalid) {
         qInfo() << "read empty property " << name << "; defaulted to empty string";
         return "";
@@ -77,7 +77,7 @@ QString getMetaInfo(const QString& name)
 double getNumMetaInfo(const QString& name, QSqlDatabase db)
 {   LOG_CALL_W(name);
 
-    QVariant value= executeSingleValueSql("SELECT WERT FROM Meta WHERE Name='" + name +"'", db);
+    QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'", db);
     if( value.type() == QVariant::Type::Invalid) {
         qInfo() << "getNumProperty read empty property " << name << " defaulted to 0.";
         return 0.;
@@ -340,14 +340,14 @@ bool create_DB_copy(QString targetfn, bool deper)
 QString proposeKennung()
 {   LOG_CALL;
     static int idOffset = getMetaInfo("IdOffset").toInt();
-    static int iMaxid = idOffset + getHighestTableId("Vertraege");
+    static int iMaxid = idOffset + getHighestRowId("Vertraege");
     QString kennung;
     do
     {
         QString maxid = QString::number(iMaxid).rightJustified(6, '0');
         QString PI = "DK-" + getMetaInfo("ProjektInitialen");
         kennung = PI + "-" + QString::number(QDate::currentDate().year()) + "-" + maxid;
-        QVariant v = executeSingleValueSql("id", "Vertraege", "Kennung='" + kennung + "'");
+        QVariant v = executeSingleValueSql(dkdbstructur["Vertraege"]["id"], "Kennung='" + kennung + "'");
         if( v.isValid())
             iMaxid++;
         else
