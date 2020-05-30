@@ -48,8 +48,8 @@ bool TableDataInserter::setValues(const QSqlRecord input)
     }
     // check compatibility
     for( int i=0; i< input.count(); i++) {
-        QSqlField inputf = input.field(i);
-        QSqlField recordf = record.field(inputf.name());
+        QVariant inputf = input.field(i).value();
+        QVariant recordf = record.field(input.field(i).name()).value();
         if( inputf.type() != recordf.type())
             return false;
     }

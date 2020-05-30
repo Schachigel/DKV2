@@ -248,20 +248,6 @@ QVector<QVariant> executeSingleColumnSql( const dbfield field, const QString& wh
 
     return result;
 }
-
-QVector<QVariant> executeSingleColumnSql( const QString& fname, const QString& table, const QString& where)
-{   LOG_CALL;
-    QVector<QVariant> result;
-    QSqlQuery q;
-    if( q.exec("SELECT " + fname + " FROM " + table + (where.isEmpty()? "" : (" WHERE " + where))))
-        while( q.next()) {
-            result.push_back(q.record().value(0));
-        }
-    else
-        qCritical() << "SingleColumnSql failed " << q.lastError() << endl << q.lastQuery();
-
-    return result;
-}
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where)
 {
     QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where);

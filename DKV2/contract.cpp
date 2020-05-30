@@ -117,7 +117,7 @@ void activateRandomContracts(int percent)
     QVector<QSqlRecord> contracts = executeSql(contract::getTableDef().Fields());
     int activations = contracts.count() * percent / 100;
     static QRandomGenerator* rand = QRandomGenerator::system();
-    for (int i = 0; i < activations; i++) {
+    for (int i=0; i < activations; i++) {
         int amount = contracts[i].value("Betrag").toInt();
         if( rand->bounded(100)%10 == 0) {
             // some contracts get activated with a different amount

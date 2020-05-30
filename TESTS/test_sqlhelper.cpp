@@ -132,7 +132,6 @@ void test_sqlhelper::test_eSingleValueSql_not_PreservsValue()
 
     QVERIFY(QSqlQuery().exec("DROP TABLE " +tablename));
 }
-
 void test_sqlhelper::test_eSingleValueSqlPreservsValue()
 {
     QString tablename("testTable");
@@ -185,7 +184,6 @@ void test_sqlhelper::test_selectQueryFromFields_noWhere()
     probe.next();
     QCOMPARE( probe.record().value("col").toString(), "Welt!");
 }
-
 void test_sqlhelper::test_selectQueryFromFields_withWhere()
 {
     // preparation
@@ -204,7 +202,6 @@ void test_sqlhelper::test_selectQueryFromFields_withWhere()
     probe.first();
     QCOMPARE( probe.record().value("col").toString(), "Welt!");
 }
-
 void test_sqlhelper::test_selectQueryFromFields_wReference()
 {
     // preparation
@@ -245,7 +242,6 @@ void test_sqlhelper::test_selectQueryFromFields_wReference()
     QCOMPARE( probe.record().value("t1.col").toString(), "Franz");
     QCOMPARE( probe.record().value("t2.other").toString(), "Hemd");
 }
-
 void test_sqlhelper::test_selectQueryFromFields_wRefwWhere()
 {
     // preparation

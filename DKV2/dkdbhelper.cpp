@@ -356,6 +356,13 @@ QString proposeKennung()
     iMaxid++; // prepare for next contract
     return kennung;
 }
+void create_sampleData(int datensaetze)
+{
+    saveRandomCreditors(datensaetze);
+    saveRandomContracts(datensaetze);
+    activateRandomContracts(90);
+
+}
 
 // todo: update for new contract structure, use sql helper functions
 QString contractList_SELECT(const QVector<dbfield>& fields)

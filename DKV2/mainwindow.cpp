@@ -284,7 +284,7 @@ void MainWindow::on_action_Liste_triggered()
 {   LOG_CALL;
     busycursor b;
     prepareCreditorsTableView();
-    if( !ui->CreditorsTableView->currentIndex().isValid())
+    if( ! ui->CreditorsTableView->currentIndex().isValid())
         ui->CreditorsTableView->selectRow(0);
 
     ui->stackedWidget->setCurrentIndex(PersonListIndex);
@@ -309,8 +309,7 @@ void MainWindow::on_CreditorsTableView_customContextMenuRequested(const QPoint &
     QModelIndex index = ui->CreditorsTableView->indexAt(pos).siblingAtColumn(0);
     if( index.isValid()) {
         QVariant data(ui->CreditorsTableView->model()->data(index));
-        bool canConvert(false); data.toInt(&canConvert);
-        if( canConvert) {
+        if( data.canConvert(QVariant::Int)) {
             QMenu menu( "PersonContextMenu", this);
             menu.addAction(ui->action_edit_Creditor);
             menu.addAction(ui->action_create_contract_for_creditor);
@@ -974,11 +973,8 @@ void MainWindow::on_action_terminate_contract_triggered()
 // debug funktions
 void MainWindow::on_action_create_sample_data_triggered()
 {   LOG_CALL;
-    //create_sampleData();
-    prepareCreditorsTableView();
-    prepare_contracts_list_view();
-    if( ui->stackedWidget->currentIndex() == OverviewIndex)
-        on_action_contracts_statistics_triggered();
+    create_sampleData();
+    ui->stackedWidget->setCurrentIndex(ui->stackedWidget->currentIndex());
 }
 void MainWindow::on_action_log_anzeigen_triggered()
 {   LOG_CALL;
