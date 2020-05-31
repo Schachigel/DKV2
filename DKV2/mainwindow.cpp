@@ -643,41 +643,26 @@ void MainWindow::on_action_save_contract_new_contract_triggered()
 void MainWindow::prepare_contracts_list_view()
 {   LOG_CALL;
     busycursor b;
-    QVector<dbfield> fields;
-    fields.append(dkdbstructur["Vertraege"]["id"]);
-    fields.append(dkdbstructur["Vertraege"]["Kennung"]);
-    fields.append(dkdbstructur["Kreditoren"]["Vorname"]);
-    fields.append(dkdbstructur["Kreditoren"]["Nachname"]);
-    fields.append(dkdbstructur["Vertraege"]["Betrag"]);
-    fields.append(dkdbstructur["Vertraege"]["Wert"]);
-    fields.append(dkdbstructur["Zinssaetze"]["Zinssatz"]);
-    fields.append(dkdbstructur["Vertraege"]["Vertragsdatum"]);
-    fields.append(dkdbstructur["Vertraege"]["LetzteZinsberechnung"]);
-    fields.append(dkdbstructur["Vertraege"]["aktiv"]);
-    fields.append(dkdbstructur["Vertraege"]["LaufzeitEnde"]);
-    fields.append(dkdbstructur["Vertraege"]["Kfrist"]);
-    tmp_ContractsModel = new QSqlQueryModel(ui->contractsTableView);
-    tmp_ContractsModel->setQuery(contractList_SQL(fields, ui->leVertraegeFilter->text()));
-    ui->contractsTableView->setModel(tmp_ContractsModel);
+    QSqlTableModel* model = new QSqlTableModel(this);
+    model->setTable("WertAktiveVertraege");
+
+    ui->contractsTableView->setModel(model);
     ui->contractsTableView->setEditTriggers(QTableView::NoEditTriggers);
     ui->contractsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->contractsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->contractsTableView->setAlternatingRowColors(true);
     ui->contractsTableView->setSortingEnabled(true);
-    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["Betrag"]), new EuroItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["Wert"]), new WertEuroItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Zinssaetze"]["Zinssatz"]), new PercentItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["Vertragsdatum"]), new DateItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["LaufzeitEnde"]), new DateItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["LetzteZinsberechnung"]), new DateItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["aktiv"]), new ActivatedItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(fields.indexOf(dkdbstructur["Vertraege"]["Kfrist"]), new KFristItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(2, new PercentItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(3, new EuroItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(4, new DateItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(5, new KFristItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(6, new DateItemFormatter(ui->contractsTableView));
     ui->contractsTableView->resizeColumnsToContents();
-    ui->contractsTableView->hideColumn(0);
+
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel(this);
     m->setDynamicSortFilter(true);
-    m->setSourceModel(tmp_ContractsModel);
+    m->setSourceModel(model);
     ui->contractsTableView->setModel(m);
     ui->contractsTableView->setSortingEnabled(true);
 }
@@ -973,6 +958,7 @@ void MainWindow::on_action_terminate_contract_triggered()
 // debug funktions
 void MainWindow::on_action_create_sample_data_triggered()
 {   LOG_CALL;
+    busycursor b;
     create_sampleData();
     ui->stackedWidget->setCurrentIndex(ui->stackedWidget->currentIndex());
 }

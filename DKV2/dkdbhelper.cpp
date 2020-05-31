@@ -144,8 +144,14 @@ void insert_defaultGmbHData( )
 void insert_views()
 {
     QString WertAktiveVertraege =
-    "CREATE VIEW 'WertAktiveVertraege' AS SELECT Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, Vertraege.Kennung AS Vertragskennung, Vertraege.ZSatz/100. AS Zinssatz, "
-    "(SELECT sum(Buchungen.betrag) FROM Buchungen WHERE Vertraege.id = Buchungen.VertragsId) AS Wert, Vertraege.Vertragsdatum AS Abschlußdatum, Vertraege.Kfrist AS Kündigungsfrist, Vertraege.LaufzeitEnde AS Vertragsende, "
+    "CREATE VIEW 'WertAktiveVertraege' AS "
+    "SELECT Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 0
+    "Vertraege.Kennung AS Vertragskennung, " // 1
+    "Vertraege.ZSatz/100. AS Zinssatz, " // 2
+    "(SELECT sum(Buchungen.betrag) FROM Buchungen WHERE Vertraege.id = Buchungen.VertragsId) AS Wert, " // 3
+    "Vertraege.Vertragsdatum AS Abschlußdatum, " // 4
+    "Vertraege.Kfrist AS Kündigungsfrist, " // 5
+    "Vertraege.LaufzeitEnde AS Vertragsende, " // 6
     "thesaurierend AS thesa "
     "FROM Vertraege "
     "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
