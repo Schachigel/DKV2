@@ -86,16 +86,15 @@ contract saveRandomContract(qlonglong creditorId)
     contract c;
     c.setLabel(proposeKennung());
     c.setCreditorId(creditorId);
-    c.setReinvesting(rand->bounded(100)%4);
+    c.setReinvesting(rand->bounded(100)%6);
     c.setInterest100th(1 +rand->bounded(149));
     c.setPlannedInvest(rand->bounded(50)*1000. + rand->bounded(1,101)*100.);
     c.setConclusionDate(QDate::currentDate().addYears(-2).addDays(rand->bounded(720)));
-    if( rand->bounded(100)%3) {
-        c.setPlannedEndDate(c.conclusionDate().addYears(rand->bounded(3)).addMonths(rand->bounded(12)));
-    }
-    else {
+    if( rand->bounded(100)%5)
         c.setNoticePeriod(3 + rand->bounded(21));
-    }
+    else
+        c.setPlannedEndDate(c.conclusionDate().addYears(rand->bounded(3)).addMonths(rand->bounded(12)));
+
     c.saveNewContract();
     return c;
 }

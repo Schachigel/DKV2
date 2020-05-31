@@ -141,12 +141,26 @@ void insert_defaultGmbHData( )
     initMetaInfo("gmbh.email","info@esperanza-mannheim.de");
     initMetaInfo("gmbh.url", "www.esperanza-mannheim.de");
 }
+void insert_views()
+{
+    QString WertAktiveVertraege =
+    "CREATE VIEW 'WertAktiveVertraege' AS SELECT Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, Vertraege.Kennung AS Vertragskennung, Vertraege.ZSatz/100. AS Zinssatz, "
+    "(SELECT sum(Buchungen.betrag) FROM Buchungen WHERE Vertraege.id = Buchungen.VertragsId) AS Wert, Vertraege.Vertragsdatum AS Abschlußdatum, Vertraege.Kfrist AS Kündigungsfrist, Vertraege.LaufzeitEnde AS Vertragsende, "
+    "thesaurierend AS thesa "
+    "FROM Vertraege "
+    "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
+    "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId";
+
+    QSqlQuery view;
+    if( !view.exec(WertAktiveVertraege))
+        qCritical() << "View " << WertAktiveVertraege << " konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
+}
+
 bool create_DK_TablesAndContent(QSqlDatabase db)
 {   LOG_CALL;
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
 
     db.transaction();
-
     if(!dkdbstructur.createDb(db)) {
         db.rollback();
         qCritical() << "creating db structure in new database failed";
@@ -154,6 +168,7 @@ bool create_DK_TablesAndContent(QSqlDatabase db)
     }
     insert_UniqueDbProperties();
     insert_defaultGmbHData();
+    insert_views();
     db.commit();
     return isValidDatabase();
 }
