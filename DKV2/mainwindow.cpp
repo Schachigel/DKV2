@@ -644,7 +644,7 @@ void MainWindow::prepare_contracts_list_view()
 {   LOG_CALL;
     busycursor b;
     QSqlTableModel* model = new QSqlTableModel(this);
-    model->setTable("WertAktiveVertraege");
+    model->setTable("WertAlleVertraege");
 
     ui->contractsTableView->setModel(model);
     ui->contractsTableView->setEditTriggers(QTableView::NoEditTriggers);
@@ -657,8 +657,8 @@ void MainWindow::prepare_contracts_list_view()
     ui->contractsTableView->setItemDelegateForColumn(4, new DateItemFormatter(ui->contractsTableView));
     ui->contractsTableView->setItemDelegateForColumn(5, new KFristItemFormatter(ui->contractsTableView));
     ui->contractsTableView->setItemDelegateForColumn(6, new DateItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(7, new thesaItemFormatter(ui->contractsTableView));
     ui->contractsTableView->resizeColumnsToContents();
-
 
     QSortFilterProxyModel *m=new QSortFilterProxyModel(this);
     m->setDynamicSortFilter(true);

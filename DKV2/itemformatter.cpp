@@ -17,23 +17,15 @@ QString PercentItemFormatter::displayText(const QVariant& value, const QLocale& 
 {
     double percent = round2(value.toDouble());
     return QString::number(percent) + "%";
-//    return QString::number(percent, 'f', 2) +"%";
 };
 
 QString EuroItemFormatter::displayText(const QVariant& value, const QLocale& locale)const
 {
-    return locale.toCurrencyString(round2(value.toDouble()));
-};
-
-QString WertEuroItemFormatter::displayText(const QVariant& value, const QLocale& locale)const
-{
-    double d = value.toDouble();
-    if( d != 0.)
-    {
-        return locale.toCurrencyString(round2(value.toDouble()));
-    }
+    double w = round2(value.toDouble());
+    if( w <= 0)
+        return "[" + locale.toCurrencyString(-1 *w) + "] offen";
     else
-        return QString("(auszahlend)");
+        return locale.toCurrencyString(w);
 };
 
 QString KFristItemFormatter ::displayText(const QVariant &value, const QLocale &) const
@@ -45,9 +37,10 @@ QString KFristItemFormatter ::displayText(const QVariant &value, const QLocale &
         return QString("%L1 Monate").arg(v);
 }
 
-QString ActivatedItemFormatter::displayText(const QVariant &value, const QLocale &) const
+QString thesaItemFormatter :: displayText(const QVariant &value, const QLocale &) const
 {
-    // the view delivers strings like "true" and "false" for boolean values
-    // let the variant resolve this ...
-    return value.toBool() ? " aktiv " : "- INAKTIV -";
+    if( value.toBool())
+        return "thesaurierend";
+    else
+        return "auszahlend";
 }

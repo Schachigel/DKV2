@@ -29,14 +29,6 @@ public:
     QString displayText(const QVariant& value, const QLocale& )const override;
 };
 
-class WertEuroItemFormatter : public QStyledItemDelegate
-{
-    Q_OBJECT
-public:
-    WertEuroItemFormatter(QObject *parent = nullptr) : QStyledItemDelegate(parent){}
-    QString displayText(const QVariant& value, const QLocale& )const override;
-};
-
 class KFristItemFormatter : public QStyledItemDelegate
 {
     Q_OBJECT
@@ -45,13 +37,14 @@ public:
     QString displayText(const QVariant &value, const QLocale &locale) const override;
 };
 
-class ActivatedItemFormatter : public QStyledItemDelegate
+class thesaItemFormatter : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    ActivatedItemFormatter(QObject *parent = nullptr) : QStyledItemDelegate(parent){}
-    QString displayText(const QVariant& value, const QLocale& )const override;
+    thesaItemFormatter(QObject* p = nullptr) : QStyledItemDelegate(p){}
+    QString displayText(const QVariant &value, const QLocale &locale) const override;
 };
+
 
 
 #endif // DATEITEMFORMATTER_H
