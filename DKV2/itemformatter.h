@@ -11,6 +11,7 @@ class DateItemFormatter : public QStyledItemDelegate
 public:
     DateItemFormatter(QObject *parent = nullptr) : QStyledItemDelegate(parent){}
     QString displayText(const QVariant& value, const QLocale& )const override;
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 
 class PercentItemFormatter : public QStyledItemDelegate
@@ -19,6 +20,7 @@ class PercentItemFormatter : public QStyledItemDelegate
 public:
     PercentItemFormatter(QObject *parent = nullptr) : QStyledItemDelegate(parent){}
     QString displayText(const QVariant& value, const QLocale& )const override;
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 
 class EuroItemFormatter : public QStyledItemDelegate
@@ -27,6 +29,7 @@ class EuroItemFormatter : public QStyledItemDelegate
 public:
     EuroItemFormatter(QObject *parent = nullptr) : QStyledItemDelegate(parent){}
     QString displayText(const QVariant& value, const QLocale& )const override;
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 
 class KFristItemFormatter : public QStyledItemDelegate
@@ -35,6 +38,7 @@ class KFristItemFormatter : public QStyledItemDelegate
 public:
     KFristItemFormatter(QObject *parent = nullptr) : QStyledItemDelegate(parent){}
     QString displayText(const QVariant &value, const QLocale &locale) const override;
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 
 class thesaItemFormatter : public QStyledItemDelegate
@@ -43,6 +47,7 @@ class thesaItemFormatter : public QStyledItemDelegate
 public:
     thesaItemFormatter(QObject* p = nullptr) : QStyledItemDelegate(p){}
     QString displayText(const QVariant &value, const QLocale &locale) const override;
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 
 

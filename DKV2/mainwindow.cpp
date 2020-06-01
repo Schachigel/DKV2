@@ -662,7 +662,8 @@ void MainWindow::prepare_contracts_list_view()
     QSqlTableModel* model = new QSqlTableModel(this);
     model->setTable("WertAlleVertraege");
     model->setFilter( filterFromFilterphrase(ui->leVertraegeFilter->text()));
-    qDebug() << model->filter();
+    qDebug() << "contract list model filter: " << model->filter();
+
     ui->contractsTableView->setModel(model);
     model->select();
 
@@ -678,6 +679,7 @@ void MainWindow::prepare_contracts_list_view()
     ui->contractsTableView->setItemDelegateForColumn(6, new KFristItemFormatter(ui->contractsTableView));
     ui->contractsTableView->setItemDelegateForColumn(7, new DateItemFormatter(ui->contractsTableView));
     ui->contractsTableView->setItemDelegateForColumn(8, new thesaItemFormatter(ui->contractsTableView));
+
     ui->contractsTableView->resizeColumnsToContents();
 }
 void MainWindow::on_action_show_list_of_contracts_triggered()
