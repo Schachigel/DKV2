@@ -340,6 +340,8 @@ void MainWindow::on_action_create_contract_for_creditor_triggered()
     ui->leKennung->setText( proposeKennung());
     if( ui->stackedWidget->currentIndex() == PersonListIndex)
         set_creditors_combo_by_id(currentIdFromCreditorsList());
+    if( ui->stackedWidget->currentIndex() == newPersonIndex)
+        set_creditors_combo_by_id(passNewCreditorIdToNewContract);
     else
         set_creditors_combo_by_id(-1);
     contract cd; // this is to get the defaults of the class definition
@@ -371,7 +373,7 @@ void MainWindow::on_action_show_contracts_triggered()
     busycursor b;
     QModelIndex mi(ui->CreditorsTableView->currentIndex());
     QString index = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(0)).toString();
-    ui->leVertraegeFilter->setText(index);
+    ui->leVertraegeFilter->setText("index:" +index);
     on_action_show_list_of_contracts_triggered();
 }
 void MainWindow::on_leFilter_editingFinished()
@@ -428,7 +430,7 @@ int  MainWindow::save_creditor()
         return -1;
     }
 
-    return kid;
+    return passNewCreditorIdToNewContract = kid;
 }
 void MainWindow::empty_create_creditor_form()
 {   LOG_CALL;
@@ -640,31 +642,43 @@ void MainWindow::on_action_save_contract_new_contract_triggered()
 }
 
 // Liste der Verträge
+QString filterFromFilterphrase(QString fph)
+{
+    if( fph.startsWith("index:"))
+    {
+        bool conversionOK = true;
+        qlonglong contractId = fph.right(fph.length()-6).toInt(&conversionOK);
+        if( ! conversionOK)
+            return "";
+        else
+            return "id=" + QString::number(contractId);
+    }
+    return fph.isEmpty() ? "" :
+           ("Kreditorin LIKE '%" + fph + "%' OR Vertragskennung LIKE '%" + fph + "%'");
+}
 void MainWindow::prepare_contracts_list_view()
 {   LOG_CALL;
     busycursor b;
     QSqlTableModel* model = new QSqlTableModel(this);
     model->setTable("WertAlleVertraege");
-
+    model->setFilter( filterFromFilterphrase(ui->leVertraegeFilter->text()));
+    qDebug() << model->filter();
     ui->contractsTableView->setModel(model);
+    model->select();
+
     ui->contractsTableView->setEditTriggers(QTableView::NoEditTriggers);
     ui->contractsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->contractsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->contractsTableView->setAlternatingRowColors(true);
     ui->contractsTableView->setSortingEnabled(true);
-    ui->contractsTableView->setItemDelegateForColumn(2, new PercentItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(3, new EuroItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(4, new DateItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(5, new KFristItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(6, new DateItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(7, new thesaItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->hideColumn(0);
+    ui->contractsTableView->setItemDelegateForColumn(3, new PercentItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(4, new EuroItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(5, new DateItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(6, new KFristItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(7, new DateItemFormatter(ui->contractsTableView));
+    ui->contractsTableView->setItemDelegateForColumn(8, new thesaItemFormatter(ui->contractsTableView));
     ui->contractsTableView->resizeColumnsToContents();
-
-    QSortFilterProxyModel *m=new QSortFilterProxyModel(this);
-    m->setDynamicSortFilter(true);
-    m->setSourceModel(model);
-    ui->contractsTableView->setModel(m);
-    ui->contractsTableView->setSortingEnabled(true);
 }
 void MainWindow::on_action_show_list_of_contracts_triggered()
 {   LOG_CALL;
@@ -676,9 +690,9 @@ void MainWindow::on_action_show_list_of_contracts_triggered()
 }
 void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &pos)
 {   LOG_CALL;
-    QSqlRecord rec = tmp_ContractsModel->record(); // ugly, but qobject_cast does not work
-    int indedOf_active_inModel = rec.indexOf("aktiv");
-    int indexOf_kfrist_inModel = rec.indexOf("Kfrist");
+//    QSqlRecord rec = tmp_ContractsModel->record(); // ugly, but qobject_cast does not work
+    int indedOf_active_inModel = 1;//  = rec.indexOf("aktiv");
+    int indexOf_kfrist_inModel = 1;// = rec.indexOf("Kfrist");
 
     QModelIndex indexClickTarget = ui->contractsTableView->indexAt(pos);
     QModelIndex index_IsActive = indexClickTarget.siblingAtColumn(indedOf_active_inModel); // contract active
@@ -718,6 +732,43 @@ int  MainWindow::get_current_id_from_contracts_list()
     }
     return -1;
 }
+
+// contract list context menu
+void MainWindow::on_action_activate_contract_triggered()
+{   LOG_CALL;
+
+    aktiviereVertrag(get_current_id_from_contracts_list());
+    prepare_contracts_list_view();
+}
+void MainWindow::on_action_loeschePassivenVertrag_triggered()
+{   LOG_CALL;
+    QModelIndex mi(ui->contractsTableView->currentIndex());
+    if( !mi.isValid()) return;
+
+    QString index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toString();
+    beendeVertrag(index.toInt());
+
+    prepare_contracts_list_view();
+}
+void MainWindow::on_leVertraegeFilter_editingFinished()
+{   LOG_CALL;
+    prepare_contracts_list_view();
+}
+void MainWindow::on_reset_contracts_filter_clicked()
+{   LOG_CALL;
+    ui->leVertraegeFilter->setText("");
+    prepare_contracts_list_view();
+}
+void MainWindow::on_action_terminate_contract_triggered()
+{   LOG_CALL;
+    QModelIndex mi(ui->contractsTableView->currentIndex());
+    if( !mi.isValid()) return;
+    int index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toInt();
+    beendeVertrag(index);
+
+    prepare_contracts_list_view();
+}
+
 
 QString tableRow( QString left, QString center, QString center2, QString right)
 {
@@ -919,42 +970,6 @@ void MainWindow::on_action_create_active_contracts_csv_triggered()
     if( !createCsvActiveContracts())
         QMessageBox::critical(this, "Fehler", "Die Datei konnte nicht angelegt werden. Ist sie z.B. in Excel geöffnet?");
 }
-// contract list context menu
-void MainWindow::on_action_activate_contract_triggered()
-{   LOG_CALL;
-
-    aktiviereVertrag(get_current_id_from_contracts_list());
-    prepare_contracts_list_view();
-}
-void MainWindow::on_action_loeschePassivenVertrag_triggered()
-{   LOG_CALL;
-    QModelIndex mi(ui->contractsTableView->currentIndex());
-    if( !mi.isValid()) return;
-
-    QString index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toString();
-    beendeVertrag(index.toInt());
-
-    prepare_contracts_list_view();
-}
-void MainWindow::on_leVertraegeFilter_editingFinished()
-{   LOG_CALL;
-    prepare_contracts_list_view();
-}
-void MainWindow::on_reset_contracts_filter_clicked()
-{   LOG_CALL;
-    ui->leVertraegeFilter->setText("");
-    prepare_contracts_list_view();
-}
-void MainWindow::on_action_terminate_contract_triggered()
-{   LOG_CALL;
-    QModelIndex mi(ui->contractsTableView->currentIndex());
-    if( !mi.isValid()) return;
-    int index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toInt();
-    beendeVertrag(index);
-
-    prepare_contracts_list_view();
-}
-
 // debug funktions
 void MainWindow::on_action_create_sample_data_triggered()
 {   LOG_CALL;

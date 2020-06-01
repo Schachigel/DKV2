@@ -146,29 +146,31 @@ void insert_views()
     QSqlQuery view;
     QString WertAktiveVertraege =
     "CREATE VIEW 'WertAktiveVertraege' AS "
-    "SELECT Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 0
-    "Vertraege.Kennung AS Vertragskennung, " // 1
-    "Vertraege.ZSatz/100. AS Zinssatz, "    // 2
-    "(SELECT sum(Buchungen.betrag) FROM Buchungen WHERE Vertraege.id = Buchungen.VertragsId) AS Wert, " // 3
-    "Vertraege.Vertragsdatum AS Abschlußdatum, " // 4
-    "Vertraege.Kfrist AS Kündigungsfrist, "     // 5
-    "Vertraege.LaufzeitEnde AS Vertragsende, " // 6
-    "thesaurierend AS thesa "                 // 7
+    "SELECT Vertraege.id AS id, "    // 0"
+    "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 1
+    "Vertraege.Kennung AS Vertragskennung, " // 2
+    "Vertraege.ZSatz/100. AS Zinssatz, "    // 3
+    "(SELECT sum(Buchungen.betrag) FROM Buchungen WHERE Vertraege.id = Buchungen.VertragsId) AS Wert, " // 4
+    "Vertraege.Vertragsdatum AS Abschlußdatum, " // 5
+    "Vertraege.Kfrist AS Kündigungsfrist, "     // 6
+    "Vertraege.LaufzeitEnde AS Vertragsende, " // 7
+    "thesaurierend AS thesa "                 // 8
     "FROM Vertraege "
     "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
     "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId";
     if( !view.exec(WertAktiveVertraege))
         qCritical() << "View " << WertAktiveVertraege << " konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
 
-    QString WertPassiveVertraege = "CREATE VIEW 'WertPassiveVertraege' AS SELECT "
-    "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 0
-    "Vertraege.Kennung AS Vertragskennung, " // 1
-    "Vertraege.ZSatz/100. AS Zinssatz, "     // 2
-    "-1* Vertraege.Betrag AS Wert, "         // 3
-    "Vertraege.Vertragsdatum AS Abschlußdatum, " // 4
-    "Vertraege.Kfrist AS Kündigungsfrist, "      // 5
-    "Vertraege.LaufzeitEnde AS Vertragsende, "   // 6
-    "Vertraege.thesaurierend AS thesa "          // 7
+    QString WertPassiveVertraege = "CREATE VIEW 'WertPassiveVertraege' AS "
+    "SELECT Vertraege.id AS id, "    // 0
+    "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 1
+    "Vertraege.Kennung AS Vertragskennung, " // 2
+    "Vertraege.ZSatz/100. AS Zinssatz, "     // 3
+    "-1* Vertraege.Betrag AS Wert, "         // 4
+    "Vertraege.Vertragsdatum AS Abschlußdatum, " // 5
+    "Vertraege.Kfrist AS Kündigungsfrist, "      // 6
+    "Vertraege.LaufzeitEnde AS Vertragsende, "   // 7
+    "Vertraege.thesaurierend AS thesa "          // 8
     "FROM Vertraege "
     "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
     "WHERE (SELECT count(*) FROM Buchungen WHERE Buchungen.VertragsId=Vertraege.id) = 0";

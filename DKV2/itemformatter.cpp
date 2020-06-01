@@ -32,7 +32,7 @@ QString KFristItemFormatter ::displayText(const QVariant &value, const QLocale &
 {
     int v = value.toInt();
     if( v == -1)
-        return "(festes Laufzeitende)";
+        return "(festes Vertragsende)";
     else
         return QString("%L1 Monate").arg(v);
 }
@@ -40,7 +40,7 @@ QString KFristItemFormatter ::displayText(const QVariant &value, const QLocale &
 QString thesaItemFormatter :: displayText(const QVariant &value, const QLocale &) const
 {
     if( value.toBool())
-        return "thesaurierend";
+        return "thesaur.";
     else
         return "auszahlend";
 }

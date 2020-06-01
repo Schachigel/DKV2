@@ -142,8 +142,8 @@ private:
     bool useDb(const QString& dbfile="");
     void showDbInStatusbar(QString filename = "");
     int save_creditor();
+    qlonglong passNewCreditorIdToNewContract =-1;
     bool save_new_contract();
-    QSqlQueryModel* tmp_ContractsModel;
     enum stackedWidgedsIndex
     {
         emptyPageIndex =0,
