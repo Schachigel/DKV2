@@ -15,7 +15,7 @@
         contracttable.append(dbForeignKey(contracttable["KreditorId"], dkdbstructur["Kreditoren"]["id"], "ON DELETE RESTRICT"));
         contracttable.append(dbfield("Kennung",    QVariant::String, "UNIQUE"));
         contracttable.append(dbfield("ZSatz",      QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
-        contracttable.append(dbfield("Betrag",     QVariant::Int).setNotNull().setDefault(0)); // Euro
+        contracttable.append(dbfield("Betrag",     QVariant::Int).setNotNull().setDefault(0)); // ct
         contracttable.append(dbfield("thesaurierend", QVariant::Bool).setNotNull().setDefault(1));
         contracttable.append(dbfield("Vertragsdatum", QVariant::Date).setNotNull());
         contracttable.append(dbfield("Kfrist" ,    QVariant::Int).setNotNull().setDefault(6));

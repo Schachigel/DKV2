@@ -17,6 +17,7 @@ enum Type{
 Type type;
 QDate date;
 double amount;
+qlonglong contractId;
     // construction
     booking(booking::Type t, QDate d, double a) : type(t), date(d), amount(a) {};
 

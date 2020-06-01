@@ -40,7 +40,7 @@
     TableDataInserter tdi(dkdbstructur["Buchungen"]);
     tdi.setValue("VertragsId", contractId);
     tdi.setValue("BuchungsArt", t);
-    tdi.setValue("Betrag", round2(amount));
+    tdi.setValue("Betrag", ctFromEuro(amount));
     tdi.setValue("Datum", date);
     return tdi.InsertData();
 }
@@ -82,7 +82,9 @@ QVector<booking> bookings::getBookings()
     }
     QVector<booking> result;
     for( auto r : rec) {
-        result.push_back(booking(type, r.value("Datum").toDate(), r.value("Betrag").toDouble()));
+        booking b(type, r.value("Datum").toDate(), euroFromCt(r.value("Betrag").toInt()));
+        b.contractId = contractId;
+        result.push_back(b);
     }
     return result;
 }

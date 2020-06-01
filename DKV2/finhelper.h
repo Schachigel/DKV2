@@ -6,6 +6,8 @@
 
 double rounded(const double d, const int stellen = 2);
 double round2(const double d);
+int ctFromEuro( const double d);
+double euroFromCt( const int i);
 
 int TageBisJahresende_a(const QDate& d);
 int TageBisJahresende(const QDate& d);

@@ -16,6 +16,14 @@ int TageBisMonatsende_exclusiv(const QDate& d)
     if( d.day() == 31) return 0;
     return 30 -d.day();
 }
+int ctFromEuro( const double d)
+{
+    return int( d * 100. + .5);
+}
+double euroFromCt( const int i)
+{
+    return double (i)/100.;
+}
 
 int TageSeitMonatsAnfang_inclusive(const QDate& d)
 {
