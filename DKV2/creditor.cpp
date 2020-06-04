@@ -112,7 +112,7 @@ int creditor::update() const
 {   LOG_CALL;
     // referential integrity will delete the contracts
     QSqlQuery deleteQ;
-    if( !deleteQ.exec("DELETE FROM Kreditoren WHERE Id=" +QString::number(index))) {
+    if( ! deleteQ.exec("DELETE FROM Kreditoren WHERE Id=" +QString::number(index))) {
         qCritical() << "Delete Kreditor failed "<< deleteQ.lastError() << endl << deleteQ.lastQuery();
         return false;
     }
@@ -149,8 +149,7 @@ void creditor::KreditorenListeMitId(QList<QPair<int,QString>> &entries) const
 {   LOG_CALL;
     QSqlQuery query;
     query.setForwardOnly(true);
-    query.prepare("SELECT id,  Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse FROM Kreditoren ORDER BY Nachname ASC, Vorname ASC");
-    if( !query.exec())
+    if( !query.exec("SELECT id,  Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse FROM Kreditoren ORDER BY Nachname ASC, Vorname ASC"))
     {
         qCritical() << "Error reading DKGeber while creating a contract: " << query.lastError().text();
         return;

@@ -29,6 +29,7 @@ QString dbfield::get_CreateSqlSnippet()
             + (!typeDetails().isEmpty() ? " " + typeDetails() : "")
             + (isAutoValue()? " AUTOINCREMENT" : "")
             + ((requiredStatus()==Required)? " NOT NULL" : "")
+            + ((unique ? " UNIQUE" : "" ))
             + (defaultValue().isValid() ? " DEFAULT "+ dbInsertableString(defaultValue()) : "");
 }
 

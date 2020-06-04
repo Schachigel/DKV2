@@ -31,7 +31,7 @@ void test_dkdbhelper::test_selectQueryFromFields()
     the test was moved here */
     QString sql = selectQueryFromFields(dkdbstructur["Buchungen"].Fields(), dkdbstructur["Buchungen"].ForeignKeys());
     qInfo() << sql << endl;
-    QCOMPARE(sql,  "SELECT Buchungen.id, Buchungen.VertragsId, Buchungen.BuchungsArt, Buchungen.Betrag, Buchungen.Datum FROM Buchungen WHERE Buchungen.VertragsId=Vertraege.id");
+    QCOMPARE(sql,  "SELECT Buchungen.id, Buchungen.VertragsId, Buchungen.BuchungsArt, Buchungen.Betrag, Buchungen.Datum FROM Buchungen WHERE true AND Buchungen.VertragsId=Vertraege.id");
 }
 
 void test_dkdbhelper::test_querySingleValueInvalidQuery()

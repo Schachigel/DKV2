@@ -91,14 +91,13 @@ QVector<booking> bookings::getBookings()
 
 double bookings::sumBookings()
 {   LOG_CALL;
+    QString sql("SELECT SUM(Betrag) FROM Buchungen WHERE VertragsId=%1 AND BuchungsArt=%2");
+    sql = sql.arg(QString::number(contractId)).arg(QString::number(type));
     QSqlQuery q;
-    if( !q.exec("SELECT SUM(Betrag) FROM Buchungen "
-                "WHERE VertragsId=" + QString::number(contractId)
-                + " AND BuchungsArt=" + QString::number(type)))
-    {
+    if( !q.exec(sql)) {
         qDebug() << "could not query sum of bookings for " << contractId << " type " << booking::typeName(type);
         return 0.;
     }
     q.first();
-    return q.value(0).toDouble();
+    return q.value(0).toDouble()/100.; // we store ct
 }

@@ -33,14 +33,11 @@ dbtable dbstructure::operator[](const QString& name) const
 bool dbstructure::createDb(QSqlDatabase db) const
 {   LOG_CALL;
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
-    db.transaction();
     for(dbtable table :getTables()) {
         if(!ensureTable(table, db)) {
             qCritical() << "could not create table " << table.name;
-            db.rollback();
             return false;
         }
     }
-    db.commit();
     return true;
 }

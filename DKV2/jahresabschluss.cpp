@@ -22,8 +22,7 @@ int jahresabschluss::JahreszahlFuerAbschluss()
 bool jahresabschluss::execute()
 {   LOG_CALL;
     QSqlQuery sql;
-    sql.prepare( "SELECT Vertraege.id "
-                "FROM Vertraege WHERE aktiv != 0");
+    sql.prepare("SELECT Vertraege.id FROM Vertraege WHERE aktiv != 0");
     if( !(sql.exec() && sql.first()))
     {
         qCritical() << "faild to select contracts: " << sql.lastError() << endl << "in " << sql.lastQuery();

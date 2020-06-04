@@ -39,7 +39,7 @@ void init_DKDBStruct()
     dkdbstructur.appendTable(booking::getTableDef());
 
     dbtable meta("Meta");
-    meta.append(dbfield("Name", QVariant::String).setNotNull());
+    meta.append(dbfield("Name", QVariant::String).setNotNull().setUnique());
     meta.append(dbfield("Wert", QVariant::String).setNotNull());
     dkdbstructur.appendTable(meta);
 
@@ -47,22 +47,27 @@ void init_DKDBStruct()
     letters.append(dbfield("templateId",    QVariant::Int).setNotNull());
     letters.append(dbfield("EigenschaftId", QVariant::Int).setNotNull());
     letters.append(dbfield("Wert",          QVariant::String).setNotNull());
+    QVector<dbfield> uniqueLetterFields;
+    uniqueLetterFields.append(letters["templateId"]);
+    uniqueLetterFields.append(letters["EigenschaftId"]);
+    letters.setUnique(uniqueLetterFields);
     dkdbstructur.appendTable(letters);
+
     done = true;
 }
 
 // db config info in 'meta' table
-void initMetaInfo( const QString& name, const QString& initialValue)
+void initMetaInfo( const QString& name, const QString& initialValue, QSqlDatabase db)
 {   LOG_CALL;
-    QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'");
+    QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'", db);
     if( value.type() == QVariant::Type::Invalid)
-        setMetaInfo(name, initialValue);
+        setMetaInfo(name, initialValue, db);
 }
-void initNumMetaInfo( const QString& name, const double& newValue)
+void initNumMetaInfo( const QString& name, const double& newValue, QSqlDatabase db)
 {   LOG_CALL;
-    QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'");
+    QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'", db);
     if( value.type() == QVariant::Type::Invalid)
-        setNumMetaInfo(name, newValue);
+        setNumMetaInfo(name, newValue, db);
 }
 QString getMetaInfo(const QString& name)
 {   LOG_CALL_W(name);
@@ -85,18 +90,20 @@ double getNumMetaInfo(const QString& name, QSqlDatabase db)
     qInfo() << "Property " << name << " : " << value.toDouble();
     return value.toDouble();
 }
-void setMetaInfo(const QString& name, const QString& Wert)
+void setMetaInfo(const QString& name, const QString& Wert, QSqlDatabase db)
 {   LOG_CALL_W(name);
-    QSqlQuery q;
-    q.prepare("INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('" + name + "', '" + Wert +"')");
-    if( !q.exec())
+    QSqlQuery q(db);
+    QString sql="INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('%1', '%2')";
+    sql = sql.arg(name).arg(Wert);
+    if( !q.exec(sql))
         qCritical() << "Failed to insert Meta information " << q.lastError() << endl << q.lastQuery();
 }
-void setNumMetaInfo(const QString& name, const double Wert)
+void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db)
 {   LOG_CALL_W(name);
-    QSqlQuery q;
-    if( !q.exec("INSERT OR REPLACE INTO Meta (Name, Wert) "
-                "VALUES ('" + name + "', '" + QString::number(Wert) +"')"))
+    QString sql= "INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('%1', '%2')";
+    sql = sql.arg(name).arg(QString::number(Wert));
+    QSqlQuery q(db);
+    if( !q.exec(sql))
         qCritical() << "Failed to insert Meta information " << q.lastError() << endl << q.lastQuery();
 }
 
@@ -124,26 +131,26 @@ bool create_DK_databaseFile(const QString& filename) /*in the default connection
     return create_DK_TablesAndContent(db);
 }
 // initial database tables and content
-void insert_UniqueDbProperties()
+void insert_UniqueDbProperties(QSqlDatabase db = QSqlDatabase::database())
 {   LOG_CALL;
-    initNumMetaInfo(DB_VERSION, CURRENT_DB_VERSION);
-    initMetaInfo("ProjektInitialen", "ESP");
+    initNumMetaInfo(DB_VERSION, CURRENT_DB_VERSION, db);
+    initMetaInfo("ProjektInitialen", "ESP", db);
     QRandomGenerator *rand = QRandomGenerator::system();
-    initMetaInfo("IdOffset", QString::number(rand->bounded(10000,20000)));
+    initMetaInfo("IdOffset", QString::number(rand->bounded(10000,20000)), db);
 }
-void insert_defaultGmbHData( )
+void insert_defaultGmbHData( QSqlDatabase db )
 {   LOG_CALL;
-    initMetaInfo("gmbh.address1", "Esperanza Franklin GmbH");
-    initMetaInfo("gmbh.address2", "");
-    initMetaInfo("gmbh.plz", "68167");
-    initMetaInfo("gmbh.stadt", "Mannheim");
-    initMetaInfo("gmbh.strasse", "Turley-Platz 9");
-    initMetaInfo("gmbh.email","info@esperanza-mannheim.de");
-    initMetaInfo("gmbh.url", "www.esperanza-mannheim.de");
+    initMetaInfo("gmbh.address1", "Esperanza Franklin GmbH", db);
+    initMetaInfo("gmbh.address2", "", db);
+    initMetaInfo("gmbh.plz", "68167", db);
+    initMetaInfo("gmbh.stadt", "Mannheim", db);
+    initMetaInfo("gmbh.strasse", "Turley-Platz 9", db);
+    initMetaInfo("gmbh.email","info@esperanza-mannheim.de", db);
+    initMetaInfo("gmbh.url", "www.esperanza-mannheim.de", db);
 }
-void insert_views()
+void insert_views( QSqlDatabase db)
 {
-    QSqlQuery view;
+    QSqlQuery view(db);
     QString WertAktiveVertraege =
     "CREATE VIEW 'WertAktiveVertraege' AS "
     "SELECT Vertraege.id AS id, "    // 0"
@@ -196,11 +203,11 @@ bool create_DK_TablesAndContent(QSqlDatabase db)
         qCritical() << "creating db structure in new database failed";
         return false;
     }
-    insert_UniqueDbProperties();
-    insert_defaultGmbHData();
-    insert_views();
+    insert_UniqueDbProperties(db);
+    insert_defaultGmbHData(db);
+    insert_views(db);
     db.commit();
-    return isValidDatabase();
+    return isValidDatabase(db);
 }
 
 // database validation
@@ -300,19 +307,13 @@ bool open_databaseForApplication( QString newDbFile)
 bool copy_TableContent(QString table, QSqlDatabase targetDB)
 {   LOG_CALL_W(table);
     bool success = true;
-    QSqlQuery q; // default database connection -> active database
+    QSqlQuery q(QSqlDatabase::database()); // default database connection -> active database, the data base to be copied
     q.exec("SELECT * FROM " + table);
     while( q.next()) {
         QSqlRecord rec = q.record();
         qDebug() << "dePe Copy: working on Record " << rec;
         TableDataInserter tdi( dkdbstructur[table]);
-        for( int iField = 0; iField < q.record().count(); iField++) {
-            QString fieldname = rec.fieldName(iField);
-            QVariant value = rec.value(iField);
-            qDebug() << "Setting " << fieldname << " to " << value;
-            tdi.setValue(fieldname, value);
-        }
-        if( tdi.InsertData(targetDB) == -1) {
+        if( (!tdi.setValues(rec)) || (tdi.InsertOrReplaceData(targetDB) == -1)) {
             qCritical() << "Error inserting Data into deperso.Copy Table" << q.record();
             success = false;
             break;
@@ -324,7 +325,7 @@ bool copy_mangledCreditors(QSqlDatabase targetDB)
 {
     bool success = true;
     int recCount = 0;
-    QSqlQuery q; // default database connection -> active database
+    QSqlQuery q(QSqlDatabase::database()); // default database connection -> active database
     q.exec("SELECT * FROM Kreditoren");
     while( q.next()) {
         recCount++;
@@ -352,7 +353,7 @@ bool create_DB_copy(QString targetfn, bool deper)
         backupFile(targetfn);
         QFile::remove(targetfn);
         if( QFile::exists(targetfn)) {
-            qCritical() << "could not remove target file";
+            qCritical() << "db_copy: could not remove target file";
             return false;
         }
     }
@@ -367,18 +368,17 @@ bool create_DB_copy(QString targetfn, bool deper)
     }
     else
         closer.set(&backupDB);
+    create_DK_TablesAndContent(backupDB);
 
-    bool success = true;
+    bool result = true;
     QVector<dbtable> tables = dkdbstructur.getTables();
     for( auto table : tables) {
-        ensureTable(table, backupDB);
-        qDebug() << "dePe Copy: working on table " << table.Name();
         if( deper && table.Name() == "Kreditoren")
-            success = success && copy_mangledCreditors(backupDB);
+            result = result && copy_mangledCreditors(backupDB);
         else
-            success = success && copy_TableContent(table.Name(), backupDB);
+            result = result && copy_TableContent(table.Name(), backupDB);
     }
-    return success;
+    return result;
 }
 
 // general stuff
@@ -516,7 +516,7 @@ void calc_contractEnd( QVector<ContractEnd>& ce)
 
     QSqlQuery sql;
     sql.setForwardOnly(true);
-    sql.exec("SELECT * FROM [Vertraege] WHERE [aktiv] = 1");
+    sql.exec("SELECT * FROM [Vertraege] WHERE [aktiv] = 1");// TODO
     while( sql.next())
     {
         QDate end = sql.record().value("LaufzeitEnde").toDate();
@@ -546,7 +546,7 @@ void calc_anualInterestDistribution( QVector<YZV>& yzv)
 {   LOG_CALL;
     QString sql = "SELECT Substr([Vertragsdatum], 0, 5), [Zinssaetze].[Zinssatz], count(*), sum([Betrag]) "
                   "FROM [Vertraege], [Zinssaetze] "
-                  "WHERE [ZSatz] = [Zinssaetze].[id] "
+                  "WHERE [ZSatz] = [Zinssaetze].[id] " // TODO
                   "GROUP BY Substr([Vertragsdatum], 0, 4), [ZSatz]";
     QSqlQuery query;
     query.exec(sql);
@@ -561,7 +561,7 @@ QVector<rowData> contractRuntimeDistribution()
 {
     int AnzahlBisEinJahr=0, AnzahlBisFuenfJahre=0, AnzahlLaenger=0, AnzahlUnbegrenzet = 0;
     double SummeBisEinJahr=0., SummeBisFuenfJahre=0., SummeLaenger=0., SummeUnbegrenzet = 0.;
-    QString sql = "SELECT [Betrag], [Wert], [Vertragsdatum], [LaufzeitEnde] FROM [Vertraege]";
+    QString sql = "SELECT [Betrag], [Wert], [Vertragsdatum], [LaufzeitEnde] FROM [Vertraege]"; // TODO
     QSqlQuery q;
     q.exec(sql);
     while( q.next())

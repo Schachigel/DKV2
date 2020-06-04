@@ -168,6 +168,11 @@ QVariant executeSingleValueSql(const dbfield& field, const QString& where, QSqlD
     if( field.name().isEmpty() || field.tableName().isEmpty())
         return QVariant();
     QVariant result = executeSingleValueSql(field.name(), field.tableName(), where, db);
+
+    if( ! result.isValid()) {
+        qDebug() << "executeSingleValueSql found no value";
+        return result;
+    }
     if(result.convert(field.type()))
         return result;
     else {
@@ -179,46 +184,35 @@ QVariant executeSingleValueSql(const dbfield& field, const QString& where, QSqlD
 QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbForeignKey> keys, const QString& incomingWhere)
 {   //LOG_CALL;
 
-    QString Select;
-    QString From;
+    QString FieldList;
+    QString TableList;
     QString calculatedWhere;
     QSet<QString> usedTables;
 
     for( auto f : fields) {
-        if( f.tableName().isEmpty())
-            qCritical() << "selectQueryFromFields: missing table name";
-        if( f.name().isEmpty())
-            qCritical() << "selectQueryFromFields: missing field name";
-        if( ! Select.isEmpty())
-            Select += ", ";
-        Select += f.tableName() + "." + f.name();
+        if( f.tableName().isEmpty() || f.name().isEmpty())
+            qCritical() << "selectQueryFromFields: missing table or field name";
+        if( ! FieldList.isEmpty())
+            FieldList += ", ";
+        FieldList += f.tableName() + "." + f.name();
 
-        if( ! usedTables.contains(f.tableName()))
-        {
+        if( ! usedTables.contains(f.tableName())) {
             usedTables.insert(f.tableName());
-            if( ! From.isEmpty())
-                From += ", ";
-            From += f.tableName();
+            if( ! TableList.isEmpty())
+                TableList += ", ";
+            TableList += f.tableName();
         }
     }
     for( auto key: keys) {
         if( ! calculatedWhere.isEmpty()) calculatedWhere += " AND ";
         calculatedWhere += key.get_SelectSqpSnippet();
     }
-    QString Where;
-    if( incomingWhere.isEmpty() && calculatedWhere.isEmpty())
-        Where = "";
-    else
-        Where = " WHERE ";
+    QString Where = "WHERE %1 AND %2";
+    Where = Where.arg(incomingWhere.isEmpty() ? "true" : incomingWhere);
+    Where = Where.arg(calculatedWhere.isEmpty() ? "true" : calculatedWhere);
 
-    if( incomingWhere.isEmpty())
-        Where += calculatedWhere;
-    else if( calculatedWhere.isEmpty())
-        Where += incomingWhere;
-    else
-        Where += incomingWhere + " AND " + calculatedWhere;
-
-    QString Query = "SELECT " + Select + " FROM " + From + Where;
+    QString Query = "SELECT %1 FROM %2 %3";
+    Query = Query.arg(FieldList).arg(TableList).arg(Where);
     qInfo() << "selectQueryFromFields created Query: " << Query;
     return Query;
 }
@@ -239,7 +233,9 @@ QVector<QVariant> executeSingleColumnSql( const dbfield field, const QString& wh
         return result;
     }
     QSqlQuery q;
-    if( q.exec("SELECT " + field.name() + " FROM " + field.tableName() + (where.isEmpty()? "" : (" WHERE " + where))))
+    QString sql = "SELECT %1 FROM %2 %3";
+    sql = sql.arg(field.name()).arg(field.tableName()).arg((where.isEmpty() ? "" : (" WHERE " + where)));
+    if( q.exec(sql))
         while( q.next()) {
             result.push_back(adjustedType(q.record().field(0), field.type()).value());
         }
@@ -278,7 +274,7 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
 
     QSqlQuery q; q.setForwardOnly(true);
     if( !q.exec(sql)) {
-        qCritical() << "SingleRecordSql failed " << q.lastError() << endl << q.lastQuery();
+        qCritical() << "executeSql failed " << q.lastError() << endl << q.lastQuery();
         return QVector<QSqlRecord>();
     }
     QVector<QSqlRecord> result;

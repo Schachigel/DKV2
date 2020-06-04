@@ -26,21 +26,25 @@ public: // types
         SqlTypeDetails = SqlTypeDetails.replace("AUTOINCREMENT", "").trimmed();
         setRequired(SqlTypeDetails.contains("NOT NULL"));
         SqlTypeDetails = SqlTypeDetails.replace("NOT NULL", "").trimmed();
-        if( SqlTypeDetails.contains("PRIMARY KEY"))
-            setPrimaryKey(), SqlTypeDetails = SqlTypeDetails.replace("PRIMARY KEY", "").trimmed();
+        setPrimaryKey(SqlTypeDetails.contains("PRIMARY KEY"));
+        SqlTypeDetails = SqlTypeDetails.replace("PRIMARY KEY", "").trimmed();
+        setUnique(SqlTypeDetails.contains("UNIQUE"));
+        SqlTypeDetails = SqlTypeDetails.replace("UNIQUE", "").trimmed();
     }
     bool operator ==(const dbfield &b) const;
     QString typeDetails()     const {return SqlTypeDetails;}
     // interface
     QString get_CreateSqlSnippet();
-    dbfield setPrimaryKey(){ primaryKey = true; return *this;}
-    dbfield setNotNull(){ setRequired(true); return *this;}
-    dbfield setDefault(QVariant v){ setDefaultValue(v); return *this;}
-    dbfield setAutoInc(){ setAutoValue(true); return *this;}
+    dbfield setUnique(bool u=true){unique = u; return *this;}
+    dbfield setPrimaryKey(bool p=true){ primaryKey = p; return *this;}
+    dbfield setNotNull(bool nn=true){ setRequired(nn); return *this;}
+    dbfield setDefault(QVariant d){ setDefaultValue(d); return *this;}
+    dbfield setAutoInc(bool a=true){ setAutoValue(a); return *this;}
     // somewhat a helper
     static bool isSupportedType(QVariant::Type t);
     private:
     // data
+    bool unique = false;
     bool primaryKey=false;
     QString SqlTypeDetails;
     QVariant::Type outputType;

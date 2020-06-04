@@ -19,7 +19,7 @@ public:
     QSqlRecord getRecord() const {return record;}
     // interface
     int InsertData(QSqlDatabase db = QSqlDatabase::database()) const;
-    int InsertOrReplaceData() const;
+    int InsertOrReplaceData(QSqlDatabase db = QSqlDatabase::database()) const;
     int UpdateData() const;
 
 private:
