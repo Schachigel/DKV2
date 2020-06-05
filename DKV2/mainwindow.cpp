@@ -354,16 +354,25 @@ void MainWindow::on_action_create_contract_for_creditor_triggered()
 }
 void MainWindow::on_action_delete_creditor_triggered()
 {   LOG_CALL;
+    const QTableView * const tv = ui->CreditorsTableView;
+    QModelIndex mi(tv->currentIndex());
+    qlonglong index = tv->model()->data(mi.siblingAtColumn(0)).toLongLong();
+    creditor c (index);
+    if( c.hasActiveContracts()) {
+        QMessageBox::information(this, "Löschen unmöglich", "Ein Kreditor mit aktiven Verträgen kann nicht gelöscht werden");
+        return;
+    }
+    // todo: type save access functions as in contract
+    QString Vorname = c.getValue("Vorname").toString(); // ui->CreditorsTableView->model()->data(mi.siblingAtColumn(1)).toString();
+    QString Nachname = c.getValue("Nachname").toString(); // ui->CreditorsTableView->model()->data(mi.siblingAtColumn(2)).toString();
+
     QString msg( "Soll der Kreditgeber ");
-    QModelIndex mi(ui->CreditorsTableView->currentIndex());
-    QString Vorname = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(1)).toString();
-    QString Nachname = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(2)).toString();
-    QString index = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(0)).toString();
-    msg += Vorname + " " + Nachname + " (id " + index + ") mit allen Verträgen und Buchungen gelöscht werden?";
+    msg += Vorname + " " + Nachname + " (id " + QString::number(index) + ")  gelöscht werden?";
     if( QMessageBox::Yes != QMessageBox::question(this, "Kreditgeber löschen?", msg))
         return;
     busycursor b;
-    if( creditor::Loeschen(index.toInt()))
+
+    if( c.Delete())
         prepareCreditorsTableView();
     else
         Q_ASSERT(!bool("could not remove kreditor and contracts"));
@@ -391,6 +400,7 @@ void MainWindow::on_pbPersonFilterZuruecksetzen_clicked()
 // new DK Geber
 void MainWindow::on_action_create_new_creditor_triggered()
 {   LOG_CALL;
+    empty_create_creditor_form();
     ui->stackedWidget->setCurrentIndex(newPersonIndex);
 }
 int  MainWindow::save_creditor()

@@ -26,7 +26,12 @@ private slots:
     void test_CreditorFromDb();
     void test_invalidCreditor();
     void test_saveManyRandomCreditors();
-
+    void test_hasActiveContracts_noContracts();
+    void test_hasActiveContracts_hasInactContract();
+    void test_hasActiveContracts_hasActContract();
+    void test_deleteContract_woContract();
+    void test_deleteContract_wInactiveContract();
+    void test_deleteContract_wActiveContractFails();
 };
 
 #endif // TEST_CREDITOR_H

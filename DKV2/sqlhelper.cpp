@@ -225,16 +225,32 @@ QSqlField adjustedType(const QSqlField& f, QVariant::Type t)
     return ret;
 }
 
+//QVector<QVariant> executeSingleColumnSql( const QString field, const QString table, const QString& where)
+//{
+//    QString sql = "SELECT %1 FROM %2 WHERE %3";
+//    sql = sql.arg(field).arg(table).arg(where.isEmpty() ? "true" : where);
+//    QSqlQuery q;
+//    QVector<QVariant> result;
+//    if( q.exec(sql)){
+//        while(q.next()) {
+//            result.push_back(q.record().field(0).value());
+//        }
+//        return result;
+//    }
+//    qCritical() << "Failed to execute single column sql " << q.lastError() << endl << q.lastQuery();
+//    return QVector<QVariant>();
+//}
+
 QVector<QVariant> executeSingleColumnSql( const dbfield field, const QString& where)
 {   LOG_CALL;
-    QVector<QVariant> result;
     if( field.tableName().isEmpty() || field.name().isEmpty()) {
         qCritical() << "incomplete dbfield";
-        return result;
+        return QVector<QVariant>();
     }
-    QSqlQuery q;
     QString sql = "SELECT %1 FROM %2 %3";
     sql = sql.arg(field.name()).arg(field.tableName()).arg((where.isEmpty() ? "" : (" WHERE " + where)));
+    QSqlQuery q;
+    QVector<QVariant> result;
     if( q.exec(sql))
         while( q.next()) {
             result.push_back(adjustedType(q.record().field(0), field.type()).value());

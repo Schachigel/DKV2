@@ -40,7 +40,17 @@ void test_contract::test_set_get_interest()
 
 void test_contract::test_createContract()
 {   LOG_CALL;
+    contract c;
+}
 
+void test_contract::test_activateContract()
+{   LOG_CALL;
+    creditor c(saveRandomCreditor());
+    contract cont(saveRandomContract(c.id()));
+    QVERIFY(cont.isActive() == false);
+    QVERIFY(cont.activate(QDate::currentDate(), cont.plannedInvest()));
+    QVERIFY(cont.isActive() == true);
+    QVERIFY(false == cont.activate(QDate::currentDate(), cont.plannedInvest()));
 }
 
 void test_contract::test_randomContract()

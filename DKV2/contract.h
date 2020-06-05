@@ -2,6 +2,7 @@
 #define VERTRAG_H
 
 #include <QString>
+#include <QVector>
 #include <QDate>
 
 #include "helper.h"
@@ -9,7 +10,6 @@
 #include "tabledatainserter.h"
 #include "dkdbhelper.h"
 #include "creditor.h"
-
 
 struct contract
 {
@@ -54,7 +54,10 @@ struct contract
     int saveNewContract();
 
 //    bool loadContractFromDb(qlonglong id);
-    bool activate(const QDate& aDate, int amount);
+    bool activate(const QDate& aDate, int amount_ct);
+    bool activate(const QDate& aDate, double amount);
+    static bool isActive( qlonglong id);
+    bool isActive();
 //    bool bookAnnualInterest(const QDate& YearEnd);
 //    bool cancelActiveContract(const QDate& kTermin);
 //    bool terminateActiveContract(const QDate& termin);

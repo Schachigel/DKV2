@@ -108,9 +108,17 @@ int creditor::update() const
     return ti.UpdateData();
 }
 
-/* static */ bool creditor::Loeschen(int index)
+bool creditor::Delete()
+{
+    bool ret = creditor::Delete(id());
+    if( ret) setId( -1);
+    return ret;
+}
+
+/* static */ bool creditor::Delete(int index)
 {   LOG_CALL;
-    // referential integrity will delete the contracts
+    // referential integrity will delete [inactive] contracts
+    // deletion with active or terminated contract will fail due to ref. integrity contracts <> bookings
     QSqlQuery deleteQ;
     if( ! deleteQ.exec("DELETE FROM Kreditoren WHERE Id=" +QString::number(index))) {
         qCritical() << "Delete Kreditor failed "<< deleteQ.lastError() << endl << deleteQ.lastQuery();
@@ -118,6 +126,18 @@ int creditor::update() const
     }
     else
         return true;
+}
+
+/* static */ bool creditor::hasActiveContracts(qlonglong i)
+{
+    // SELECT sum(Buchungen.Betrag) FROM Buchungen
+    // WHERE Buchungen.VertragsId IN (SELECT Vertraege.id FROM Vertraege WHERE Vertraege.KreditorId = 14)
+    QString where = "Buchungen.VertragsId IN (SELECT Vertraege.id FROM Vertraege WHERE Vertraege.KreditorId = %1)";
+    where = where.arg(i);
+    QVariant a = executeSingleValueSql("SUM(Buchungen.Betrag)", "Buchungen", where);
+    if( a.toDouble() > 0)
+        return true;
+    return false;
 }
 
 /* static */ const dbtable& creditor::getTableDef()

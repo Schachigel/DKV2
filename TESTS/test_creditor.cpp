@@ -3,6 +3,7 @@
 #include "../DKV2/helper.h"
 #include "../DKV2/sqlhelper.h"
 #include "../DKV2/dkdbhelper.h"
+#include "../DKV2/contract.h"
 #include "../DKV2/creditor.h"
 #include "test_creditor.h"
 
@@ -76,4 +77,45 @@ void test_creditor::test_saveManyRandomCreditors()
     int numberOfCreditors = 50;
     saveRandomCreditors(numberOfCreditors);
     QVERIFY2(rowCount("Kreditoren") == numberOfCreditors, "random creditor creation failed");
+}
+
+void test_creditor::test_hasActiveContracts_noContracts()
+{
+    creditor c = saveRandomCreditor();
+    QCOMPARE(c.hasActiveContracts(), false);
+}
+
+void test_creditor::test_hasActiveContracts_hasInactContract()
+{
+    creditor c = saveRandomCreditor();
+    contract co = saveRandomContract(c.id());
+    QCOMPARE(c.hasActiveContracts(), false);
+}
+
+void test_creditor::test_hasActiveContracts_hasActContract()
+{
+    creditor c = saveRandomCreditor();
+    contract co = saveRandomContract(c.id());
+    co.activate(QDate::currentDate(), 1000.0);
+    QCOMPARE(c.hasActiveContracts(), true);
+}
+void test_creditor::test_deleteContract_woContract()
+{
+    creditor c = saveRandomCreditor();
+    QVERIFY(c.Delete());
+}
+
+void test_creditor::test_deleteContract_wInactiveContract()
+{
+    creditor c = saveRandomCreditor();
+    contract co = saveRandomContract(c.id());
+    QVERIFY(c.Delete());
+}
+
+void test_creditor::test_deleteContract_wActiveContractFails()
+{
+    creditor c = saveRandomCreditor();
+    contract co = saveRandomContract(c.id());
+    co.activate(QDate::currentDate(), 1000.0);
+    QCOMPARE(c.Delete(), false);
 }

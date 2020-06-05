@@ -47,7 +47,10 @@ public:
     int save();
     int update() const;
     void KreditorenListeMitId(QList<QPair<int,QString>> &entries) const;
-    static bool Loeschen(int index);
+    bool hasActiveContracts(){return hasActiveContracts(id());};
+    static bool hasActiveContracts(qlonglong i);
+    bool Delete();
+    static bool Delete(int index);
 private:
     // data
     TableDataInserter ti;

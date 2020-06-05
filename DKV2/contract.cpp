@@ -12,7 +12,10 @@
     {
         contracttable.append(dbfield("id",         QVariant::LongLong).setPrimaryKey().setAutoInc());
         contracttable.append(dbfield("KreditorId", QVariant::LongLong).setNotNull());
-        contracttable.append(dbForeignKey(contracttable["KreditorId"], dkdbstructur["Kreditoren"]["id"], "ON DELETE RESTRICT"));
+        contracttable.append(dbForeignKey(contracttable["KreditorId"],
+                             dkdbstructur["Kreditoren"]["id"], "ON DELETE CASCADE"));
+        // deleting a creditor will delete inactive contracts but not
+        // contracts with existing bookings (=active or terminated contracts)
         contracttable.append(dbfield("Kennung",    QVariant::String, "UNIQUE"));
         contracttable.append(dbfield("ZSatz",      QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
         contracttable.append(dbfield("Betrag",     QVariant::Int).setNotNull().setDefault(0)); // ct
@@ -69,14 +72,37 @@ int contract::saveNewContract()
     return -1;
 }
 
-bool contract::activate(const QDate& aDate, int amount)
+bool contract::activate(const QDate& aDate, int amount_ct)
 {
-    if( amount < 0 || ! booking::makeDeposit( id(), aDate, amount)) {
-        qCritical() << "failed to conduct activation to contract " << id() << "[" << aDate << ", " << amount << "]";
+    Q_ASSERT (id()>=0);
+    if( isActive()) {
+        qDebug() << "Already active contract can not be activated";
         return false;
     }
-    qInfo() << "successfully activated contract " << id() << "[" << aDate << ", " << amount << "]";
+    if( amount_ct < 0 || ! booking::makeDeposit( id(), aDate, amount_ct)) {
+        qCritical() << "failed to conduct activation on contract " << id() << "[" << aDate << ", " << amount_ct << "]";
+        return false;
+    }
+    qInfo() << "Successfully activated contract " << id() << "[" << aDate << ", " << amount_ct << " ct]";
     return true;
+}
+bool contract::activate(const QDate& aDate, double amount)
+{
+    int ct = ctFromEuro(amount);
+    return activate(aDate, ct);
+}
+
+/* static */ bool contract::isActive( qlonglong id)
+{
+    QString sql = "SELECT SUM(Betrag) FROM Buchungen WHERE VertragsId=" + QString::number(id);
+    int amount = executeSingleValueSql(sql).toInt();
+    if( amount > 0)
+        return true;
+    return false;
+}
+bool contract::isActive()
+{
+    return isActive(id());
 }
 
 contract saveRandomContract(qlonglong creditorId)
