@@ -382,7 +382,7 @@ void MainWindow::on_action_show_contracts_triggered()
     busycursor b;
     QModelIndex mi(ui->CreditorsTableView->currentIndex());
     QString index = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(0)).toString();
-    ui->leVertraegeFilter->setText("index:" +index);
+    ui->leVertraegeFilter->setText("kreditor:" +index);
     on_action_show_list_of_contracts_triggered();
 }
 void MainWindow::on_leFilter_editingFinished()
@@ -654,10 +654,10 @@ void MainWindow::on_action_save_contract_new_contract_triggered()
 // Liste der Verträge
 QString filterFromFilterphrase(QString fph)
 {
-    if( fph.startsWith("index:"))
+    if( fph.startsWith("kreditor:"))
     {
         bool conversionOK = true;
-        qlonglong contractId = fph.right(fph.length()-6).toInt(&conversionOK);
+        qlonglong contractId = fph.right(fph.length()-9).toInt(&conversionOK);
         if( ! conversionOK)
             return "";
         else
