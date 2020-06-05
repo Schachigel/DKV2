@@ -308,17 +308,12 @@ void MainWindow::on_CreditorsTableView_customContextMenuRequested(const QPoint &
 {   LOG_CALL;
     QModelIndex index = ui->CreditorsTableView->indexAt(pos).siblingAtColumn(0);
     if( index.isValid()) {
-        QVariant data(ui->CreditorsTableView->model()->data(index));
-        if( data.canConvert(QVariant::Int)) {
-            QMenu menu( "PersonContextMenu", this);
-            menu.addAction(ui->action_edit_Creditor);
-            menu.addAction(ui->action_create_contract_for_creditor);
-            menu.addAction( ui->action_delete_creditor);
-            menu.addAction(ui->action_show_contracts);
-            menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
-        }
-        else
-            qCritical() << "Conversion error: model data is not int";
+        QMenu menu( "PersonContextMenu", this);
+        menu.addAction(ui->action_edit_Creditor);
+        menu.addAction(ui->action_create_contract_for_creditor);
+        menu.addAction( ui->action_delete_creditor);
+        menu.addAction(ui->action_show_contracts);
+        menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
         return;
     }
 }
@@ -674,24 +669,25 @@ void MainWindow::prepare_contracts_list_view()
     model->setFilter( filterFromFilterphrase(ui->leVertraegeFilter->text()));
     qDebug() << "contract list model filter: " << model->filter();
 
-    ui->contractsTableView->setModel(model);
+    QTableView*& tv = ui->contractsTableView;
+    tv->setModel(model);
     model->select();
 
-    ui->contractsTableView->setEditTriggers(QTableView::NoEditTriggers);
-    ui->contractsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->contractsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui->contractsTableView->setAlternatingRowColors(true);
-    ui->contractsTableView->setSortingEnabled(true);
-    ui->contractsTableView->hideColumn(0);
-    ui->contractsTableView->hideColumn(9);
-    ui->contractsTableView->setItemDelegateForColumn(3, new PercentItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(4, new EuroItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(5, new DateItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(6, new KFristItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(7, new DateItemFormatter(ui->contractsTableView));
-    ui->contractsTableView->setItemDelegateForColumn(8, new thesaItemFormatter(ui->contractsTableView));
+    tv->setEditTriggers(QTableView::NoEditTriggers);
+    tv->setSelectionMode(QAbstractItemView::SingleSelection);
+    tv->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tv->setAlternatingRowColors(true);
+    tv->setSortingEnabled(true);
+    tv->hideColumn(0);
+    tv->hideColumn(9);
+    tv->setItemDelegateForColumn(3, new PercentItemFormatter(tv));
+    tv->setItemDelegateForColumn(4, new EuroItemFormatter(tv));
+    tv->setItemDelegateForColumn(5, new DateItemFormatter(tv));
+    tv->setItemDelegateForColumn(6, new KFristItemFormatter(tv));
+    tv->setItemDelegateForColumn(7, new DateItemFormatter(tv));
+    tv->setItemDelegateForColumn(8, new thesaItemFormatter(tv));
 
-    ui->contractsTableView->resizeColumnsToContents();
+    tv->resizeColumnsToContents();
 }
 void MainWindow::on_action_show_list_of_contracts_triggered()
 {   LOG_CALL;
@@ -703,23 +699,15 @@ void MainWindow::on_action_show_list_of_contracts_triggered()
 }
 void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &pos)
 {   LOG_CALL;
-//    QSqlRecord rec = tmp_ContractsModel->record(); // ugly, but qobject_cast does not work
-    int indedOf_active_inModel = 1;//  = rec.indexOf("aktiv");
-    int indexOf_kfrist_inModel = 1;// = rec.indexOf("Kfrist");
 
-    QModelIndex indexClickTarget = ui->contractsTableView->indexAt(pos);
-    QModelIndex index_IsActive = indexClickTarget.siblingAtColumn(indedOf_active_inModel); // contract active
-    QVariant ContractIsActive = ui->contractsTableView->model()->data(index_IsActive);
-    if( !ContractIsActive.isValid())
-        return; // clicked outside the used lines
-    QModelIndex index_Kfrist = indexClickTarget.siblingAtColumn(indexOf_kfrist_inModel);
-    QVariant Kfrist = ui->contractsTableView->model()->data(index_Kfrist);
-    bool hatLaufzeitende = false;
-    if( Kfrist == -1)
-        hatLaufzeitende = true;
+    QTableView*& tv = ui->contractsTableView;
+    QModelIndex index = tv->indexAt(pos).siblingAtColumn(0);
+
+    contract c(index.data().toInt());
+    bool hatLaufzeitende = c.noticePeriod() == -1;
 
     QMenu menu( "PersonContextMenu", this);
-    if(ContractIsActive.toBool())
+    if(c.isActive())
     {
         if( hatLaufzeitende)
             ui->action_terminate_contract->setText("Vertrag beenden");
