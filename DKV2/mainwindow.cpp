@@ -661,7 +661,7 @@ QString filterFromFilterphrase(QString fph)
         if( ! conversionOK)
             return "";
         else
-            return "id=" + QString::number(contractId);
+            return "KreditorId=" + QString::number(contractId);
     }
     return fph.isEmpty() ? "" :
            ("Kreditorin LIKE '%" + fph + "%' OR Vertragskennung LIKE '%" + fph + "%'");
@@ -683,6 +683,7 @@ void MainWindow::prepare_contracts_list_view()
     ui->contractsTableView->setAlternatingRowColors(true);
     ui->contractsTableView->setSortingEnabled(true);
     ui->contractsTableView->hideColumn(0);
+    ui->contractsTableView->hideColumn(9);
     ui->contractsTableView->setItemDelegateForColumn(3, new PercentItemFormatter(ui->contractsTableView));
     ui->contractsTableView->setItemDelegateForColumn(4, new EuroItemFormatter(ui->contractsTableView));
     ui->contractsTableView->setItemDelegateForColumn(5, new DateItemFormatter(ui->contractsTableView));

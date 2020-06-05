@@ -151,8 +151,7 @@ void insert_defaultGmbHData( QSqlDatabase db )
 void insert_views( QSqlDatabase db)
 {
     QSqlQuery view(db);
-    QString WertAktiveVertraege =
-    "CREATE VIEW 'WertAktiveVertraege' AS "
+    QString WertAktiveVertraege = "CREATE VIEW 'WertAktiveVertraege' AS "
     "SELECT Vertraege.id AS id, "    // 0"
     "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 1
     "Vertraege.Kennung AS Vertragskennung, " // 2
@@ -161,7 +160,8 @@ void insert_views( QSqlDatabase db)
     "Vertraege.Vertragsdatum AS Abschlußdatum, " // 5
     "Vertraege.Kfrist AS Kündigungsfrist, "     // 6
     "Vertraege.LaufzeitEnde AS Vertragsende, " // 7
-    "thesaurierend AS thesa "                 // 8
+    "thesaurierend AS thesa, "                 // 8
+    "Kreditoren.id AS KreditorId " // 9
     "FROM Vertraege "
     "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
     "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId";
@@ -177,7 +177,8 @@ void insert_views( QSqlDatabase db)
     "Vertraege.Vertragsdatum AS Abschlußdatum, " // 5
     "Vertraege.Kfrist AS Kündigungsfrist, "      // 6
     "Vertraege.LaufzeitEnde AS Vertragsende, "   // 7
-    "Vertraege.thesaurierend AS thesa "          // 8
+    "Vertraege.thesaurierend AS thesa, "          // 8
+    "Kreditoren.id AS KreditorId " // 9
     "FROM Vertraege "
     "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
     "WHERE (SELECT count(*) FROM Buchungen WHERE Buchungen.VertragsId=Vertraege.id) = 0";
