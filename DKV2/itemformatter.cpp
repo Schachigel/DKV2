@@ -37,7 +37,7 @@ QString EuroItemFormatter::displayText(const QVariant& value, const QLocale& loc
     QLocale l(locale);
     l.setNumberOptions(0);
     if( w <= 0)
-        return "[" + l.toString(-1 *w) + " "  + "] offen";
+        return "[" + l.toCurrencyString(-1 *w) + " "  + "] offen";
     else
         return l.toCurrencyString(w)+ " ";
 };

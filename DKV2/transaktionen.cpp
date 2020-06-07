@@ -10,7 +10,7 @@
 #include "transaktionen.h"
 
 
-void aktiviereVertrag(int )
+void aktiviereVertrag(int contractId)
 {   LOG_CALL;
     askDateDlg dlg( nullptr, QDate::currentDate());
     dlg.setMsg("<H3>Mit der Aktivierung des Vertrags beginnt die Zinsberechnung. <br>Bitte geben Sie das Datum des Geldeingangs ein:</H3>");
@@ -18,8 +18,9 @@ void aktiviereVertrag(int )
     if( QDialog::Accepted != dlg.exec())
         return;
 
-    contract v;
-Q_ASSERT(!"repair");
+    contract v(contractId);
+    if( !v.activate(dlg.getDate(), v.plannedInvest()))
+        qCritical() << "activation failed";
 }
 
 void beendeVertrag(int )

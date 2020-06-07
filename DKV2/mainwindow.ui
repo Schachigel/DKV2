@@ -11,6 +11,11 @@
     <height>800</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <pointsize>10</pointsize>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>-  DKV2 -</string>
   </property>
@@ -51,7 +56,7 @@
            <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;h2 style=&quot; margin-top:16px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8.25pt; font-weight:600;&quot;&gt;Willkommen zu DKV2- Deiner Verwaltung von Direktrediten&lt;/span&gt;&lt;/h2&gt;
 &lt;h2 style=&quot; margin-top:16px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;img src=&quot;:/res/splash.png&quot; /&gt;&lt;/h2&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
@@ -74,14 +79,14 @@ p, li { white-space: pre-wrap; }
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="leFilter">
+           <widget class="QLineEdit" name="le_CreditorsFilter">
             <property name="toolTip">
              <string>Gib 2 oder mehr Zeichen ein und drücke die Rücklauftaste</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pbPersonFilterZuruecksetzen">
+           <widget class="QPushButton" name="btn_reset_filter_creditors">
             <property name="text">
              <string>alle anzeigen</string>
             </property>
@@ -112,7 +117,7 @@ p, li { white-space: pre-wrap; }
         <item>
          <layout class="QHBoxLayout" name="hlNeuePersonButtons">
           <item>
-           <widget class="CustomToolButton" name="saveAnd">
+           <widget class="CustomToolButton" name="customBtn_saveCreditorAnd">
             <property name="toolTip">
              <string>Der DK Geber wird gespeichert und ein weiterer Datensatz zur Eingabe angelegt</string>
             </property>
@@ -122,7 +127,7 @@ p, li { white-space: pre-wrap; }
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="cancel">
+           <widget class="QPushButton" name="cancelCreateCreditor">
             <property name="toolTip">
              <string>Das Anlegen des DK Gebers wird abgebrochen</string>
             </property>
@@ -514,7 +519,7 @@ p, li { white-space: pre-wrap; }
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="leVertraegeFilter"/>
+           <widget class="QLineEdit" name="le_ContractsFilter"/>
           </item>
           <item>
            <widget class="QPushButton" name="reset_contracts_filter">
@@ -650,68 +655,74 @@ p, li { white-space: pre-wrap; }
      <height>25</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuDatenbank">
+
+   <widget class="QMenu" name="menu_database">
     <property name="title">
      <string>&amp;Datenbank</string>
     </property>
-    <addaction name="action_back"/>
+    <addaction name="action_menu_database_start"/>
     <addaction name="separator"/>
-    <addaction name="action_create_new_DB"/>
-    <addaction name="action_open_DB"/>
-    <addaction name="actionDB_schliessen"/>
+    <addaction name="action_menu_database_new"/>
+    <addaction name="action_menu_database_open"/>
+    <addaction name="action_menu_database_exit"/>
     <addaction name="separator"/>
-    <addaction name="action_create_copy"/>
-    <addaction name="action_create_anonymous_copy"/>
+    <addaction name="action_menu_database_copy"/>
+    <addaction name="action_menu_database_anonymous_copy"/>
     <addaction name="separator"/>
-    <addaction name="action_store_output_directory"/>
-    <addaction name="action_exit_program"/>
+    <addaction name="action_menu_database_configure_outdir"/>
+    <addaction name="action_menu_database_program_exit"/>
    </widget>
-   <widget class="QMenu" name="menuDK_Geber">
+
+   <widget class="QMenu" name="manu_creditors">
     <property name="title">
      <string>&amp;Kreditgeber</string>
     </property>
-    <addaction name="action_Liste"/>
+    <addaction name="action_menu_creditors_listview"/>
     <addaction name="separator"/>
-    <addaction name="action_create_new_creditor"/>
-    <addaction name="action_delete_creditor"/>
+    <addaction name="action_menu_creditors_create"/>
+    <addaction name="action_menu_creditors_delete"/>
    </widget>
-   <widget class="QMenu" name="menuVertr_ge">
-    <property name="title">
-     <string>&amp;Verträge</string>
-    </property>
-    <widget class="QMenu" name="menuListen_drucken">
+
+   <widget class="QMenu" name="manu_contracts">
+    <widget class="QMenu" name="menu_contracts_subm_print_lists">
      <property name="title">
       <string>Listen drucken</string>
      </property>
-     <addaction name="action_create_active_contracts_csv"/>
-    </widget>
-    <addaction name="action_show_list_of_contracts"/>
-    <addaction name="action_create_contract_for_creditor"/>
+     <addaction name="action_menu_contracts_print_lists"/>
+    </widget>    
+    <property name="title">
+     <string>&amp;Verträge</string>
+    </property>
+    <addaction name="action_menu_contracts_listview"/>
+    <addaction name="action_menu_contracts_create"/>
     <addaction name="separator"/>
-    <addaction name="action_anual_interest_settlement"/>
+    <addaction name="action_menu_contracts_anual_interest_settlement"/>
     <addaction name="separator"/>
-    <addaction name="action_contracts_statistics"/>
-    <addaction name="menuListen_drucken"/>
+    <addaction name="action_menu_contracts_statistics_view"/>
+    <addaction name="menu_contracts_print_lists"/>
    </widget>
-   <widget class="QMenu" name="menuDebug">
+
+
+   <widget class="QMenu" name="menu_debug">
     <property name="enabled">
      <bool>true</bool>
     </property>
     <property name="title">
      <string>&amp;Extras</string>
     </property>
-    <addaction name="action_create_sample_data"/>
-    <addaction name="action_log_anzeigen"/>
+    <addaction name="action_menu_debug_create_sample_data"/>
+    <addaction name="action_menu_debug_show_log"/>
     <addaction name="actionShow_Bookings"/>
-    <addaction name="action_ber_DKV2"/>
+    <addaction name="action_about_DKV2"/>
    </widget>
-   <addaction name="menuDatenbank"/>
-   <addaction name="menuDK_Geber"/>
-   <addaction name="menuVertr_ge"/>
-   <addaction name="menuDebug"/>
+   <addaction name="menu_database"/>
+   <addaction name="manu_creditors"/>
+   <addaction name="manu_contracts"/>
+   <addaction name="menu_debug"/>
   </widget>
+  
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="action_create_new_DB">
+  <action name="action_menu_database_new">
    <property name="text">
     <string>&amp;Neue anlegen</string>
    </property>
@@ -722,7 +733,7 @@ p, li { white-space: pre-wrap; }
     <string>Ctrl+N</string>
    </property>
   </action>
-  <action name="action_open_DB">
+  <action name="action_menu_database_open">
    <property name="text">
     <string>&amp;Öffnen</string>
    </property>
@@ -736,7 +747,7 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
   </action>
-  <action name="actionDB_schliessen">
+  <action name="action_menu_database_exit">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -753,7 +764,7 @@ p, li { white-space: pre-wrap; }
     <bool>false</bool>
    </property>
   </action>
-  <action name="action_Liste">
+  <action name="action_menu_creditors_listview">
    <property name="text">
     <string>&amp;Liste der DK Geber</string>
    </property>
@@ -761,17 +772,17 @@ p, li { white-space: pre-wrap; }
     <string>Zeigt eine Liste aller DK Geber an</string>
    </property>
   </action>
-  <action name="action_exit_program">
+  <action name="action_menu_database_program_exit">
    <property name="text">
     <string>Programm beenden</string>
    </property>
   </action>
-  <action name="action_show_list_of_contracts">
+  <action name="action_menu_contracts_listview">
    <property name="text">
     <string>Liste der Verträge anzeigen</string>
    </property>
   </action>
-  <action name="action_create_sample_data">
+  <action name="action_menu_debug_create_sample_data">
    <property name="text">
     <string>Beispieldaten erstellen</string>
    </property>
@@ -779,12 +790,17 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
   </action>
-  <action name="action_create_new_creditor">
+  <action name="action_menu_creditors_create">
    <property name="text">
     <string>Anlegen</string>
    </property>
   </action>
-  <action name="action_create_contract_for_creditor">
+  <action name="action_menu_creditors_delete">
+   <property name="text">
+    <string>Löschen</string>
+   </property>
+  </action>
+  <action name="action_menu_contracts_create">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -798,7 +814,7 @@ p, li { white-space: pre-wrap; }
     <string>Ins</string>
    </property>
   </action>
-  <action name="action_delete_creditor">
+  <action name="action_cmenu_delete_creaditor">
    <property name="text">
     <string>Löschen</string>
    </property>
@@ -811,7 +827,7 @@ p, li { white-space: pre-wrap; }
     <string>Show Log file</string>
    </property>
   </action>
-  <action name="action_activate_contract">
+<action name="action_cmenu_activate_contract">
    <property name="text">
     <string>Vertrag aktivieren</string>
    </property>
@@ -819,17 +835,17 @@ p, li { white-space: pre-wrap; }
     <string>Zinszahlung des Vertrags aktivieren</string>
    </property>
   </action>
-  <action name="action_loeschePassivenVertrag">
+  <action name="action_cmenu_delete_inactive_contract">
    <property name="text">
     <string>Vertrag &amp;löschen</string>
    </property>
   </action>
-  <action name="action_log_anzeigen">
+  <action name="action_menu_debug_show_log">
    <property name="text">
     <string>Log Datei öffnen</string>
    </property>
   </action>
-  <action name="action_terminate_contract">
+  <action name="action_cmenu_terminate_contract">
    <property name="text">
     <string>Vertrag &amp;beenden</string>
    </property>
@@ -837,7 +853,7 @@ p, li { white-space: pre-wrap; }
     <string>Zins und Auszahlungsbetrag berechnen, Vertrag löschen</string>
    </property>
   </action>
-  <action name="action_contracts_statistics">
+  <action name="action_menu_contracts_statistics_view">
    <property name="text">
     <string>Übersicht</string>
    </property>
@@ -845,7 +861,7 @@ p, li { white-space: pre-wrap; }
     <string>Übersicht über Vertragsdaten anzeigen</string>
    </property>
   </action>
-  <action name="action_show_contracts">
+  <action name="action_cmenu_go_contracts">
    <property name="text">
     <string>Verträge zeigen</string>
    </property>
@@ -858,7 +874,7 @@ p, li { white-space: pre-wrap; }
     <string>Buchungen anzeigen</string>
    </property>
   </action>
-  <action name="action_edit_Creditor">
+  <action name="action_cmenu_edit_creditor">
    <property name="text">
     <string>Bearbeiten</string>
    </property>
@@ -866,12 +882,12 @@ p, li { white-space: pre-wrap; }
     <string>Adressdaten und Bankdaten bearbeiten</string>
    </property>
   </action>
-  <action name="action_anual_interest_settlement">
+  <action name="action_menu_contracts_anual_interest_settlement">
    <property name="text">
     <string>Jahreszinsabrechnung</string>
    </property>
   </action>
-  <action name="action_store_output_directory">
+  <action name="action_menu_database_configure_outdir">
    <property name="checkable">
     <bool>false</bool>
    </property>
@@ -882,27 +898,27 @@ p, li { white-space: pre-wrap; }
     <string>Ausgabeverzeichnis festlegen</string>
    </property>
   </action>
-  <action name="action_create_active_contracts_csv">
+  <action name="action_menu_contracts_print_lists">
    <property name="text">
     <string>Aktive Verträge (CSV)</string>
    </property>
   </action>
-  <action name="action_back">
+  <action name="action_menu_database_start">
    <property name="text">
     <string>Start</string>
    </property>
   </action>
-  <action name="action_create_anonymous_copy">
+  <action name="action_menu_database_anonymous_copy">
    <property name="text">
     <string>Anonymisierte &amp;Kopie</string>
    </property>
   </action>
-  <action name="action_create_copy">
+  <action name="action_menu_database_copy">
    <property name="text">
     <string>Kopie anlegen</string>
    </property>
   </action>
-  <action name="action_save_contact_go_contract">
+  <action name="action_saveCreditor_go_contract">
    <property name="text">
     <string>Speichern, dann Vertrag anlegen</string>
    </property>
@@ -910,7 +926,7 @@ p, li { white-space: pre-wrap; }
     <string>Kontakt speichern und einen Vertrag zu diesem Kontakt anlegen</string>
    </property>
   </action>
-  <action name="action_save_contact_go_creditors">
+  <action name="action_saveCreditor_go_creditors">
    <property name="text">
     <string>Speichern und zu Kreditoren</string>
    </property>
@@ -918,7 +934,7 @@ p, li { white-space: pre-wrap; }
     <string>Speichern und die Liste der Kreditoren anzeigen</string>
    </property>
   </action>
-  <action name="action_save_contact_go_new_creditor">
+  <action name="action_saveCreditor_go_new_creditor">
    <property name="text">
     <string>Speichern, dann neuen K. anlegen</string>
    </property>
@@ -950,9 +966,17 @@ p, li { white-space: pre-wrap; }
     <string>Speichern und dann einen weiteren Vertrag anlegen</string>
    </property>
   </action>
-  <action name="action_ber_DKV2">
+  <action name="action_about_DKV2">
    <property name="text">
     <string>Über DKV2</string>
+   </property>
+  </action>
+  <action name="action_cmenu_change_contract">
+   <property name="text">
+    <string>cmenu_change_contract</string>
+   </property>
+   <property name="toolTip">
+    <string>Ein- oder Auszahlung</string>
    </property>
   </action>
  </widget>
@@ -965,8 +989,8 @@ p, li { white-space: pre-wrap; }
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>leFilter</tabstop>
-  <tabstop>pbPersonFilterZuruecksetzen</tabstop>
+  <tabstop>le_CreditorsFilter</tabstop>
+  <tabstop>btn_reset_filter_creditors</tabstop>
   <tabstop>CreditorsTableView</tabstop>
   <tabstop>leNachname</tabstop>
   <tabstop>leStrasse</tabstop>
@@ -986,7 +1010,7 @@ p, li { white-space: pre-wrap; }
   <tabstop>cbKFrist</tabstop>
   <tabstop>deLaufzeitEnde</tabstop>
   <tabstop>chkbThesaurierend</tabstop>
-  <tabstop>leVertraegeFilter</tabstop>
+  <tabstop>le_ContractsFilter</tabstop>
   <tabstop>reset_contracts_filter</tabstop>
   <tabstop>contractsTableView</tabstop>
   <tabstop>comboUebersicht</tabstop>
@@ -995,8 +1019,8 @@ p, li { white-space: pre-wrap; }
   <tabstop>leFilterBookings</tabstop>
   <tabstop>pbPersonFilterZuruecksetzenBookings</tabstop>
   <tabstop>tblViewBookings</tabstop>
-  <tabstop>cancel</tabstop>
-  <tabstop>saveAnd</tabstop>
+  <tabstop>cancelCreateCreditor</tabstop>
+  <tabstop>customBtn_saveCreditorAnd</tabstop>
   <tabstop>leVorname</tabstop>
   <tabstop>teWelcome</tabstop>
  </tabstops>

@@ -79,7 +79,7 @@ bool contract::activate(const QDate& aDate, int amount_ct)
         qDebug() << "Already active contract can not be activated";
         return false;
     }
-    if( amount_ct < 0 || ! booking::makeDeposit( id(), aDate, amount_ct)) {
+    if( amount_ct < 0 || ! booking::makeDeposit( id(), aDate, euroFromCt(amount_ct))) {
         qCritical() << "failed to conduct activation on contract " << id() << "[" << aDate << ", " << amount_ct << "]";
         return false;
     }
@@ -114,7 +114,7 @@ contract saveRandomContract(qlonglong creditorId)
     c.setCreditorId(creditorId);
     c.setReinvesting(rand->bounded(100)%6);
     c.setInterest100th(1 +rand->bounded(149));
-    c.setPlannedInvest(rand->bounded(50)*1000. + rand->bounded(1,101)*100.);
+    c.setPlannedInvest(ctFromEuro(rand->bounded(50)*1000. + rand->bounded(1,101)));
     c.setConclusionDate(QDate::currentDate().addYears(-2).addDays(rand->bounded(720)));
     if( rand->bounded(100)%5)
         c.setNoticePeriod(3 + rand->bounded(21));

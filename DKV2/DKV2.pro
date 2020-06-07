@@ -27,6 +27,7 @@ SOURCES += \
         appconfig.cpp \
         askdatedlg.cpp \
         booking.cpp \
+        changecontractvaluewiz.cpp \
         contract.cpp \
         creditor.cpp \
         csvwriter.cpp \
@@ -53,6 +54,7 @@ HEADERS += \
         appconfig.h \
         askdatedlg.h \
         booking.h \
+        changecontractvaluewiz.h \
         contract.h \
         creditor.h \
         csvwriter.h \
