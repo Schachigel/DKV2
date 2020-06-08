@@ -12,6 +12,9 @@
 
 void aktiviereVertrag(int contractId)
 {   LOG_CALL;
+    // todo: wizard UI Geldeingang:
+    // - Wann?
+    // - Wieviel? -> go
     askDateDlg dlg( nullptr, QDate::currentDate());
     dlg.setMsg("<H3>Mit der Aktivierung des Vertrags beginnt die Zinsberechnung. <br>Bitte geben Sie das Datum des Geldeingangs ein:</H3>");
     dlg.setDateLabel("Die Verzinsung beginnt am");

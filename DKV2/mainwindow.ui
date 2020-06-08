@@ -684,12 +684,6 @@ p, li { white-space: pre-wrap; }
    </widget>
 
    <widget class="QMenu" name="manu_contracts">
-    <widget class="QMenu" name="menu_contracts_subm_print_lists">
-     <property name="title">
-      <string>Listen drucken</string>
-     </property>
-     <addaction name="action_menu_contracts_print_lists"/>
-    </widget>    
     <property name="title">
      <string>&amp;Verträge</string>
     </property>
@@ -699,7 +693,13 @@ p, li { white-space: pre-wrap; }
     <addaction name="action_menu_contracts_anual_interest_settlement"/>
     <addaction name="separator"/>
     <addaction name="action_menu_contracts_statistics_view"/>
-    <addaction name="menu_contracts_print_lists"/>
+    <widget class="QMenu" name="menu_contracts_subm_print_lists">
+     <property name="title">
+      <string>Listen drucken</string>
+     </property>
+     <addaction name="action_menu_contracts_print_lists"/>
+    </widget>    
+    <addaction name="menu_contracts_subm_print_lists"/>
    </widget>
 
 
