@@ -334,10 +334,6 @@ void MainWindow::on_action_cmenu_go_contracts_triggered()
     ui->le_ContractsFilter->setText("kreditor:" +index);
     on_action_menu_contracts_listview_triggered();
 }
-void MainWindow::on_action_cmenu_change_contract_triggered()
-{   // deposit or payout...
-    // todo: implement
-}
 
 // new Kreditor page
 void MainWindow::on_action_menu_creditors_create_triggered()
@@ -576,7 +572,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &
 void MainWindow::on_action_cmenu_activate_contract_triggered()
 {   LOG_CALL;
 
-    aktiviereVertrag(get_current_id_from_contracts_list());
+    activateContract(get_current_id_from_contracts_list());
     prepare_contracts_list_view();
 }
 void MainWindow::on_action_cmenu_terminate_contract_triggered()
@@ -593,10 +589,15 @@ void MainWindow::on_action_cmenu_delete_inactive_contract_triggered()
     QModelIndex mi(ui->contractsTableView->currentIndex());
     if( !mi.isValid()) return;
 
-    QString index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toString();
-    beendeVertrag(index.toInt());
-
+    beendeVertrag(ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toLongLong());
     prepare_contracts_list_view();
+}
+void MainWindow::on_action_cmenu_change_contract_triggered()
+{   // deposit or payout...
+    QModelIndex mi(ui->contractsTableView->currentIndex());
+    if( !mi.isValid()) return;
+
+    changeContractValue(ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toLongLong());
 }
 
 // new contract

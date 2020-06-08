@@ -3,11 +3,12 @@
 
 #include "contract.h"
 
-void aktiviereVertrag(int vid);
+void activateContract(qlonglong vid);
+void changeContractValue(qlonglong vid);
 
-void beendeVertrag(int vid);
-void VertragsEnde_LaufzeitEnde( contract& v);
-void VertragsEnde_MitKFrist( contract& v);
-void VertragsEnde_PassiverV( contract& v);
+void beendeVertrag(qlonglong vid);
+void terminateContract_Final( contract& v);
+void cancelContract_wNoticePeriod( contract& v);
+void terminatePassiveContract( contract& v);
 
 #endif // TRANSAKTIONEN_H

@@ -36,7 +36,7 @@ bool TableDataInserter::setValue(const QString& n, const QVariant& v)
         record.setValue(n, vf);
         return true;
     }
-    qCritical() << "type conversion failed" << n;
+    qCritical() << "type conversion failed, no data inserted " << n;
     return false;
 }
 
@@ -52,7 +52,6 @@ bool TableDataInserter::setValues(const QSqlRecord input)
             return false;
         }
     }
-//    qInfo() << "table inserter set values from " << input;
     return true;
 }
 

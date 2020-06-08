@@ -76,7 +76,7 @@ bool contract::activate(const QDate& aDate, int amount_ct)
 {
     Q_ASSERT (id()>=0);
     if( isActive()) {
-        qDebug() << "Already active contract can not be activated";
+        qCritical() << "Already active contract can not be activated";
         return false;
     }
     if( amount_ct < 0 || ! booking::makeDeposit( id(), aDate, euroFromCt(amount_ct))) {

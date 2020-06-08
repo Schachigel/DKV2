@@ -702,7 +702,6 @@ p, li { white-space: pre-wrap; }
     <addaction name="menu_contracts_subm_print_lists"/>
    </widget>
 
-
    <widget class="QMenu" name="menu_debug">
     <property name="enabled">
      <bool>true</bool>
@@ -973,7 +972,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="action_cmenu_change_contract">
    <property name="text">
-    <string>cmenu_change_contract</string>
+    <string>Ein- oder Auszahlung</string>
    </property>
    <property name="toolTip">
     <string>Ein- oder Auszahlung</string>

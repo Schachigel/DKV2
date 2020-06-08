@@ -5,12 +5,11 @@
 
 #include "askdatedlg.h"
 #include "helper.h"
-#include "finhelper.h"
-#include "letters.h"
+#include "changecontractvaluewiz.h"
 #include "transaktionen.h"
 
 
-void aktiviereVertrag(int contractId)
+void activateContract(qlonglong contractId)
 {   LOG_CALL;
     // todo: wizard UI Geldeingang:
     // - Wann?
@@ -26,17 +25,23 @@ void aktiviereVertrag(int contractId)
         qCritical() << "activation failed";
 }
 
-void beendeVertrag(int )
+void changeContractValue(qlonglong vid)
+{
+    changeContractValueWiz(vid);
+}
+
+
+void beendeVertrag(qlonglong )
 {   LOG_CALL;
 Q_ASSERT(!"repair");
     contract v;
 }
-void VertragsEnde_LaufzeitEnde( contract& )
+void terminateContract_Final( contract& )
 {   LOG_CALL;
 Q_ASSERT(!"repair");
     return;
 }
-void VertragsEnde_MitKFrist( contract& )
+void cancelContract_wConclusionDate( contract& )
 {   LOG_CALL;
 Q_ASSERT(!"repair");
 }
