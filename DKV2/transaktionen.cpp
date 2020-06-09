@@ -6,28 +6,66 @@
 #include "askdatedlg.h"
 #include "helper.h"
 #include "changecontractvaluewiz.h"
+#include "activatecontractwiz.h"
 #include "transaktionen.h"
 
 
 void activateContract(qlonglong contractId)
 {   LOG_CALL;
-    // todo: wizard UI Geldeingang:
-    // - Wann?
-    // - Wieviel? -> go
-    askDateDlg dlg( nullptr, QDate::currentDate());
-    dlg.setMsg("<H3>Mit der Aktivierung des Vertrags beginnt die Zinsberechnung. <br>Bitte geben Sie das Datum des Geldeingangs ein:</H3>");
-    dlg.setDateLabel("Die Verzinsung beginnt am");
-    if( QDialog::Accepted != dlg.exec())
-        return;
-
     contract v(contractId);
-    if( !v.activate(dlg.getDate(), v.plannedInvest()))
+    creditor cred(v.creditorId());
+
+    activateContractWiz wiz;
+    QFont f = wiz.font();
+    f.setPointSize(10); wiz.setFont(f);
+    wiz.label = v.label();
+    wiz.creditorName = cred.firstname() + " " + cred.lastname();
+    wiz.expectedAmount = v.plannedInvest();
+    wiz.setField("amount", v.plannedInvest());
+    wiz.setField("date", v.conclusionDate().addDays(1));
+    wiz.exec();
+    if( ! wiz.field("confirmed").toBool()) {
+        qInfo() << "contract activation cancled by the user";
+        return;
+    }
+    if( !v.activate(wiz.field("date").toDate(), wiz.field("amount").toDouble())) {
         qCritical() << "activation failed";
+        Q_ASSERT(true);
+    }
+    return;
 }
 
 void changeContractValue(qlonglong vid)
 {
-    changeContractValueWiz(vid);
+    contract con(vid);
+    if( ! con.isActive()) {
+        qCritical() << "tried to changeContractValue of an inactive contract";
+        Q_ASSERT(true);
+        return;
+    }
+
+    creditor cre(con.creditorId());
+    ChangeContractWiz wiz;
+    QFont f = wiz.font(); f.setPointSize(10);
+    wiz.setFont(f);
+    wiz.creditorName = cre.firstname() + " " + cre.lastname();
+    wiz.contractLabel= con.label();
+    wiz.currentAmount= con.currentValue();
+    wiz.earlierstDate = con.latestBooking().addDays(1);
+    wiz.setField("deposit_notPayment", QVariant(true));
+
+    wiz.exec();
+    if( wiz.field("confirmed").toBool()) {
+        double amount {wiz.field("amount").toDouble()};
+        QDate date {wiz.field("date").toDate()};
+        qDebug() << wiz.field("deposit_notPayment") << ", " << amount << ", " << date;
+        if( wiz.field("deposit_notPayment").toBool()) {
+            con.deposit(amount, date);
+        } else {
+            con.payout(amount, date);
+        }
+    } else
+        qInfo() << "contract change was cancled by the user";
 }
 
 

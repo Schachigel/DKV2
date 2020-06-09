@@ -53,7 +53,7 @@
 /* static */ bool booking::makePayout(qlonglong contractId, QDate date, double amount)
 {
     if( amount > 0. ) amount = -1. * amount;
-    // todo: check account
+    // contract has to check that a payout is possible
     return doBooking(Type::payout, contractId, date, amount);
 
 }

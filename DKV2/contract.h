@@ -33,8 +33,8 @@ struct contract
     double interestRate() const { return double(td.getValue("ZSatz").toInt())/100.;}
     //int interestRate100th() const { return td.getValue("ZSatz").toInt()*100;}
 
-    void setPlannedInvest(int i) { td.setValue("Betrag", i);}
-    int plannedInvest() const { return td.getValue("Betrag").toInt();}
+    void setPlannedInvest(double d) { td.setValue("Betrag", ctFromEuro(d));}
+    double plannedInvest() const { return euroFromCt( td.getValue("Betrag").toInt());}
 
     void setReinvesting( bool b) { td.setValue("thesaurierend", b);}
     bool reinvesting() const { return (td.getValue("thesaurierend").toInt() != 0);}
@@ -52,12 +52,17 @@ struct contract
     static const dbtable& getTableDef();
     bool validateAndSaveNewContract(QString& meldung);
     int saveNewContract();
+    double currentValue();
+    QDate latestBooking();
 
-//    bool loadContractFromDb(qlonglong id);
     bool activate(const QDate& aDate, int amount_ct);
     bool activate(const QDate& aDate, double amount);
     static bool isActive( qlonglong id);
     bool isActive();
+
+    bool deposit(double amount, QDate d);
+    bool payout(double amount, QDate d);
+
 //    bool bookAnnualInterest(const QDate& YearEnd);
 //    bool cancelActiveContract(const QDate& kTermin);
 //    bool terminateActiveContract(const QDate& termin);

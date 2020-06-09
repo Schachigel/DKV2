@@ -571,7 +571,6 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &
 }
 void MainWindow::on_action_cmenu_activate_contract_triggered()
 {   LOG_CALL;
-
     activateContract(get_current_id_from_contracts_list());
     prepare_contracts_list_view();
 }
@@ -596,8 +595,9 @@ void MainWindow::on_action_cmenu_change_contract_triggered()
 {   // deposit or payout...
     QModelIndex mi(ui->contractsTableView->currentIndex());
     if( !mi.isValid()) return;
-
-    changeContractValue(ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toLongLong());
+    qlonglong contractId = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toLongLong();
+    changeContractValue(contractId);
+    on_action_menu_contracts_listview_triggered();
 }
 
 // new contract
@@ -985,6 +985,7 @@ void MainWindow::on_action_menu_debug_create_sample_data_triggered()
     busycursor b;
     create_sampleData();
     ui->stackedWidget->setCurrentIndex(ui->stackedWidget->currentIndex());
+    on_action_menu_contracts_listview_triggered();
 }
 void MainWindow::on_action_menu_debug_show_log_triggered()
 {   LOG_CALL;

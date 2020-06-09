@@ -24,6 +24,7 @@ CONFIG += c++11
 CONFIG += c++14
 
 SOURCES += \
+        activatecontractwiz.cpp \
         appconfig.cpp \
         askdatedlg.cpp \
         booking.cpp \
@@ -51,6 +52,7 @@ SOURCES += \
         transaktionen.cpp
 
 HEADERS += \
+        activatecontractwiz.h \
         appconfig.h \
         askdatedlg.h \
         booking.h \

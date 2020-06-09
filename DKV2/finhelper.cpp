@@ -18,7 +18,9 @@ int TageBisMonatsende_exclusiv(const QDate& d)
 }
 int ctFromEuro( const double d)
 {
-    return int( d * 100. + .5);
+    if( d>=0)
+        return int( d * 100. +.5);
+    return int( d * 100. -.5);
 }
 double euroFromCt( const int i)
 {

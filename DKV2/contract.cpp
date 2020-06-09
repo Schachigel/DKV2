@@ -50,12 +50,12 @@ bool contract::validateAndSaveNewContract(QString& meldung)
         meldung = "Der Vertrag konnte nicht gespeichert werden. Ist die Kennung des Vertrags eindeutig?";
     return buchungserfolg;
 }
-int contract::saveNewContract()
+int  contract::saveNewContract()
 {   LOG_CALL;
     TableDataInserter ti(dkdbstructur["Vertraege"]);
     ti.setValue(dkdbstructur["Vertraege"]["KreditorId"].name(), creditorId());
     ti.setValue(dkdbstructur["Vertraege"]["Kennung"].name(), label());
-    ti.setValue(dkdbstructur["Vertraege"]["Betrag"].name(), plannedInvest());
+    ti.setValue(dkdbstructur["Vertraege"]["Betrag"].name(), ctFromEuro(plannedInvest()));
     ti.setValue(dkdbstructur["Vertraege"]["ZSatz"].name(), interestRate()*100);
     ti.setValue(dkdbstructur["Vertraege"]["thesaurierend"].name(), reinvesting());
     ti.setValue(dkdbstructur["Vertraege"]["Vertragsdatum"].name(), conclusionDate());
@@ -70,6 +70,17 @@ int contract::saveNewContract()
     }
     qCritical() << "Fehler beim Einfügen eines neuen Vertrags";
     return -1;
+}
+
+double contract::currentValue()
+{
+    int valueInCent = executeSingleValueSql("SUM(Betrag)", "Buchungen", "VertragsId="+QString::number(id())).toInt();
+    return euroFromCt(valueInCent);
+}
+
+QDate contract::latestBooking()
+{
+    return executeSingleValueSql("MAX(Datum)", "Buchungen", "VertragsId="+QString::number(id())).toDate();
 }
 
 bool contract::activate(const QDate& aDate, int amount_ct)
@@ -105,6 +116,20 @@ bool contract::isActive()
     return isActive(id());
 }
 
+bool contract::deposit(double amount, QDate d)
+{
+    return booking::makeDeposit(id(), d, amount);
+}
+
+bool contract::payout(double amount, QDate d)
+{
+    if( amount > currentValue()) {
+        qCritical() << "Payout impossible. The account has not enough coverage";
+        return false;
+    }
+    return booking::makePayout(id(), d, amount);
+}
+
 contract saveRandomContract(qlonglong creditorId)
 {   LOG_CALL;
     static QRandomGenerator *rand = QRandomGenerator::system();
@@ -112,11 +137,14 @@ contract saveRandomContract(qlonglong creditorId)
     contract c;
     c.setLabel(proposeKennung());
     c.setCreditorId(creditorId);
-    c.setReinvesting(rand->bounded(100)%6);
+    c.setReinvesting(rand->bounded(100)%6);// 16% auszahlend
     c.setInterest100th(1 +rand->bounded(149));
-    c.setPlannedInvest(ctFromEuro(rand->bounded(50)*1000. + rand->bounded(1,101)));
+    c.setPlannedInvest(    rand->bounded(50)*1000.
+                           + rand->bounded(1,3) *500.
+                           + rand->bounded(10) *100);
     c.setConclusionDate(QDate::currentDate().addYears(-2).addDays(rand->bounded(720)));
     if( rand->bounded(100)%5)
+        // in 4 von 5 Fällen
         c.setNoticePeriod(3 + rand->bounded(21));
     else
         c.setPlannedEndDate(c.conclusionDate().addYears(rand->bounded(3)).addMonths(rand->bounded(12)));
