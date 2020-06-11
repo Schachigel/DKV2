@@ -170,9 +170,7 @@ void wizChangeContract_Summary::initializePage()
 
 bool wizChangeContract_Summary::validatePage()
 {
-    if( field("confirmed").toBool())
-        return true;
-    return false;
+    return field("confirmed").toBool();
 }
 
 ChangeContractWiz::ChangeContractWiz(QWidget* p) : QWizard(p)

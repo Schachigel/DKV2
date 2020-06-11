@@ -69,23 +69,31 @@ void initNumMetaInfo( const QString& name, const double& newValue, QSqlDatabase 
     if( value.type() == QVariant::Type::Invalid)
         setNumMetaInfo(name, newValue, db);
 }
-QString getMetaInfo(const QString& name)
+QString getMetaInfo(const QString& name, const QString& def, QSqlDatabase db)
 {   LOG_CALL_W(name);
+    if( !db.isValid()){
+        qInfo() << "no database ready (yet), defaulting";
+        return def;
+    }
     QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'");
-    if( value.type() == QVariant::Type::Invalid) {
-        qInfo() << "read empty property " << name << "; defaulted to empty string";
-        return "";
+    if( ! value.isValid()) {
+        qInfo() << "read uninitialized property " << name << " -> using default " << def;
+        return def;
     }
     qInfo() << "Property " << name << " : " << value;
     return value.toString();
 }
-double getNumMetaInfo(const QString& name, QSqlDatabase db)
+double getNumMetaInfo(const QString& name, const double def, QSqlDatabase db)
 {   LOG_CALL_W(name);
+    if( !db.isValid()){
+        qInfo() << "no database ready (yet), defaulting";
+        return def;
+    }
 
     QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'", db);
-    if( value.type() == QVariant::Type::Invalid) {
-        qInfo() << "getNumProperty read empty property " << name << " defaulted to 0.";
-        return 0.;
+    if( ! value.isValid()) {
+        qInfo() << "getNumProperty read empty property " << name << " -> using default";
+        return def;
     }
     qInfo() << "Property " << name << " : " << value.toDouble();
     return value.toDouble();
@@ -134,19 +142,18 @@ bool create_DK_databaseFile(const QString& filename) /*in the default connection
 void insert_UniqueDbProperties(QSqlDatabase db = QSqlDatabase::database())
 {   LOG_CALL;
     initNumMetaInfo(DB_VERSION, CURRENT_DB_VERSION, db);
-    initMetaInfo("ProjektInitialen", "ESP", db);
-    QRandomGenerator *rand = QRandomGenerator::system();
-    initMetaInfo("IdOffset", QString::number(rand->bounded(10000,20000)), db);
+    initMetaInfo("ProjektInitialen", appConfig::getRuntimeData("ProjektInitialen"), db);
+    initMetaInfo("IdOffset", appConfig::getRuntimeData("IdOffset"), db);
 }
 void insert_defaultGmbHData( QSqlDatabase db )
 {   LOG_CALL;
-    initMetaInfo("gmbh.address1", "Esperanza Franklin GmbH", db);
-    initMetaInfo("gmbh.address2", "", db);
-    initMetaInfo("gmbh.plz", "68167", db);
-    initMetaInfo("gmbh.stadt", "Mannheim", db);
-    initMetaInfo("gmbh.strasse", "Turley-Platz 9", db);
-    initMetaInfo("gmbh.email","info@esperanza-mannheim.de", db);
-    initMetaInfo("gmbh.url", "www.esperanza-mannheim.de", db);
+    initMetaInfo("gmbh.address1", appConfig::getRuntimeData("gmbh.address1"), db);
+    initMetaInfo("gmbh.address2", appConfig::getRuntimeData("gmbh.address2"), db);
+    initMetaInfo("gmbh.plz",      appConfig::getRuntimeData("gmbh.plz"),      db);
+    initMetaInfo("gmbh.stadt",    appConfig::getRuntimeData("gmbh.stadt"),    db);
+    initMetaInfo("gmbh.strasse",  appConfig::getRuntimeData("gmbh.strasse"),  db);
+    initMetaInfo("gmbh.email",    appConfig::getRuntimeData("gmbh.email"),    db);
+    initMetaInfo("gmbh.url",      appConfig::getRuntimeData("gmbh.url"),      db);
 }
 void insert_views( QSqlDatabase db)
 {
@@ -214,7 +221,7 @@ bool create_DK_TablesAndContent(QSqlDatabase db)
 // database validation
 bool check_db_version(QSqlDatabase db)
 {   LOG_CALL;
-    double d = getNumMetaInfo(DB_VERSION, db);
+    double d = getNumMetaInfo(DB_VERSION, -1., db);
     if( d >= CURRENT_DB_VERSION)
         return true;
     qCritical() << "db version check failed: found version " << d << " needed version " << CURRENT_DB_VERSION;

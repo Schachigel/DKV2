@@ -38,6 +38,7 @@ SOURCES += \
         dbtable.cpp \
         dkdbhelper.cpp \
         filehelper.cpp \
+        fileselectionwiz.cpp \
         finhelper.cpp \
         frmjahresabschluss.cpp \
         helper.cpp \
@@ -66,6 +67,7 @@ HEADERS += \
         dbtable.h \
         dkdbhelper.h \
         filehelper.h \
+        fileselectionwiz.h \
         financaltimespan.h \
         finhelper.h \
         frmjahresabschluss.h \

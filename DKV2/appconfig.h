@@ -19,6 +19,9 @@ struct appConfig
     static QString CurrentDb();
     static void delCurrentDb();
 
+    static void setRuntimeData( const QString& name, const QString& value);
+    static QString getRuntimeData( const QString& name, const QString& defaultvalue ="");
+
     // for testing only
     static void deleteUserData(const QString& name);
     static void deleteRuntimeData(const QString& name);
@@ -32,8 +35,6 @@ private:
     // QString getNumUserData(QString name);
 
     static QMap<QString, QString> runtimedata;
-    static void setRuntimeData( const QString& name, const QString& value);
-    static QString getRuntimeData( const QString& name, const QString& defaultvalue ="");
 };
 
 #endif // APPCONFIG_H

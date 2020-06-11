@@ -18,6 +18,8 @@
 
 #include "askdatedlg.h"
 #include "appconfig.h"
+#include "fileselectionwiz.h"
+#include "appconfig.h"
 #include "itemformatter.h"
 #include "dkdbhelper.h"
 #include "letters.h"
@@ -133,22 +135,52 @@ void MainWindow::on_action_menu_database_start_triggered()
 
 // Database Menu
 QString askUserDbFilename(QString title, bool onlyExistingFiles=false)
-{   LOG_CALL;
-    QString folder;
+{   // this function is used with openDb, creaetDbCopy, createAnony.DbCopy but NOT newDb
+    LOG_CALL;
+    fileSelectionWiz wiz;
+    wiz.title =title;
+    wiz.subtitle ="Mit dieser Dialogfolge wählst Du eine DKV2 Datenbank aus";
+    wiz.fileTypeDescription ="dk-DB Dateien (*.dkdb)";
+    if( (wiz.existingFile=onlyExistingFiles))
+        wiz.bffTitle ="Wähle eine existierende dkdb Datei aus";
+    else
+        wiz.bffTitle ="Wähle eine dkdb Datei aus oder gib einen neuen Dateinamen ein";
+
     QFileInfo lastdb (appConfig::CurrentDb());
     if( lastdb.exists())
-        folder = lastdb.path();
+        wiz.openInFolder=lastdb.path();
     else
-        folder = QStandardPaths::writableLocation((QStandardPaths::AppDataLocation));
+        wiz.openInFolder =QStandardPaths::writableLocation((QStandardPaths::AppDataLocation));
 
-    if( onlyExistingFiles)
-        return QFileDialog::getOpenFileName(nullptr, title, folder, "dk-DB Dateien (*.dkdb)", nullptr);
+    wiz.exec();
+    return wiz.field("selectedFile").toString();
+}
+QString askUserNewDb()
+{   LOG_CALL;
+    newDatabaseWiz wiz;
+    QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
+    QFileInfo lastdb (appConfig::CurrentDb());
+    if( lastdb.exists())
+        wiz.openInFolder=lastdb.path();
     else
-        return QFileDialog::getSaveFileName(nullptr, title, folder, "dk-DB Dateien (*.dkdb)", nullptr);
+        wiz.openInFolder =QStandardPaths::writableLocation((QStandardPaths::AppDataLocation));
+    wiz.title = "Neue DKV2 Datenbank Datei";
+    wiz.exec();
+    appConfig::setRuntimeData("gmbh.address1", wiz.field("address1").toString());
+    appConfig::setRuntimeData("gmbh.address2", wiz.field("address2").toString());
+    appConfig::setRuntimeData("gmbh.strasse",  wiz.field("strasse").toString());
+    appConfig::setRuntimeData("gmbh.plz",      wiz.field("plz").toString());
+    appConfig::setRuntimeData("gmbh.stadt",    wiz.field("stadt").toString());
+    appConfig::setRuntimeData("gmbh.email",    wiz.field("email").toString());
+    appConfig::setRuntimeData("gmbh.url",      wiz.field("url").toString());
+    appConfig::setRuntimeData("ProjektInitialen", wiz.field("projekt").toString());
+    appConfig::setRuntimeData("IdOffset",      wiz.field("IdOffset").toString());
+
+    return wiz.field("selectedFile").toString();
 }
 void MainWindow::on_action_menu_database_new_triggered()
 {   LOG_CALL;
-    QString dbfile = askUserDbFilename("Neue DkVerarbeitungs Datenbank");
+    QString dbfile = askUserNewDb();
     if( dbfile == "") {
         qDebug() << "user canceled file selection";
         return;
@@ -159,14 +191,14 @@ void MainWindow::on_action_menu_database_new_triggered()
         appConfig::setLastDb(dbfile);
     }
     else {
-        QMessageBox::information(this, "Fehler", "Die neue Datenbankdatei konnte nicht angelegt und geöffnet werden");
+        QMessageBox::information(this, "Fehler", "Die neue Datenbankdatei konnte nicht angelegt und geöffnet werden.");
         return;
     }
     ui->stackedWidget->setCurrentIndex(startPageIndex);
 }
 void MainWindow::on_action_menu_database_open_triggered()
 {   LOG_CALL;
-    QString dbfile = askUserDbFilename("DkVerarbeitungs Datenbank", true);
+    QString dbfile = askUserDbFilename("DKV2 Datenbank zum Öffnen auswählen.", true);
     if( dbfile == "") {
         qDebug() << "keine Datei wurde vom Anwender ausgewählt";
         QMessageBox::information(this, "Abbruch", "Es wurde keine Datenbankdatei ausgewählt");
@@ -187,7 +219,7 @@ void MainWindow::on_action_menu_database_open_triggered()
 }
 void MainWindow::on_action_menu_database_copy_triggered()
 {   LOG_CALL;
-    QString dbfile = askUserDbFilename( "Kopie der Datenbank");
+    QString dbfile = askUserDbFilename( "Dateiname der Kopie Datenbank angeben.");
     if( dbfile == "")
         return;
 
@@ -201,7 +233,7 @@ void MainWindow::on_action_menu_database_copy_triggered()
 }
 void MainWindow::on_action_menu_database_anonymous_copy_triggered()
 {   LOG_CALL;
-    QString dbfile = askUserDbFilename("Anonymisierte Datenbank");
+    QString dbfile = askUserDbFilename("Dateiname der Anonymisierten Kopie angeben.");
     if( dbfile == "")
         return;
     busycursor b;
