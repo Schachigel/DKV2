@@ -117,7 +117,7 @@ p, li { white-space: pre-wrap; }
         <item>
          <layout class="QHBoxLayout" name="hlNeuePersonButtons">
           <item>
-           <widget class="CustomToolButton" name="customBtn_saveCreditorAnd">
+           <widget class="uiCustomToolButton" name="customBtn_saveCreditorAnd">
             <property name="toolTip">
              <string>Der DK Geber wird gespeichert und ein weiterer Datensatz zur Eingabe angelegt</string>
             </property>
@@ -333,7 +333,7 @@ p, li { white-space: pre-wrap; }
            <number>3</number>
           </property>
           <item>
-           <widget class="CustomToolButton" name="saveContractAnd">
+           <widget class="uiCustomToolButton" name="saveContractAnd">
             <property name="toolTip">
              <string>Speichert den Vertrag und kehrt zur Liste der DK Geber zurück</string>
             </property>
@@ -982,9 +982,9 @@ p, li { white-space: pre-wrap; }
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>CustomToolButton</class>
+   <class>uiCustomToolButton</class>
    <extends>QToolButton</extends>
-   <header>customtoolbutton.h</header>
+   <header>uicustomtoolbutton.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

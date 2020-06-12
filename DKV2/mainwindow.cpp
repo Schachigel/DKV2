@@ -22,8 +22,6 @@
 #include "uiitemformatter.h"
 #include "dkdbhelper.h"
 #include "letters.h"
-#include "jahresabschluss.h"
-#include "uijahresabschluss.h"
 #include "transaktionen.h"
 
 // construction, destruction
@@ -985,19 +983,7 @@ void MainWindow::on_pbPrint_clicked()
 // anual settlement
 void MainWindow::on_action_menu_contracts_anual_interest_settlement_triggered()
 {   LOG_CALL;
-    jahresabschluss Abschluss;
-
-    QString msg = "Der Jahresabschluss für das Jahr "
-                  + QString::number(Abschluss.abzuschliessendesJahr())
-                  + " kann gemacht werden\n\n";
-    msg += "Dabei werden die Zinsen für alle Verträge berechnet. Der Wert von thesaurierenden Verträgen wird angepasst\n";
-    msg += "Dieser Vorgang kann nicht rückgängig gemacht werden. Möchtest Du fortfahren?";
-
-    if( QMessageBox::Yes != QMessageBox::question(this, "Jahresabschluss", msg))
-        return;
-    Abschluss.execute();
-    frmJahresabschluss dlgJA(Abschluss, this);
-    dlgJA.exec();
+    Q_ASSERT("tobeimplemented");
     on_action_menu_contracts_listview_triggered( );
 }
 // list creation csv, printouts

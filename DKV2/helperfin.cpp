@@ -4,7 +4,6 @@
 #include <QDebug>
 
 #include "helperfin.h"
-#include "financaltimespan.h"
 
 double round2(const double d)
 {
@@ -71,37 +70,9 @@ int TageBisJahresende_a(const QDate& d)
     return 30*month +days;
 }
 
-int TageBisJahresende(const QDate& d)
-{
-    if( QDate::isLeapYear(d.year()))
-    {
-        QDate mapToKeyYear(2016, d.month(), d.day());
-        return DateDiffLookup_leapYear[mapToKeyYear].tillEoY;
-    }
-    else
-    {
-        QDate mapToKeyYear(2017, d.month(), d.day());
-        return DateDiffLookup[mapToKeyYear].tillEoY;
-    }
-}
-
 int TageSeitJahresAnfang_a(const QDate& d)
 {
     return 30* (d.month()-1) + ((d.day() == 31) ? 30 : d.day());
-}
-
-int TageSeitJahresAnfang(const QDate& d)
-{
-    if( QDate::isLeapYear(d.year()))
-    {
-        QDate mapToKeyYear(2016, d.month(), d.day());
-        return DateDiffLookup_leapYear[mapToKeyYear].sinceBoY;
-    }
-    else
-    {
-        QDate mapToKeyYear(2017, d.month(), d.day());
-        return DateDiffLookup[mapToKeyYear].sinceBoY;
-    }
 }
 
 double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)
@@ -117,7 +88,7 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
     {
         return round2(double(TageZwischen(von, bis))/360. *zins/100. *wert);
     }
-    int TageImErstenJahr = TageBisJahresende(von); // first day no intrest
+    int TageImErstenJahr = TageBisJahresende_a(von); // first day no intrest
     double ZinsImErstenJahr = round2(double(TageImErstenJahr)/360. *zins/100. *wert);
     double gesamtZins (ZinsImErstenJahr);
 
@@ -131,7 +102,7 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
         zwischenWert = (thesa) ? (zwischenWert+JahresZins) : zwischenWert;
     }
     gesamtZins = round2(gesamtZins);
-    int TageImLetztenJahr = TageSeitJahresAnfang(bis);
+    int TageImLetztenJahr = TageSeitJahresAnfang_a(bis);
     double ZinsRestjahr = round2(double(TageImLetztenJahr)/360. *zins/100. *zwischenWert);
     gesamtZins += ZinsRestjahr;
     qDebug().noquote()

@@ -41,6 +41,7 @@ SOURCES +=  tst_db.cpp \
     ../DKV2/helperfile.cpp \
     ../DKV2/helper.cpp \
     ../DKV2/tabledatainserter.cpp \
+    financaltimespan.cpp \
     test_appconfig.cpp \
     test_booking.cpp \
     test_contract.cpp \
@@ -56,6 +57,7 @@ SOURCES +=  tst_db.cpp \
     testhelper.cpp
 
 HEADERS += \
+    financaltimespan.h \
     test_appconfig.h \
     test_booking.h \
     test_contract.h \

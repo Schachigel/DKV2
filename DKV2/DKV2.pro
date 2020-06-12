@@ -46,7 +46,6 @@ SOURCES += \
         transaktionen.cpp \
         uicustomtoolbutton.cpp \
         uiitemformatter.cpp \
-        uijahresabschluss.cpp \
         wizactivatecontract.cpp \
         wizchangecontractvalue.cpp \
         wizfileselection.cpp
@@ -61,12 +60,10 @@ HEADERS += \
         dbstructure.h \
         dbtable.h \
         dkdbhelper.h \
-        financaltimespan.h \
         helper.h \
         helperfile.h \
         helperfin.h \
         helpersql.h \
-        jahresabschluss.h \
         letterTemplate.h \
         letters.h \
         mainwindow.h \
@@ -74,14 +71,12 @@ HEADERS += \
         transaktionen.h \
         uicustomtoolbutton.h \
         uiitemformatter.h \
-        uijahresabschluss.h \
         wizactivatecontract.h \
         wizchangecontractvalue.h \
         wizfileselection.h
 
 FORMS += \
-        mainwindow.ui \
-        uijahresabschluss.ui
+        mainwindow.ui
 
 DISTFILES += \
     ../DOCS/Zinsberechnungsmethode.txt \

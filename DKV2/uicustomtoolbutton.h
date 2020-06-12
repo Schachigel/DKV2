@@ -3,11 +3,11 @@
 
 #include <QToolButton>
 
-class CustomToolButton : public QToolButton
+class uiCustomToolButton : public QToolButton
 {
     Q_OBJECT
 public:
-    explicit CustomToolButton(QWidget *parent = 0);
+    explicit uiCustomToolButton(QWidget *parent = 0);
 };
 
 #endif // CUSTOMTOOLBUTTON_H

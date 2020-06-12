@@ -1,7 +1,7 @@
 #include "helper.h"
 #include "uicustomtoolbutton.h"
 
-CustomToolButton::CustomToolButton(QWidget *parent) :
+uiCustomToolButton::uiCustomToolButton(QWidget *parent) :
     QToolButton(parent)
 {   LOG_CALL;
     setPopupMode(QToolButton::MenuButtonPopup);
