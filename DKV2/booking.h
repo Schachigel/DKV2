@@ -23,6 +23,7 @@ qlonglong contractId;
 
     // statics
     static const dbtable& getTableDef();
+    static const dbtable& getTableDef_deletedContracts();
     static bool makeDeposit(   const qlonglong contractId, const QDate date, const double amount);
     static bool makePayout(    const qlonglong contractId, const QDate date, const double amount);
     static bool investInterest(const qlonglong contractId, const QDate date, const double amount);

@@ -50,6 +50,7 @@ struct contract
 
     // interface
     static const dbtable& getTableDef();
+    static const dbtable& getTableDef_deletedContracts();
     bool validateAndSaveNewContract(QString& meldung);
     int saveNewContract();
     double currentValue();

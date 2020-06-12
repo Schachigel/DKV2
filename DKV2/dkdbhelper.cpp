@@ -35,8 +35,12 @@ void init_DKDBStruct()
     // DB bool -> Variant int
 
     dkdbstructur.appendTable(creditor::getTableDef());
+
     dkdbstructur.appendTable(contract::getTableDef());
+    dkdbstructur.appendTable(contract::getTableDef_deletedContracts());
+
     dkdbstructur.appendTable(booking::getTableDef());
+    dkdbstructur.appendTable(booking::getTableDef_deletedContracts());
 
     dbtable meta("Meta");
     meta.append(dbfield("Name", QVariant::String).setNotNull().setUnique());

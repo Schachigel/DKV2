@@ -7,25 +7,42 @@
 
 /* static */ const dbtable& contract::getTableDef()
 {
-    static dbtable contracttable("Vertraege");
-    if( 0 == contracttable.Fields().size())
-    {
-        contracttable.append(dbfield("id",         QVariant::LongLong).setPrimaryKey().setAutoInc());
-        contracttable.append(dbfield("KreditorId", QVariant::LongLong).setNotNull());
-        contracttable.append(dbForeignKey(contracttable["KreditorId"],
-                             dkdbstructur["Kreditoren"]["id"], "ON DELETE CASCADE"));
-        // deleting a creditor will delete inactive contracts but not
-        // contracts with existing bookings (=active or terminated contracts)
-        contracttable.append(dbfield("Kennung",    QVariant::String, "UNIQUE"));
-        contracttable.append(dbfield("ZSatz",      QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
-        contracttable.append(dbfield("Betrag",     QVariant::Int).setNotNull().setDefault(0)); // ct
-        contracttable.append(dbfield("thesaurierend", QVariant::Bool).setNotNull().setDefault(1));
-        contracttable.append(dbfield("Vertragsdatum", QVariant::Date).setNotNull());
-        contracttable.append(dbfield("Kfrist" ,    QVariant::Int).setNotNull().setDefault(6));
-        contracttable.append(dbfield("LaufzeitEnde",  QVariant::Date).setNotNull().setDefault("9999-12-31"));
-    }
-    return contracttable;
+    static dbtable contractTable("Vertraege");
+    if( 0 != contractTable.Fields().size())
+        return contractTable;
+
+    contractTable.append(dbfield("id",         QVariant::LongLong).setPrimaryKey().setAutoInc());
+    contractTable.append(dbfield("KreditorId", QVariant::LongLong).setNotNull());
+    contractTable.append(dbForeignKey(contractTable["KreditorId"],
+                         dkdbstructur["Kreditoren"]["id"], "ON DELETE CASCADE"));
+    // deleting a creditor will delete inactive contracts but not
+    // contracts with existing bookings (=active or terminated contracts)
+    contractTable.append(dbfield("Kennung",    QVariant::String, "UNIQUE"));
+    contractTable.append(dbfield("ZSatz",      QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
+    contractTable.append(dbfield("Betrag",     QVariant::Int).setNotNull().setDefault(0)); // ct
+    contractTable.append(dbfield("thesaurierend", QVariant::Bool).setNotNull().setDefault(1));
+    contractTable.append(dbfield("Vertragsdatum", QVariant::Date).setNotNull());
+    contractTable.append(dbfield("Kfrist" ,    QVariant::Int).setNotNull().setDefault(6));
+    contractTable.append(dbfield("LaufzeitEnde",  QVariant::Date).setNotNull().setDefault("9999-12-31"));
+
+    return contractTable;
 }
+
+/* static */ const dbtable& contract::getTableDef_deletedContracts()
+{
+    static dbtable exContractTable("exVertraege");
+    if( 0 != exContractTable.Fields().size())
+        return exContractTable;
+
+    exContractTable.append(dbfield("id", QVariant::LongLong).setPrimaryKey());
+    for(int i= 1 /* not 0 */; i < getTableDef().Fields().count(); i++) {
+        exContractTable.append(getTableDef().Fields()[i]);
+    }
+    exContractTable.append(dbForeignKey(exContractTable["KreditorId"],
+                         dkdbstructur["Kreditoren"]["id"], "ON DELETE CASCADE"));
+    return exContractTable;
+}
+
 
 bool contract::fromDb(qlonglong i)
 {

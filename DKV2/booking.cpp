@@ -18,6 +18,18 @@
     return bookings;
 }
 
+/* static */ const dbtable& booking::getTableDef_deletedContracts()
+{
+    static dbtable deletedBookings("exBuchungen");
+    deletedBookings.append(dbfield("id", QVariant::LongLong).setPrimaryKey());
+    for( int i =1 /* not 0 */ ; i < getTableDef().Fields().count(); i++) {
+        deletedBookings.append(getTableDef().Fields()[i]);
+    }
+
+    deletedBookings.append(dbForeignKey(deletedBookings["VertragsId"], dkdbstructur["exVertraege"]["id"], "ON DELETE RESTRICT"));
+    return deletedBookings;
+}
+
 /* static */ const QString booking::typeName( booking::Type t)
 {
     switch (t)

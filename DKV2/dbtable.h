@@ -12,6 +12,7 @@ struct dbtable
     friend class dbstructure;
     // constr. destr. & access fu
     dbtable(QString n="") : name(n) {}
+    void setName(QString n) { name = n;}
     QString Name() const {return name;}
     QVector<dbfield> Fields() const { return fields;}
     QVector<dbForeignKey> ForeignKeys() const {return foreignKeys;}
