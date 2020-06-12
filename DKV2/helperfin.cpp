@@ -3,7 +3,7 @@
 #include <math.h>
 #include <QDebug>
 
-#include "finhelper.h"
+#include "helperfin.h"
 #include "financaltimespan.h"
 
 double round2(const double d)

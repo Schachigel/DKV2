@@ -3,8 +3,8 @@
 #include <QRandomGenerator>
 
 #include "helper.h"
-#include "finhelper.h"
-#include "sqlhelper.h"
+#include "helperfin.h"
+#include "helpersql.h"
 #include "creditor.h"
 
 QList<QString> Vornamen {"Holger", "Volker", "Peter", "Hans", "Susi", "Roland", "Claudia", "Emil", "Evelyn", "Ötzgür", "Thomas", "Elke", "Berta", "Malte", "Jori", "Paul", "Jonas", "Finn", "Leon", "Luca", "Emma", "Mia", "Lena", "Anna", "Anne", "Martha", "Ruth", "Rosemie", "Rosemarie", "Verena", "Ursula", "Erika", "Adrian", "Avan", "Anton", "Benno", "Karl", "Merlin", "Noah", "Oliver","Olaf", "Pepe", "Zeno", "Apollo", "Edward", "Ronaldo", "Siegbert", "Thomas", "Michael"};
@@ -108,24 +108,28 @@ int creditor::update() const
     return ti.UpdateData();
 }
 
-bool creditor::Delete()
+bool creditor::remove()
 {
-    bool ret = creditor::Delete(id());
+    bool ret = creditor::remove(id());
     if( ret) setId( -1);
     return ret;
 }
 
-/* static */ bool creditor::Delete(int index)
+/* static */ bool creditor::remove(int index)
 {   LOG_CALL;
-    // referential integrity will delete [inactive] contracts
-    // deletion with active or terminated contract will fail due to ref. integrity contracts <> bookings
+    // referential integrity will delete [inactive] contracts (this is w/o bookings)
+    // [ creditor <-> contract ] On Delete Cascade
+    // deletion with active contracts will fail due to ref. integrity contracts <> bookings
+    // [ contract <-> booking ] On Delete Restrict
     QSqlQuery deleteQ;
-    if( ! deleteQ.exec("DELETE FROM Kreditoren WHERE Id=" +QString::number(index))) {
-        qCritical() << "Delete Kreditor failed "<< deleteQ.lastError() << endl << deleteQ.lastQuery();
-        return false;
-    }
-    else
+    if( deleteQ.exec("DELETE FROM Kreditoren WHERE Id=" +QString::number(index)))
         return true;
+
+    if( "19" == deleteQ.lastError().nativeErrorCode())
+        qDebug() << "Delete Kreditor failed due to refer. integrity rules" << endl << deleteQ.lastQuery();
+    else
+        qCritical() << "Delete Kreditor failed "<< deleteQ.lastError() << endl << deleteQ.lastQuery();
+    return false;
 }
 
 /* static */ bool creditor::hasActiveContracts(qlonglong i)

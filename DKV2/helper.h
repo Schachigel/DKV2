@@ -6,7 +6,7 @@
 #include <QFile>
 #include <QDebug>
 
-#include "filehelper.h"
+#include "helperfile.h"
 
 
 class dbgTimer

@@ -1,7 +1,7 @@
 #include <QtTest>
 
 #include "../DKV2/helper.h"
-#include "../DKV2/sqlhelper.h"
+#include "../DKV2/helpersql.h"
 #include "../DKV2/dkdbhelper.h"
 #include "../DKV2/contract.h"
 #include "../DKV2/creditor.h"
@@ -102,14 +102,14 @@ void test_creditor::test_hasActiveContracts_hasActContract()
 void test_creditor::test_deleteContract_woContract()
 {
     creditor c = saveRandomCreditor();
-    QVERIFY(c.Delete());
+    QVERIFY(c.remove());
 }
 
 void test_creditor::test_deleteContract_wInactiveContract()
 {
     creditor c = saveRandomCreditor();
     contract co = saveRandomContract(c.id());
-    QVERIFY(c.Delete());
+    QVERIFY(c.remove());
 }
 
 void test_creditor::test_deleteContract_wActiveContractFails()
@@ -117,5 +117,5 @@ void test_creditor::test_deleteContract_wActiveContractFails()
     creditor c = saveRandomCreditor();
     contract co = saveRandomContract(c.id());
     co.activate(QDate::currentDate(), 1000.0);
-    QCOMPARE(c.Delete(), false);
+    QCOMPARE(c.remove(), false);
 }

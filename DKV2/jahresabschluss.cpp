@@ -2,7 +2,7 @@
 #include <QSqlError>
 
 #include "helper.h"
-#include "sqlhelper.h"
+#include "helpersql.h"
 #include "contract.h"
 #include "jahresabschluss.h"
 

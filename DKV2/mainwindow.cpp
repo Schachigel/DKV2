@@ -16,15 +16,14 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "askdatedlg.h"
 #include "appconfig.h"
-#include "fileselectionwiz.h"
+#include "wizfileselection.h"
 #include "appconfig.h"
-#include "itemformatter.h"
+#include "uiitemformatter.h"
 #include "dkdbhelper.h"
 #include "letters.h"
 #include "jahresabschluss.h"
-#include "frmjahresabschluss.h"
+#include "uijahresabschluss.h"
 #include "transaktionen.h"
 
 // construction, destruction
@@ -339,24 +338,20 @@ void MainWindow::on_action_cmenu_delete_creaditor_triggered()
     QModelIndex mi(tv->currentIndex());
     qlonglong index = tv->model()->data(mi.siblingAtColumn(0)).toLongLong();
     creditor c (index);
-    if( c.hasActiveContracts()) {
-        QMessageBox::information(this, "Löschen unmöglich", "Ein Kreditor mit aktiven Verträgen kann nicht gelöscht werden");
-        return;
-    }
-    // todo: type save access functions as in contract
-    QString Vorname = c.getValue("Vorname").toString(); // ui->CreditorsTableView->model()->data(mi.siblingAtColumn(1)).toString();
-    QString Nachname = c.getValue("Nachname").toString(); // ui->CreditorsTableView->model()->data(mi.siblingAtColumn(2)).toString();
 
-    QString msg( "Soll der Kreditgeber ");
-    msg += Vorname + " " + Nachname + " (id " + QString::number(index) + ")  gelöscht werden?";
+    QString msg( "Soll der Kreditgeber %1 %2 (id %3) gelöscht werden?");
+    msg =msg.arg(c.getValue("Vorname").toString())
+            .arg(c.getValue("Nachname").toString())
+            .arg(QString::number(index));
+
     if( QMessageBox::Yes != QMessageBox::question(this, "Kreditgeber löschen?", msg))
         return;
     busycursor b;
 
-    if( c.Delete())
+    if( c.remove())
         prepare_CreditorsListPage();
     else
-        Q_ASSERT(!bool("could not remove kreditor and contracts"));
+        QMessageBox::information(this, "Löschen unmöglich", "Ein Kreditor mit aktiven oder beendeten Verträgen kann nicht gelöscht werden");
 }
 void MainWindow::on_action_cmenu_go_contracts_triggered()
 {   LOG_CALL;
@@ -611,7 +606,7 @@ void MainWindow::on_action_cmenu_terminate_contract_triggered()
     QModelIndex mi(ui->contractsTableView->currentIndex());
     if( !mi.isValid()) return;
     int index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toInt();
-    beendeVertrag(index);
+    terminateContract(index);
 
     prepare_contracts_list_view();
 }
@@ -620,7 +615,7 @@ void MainWindow::on_action_cmenu_delete_inactive_contract_triggered()
     QModelIndex mi(ui->contractsTableView->currentIndex());
     if( !mi.isValid()) return;
 
-    beendeVertrag(ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toLongLong());
+    deleteInactiveContract(ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toLongLong());
     prepare_contracts_list_view();
 }
 void MainWindow::on_action_cmenu_change_contract_triggered()

@@ -9,8 +9,8 @@
 #include <QVBoxLayout>
 #include <QMessageBox>
 
-#include "finhelper.h"
-#include "changecontractvaluewiz.h"
+#include "helperfin.h"
+#include "wizchangecontractvalue.h"
 
 wizChangeContract_IntroPage::wizChangeContract_IntroPage(QWidget* parent) : QWizardPage(parent)
 {

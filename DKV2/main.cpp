@@ -12,7 +12,7 @@
 #include <QPixmap>
 #include <QTextStream>
 
-#include "filehelper.h"
+#include "helperfile.h"
 #include "appconfig.h"
 #include "dkdbhelper.h"
 #include "mainwindow.h"

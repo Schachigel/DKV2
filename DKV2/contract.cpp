@@ -147,6 +147,25 @@ bool contract::payout(double amount, QDate d)
     return booking::makePayout(id(), d, amount);
 }
 
+bool contract::remove()
+{
+    return contract::remove(id());
+}
+
+/* static */ bool contract::remove(qlonglong id)
+{
+    QString sql="DELETE FROM Vertraege WHERE id=" + QString::number(id);
+    QSqlQuery deleteQ;
+    if( deleteQ.exec(sql))
+        return true;
+    if( "19" == deleteQ.lastError().nativeErrorCode())
+        qDebug() << "Delete contract failed due to refer. integrity rules" << endl << deleteQ.lastQuery();
+    else
+        qCritical() << "Delete contract failed "<< deleteQ.lastError() << endl << deleteQ.lastQuery();
+    return false;
+
+}
+
 contract saveRandomContract(qlonglong creditorId)
 {   LOG_CALL;
     static QRandomGenerator *rand = QRandomGenerator::system();

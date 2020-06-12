@@ -4,7 +4,7 @@
 #include <QString>
 #include <QList>
 
-#include "sqlhelper.h"
+#include "helpersql.h"
 #include "dbfield.h"
 
 class csvwriter

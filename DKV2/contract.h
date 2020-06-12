@@ -6,7 +6,7 @@
 #include <QDate>
 
 #include "helper.h"
-#include "finhelper.h"
+#include "helperfin.h"
 #include "tabledatainserter.h"
 #include "dkdbhelper.h"
 #include "creditor.h"
@@ -64,10 +64,11 @@ struct contract
     bool deposit(double amount, QDate d);
     bool payout(double amount, QDate d);
 
+    bool remove();
+    static bool remove(qlonglong id);
+
 //    bool bookAnnualInterest(const QDate& YearEnd);
 //    bool cancelActiveContract(const QDate& kTermin);
-//    bool terminateActiveContract(const QDate& termin);
-//    bool deleteInactiveContract();
 
 private:
     // data

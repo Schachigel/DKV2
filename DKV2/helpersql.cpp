@@ -1,5 +1,5 @@
 #include "helper.h"
-#include "sqlhelper.h"
+#include "helpersql.h"
 
 bool vTypesShareDbType( QVariant::Type t1, QVariant::Type t2)
 {

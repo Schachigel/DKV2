@@ -1,7 +1,7 @@
 #include <QSqlDatabase>
 
 #include "helper.h"
-#include "sqlhelper.h"
+#include "helpersql.h"
 #include "dbstructure.h"
 
 dbstructure dbstructure::appendTable(dbtable t)

@@ -1,6 +1,6 @@
 #include <QTest>
 
-#include "../DKV2/sqlhelper.h"
+#include "../DKV2/helpersql.h"
 #include "../DKV2/dbstructure.h"
 #include "../DKV2/dbfield.h"
 #include "../DKV2/dbtable.h"

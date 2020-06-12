@@ -6,7 +6,7 @@
 #include <QTextDocument>
 #include <QPrinter>
 
-#include "sqlhelper.h"
+#include "helpersql.h"
 
 const double mmInPt {2.83465};
 

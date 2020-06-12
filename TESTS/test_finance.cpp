@@ -2,7 +2,7 @@
 #include <QString>
 #include <QDebug>
 
-#include "../DKV2/finhelper.h"
+#include "../DKV2/helperfin.h"
 #include "test_finance.h"
 
 double computeDkZinsen(double Betrag, double Zinssatz, int anzTage)

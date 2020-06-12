@@ -9,7 +9,7 @@
 
 
 #include "dkdbhelper.h"
-#include "fileselectionwiz.h"
+#include "wizfileselection.h"
 
 /*
  * general page to select a file name

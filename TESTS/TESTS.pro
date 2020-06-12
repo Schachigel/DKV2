@@ -31,14 +31,14 @@ SOURCES +=  tst_db.cpp \
     ../DKV2/contract.cpp \
     ../DKV2/creditor.cpp \
     ../DKV2/dkdbhelper.cpp \
-    ../DKV2/finhelper.cpp \
+    ../DKV2/helperfin.cpp \
     ../DKV2/letterTemplate.cpp \
-    ../DKV2/sqlhelper.cpp \
+    ../DKV2/helpersql.cpp \
     ../DKV2/csvwriter.cpp \
     ../DKV2/dbfield.cpp \
     ../DKV2/dbstructure.cpp \
     ../DKV2/dbtable.cpp \
-    ../DKV2/filehelper.cpp \
+    ../DKV2/helperfile.cpp \
     ../DKV2/helper.cpp \
     ../DKV2/tabledatainserter.cpp \
     test_appconfig.cpp \

@@ -9,7 +9,7 @@
 #include "../DKV2/dbtable.h"
 #include "../DKV2/creditor.h"
 #include "../DKV2/dkdbhelper.h"
-#include "../DKV2/filehelper.h"
+#include "../DKV2/helperfile.h"
 #include "../DKV2/helper.h"
 
 #include "testhelper.h"

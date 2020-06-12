@@ -1,6 +1,6 @@
 
 #include "helper.h"
-#include "sqlhelper.h"
+#include "helpersql.h"
 #include "tabledatainserter.h"
 
 TableDataInserter::TableDataInserter(const dbtable& t)

@@ -1,8 +1,8 @@
 //#include "finhelper.h"
 #include <QDate>
 
-#include "finhelper.h"
-#include "itemformatter.h"
+#include "helperfin.h"
+#include "uiitemformatter.h"
 
 QString DateItemFormatter::displayText(const QVariant& value, const QLocale& )const
 {

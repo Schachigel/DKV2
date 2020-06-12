@@ -5,8 +5,8 @@
 #include <QVBoxLayout>
 #include <QDebug>
 
-#include "finhelper.h"
-#include "activatecontractwiz.h"
+#include "helperfin.h"
+#include "wizactivatecontract.h"
 
 wizActivateContract_IntroPage::wizActivateContract_IntroPage(QWidget* p) : QWizardPage(p)
 {

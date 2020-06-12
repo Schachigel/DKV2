@@ -11,7 +11,7 @@
 #include "dbtable.h"
 #include "dbfield.h"
 #include "dbstructure.h"
-#include "sqlhelper.h"
+#include "helpersql.h"
 
 extern dbstructure dkdbstructur;
 // THE structure of our database the single source of truth

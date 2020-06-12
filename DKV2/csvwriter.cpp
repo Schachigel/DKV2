@@ -1,7 +1,7 @@
 
 #include "helper.h"
-#include "sqlhelper.h"
-#include "filehelper.h"
+#include "helpersql.h"
+#include "helperfile.h"
 #include "csvwriter.h"
 
 void csvwriter::addColumn(QString header)

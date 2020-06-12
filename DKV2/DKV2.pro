@@ -24,67 +24,64 @@ CONFIG += c++11
 CONFIG += c++14
 
 SOURCES += \
-        activatecontractwiz.cpp \
         appconfig.cpp \
-        askdatedlg.cpp \
         booking.cpp \
-        changecontractvaluewiz.cpp \
         contract.cpp \
         creditor.cpp \
         csvwriter.cpp \
-        customtoolbutton.cpp \
         dbfield.cpp \
         dbstructure.cpp \
         dbtable.cpp \
         dkdbhelper.cpp \
-        filehelper.cpp \
-        fileselectionwiz.cpp \
-        finhelper.cpp \
-        frmjahresabschluss.cpp \
         helper.cpp \
-        itemformatter.cpp \
+        helperfile.cpp \
+        helperfin.cpp \
+        helpersql.cpp \
         jahresabschluss.cpp \
         letterTemplate.cpp \
         letters.cpp \
         main.cpp \
         mainwindow.cpp \
-        sqlhelper.cpp \
         tabledatainserter.cpp \
-        transaktionen.cpp
+        transaktionen.cpp \
+        uicustomtoolbutton.cpp \
+        uiitemformatter.cpp \
+        uijahresabschluss.cpp \
+        wizactivatecontract.cpp \
+        wizchangecontractvalue.cpp \
+        wizfileselection.cpp
 
 HEADERS += \
-        activatecontractwiz.h \
         appconfig.h \
-        askdatedlg.h \
         booking.h \
-        changecontractvaluewiz.h \
         contract.h \
         creditor.h \
         csvwriter.h \
-        customtoolbutton.h \
         dbfield.h \
         dbstructure.h \
         dbtable.h \
         dkdbhelper.h \
-        filehelper.h \
-        fileselectionwiz.h \
         financaltimespan.h \
-        finhelper.h \
-        frmjahresabschluss.h \
         helper.h \
-        itemformatter.h \
+        helperfile.h \
+        helperfin.h \
+        helpersql.h \
         jahresabschluss.h \
         letterTemplate.h \
         letters.h \
         mainwindow.h \
-        sqlhelper.h \
         tabledatainserter.h \
-        transaktionen.h
+        transaktionen.h \
+        uicustomtoolbutton.h \
+        uiitemformatter.h \
+        uijahresabschluss.h \
+        wizactivatecontract.h \
+        wizchangecontractvalue.h \
+        wizfileselection.h
 
 FORMS += \
-        askDateDlg.ui \
-        frmjahresabschluss.ui \
-        mainwindow.ui
+        mainwindow.ui \
+        uijahresabschluss.ui
 
 DISTFILES += \
     ../DOCS/Zinsberechnungsmethode.txt \
