@@ -50,6 +50,14 @@ public:
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 
+class bookingTypeFormatter : public QStyledItemDelegate
+{
+    Q_OBJECT
+public:
+    bookingTypeFormatter(QObject* p = nullptr) : QStyledItemDelegate(p){}
+    QString displayText(const QVariant &value, const QLocale &locale) const override;
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+};
 
 
 #endif // DATEITEMFORMATTER_H

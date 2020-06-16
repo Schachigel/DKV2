@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1090</width>
-    <height>800</height>
+    <width>1075</width>
+    <height>810</height>
    </rect>
   </property>
   <property name="font">
@@ -31,7 +31,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -531,13 +531,19 @@ p, li { white-space: pre-wrap; }
          </layout>
         </item>
         <item>
-         <widget class="QTableView" name="contractsTableView">
-          <property name="contextMenuPolicy">
-           <enum>Qt::CustomContextMenu</enum>
+         <widget class="QSplitter" name="splitter">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
           </property>
-          <property name="toolTip">
-           <string>Verwende die sekundäre Maustaste für weitere Optionen</string>
-          </property>
+          <widget class="QTableView" name="contractsTableView">
+           <property name="contextMenuPolicy">
+            <enum>Qt::CustomContextMenu</enum>
+           </property>
+           <property name="toolTip">
+            <string>Verwende die sekundäre Maustaste für weitere Optionen</string>
+           </property>
+          </widget>
+          <widget class="QTableView" name="bookingsTableView"/>
          </widget>
         </item>
        </layout>
@@ -651,11 +657,10 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1090</width>
+     <width>1075</width>
      <height>25</height>
     </rect>
    </property>
-
    <widget class="QMenu" name="menu_database">
     <property name="title">
      <string>&amp;Datenbank</string>
@@ -672,7 +677,6 @@ p, li { white-space: pre-wrap; }
     <addaction name="action_menu_database_configure_outdir"/>
     <addaction name="action_menu_database_program_exit"/>
    </widget>
-
    <widget class="QMenu" name="manu_creditors">
     <property name="title">
      <string>&amp;Kreditgeber</string>
@@ -682,26 +686,24 @@ p, li { white-space: pre-wrap; }
     <addaction name="action_menu_creditors_create"/>
     <addaction name="action_menu_creditors_delete"/>
    </widget>
-
    <widget class="QMenu" name="manu_contracts">
     <property name="title">
      <string>&amp;Verträge</string>
     </property>
+    <widget class="QMenu" name="menu_contracts_subm_print_lists">
+     <property name="title">
+      <string>Listen drucken</string>
+     </property>
+     <addaction name="action_menu_contracts_print_lists"/>
+    </widget>
     <addaction name="action_menu_contracts_listview"/>
     <addaction name="action_menu_contracts_create"/>
     <addaction name="separator"/>
     <addaction name="action_menu_contracts_anual_interest_settlement"/>
     <addaction name="separator"/>
     <addaction name="action_menu_contracts_statistics_view"/>
-    <widget class="QMenu" name="menu_contracts_subm_print_lists">
-     <property name="title">
-      <string>Listen drucken</string>
-     </property>
-     <addaction name="action_menu_contracts_print_lists"/>
-    </widget>    
     <addaction name="menu_contracts_subm_print_lists"/>
    </widget>
-
    <widget class="QMenu" name="menu_debug">
     <property name="enabled">
      <bool>true</bool>
@@ -719,7 +721,6 @@ p, li { white-space: pre-wrap; }
    <addaction name="manu_contracts"/>
    <addaction name="menu_debug"/>
   </widget>
-  
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_menu_database_new">
    <property name="text">
@@ -826,7 +827,7 @@ p, li { white-space: pre-wrap; }
     <string>Show Log file</string>
    </property>
   </action>
-<action name="action_cmenu_activate_contract">
+  <action name="action_cmenu_activate_contract">
    <property name="text">
     <string>Vertrag aktivieren</string>
    </property>

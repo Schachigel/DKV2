@@ -38,6 +38,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->statusBar->addPermanentWidget(ui->statusLabel);
 
     setCentralWidget(ui->stackedWidget);
+    if( appConfig::CurrentDb().isEmpty())
+        on_action_menu_database_new_triggered();
     if( !useDb(appConfig::CurrentDb()))
         // there should be a valid DB - checked in main.cpp
         Q_ASSERT(!"useDb failed in construcor of mainwindow");
@@ -45,6 +47,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->txtAnmerkung->setTabChangesFocus(true);
     ui->CreditorsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 15px; }");
     ui->contractsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 15px; }");
+
+    ui->bookingsTableView->setItemDelegateForColumn(2, new bookingTypeFormatter);
 
     fillCombo_NoticePeriods();
     createButtonMenu_saveCreditorAnd();
@@ -57,6 +61,22 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex & )
+{
+    // todo: do all init only once, this function should only do the 
+    // setFilter and the select()
+    QModelIndex indexIndex = newI.siblingAtColumn(0);
+    int index =ui->contractsTableView->model()->data(indexIndex).toInt();
+    QSqlTableModel* model = new QSqlTableModel(this);
+    model->setTable("Buchungen");
+    model->setFilter("Buchungen.VertragsId=" + QString::number(index));
+    model->setSort(4, Qt::SortOrder::DescendingOrder);
+
+    ui->bookingsTableView->setModel(model);
+    model->select();
+    ui->bookingsTableView->hideColumn(0);
+    ui->bookingsTableView->hideColumn(1);
+}
 // generell functions
 void MainWindow::setSplash(QSplashScreen* s)
 {   LOG_CALL;
@@ -545,12 +565,16 @@ void MainWindow::prepare_contracts_list_view()
     tv->setItemDelegateForColumn(8, new thesaItemFormatter(tv));
 
     tv->resizeColumnsToContents();
+    auto c = connect(ui->contractsTableView->selectionModel(),
+            SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
+            SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
+    qDebug() << c;
+
 }
 int  MainWindow::get_current_id_from_contracts_list()
 {   LOG_CALL;
     QModelIndex mi(ui->contractsTableView->currentIndex().siblingAtColumn(0));
-    if( mi.isValid())
-    {
+    if( mi.isValid()) {
         QVariant data(ui->contractsTableView->model()->data(mi));
         return data.toInt();
     }
@@ -983,7 +1007,7 @@ void MainWindow::on_pbPrint_clicked()
 // anual settlement
 void MainWindow::on_action_menu_contracts_anual_interest_settlement_triggered()
 {   LOG_CALL;
-    Q_ASSERT("tobeimplemented");
+    Q_ASSERT( ! "tobeimplemented");
     on_action_menu_contracts_listview_triggered( );
 }
 // list creation csv, printouts

@@ -43,8 +43,10 @@ public:
     int get_current_id_from_contracts_list();
     contract get_contract_data_from_form();
 
+
 private slots:
 
+    void currentChange_ctv(const QModelIndex & , const QModelIndex & );
     void on_action_menu_database_new_triggered();
     void on_action_menu_database_program_exit_triggered();
     void on_action_menu_database_open_triggered();

@@ -1,6 +1,7 @@
 //#include "finhelper.h"
 #include <QDate>
 
+#include "booking.h"
 #include "helperfin.h"
 #include "uiitemformatter.h"
 
@@ -72,6 +73,29 @@ QString thesaItemFormatter::displayText(const QVariant &value, const QLocale &) 
         return "auszahlend";
 }
 void thesaItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    QStyleOptionViewItem alignedOption(option);
+    alignedOption.displayAlignment = Qt::AlignCenter;
+    QStyledItemDelegate::paint(painter, alignedOption, index);
+}
+
+QString bookingTypeFormatter::displayText(const QVariant &value, const QLocale &) const
+{
+    switch(value.toInt())
+    {
+    case booking::Type::deposit :
+        return "Einzahlung";
+    case booking::Type::payout :
+        return "Auszahlung";
+    case booking::Type::interestPayout:
+        return "Zinsauszahlung";
+    case booking::Type::interestDeposit:
+        return "Zinsanrechnung";
+    default:
+        return "FEHLER";
+    }
+}
+void bookingTypeFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QStyleOptionViewItem alignedOption(option);
     alignedOption.displayAlignment = Qt::AlignCenter;
