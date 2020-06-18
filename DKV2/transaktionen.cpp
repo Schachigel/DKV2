@@ -1,4 +1,5 @@
 
+#include <QDate>
 #include <QString>
 #include <QMessageBox>
 #include <QDate>
@@ -6,6 +7,8 @@
 #include "helper.h"
 #include "wizchangecontractvalue.h"
 #include "wizactivatecontract.h"
+#include "wizterminatecontract.h"
+#include "wizannualsettlement.h"
 #include "transaktionen.h"
 
 
@@ -44,7 +47,7 @@ void changeContractValue(qlonglong cid)
     }
 
     creditor cre(con.creditorId());
-    ChangeContractWiz wiz;
+    wizChangeContract wiz;
     QFont f = wiz.font(); f.setPointSize(10);
     wiz.setFont(f);
     wiz.creditorName = cre.firstname() + " " + cre.lastname();
@@ -85,15 +88,20 @@ void terminateContract(qlonglong cid)
         cancelContract_wNoticePeriod(c);
     }
 }
-
-void terminateContract_Final( contract& )
+void terminateContract_Final( contract& c)
 {   LOG_CALL;
-Q_ASSERT(!"repair");
+
     // todo: wiz UI:
-    // ask termination date
-    // calculate and book final value,
-    // wiz page for confirmation / print option 4 contract history
+    //OK ask termination date
+    //nOK calculate final value,
+    //OK wiz page for confirmation / print option 4 contract history
+    // do final interest booking, do payout booking
     // move to exVerträge, exBuchungen
+    // print pdf
+
+    wizTerminateContract wiz(nullptr, c);
+    wiz.exec();
+
     return;
 }
 void cancelContract_wNoticePeriod( contract& )
@@ -104,4 +112,16 @@ Q_ASSERT(!"repair");
     // change terminationDate (date)
 }
 
-
+void annualSettlement()
+{
+    QVariant vYear=executeSingleValueSql("SELECT * FROM nextInterestDate");
+    if( ! vYear.isValid() || vYear.isNull()) {
+        QMessageBox::information(nullptr, "Fehler",
+            "Ein Jahr für die nächste Zinsberechnung konnte nicht gefunden werden."
+            "Es keine Verträge für die eine Abrechnung gemacht werden kann.");
+        return;
+    }
+    wizAnnualSettlement wiz;
+    wiz.setField("year", vYear.toDate().year() -1);
+    wiz.exec();
+}

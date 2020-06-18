@@ -163,19 +163,16 @@ void insert_views( QSqlDatabase db)
 {
     QSqlQuery view(db);
     QString WertAktiveVertraege = "CREATE VIEW 'WertAktiveVertraege' AS "
-    "SELECT Vertraege.id AS id, "    // 0"
-    "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 1
-    "Vertraege.Kennung AS Vertragskennung, " // 2
-    "Vertraege.ZSatz/100. AS Zinssatz, "    // 3
-    "(SELECT sum(Buchungen.betrag) FROM Buchungen WHERE Vertraege.id = Buchungen.VertragsId) AS Wert, " // 4
-    "Vertraege.Vertragsdatum AS Abschlußdatum, " // 5
-    "Vertraege.Kfrist AS Kündigungsfrist, "     // 6
-    "Vertraege.LaufzeitEnde AS Vertragsende, " // 7
-    "thesaurierend AS thesa, "                 // 8
-    "Kreditoren.id AS KreditorId " // 9
-    "FROM Vertraege "
-    "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
-    "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId";
+        "SELECT Vertraege.id AS id, Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, Vertraege.Kennung AS Vertragskennung, Vertraege.ZSatz/100. AS Zinssatz, "
+        "(SELECT sum(Buchungen.betrag) FROM Buchungen "
+        "WHERE Vertraege.id = Buchungen.VertragsId) AS Wert, "
+        "MIN(Buchungen.Datum) AS Datum, Vertraege.Kfrist AS Kündigungsfrist, Vertraege.LaufzeitEnde AS Vertragsende, thesaurierend AS thesa, Kreditoren.id AS KreditorId "
+        "FROM Vertraege "
+        "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
+        "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
+        "Group by Vertraege.id";
+    if( !view.exec("DROP VIEW WertAktiveVertraege"))
+        qCritical() << "View " << WertAktiveVertraege << " konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
     if( !view.exec(WertAktiveVertraege))
         qCritical() << "View " << WertAktiveVertraege << " konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
 
@@ -185,7 +182,7 @@ void insert_views( QSqlDatabase db)
     "Vertraege.Kennung AS Vertragskennung, " // 2
     "Vertraege.ZSatz/100. AS Zinssatz, "     // 3
     "-1* Vertraege.Betrag AS Wert, "         // 4
-    "Vertraege.Vertragsdatum AS Abschlußdatum, " // 5
+    "Vertraege.Vertragsdatum AS Datum, " // 5
     "Vertraege.Kfrist AS Kündigungsfrist, "      // 6
     "Vertraege.LaufzeitEnde AS Vertragsende, "   // 7
     "Vertraege.thesaurierend AS thesa, "          // 8
@@ -193,16 +190,51 @@ void insert_views( QSqlDatabase db)
     "FROM Vertraege "
     "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
     "WHERE (SELECT count(*) FROM Buchungen WHERE Buchungen.VertragsId=Vertraege.id) = 0";
+    view.exec("DROP VIEW 'WertPassiveVertraege'");
     if( !view.exec(WertPassiveVertraege))
         qCritical() << "View " << WertAktiveVertraege << " konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
 
     QString WertAlleVertraege = "CREATE VIEW 'WertAlleVertraege' AS "
                                 "SELECT * FROM WertAktiveVertraege "
                                 "UNION "
-                                "SELECT * FROM WertPassiveVertraege";
+                                "SELECT * FROM WertPassiveVertraege ";
+    view.exec("DROP VIEW 'WertAlleVertraege'");
     if( !view.exec(WertAlleVertraege))
         qCritical() << "View " << WertAktiveVertraege << " konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
 
+    QString aktiveVertraege = "CREATE VIEW 'AktiveVertraege' AS "
+            "SELECT DISTINCT Vertraege.* "
+            "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id=buchungen.VertragsId ";
+    view.exec("DROP VIEW 'AktiveVertraege'");
+    if( !view.exec(aktiveVertraege))
+        qCritical() << "View 'AktiveVertraege' konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
+
+    QString firstInterestDates = "CREATE VIEW 'firstInterestDates' AS "
+            "SELECT Vertraege.id, strftime('%Y-%m-%d', MIN(Datum), '1 year', 'start of year')  as NextInterestDate "
+            "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id = buchungen.VertragsId "
+            /* buchungen von Verträgen für die es keine Zinsbuchungen gibt */
+            "WHERE (SELECT count(*) FROM Buchungen WHERE (Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8) AND Buchungen.VertragsId=Vertraege.id)=0 "
+            "GROUP BY Vertraege.id ";
+    view.exec("DROP VIEW 'firstInterestDates'");
+    if( !view.exec(firstInterestDates))
+        qCritical() << "View 'firstInterestDates' konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
+
+    QString nextInterestDates = "CREATE VIEW 'nextInterestDates' AS "
+            "SELECT Vertraege.id, strftime('%Y-%m-%d', MAX(Datum), '1 year', 'start of year') AS NextInterestDate "
+            "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id=buchungen.VertragsId "
+            "WHERE Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8 AND Buchungen.VertragsId=Vertraege.id=0 ";
+    view.exec("DROP VIEW 'nextInterestDates'");
+    if( !view.exec(nextInterestDates))
+        qCritical() << "View 'nextInterestDates' konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
+
+    QString nextInterestDate = "CREATE VIEW 'nextInterestDate' AS "
+            "SELECT MIN(NextInterestDate) AS date FROM "
+            "(SELECT * FROM firstInterestDates "
+            "UNION SELECT * from nextInterestDates)";
+
+    view.exec("DROP VIEW 'nextInterestDate'");
+    if( !view.exec(nextInterestDate))
+        qCritical() << "View 'nextInterestDate' konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
 }
 
 bool create_DK_TablesAndContent(QSqlDatabase db)
@@ -273,6 +305,7 @@ bool isValidDatabase(QSqlDatabase db)
         qCritical() << "database version check failed";
         return false;
     }
+    // todo : check views
     qInfo() << db.databaseName() << " is a valid dk database";
     return true;
 }

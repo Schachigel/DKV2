@@ -489,7 +489,6 @@ void MainWindow::on_action_saveCreditor_go_new_creditor_triggered()
         return;
     }
     on_action_menu_creditors_create_triggered();
-//    empty_create_creditor_form();
 }
 
 // Contract List helper
@@ -664,7 +663,11 @@ void MainWindow::on_action_menu_contracts_create_triggered()
         set_creditors_combo_by_id(-1);
     contract cd; // this is to get the defaults of the class definition
     ui->deLaufzeitEnde->setDate(cd.plannedEndDate());
-    ui->cbKFrist->setCurrentIndex(ui->cbKFrist->findText("6"));
+    int cbkFristStartIndex = ui->cbKFrist->findText("6 Monate");
+    if( cbkFristStartIndex <0)
+        qDebug() << "error setting kFrist Combo default value";
+    else
+        ui->cbKFrist->setCurrentIndex(cbkFristStartIndex);
     ui->deVertragsabschluss->setDate(cd.conclusionDate());
     ui->chkbThesaurierend->setChecked(cd.reinvesting());
 
@@ -711,7 +714,7 @@ contract MainWindow::get_contract_data_from_form()
 
     // interface to comboBox -> 1/100th of the itemdata
     int interrestIndex= ui->cbZins->itemData(ui->cbZins->currentIndex()).toInt();
-    c.setInterest100th(round2(double(interrestIndex)/100));
+    c.setInterest100th(round2(double(interrestIndex)));
     c.setConclusionDate (ui->deVertragsabschluss->date());
 
     int kFrist = ui->cbKFrist->currentData().toInt();
@@ -1007,7 +1010,7 @@ void MainWindow::on_pbPrint_clicked()
 // anual settlement
 void MainWindow::on_action_menu_contracts_anual_interest_settlement_triggered()
 {   LOG_CALL;
-    Q_ASSERT( ! "tobeimplemented");
+    annualSettlement();
     on_action_menu_contracts_listview_triggered( );
 }
 // list creation csv, printouts
@@ -1032,6 +1035,10 @@ void MainWindow::on_action_menu_debug_show_log_triggered()
     QString cmd = "open " + logFilePath().toUtf8();
     system(cmd.toUtf8().constData());
     #endif
+}
+void MainWindow::on_actionDatenbank_Views_schreiben_triggered()
+{
+    insert_views(QSqlDatabase::database());
 }
 // bookings- bisher Debug stuff
 void MainWindow::on_tblViewBookingsSelectionChanged(const QItemSelection& to, const QItemSelection& )
@@ -1072,3 +1079,4 @@ void MainWindow::on_action_about_DKV2_triggered()
     msg += "Viel Spaß mit DKV2 !";
     QMessageBox::information(this, "I n f o", msg);
 }
+

@@ -53,18 +53,19 @@ struct contract
     static const dbtable& getTableDef_deletedContracts();
     bool validateAndSaveNewContract(QString& meldung);
     int saveNewContract();
-    double currentValue();
-    QDate latestBooking();
+    double currentValue() const;
+    double futureValue(QDate terminationDate) const;
+    QDate latestBooking() const;
 
-    bool activate(const QDate& aDate, int amount_ct);
-    bool activate(const QDate& aDate, double amount);
+    bool activate(const QDate& aDate, int amount_ct) const;
+    bool activate(const QDate& aDate, double amount) const;
     static bool isActive( qlonglong id);
-    bool isActive();
+    bool isActive() const;
 
-    bool deposit(double amount, QDate d);
-    bool payout(double amount, QDate d);
+    bool deposit(double amount, QDate d) const;
+    bool payout(double amount, QDate d) const;
 
-    bool remove();
+    bool remove() const;
     static bool remove(qlonglong id);
 
 //    bool bookAnnualInterest(const QDate& YearEnd);

@@ -22,8 +22,9 @@ void DateItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &opt
 
 QString PercentItemFormatter::displayText(const QVariant& value, const QLocale& )const
 {
-    double percent = round2(value.toDouble());
-    return QString::number(percent) + "%";
+    double percent = value.toDouble();
+    // data is stored as 100th percent but the query compensatates that
+    return QString("%1%").arg(percent, 2, 'g');
 };
 void PercentItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {

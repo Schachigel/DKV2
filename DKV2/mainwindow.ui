@@ -715,6 +715,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="action_menu_debug_show_log"/>
     <addaction name="actionShow_Bookings"/>
     <addaction name="action_about_DKV2"/>
+    <addaction name="actionDatenbank_Views_schreiben"/>
    </widget>
    <addaction name="menu_database"/>
    <addaction name="manu_creditors"/>
@@ -977,6 +978,11 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="toolTip">
     <string>Ein- oder Auszahlung</string>
+   </property>
+  </action>
+  <action name="actionDatenbank_Views_schreiben">
+   <property name="text">
+    <string>Datenbank Views schreiben</string>
    </property>
   </action>
  </widget>

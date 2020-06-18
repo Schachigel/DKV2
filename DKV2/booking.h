@@ -8,7 +8,7 @@
 struct booking
 {
 enum Type{
-    non,
+    non, // means all
     deposit = 1,
     payout  = 2,
     interestDeposit = 4,

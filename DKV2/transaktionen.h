@@ -11,4 +11,6 @@ void terminateContract(qlonglong cid);
 void terminateContract_Final( contract& v);
 void cancelContract_wNoticePeriod( contract& v);
 
+void annualSettlement();
+
 #endif // TRANSAKTIONEN_H

@@ -37,7 +37,6 @@ SOURCES += \
         helperfile.cpp \
         helperfin.cpp \
         helpersql.cpp \
-        jahresabschluss.cpp \
         letterTemplate.cpp \
         letters.cpp \
         main.cpp \
@@ -47,8 +46,10 @@ SOURCES += \
         uicustomtoolbutton.cpp \
         uiitemformatter.cpp \
         wizactivatecontract.cpp \
+        wizannualsettlement.cpp \
         wizchangecontractvalue.cpp \
-        wizfileselection.cpp
+        wizfileselection.cpp \
+        wizterminatecontract.cpp
 
 HEADERS += \
         appconfig.h \
@@ -72,8 +73,10 @@ HEADERS += \
         uicustomtoolbutton.h \
         uiitemformatter.h \
         wizactivatecontract.h \
+        wizannualsettlement.h \
         wizchangecontractvalue.h \
-        wizfileselection.h
+        wizfileselection.h \
+        wizterminatecontract.h
 
 FORMS += \
         mainwindow.ui

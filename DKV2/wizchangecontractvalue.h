@@ -32,9 +32,9 @@ struct wizChangeContract_Summary : public QWizardPage{
     bool validatePage() override;
 };
 
-struct ChangeContractWiz : public QWizard
+struct wizChangeContract : public QWizard
 {
-    ChangeContractWiz(QWidget* p =nullptr);
+    wizChangeContract(QWidget* p =nullptr);
     QString creditorName;
     QString contractLabel;
     double  currentAmount = 0.;

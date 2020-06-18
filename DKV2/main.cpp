@@ -35,53 +35,53 @@ void initLogging()
     qInstallMessageHandler(logger);
 }
 
-QString interactW_UserForDB(QString dbfile)
-{   LOG_CALL;
-    do
-    {
-        dbfile = QFileDialog::getSaveFileName(nullptr,
-            "Wähle eine Datenbank oder gib einen Namen für eine Neue ein",
-            QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +"/DKV2", "dk-DB Dateien (*.dkdb)", nullptr,QFileDialog::DontConfirmOverwrite);
-        qDebug() << "DbFile from user: " << dbfile;
-        if( dbfile == "")
-            return QString();  // canceled by user
+//QString interactW_UserForDB(QString dbfile)
+//{   LOG_CALL;
+//    do
+//    {
+//        dbfile = QFileDialog::getSaveFileName(nullptr,
+//            "Wähle eine Datenbank oder gib einen Namen für eine Neue ein",
+//            QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +"/DKV2", "dk-DB Dateien (*.dkdb)", nullptr,QFileDialog::DontConfirmOverwrite);
+//        qDebug() << "DbFile from user: " << dbfile;
+//        if( dbfile == "")
+//            return QString();  // canceled by user
 
-        if( QFile::exists(dbfile))
-        {
-            if( isValidDatabase(dbfile))
-                return dbfile;
-            else
-            {   // overwrite?
-                QMessageBox::StandardButton sb = QMessageBox::question(nullptr, "Die gewählte Datenbank ist ungültig", "Soll die Datei für eine neue DB überschrieben werden?");
-                qDebug() << "users choice: replace file? " << sb;
-                if( QMessageBox::Yes != sb)
-                    continue;
-                else
-                {
-                    if( create_DK_databaseFile(dbfile))
-                        return dbfile;
-                    else
-                    {
-                        qCritical() << "Overwrite of existing db failed";
-                        QMessageBox::critical(nullptr, "Feher", "Die Datei konnte nicht überschrieben werden. Wähle eine andere!");
-                        continue;
-                    }
-                }
-            }
-        }
-        // new file ...
-        if( create_DK_databaseFile(dbfile))
-            return dbfile;
-        else
-        {
-            qCritical() << "Creating of existing db failed";
-            if( QMessageBox::Yes != QMessageBox::question(nullptr, "Feher", "Die Datei konnte nicht angelegt werden. Möchten Sie eine andere auswählen?"))
-                return QString();
-            continue;
-        }
-    }
-    while(true);
-}
+//        if( QFile::exists(dbfile))
+//        {
+//            if( isValidDatabase(dbfile))
+//                return dbfile;
+//            else
+//            {   // overwrite?
+//                QMessageBox::StandardButton sb = QMessageBox::question(nullptr, "Die gewählte Datenbank ist ungültig", "Soll die Datei für eine neue DB überschrieben werden?");
+//                qDebug() << "users choice: replace file? " << sb;
+//                if( QMessageBox::Yes != sb)
+//                    continue;
+//                else
+//                {
+//                    if( create_DK_databaseFile(dbfile))
+//                        return dbfile;
+//                    else
+//                    {
+//                        qCritical() << "Overwrite of existing db failed";
+//                        QMessageBox::critical(nullptr, "Feher", "Die Datei konnte nicht überschrieben werden. Wähle eine andere!");
+//                        continue;
+//                    }
+//                }
+//            }
+//        }
+//        // new file ...
+//        if( create_DK_databaseFile(dbfile))
+//            return dbfile;
+//        else
+//        {
+//            qCritical() << "Creating of existing db failed";
+//            if( QMessageBox::Yes != QMessageBox::question(nullptr, "Feher", "Die Datei konnte nicht angelegt werden. Möchten Sie eine andere auswählen?"))
+//                return QString();
+//            continue;
+//        }
+//    }
+//    while(true);
+//}
 
 QString getInitialDbFile()
 {   LOG_CALL;
@@ -89,39 +89,28 @@ QString getInitialDbFile()
     QStringList args =QApplication::instance()->arguments();
     QString dbfileFromCmdline = args.size() > 1 ? args.at(1) : QString();
 
-    if( !dbfileFromCmdline.isEmpty())
-    {   // if there is a cmd line arg we will not try other
+    if( !dbfileFromCmdline.isEmpty()) {
+        // if there is a cmd line arg we will not try other
         // and not store in appConfig
-        if( isValidDatabase( dbfileFromCmdline))
-        {
+        if( isValidDatabase( dbfileFromCmdline)) {
             qInfo() << "valid dbfile from command line " << dbfileFromCmdline;
             return dbfileFromCmdline;
-        }
-        else
-        {
+        } else {
             qCritical() << "invalid dbfile from comman line" << dbfileFromCmdline;
             return QString();
         }
     }
 
     QString dbfile =appConfig::LastDb();
-    if( isValidDatabase(dbfile))
-    {   // all good then
+    if( isValidDatabase(dbfile)) {
+        // all good then
         qInfo() << "DbFile from configuration exists and is valid: " << dbfile;
+        appConfig::setLastDb(dbfile);
+        return dbfile;
+    } else {
+        qInfo() << "invalid DB file from configuration: " << dbfile;
+        return QString();
     }
-    else
-    {
-        qInfo() << "invalid DB file from configuration: " << dbfile << endl << "going to ask user";
-        dbfile = interactW_UserForDB(dbfile);
-        if( dbfile.isEmpty())
-        {
-            qCritical() << "No valid DB -> abort";
-            return QString();
-        }
-    }
-    // remember file that was opened (from user or config)
-    appConfig::setLastDb(dbfile);
-    return dbfile;
 }
 
 QSplashScreen* doSplash()
@@ -160,13 +149,8 @@ int main(int argc, char *argv[])
 
     init_DKDBStruct();
 
-    QString DatabaseFileName = getInitialDbFile();
-    if( DatabaseFileName.isEmpty())
-    {   // qCritical() << "no valid database -> exiting";
-        exit (ERROR_FILE_NOT_FOUND);
-    }
-    // let main window know, which db to use
-    appConfig::setCurrentDb(DatabaseFileName);
+    // let propose a db to mainwindow
+    appConfig::setCurrentDb(getInitialDbFile());
 
 #ifndef QT_DEBUG
     QSplashScreen* splash = doSplash(); // do only AFTER having an app. object

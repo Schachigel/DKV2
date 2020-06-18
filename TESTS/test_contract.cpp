@@ -36,6 +36,7 @@ void test_contract::test_set_get_interest()
     c.setCreditorId(cre.id());
     c.saveNewContract();
     contract d(c.id());
+    QCOMPARE(d.interestRate(), 1.49);
 }
 
 void test_contract::test_createContract()

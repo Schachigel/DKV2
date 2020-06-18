@@ -89,18 +89,28 @@ int  contract::saveNewContract()
     return -1;
 }
 
-double contract::currentValue()
+double contract::currentValue() const
 {
-    int valueInCent = executeSingleValueSql("SUM(Betrag)", "Buchungen", "VertragsId="+QString::number(id())).toInt();
+    QString where = " Buchungen.BuchungsArt != %1 AND VertragsId=%2";
+    where = where.arg(booking::Type::interestPayout).arg(QString::number(id()));
+    int valueInCent = executeSingleValueSql("SUM(Betrag)", "Buchungen", where).toInt();
     return euroFromCt(valueInCent);
 }
 
-QDate contract::latestBooking()
+double contract::futureValue(QDate targetDate) const
+{
+    double cv = currentValue();
+
+
+    return cv;
+}
+
+QDate contract::latestBooking() const
 {
     return executeSingleValueSql("MAX(Datum)", "Buchungen", "VertragsId="+QString::number(id())).toDate();
 }
 
-bool contract::activate(const QDate& aDate, int amount_ct)
+bool contract::activate(const QDate& aDate, int amount_ct) const
 {
     Q_ASSERT (id()>=0);
     if( isActive()) {
@@ -114,7 +124,7 @@ bool contract::activate(const QDate& aDate, int amount_ct)
     qInfo() << "Successfully activated contract " << id() << "[" << aDate << ", " << amount_ct << " ct]";
     return true;
 }
-bool contract::activate(const QDate& aDate, double amount)
+bool contract::activate(const QDate& aDate, double amount) const
 {
     int ct = ctFromEuro(amount);
     return activate(aDate, ct);
@@ -128,17 +138,17 @@ bool contract::activate(const QDate& aDate, double amount)
         return true;
     return false;
 }
-bool contract::isActive()
+bool contract::isActive() const
 {
     return isActive(id());
 }
 
-bool contract::deposit(double amount, QDate d)
+bool contract::deposit(double amount, QDate d) const
 {
     return booking::makeDeposit(id(), d, amount);
 }
 
-bool contract::payout(double amount, QDate d)
+bool contract::payout(double amount, QDate d) const
 {
     if( amount > currentValue()) {
         qCritical() << "Payout impossible. The account has not enough coverage";
@@ -147,8 +157,7 @@ bool contract::payout(double amount, QDate d)
     return booking::makePayout(id(), d, amount);
 }
 
-bool contract::remove()
-{
+bool contract::remove() const {
     return contract::remove(id());
 }
 

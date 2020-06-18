@@ -135,6 +135,8 @@ private slots:
 
     void on_action_cmenu_change_contract_triggered();
 
+    void on_actionDatenbank_Views_schreiben_triggered();
+
 private:
     Ui::MainWindow *ui;
     QSplashScreen* splash;
