@@ -21,7 +21,6 @@ public:
     int InsertData(QSqlDatabase db = QSqlDatabase::database()) const;
     int InsertOrReplaceData(QSqlDatabase db = QSqlDatabase::database()) const;
     int UpdateData() const;
-
 private:
     // data
     QString tablename;
@@ -31,5 +30,17 @@ private:
     QString getInsertRecordSQL() const;
     QString getInsertOrReplaceRecordSQL() const;
     QString getUpdateRecordSQL() const;
+public:
+    friend inline bool operator==(const TableDataInserter& lhs, const TableDataInserter& rhs)
+    { /* do actual comparison */
+        if( lhs.tablename != rhs.tablename) return false;
+        if( lhs.record.count() != rhs.record.count()) return false;
+        if( lhs.record != rhs.record) return false;
+        return true;
+    }
+
 };
+
+
+
 #endif // TABLEDATAINSERTER_H

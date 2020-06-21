@@ -5,6 +5,7 @@
 #include <QDate>
 
 #include "helper.h"
+#include "booking.h"
 #include "wizchangecontractvalue.h"
 #include "wizactivatecontract.h"
 #include "wizterminatecontract.h"
@@ -30,7 +31,7 @@ void activateContract(qlonglong cid)
         qInfo() << "contract activation cancled by the user";
         return;
     }
-    if( !v.activate(wiz.field("date").toDate(), wiz.field("amount").toDouble())) {
+    if( !v.activate(wiz.field("amount").toDouble(), wiz.field("date").toDate())) {
         qCritical() << "activation failed";
         Q_ASSERT(true);
     }
@@ -52,7 +53,7 @@ void changeContractValue(qlonglong cid)
     wiz.setFont(f);
     wiz.creditorName = cre.firstname() + " " + cre.lastname();
     wiz.contractLabel= con.label();
-    wiz.currentAmount= con.currentValue();
+    wiz.currentAmount= con.Value();
     wiz.earlierstDate = con.latestBooking().addDays(1);
     wiz.setField("deposit_notPayment", QVariant(true));
 
@@ -114,7 +115,7 @@ Q_ASSERT(!"repair");
 
 void annualSettlement()
 {
-    QVariant vYear=executeSingleValueSql("SELECT * FROM nextInterestDate");
+    QDate vYear=bookings::dateOfnextSettlement();
     if( ! vYear.isValid() || vYear.isNull()) {
         QMessageBox::information(nullptr, "Fehler",
             "Ein Jahr für die nächste Zinsberechnung konnte nicht gefunden werden."
@@ -122,6 +123,6 @@ void annualSettlement()
         return;
     }
     wizAnnualSettlement wiz;
-    wiz.setField("year", vYear.toDate().year() -1);
+    wiz.setField("year", vYear.year() -1);
     wiz.exec();
 }

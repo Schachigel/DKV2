@@ -78,33 +78,31 @@ int TageSeitJahresAnfang_a(const QDate& d)
 double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)
 {
     qDebug().noquote() << "\n\nZinsberechnung von " << von << " bis " << bis << QString((thesa)? " thesaurierend" : ("bei Zinsauszahlungen"));
-    if( !(von.isValid() && bis.isValid()) || ( von > bis))
-    {
+    if( !(von.isValid() && bis.isValid()) || ( von > bis)) {
         qCritical() << "Zinseszins kann nicht berechnet werden - ungültige Parameter";
         return -1.;
     }
+    if( wert <= 0.) return 0.;
 
-    if( von.year() == bis.year())
-    {
+    if( von.year() == bis.year()) {
         return round2(double(TageZwischen(von, bis))/360. *zins/100. *wert);
     }
     int TageImErstenJahr = TageBisJahresende_a(von); // first day no intrest
-    double ZinsImErstenJahr = round2(double(TageImErstenJahr)/360. *zins/100. *wert);
+    double ZinsImErstenJahr = double(TageImErstenJahr)/360. *zins/100. *wert;
     double gesamtZins (ZinsImErstenJahr);
 
     double zwischenWert = (thesa) ? (wert+ZinsImErstenJahr) : (wert);
     double ZinsVolleJahre = 0.;
     int jahre(0);
-    for( jahre=0; jahre < bis.year()-von.year()-1; jahre++)
-    {
+    for( jahre=0; jahre < bis.year()-von.year()-1; jahre++) {
         double JahresZins = zwischenWert *zins/100.;
         gesamtZins += JahresZins; ZinsVolleJahre += JahresZins;
         zwischenWert = (thesa) ? (zwischenWert+JahresZins) : zwischenWert;
     }
-    gesamtZins = round2(gesamtZins);
     int TageImLetztenJahr = TageSeitJahresAnfang_a(bis);
-    double ZinsRestjahr = round2(double(TageImLetztenJahr)/360. *zins/100. *zwischenWert);
+    double ZinsRestjahr = double(TageImLetztenJahr)/360. *zins/100. *zwischenWert;
     gesamtZins += ZinsRestjahr;
+    gesamtZins = round2(gesamtZins);
     qDebug().noquote()
         << "\nErstes Jahr : " << ZinsImErstenJahr << "(" << TageImErstenJahr << " Tage)"
         << "\nVolle Jahre : " << ZinsVolleJahre << "(" << jahre << " Jahre)"

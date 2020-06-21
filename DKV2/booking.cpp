@@ -17,6 +17,10 @@
     }
     return bookings;
 }
+/* static */ bool booking::isInterestBooking(booking::Type t)
+{
+    return t & (interestPayout|interestDeposit);
+}
 
 /* static */ const dbtable& booking::getTableDef_deletedContracts()
 {
@@ -49,7 +53,7 @@
 
 /* static */ bool booking::doBooking( const booking::Type t, const qlonglong contractId, const QDate date, const double amount)
 {   LOG_CALL_W(typeName(t));
-    TableDataInserter tdi(dkdbstructur["Buchungen"]);
+    TableDataInserter tdi(booking::getTableDef());
     tdi.setValue("VertragsId", contractId);
     tdi.setValue("BuchungsArt", t);
     tdi.setValue("Betrag", ctFromEuro(amount));
@@ -71,45 +75,32 @@
 }
 /* static */ bool booking::investInterest(qlonglong contractId, QDate date, double amount)
 {
-    Q_ASSERT( amount > 0.);
+    Q_ASSERT( amount >= 0.);
     return doBooking(Type::interestDeposit, contractId, date, amount);
 }
 /* static */ bool booking::payoutInterest(qlonglong contractId, QDate date, double amount)
 {
-    Q_ASSERT( amount > 0.);
+    if( amount > 0) amount *= -1.;
     return doBooking(Type::interestPayout, contractId, date, amount);
 }
 
-/*
- * BookingS is about getting collections of bookings
-*/
-
-QVector<booking> bookings::getBookings()
+/* static */ QDate bookings::dateOfnextSettlement()
 {   LOG_CALL;
-    QVector<QSqlRecord> rec = executeSql(dkdbstructur["Buchungen"].Fields(),
-            "VertragsId=" + QString::number(contractId) + " AND BuchungsArt=" + QString::number(type));
-    if( rec.isEmpty()) {
-        qDebug() << "could not query bookings for " << contractId << " type " << booking::typeName(type);
-        return QVector<booking>();
-    }
-    QVector<booking> result;
-    for( auto r : rec) {
-        booking b(type, r.value("Datum").toDate(), euroFromCt(r.value("Betrag").toInt()));
-        b.contractId = contractId;
-        result.push_back(b);
-    }
-    return result;
+    return  executeSingleValueSql("date", "NextAnnualSettlement").toDate();
 }
-
-double bookings::sumBookings()
+/* static */ QVector<booking> bookings::getBookings(qlonglong cid, QDate from, QDate to)
 {   LOG_CALL;
-    QString sql("SELECT SUM(Betrag) FROM Buchungen WHERE VertragsId=%1 AND BuchungsArt=%2");
-    sql = sql.arg(QString::number(contractId)).arg(QString::number(type));
-    QSqlQuery q;
-    if( !q.exec(sql)) {
-        qDebug() << "could not query sum of bookings for " << contractId << " type " << booking::typeName(type);
-        return 0.;
+    QString where = "Buchungen.VertragsId=%1 "
+                  "AND Buchungen.Datum >='%2' "
+                  "AND Buchungen.Datum <='%3'";
+    where = where.arg(QString::number(cid)).arg(from.toString(Qt::ISODate)).arg(to.toString(Qt::ISODate));
+    QVector<QSqlRecord> records = executeSql(booking::getTableDef().Fields(), where, "Datum DESC");
+    QVector<booking> ret;
+    for( auto rec: records) {
+        booking::Type t = booking::Type(rec.value("BuchungsArt").toInt());
+        QDate d = rec.value("Datum").toDate();
+        double amount = euroFromCt(rec.value("Betrag").toInt());
+        ret.push_back(booking(t, d, amount));
     }
-    q.first();
-    return q.value(0).toDouble()/100.; // we store ct
+    return ret;
 }

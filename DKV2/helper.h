@@ -44,6 +44,7 @@ public:
 #define LOG_CALL_W(x)         LOG_ENTRY_EXIT_FOR(__func__ + QString("(\"") + x + QString("\")"))
 
 extern const QDate EndOfTheFuckingWorld;
+extern const QDate BeginingOfTime;
 
 extern QFile* outFile_p;
 

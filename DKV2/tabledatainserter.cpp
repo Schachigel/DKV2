@@ -26,7 +26,7 @@ bool TableDataInserter::setValue(const QString& n, const QVariant& v)
         return false;
     }
     if( record.field(n).type() == v.type()) {
-        qInfo() << "tableDataInserter setValue: " << n << " -> " << v ;
+//        qInfo() << "tableDataInserter setValue: " << n << " -> " << v ;
         record.setValue(n, v);
         return true;
     }

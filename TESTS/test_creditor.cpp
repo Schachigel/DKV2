@@ -96,7 +96,7 @@ void test_creditor::test_hasActiveContracts_hasActContract()
 {
     creditor c = saveRandomCreditor();
     contract co = saveRandomContract(c.id());
-    co.activate(QDate::currentDate(), 1000.0);
+    co.activate(1000.0, QDate::currentDate());
     QCOMPARE(c.hasActiveContracts(), true);
 }
 void test_creditor::test_deleteContract_woContract()
@@ -116,6 +116,6 @@ void test_creditor::test_deleteContract_wActiveContractFails()
 {
     creditor c = saveRandomCreditor();
     contract co = saveRandomContract(c.id());
-    co.activate(QDate::currentDate(), 1000.0);
+    co.activate(1000.0, QDate::currentDate());
     QCOMPARE(c.remove(), false);
 }

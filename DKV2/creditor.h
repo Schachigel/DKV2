@@ -9,12 +9,12 @@
 #include "dkdbhelper.h"
 
 
-class creditor
+struct creditor
 {
-public:
+    static const dbtable& getTableDef();
     // constructors
-    creditor() : ti(dkdbstructur["Kreditoren"]){}
-    creditor (int i) : ti(dkdbstructur["Kreditoren"]){ fromDb(i);}
+    creditor() : ti(getTableDef()){}
+    creditor (int i) : ti(getTableDef()){ fromDb(i);}
     // comparison
     bool operator==(const creditor& c) const;
     // setter
@@ -38,7 +38,6 @@ public:
     void setBic(QString b)      { ti.setValue("BIC", b);}
     qlonglong id() const        {return getValue("id").toLongLong();}
     void setId(qlonglong i)     { ti.setValue("id", i);}
-    static const dbtable& getTableDef();
     // interface
     bool fromDb(int id);
     QVariant getValue(const QString& f) const { return ti.getValue(f);}

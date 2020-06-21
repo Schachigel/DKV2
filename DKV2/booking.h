@@ -2,7 +2,7 @@
 #define BOOKING_H
 
 #include <QDate>
-
+#include "helper.h"
 #include "dbtable.h"
 
 struct booking
@@ -20,6 +20,8 @@ double amount;
 qlonglong contractId;
     // construction
     booking(booking::Type t, QDate d, double a) : type(t), date(d), amount(a) {};
+    // interface
+    bool isInterestBooking() const { return isInterestBooking(type);}
 
     // statics
     static const dbtable& getTableDef();
@@ -29,22 +31,16 @@ qlonglong contractId;
     static bool investInterest(const qlonglong contractId, const QDate date, const double amount);
     static bool payoutInterest(const qlonglong contractId, const QDate date, const double amount);
     static const QString typeName(booking::Type t);
+    static bool isInterestBooking(Type t);
+    bool executeBooking();
 private:
     static bool doBooking( const booking::Type, const qlonglong contractId, const QDate date, const double amount);
 };
 
 struct bookings
 {
-
-    bookings(qlonglong contractid, booking::Type type = booking::Type::non)
-        : contractId(contractid), type(type){};
-    QVector<booking> getBookings();
-    //QVector<data> getBookings(QDate from, QDate to = EndOfTheFuckingWorld);
-    double sumBookings();
-    //double sumBookings(QDate from, QDate to = EndOfTheFuckingWorld);
-private:
-    qlonglong contractId;
-    booking::Type type;
+    static QDate dateOfnextSettlement();
+    static QVector<booking> getBookings(qlonglong cid, QDate from =BeginingOfTime, QDate to =EndOfTheFuckingWorld);
 };
 
 #endif // BOOKING_H

@@ -21,10 +21,14 @@ private slots:
     void init();
     void cleanup();
     // the actual tests
-    void test_createBooking();
-    void test_createDeposits();
-    void test_randomActivations();
-
+    void test_isInterestBooking();
+    void test_dateONSettlement_noContracts();
+    void test_dateONSettlement_activatedContracts();
+    void test_dateONSettelment_contractsW_interestBookings00();
+    void test_dateONSettelment_contractsW_and_wo_interestBookings01();
+    void test_dateONSettelment_contractsW_and_wo_interestBookings02();
+    void test_dateONSettelment_contractsW_and_wo_interestBookings03();
+    void test_getBookings();
 };
 
 #endif // TEST_BOOKING_H

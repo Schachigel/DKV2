@@ -58,9 +58,9 @@ void wizTerminateContract_ConfirmationPage::initializePage()
     wizTerminateContract* wiz = dynamic_cast<wizTerminateContract*>(wizard());
     QString subtitle = "Der Wert des Vertrags beläuft sich auf %1 Euro. "
                        "Inclusive Zins müssen %2 Euro ausbezahlt werden.";
-    QString finalV =QString::number(wiz->c.futureValue(field("date").toDate()));
-    QString currentV =QString::number(wiz->c.currentValue());
-    subtitle = subtitle.arg(currentV).arg(finalV);
+//    QString finalV =QString::number(wiz->c.futureValue(field("date").toDate()));
+    QString currentV =QString::number(wiz->c.Value());
+//    subtitle = subtitle.arg(currentV).arg(finalV);
     setSubTitle(subtitle);
 }
 

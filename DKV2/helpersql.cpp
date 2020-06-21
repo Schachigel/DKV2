@@ -181,7 +181,7 @@ QVariant executeSingleValueSql(const dbfield& field, const QString& where, QSqlD
     }
 }
 
-QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbForeignKey> keys, const QString& incomingWhere)
+QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbForeignKey> keys, const QString& incomingWhere, const QString& order)
 {   //LOG_CALL;
 
     QString FieldList;
@@ -193,13 +193,13 @@ QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbFo
         if( f.tableName().isEmpty() || f.name().isEmpty())
             qCritical() << "selectQueryFromFields: missing table or field name";
         if( ! FieldList.isEmpty())
-            FieldList += ", ";
-        FieldList += f.tableName() + "." + f.name();
+            FieldList +=", ";
+        FieldList +=f.tableName() +"." +f.name();
 
         if( ! usedTables.contains(f.tableName())) {
             usedTables.insert(f.tableName());
             if( ! TableList.isEmpty())
-                TableList += ", ";
+                TableList +=", ";
             TableList += f.tableName();
         }
     }
@@ -207,12 +207,14 @@ QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbFo
         if( ! calculatedWhere.isEmpty()) calculatedWhere += " AND ";
         calculatedWhere += key.get_SelectSqpSnippet();
     }
-    QString Where = "WHERE %1 AND %2";
+    QString Where ="%1 AND %2";
     Where = Where.arg(incomingWhere.isEmpty() ? "true" : incomingWhere);
     Where = Where.arg(calculatedWhere.isEmpty() ? "true" : calculatedWhere);
 
-    QString Query = "SELECT %1 FROM %2 %3";
+    QString Query = "SELECT %1 FROM %2 WHERE %3";
     Query = Query.arg(FieldList).arg(TableList).arg(Where);
+    if( ! order.isEmpty())
+        Query = Query +" ORDER BY " +order;
     qInfo() << "selectQueryFromFields created Query: " << Query;
     return Query;
 }
@@ -283,9 +285,9 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
     }
     return result;
 }
-QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where)
+QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where, const QString& order)
 {
-    QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where);
+    QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where, order);
     qDebug() << "executeSql:\n" << sql;
 
     QSqlQuery q; q.setForwardOnly(true);

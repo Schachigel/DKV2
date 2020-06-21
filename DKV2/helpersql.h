@@ -25,11 +25,13 @@ QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db = QSqlDatabas
 QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where = "", QSqlDatabase db = QSqlDatabase::database());
 QVariant executeSingleValueSql(const dbfield&, const QString& where, QSqlDatabase db=QSqlDatabase::database());
 
-QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbForeignKey> keys =QVector<dbForeignKey>(), const QString& where = "");
+QString selectQueryFromFields(const QVector<dbfield>& fields,
+                              const QVector<dbForeignKey> keys =QVector<dbForeignKey>(),
+                              const QString& where ="", const QString& order ="");
 // QVector<QVariant> executeSingleColumnSql( const QString field, const QString table, const QString& where);
 QVector<QVariant> executeSingleColumnSql( const dbfield field, const QString& where="");
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where ="");
-QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where="");
+QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where="", const QString& order="");
 
 int getHighestRowId(const QString& tablename);
 

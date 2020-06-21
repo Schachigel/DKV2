@@ -162,7 +162,7 @@ void insert_defaultGmbHData( QSqlDatabase db )
 void insert_views( QSqlDatabase db)
 {
     QSqlQuery view(db);
-    QString WertAktiveVertraege = "CREATE VIEW 'WertAktiveVertraege' AS "
+    QString WertAktiveVertraege = "CREATE VIEW WertAktiveVertraege AS "
         "SELECT Vertraege.id AS id, Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, Vertraege.Kennung AS Vertragskennung, Vertraege.ZSatz/100. AS Zinssatz, "
         "(SELECT sum(Buchungen.betrag) FROM Buchungen "
         "WHERE Vertraege.id = Buchungen.VertragsId) AS Wert, "
@@ -176,7 +176,7 @@ void insert_views( QSqlDatabase db)
     if( !view.exec(WertAktiveVertraege))
         qCritical() << "View " << WertAktiveVertraege << " konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
 
-    QString WertPassiveVertraege = "CREATE VIEW 'WertPassiveVertraege' AS "
+    QString WertPassiveVertraege = "CREATE VIEW WertPassiveVertraege AS "
     "SELECT Vertraege.id AS id, "    // 0
     "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 1
     "Vertraege.Kennung AS Vertragskennung, " // 2
@@ -194,7 +194,7 @@ void insert_views( QSqlDatabase db)
     if( !view.exec(WertPassiveVertraege))
         qCritical() << "View " << WertAktiveVertraege << " konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
 
-    QString WertAlleVertraege = "CREATE VIEW 'WertAlleVertraege' AS "
+    QString WertAlleVertraege = "CREATE VIEW WertAlleVertraege AS "
                                 "SELECT * FROM WertAktiveVertraege "
                                 "UNION "
                                 "SELECT * FROM WertPassiveVertraege ";
@@ -202,39 +202,47 @@ void insert_views( QSqlDatabase db)
     if( !view.exec(WertAlleVertraege))
         qCritical() << "View " << WertAktiveVertraege << " konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
 
-    QString aktiveVertraege = "CREATE VIEW 'AktiveVertraege' AS "
+    QString aktiveVertraege = "CREATE VIEW AktiveVertraege AS "
             "SELECT DISTINCT Vertraege.* "
             "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id=buchungen.VertragsId ";
     view.exec("DROP VIEW 'AktiveVertraege'");
     if( !view.exec(aktiveVertraege))
         qCritical() << "View 'AktiveVertraege' konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
 
-    QString firstInterestDates = "CREATE VIEW 'firstInterestDates' AS "
-            "SELECT Vertraege.id, strftime('%Y-%m-%d', MIN(Datum), '1 year', 'start of year')  as NextInterestDate "
+    /* Wann muss die Abrechnung für Verträge gemacht werden, die noch keine Zinsabrechnung hatten? */
+    QString viewName_FirstAS("NextAnnualS_first");
+    QString firstInterestDates = "CREATE VIEW %1 AS "
+            "SELECT STRFTIME('%Y-%m-%d', MIN(Datum), '1 year', 'start of year')  as nextInterestDate "
             "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id = buchungen.VertragsId "
             /* buchungen von Verträgen für die es keine Zinsbuchungen gibt */
             "WHERE (SELECT count(*) FROM Buchungen WHERE (Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8) AND Buchungen.VertragsId=Vertraege.id)=0 "
             "GROUP BY Vertraege.id ";
-    view.exec("DROP VIEW 'firstInterestDates'");
-    if( !view.exec(firstInterestDates))
-        qCritical() << "View 'firstInterestDates' konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
+    view.exec(QString("DROP VIEW %1").arg(viewName_FirstAS));
+    if( !view.exec(firstInterestDates.arg(viewName_FirstAS)))
+        qCritical() << QString("View '%1' konnte nicht angelegt werden: ").arg(viewName_FirstAS) << view.lastError() << endl << view.lastQuery();
 
-    QString nextInterestDates = "CREATE VIEW 'nextInterestDates' AS "
-            "SELECT Vertraege.id, strftime('%Y-%m-%d', MAX(Datum), '1 year', 'start of year') AS NextInterestDate "
-            "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id=buchungen.VertragsId "
-            "WHERE Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8 AND Buchungen.VertragsId=Vertraege.id=0 ";
-    view.exec("DROP VIEW 'nextInterestDates'");
-    if( !view.exec(nextInterestDates))
-        qCritical() << "View 'nextInterestDates' konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
+    /* Wann muss die Abrechnung für Verträge gemacht werden, die bereits Zinsabrechnung(en) hatten? */
+    QString viewName_NextAS("NextAnnualS_next");
+    QString nextInterestDates = "CREATE VIEW %1 AS "
+        "SELECT STRFTIME('%Y-%m-%d', MAX(Datum), '1 year', 'start of year') as nextInterestDate "
+        "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id=buchungen.VertragsId "
+        "WHERE Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8 "
+        "GROUP BY Buchungen.VertragsId "
+        "ORDER BY Datum ASC LIMIT 1";
 
-    QString nextInterestDate = "CREATE VIEW 'nextInterestDate' AS "
-            "SELECT MIN(NextInterestDate) AS date FROM "
-            "(SELECT * FROM firstInterestDates "
-            "UNION SELECT * from nextInterestDates)";
+    view.exec(QString("DROP VIEW '%1'").arg(viewName_NextAS));
+    if( !view.exec(nextInterestDates.arg(viewName_NextAS)))
+        qCritical() << QString("View '%1' konnte nicht angelegt werden: ").arg(viewName_NextAS) << view.lastError() << endl << view.lastQuery();
 
-    view.exec("DROP VIEW 'nextInterestDate'");
+    QString viewName_NextAS_allContracts("NextAnnualSettlement");
+    QString nextInterestDate = QString("CREATE VIEW %1 AS "
+            "SELECT MIN(nextInterestDate) AS date FROM "
+            "(SELECT nextInterestDate FROM %2 "
+            "UNION SELECT nextInterestDate from %3)").arg(viewName_NextAS_allContracts).arg(viewName_FirstAS).arg(viewName_NextAS);
+
+    view.exec(QString("DROP VIEW %1").arg(viewName_NextAS_allContracts));
     if( !view.exec(nextInterestDate))
-        qCritical() << "View 'nextInterestDate' konnte nicht angelegt werden: " << view.lastError() << endl << view.lastQuery();
+        qCritical() << QString("View '%1' konnte nicht angelegt werden: ").arg(viewName_NextAS_allContracts) << view.lastError() << endl << view.lastQuery();
 }
 
 bool create_DK_TablesAndContent(QSqlDatabase db)
