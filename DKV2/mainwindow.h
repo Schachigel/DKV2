@@ -93,10 +93,6 @@ private slots:
 
     void on_action_cmenu_go_contracts_triggered();
 
-    void on_tblViewBookingsSelectionChanged(const QItemSelection &, const QItemSelection &);
-
-    void on_actionShow_Bookings_triggered();
-
     void on_action_menu_contracts_anual_interest_settlement_triggered();
 
     void on_leBetrag_editingFinished();

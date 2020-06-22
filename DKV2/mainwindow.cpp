@@ -63,7 +63,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex & )
 {
-    // todo: do all init only once, this function should only do the 
+    // todo: do all init only once, this function should only do the
     // setFilter and the select()
     QModelIndex indexIndex = newI.siblingAtColumn(0);
     int index =ui->contractsTableView->model()->data(indexIndex).toInt();
@@ -76,6 +76,7 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
     model->select();
     ui->bookingsTableView->hideColumn(0);
     ui->bookingsTableView->hideColumn(1);
+    ui->bookingsTableView->setItemDelegateForColumn(3, new EuroItemFormatter);
 }
 // generell functions
 void MainWindow::setSplash(QSplashScreen* s)
@@ -1039,32 +1040,6 @@ void MainWindow::on_action_menu_debug_show_log_triggered()
 void MainWindow::on_actionDatenbank_Views_schreiben_triggered()
 {
     insert_views(QSqlDatabase::database());
-}
-// bookings- bisher Debug stuff
-void MainWindow::on_tblViewBookingsSelectionChanged(const QItemSelection& to, const QItemSelection& )
-{   LOG_CALL;
-    QString json =ui->tblViewBookings->model()->data(to.indexes().at(0).siblingAtColumn(6)).toString();
-    ui->lblYson->setText(json);
-}
-void MainWindow::on_actionShow_Bookings_triggered()
-{   LOG_CALL;
-
-    QSqlRelationalTableModel* model = new QSqlRelationalTableModel(ui->tblViewBookings);
-    model->setTable("Buchungen");
-    model->setSort(0,Qt::DescendingOrder );
-    model->setRelation(2, QSqlRelation("Buchungsarten", "id", "Art"));
-
-    model->select();
-
-    ui->tblViewBookings->setModel(model);
-    ui->tblViewBookings->hideColumn(6);
-    ui->tblViewBookings->resizeColumnsToContents();
-
-    connect(ui->tblViewBookings->selectionModel(),
-        SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)),
-            this, SLOT(on_tblViewBookingsSelectionChanged(const QItemSelection&, const QItemSelection&)));
-
-    ui->stackedWidget->setCurrentIndex(bookingsListIndex);
 }
 // about
 void MainWindow::on_action_about_DKV2_triggered()
