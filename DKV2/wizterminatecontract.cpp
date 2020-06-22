@@ -59,7 +59,7 @@ void wizTerminateContract_ConfirmationPage::initializePage()
     QString subtitle = "Der Wert des Vertrags beläuft sich auf %1 Euro. "
                        "Inclusive Zins müssen %2 Euro ausbezahlt werden.";
 //    QString finalV =QString::number(wiz->c.futureValue(field("date").toDate()));
-    QString currentV =QString::number(wiz->c.Value());
+    QString currentV =QString::number(wiz->c.value());
 //    subtitle = subtitle.arg(currentV).arg(finalV);
     setSubTitle(subtitle);
 }

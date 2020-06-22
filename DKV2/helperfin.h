@@ -4,15 +4,14 @@
 #include <QDate>
 #include <QRegExpValidator>
 
-double rounded(const double d, const int stellen = 2);
 double round2(const double d);
 int ctFromEuro( const double d);
 double euroFromCt( const int i);
 
-int TageBisJahresende_a(const QDate& d);
 int TageBisJahresende(const QDate& d);
-int TageSeitJahresAnfang_a(const QDate& d);
+int TageBisJahresende_lookup(const QDate& d);
 int TageSeitJahresAnfang(const QDate& d);
+int TageSeitJahresAnfang_lookup(const QDate& d);
 
 double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa=true);
 

@@ -5,7 +5,8 @@
 #include "contract.h"
 #include "booking.h"
 
-/* static */ const dbtable& contract::getTableDef()
+// statics & friends
+const dbtable& contract::getTableDef()
 {
     static dbtable contractTable("Vertraege");
     if( 0 != contractTable.Fields().size())
@@ -27,8 +28,7 @@
 
     return contractTable;
 }
-
-/* static */ const dbtable& contract::getTableDef_deletedContracts()
+const dbtable& contract::getTableDef_deletedContracts()
 {
     static dbtable exContractTable("exVertraege");
     if( 0 != exContractTable.Fields().size())
@@ -42,31 +42,63 @@
                          dkdbstructur["Kreditoren"]["id"], "ON DELETE CASCADE"));
     return exContractTable;
 }
-
-
-bool contract::fromDb(qlonglong i)
+bool contract::remove(qlonglong id)
 {
-    QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), "id=" + QString::number(i));
-    return td.setValues(rec);
-}
+    QString sql="DELETE FROM Vertraege WHERE id=" + QString::number(id);
+    QSqlQuery deleteQ;
+    if( deleteQ.exec(sql))
+        return true;
+    if( "19" == deleteQ.lastError().nativeErrorCode())
+        qDebug() << "Delete contract failed due to refer. integrity rules" << endl << deleteQ.lastQuery();
+    else
+        qCritical() << "Delete contract failed "<< deleteQ.lastError() << endl << deleteQ.lastQuery();
+    return false;
 
-bool contract::validateAndSaveNewContract(QString& meldung)
-{   LOG_CALL;
-    meldung.clear();
-    if( plannedInvest() <=0)
-        meldung = "Der Kreditbetrag muss größer als null sein";
-    else if( creditorId() <= 0 )
-        meldung = "Wähle den Kreditgeber. Ist die Auswahl leer muss zuerst ein Kreditor angelegt werden";
-    else if( label() == "")
-        meldung= "Du solltest eine eindeutige Kennung vergeben, damit der Kredit besser zugeordnet werden kann";
-    if( !meldung.isEmpty())
-        return false;
-
-    bool buchungserfolg = saveNewContract();
-    if( !buchungserfolg)
-        meldung = "Der Vertrag konnte nicht gespeichert werden. Ist die Kennung des Vertrags eindeutig?";
-    return buchungserfolg;
 }
+// construction
+void contract::init()
+{
+    setId(-1);
+    //setPlannedEndDate(EndOfTheFuckingWorld);
+    setNoticePeriod(6);
+    setReinvesting(true);
+    setConclusionDate(QDate::currentDate());
+    setInterest100th(150);
+    setPlannedInvest(1000000);
+}
+contract::contract(qlonglong i) : td(getTableDef())
+{
+    if( i >0) {
+        QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), "id=" + QString::number(i));
+        if( td.setValues(rec))
+            return;
+        else
+            qCritical() << "contract from id could not be created";
+    }
+    init();
+}
+// interface
+double contract::value() const
+{
+    return value(EndOfTheFuckingWorld);
+}
+double contract::value(QDate d) const
+{
+    // what is the value of the contract at a given time?
+    QString where = "VertragsId=%1 AND BuchungsArt!=%2 AND Datum <='%3'";
+    where =where.arg(id());
+    where =where.arg(booking::Type::interestPayout);
+    where =where.arg(d.toString(Qt::ISODate));
+    QVariant v = executeSingleValueSql("SUM(Betrag)", "Buchungen", where);
+    if( v.isValid())
+        return euroFromCt(v.toInt());
+    return 0.;
+}
+QDate contract::latestBooking() const
+{
+    return executeSingleValueSql("MAX(Datum)", "Buchungen", "VertragsId="+QString::number(id())).toDate();
+}
+// write to db
 int  contract::saveNewContract()
 {   LOG_CALL;
     TableDataInserter ti(dkdbstructur["Vertraege"]);
@@ -88,31 +120,25 @@ int  contract::saveNewContract()
     qCritical() << "Fehler beim Einfügen eines neuen Vertrags";
     return -1;
 }
+bool contract::validateAndSaveNewContract(QString& meldung)
+{   LOG_CALL;
+    meldung.clear();
+    if( plannedInvest() <=0)
+        meldung = "Der Kreditbetrag muss größer als null sein";
+    else if( creditorId() <= 0 )
+        meldung = "Wähle den Kreditgeber. Ist die Auswahl leer muss zuerst ein Kreditor angelegt werden";
+    else if( label() == "")
+        meldung= "Du solltest eine eindeutige Kennung vergeben, damit der Kredit besser zugeordnet werden kann";
+    if( !meldung.isEmpty())
+        return false;
 
-double contract::Value() const
-{
-    return getValue(EndOfTheFuckingWorld);
+    bool buchungserfolg = saveNewContract();
+    if( !buchungserfolg)
+        meldung = "Der Vertrag konnte nicht gespeichert werden. Ist die Kennung des Vertrags eindeutig?";
+    return buchungserfolg;
 }
-
-double contract::getValue(QDate d) const
-{
-    // what is the value of the contract at a given time?
-    QString where = "VertragsId=%1 AND BuchungsArt!=%2 AND Datum <='%3'";
-    where =where.arg(id());
-    where =where.arg(booking::Type::interestPayout);
-    where =where.arg(d.toString(Qt::ISODate));
-    QVariant v = executeSingleValueSql("SUM(Betrag)", "Buchungen", where);
-    if( v.isValid())
-        return euroFromCt(v.toInt());
-    return 0.;
-}
-
-QDate contract::latestBooking() const
-{
-    return executeSingleValueSql("MAX(Datum)", "Buchungen", "VertragsId="+QString::number(id())).toDate();
-}
-
-bool contract::activate(int amount_ct, const QDate& aDate) const
+// contract activation
+bool contract::activate(const QDate& aDate, int amount_ct) const
 {   LOG_CALL;
     Q_ASSERT (id()>=0);
     if( isActive()) {
@@ -130,41 +156,28 @@ bool contract::activate(int amount_ct, const QDate& aDate) const
     qInfo() << "Successfully activated contract " << id() << "[" << aDate << ", " << amount_ct << " ct]";
     return true;
 }
-bool contract::activate( double amount, const QDate& aDate) const
+bool contract::activate( const QDate& aDate, double amount) const
 {
     int ct = ctFromEuro(amount);
-    return activate(ct, aDate);
-}
-
-/* static */ bool contract::isActive( qlonglong id)
-{
-    QString sql = "SELECT count(*) FROM Buchungen WHERE VertragsId=" + QString::number(id);
-    return 0 < executeSingleValueSql(sql).toInt();
+    return activate(aDate, ct);
 }
 bool contract::isActive() const
 {
-    return isActive(id());
+    QString sql = "SELECT count(*) FROM Buchungen WHERE VertragsId=" + QString::number(id());
+    return 0 < executeSingleValueSql(sql).toInt();
 }
 QDate contract::activationDate() const
 {
     QString where = "Buchungen.VertragsId=%1";
     return executeSingleValueSql("MIN(Datum)", "Buchungen", where.arg(id())).toDate();
 }
-
-//QDate contract::latestInterestPaymentDate() const
-//{
-//    //    if( ! isActive()) return QDate();
-//    QString where ="VertragsId=%1 AND (Buchungen.BuchungsArt=%2 OR Buchungen.BuchungsArt=%3)";
-//    where = where.arg(id()).arg(booking::Type::interestPayout).arg(booking::Type::interestDeposit);
-//    return executeSingleValueSql("MAX(Buchungen.Datum)", "Buchungen", where).toDate();
-//}
-
+// booking actions
 int contract::annualSettlement() const
 {   LOG_CALL;
     if( ! isActive()) return 0;
     QDate lastBooking =latestBooking();
     QDate target =QDate(lastBooking.year() +1, 1, 1);
-    double zins =ZinsesZins(interestRate(), Value(), lastBooking, target);
+    double zins =ZinsesZins(interestRate(), value(), lastBooking, target);
     if( reinvesting()
             ? booking::investInterest(id(), target, zins)
             : booking::payoutInterest(id(), target, -1*zins)) {
@@ -175,7 +188,6 @@ int contract::annualSettlement() const
         return 0;
     }
 }
-
 bool contract::bookInterest(QDate d) const
 {   LOG_CALL;
     if( ! d.isValid()) {
@@ -197,7 +209,7 @@ bool contract::bookInterest(QDate d) const
         }
         lastBooking =latestBooking();
     }
-    double zins = ZinsesZins(interestRate(), Value(), lastBooking, d);
+    double zins = ZinsesZins(interestRate(), value(), lastBooking, d);
     if( reinvesting()
         ? booking::investInterest(id(), d, zins)
         : booking::payoutInterest(id(), d, -1.*zins))
@@ -210,8 +222,7 @@ bool contract::bookInterest(QDate d) const
     QSqlDatabase::database().rollback();
     return false;
 }
-
-bool contract::deposit(double amount, QDate d) const
+bool contract::deposit(QDate d, double amount) const
 {   LOG_CALL;
     Q_ASSERT(amount > 0);
     if( ! d.isValid()) {
@@ -238,11 +249,10 @@ bool contract::deposit(double amount, QDate d) const
     }
     return true;
 }
-
-bool contract::payout(double amount, QDate d) const
+bool contract::payout(QDate d, double amount) const
 {   LOG_CALL;
     if( amount < 0) amount *= -1.;
-    if( amount > Value()) {
+    if( amount > value()) {
         qCritical() << "Payout impossible. The account has not enough coverage";
         return false;
     }
@@ -263,25 +273,11 @@ bool contract::payout(double amount, QDate d) const
     }
     return booking::makePayout(id(), d, amount);
 }
-
-bool contract::remove() const {
-    return contract::remove(id());
-}
-
-/* static */ bool contract::remove(qlonglong id)
+bool contract::finalize(const QDate& /*finDate*/, double& /*finInterest*/, double& /*finPayout*/)
 {
-    QString sql="DELETE FROM Vertraege WHERE id=" + QString::number(id);
-    QSqlQuery deleteQ;
-    if( deleteQ.exec(sql))
-        return true;
-    if( "19" == deleteQ.lastError().nativeErrorCode())
-        qDebug() << "Delete contract failed due to refer. integrity rules" << endl << deleteQ.lastQuery();
-    else
-        qCritical() << "Delete contract failed "<< deleteQ.lastError() << endl << deleteQ.lastQuery();
-    return false;
-
+    return true;
 }
-
+// test helper
 contract saveRandomContract(qlonglong creditorId)
 {   LOG_CALL;
     static QRandomGenerator *rand = QRandomGenerator::system();
@@ -332,6 +328,6 @@ void activateRandomContracts(int percent)
         activationDate = activationDate.addDays(rand->bounded(50));
 
         contract c(contracts[i].value("id").toInt());
-        c.activate(amount, activationDate);
+        c.activate(activationDate, amount);
     }
 }

@@ -14,11 +14,17 @@
 
 struct contract
 {
+    // static & friends
     static const dbtable& getTableDef();
     static const dbtable& getTableDef_deletedContracts();
+    static bool remove(qlonglong id);
+    inline friend bool operator==(const contract& lhs, const contract& rhs)
+    {   // friend functions - even in the class definition - are not member
+        return lhs.td == rhs.td;
+    }
     // construction
-    contract() :td(getTableDef()) { setId(-1);};
-    contract(qlonglong id) : td(getTableDef()) { fromDb(id); };
+    contract(qlonglong id =-1);
+    void init();
     // getter & setter
     void setId(qlonglong id) { td.setValue("id", id);}
     qlonglong id() const { return td.getValue("id").toLongLong();}
@@ -30,7 +36,6 @@ struct contract
     void setInterest100th( int percentpercent) {td.setValue("ZSatz", percentpercent);}
     void setInterestRate( double percent) {td.setValue("ZSatz", int(percent*100));}
     double interestRate() const { return double(td.getValue("ZSatz").toInt())/100.;}
-    //int interestRate100th() const { return td.getValue("ZSatz").toInt()*100;}
     void setPlannedInvest(double d) { td.setValue("Betrag", ctFromEuro(d));}
     double plannedInvest() const { return euroFromCt( td.getValue("Betrag").toInt());}
     void setReinvesting( bool b =true) { td.setValue("thesaurierend", b);}
@@ -43,42 +48,29 @@ struct contract
     QDate conclusionDate() const { return td.getValue("Vertragsdatum").toDate();}
 
     // interface
-    bool validateAndSaveNewContract(QString& meldung);
-    int saveNewContract();
-    double Value() const;
-    double getValue(QDate d) const;
+    double value() const;
+    double value(QDate d) const;
     QDate latestBooking() const;
-
-    bool activate(int amount_ct, const QDate& aDate) const;
-    bool activate(double amount, const QDate& aDate) const;
-    static bool isActive( qlonglong id);
+    // write to db
+    int saveNewContract();
+    bool validateAndSaveNewContract(QString& meldung);
+    // contract activation
+    bool activate(const QDate& aDate, int amount_ct) const;
+    bool activate(const QDate& aDate, double amount) const;
     bool isActive() const;
     QDate activationDate() const;
-//    QDate latestInterestPaymentDate() const;
-
+    // booking actions
     int annualSettlement() const;
     bool bookInterest(QDate d) const;
-    bool deposit(double amount, QDate d) const;
-    bool payout(double amount, QDate d) const;
-
-    bool remove() const;
-    static bool remove(qlonglong id);
-
-//    bool bookAnnualInterest(const QDate& YearEnd);
-//    bool cancelActiveContract(const QDate& kTermin);
-
-    inline friend bool operator==(const contract& lhs, const contract& rhs)
-    {
-        return lhs.td == rhs.td;
-    }
+    bool deposit(QDate d, double amount) const;
+    bool payout(QDate d, double amount) const;
+    bool finalize(const QDate& finDate, double& finInterest, double& finPayout);
 private:
     // data
     TableDataInserter td;
-    // helper
-    bool fromDb(qlonglong i);
 };
 
-// for testing
+// test helper
 contract saveRandomContract(qlonglong creditorId);
 void saveRandomContracts(int count);
 void activateRandomContracts(int percent);

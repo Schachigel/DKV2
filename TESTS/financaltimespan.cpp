@@ -2,7 +2,7 @@
 
 #include "financaltimespan.h"
 
-int TageBisJahresende(const QDate& d)
+int TageBisJahresende_lookup(const QDate& d)
 {
     if( QDate::isLeapYear(d.year()))
     {
@@ -16,7 +16,7 @@ int TageBisJahresende(const QDate& d)
     }
 }
 
-int TageSeitJahresAnfang(const QDate& d)
+int TageSeitJahresAnfang_lookup(const QDate& d)
 {
     if( QDate::isLeapYear(d.year()))
     {

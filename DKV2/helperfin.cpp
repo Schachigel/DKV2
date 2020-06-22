@@ -9,12 +9,6 @@ double round2(const double d)
 {
     return (qRound(d * 100.))/100.;
 }
-
-int TageBisMonatsende_exclusiv(const QDate& d)
-{
-    if( d.day() == 31) return 0;
-    return 30 -d.day();
-}
 int ctFromEuro( const double d)
 {
     if( d>=0)
@@ -26,14 +20,8 @@ double euroFromCt( const int i)
     return double (i)/100.;
 }
 
-int TageSeitMonatsAnfang_inclusive(const QDate& d)
-{
-    if( d.day() == 31) return 30;
-    return d.day();
-}
-
 int TageZwischen(const QDate& von, const QDate& bis)
-{
+{   // finanzmathematischer Abstand zwischen zwei Daten im selben Jahr
     if( bis == von) return 0;
     Q_ASSERT( von.year() == bis.year());
     Q_ASSERT(bis > von);
@@ -53,9 +41,9 @@ int TageZwischen(const QDate& von, const QDate& bis)
     return tageErsterMonat + tageVolleMonate + tageLetzterMonat;
 }
 
-int TageBisJahresende_a(const QDate& d)
+int TageBisJahresende(const QDate& d)
 {
-    if( d.day()==d.daysInMonth())
+    if( d.day()==d.daysInMonth()) // letzter Tag des Monats
     {
         if( d.month()==2)
             // Feb hat 30 Tage (da Vertrag über Feb hinaus geht)
@@ -70,14 +58,14 @@ int TageBisJahresende_a(const QDate& d)
     return 30*month +days;
 }
 
-int TageSeitJahresAnfang_a(const QDate& d)
+int TageSeitJahresAnfang(const QDate& d)
 {
     return 30* (d.month()-1) + ((d.day() == 31) ? 30 : d.day());
 }
 
 double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)
 {
-    qDebug().noquote() << "\n\nZinsberechnung von " << von << " bis " << bis << QString((thesa)? " thesaurierend" : ("bei Zinsauszahlungen"));
+    qDebug().noquote() << "\n\nZinsberechnung von " << von << " bis " << bis << QString((thesa)? " thesaurierend\n" : ("ausschüttend\n"));
     if( !(von.isValid() && bis.isValid()) || ( von > bis)) {
         qCritical() << "Zinseszins kann nicht berechnet werden - ungültige Parameter";
         return -1.;
@@ -85,10 +73,10 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
     if( wert <= 0.) return 0.;
 
     if( von.year() == bis.year()) {
-        return round2(double(TageZwischen(von, bis))/360. *zins/100. *wert);
+        return round2(TageZwischen(von, bis)/360. *zins/100. *wert);
     }
-    int TageImErstenJahr = TageBisJahresende_a(von); // first day no intrest
-    double ZinsImErstenJahr = double(TageImErstenJahr)/360. *zins/100. *wert;
+    int TageImErstenJahr = TageBisJahresende(von); // first day no intrest
+    double ZinsImErstenJahr = TageImErstenJahr/360. *zins/100. *wert;
     double gesamtZins (ZinsImErstenJahr);
 
     double zwischenWert = (thesa) ? (wert+ZinsImErstenJahr) : (wert);
@@ -99,8 +87,8 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
         gesamtZins += JahresZins; ZinsVolleJahre += JahresZins;
         zwischenWert = (thesa) ? (zwischenWert+JahresZins) : zwischenWert;
     }
-    int TageImLetztenJahr = TageSeitJahresAnfang_a(bis);
-    double ZinsRestjahr = double(TageImLetztenJahr)/360. *zins/100. *zwischenWert;
+    int TageImLetztenJahr = TageSeitJahresAnfang(bis);
+    double ZinsRestjahr = TageImLetztenJahr/360. *zins/100. *zwischenWert;
     gesamtZins += ZinsRestjahr;
     gesamtZins = round2(gesamtZins);
     qDebug().noquote()

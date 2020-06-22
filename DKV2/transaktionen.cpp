@@ -31,7 +31,7 @@ void activateContract(qlonglong cid)
         qInfo() << "contract activation cancled by the user";
         return;
     }
-    if( !v.activate(wiz.field("amount").toDouble(), wiz.field("date").toDate())) {
+    if( ! v.activate(wiz.field("date").toDate(), wiz.field("amount").toDouble())) {
         qCritical() << "activation failed";
         Q_ASSERT(true);
     }
@@ -53,7 +53,7 @@ void changeContractValue(qlonglong cid)
     wiz.setFont(f);
     wiz.creditorName = cre.firstname() + " " + cre.lastname();
     wiz.contractLabel= con.label();
-    wiz.currentAmount= con.Value();
+    wiz.currentAmount= con.value();
     wiz.earlierstDate = con.latestBooking().addDays(1);
     wiz.setField("deposit_notPayment", QVariant(true));
 
@@ -63,9 +63,9 @@ void changeContractValue(qlonglong cid)
         QDate date {wiz.field("date").toDate()};
         qDebug() << wiz.field("deposit_notPayment") << ", " << amount << ", " << date;
         if( wiz.field("deposit_notPayment").toBool()) {
-            con.deposit(amount, date);
+            con.deposit(date, amount);
         } else {
-            con.payout(amount, date);
+            con.payout(date, amount);
         }
     } else
         qInfo() << "contract change was cancled by the user";
@@ -75,8 +75,7 @@ void deleteInactiveContract(qlonglong cid)
 {   LOG_CALL;
     // contracts w/o bookings can be deleted
 // todo: wiz ui with confirmation?
-    contract v(cid);
-    v.remove();
+    contract::remove(cid);
 }
 
 void terminateContract(qlonglong cid)

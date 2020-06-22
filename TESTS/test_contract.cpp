@@ -49,10 +49,10 @@ void test_contract::test_activateContract()
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
     QVERIFY(cont.isActive() == false);
-    QVERIFY(cont.activate(cont.plannedInvest(), QDate::currentDate()));
+    QVERIFY(cont.activate(QDate::currentDate(), cont.plannedInvest()));
     QVERIFY(cont.isActive() == true);
     // activating an active contract fails:
-    QVERIFY(false == cont.activate(cont.plannedInvest(), QDate::currentDate()));
+    QVERIFY(false == cont.activate(QDate::currentDate(), cont.plannedInvest()));
 }
 
 void test_contract::test_randomContract()
@@ -83,10 +83,10 @@ void test_contract::deposit_inactive_contract_fails()
 {
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
-    QVERIFY( ! cont.deposit(1000., QDate::currentDate()));
+    QVERIFY( ! cont.deposit(QDate::currentDate(), 1000.));
     QDate aDate = QDate::currentDate();
-    cont.activate(1000., aDate);
-    QVERIFY(cont.deposit(1000., aDate.addMonths(3)));
+    cont.activate(aDate, 1000.);
+    QVERIFY(cont.deposit(aDate.addMonths(3), 1000.));
 }
 
 void test_contract::payout_inactive_contract_fails()
@@ -95,17 +95,17 @@ void test_contract::payout_inactive_contract_fails()
     contract cont(saveRandomContract(c.id()));
     cont.setReinvesting();
     QDate aDate = QDate::currentDate();
-    QVERIFY( ! cont.payout(1000., aDate));
-    cont.activate(1000., aDate);
-    QVERIFY(cont.deposit(500., aDate.addDays(1)));
+    QVERIFY( ! cont.payout(aDate, 1000.));
+    cont.activate(aDate, 1000.);
+    QVERIFY(cont.deposit(aDate.addDays(1), 500.));
 }
 
 void test_contract::too_high_payout_fails()
 {
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
-    cont.activate(1000., QDate::currentDate());
-    QVERIFY( ! cont.payout(1001., QDate::currentDate().addDays(1)));
+    cont.activate(QDate::currentDate(), 1000.);
+    QVERIFY( ! cont.payout(QDate::currentDate().addDays(1), 1001.));
 }
 
 void test_contract::unsequenced_bookings_fail()
@@ -113,11 +113,11 @@ void test_contract::unsequenced_bookings_fail()
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
     QDate aDate = QDate::currentDate();
-    cont.activate(1000., aDate);
-    QVERIFY( ! cont.deposit(1000., aDate));
-    QVERIFY( ! cont.deposit(1000., aDate.addDays(-1)));
-    QVERIFY( ! cont.payout(100., aDate));
-    QVERIFY( ! cont.payout(100., aDate.addDays(-1)));
+    cont.activate(aDate, 1000.);
+    QVERIFY( ! cont.deposit(aDate, 1000.));
+    QVERIFY( ! cont.deposit(aDate.addDays(-1), 1000.));
+    QVERIFY( ! cont.payout(aDate, 100.));
+    QVERIFY( ! cont.payout(aDate.addDays(-1), 100.));
 }
 
 void test_contract::test_annualSettlement_inactive_fails()
@@ -128,9 +128,9 @@ void test_contract::test_annualSettlement_inactive_fails()
     cont.setReinvesting(true);
     QVERIFY( ! cont.annualSettlement());
 
-    cont.activate(1000., QDate(2019, 7, 1));
+    cont.activate(QDate(2019, 7, 1), 1000.);
     QCOMPARE(cont.annualSettlement(), 2020);
-    QCOMPARE(cont.Value(), 1005.);
+    QCOMPARE(cont.value(), 1005.);
 }
 
 void test_contract::test_annualSettlement_fullYear()
@@ -140,9 +140,9 @@ void test_contract::test_annualSettlement_fullYear()
     cont.setInterest100th(100);
     cont.setReinvesting(true);
 
-    cont.activate(1000., QDate(2019, 1, 1));
+    cont.activate(QDate(2019, 1, 1), 1000.);
     QCOMPARE(cont.annualSettlement(), 2020);
-    QCOMPARE(cont.Value(), 1010.);
+    QCOMPARE(cont.value(), 1010.);
 }
 
 void test_contract::test_annualSettlement_twoYear()
@@ -152,10 +152,10 @@ void test_contract::test_annualSettlement_twoYear()
     cont.setInterest100th(100);
     cont.setReinvesting(true);
 
-    cont.activate(1000., QDate(2019, 1, 1));
+    cont.activate(QDate(2019, 1, 1), 1000.);
     QCOMPARE(cont.annualSettlement(), 2020);
     QCOMPARE(cont.annualSettlement(), 2021);
-    QCOMPARE(cont.Value(), 1020.1);
+    QCOMPARE(cont.value(), 1020.1);
 }
 
 void test_contract::test_deposit01()
@@ -164,9 +164,9 @@ void test_contract::test_deposit01()
     contract cont(saveRandomContract(c.id()));
     cont.setInterestRate(2.0);
     cont.setReinvesting(true);
-    cont.activate(1000., QDate(2019, 1, 1));
-    cont.deposit(1000., QDate(2019, 7, 1));
-    QCOMPARE(cont.Value(), 2010.);
+    cont.activate(QDate(2019, 1, 1), 1000.);
+    cont.deposit(QDate(2019, 7, 1), 1000.);
+    QCOMPARE(cont.value(), 2010.);
 }
 
 void test_contract::test_deposit_wSettlement()
@@ -175,9 +175,9 @@ void test_contract::test_deposit_wSettlement()
     contract cont(saveRandomContract(c.id()));
     cont.setInterestRate(2.0);
     cont.setReinvesting(true);
-    cont.activate(1000., QDate(2019, 1, 1));
-    cont.deposit(1000., QDate(2020, 7, 1));
-    QCOMPARE(cont.Value(), 2030.2);
+    cont.activate(QDate(2019, 1, 1), 1000.);
+    cont.deposit(QDate(2020, 7, 1), 1000.);
+    QCOMPARE(cont.value(), 2030.2);
     QCOMPARE(bookings::getBookings(cont.id()).count(), 4);
 }
 
@@ -187,9 +187,9 @@ void test_contract::test_payout()
     contract cont(saveRandomContract(c.id()));
     cont.setInterestRate(2.0);
     cont.setReinvesting(true);
-    cont.activate(1000., QDate(2019, 1, 1));
-    cont.payout(500., QDate(2019, 7, 1));
-    QCOMPARE(cont.Value(), 510.);
+    cont.activate(QDate(2019, 1, 1), 1000.);
+    cont.payout(QDate(2019, 7, 1), 500.);
+    QCOMPARE(cont.value(), 510.);
 }
 
 void test_contract::test_payout_wSettlement()
@@ -198,9 +198,9 @@ void test_contract::test_payout_wSettlement()
     contract cont(saveRandomContract(c.id()));
     cont.setInterestRate(2.0);
     cont.setReinvesting(true);
-    cont.activate(1000., QDate(2019, 1, 1));
-    cont.payout(500., QDate(2020, 7, 1));
-    QCOMPARE(cont.Value(), 530.2);
+    cont.activate(QDate(2019, 1, 1), 1000.);
+    cont.payout(QDate(2020, 7, 1), 500.);
+    QCOMPARE(cont.value(), 530.2);
     QCOMPARE(bookings::getBookings(cont.id()).count(), 4);
 }
 
@@ -210,9 +210,9 @@ void test_contract::test_activationDate()
     contract cont(saveRandomContract(c.id()));
     QDate aDate = QDate(2020, 5, 1);
     QCOMPARE(cont.activationDate(), QDate());
-    cont.activate(1000., aDate);
+    cont.activate(aDate, 1000.);
     QCOMPARE(cont.activationDate(), aDate);
-    cont.deposit(1000., aDate.addMonths(6));
+    cont.deposit(aDate.addMonths(6), 1000.);
     QCOMPARE(cont.activationDate(), aDate);
     booking::investInterest(cont.id(), QDate(2021, 1, 1), 10.);
     QCOMPARE(cont.activationDate(), aDate);
@@ -252,14 +252,14 @@ void test_contract::test_getValue_byDate()
     cont.setReinvesting();
     QDate aDate = QDate(2020, 5, 1);
 
-    cont.activate(1000., aDate);
-    QCOMPARE(cont.getValue(aDate), 1000.);
-    QCOMPARE(cont.getValue(aDate.addMonths(1)), 1000.);
+    cont.activate(aDate, 1000.);
+    QCOMPARE(cont.value(aDate), 1000.);
+    QCOMPARE(cont.value(aDate.addMonths(1)), 1000.);
 
-    cont.deposit(1000., aDate.addMonths(6)); // 1.11.
-    QCOMPARE(cont.getValue(aDate.addMonths(7)), 2005.);
-    cont.payout(100, aDate.addYears(2));
-    QCOMPARE(cont.Value(), 1935.18); // verified in excel
+    cont.deposit(aDate.addMonths(6), 1000.); // 1.11.
+    QCOMPARE(cont.value(aDate.addMonths(7)), 2005.);
+    cont.payout(aDate.addYears(2), 100);
+    QCOMPARE(cont.value(), 1935.18); // verified in excel
 }
 
 void test_contract::test_getValue_byDate_wInterestPayout()
@@ -271,12 +271,12 @@ void test_contract::test_getValue_byDate_wInterestPayout()
     cont.setReinvesting(false);
     QDate aDate = QDate(2020, 5, 1);
 
-    cont.activate(1000., aDate);
-    QCOMPARE(cont.getValue(aDate), 1000.);
-    QCOMPARE(cont.getValue(aDate.addMonths(1)), 1000.);
+    cont.activate(aDate, 1000.);
+    QCOMPARE(cont.value(aDate), 1000.);
+    QCOMPARE(cont.value(aDate.addMonths(1)), 1000.);
 
-    cont.deposit(1000., aDate.addMonths(6)); // 1.11.
-    QCOMPARE(cont.getValue(aDate.addMonths(7)), 2000.);
-    cont.payout(100, aDate.addYears(2));
-    QCOMPARE(cont.Value(), 1900.); // verified in excel
+    cont.deposit(aDate.addMonths(6), 1000.); // 1.11.
+    QCOMPARE(cont.value(aDate.addMonths(7)), 2000.);
+    cont.payout(aDate.addYears(2), 100);
+    QCOMPARE(cont.value(), 1900.); // verified in excel
 }
