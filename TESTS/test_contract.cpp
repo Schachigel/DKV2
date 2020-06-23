@@ -169,6 +169,17 @@ void test_contract::test_deposit01()
     QCOMPARE(cont.value(), 2010.);
 }
 
+void test_contract::test_depositFailsOn_1_1()
+{
+    creditor c(saveRandomCreditor());
+    contract cont(saveRandomContract(c.id()));
+    cont.setInterestRate(2.0);
+    cont.setReinvesting(true);
+    cont.activate(QDate(2019, 1, 1), 1000.);
+    QVERIFY( ! cont.deposit(QDate(2020, 1, 1), 1000.));
+    QVERIFY( ! cont.payout(QDate(2020, 1, 1), 100));
+}
+
 void test_contract::test_deposit_wSettlement()
 {
     creditor c(saveRandomCreditor());

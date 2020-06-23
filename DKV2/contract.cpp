@@ -225,8 +225,8 @@ bool contract::bookInterest(QDate d) const
 bool contract::deposit(QDate d, double amount) const
 {   LOG_CALL;
     Q_ASSERT(amount > 0);
-    if( ! d.isValid()) {
-        qCritical() << "Invalid Date";
+    if( ! d.isValid() || (d.day() == 1 && d.month() == 1)) {
+        qCritical() << "Invalid Date" << d;
         return false;
     }
     if( ! isActive()) {
@@ -256,7 +256,7 @@ bool contract::payout(QDate d, double amount) const
         qCritical() << "Payout impossible. The account has not enough coverage";
         return false;
     }
-    if( ! d.isValid()) {
+    if( ! d.isValid() || (d.day() == 1 && d.month() == 1)) {
         qCritical() << "Invalid Date";
         return false;
     }
