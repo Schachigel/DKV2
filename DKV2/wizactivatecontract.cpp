@@ -16,8 +16,8 @@ wizActivateContract_IntroPage::wizActivateContract_IntroPage(QWidget* p) : QWiza
 void wizActivateContract_IntroPage::initializePage()
 {
     activateContractWiz* wiz = dynamic_cast<activateContractWiz*>(wizard());
-    QString subtitle = "Mit dieser Dialogfolge kannst Du den Vertrag <b>%1</b> von <b>%2</b> aktiviert, "
-                       "so dass die Zinsberechnung beginnt.<br>"
+    QString subtitle = "Mit dieser Dialogfolge kannst Du den Vertrag <br><b>%1</b> von <b>%2</b> <br>aktivieren, "
+                       "so dass die Zinsberechnung beginnt.<p>"
                        "Die Aktivierung muss nach dem Geldeingang durchgeführt werden.";
     setSubTitle(subtitle.arg(wiz->label).arg(wiz->creditorName));
 }
@@ -26,6 +26,7 @@ wizActiateContract_DatePage::wizActiateContract_DatePage(QWidget* p) : QWizardPa
 {
     QLabel* l = new QLabel("Aktivierungsdatum");
     QDateEdit* de = new QDateEdit;
+    de->setDisplayFormat("dd.MM.yyyy");
     registerField("date", de);
     l->setBuddy(de);
     QVBoxLayout*  layout = new QVBoxLayout;
@@ -43,8 +44,8 @@ void wizActiateContract_DatePage::initializePage()
 wizActiateContract_AmountPage::wizActiateContract_AmountPage(QWidget* p) : QWizardPage(p)
 {
     setTitle("Eingegangener Kreditbetrag");
-    setSubTitle("Gib die Summe ein, die von dem Kreditor überwiesen wurde. "
-                "Diese sollte normalerweise dem Kreditbetrag im Vertrag entsprechen.");
+    setSubTitle("Gib die Summe ein, die von dem Kreditor überwiesen wurde.<br> "
+                "Diese entspricht normalerweise dem im Vertrag vereinbarten Kreditbetrag.");
     QVBoxLayout*  layout = new QVBoxLayout;
     QLabel* l = new QLabel("Betrag in Euro");
     QLineEdit* le = new QLineEdit;
@@ -59,7 +60,7 @@ bool wizActiateContract_AmountPage::validatePage()
 {
     activateContractWiz* wiz = dynamic_cast<activateContractWiz*>(wizard());
     double amount = field("amount").toDouble();
-    if( amount < 100)
+    if( amount < 500)
         return false;
     setField("amount", round2(amount));
     if( wiz->expectedAmount != amount) {
@@ -80,10 +81,11 @@ wizActivateContract_SummaryPage::wizActivateContract_SummaryPage( QWidget* p) : 
 
 void wizActivateContract_SummaryPage::initializePage()
 {
-    QString subt ="Der Vertrag <b>%1</b> von <b>%2</b> soll mit einem Betrag von <b>%3</b> Euro aktiviert werden. <p>%4";
+    QString subt ="Der Vertrag <br><b>%1</b> von <b>%2</b><br> soll mit einem Betrag von <br><b>%3 Euro</b>  zum <br>%4 aktiviert werden. <p>%5";
     activateContractWiz* wiz = dynamic_cast<activateContractWiz*>(wizard());
     double amount = field("amount").toDouble();
-    subt = subt.arg(wiz->label).arg(wiz->creditorName).arg(QString::number(amount));
+    subt = subt.arg(wiz->label).arg(wiz->creditorName);
+    subt = subt.arg(QString::number(amount)).arg(field("date").toDate().toString("dd.MM.yyyy"));
     if( amount != wiz->expectedAmount)
         subt = subt.arg("<b>Der Überweisungsbetrag stimmt nicht mit dem Kreditbetrag überein.</b>");
     else
