@@ -10,11 +10,13 @@
 wizTerminateContract_DatePage::wizTerminateContract_DatePage(QWidget* p) : QWizardPage(p)
 {
     setTitle("Vertrag beenden");
-    setSubTitle("Mit dieser Dialogfolge kannst Du einen Vertrag beenden.");
-    QLabel* l = new QLabel("Gib das Datum des Vertragsende ein. Bis zu diesem Datum werden die Zinsen berechnet."
-                           " Es sollte auch das Auszahlungsdatum sein.");
+    setSubTitle("Mit dieser Dialogfolge kannst Du einen Vertrag beenden.<br>"
+                "Gib das Datum an, zu dem der Vertrag ausgezahlt wird. <br>"
+                "Bis zu diesem Datum werden die Zinsen berechnet. ");
+    QLabel* l = new QLabel("Vertragsende");
     l->setWordWrap(true);
     QDateEdit* de = new QDateEdit;
+    de->setDisplayFormat("dd.MM.yyyy");
     registerField("date", de);
     l->setBuddy(de);
     QVBoxLayout* layout = new QVBoxLayout;
@@ -34,7 +36,7 @@ bool wizTerminateContract_DatePage::validatePage()
     wizTerminateContract* wiz = dynamic_cast<wizTerminateContract*>(wizard());
     if( field("date").toDate() >= wiz->c.latestBooking())
         return true;
-    QString msg ("Das Vertragsende muss nach der letzten Buchung des Vertrags am %1 liegen");
+    QString msg ("Das Vertragsende muss nach der letzten Buchung des Vertrags am %1 sein");
     msg = msg.arg(wiz->c.latestBooking().toString("dd.MM.yyyy"));
     QMessageBox::information(this, "Ungültiges Datum", msg);
     return false;
@@ -56,11 +58,13 @@ wizTerminateContract_ConfirmationPage::wizTerminateContract_ConfirmationPage(QWi
 void wizTerminateContract_ConfirmationPage::initializePage()
 {
     wizTerminateContract* wiz = dynamic_cast<wizTerminateContract*>(wizard());
-    QString subtitle = "Der Wert des Vertrags beläuft sich auf %1 Euro. "
-                       "Inclusive Zins müssen %2 Euro ausbezahlt werden.";
-//    QString finalV =QString::number(wiz->c.futureValue(field("date").toDate()));
-    QString currentV =QString::number(wiz->c.value());
-//    subtitle = subtitle.arg(currentV).arg(finalV);
+    double interest =0., finalValue =0.;
+    wiz->c.finalize(true, field("date").toDate(), interest, finalValue);
+
+    QString subtitle = "Bewertung des Vertrags zum Laufzeit Ende: <b>%1 Euro</b><br>"
+                       "Zinsen seit letzter Berechnung: <b>%2 Euro</b>"
+                       "Auszahlungsbetrag: <b>%3</b>";
+    subtitle = subtitle.arg(wiz->c.value()).arg(interest).arg(finalValue);
     setSubTitle(subtitle);
 }
 

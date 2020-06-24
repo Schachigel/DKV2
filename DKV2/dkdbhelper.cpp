@@ -40,7 +40,7 @@ void init_DKDBStruct()
     dkdbstructur.appendTable(contract::getTableDef_deletedContracts());
 
     dkdbstructur.appendTable(booking::getTableDef());
-    dkdbstructur.appendTable(booking::getTableDef_deletedContracts());
+    dkdbstructur.appendTable(booking::getTableDef_deletedBookings());
 
     dbtable meta("Meta");
     meta.append(dbfield("Name", QVariant::String).setNotNull().setUnique());

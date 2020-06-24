@@ -19,8 +19,7 @@ void activateContract(qlonglong cid)
     creditor cred(v.creditorId());
 
     activateContractWiz wiz;
-    QFont f = wiz.font();
-    f.setPointSize(10); wiz.setFont(f);
+    QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     wiz.label = v.label();
     wiz.creditorName = cred.firstname() + " " + cred.lastname();
     wiz.expectedAmount = v.plannedInvest();
@@ -49,8 +48,7 @@ void changeContractValue(qlonglong cid)
 
     creditor cre(con.creditorId());
     wizChangeContract wiz;
-    QFont f = wiz.font(); f.setPointSize(10);
-    wiz.setFont(f);
+    QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     wiz.creditorName = cre.firstname() + " " + cre.lastname();
     wiz.contractLabel= con.label();
     wiz.currentAmount= con.value();
@@ -79,32 +77,34 @@ void deleteInactiveContract(qlonglong cid)
 }
 
 void terminateContract(qlonglong cid)
-{
+{   LOG_CALL;
     contract c(cid);
-    if( -1 == c.noticePeriod()) {
-        // contract w termination date
+    if( c.hasEndDate()) {
         terminateContract_Final(c);
     } else {
-        cancelContract_wNoticePeriod(c);
+        cancelContract(c);
     }
 }
 void terminateContract_Final( contract& c)
 {   LOG_CALL;
 
     // todo: wiz UI:
-    //OK ask termination date
-    //nOK calculate final value,
-    //OK wiz page for confirmation / print option 4 contract history
-    // do final interest booking, do payout booking
-    // move to exVerträge, exBuchungen
-    // print pdf
+    // done ask termination date
+    // done check it to be after lastBooking
+    // done calculate final value
+    // done wiz page for confirmation / print option 4 contract history
 
     wizTerminateContract wiz(nullptr, c);
+    QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     wiz.exec();
+
+    //open do final interest booking, do payout booking
+    //open move to exVerträge, exBuchungen
+    //open print pdf
 
     return;
 }
-void cancelContract_wNoticePeriod( contract& )
+void cancelContract( contract& )
 {   LOG_CALL;
 Q_ASSERT(!"repair");
     // UI asking for date

@@ -22,7 +22,7 @@
     return t & (interestPayout|interestDeposit);
 }
 
-/* static */ const dbtable& booking::getTableDef_deletedContracts()
+/* static */ const dbtable& booking::getTableDef_deletedBookings()
 {
     static dbtable deletedBookings("exBuchungen");
     deletedBookings.append(dbfield("id", QVariant::LongLong).setPrimaryKey());

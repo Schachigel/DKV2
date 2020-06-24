@@ -42,6 +42,7 @@ struct contract
     bool reinvesting() const { return (td.getValue("thesaurierend").toInt() != 0);}
     void setNoticePeriod(int m) { td.setValue("Kfrist", m); if( -1 != m) setPlannedEndDate( EndOfTheFuckingWorld);}
     int noticePeriod() const { return td.getValue("Kfrist").toInt();}
+    bool hasEndDate() const {return -1 == td.getValue("Kfrist");}
     void setPlannedEndDate( QDate d) { td.setValue("LaufzeitEnde", d); if( d != EndOfTheFuckingWorld) setNoticePeriod(-1);}
     QDate plannedEndDate() const { return td.getValue("LaufzeitEnde").toDate();}
     void setConclusionDate(QDate d) { td.setValue("Vertragsdatum", d);}
@@ -64,7 +65,7 @@ struct contract
     bool bookInterest(QDate d) const;
     bool deposit(QDate d, double amount) const;
     bool payout(QDate d, double amount) const;
-    bool finalize(const QDate& finDate, double& finInterest, double& finPayout);
+    bool finalize(bool simulate, const QDate finDate, double& finInterest, double& finPayout) const;
 private:
     // data
     TableDataInserter td;

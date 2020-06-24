@@ -327,7 +327,7 @@ void MainWindow::on_action_menu_creditors_delete_triggered()
     on_action_cmenu_delete_creaditor_triggered();
 }
 
-// Kontext Menue in Kreditoren Tabelle
+// Context Menue in Creditor Table
 void MainWindow::on_CreditorsTableView_customContextMenuRequested(const QPoint &pos)
 {   LOG_CALL;
     QModelIndex index = ui->CreditorsTableView->indexAt(pos).siblingAtColumn(0);
@@ -381,7 +381,7 @@ void MainWindow::on_action_cmenu_go_contracts_triggered()
     on_action_menu_contracts_listview_triggered();
 }
 
-// new Kreditor page
+// new Creditor page
 void MainWindow::on_action_menu_creditors_create_triggered()
 {   LOG_CALL;
     empty_create_creditor_form();

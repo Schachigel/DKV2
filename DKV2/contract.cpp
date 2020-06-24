@@ -273,8 +273,42 @@ bool contract::payout(QDate d, double amount) const
     }
     return booking::makePayout(id(), d, amount);
 }
-bool contract::finalize(const QDate& /*finDate*/, double& /*finInterest*/, double& /*finPayout*/)
-{
+bool contract::finalize(bool simulate, const QDate finDate,
+                        double& finInterest, double& finPayout) const
+{   LOG_CALL;
+    if( ! finDate.isValid() || finDate < latestBooking()) {
+        qDebug() << "invalid date to finalize contract";
+        return false;
+    }
+    while( latestBooking().year() < finDate.year())
+    {
+        if( ! annualSettlement()) {
+            qDebug() << "error with annual settlement during contract termination";
+            return false;
+        }
+    }
+    double cv = value(finDate);
+    finInterest = ZinsesZins(interestRate(), cv, latestBooking(), finDate);
+    finPayout = cv +finInterest;
+    if( simulate)
+        return  true;
+    QSqlDatabase::database().transaction();
+    if( ! booking::investInterest(id(), finDate, finInterest)) {
+        qDebug() << "faild to book final interest";
+        QSqlDatabase::database().rollback();
+        return false;
+    }
+    if( ! booking::makePayout(id(), finDate, value())) {
+        qDebug() << "faild to book final payout";
+        QSqlDatabase::database().rollback();
+        return false;
+    }
+    if( value() != 0.) {
+        qDebug() << "final payout did not equlize the contract";
+        QSqlDatabase::database().rollback();
+        return false;
+    }
+    QSqlDatabase::database().commit();
     return true;
 }
 // test helper
