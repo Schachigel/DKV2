@@ -9,6 +9,7 @@
 #include "wizchangecontractvalue.h"
 #include "wizactivatecontract.h"
 #include "wizterminatecontract.h"
+#include "wizcancelcontract.h"
 #include "wizannualsettlement.h"
 #include "transaktionen.h"
 
@@ -104,12 +105,14 @@ void terminateContract_Final( contract& c)
 
     return;
 }
-void cancelContract( contract& )
+void cancelContract( contract& c)
 {   LOG_CALL;
-Q_ASSERT(!"repair");
-    // UI asking for date
-    // change noticePeriod -1
-    // change terminationDate (date)
+    wizCancelContract wiz(nullptr);
+    QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
+    wiz.c = c;
+    wiz.creditorName = executeSingleValueSql("Vorname || ' ' || Nachname", "Kreditoren", "id=" + QString::number(c.creditorId())).toString();
+    wiz.contractualEnd =QDate::currentDate().addMonths(c.noticePeriod());
+    wiz.exec();
 }
 
 void annualSettlement()

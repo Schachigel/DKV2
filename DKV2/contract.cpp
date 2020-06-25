@@ -274,7 +274,7 @@ bool contract::payout(QDate d, double amount) const
     return booking::makePayout(id(), d, amount);
 }
 bool contract::finalize(bool simulate, const QDate finDate,
-                        double& finInterest, double& finPayout) const
+                        double& finInterest, double& finPayout)
 {   LOG_CALL;
     if( ! finDate.isValid() || finDate < latestBooking()) {
         qDebug() << "invalid date to finalize contract";
@@ -282,6 +282,8 @@ bool contract::finalize(bool simulate, const QDate finDate,
     }
     while( latestBooking().year() < finDate.year())
     {
+        // as we are terminating the contract we have to sum up all interests
+        setReinvesting(true);
         if( ! annualSettlement()) {
             qDebug() << "error with annual settlement during contract termination";
             return false;

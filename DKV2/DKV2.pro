@@ -47,6 +47,7 @@ SOURCES += \
         uiitemformatter.cpp \
         wizactivatecontract.cpp \
         wizannualsettlement.cpp \
+        wizcancelcontract.cpp \
         wizchangecontractvalue.cpp \
         wizfileselection.cpp \
         wizterminatecontract.cpp
@@ -74,6 +75,7 @@ HEADERS += \
         uiitemformatter.h \
         wizactivatecontract.h \
         wizannualsettlement.h \
+        wizcancelcontract.h \
         wizchangecontractvalue.h \
         wizfileselection.h \
         wizterminatecontract.h

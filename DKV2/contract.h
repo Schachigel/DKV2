@@ -65,7 +65,7 @@ struct contract
     bool bookInterest(QDate d) const;
     bool deposit(QDate d, double amount) const;
     bool payout(QDate d, double amount) const;
-    bool finalize(bool simulate, const QDate finDate, double& finInterest, double& finPayout) const;
+    bool finalize(bool simulate, const QDate finDate, double& finInterest, double& finPayout);
 private:
     // data
     TableDataInserter td;

@@ -21,8 +21,8 @@ struct wizTerminateContract_ConfirmationPage : QWizardPage{
 
 struct wizTerminateContract : QWizard
 {
-    wizTerminateContract(QWidget* p, const contract& c);
-    const contract& c;
+    wizTerminateContract(QWidget* p, contract c);
+    contract c;
 };
 
 #endif // WIZTERMINATECONTRACT_H

@@ -674,37 +674,6 @@ void MainWindow::on_action_menu_contracts_create_triggered()
 
     ui->stackedWidget->setCurrentIndex(newContractPageIndex);
 }
-void ensureEndOfContractConsistency( int& monate, QDate& lze, const QDate )
-{   LOG_CALL;
-    // ensure consistency:
-    // kfrist == -1 -> LaufzeitEnde has to be valid and NOT 31.12.9999
-    // kfrist > 0 -> LaufzeitEnde == 31.12.9999
-    if( !lze.isValid() || lze == QDate(2000,1,1)) // QDateEdit default
-        lze = EndOfTheFuckingWorld;
-
-    if( monate > 0) {
-        if( lze == EndOfTheFuckingWorld)
-            return;  // all good
-        else {
-            lze = EndOfTheFuckingWorld;
-            qCritical() << "inconsistent contract end date with valid notice period resolved to " << lze;
-            return;
-        }
-    }
-
-    if( monate < 0) {
-        monate = -1;
-        if( lze == EndOfTheFuckingWorld) {
-            // pathetic we have to choose
-            lze = EndOfTheFuckingWorld;
-            monate = 6;
-            qCritical() << "incnosistent contract end reslved. notice period now " << monate;
-            return;
-        }
-        else
-            return;
-    }
-}
 contract MainWindow::get_contract_data_from_form()
 {   LOG_CALL;
     contract c;
@@ -720,7 +689,8 @@ contract MainWindow::get_contract_data_from_form()
 
     int kFrist = ui->cbKFrist->currentData().toInt();
     QDate LaufzeitEnde = ui->deLaufzeitEnde->date();  // QDateTimeEdit default: 2000/1/1
-    ensureEndOfContractConsistency(kFrist, LaufzeitEnde, c.conclusionDate());
+    c.setPlannedEndDate(LaufzeitEnde);
+    c.setNoticePeriod(kFrist);
     return c;
 }
 bool MainWindow::save_new_contract()
