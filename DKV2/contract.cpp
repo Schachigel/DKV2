@@ -273,6 +273,22 @@ bool contract::payout(QDate d, double amount) const
     }
     return booking::makePayout(id(), d, amount);
 }
+bool contract::cancel(QDate d)
+{   LOG_CALL;
+    if( ! id()) {
+        qInfo() << "an invalid contract can not be canceled";
+        return false;
+    }
+    QString sql ="UPDATE Vertraege SET LaufzeitEnde='%1', Kfrist=%2 WHERE id=%3";
+    sql =sql.arg(d.toString(Qt::ISODate)).arg(-1).arg(id());
+    if( ! executeSql(sql)) {
+        qDebug() << "contract update to cancel can not be done. ";
+        return false;
+    }
+    setPlannedEndDate(d);
+    return true;
+}
+
 bool contract::finalize(bool simulate, const QDate finDate,
                         double& finInterest, double& finPayout)
 {   LOG_CALL;

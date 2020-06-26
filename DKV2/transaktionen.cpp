@@ -105,6 +105,7 @@ void terminateContract_Final( contract& c)
 
     return;
 }
+
 void cancelContract( contract& c)
 {   LOG_CALL;
     wizCancelContract wiz(nullptr);
@@ -113,6 +114,12 @@ void cancelContract( contract& c)
     wiz.creditorName = executeSingleValueSql("Vorname || ' ' || Nachname", "Kreditoren", "id=" + QString::number(c.creditorId())).toString();
     wiz.contractualEnd =QDate::currentDate().addMonths(c.noticePeriod());
     wiz.exec();
+    if( ! wiz.field("confirmed").toBool())
+    {
+        qInfo() << "cancel wizard canceled by user";
+        return;
+    }
+    c.cancel(wiz.field("date").toDate());
 }
 
 void annualSettlement()

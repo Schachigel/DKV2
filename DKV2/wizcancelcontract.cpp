@@ -1,5 +1,6 @@
 #include <QLabel>
 #include <QDateEdit>
+#include <QCheckBox>
 #include <QVBoxLayout>
 
 #include "wizcancelcontract.h"
@@ -35,7 +36,7 @@ wizCancelContract_DatePage::wizCancelContract_DatePage(QWidget* p) : QWizardPage
 void wizCancelContract_DatePage::initializePage()
 {
     wizCancelContract* wiz = dynamic_cast<wizCancelContract*>(wizard());
-    QString subTitle("Das vertraglich vorgesehene Vertragende ist frühestens am %1");
+    QString subTitle("Das vertraglich vorgesehene Vertragende ist frühestens am %1.");
     subTitle =subTitle.arg(wiz->contractualEnd.toString("dd.MM.yyyy"));
     setSubTitle(subTitle);
     setField("date", wiz->contractualEnd);
@@ -47,8 +48,35 @@ bool wizCancelContract_DatePage::validatePage()
     return field("date").toDate() > wiz->c.latestBooking();
 }
 
+wizCancelContract_SummaryPage::wizCancelContract_SummaryPage(QWidget* p) : QWizardPage(p)
+{
+    setTitle("Zusammenfassung");
+    QCheckBox* cb = new QCheckBox("Die Eingaben sind korrekt!");
+    registerField("confirmed", cb);
+    QVBoxLayout* layout = new QVBoxLayout;
+    layout-> addWidget(cb);
+    setLayout(layout);
+}
+
+void wizCancelContract_SummaryPage::initializePage()
+{
+    wizCancelContract* wiz = dynamic_cast<wizCancelContract*>(wizard());
+    QString subt = "Der Vertrag %1 von %2 soll zum %3 beendet werden.";
+    subt = subt.arg(wiz->c.label()).arg(wiz->creditorName);
+    subt = subt.arg(field("date").toDate().toString("dd.MM.yyyy"));
+    setSubTitle(subt);
+}
+
+bool wizCancelContract_SummaryPage::validatePage()
+{
+    if( field("confirmed").toBool())
+        return true;
+    return false;
+}
+
 wizCancelContract::wizCancelContract(QWidget* p) : QWizard(p)
 {
     addPage(new wizCancelContract_IntroPage);
     addPage(new wizCancelContract_DatePage);
+    addPage(new wizCancelContract_SummaryPage);
 }

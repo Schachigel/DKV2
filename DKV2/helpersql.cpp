@@ -308,7 +308,18 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
     }
     return result;
 }
-
+bool executeSql(QString sql)
+{
+    QSqlQuery q;
+    q.prepare(sql);
+    if( q.exec())
+    {
+        qInfo() << "Successfully executed query \n" << q.lastQuery();
+        return true;
+    }
+    qDebug() << "failed to execute query. Error: " << q.lastError() << endl << q.lastQuery();
+    return false;
+}
 int getHighestRowId(const QString& tablename)
 {   LOG_CALL;
     return executeSingleValueSql("max(rowid)", tablename).toInt();
