@@ -168,8 +168,11 @@ bool contract::isActive() const
 }
 QDate contract::activationDate() const
 {
+    static QDate aDate;
+    if( aDate.isValid())
+        return aDate;
     QString where = "Buchungen.VertragsId=%1";
-    return executeSingleValueSql("MIN(Datum)", "Buchungen", where.arg(id())).toDate();
+    return aDate =executeSingleValueSql("MIN(Datum)", "Buchungen", where.arg(id())).toDate();
 }
 // booking actions
 int contract::annualSettlement() const
@@ -181,15 +184,16 @@ int contract::annualSettlement() const
     if( reinvesting()
             ? booking::investInterest(id(), target, zins)
             : booking::payoutInterest(id(), target, -1*zins)) {
-        qInfo() << "successfull annual settlement: Vertrag " << id() << ": " << target << " Zins: " << zins;
+        qInfo() << "Successfull annual settlement: contract id " << id() << ": " << target << " Zins: " << zins;
         return lastBooking.year() +1;
     } else {
         qDebug() << "failed annual settlement: Vertrag " << id() << ": " << target << " Zins: " << zins;
         return 0;
     }
 }
-bool contract::bookInterest(QDate d) const
+bool contract::bookInterest(QDate d, bool transactual) const
 {   LOG_CALL;
+    // transactual =false allows to use this funciton with an outer transaction (sqlite does not support nested transaction)
     if( ! d.isValid()) {
         qCritical() << "Invalid Date";
         return false;
@@ -199,12 +203,14 @@ bool contract::bookInterest(QDate d) const
         qCritical() << "could not book interest because there are already more recent bookings";
         return false;
     }
-    QSqlDatabase::database().transaction();
+    if( transactual)
+        QSqlDatabase::database().transaction();
     while( d.year() > lastBooking.year()) {
         qInfo() << "perform annual settlement first";
         if(0 == annualSettlement()) {
             qCritical() << "annual settlement during interest booking failed";
-            QSqlDatabase::database().rollback();
+            if( transactual)
+                QSqlDatabase::database().rollback();
             return false;
         }
         lastBooking =latestBooking();
@@ -215,11 +221,13 @@ bool contract::bookInterest(QDate d) const
         : booking::payoutInterest(id(), d, -1.*zins))
     {
         qInfo() << "Successfull interest booking: " << id() << d << zins;
-        QSqlDatabase::database().commit();
+        if( transactual)
+            QSqlDatabase::database().commit();
         return true;
     }
     qCritical() << "interest booking failed" << id() << d << zins;
-    QSqlDatabase::database().rollback();
+    if( transactual)
+        QSqlDatabase::database().rollback();
     return false;
 }
 bool contract::deposit(QDate d, double amount) const
@@ -239,7 +247,7 @@ bool contract::deposit(QDate d, double amount) const
         return false;
     }
     // update interest calculation
-    if( ! bookInterest(d)) {
+    if( ! bookInterest(d, false)) {
         qCritical() << "intrest booking failed";
         return false;
     }
@@ -288,7 +296,6 @@ bool contract::cancel(QDate d)
     setPlannedEndDate(d);
     return true;
 }
-
 bool contract::finalize(bool simulate, const QDate finDate,
                         double& finInterest, double& finPayout)
 {   LOG_CALL;
@@ -296,12 +303,14 @@ bool contract::finalize(bool simulate, const QDate finDate,
         qDebug() << "invalid date to finalize contract";
         return false;
     }
+    QSqlDatabase::database().transaction();
     while( latestBooking().year() < finDate.year())
     {
         // as we are terminating the contract we have to sum up all interests
         setReinvesting(true);
         if( ! annualSettlement()) {
-            qDebug() << "error with annual settlement during contract termination";
+            qCritical() << "error with annual settlement during contract termination";
+            QSqlDatabase::database().rollback();
             return false;
         }
     }
@@ -310,24 +319,37 @@ bool contract::finalize(bool simulate, const QDate finDate,
     finPayout = cv +finInterest;
     if( simulate)
         return  true;
-    QSqlDatabase::database().transaction();
     if( ! booking::investInterest(id(), finDate, finInterest)) {
-        qDebug() << "faild to book final interest";
+        qCritical() << "faild to book final interest";
         QSqlDatabase::database().rollback();
         return false;
     }
-    if( ! booking::makePayout(id(), finDate, value())) {
-        qDebug() << "faild to book final payout";
+    if( ! booking::makePayout(id(), finDate, finPayout)) {
+        qCritical() << "faild to book final payout";
         QSqlDatabase::database().rollback();
         return false;
     }
     if( value() != 0.) {
-        qDebug() << "final payout did not equlize the contract";
+        qCritical() << "final payout did not equlize the contract";
         QSqlDatabase::database().rollback();
         return false;
     }
-    QSqlDatabase::database().commit();
-    return true;
+    if( simulate) {
+        QSqlDatabase::database().rollback();
+        return true;
+    } else {
+        if( ! archive()) {
+            qCritical() << "archiving contract failed";
+            return false;
+        } else {
+            qInfo() << "successfully finalized and archived contract " << id();
+            return true;
+        }
+    }
+}
+bool contract::archive()
+{
+    // move all bookings and the contract to the archive tables
 }
 // test helper
 contract saveRandomContract(qlonglong creditorId)

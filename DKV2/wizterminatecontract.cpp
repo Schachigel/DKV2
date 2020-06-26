@@ -62,9 +62,10 @@ void wizTerminateContract_ConfirmationPage::initializePage()
     wiz->c.finalize(true, field("date").toDate(), interest, finalValue);
 
     QString subtitle = "Bewertung des Vertrags zum Laufzeit Ende: <b>%1 Euro</b><br>"
-                       "Zinsen seit letzter Berechnung: <b>%2 Euro</b>"
-                       "Auszahlungsbetrag: <b>%3</b>";
-    subtitle = subtitle.arg(wiz->c.value()).arg(interest).arg(finalValue);
+                       "Zinsen der letzten Zinsphase: <b>%2 Euro</b><br>"
+                       "Auszahlungsbetrag: <b>%3 Euro</b>";
+    QLocale locale;
+    subtitle = subtitle.arg(locale.toCurrencyString(wiz->c.value())).arg(interest).arg(locale.toCurrencyString(finalValue));
     setSubTitle(subtitle);
 }
 

@@ -61,7 +61,7 @@ wizCancelContract_SummaryPage::wizCancelContract_SummaryPage(QWidget* p) : QWiza
 void wizCancelContract_SummaryPage::initializePage()
 {
     wizCancelContract* wiz = dynamic_cast<wizCancelContract*>(wizard());
-    QString subt = "Der Vertrag %1 von %2 soll zum %3 beendet werden.";
+    QString subt = "Der Vertrag <br><b>%1</b> von <b>%2</b> soll zum <br><b>%3</b><br> beendet werden.";
     subt = subt.arg(wiz->c.label()).arg(wiz->creditorName);
     subt = subt.arg(field("date").toDate().toString("dd.MM.yyyy"));
     setSubTitle(subt);

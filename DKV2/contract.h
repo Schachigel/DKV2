@@ -62,7 +62,7 @@ struct contract
     QDate activationDate() const;
     // booking actions
     int annualSettlement() const;
-    bool bookInterest(QDate d) const;
+    bool bookInterest(QDate d, bool transactual =true) const;
     bool deposit(QDate d, double amount) const;
     bool payout(QDate d, double amount) const;
     bool cancel(QDate);
@@ -70,6 +70,8 @@ struct contract
 private:
     // data
     TableDataInserter td;
+    // helper
+    bool archive();
 };
 
 // test helper

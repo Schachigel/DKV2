@@ -88,18 +88,14 @@ void terminateContract(qlonglong cid)
 }
 void terminateContract_Final( contract& c)
 {   LOG_CALL;
-
-    // todo: wiz UI:
-    // done ask termination date
-    // done check it to be after lastBooking
-    // done calculate final value
-    // done wiz page for confirmation / print option 4 contract history
-
     wizTerminateContract wiz(nullptr, c);
     QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     wiz.exec();
+    if( ! wiz.field("confirm").toBool())
+        return;
+    double interest =0., finalValue =0.;
+    c.finalize(false, wiz.field("date").toDate(), interest, finalValue);
 
-    //open do final interest booking, do payout booking
     //open move to exVerträge, exBuchungen
     //open print pdf
 
