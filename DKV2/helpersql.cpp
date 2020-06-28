@@ -308,10 +308,11 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
     }
     return result;
 }
-bool executeSql(QString sql)
+bool executeSql(QString sql, QVariant v)
 {
     QSqlQuery q;
     q.prepare(sql);
+    if( v.isValid()) q.bindValue(0, v);
     if( q.exec())
     {
         qInfo() << "Successfully executed query \n" << q.lastQuery();

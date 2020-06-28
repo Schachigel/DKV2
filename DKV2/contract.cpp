@@ -348,8 +348,23 @@ bool contract::finalize(bool simulate, const QDate finDate,
     }
 }
 bool contract::archive()
-{
+{   LOG_CALL;
+    if( value() != 0.)
+        return false;
     // move all bookings and the contract to the archive tables
+    bool res = true;
+    QSqlDatabase::database().transaction();
+    res &= executeSql("INSERT INTO exVertraege SELECT * FROM Vertraege WHERE id=?", id());
+    res &= executeSql("INSERT INTO exBuchungen SELECT * FROM Buchungen WHERE VertragsId=?", id());
+    res &= executeSql("DELETE FROM Buchungen WHERE VertragsId=?", id());
+    res &= executeSql("DELETE FROM Vertraege WHERE id=?", id());
+     if( ! res) {
+        QSqlDatabase::database().rollback();
+        return false;
+    }
+    reset();
+    QSqlDatabase::database().commit();
+    return true;
 }
 // test helper
 contract saveRandomContract(qlonglong creditorId)

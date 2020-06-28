@@ -45,6 +45,7 @@ private slots:
     //void test_latestSettlementDate();
     void test_getValue_byDate();
     void test_getValue_byDate_wInterestPayout();
+    void test_finalize();
 };
 
 #endif // TEST_CONTRACT_H

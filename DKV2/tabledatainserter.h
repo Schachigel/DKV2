@@ -6,9 +6,8 @@
 
 #include "dbtable.h"
 
-class TableDataInserter
+struct TableDataInserter
 {
-public:
     // constr. destrc. & access fu
     //TableDataInserter(){}
     TableDataInserter(const dbtable& t);
@@ -21,6 +20,7 @@ public:
     int InsertData(QSqlDatabase db = QSqlDatabase::database()) const;
     int InsertOrReplaceData(QSqlDatabase db = QSqlDatabase::database()) const;
     int UpdateData() const;
+    void reset() {tablename =""; record =QSqlRecord();}
 private:
     // data
     QString tablename;

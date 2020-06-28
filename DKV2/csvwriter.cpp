@@ -100,31 +100,24 @@ bool table2csv(QVector<dbfield>& fields, QVector<QVariant::Type>& types, QString
     }
 
     QLocale locale;
-    while( q.next())
-    {
-        for (int i = 0; i < fields.count(); i++)
-        {
-            switch(types[i])
-            {
-            case QVariant::Type::Int:
-            {
+    while( q.next()) {
+        for (int i = 0; i < fields.count(); i++) {
+            switch(types[i]) {
+            case QVariant::Type::Int: {
                 int v = q.record().value(fields[i].name()).toInt();
                 csv.appendToRow(QString::number(v));
                 break;
             }
-            case QVariant::Type::String:
-            {
+            case QVariant::Type::String: {
                 csv.appendToRow(q.record().value(fields[i].name()).toString());
                 break;
             }
-            case QVariant::Type::Date:
-            {
+            case QVariant::Type::Date: {
                 QDate d = q.record().value(fields[i].name()).toDate();
                 csv.appendToRow(d.toString("dd.MM.yyyy"));
                 break;
             }
-            case QVariant::Type::Double:
-            {
+            case QVariant::Type::Double: {
                 double d = q.record().value(fields[i].name()).toDouble();
                 csv.appendToRow(locale.toString(d, 'f', 2));
                 break;

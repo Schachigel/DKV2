@@ -72,6 +72,7 @@ private:
     TableDataInserter td;
     // helper
     bool archive();
+    void reset() {setId(-1); td.reset();}
 };
 
 // test helper

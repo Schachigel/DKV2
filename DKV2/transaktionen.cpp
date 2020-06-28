@@ -72,8 +72,9 @@ void changeContractValue(qlonglong cid)
 
 void deleteInactiveContract(qlonglong cid)
 {   LOG_CALL;
-    // contracts w/o bookings can be deleted
+// contracts w/o bookings can be deleted
 // todo: wiz ui with confirmation?
+// if creditor has no other contracts: delete creditor
     contract::remove(cid);
 }
 
@@ -94,11 +95,9 @@ void terminateContract_Final( contract& c)
     if( ! wiz.field("confirm").toBool())
         return;
     double interest =0., finalValue =0.;
-    c.finalize(false, wiz.field("date").toDate(), interest, finalValue);
-
-    //open move to exVerträge, exBuchungen
-    //open print pdf
-
+    if( ! c.finalize(false, wiz.field("date").toDate(), interest, finalValue)) {
+        qDebug() << "failed to terminate contract";
+    }
     return;
 }
 
@@ -110,8 +109,7 @@ void cancelContract( contract& c)
     wiz.creditorName = executeSingleValueSql("Vorname || ' ' || Nachname", "Kreditoren", "id=" + QString::number(c.creditorId())).toString();
     wiz.contractualEnd =QDate::currentDate().addMonths(c.noticePeriod());
     wiz.exec();
-    if( ! wiz.field("confirmed").toBool())
-    {
+    if( ! wiz.field("confirmed").toBool()) {
         qInfo() << "cancel wizard canceled by user";
         return;
     }

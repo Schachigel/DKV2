@@ -291,3 +291,20 @@ void test_contract::test_getValue_byDate_wInterestPayout()
     cont.payout(aDate.addYears(2), 100);
     QCOMPARE(cont.value(), 1900.); // verified in excel
 }
+
+void test_contract::test_finalize()
+{
+    creditor c(saveRandomCreditor());
+    contract cont(saveRandomContract(c.id()));
+    QDate aDate = QDate(2020, 5, 1);
+    cont.activate(aDate, 1000.);
+    cont.deposit(aDate.addMonths(1), 1000.);
+    QCOMPARE(tableRecordCount("Vertraege"), 1);
+    QCOMPARE(tableRecordCount("Buchungen"), 3);
+    double fi =0., fp =0.;
+    cont.finalize(false, aDate.addMonths(2), fi, fp);
+    QCOMPARE(tableRecordCount("Vertraege"), 0);
+    QCOMPARE(tableRecordCount("Buchungen"), 0);
+    QCOMPARE(tableRecordCount("exVertraege"), 1);
+    QCOMPARE(tableRecordCount("exBuchungen"), 5);
+}
