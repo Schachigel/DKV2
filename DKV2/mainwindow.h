@@ -133,6 +133,8 @@ private slots:
 
     void on_actionDatenbank_Views_schreiben_triggered();
 
+    void on_actionBeendete_Vertr_ge_anzeigen_triggered();
+
 private:
     Ui::MainWindow *ui;
     QSplashScreen* splash;

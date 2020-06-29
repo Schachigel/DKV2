@@ -649,6 +649,13 @@ void MainWindow::on_action_cmenu_change_contract_triggered()
     on_action_menu_contracts_listview_triggered();
 }
 
+
+// terminated contracts list
+void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
+{
+
+}
+
 // new contract
 void MainWindow::on_action_menu_contracts_create_triggered()
 {   LOG_CALL;
@@ -1024,4 +1031,5 @@ void MainWindow::on_action_about_DKV2_triggered()
     msg += "Viel Spaß mit DKV2 !";
     QMessageBox::information(this, "I n f o", msg);
 }
+
 

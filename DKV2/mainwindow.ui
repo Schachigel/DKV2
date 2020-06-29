@@ -24,7 +24,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>6</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -638,6 +638,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="separator"/>
     <addaction name="action_menu_contracts_statistics_view"/>
     <addaction name="menu_contracts_subm_print_lists"/>
+    <addaction name="actionBeendete_Vertr_ge_anzeigen"/>
    </widget>
    <widget class="QMenu" name="menu_debug">
     <property name="enabled">
@@ -912,6 +913,11 @@ p, li { white-space: pre-wrap; }
   <action name="actionDatenbank_Views_schreiben">
    <property name="text">
     <string>Datenbank Views schreiben</string>
+   </property>
+  </action>
+  <action name="actionBeendete_Vertr_ge_anzeigen">
+   <property name="text">
+    <string>Beendete Verträge anzeigen</string>
    </property>
   </action>
  </widget>

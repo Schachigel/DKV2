@@ -30,7 +30,8 @@ void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db = QS
 
 bool create_DK_databaseFile(const QString& filename);
 bool create_DK_TablesAndContent(QSqlDatabase db = QSqlDatabase::database());
-void insert_views( QSqlDatabase db);
+bool createView(QString name, QString sql, QSqlDatabase db =QSqlDatabase::database());
+bool insert_views( QSqlDatabase db =QSqlDatabase::database());
 
 bool check_db_version(QSqlDatabase db = QSqlDatabase::database());
 bool isValidDatabase(const QString& filename);
