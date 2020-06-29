@@ -45,8 +45,8 @@ MainWindow::MainWindow(QWidget *parent) :
         Q_ASSERT(!"useDb failed in construcor of mainwindow");
 
     ui->txtAnmerkung->setTabChangesFocus(true);
-    ui->CreditorsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 15px; }");
-    ui->contractsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 15px; }");
+    ui->CreditorsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 10px; }");
+    ui->contractsTableView->setStyleSheet("QTableView::item { padding-right: 10px; padding-left: 10px; }");
 
     ui->bookingsTableView->setItemDelegateForColumn(2, new bookingTypeFormatter);
 
@@ -61,23 +61,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex & )
-{
-    // todo: do all init only once, this function should only do the
-    // setFilter and the select()
-    QModelIndex indexIndex = newI.siblingAtColumn(0);
-    int index =ui->contractsTableView->model()->data(indexIndex).toInt();
-    QSqlTableModel* model = new QSqlTableModel(this);
-    model->setTable("Buchungen");
-    model->setFilter("Buchungen.VertragsId=" + QString::number(index));
-    model->setSort(4, Qt::SortOrder::DescendingOrder);
-
-    ui->bookingsTableView->setModel(model);
-    model->select();
-    ui->bookingsTableView->hideColumn(0);
-    ui->bookingsTableView->hideColumn(1);
-    ui->bookingsTableView->setItemDelegateForColumn(3, new EuroItemFormatter);
-}
 // generell functions
 void MainWindow::setSplash(QSplashScreen* s)
 {   LOG_CALL;
@@ -532,6 +515,7 @@ void MainWindow::fillCombo_NoticePeriods()
 // Contract List
 void MainWindow::on_action_menu_contracts_listview_triggered()
 {   LOG_CALL;
+    showDeletedContracts =false;
     prepare_contracts_list_view();
     if( !ui->contractsTableView->currentIndex().isValid())
         ui->contractsTableView->selectRow(0);
@@ -542,7 +526,10 @@ void MainWindow::prepare_contracts_list_view()
 {   LOG_CALL;
     busycursor b;
     QSqlTableModel* model = new QSqlTableModel(this);
-    model->setTable("WertAlleVertraege");
+    if( showDeletedContracts)
+        model->setTable("WertBeendeteVertraege");
+    else
+        model->setTable("WertAlleVertraege");
     model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
     qDebug() << "contract list model filter: " << model->filter();
 
@@ -558,7 +545,7 @@ void MainWindow::prepare_contracts_list_view()
     tv->hideColumn(0);
     tv->hideColumn(9);
     tv->setItemDelegateForColumn(3, new PercentItemFormatter(tv));
-    tv->setItemDelegateForColumn(4, new EuroItemFormatter(tv));
+    tv->setItemDelegateForColumn(4, new ContractValueItemFormatter(tv));
     tv->setItemDelegateForColumn(5, new DateItemFormatter(tv));
     tv->setItemDelegateForColumn(6, new KFristItemFormatter(tv));
     tv->setItemDelegateForColumn(7, new DateItemFormatter(tv));
@@ -589,11 +576,34 @@ void MainWindow::on_reset_contracts_filter_clicked()
     ui->le_ContractsFilter->setText("");
     prepare_contracts_list_view();
 }
+void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex & )
+{
+    // todo: do all init only once, this function should only do the
+    // setFilter and the select()
+    QModelIndex indexIndex = newI.siblingAtColumn(0);
+    int index =ui->contractsTableView->model()->data(indexIndex).toInt();
+    QSqlTableModel* model = new QSqlTableModel(this);
+    if( showDeletedContracts) {
+        model->setTable("exBuchungen");
+        model->setFilter("exBuchungen.VertragsId=" + QString::number(index));
+    } else {
+        model->setTable("Buchungen");
+        model->setFilter("Buchungen.VertragsId=" + QString::number(index));
+    }
+    model->setSort(0, Qt::SortOrder::AscendingOrder);
+
+    ui->bookingsTableView->setModel(model);
+    model->select();
+    ui->bookingsTableView->hideColumn(0);
+    ui->bookingsTableView->hideColumn(1);
+    ui->bookingsTableView->setItemDelegateForColumn(3, new BookingAmountItemFormatter);
+}
 
 // contract list context menu
 void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &pos)
 {   LOG_CALL;
-
+    if( showDeletedContracts)
+        return;
     QTableView*& tv = ui->contractsTableView;
     QModelIndex index = tv->indexAt(pos).siblingAtColumn(0);
 
@@ -653,7 +663,11 @@ void MainWindow::on_action_cmenu_change_contract_triggered()
 // terminated contracts list
 void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
 {
-
+    showDeletedContracts =true;
+    prepare_contracts_list_view();
+    if( !ui->contractsTableView->currentIndex().isValid())
+        ui->contractsTableView->selectRow(0);
+    ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
 }
 
 // new contract

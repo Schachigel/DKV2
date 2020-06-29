@@ -33,23 +33,40 @@ void PercentItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &
     QStyledItemDelegate::paint(painter, alignedOption, index);
 }
 
-QString EuroItemFormatter::displayText(const QVariant& value, const QLocale& locale)const
+QString ContractValueItemFormatter::displayText(const QVariant& value, const QLocale& locale)const
 {
     double w = round2(value.toDouble()/100);
     QLocale l(locale);
     l.setNumberOptions(0);
-    if( w <= 0)
+    if( w < 0)
         return "[" + l.toCurrencyString(-1 *w) + " "  + "] offen";
     else
         return l.toCurrencyString(w)+ " ";
 };
-
-void EuroItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void ContractValueItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QStyleOptionViewItem alignedOption(option);
     alignedOption.displayAlignment = Qt::AlignRight|Qt::AlignVCenter;
     QStyledItemDelegate::paint(painter, alignedOption, index);
 }
+
+void BookingAmountItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    QStyleOptionViewItem alignedOption(option);
+    alignedOption.displayAlignment = Qt::AlignRight|Qt::AlignVCenter;
+    QStyledItemDelegate::paint(painter, alignedOption, index);
+}
+
+QString BookingAmountItemFormatter::displayText(const QVariant& value, const QLocale& locale)const
+{
+    double w = round2(value.toDouble()/100);
+    QLocale l(locale);
+    l.setNumberOptions(0);
+    if( w <= 0)
+        return "[" + l.toCurrencyString(-1 *w) + " "  + "]";
+    else
+        return l.toCurrencyString(w)+ " ";
+};
 
 QString KFristItemFormatter::displayText(const QVariant &value, const QLocale &) const
 {

@@ -337,27 +337,39 @@ bool contract::finalize(bool simulate, const QDate finDate,
     if( simulate) {
         QSqlDatabase::database().rollback();
         return true;
-    } else {
-        if( ! archive()) {
-            qCritical() << "archiving contract failed";
-            return false;
-        } else {
-            qInfo() << "successfully finalized and archived contract " << id();
-            return true;
-        }
     }
+
+    storeTerminationDate(finDate);
+
+    if( ! archive()) {
+        qCritical() << "archiving contract failed";
+        return false;
+    } else {
+        qInfo() << "successfully finalized and archived contract " << id();
+        return true;
+    }
+
 }
+
+bool contract::storeTerminationDate(QDate d) const
+{
+    return executeSql("UPDATE Vertraege SET (LaufzeitEnde=" + d.toString(Qt::ISODate) + ") WHERE Vertraege.id=?", id());
+}
+
 bool contract::archive()
 {   LOG_CALL;
     if( value() != 0.)
         return false;
     // move all bookings and the contract to the archive tables
-    bool res = true;
+    bool res = false;
     QSqlDatabase::database().transaction();
-    res &= executeSql("INSERT INTO exVertraege SELECT * FROM Vertraege WHERE id=?", id());
-    res &= executeSql("INSERT INTO exBuchungen SELECT * FROM Buchungen WHERE VertragsId=?", id());
-    res &= executeSql("DELETE FROM Buchungen WHERE VertragsId=?", id());
-    res &= executeSql("DELETE FROM Vertraege WHERE id=?", id());
+    do {
+        if( ! executeSql("INSERT INTO exVertraege SELECT * FROM Vertraege WHERE id=?", id())) break;
+        if( ! executeSql("INSERT INTO exBuchungen SELECT * FROM Buchungen WHERE VertragsId=?", id())) break;
+        if( ! executeSql("DELETE FROM Buchungen WHERE VertragsId=?", id())) break;
+        if( ! executeSql("DELETE FROM Vertraege WHERE id=?", id())) break;
+        res =true;
+    } while( false);
      if( ! res) {
         QSqlDatabase::database().rollback();
         return false;

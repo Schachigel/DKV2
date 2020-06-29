@@ -252,6 +252,19 @@ bool insert_views( QSqlDatabase db)
             "UNION SELECT nextInterestDate from NextAnnualS_next)");
 
     ret &= createView("NextAnnualSettlement", nextInterestDate, db);
+
+    QString sqlDeletedContracts =
+            "CREATE VIEW  WertBeendeteVertraege AS "
+            "SELECT exVertraege.id AS id, Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, exVertraege.Kennung AS Vertragskennung, exVertraege.ZSatz/100. AS Zinssatz, "
+            "(SELECT sum(exBuchungen.betrag) FROM exBuchungen "
+            "WHERE exVertraege.id = exBuchungen.VertragsId) AS Wert, "
+            "MIN(exBuchungen.Datum) AS Datum, exVertraege.Kfrist AS Kündigungsfrist, exVertraege.LaufzeitEnde AS Vertragsende, thesaurierend AS thesa, Kreditoren.id AS KreditorId "
+            "FROM exVertraege "
+            "INNER JOIN exBuchungen ON exBuchungen.VertragsId = exVertraege.id "
+            "INNER JOIN Kreditoren ON Kreditoren.id = exVertraege.KreditorId "
+            "Group by exVertraege.id";
+    ret &= createView("WertBeendeteVertraege", sqlDeletedContracts, db);
+
     return ret;
 }
 

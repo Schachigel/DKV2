@@ -178,7 +178,8 @@ private:
     QString prepare_overview_page(Uebersichten u);
     QMenu* menuSaveKreditorAnd;
     QMenu* menuSaveContractAnd;
-protected:
+private:
+    bool showDeletedContracts =false;
     void timerEvent(QTimerEvent* te) override
     {
         if( splash)
