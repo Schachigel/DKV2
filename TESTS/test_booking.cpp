@@ -22,15 +22,6 @@ void test_booking::cleanup()
     cleanupTestDb();
 }
 
-void test_booking::test_isInterestBooking()
-{
-    QVERIFY( ! booking::isInterestBooking(booking::Type::non));
-    QVERIFY( ! booking::isInterestBooking(booking::Type::deposit));
-    QVERIFY( ! booking::isInterestBooking(booking::Type::payout));
-    QVERIFY( booking::isInterestBooking(booking::Type::interestDeposit));
-    QVERIFY( booking::isInterestBooking(booking::Type::interestPayout));
-}
-
 void test_booking::test_dateONSettlement_noContracts()
 {
     creditor c(saveRandomCreditor());

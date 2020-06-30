@@ -20,8 +20,6 @@ double amount;
 qlonglong contractId;
     // construction
     booking(booking::Type t, QDate d, double a) : type(t), date(d), amount(a) {};
-    // interface
-    bool isInterestBooking() const { return isInterestBooking(type);}
 
     // statics
     static const dbtable& getTableDef();
@@ -31,10 +29,10 @@ qlonglong contractId;
     static bool investInterest(const qlonglong contractId, const QDate date, const double amount);
     static bool payoutInterest(const qlonglong contractId, const QDate date, const double amount);
     static const QString typeName(booking::Type t);
-    static bool isInterestBooking(Type t);
     bool executeBooking();
 private:
     static bool doBooking( const booking::Type, const qlonglong contractId, const QDate date, const double amount);
+    static QString b_type(Type t);
 };
 
 struct bookings

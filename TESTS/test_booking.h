@@ -21,7 +21,6 @@ private slots:
     void init();
     void cleanup();
     // the actual tests
-    void test_isInterestBooking();
     void test_dateONSettlement_noContracts();
     void test_dateONSettlement_activatedContracts();
     void test_dateONSettelment_contractsW_interestBookings00();

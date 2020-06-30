@@ -17,11 +17,6 @@
     }
     return bookings;
 }
-/* static */ bool booking::isInterestBooking(booking::Type t)
-{
-    return t & (interestPayout|interestDeposit);
-}
-
 /* static */ const dbtable& booking::getTableDef_deletedBookings()
 {
     static dbtable deletedBookings("exBuchungen");
@@ -32,6 +27,18 @@
 
     deletedBookings.append(dbForeignKey(deletedBookings["VertragsId"], dkdbstructur["exVertraege"]["id"], "ON DELETE RESTRICT"));
     return deletedBookings;
+}
+
+/* static */ QString booking::b_type(Type t)
+{
+    switch(t) {
+    case booking::non: return "invalid booking";
+    case booking::deposit: return "deposit";
+    case booking::payout: return "payout";
+    case booking::interestDeposit: return "reinvestment";
+    case booking::interestPayout: return "interest payout";
+    default: return "ERROR";
+    }
 }
 
 /* static */ const QString booking::typeName( booking::Type t)
@@ -58,7 +65,12 @@
     tdi.setValue("BuchungsArt", t);
     tdi.setValue("Betrag", ctFromEuro(amount));
     tdi.setValue("Datum", date);
-    return tdi.InsertData();
+    if( tdi.InsertData()) {
+        qInfo() << "successful booking: " << b_type(t) << " contract#: " << contractId << " Amount: " << ctFromEuro(amount) << " date: " << date;
+        return true;
+    }
+    qCritical() << "booking failed for contract#: " << contractId << " Amount: " << ctFromEuro(amount) << " date: " << date;;
+    return false;
 }
 
 /* static */ bool booking::makeDeposit(const qlonglong contractId, const QDate date, const double amount)
