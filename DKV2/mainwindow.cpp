@@ -475,7 +475,16 @@ void MainWindow::on_action_saveCreditor_go_new_creditor_triggered()
     on_action_menu_creditors_create_triggered();
 }
 
-// Contract List helper
+// Contract List
+void MainWindow::on_action_menu_contracts_listview_triggered()
+{   LOG_CALL;
+    showDeletedContracts =false;
+    prepare_contracts_list_view();
+    if( !ui->contractsTableView->currentIndex().isValid())
+        ui->contractsTableView->selectRow(0);
+
+    ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
+}
 QString filterFromFilterphrase(QString fph)
 {
     if( fph.startsWith("kreditor:"))
@@ -489,38 +498,6 @@ QString filterFromFilterphrase(QString fph)
     }
     return fph.isEmpty() ? "" :
            ("Kreditorin LIKE '%" + fph + "%' OR Vertragskennung LIKE '%" + fph + "%'");
-}
-void MainWindow::createBtnMenu_saveContractAnd()
-{   LOG_CALL;
-    // Vertrag anlegen: "Speichern und ... " Menü anlegen
-    menuSaveContractAnd = new QMenu;
-    menuSaveContractAnd->addAction(ui->action_save_contract_new_contract);
-    menuSaveContractAnd->addAction(ui->action_save_contract_go_kreditors);
-    menuSaveContractAnd->addAction(ui->action_save_contract_go_contracts);
-    ui->saveContractAnd->setMenu(menuSaveContractAnd);
-    ui->saveContractAnd->setDefaultAction(ui->action_save_contract_go_kreditors);
-}
-void MainWindow::fillCombo_NoticePeriods()
-{   LOG_CALL;
-    // combo box für Kündigungsfristen füllen
-    ui->cbKFrist->addItem("festes Vertragsende", QVariant(-1));
-    for (int i=3; i<12; i++)
-        ui->cbKFrist->addItem(QString::number(i) + " Monate", QVariant(i));
-    ui->cbKFrist->addItem("1 Jahr", QVariant(12));
-    ui->cbKFrist->addItem("1 Jahr und 1 Monat", QVariant(13));
-    for (int i=14; i<24; i++)
-        ui->cbKFrist->addItem("1 Jahr und " + QString::number( i-12) + " Monate", QVariant(i));
-    ui->cbKFrist->addItem("2 Jahre", QVariant(24));
-}
-// Contract List
-void MainWindow::on_action_menu_contracts_listview_triggered()
-{   LOG_CALL;
-    showDeletedContracts =false;
-    prepare_contracts_list_view();
-    if( !ui->contractsTableView->currentIndex().isValid())
-        ui->contractsTableView->selectRow(0);
-
-    ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
 }
 void MainWindow::prepare_contracts_list_view()
 {   LOG_CALL;
@@ -594,6 +571,7 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
 
     ui->bookingsTableView->setModel(model);
     model->select();
+    ui->bookingsTableView->setSortingEnabled(false);
     ui->bookingsTableView->hideColumn(0);
     ui->bookingsTableView->hideColumn(1);
     ui->bookingsTableView->setItemDelegateForColumn(3, new BookingAmountItemFormatter);
@@ -659,7 +637,6 @@ void MainWindow::on_action_cmenu_change_contract_triggered()
     on_action_menu_contracts_listview_triggered();
 }
 
-
 // terminated contracts list
 void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
 {
@@ -670,6 +647,29 @@ void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
     ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
 }
 
+// new Contract helper
+void MainWindow::createBtnMenu_saveContractAnd()
+{   LOG_CALL;
+    // Vertrag anlegen: "Speichern und ... " Menü anlegen
+    menuSaveContractAnd = new QMenu;
+    menuSaveContractAnd->addAction(ui->action_save_contract_new_contract);
+    menuSaveContractAnd->addAction(ui->action_save_contract_go_kreditors);
+    menuSaveContractAnd->addAction(ui->action_save_contract_go_contracts);
+    ui->saveContractAnd->setMenu(menuSaveContractAnd);
+    ui->saveContractAnd->setDefaultAction(ui->action_save_contract_go_kreditors);
+}
+void MainWindow::fillCombo_NoticePeriods()
+{   LOG_CALL;
+    // combo box für Kündigungsfristen füllen
+    ui->cbKFrist->addItem("festes Vertragsende", QVariant(-1));
+    for (int i=3; i<12; i++)
+        ui->cbKFrist->addItem(QString::number(i) + " Monate", QVariant(i));
+    ui->cbKFrist->addItem("1 Jahr", QVariant(12));
+    ui->cbKFrist->addItem("1 Jahr und 1 Monat", QVariant(13));
+    for (int i=14; i<24; i++)
+        ui->cbKFrist->addItem("1 Jahr und " + QString::number( i-12) + " Monate", QVariant(i));
+    ui->cbKFrist->addItem("2 Jahre", QVariant(24));
+}
 // new contract
 void MainWindow::on_action_menu_contracts_create_triggered()
 {   LOG_CALL;
@@ -762,7 +762,7 @@ void MainWindow::on_leBetrag_editingFinished()
     ui->leBetrag->setText(QString("%L1").arg(round2(userInput)));
 }
 
-// helper: switch to "Vertrag anlegen"
+// helper: switch to "new contract"
 void MainWindow::fill_creditors_dropdown()
 {   LOG_CALL;
     ui->comboKreditoren->clear();

@@ -301,10 +301,16 @@ void test_contract::test_finalize()
     cont.deposit(aDate.addMonths(1), 1000.);
     QCOMPARE(tableRecordCount("Vertraege"), 1);
     QCOMPARE(tableRecordCount("Buchungen"), 3);
+    QString contractId = QString::number(cont.id());
     double fi =0., fp =0.;
     cont.finalize(false, aDate.addMonths(2), fi, fp);
+    // finalize should reset the cont object
+    QCOMPARE(cont.id(), -1);
     QCOMPARE(tableRecordCount("Vertraege"), 0);
     QCOMPARE(tableRecordCount("Buchungen"), 0);
     QCOMPARE(tableRecordCount("exVertraege"), 1);
     QCOMPARE(tableRecordCount("exBuchungen"), 5);
+    QCOMPARE(executeSingleValueSql(
+             contract::getTableDef_deletedContracts()["LaufzeitEnde"],
+             "id=" +contractId), QDate(aDate.addMonths(2)));
 }

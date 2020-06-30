@@ -73,7 +73,7 @@ private:
     // helper
     bool storeTerminationDate(QDate d) const;
     bool archive();
-    void reset() {setId(-1); td.reset();}
+    void reset() {init();}
 };
 
 // test helper

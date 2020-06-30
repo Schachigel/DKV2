@@ -299,10 +299,11 @@ bool contract::cancel(QDate d)
 bool contract::finalize(bool simulate, const QDate finDate,
                         double& finInterest, double& finPayout)
 {   LOG_CALL;
-    if( ! finDate.isValid() || finDate < latestBooking()) {
+    if( ! finDate.isValid() || finDate < latestBooking() || id() == -1) {
         qDebug() << "invalid date to finalize contract";
         return false;
     }
+    qlonglong id_to_be_deleted = id();
     QSqlDatabase::database().transaction();
     while( latestBooking().year() < finDate.year())
     {
@@ -339,21 +340,25 @@ bool contract::finalize(bool simulate, const QDate finDate,
         return true;
     }
 
-    storeTerminationDate(finDate);
+    if( ! storeTerminationDate(finDate)) {
+        qDebug() << "faild to set termination date";
+    }
 
     if( ! archive()) {
+        QSqlDatabase::database().rollback();
         qCritical() << "archiving contract failed";
         return false;
     } else {
-        qInfo() << "successfully finalized and archived contract " << id();
+        QSqlDatabase::database().commit();
+        reset();
+        qInfo() << "successfully finalized and archived contract " << id_to_be_deleted;
         return true;
     }
-
 }
 
 bool contract::storeTerminationDate(QDate d) const
-{
-    return executeSql("UPDATE Vertraege SET (LaufzeitEnde=" + d.toString(Qt::ISODate) + ") WHERE Vertraege.id=?", id());
+{   LOG_CALL;
+    return executeSql("UPDATE Vertraege SET LaufzeitEnde='" + d.toString(Qt::ISODate) + "' WHERE Vertraege.id=?", id_aS());
 }
 
 bool contract::archive()
@@ -362,7 +367,6 @@ bool contract::archive()
         return false;
     // move all bookings and the contract to the archive tables
     bool res = false;
-    QSqlDatabase::database().transaction();
     do {
         if( ! executeSql("INSERT INTO exVertraege SELECT * FROM Vertraege WHERE id=?", id())) break;
         if( ! executeSql("INSERT INTO exBuchungen SELECT * FROM Buchungen WHERE VertragsId=?", id())) break;
@@ -371,11 +375,8 @@ bool contract::archive()
         res =true;
     } while( false);
      if( ! res) {
-        QSqlDatabase::database().rollback();
         return false;
     }
-    reset();
-    QSqlDatabase::database().commit();
     return true;
 }
 // test helper
