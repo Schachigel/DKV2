@@ -321,6 +321,27 @@ bool executeSql(QString sql, QVariant v)
     qDebug() << "failed to execute query. Error: " << q.lastError() << endl << q.lastQuery();
     return false;
 }
+bool executeSql(QString sql, QVector<QVariant> v)
+{   LOG_CALL;
+    QSqlQuery q;
+    q.prepare(sql);
+    for( int i =0; i< v.count(); i++) {
+        if( v[i].isValid()) {
+            q.addBindValue(v[i]);
+            qInfo() << "bound value " << v[i];
+        } else {
+            qCritical() << "invalid sql parameter at index " << i;
+            return false;
+        }
+    }
+    if( q.exec()) {
+        qInfo() << "Successfully executed query \n" << q.lastQuery();
+        return true;
+    }
+    qDebug() << "failed to execute query. Error: " << q.lastError() << endl << q.lastQuery();
+    return false;
+}
+
 int getHighestRowId(const QString& tablename)
 {   LOG_CALL;
     return executeSingleValueSql("max(rowid)", tablename).toInt();

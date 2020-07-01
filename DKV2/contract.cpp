@@ -193,6 +193,10 @@ int contract::annualSettlement() const
 }
 bool contract::bookInterest(QDate d, bool transactual) const
 {   LOG_CALL;
+    if( ! isActive()) {
+        qCritical() << "interest booking on inactive contract not possible";
+        return false;
+    }
     // transactual =false allows to use this funciton with an outer transaction (sqlite does not support nested transaction)
     if( ! d.isValid()) {
         qCritical() << "Invalid Date";
@@ -231,12 +235,12 @@ bool contract::bookInterest(QDate d, bool transactual) const
 bool contract::deposit(QDate d, double amount) const
 {   LOG_CALL;
     Q_ASSERT(amount > 0);
-    if( ! d.isValid() || (d.day() == 1 && d.month() == 1)) {
-        qCritical() << "Invalid Date" << d;
-        return false;
-    }
     if( ! isActive()) {
         qCritical() << "could not put money on an inactive account";
+        return false;
+    }
+    if( ! d.isValid() || (d.day() == 1 && d.month() == 1)) {
+        qCritical() << "Invalid Date" << d;
         return false;
     }
     if( latestBooking() >= d) {
@@ -257,6 +261,7 @@ bool contract::payout(QDate d, double amount) const
 {   LOG_CALL;
     if( amount < 0) amount *= -1.;
     if( amount > value()) {
+        // so we do not need to check if contract is active
         qCritical() << "Payout impossible. The account has not enough coverage";
         return false;
     }
@@ -278,13 +283,14 @@ bool contract::payout(QDate d, double amount) const
 }
 bool contract::cancel(QDate d)
 {   LOG_CALL;
-    if( ! id()) {
-        qInfo() << "an invalid contract can not be canceled";
+    if( ! isActive()) {
+        qInfo() << "an inactive contract can not be canceled";
         return false;
     }
-    QString sql ="UPDATE Vertraege SET LaufzeitEnde='%1', Kfrist=%2 WHERE id=%3";
-    sql =sql.arg(d.toString(Qt::ISODate)).arg(-1).arg(id());
-    if( ! executeSql(sql)) {
+    QString sql ="UPDATE Vertraege SET LaufzeitEnde=?, Kfrist=? WHERE id=?";
+    QVector<QVariant> v {d.toString(Qt::ISODate), -1, id()};
+    // sql = sql.arg(d.toString(Qt::ISODate)).arg(-1).arg(id());
+    if( ! executeSql(sql, v)) {
         qDebug() << "contract update to cancel can not be done. ";
         return false;
     }
@@ -339,7 +345,8 @@ bool contract::finalize(bool simulate, const QDate finDate,
 
 bool contract::storeTerminationDate(QDate d) const
 {   LOG_CALL;
-    return executeSql("UPDATE Vertraege SET LaufzeitEnde='" + d.toString(Qt::ISODate) + "' WHERE Vertraege.id=?", id_aS());
+    QVector<QVariant> v {d, id()};
+    return executeSql("UPDATE Vertraege SET LaufzeitEnde=? WHERE id=?", v);
 }
 
 bool contract::archive()
