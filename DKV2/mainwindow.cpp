@@ -513,7 +513,6 @@ void MainWindow::prepare_contracts_list_view()
     QTableView*& tv = ui->contractsTableView;
     tv->setModel(model);
     model->select();
-
     tv->setEditTriggers(QTableView::NoEditTriggers);
     tv->setSelectionMode(QAbstractItemView::SingleSelection);
     tv->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -532,7 +531,11 @@ void MainWindow::prepare_contracts_list_view()
     auto c = connect(ui->contractsTableView->selectionModel(),
             SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
             SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
-    tv->setCurrentIndex(model->index(0, 1));
+
+    if( ! model->rowCount()) {
+        ui->bookingsTableView->setModel(nullptr);
+    } else
+        tv->setCurrentIndex(model->index(0, 1));
 }
 int  MainWindow::get_current_id_from_contracts_list()
 {   LOG_CALL;
