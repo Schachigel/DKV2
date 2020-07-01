@@ -43,7 +43,6 @@ void test_booking::test_dateONSettlement_activatedContracts()
     cont3.activate(QDate( 1999,12,31), 1000.);
     QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2000, 1, 1));
 }
-
 void test_booking::test_dateONSettelment_contractsW_interestBookings00()
 {
     creditor cred(saveRandomCreditor());
@@ -53,7 +52,6 @@ void test_booking::test_dateONSettelment_contractsW_interestBookings00()
     booking::investInterest(cred.id(), QDate(2001,1,1), 5.);
     QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2002, 1, 1));
 }
-
 void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings01()
 {
     creditor cred(saveRandomCreditor());
@@ -67,7 +65,6 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings01()
 
     QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2001, 1, 1));
 }
-
 void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings02()
 {
     creditor cred(saveRandomCreditor());
@@ -81,7 +78,6 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings02()
 
     QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2002, 1, 1));
 }
-
 void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings03()
 {
     {
@@ -94,43 +90,4 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings03()
         dbgTimer timer("calculate settlement year");
         QCOMPARE( bookings::dateOfnextSettlement(), QDate(QDate::currentDate().addYears(-1).year(), 1, 1));
     }
-}
-
-void test_booking::test_getBookings()
-{
-//    creditor c(saveRandomCreditor());
-//    contract cont(saveRandomContract(c.id()));
-//    QDate aDate = QDate(2020, 5, 1);
-//    cont.activate(1000., aDate);
-//    cont.deposit(1000., aDate.addMonths(6));
-//    booking::investInterest(cont.id(), QDate(2021, 1, 1), 10.);
-//    cont.deposit(1000., QDate(2021, 2, 1));
-//    booking::payoutInterest(cont.id(), QDate(2022, 1, 1), 10.);
-//    cont.deposit(1000., QDate(2022, 2, 1));
-
-//    QVector<booking> v=bookings::getBookings(cont.id(), QDate(2020, 5, 1));
-//    QCOMPARE(v.size(), 6);
-
-//    QCOMPARE(v[5].type, booking::Type::deposit);
-//    QCOMPARE(v[4].type, booking::Type::deposit);
-//    QCOMPARE(v[3].type, booking::Type::interestDeposit);
-//    QCOMPARE(v[2].type, booking::Type::deposit);
-//    QCOMPARE(v[1].type, booking::Type::interestPayout);
-//    QCOMPARE(v[0].type, booking::Type::deposit);
-
-//    QCOMPARE(v[5].date, aDate);
-//    QCOMPARE(v[4].date, aDate.addMonths(6));
-//    QCOMPARE(v[3].date, QDate(2021, 1, 1));
-//    QCOMPARE(v[2].date, QDate(2021, 2, 1));
-//    QCOMPARE(v[1].date, QDate(2022, 1, 1));
-//    QCOMPARE(v[0].date, QDate(2022, 2, 1));
-
-//    QCOMPARE(v[5].amount, 1000.);
-//    QCOMPARE(v[4].amount, 1000.);
-//    QCOMPARE(v[3].amount, 10.);
-//    QCOMPARE(v[2].amount, 1000.);
-//    QCOMPARE(v[0].amount, 1000.);
-//    QCOMPARE(v[1].amount, -10);
-
-
 }

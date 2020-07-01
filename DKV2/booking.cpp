@@ -29,32 +29,15 @@
     return deletedBookings;
 }
 
-/* static */ QString booking::b_type(Type t)
+/* static */ QString booking::typeName(Type t)
 {
     switch(t) {
     case booking::non: return "invalid booking";
     case booking::deposit: return "deposit";
     case booking::payout: return "payout";
-    case booking::interestDeposit: return "reinvestment";
+    case booking::interestDeposit: return "reinvest interest";
     case booking::interestPayout: return "interest payout";
     default: return "ERROR";
-    }
-}
-
-/* static */ const QString booking::typeName( booking::Type t)
-{
-    switch (t)
-    {
-    case booking::Type::deposit:
-        return "deposit";
-    case booking::Type::payout:
-        return "payout";
-    case booking::Type::interestDeposit:
-        return "reinvestment";
-    case booking::Type::interestPayout:
-        return "interest payout";
-    default:
-        return "invalid booking type";
     }
 }
 
@@ -66,13 +49,12 @@
     tdi.setValue("Betrag", ctFromEuro(amount));
     tdi.setValue("Datum", date);
     if( tdi.InsertData()) {
-        qInfo() << "successful booking: " << b_type(t) << " contract#: " << contractId << " Amount: " << ctFromEuro(amount) << " date: " << date;
+        qInfo() << "successful booking: " << typeName(t) << " contract#: " << contractId << " Amount: " << ctFromEuro(amount) << " date: " << date;
         return true;
     }
     qCritical() << "booking failed for contract#: " << contractId << " Amount: " << ctFromEuro(amount) << " date: " << date;;
     return false;
 }
-
 /* static */ bool booking::makeDeposit(const qlonglong contractId, const QDate date, const double amount)
 {
     Q_ASSERT( amount > 0.);

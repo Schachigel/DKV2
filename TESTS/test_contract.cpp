@@ -84,20 +84,11 @@ void test_contract::deposit_inactive_contract_fails()
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
     QVERIFY( ! cont.deposit(QDate::currentDate(), 1000.));
-    QDate aDate = QDate::currentDate();
+    QVERIFY( ! cont.payout(QDate::currentDate(), 1000.));
+    QDate aDate = QDate(2019, 1, 1);
     cont.activate(aDate, 1000.);
-    QVERIFY(cont.deposit(aDate.addMonths(3), 1000.));
-}
-
-void test_contract::payout_inactive_contract_fails()
-{
-    creditor c(saveRandomCreditor());
-    contract cont(saveRandomContract(c.id()));
-    cont.setReinvesting();
-    QDate aDate = QDate::currentDate();
-    QVERIFY( ! cont.payout(aDate, 1000.));
-    cont.activate(aDate, 1000.);
-    QVERIFY(cont.deposit(aDate.addDays(1), 500.));
+    QVERIFY(cont.deposit(aDate.addMonths(6), 1000.));
+    QVERIFY(cont.payout(aDate.addMonths(6).addDays(1), 100.));
 }
 
 void test_contract::too_high_payout_fails()

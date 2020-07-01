@@ -28,11 +28,10 @@ qlonglong contractId;
     static bool makePayout(    const qlonglong contractId, const QDate date, const double amount);
     static bool investInterest(const qlonglong contractId, const QDate date, const double amount);
     static bool payoutInterest(const qlonglong contractId, const QDate date, const double amount);
-    static const QString typeName(booking::Type t);
     bool executeBooking();
 private:
     static bool doBooking( const booking::Type, const qlonglong contractId, const QDate date, const double amount);
-    static QString b_type(Type t);
+    static QString typeName(Type t);
 };
 
 struct bookings

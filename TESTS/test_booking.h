@@ -27,7 +27,6 @@ private slots:
     void test_dateONSettelment_contractsW_and_wo_interestBookings01();
     void test_dateONSettelment_contractsW_and_wo_interestBookings02();
     void test_dateONSettelment_contractsW_and_wo_interestBookings03();
-    void test_getBookings();
 };
 
 #endif // TEST_BOOKING_H
