@@ -284,12 +284,11 @@ bool contract::payout(QDate d, double amount) const
 bool contract::cancel(QDate d)
 {   LOG_CALL;
     if( ! isActive()) {
-        qInfo() << "an inactive contract can not be canceled";
+        qInfo() << "an inactive contract can not be canceled. It should be deleted.";
         return false;
     }
     QString sql ="UPDATE Vertraege SET LaufzeitEnde=?, Kfrist=? WHERE id=?";
     QVector<QVariant> v {d.toString(Qt::ISODate), -1, id()};
-    // sql = sql.arg(d.toString(Qt::ISODate)).arg(-1).arg(id());
     if( ! executeSql(sql, v)) {
         qDebug() << "contract update to cancel can not be done. ";
         return false;
@@ -302,6 +301,10 @@ bool contract::finalize(bool simulate, const QDate finDate,
 {   LOG_CALL;
     if( ! finDate.isValid() || finDate < latestBooking() || id() == -1) {
         qDebug() << "invalid date to finalize contract";
+        return false;
+    }
+    if( ! isActive()){
+        qDebug() << "could not finalize inactive contract";
         return false;
     }
     qlonglong id_to_be_deleted = id();
@@ -351,8 +354,10 @@ bool contract::storeTerminationDate(QDate d) const
 
 bool contract::archive()
 {   LOG_CALL;
-    if( value() != 0.)
-        return false;
+    // no check isActive() cause this is only called from finalize which does the check already
+    // no check value()==0 cause this is done in finalize already
+    // secured by the transaction of finalize()
+
     // move all bookings and the contract to the archive tables
     bool res = false;
     do {
@@ -362,10 +367,12 @@ bool contract::archive()
         if( ! executeSql("DELETE FROM Vertraege WHERE id=?", id())) break;
         res =true;
     } while( false);
-     if( ! res) {
-        return false;
+    if(res) {
+        qInfo() << "contract was moved to the contract archive";
+        return true;
     }
-    return true;
+    qCritical() << "contract could not be moved to the archive";
+    return false;
 }
 // test helper
 contract saveRandomContract(qlonglong creditorId)
