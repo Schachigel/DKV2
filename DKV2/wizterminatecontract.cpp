@@ -10,8 +10,8 @@
 wizTerminateContract_DatePage::wizTerminateContract_DatePage(QWidget* p) : QWizardPage(p)
 {
     setTitle("Vertrag beenden");
-    setSubTitle("Mit dieser Dialogfolge kannst Du einen Vertrag beenden.<br>"
-                "Gib das Datum an, zu dem der Vertrag ausgezahlt wird. <br>"
+    setSubTitle("Mit dieser Dialogfolge kannst Du einen Vertrag beenden.<p>"
+                "Gib das Datum an, zu dem der Vertrag ausgezahlt wird. "
                 "Bis zu diesem Datum werden die Zinsen berechnet. ");
     QLabel* l = new QLabel("Vertragsende");
     l->setWordWrap(true);
@@ -45,7 +45,7 @@ bool wizTerminateContract_DatePage::validatePage()
 wizTerminateContract_ConfirmationPage::wizTerminateContract_ConfirmationPage(QWidget* p) : QWizardPage(p)
 {
     setTitle("Vertrag beenden");
-    QCheckBox* cbPrint = new QCheckBox("Beleg als PDF speichern");
+    QCheckBox* cbPrint = new QCheckBox("Beleg als CSV Datei speichern");
     registerField("print", cbPrint);
     QCheckBox* cbConfirm = new QCheckBox("Daten bestätigen");
     registerField("confirm", cbConfirm);
@@ -61,11 +61,13 @@ void wizTerminateContract_ConfirmationPage::initializePage()
     double interest =0., finalValue =0.;
     wiz->c.finalize(true, field("date").toDate(), interest, finalValue);
 
-    QString subtitle = "Bewertung des Vertrags zum Laufzeit Ende: <b>%1 Euro</b><br>"
-                       "Zinsen der letzten Zinsphase: <b>%2 Euro</b><br>"
-                       "Auszahlungsbetrag: <b>%3 Euro</b>";
+    QString subtitle = "<table width=100%>"
+                       "<tr><td>Bewertung des Vertrags zum Laufzeit Ende</td><td align=right><b>%1</b> </td></tr>"
+                       "<tr><td>Zinsen der letzten Zinsphase</td>            <td align=right><b>%2</b> </td></tr>"
+                       "<tr><td>Auszahlungsbetrag </td>                      <td align=right><b>%3</b> </td></tr>"
+                       "</table>";
     QLocale locale;
-    subtitle = subtitle.arg(locale.toCurrencyString(wiz->c.value())).arg(interest).arg(locale.toCurrencyString(finalValue));
+    subtitle = subtitle.arg(locale.toCurrencyString(wiz->c.value())).arg(locale.toCurrencyString(interest)).arg(locale.toCurrencyString(finalValue));
     setSubTitle(subtitle);
 }
 

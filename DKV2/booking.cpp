@@ -11,9 +11,9 @@
         bookings.append(dbfield("id",          QVariant::LongLong).setPrimaryKey().setAutoInc());
         bookings.append(dbfield("VertragsId",  QVariant::LongLong).setDefault(0).setNotNull());
         bookings.append(dbForeignKey(bookings["VertragsId"], dkdbstructur["Vertraege"]["id"], "ON DELETE RESTRICT"));
+        bookings.append(dbfield("Datum",       QVariant::Date).setDefault("9999-12-31").setNotNull());
         bookings.append(dbfield("BuchungsArt", QVariant::Int).setDefault(0).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
         bookings.append(dbfield("Betrag",      QVariant::Int).setDefault(0).setNotNull()); // in cent
-        bookings.append(dbfield("Datum",       QVariant::Date).setDefault("9999-12-31").setNotNull());
     }
     return bookings;
 }

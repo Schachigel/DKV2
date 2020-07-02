@@ -576,7 +576,9 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
     ui->bookingsTableView->setSortingEnabled(false);
     ui->bookingsTableView->hideColumn(0);
     ui->bookingsTableView->hideColumn(1);
-    ui->bookingsTableView->setItemDelegateForColumn(3, new BookingAmountItemFormatter);
+    ui->bookingsTableView->setItemDelegateForColumn(2, new DateItemFormatter);
+    ui->bookingsTableView->setItemDelegateForColumn(3, new bookingTypeFormatter);
+    ui->bookingsTableView->setItemDelegateForColumn(4, new BookingAmountItemFormatter);
 }
 
 // contract list context menu
