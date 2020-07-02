@@ -13,14 +13,10 @@ wizTerminateContract_DatePage::wizTerminateContract_DatePage(QWidget* p) : QWiza
     setSubTitle("Mit dieser Dialogfolge kannst Du einen Vertrag beenden.<p>"
                 "Gib das Datum an, zu dem der Vertrag ausgezahlt wird. "
                 "Bis zu diesem Datum werden die Zinsen berechnet. ");
-    QLabel* l = new QLabel("Vertragsende");
-    l->setWordWrap(true);
     QDateEdit* de = new QDateEdit;
     de->setDisplayFormat("dd.MM.yyyy");
     registerField("date", de);
-    l->setBuddy(de);
     QVBoxLayout* layout = new QVBoxLayout;
-    layout->addWidget(l);
     layout->addWidget(de);
     setLayout(layout);
 }

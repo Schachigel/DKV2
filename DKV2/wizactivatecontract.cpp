@@ -16,21 +16,18 @@ wizActivateContract_IntroPage::wizActivateContract_IntroPage(QWidget* p) : QWiza
 void wizActivateContract_IntroPage::initializePage()
 {
     activateContractWiz* wiz = dynamic_cast<activateContractWiz*>(wizard());
-    QString subtitle = "Mit dieser Dialogfolge kannst Du den Vertrag <br><b>%1</b> von <b>%2</b> <br>aktivieren, "
-                       "so dass die Zinsberechnung beginnt.<p>"
-                       "Die Aktivierung muss nach dem Geldeingang durchgeführt werden.";
+    QString subtitle = "Mit dieser Dialogfolge kannst Du den Vertrag <p><b>%1</b> von <b>%2</b> <p>aktivieren, "
+                       "so dass die Zinsberechnung beginnt.<br>"
+                       "Die Aktivierung muss nach dem Geldeingang durchgeführt werden.<br>";
     setSubTitle(subtitle.arg(wiz->label).arg(wiz->creditorName));
 }
 
 wizActiateContract_DatePage::wizActiateContract_DatePage(QWidget* p) : QWizardPage(p)
 {
-    QLabel* l = new QLabel("Aktivierungsdatum");
     QDateEdit* de = new QDateEdit;
     de->setDisplayFormat("dd.MM.yyyy");
     registerField("date", de);
-    l->setBuddy(de);
     QVBoxLayout*  layout = new QVBoxLayout;
-    layout->addWidget(l);
     layout->addWidget(de);
     setLayout(layout);
 }
@@ -81,11 +78,13 @@ wizActivateContract_SummaryPage::wizActivateContract_SummaryPage( QWidget* p) : 
 
 void wizActivateContract_SummaryPage::initializePage()
 {
-    QString subt ="Der Vertrag <br><b>%1</b> von <b>%2</b><br> soll mit einem Betrag von <br><b>%3 Euro</b>  zum <br>%4 aktiviert werden. <p>%5";
+    QString subt ="Der Vertrag <p><b>%1</b> von <b>%2</b><p> soll mit einem Betrag von <p>"
+                  "<b>%3 Euro</b><p> zum %4 aktiviert werden. <br>";
     activateContractWiz* wiz = dynamic_cast<activateContractWiz*>(wizard());
     double amount = field("amount").toDouble();
     subt = subt.arg(wiz->label).arg(wiz->creditorName);
-    subt = subt.arg(QString::number(amount)).arg(field("date").toDate().toString("dd.MM.yyyy"));
+    QLocale locale;
+    subt = subt.arg(locale.toCurrencyString(amount)).arg(field("date").toDate().toString("dd.MM.yyyy"));
     if( amount != wiz->expectedAmount)
         subt = subt.arg("<b>Der Überweisungsbetrag stimmt nicht mit dem Kreditbetrag überein.</b>");
     else
