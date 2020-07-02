@@ -288,14 +288,12 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
 QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where, const QString& order)
 {
     QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where, order);
-    qDebug() << "executeSql:\n" << sql;
-
+    QVector<QSqlRecord> result;
     QSqlQuery q; q.setForwardOnly(true);
     if( !q.exec(sql)) {
         qCritical() << "executeSql failed " << q.lastError() << endl << q.lastQuery();
-        return QVector<QSqlRecord>();
+        return result;
     }
-    QVector<QSqlRecord> result;
     while( q.next()) {
         // adjust the database types to the expected types
         QSqlRecord oneRecord;
@@ -306,6 +304,7 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
         }
         result.push_back(oneRecord);
     }
+    qInfo() << "executeSql returns " << result;
     return result;
 }
 bool executeSql(QString sql, QVariant v)
@@ -322,7 +321,8 @@ bool executeSql(QString sql, QVariant v)
     return false;
 }
 bool executeSql(QString sql, QVector<QVariant> v)
-{   LOG_CALL;
+{//   LOG_CALL;
+    if( v.isEmpty()) return executeSql(sql);
     QSqlQuery q;
     q.prepare(sql);
     for( int i =0; i< v.count(); i++) {
@@ -330,15 +330,15 @@ bool executeSql(QString sql, QVector<QVariant> v)
             q.addBindValue(v[i]);
             qInfo() << "bound value " << v[i];
         } else {
-            qCritical() << "invalid sql parameter at index " << i;
+            qCritical() << "executeSql w V: invalid sql parameter at index " << i;
             return false;
         }
     }
     if( q.exec()) {
-        qInfo() << "Successfully executed query \n" << q.lastQuery();
+        qInfo() << "executeSql w V Successfully executed query \n" << q.lastQuery();
         return true;
     }
-    qDebug() << "failed to execute query. Error: " << q.lastError() << endl << q.lastQuery();
+    qDebug() << "executeSql w V failed to execute query. Error: " << q.lastError() << endl << q.lastQuery();
     return false;
 }
 
