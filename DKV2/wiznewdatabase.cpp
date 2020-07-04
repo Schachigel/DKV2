@@ -7,9 +7,9 @@
 #include <QFileDialog>
 #include <QRandomGenerator>
 
-
+#include "appconfig.h"
 #include "dkdbhelper.h"
-#include "wizfileselection.h"
+#include "wiznewdatabase.h"
 
 /*
  * general page to select a file name
@@ -18,7 +18,7 @@
 wizFileSelection_IntroPage::wizFileSelection_IntroPage(QWidget* p) : QWizardPage(p) {
     QLineEdit* le = new QLineEdit;
     registerField("selectedFile", le);
-    QLabel* l =new QLabel("Klicke auf 'durchsuchen' um eine Dateiauswahl Fenster zu öffnen");
+    QLabel* l =new QLabel("Klicke auf 'durchsuchen' um eine Dateiauswahlfenster zu öffnen.");
     QVBoxLayout* layout =new QVBoxLayout;
     layout->addWidget(l);
     layout->addWidget(le);
@@ -133,46 +133,92 @@ void wizFileSelectionNewDb_IntroPage::setVisible(bool v) {
 /*
  * page to enter GmbH address data
 */
-wizProjectDetails_Page::wizProjectDetails_Page(QWidget* p) : QWizardPage(p)
+wizProjectAddress_Page::wizProjectAddress_Page(QWidget* p) : QWizardPage(p)
 {
-    setTitle("Daten Deiner Projekt GmbH");
+    setTitle("Adresse der Projekt GmbH");
+    //QLabel* lDisclaimer = new QLabel();
+    setSubTitle("*<small>Diese Daten werden für Briefdruck benötigt und können auch später eingegeben und geändert werden</small>");
     QLineEdit* leAddress1 = new QLineEdit;
-    registerField("address1", leAddress1);
+    registerField(GMBH_ADDRESS1, leAddress1);
     QLineEdit* leAddress2 = new QLineEdit;
-    registerField("address2", leAddress2);
-    QLineEdit* lePlz =      new QLineEdit;
-    registerField("plz", lePlz);
-    QLineEdit* leStadt =    new QLineEdit;
-    registerField("stadt", leStadt);
+    registerField(GMBH_ADDRESS2, leAddress2);
     QLineEdit* leStrasse =  new QLineEdit;
-    registerField("strasse", leStrasse);
+    registerField(GMBH_STREET, leStrasse);
+    QLineEdit* lePlz =      new QLineEdit;
+    registerField(GMBH_PLZ, lePlz);
+    QLineEdit* leStadt =    new QLineEdit;
+    registerField(GMBH_CITY, leStadt);
     QLineEdit* leEmail =    new QLineEdit;
-    registerField("email", leEmail);
+    registerField(GMBH_EMAIL, leEmail);
     QLineEdit* leUrl   =    new QLineEdit;
-    registerField("url", leUrl);
+    registerField(GMBH_URL, leUrl);
 
     QGridLayout* grid  = new QGridLayout;
-    grid->addWidget(leAddress1, 0, 0, 1, 5);
-    grid->addWidget(leAddress2, 1, 0, 1, 5);
-    grid->addWidget(leStrasse,  2, 0, 1, 5);
-    lePlz->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-    leStadt->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-    grid->addWidget(lePlz,      3, 0, 1, 1);
-    grid->addWidget(leStadt,    3, 1, 1, 4);
-    grid->addWidget(leEmail,    4, 0, 1, 5);
-    grid->addWidget(leUrl,      5, 0, 1, 5);
+    grid->addWidget(leAddress1, 0, 0, 1, 3);
+    grid->addWidget(leAddress2, 1, 0, 1, 3);
+    grid->addWidget(leStrasse,  2, 0, 1, 3);
+    grid->addWidget(lePlz,      3, 0);
+    grid->addWidget(leStadt,    3, 1, 1, 2);
+    grid->addWidget(leEmail,    4, 0, 1, 3);
+    grid->addWidget(leUrl,      5, 0, 1, 3);
+    grid->setColumnStretch(0, 1);
+    grid->setColumnStretch(1, 4);
+    // grid->setHorizontalSpacing(0);
+    setLayout(grid);
+}
+
+void wizProjectAddress_Page::initializePage()
+{
+    dbConfig c =dbConfig::fromRuntimeData();
+    setField(GMBH_ADDRESS1, getMetaInfo(GMBH_ADDRESS1, c.address1));
+    setField(GMBH_ADDRESS2, getMetaInfo(GMBH_ADDRESS2, c.address2));
+    setField(GMBH_STREET,   getMetaInfo(GMBH_STREET,   c.street));
+    setField(GMBH_PLZ,      getMetaInfo(GMBH_PLZ,      c.plz));
+    setField(GMBH_CITY,     getMetaInfo(GMBH_CITY,     c.city));
+    setField(GMBH_EMAIL,    getMetaInfo(GMBH_EMAIL,    c.email));
+    setField(GMBH_URL,      getMetaInfo(GMBH_URL,      c.url));
+}
+
+wizProjectDetails_Page::wizProjectDetails_Page(QWidget* p) : QWizardPage(p)
+{
+    setTitle("Weitere Daten der Projekt GmbH");
+    setSubTitle("*<small>Diese Daten werden für Briefdruck benötigt und können auch später eingegeben und geändert werden</small>");
+    QLabel* lHre = new QLabel ("Eintrag im Handeslregister");
+    QLineEdit* leHre = new QLineEdit;
+    registerField(GMBH_HRE, leHre);
+    QLabel* lGefue = new QLabel ("Geschäftsführer*innen");
+    QLineEdit* leGefue1 = new QLineEdit;
+    registerField(GMBH_GEFUE1, leGefue1);
+    QLineEdit* leGefue2 = new QLineEdit;
+    registerField(GMBH_GEFUE2, leGefue2);
+    QLineEdit* leGefue3 = new QLineEdit;
+    registerField(GMBH_GEFUE3, leGefue3);
+    QLabel* lDkv =new QLabel("DK Verwaltung");
+    QLineEdit* leDkv = new QLineEdit;
+    registerField(GMBH_DKV, leDkv);
+
+    QGridLayout* grid  = new QGridLayout;
+    grid->addWidget(lHre,     0, 0, 1, 2);
+    grid->addWidget(leHre,    0, 2, 1, 3);
+    grid->addWidget(lGefue,   1, 0, 1, 2);
+    grid->addWidget(leGefue1, 1, 2, 1, 3);
+    grid->addWidget(leGefue2, 2, 2, 1, 3);
+    grid->addWidget(leGefue3, 3, 2, 1, 3);
+    grid->addWidget(lDkv,     4, 0, 1, 2);
+    grid->addWidget(leDkv,    4, 2, 1, 3);
+    grid->setColumnStretch(0, 2);
+    grid->setColumnStretch(3, 3);
     setLayout(grid);
 }
 
 void wizProjectDetails_Page::initializePage()
 {
-    setField("address1", getMetaInfo("gmbh.address1", "Esperanza Franklin GmbH"));
-    setField("address2", getMetaInfo("gmbh.address2", ""));
-    setField("strasse",  getMetaInfo("gmbh.strasse",  "Turley-Platz 9"));
-    setField("plz",      getMetaInfo("gmbh.plz",      "68167"));
-    setField("stadt",    getMetaInfo("gmbh.stadt",    "Mannheim"));
-    setField("email",    getMetaInfo("gmbh.email",    "info@esperanza-mannheim.de"));
-    setField("url",      getMetaInfo("gmbh.url",      "www.esperanza-mannheim.de"));
+    dbConfig c =dbConfig::fromRuntimeData();
+    setField(GMBH_HRE,    c.hre);
+    setField(GMBH_GEFUE1, c.gefue1);
+    setField(GMBH_GEFUE2, c.gefue2);
+    setField(GMBH_GEFUE3, c.gefue3);
+    setField(GMBH_DKV,    c.dkv);
 }
 
 wizContractLableInfo_Page::wizContractLableInfo_Page(QWidget* p) : QWizardPage(p)
@@ -184,13 +230,13 @@ wizContractLableInfo_Page::wizContractLableInfo_Page(QWidget* p) : QWizardPage(p
     lProject->setText("Projekt Kürzel (2-5 Zeichen):");
     QLineEdit* leProject = new QLineEdit;
     lProject->setBuddy(leProject);
-    registerField("projekt", leProject);
+    registerField(GMBH_PI, leProject);
 
     QLabel* lIndex = new QLabel;
     lIndex->setText("Start Index:");
     QLineEdit* leStartIndex = new QLineEdit;
     lIndex->setBuddy(leStartIndex);
-    registerField("startindex", leStartIndex);
+    registerField(STARTINDEX, leStartIndex);
 
     QVBoxLayout* layout =new QVBoxLayout;
     layout->addWidget(lProject);
@@ -203,18 +249,18 @@ wizContractLableInfo_Page::wizContractLableInfo_Page(QWidget* p) : QWizardPage(p
 void wizContractLableInfo_Page::initializePage()
 {
     QRandomGenerator rand(::GetTickCount());
-    setField("projekt", getMetaInfo("ProjektInitialen", "ESP"));
+    setField(GMBH_PI, getMetaInfo(GMBH_PI, "ESP"));
     int startindex = rand.bounded(1000, 9999);
-    setField("startindex", QString::number(startindex));
+    setField(STARTINDEX, QString::number(startindex));
 }
 
 bool wizContractLableInfo_Page::validatePage()
 {
-    int startindex = field("startindex").toInt();
-    setField("startindex", QString::number(startindex));
+    int startindex = field(STARTINDEX).toInt();
+    setField(STARTINDEX, QString::number(startindex));
     QString project = field("project").toString();
     if(project.length()> 5)
-        setField("projekt", project.left(5));
+        setField(GMBH_PI, project.left(5));
     return true;
 }
 
@@ -234,19 +280,19 @@ void wizNewDatabase_SummaryPage::initializePage()
                    "<tr><td></td><td>%2</td></tr>"
                    "<tr><td></td><td>%3</td></tr>"
                    "<tr><td></td><td>%4 %5<br></td></tr>";
-    subt = subt.arg(field("address1").toString());
-    subt = subt.arg(field("address2").toString());
-    subt = subt.arg(field("strasse").toString());
-    subt = subt.arg(field("plz").toString());
-    subt = subt.arg(field("stadt").toString());
+    subt = subt.arg(field(GMBH_ADDRESS1).toString());
+    subt = subt.arg(field(GMBH_ADDRESS2).toString());
+    subt = subt.arg(field(GMBH_STREET).toString());
+    subt = subt.arg(field(GMBH_PLZ).toString());
+    subt = subt.arg(field(GMBH_CITY).toString());
 
     subt += "<tr><td>E-Mail:</td><td>%1</td></tr>"
             "<tr><td>Web:</td><td>%2</td></tr>"
             "<tr><td>Kürzel:    </td><td>%3</td></tr>"
             "<tr><td>Start Index:&nbsp;&nbsp;</td><td>%4</td></tr></table>";
-    subt = subt.arg(field("email").toString()).arg(field("url").toString());
-    subt = subt.arg(field("projekt").toString());
-    subt = subt.arg(field("startindex").toString());
+    subt = subt.arg(field(GMBH_EMAIL).toString()).arg(field(GMBH_URL).toString());
+    subt = subt.arg(field(GMBH_PI).toString());
+    subt = subt.arg(field(STARTINDEX).toString());
     setSubTitle(subt);
 }
 bool wizNewDatabase_SummaryPage::validatePage()
@@ -259,6 +305,7 @@ bool wizNewDatabase_SummaryPage::validatePage()
 */
 newDatabaseWiz::newDatabaseWiz(QWidget* p) : QWizard(p) {
     addPage(new wizFileSelectionNewDb_IntroPage);
+    addPage(new wizProjectAddress_Page);
     addPage(new wizProjectDetails_Page);
     addPage(new wizContractLableInfo_Page);
     addPage(new wizNewDatabase_SummaryPage);

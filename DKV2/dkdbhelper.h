@@ -17,17 +17,6 @@ extern dbstructure dkdbstructur;
 // THE structure of our database the single source of truth
 void init_DKDBStruct();
 
-// db config info in 'meta' table
-// init = write only if not set
-void initMetaInfo( const QString& name, const QString& wert, QSqlDatabase db=QSqlDatabase::database());
-void initNumMetaInfo( const QString& name, const double& wert, QSqlDatabase db=QSqlDatabase::database());
-// reading
-QString getMetaInfo(const QString& name, const QString& def="", QSqlDatabase db = QSqlDatabase::database());
-double getNumMetaInfo(const QString& name, const double def =0., QSqlDatabase db = QSqlDatabase::database());
-// writing
-void setMetaInfo(const QString& name, const QString& value, QSqlDatabase db = QSqlDatabase::database());
-void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db = QSqlDatabase::database());
-
 bool create_DK_databaseFile(const QString& filename);
 bool create_DK_TablesAndContent(QSqlDatabase db = QSqlDatabase::database());
 bool createView(QString name, QString sql, QSqlDatabase db =QSqlDatabase::database());

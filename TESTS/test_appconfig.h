@@ -21,6 +21,8 @@ private slots:
 //    void cleanup();
     void test_initials();
     void test_overwrite_value();
+    void test_dbConfig_RuntimeData();
+    void test_dbConfig_Db();
 };
 
 #endif // TEST_APPCONFIG_H

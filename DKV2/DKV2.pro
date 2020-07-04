@@ -49,7 +49,7 @@ SOURCES += \
         wizannualsettlement.cpp \
         wizcancelcontract.cpp \
         wizchangecontractvalue.cpp \
-        wizfileselection.cpp \
+        wiznewdatabase.cpp \
         wizterminatecontract.cpp
 
 HEADERS += \
@@ -77,7 +77,7 @@ HEADERS += \
         wizannualsettlement.h \
         wizcancelcontract.h \
         wizchangecontractvalue.h \
-        wizfileselection.h \
+        wiznewdatabase.h \
         wizterminatecontract.h
 
 FORMS += \

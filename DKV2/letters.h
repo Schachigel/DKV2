@@ -2,6 +2,7 @@
 #define LETTERS_H
 
 #include "contract.h"
+#include "appconfig.h"
 #include "letterTemplate.h"
 
 void printThankyouLetter( const contract& v);

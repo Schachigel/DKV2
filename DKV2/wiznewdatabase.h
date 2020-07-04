@@ -3,6 +3,7 @@
 
 #include <QWizard>
 
+/* database -> open */
 struct wizFileSelection_IntroPage : public QWizardPage
 {
     wizFileSelection_IntroPage(QWidget* p =nullptr);
@@ -26,6 +27,7 @@ struct fileSelectionWiz : public QWizard
 };
 
 
+/* database -> new */
 struct wizFileSelectionNewDb_IntroPage : public QWizardPage
 {
     wizFileSelectionNewDb_IntroPage(QWidget* p =nullptr);
@@ -36,12 +38,18 @@ private slots:
     void browseButtonClicked();
 };
 
-struct wizProjectDetails_Page : public QWizardPage
+struct wizProjectAddress_Page : public QWizardPage
 {
-    wizProjectDetails_Page(QWidget* p=nullptr);
+    wizProjectAddress_Page(QWidget* p=nullptr);
     void initializePage() override;
 //    void setVisible(bool v) override;
 //    bool validatePage() override;
+};
+
+struct wizProjectDetails_Page : public QWizardPage
+{
+    wizProjectDetails_Page(QWidget* p= nullptr);
+    void initializePage() override;
 };
 
 struct wizContractLableInfo_Page : public QWizardPage

@@ -13,9 +13,6 @@
 #include "booking.h"
 #include "dbstructure.h"
 
-const double CURRENT_DB_VERSION {2.0};
-const QString DB_VERSION {"Version"};
-
 class dbCloser
 {   // for use on the stack only
 public:
@@ -60,65 +57,6 @@ void init_DKDBStruct()
     done = true;
 }
 
-// db config info in 'meta' table
-void initMetaInfo( const QString& name, const QString& initialValue, QSqlDatabase db)
-{   LOG_CALL;
-    QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'", db);
-    if( value.type() == QVariant::Type::Invalid)
-        setMetaInfo(name, initialValue, db);
-}
-void initNumMetaInfo( const QString& name, const double& newValue, QSqlDatabase db)
-{   LOG_CALL;
-    QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'", db);
-    if( value.type() == QVariant::Type::Invalid)
-        setNumMetaInfo(name, newValue, db);
-}
-QString getMetaInfo(const QString& name, const QString& def, QSqlDatabase db)
-{   LOG_CALL_W(name);
-    if( !db.isValid()){
-        qInfo() << "no database ready (yet), defaulting";
-        return def;
-    }
-    QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'");
-    if( ! value.isValid()) {
-        qInfo() << "read uninitialized property " << name << " -> using default " << def;
-        return def;
-    }
-    qInfo() << "Property " << name << " : " << value;
-    return value.toString();
-}
-double getNumMetaInfo(const QString& name, const double def, QSqlDatabase db)
-{   LOG_CALL_W(name);
-    if( !db.isValid()){
-        qInfo() << "no database ready (yet), defaulting";
-        return def;
-    }
-
-    QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'", db);
-    if( ! value.isValid()) {
-        qInfo() << "getNumProperty read empty property " << name << " -> using default";
-        return def;
-    }
-    qInfo() << "Property " << name << " : " << value.toDouble();
-    return value.toDouble();
-}
-void setMetaInfo(const QString& name, const QString& Wert, QSqlDatabase db)
-{   LOG_CALL_W(name);
-    QSqlQuery q(db);
-    QString sql="INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('%1', '%2')";
-    sql = sql.arg(name).arg(Wert);
-    if( !q.exec(sql))
-        qCritical() << "Failed to insert Meta information " << q.lastError() << endl << q.lastQuery();
-}
-void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db)
-{   LOG_CALL_W(name);
-    QString sql= "INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('%1', '%2')";
-    sql = sql.arg(name).arg(QString::number(Wert));
-    QSqlQuery q(db);
-    if( !q.exec(sql))
-        qCritical() << "Failed to insert Meta information " << q.lastError() << endl << q.lastQuery();
-}
-
 // database creation
 bool create_DK_databaseFile(const QString& filename) /*in the default connection*/
 {   //LOG_CALL_W("filename: " + filename);
@@ -143,21 +81,10 @@ bool create_DK_databaseFile(const QString& filename) /*in the default connection
     return create_DK_TablesAndContent(db);
 }
 // initial database tables and content
-void insert_UniqueDbProperties(QSqlDatabase db = QSqlDatabase::database())
+void insert_DbProperties(QSqlDatabase db = QSqlDatabase::database())
 {   LOG_CALL;
-    initNumMetaInfo(DB_VERSION, CURRENT_DB_VERSION, db);
-    initMetaInfo("ProjektInitialen", appConfig::getRuntimeData("ProjektInitialen"), db);
-    initMetaInfo("IdOffset", appConfig::getRuntimeData("IdOffset"), db);
-}
-void insert_defaultGmbHData( QSqlDatabase db )
-{   LOG_CALL;
-    initMetaInfo("gmbh.address1", appConfig::getRuntimeData("gmbh.address1"), db);
-    initMetaInfo("gmbh.address2", appConfig::getRuntimeData("gmbh.address2"), db);
-    initMetaInfo("gmbh.plz",      appConfig::getRuntimeData("gmbh.plz"),      db);
-    initMetaInfo("gmbh.stadt",    appConfig::getRuntimeData("gmbh.stadt"),    db);
-    initMetaInfo("gmbh.strasse",  appConfig::getRuntimeData("gmbh.strasse"),  db);
-    initMetaInfo("gmbh.email",    appConfig::getRuntimeData("gmbh.email"),    db);
-    initMetaInfo("gmbh.url",      appConfig::getRuntimeData("gmbh.url"),      db);
+    dbConfig c =c.fromRuntimeData();
+    c.toDb(db);
 }
 
 bool createView(QString name, QString sql, QSqlDatabase db) {
@@ -170,7 +97,6 @@ bool createView(QString name, QString sql, QSqlDatabase db) {
     qCritical() << "faild to create view " << name << endl << q.lastQuery() << endl << q.lastError();
     return false;
 }
-
 bool insert_views( QSqlDatabase db)
 {   LOG_CALL;
     QString WertAktiveVertraege = "CREATE VIEW WertAktiveVertraege AS "
@@ -277,8 +203,7 @@ bool create_DK_TablesAndContent(QSqlDatabase db)
         db.rollback();
         return false;
     }
-    insert_UniqueDbProperties(db);
-    insert_defaultGmbHData(db);
+    insert_DbProperties(db);
     db.commit();
     return isValidDatabase(db);
 }
@@ -369,11 +294,11 @@ bool open_databaseForApplication( QString newDbFile)
     }
 
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
-    if( !check_db_version(db))
-    {
+    if( !check_db_version(db)) {
         closeDatabaseConnection();
         return false;
     }
+    dbConfig c; c.fromDb(); c.toRuntimeData();
     return true;
 }
 
@@ -461,10 +386,9 @@ QString proposeKennung()
     static int idOffset = getMetaInfo("IdOffset").toInt();
     static int iMaxid = idOffset + getHighestRowId("Vertraege");
     QString kennung;
-    do
-    {
+    do {
         QString maxid = QString::number(iMaxid).rightJustified(6, '0');
-        QString PI = "DK-" + getMetaInfo("ProjektInitialen");
+        QString PI = "DK-" + getMetaInfo(GMBH_PI);
         kennung = PI + "-" + QString::number(QDate::currentDate().year()) + "-" + maxid;
         QVariant v = executeSingleValueSql(dkdbstructur["Vertraege"]["id"], "Kennung='" + kennung + "'");
         if( v.isValid())
@@ -597,14 +521,11 @@ void calc_contractEnd( QVector<ContractEnd>& ce)
         if( !end.isValid()) continue;
         if( end.year() > maxYear) continue;
         if( end.year() < QDate::currentDate().year()) continue;
-        if( m_count.contains(end.year()))
-        {
+        if( m_count.contains(end.year())) {
             m_count[end.year()] = m_count[end.year()] +1;
             m_sum[end.year()]   = m_sum[end.year()] +
                                 (sql.record().value("thesaurierend").toBool() ? sql.record().value("Wert").toReal() : sql.record().value("Betrag").toReal());
-        }
-        else
-        {
+        } else {
             m_count[end.year()] = 1;
             m_sum[end.year()]   = (sql.record().value("thesaurierend").toBool() ? sql.record().value("Wert").toReal() : sql.record().value("Betrag").toReal());
         }
@@ -624,8 +545,7 @@ void calc_anualInterestDistribution( QVector<YZV>& yzv)
                   "GROUP BY Substr([Vertragsdatum], 0, 4), [ZSatz]";
     QSqlQuery query;
     query.exec(sql);
-    while( query.next())
-    {
+    while( query.next()) {
         QSqlRecord r =query.record();
         yzv.push_back({r.value(0).toInt(), r.value(1).toReal(), r.value(2).toInt(), r.value(3).toReal() });
     }
@@ -638,29 +558,21 @@ QVector<rowData> contractRuntimeDistribution()
     QString sql = "SELECT [Betrag], [Wert], [Vertragsdatum], [LaufzeitEnde] FROM [Vertraege]"; // TODO
     QSqlQuery q;
     q.exec(sql);
-    while( q.next())
-    {
+    while( q.next()) {
         double betrag = q.value("Betrag").toReal();
         double wert =   q.value("Wert").toReal();
         QDate von = q.value("Vertragsdatum").toDate();
         QDate bis = q.value("LaufzeitEnde").toDate();
-        if(! bis.isValid() || bis == EndOfTheFuckingWorld)
-        {
+        if(! bis.isValid() || bis == EndOfTheFuckingWorld) {
             AnzahlUnbegrenzet++;
             SummeUnbegrenzet += wert > betrag ? wert : betrag;
-        }
-        else if( von.addYears(5) < bis)
-        {
+        } else if( von.addYears(5) < bis) {
             AnzahlLaenger++;
             SummeLaenger+= wert > betrag ? wert : betrag;
-        }
-        else if( von.addYears(1) > bis)
-        {
+        } else if( von.addYears(1) > bis) {
             AnzahlBisEinJahr++;
             SummeBisEinJahr += wert > betrag ? wert : betrag;
-        }
-        else
-        {
+        } else {
             AnzahlBisFuenfJahre ++;
             SummeBisFuenfJahre += wert > betrag ? wert : betrag;
         }

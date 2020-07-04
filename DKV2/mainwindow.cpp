@@ -17,7 +17,7 @@
 #include "ui_mainwindow.h"
 
 #include "appconfig.h"
-#include "wizfileselection.h"
+#include "wiznewdatabase.h"
 #include "appconfig.h"
 #include "uiitemformatter.h"
 #include "dkdbhelper.h"
@@ -167,16 +167,23 @@ QString askUserNewDb()
         wiz.openInFolder =QStandardPaths::writableLocation((QStandardPaths::AppDataLocation));
     wiz.title = "Neue DKV2 Datenbank Datei";
     wiz.exec();
-    appConfig::setRuntimeData("gmbh.address1", wiz.field("address1").toString());
-    appConfig::setRuntimeData("gmbh.address2", wiz.field("address2").toString());
-    appConfig::setRuntimeData("gmbh.strasse",  wiz.field("strasse").toString());
-    appConfig::setRuntimeData("gmbh.plz",      wiz.field("plz").toString());
-    appConfig::setRuntimeData("gmbh.stadt",    wiz.field("stadt").toString());
-    appConfig::setRuntimeData("gmbh.email",    wiz.field("email").toString());
-    appConfig::setRuntimeData("gmbh.url",      wiz.field("url").toString());
-    appConfig::setRuntimeData("ProjektInitialen", wiz.field("projekt").toString());
-    appConfig::setRuntimeData("IdOffset",      wiz.field("IdOffset").toString());
-
+    dbConfig c;
+    c.address1 =wiz.field(GMBH_ADDRESS1).toString();
+    c.address2 =wiz.field(GMBH_ADDRESS2).toString();
+    c.street   =wiz.field(GMBH_STREET).toString();
+    c.plz      =wiz.field(GMBH_PLZ).toString();
+    c.city     =wiz.field(GMBH_CITY).toString();
+    c.email    =wiz.field(GMBH_EMAIL).toString();
+    c.url      =wiz.field(GMBH_URL).toString();
+    c.pi       =wiz.field(GMBH_PI).toString();
+    c.startindex=wiz.field(STARTINDEX).toDouble();
+    c.dbId     =c.pi +QString::number(c.startindex);
+    c.hre      =wiz.field(GMBH_HRE).toString();
+    c.gefue1   =wiz.field(GMBH_GEFUE1).toString();
+    c.gefue2   =wiz.field(GMBH_GEFUE2).toString();
+    c.gefue3   =wiz.field(GMBH_GEFUE3).toString();
+    c.dkv      =wiz.field(GMBH_DKV).toString();
+    c.toRuntimeData();
     return wiz.field("selectedFile").toString();
 }
 void MainWindow::on_action_menu_database_new_triggered()

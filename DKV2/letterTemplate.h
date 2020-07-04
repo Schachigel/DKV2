@@ -7,6 +7,7 @@
 #include <QPrinter>
 
 #include "helpersql.h"
+#include "appconfig.h"
 
 const double mmInPt {2.83465};
 
@@ -24,7 +25,7 @@ public:
     };
     QMap<QString, QString> placeholders
     {   {"datum",""}, {"abrechnungsjahr", "2020"}, {"kuendigungsdatum", ""},
-        {"gmbh.address1","Esperanza Franklin GmbH"}, {"gmbh.address2",""}, {"gmbh.strasse","Turley-Platz 9"}, {"gmbh.plz", "68167"}, {"gmbh.stadt", "Mannheim"}, {"gmbh.email", "info@esperanza-mannheim.de"}, {"gmbh.url", "www.esperanza-mannheim.de"},{"gmbh.dkKontakt", "Jutta Sichau"},
+        {GMBH_ADDRESS1,"Esperanza Franklin GmbH"}, {GMBH_ADDRESS2,""}, {GMBH_STREET,"Turley-Platz 9"}, {GMBH_PLZ, "68167"}, {GMBH_CITY, "Mannheim"}, {GMBH_EMAIL, "info@esperanza-mannheim.de"}, {GMBH_URL, "www.esperanza-mannheim.de"},{"gmbh.dkKontakt", "Jutta Sichau"},
         {"kreditoren.vorname", ""}, {"kreditoren.nachname", ""}, {"kreditoren.strasse", ""}, {"kreditoren.plz", ""}, {"kreditoren.stadt", ""}, {"kreditoren.email", ""}, {"kreditoren.iban", ""},
         {"vertraege.kennung", ""}, {"vertraege.betrag", ""}, {"vertraege.buchungsdatum", ""}, {"vertraege.kfrist", ""}, {"vertraege.laufzeitende", ""},
         {"tbh.kennung", "Vertragskennung"}, {"tbh.old", "Vorjahreswert"}, {"tbh.zins", "Zinssatz"}, {"tbh.new", "Neuer Wert"}
