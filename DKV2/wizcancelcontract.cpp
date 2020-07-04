@@ -15,7 +15,7 @@ void wizCancelContract_IntroPage::initializePage()
     wizCancelContract* wiz = dynamic_cast<wizCancelContract*>(wizard());
     QString subTitle("Mit dieser Dialogfolge kannst Du den Vertrag <p><b>%1</b>"
                      "<p>von <p><b>%2</b><p> kündigen. "
-                     "Dadurch wird das Vertragende festgelegt, an dem die Auszahlung erfolgen wird.<p>");
+                     "Dadurch wird das Vertragsende festgelegt, an dem die Auszahlung erfolgen wird.<p>");
     subTitle = subTitle.arg(wiz->c.label()).arg(wiz->creditorName);
     setSubTitle(subTitle);
 }
@@ -35,7 +35,7 @@ wizCancelContract_DatePage::wizCancelContract_DatePage(QWidget* p) : QWizardPage
 void wizCancelContract_DatePage::initializePage()
 {
     wizCancelContract* wiz = dynamic_cast<wizCancelContract*>(wizard());
-    QString subTitle("Das durch die Kündigungsfrist vertraglich vereinbarte Vertragende ist am <b>%1</b>."
+    QString subTitle("Das durch die Kündigungsfrist vertraglich vereinbarte Vertragsende ist am <b>%1</b>."
                      "<p>Gib das geplante Vertragsende ein.");
     subTitle =subTitle.arg(wiz->contractualEnd.toString("dd.MM.yyyy"));
     setSubTitle(subTitle);

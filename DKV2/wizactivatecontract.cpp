@@ -41,7 +41,7 @@ void wizActiateContract_DatePage::initializePage()
 wizActiateContract_AmountPage::wizActiateContract_AmountPage(QWidget* p) : QWizardPage(p)
 {
     setTitle("Eingegangener Kreditbetrag");
-    setSubTitle("Gib die Summe ein, die von dem Kreditor überwiesen wurde.<br> "
+    setSubTitle("Gib die Summe ein, die von dem/der DK-Geber*in überwiesen wurde.<br> "
                 "Diese entspricht normalerweise dem im Vertrag vereinbarten Kreditbetrag.");
     QVBoxLayout*  layout = new QVBoxLayout;
     QLabel* l = new QLabel("Betrag in Euro");

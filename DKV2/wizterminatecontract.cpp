@@ -58,7 +58,7 @@ void wizTerminateContract_ConfirmationPage::initializePage()
     wiz->c.finalize(true, field("date").toDate(), interest, finalValue);
 
     QString subtitle = "<table width=100%>"
-                       "<tr><td>Bewertung des Vertrags zum Laufzeit Ende</td><td align=right><b>%1</b> </td></tr>"
+                       "<tr><td>Bewertung des Vertrags zum Laufzeitende</td><td align=right><b>%1</b> </td></tr>"
                        "<tr><td>Zinsen der letzten Zinsphase</td>            <td align=right><b>%2</b> </td></tr>"
                        "<tr><td>Auszahlungsbetrag </td>                      <td align=right><b>%3</b> </td></tr>"
                        "</table>";
