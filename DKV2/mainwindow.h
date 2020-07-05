@@ -135,6 +135,8 @@ private slots:
 
     void on_actionBeendete_Vertr_ge_anzeigen_triggered();
 
+    void on_actionProjektkonfiguration_ndern_triggered();
+
 private:
     Ui::MainWindow *ui;
     QSplashScreen* splash;
@@ -144,7 +146,7 @@ private:
     void prepare_CreditorsListPage();
     void prepare_contracts_list_view();
     void prepare_startPage();
-    bool useDb(const QString& dbfile="");
+    bool useDb(const QString& dbfile);
     void showDbInStatusbar(QString filename = "");
     int save_creditor();
     qlonglong passNewCreditorIdToNewContract =-1;

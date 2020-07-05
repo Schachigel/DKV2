@@ -83,8 +83,8 @@ bool create_DK_databaseFile(const QString& filename) /*in the default connection
 // initial database tables and content
 void insert_DbProperties(QSqlDatabase db = QSqlDatabase::database())
 {   LOG_CALL;
-    dbConfig c =c.fromRuntimeData();
-    c.toDb(db);
+    dbConfig c(dbConfig::FROM_RTD); // get configuration defaults
+    c.writeDb(db);
 }
 
 bool createView(QString name, QString sql, QSqlDatabase db) {
@@ -298,7 +298,8 @@ bool open_databaseForApplication( QString newDbFile)
         closeDatabaseConnection();
         return false;
     }
-    dbConfig c; c.fromDb(); c.toRuntimeData();
+    dbConfig c(dbConfig::FROM_DB);
+    c.storeRuntimeData();
     return true;
 }
 

@@ -53,10 +53,11 @@ void test_appConfig::test_dbConfig_RuntimeData()
     in.url ="url"; in.pi ="pi"; in.hre ="hre";
     in.gefue1 ="g1"; in.gefue2 ="g2"; in.gefue3 ="g3";
     in.dkv ="dkv"; in.startindex =1; in.dbId ="dbid";
-    in.dbVersion =3.1;
-    in.toRuntimeData();
+    in.dbVersion =3.1; in.minPayout =5000; in.minContract =100000;
+
+    in.storeRuntimeData();
     QCOMPARE(in, in);
-    QCOMPARE(in, dbConfig::fromRuntimeData());
+    QCOMPARE(in, dbConfig(dbConfig::FROM_RTD));
 }
 
 void test_appConfig::test_dbConfig_Db()
@@ -67,8 +68,12 @@ void test_appConfig::test_dbConfig_Db()
     in.url ="url"; in.pi ="pi"; in.hre ="hre";
     in.gefue1 ="g1"; in.gefue2 ="g2"; in.gefue3 ="g3";
     in.dkv ="dkv"; in.startindex =1; in.dbId ="dbid";
-    in.dbVersion =3.1;
+    in.dbVersion =3.1; in.minPayout =5000; in.minContract =100000;
 
-    in.toDb();
-    QCOMPARE(in, dbConfig::fromDb());
+    in.writeDb();
+//    QCOMPARE(in, dbConfig::fromDb());
+    QCOMPARE(in, dbConfig(dbConfig::FROM_DB));
+    // test equality operator
+    in.minPayout+= 1;
+    QVERIFY(in != dbConfig(dbConfig::FROM_DB));
 }

@@ -16,6 +16,8 @@ const QString GMBH_EMAIL {"gmbh.email"};
 const QString GMBH_URL {"gmbh.url"};
 const QString GMBH_PI {"gmbh.Projektinitialen"};
 const QString STARTINDEX {"startindex"};
+const QString MIN_PAYOUT {"minAuszahlung"};
+const QString MIN_AMOUNT {"minVertragswert"};
 const QString DBID {"dbId"};
 const QString GMBH_HRE {"gmbh.Handelsregister"};
 const QString GMBH_GEFUE1{"gmbh.gefue1"};
@@ -71,46 +73,66 @@ private:
 
 struct dbConfig
 {
-    static dbConfig fromRuntimeData();
-    void toRuntimeData();
-    static dbConfig fromDb(QSqlDatabase db =QSqlDatabase::database());
-    void toDb(QSqlDatabase db =QSqlDatabase::database());
-
-    QString address1 ="Esperanza Franklin GmbH";
-    QString address2 ="";
-    QString street ="Turley-Platz 9";
-    QString plz ="68167";
-    QString city ="Mannheim";
-    QString email ="info@esperanza-mannheim.de";
-    QString url ="www.esperanza-mannheim.de";
-    QString pi ="ESP"; // project initials
-    QString hre ="Amtsgericht Mannheim HRB HRB 7-----3";
-    QString gefue1 ="...";
-    QString gefue2 ="...";
-    QString gefue3 ="...";
-    QString dkv    ="...";
-    int     startindex =1234;
-    QString dbId ="ESP1234";
+    enum src {
+        FROM_DB =1,
+        FROM_RTD=2
+    };
+    dbConfig() =default;
+    dbConfig(src s) {
+        if( s==FROM_DB) readDb();
+        else loadRuntimeData();
+    }
+    // static dbConfig fromRuntimeData();
+    void loadRuntimeData();
+    void storeRuntimeData();
+    // static dbConfig fromDb(QSqlDatabase db =QSqlDatabase::database());
+    void readDb(QSqlDatabase db =QSqlDatabase::database());
+    void writeDb(QSqlDatabase db =QSqlDatabase::database());
+    // all config defaults come from here
+    QString address1    ="Esperanza Franklin GmbH";
+    QString address2    ="";
+    QString street      ="Turley-Platz 9";
+    QString plz         ="68167";
+    QString city        ="Mannheim";
+    QString email       ="info@esperanza-mannheim.de";
+    QString url         ="www.esperanza-mannheim.de";
+    QString pi          ="ESP"; // project initials
+    QString hre         ="Amtsgericht Mannheim HRB HRB 7-----3";
+    QString gefue1      ="...";
+    QString gefue2      ="...";
+    QString gefue3      ="...";
+    QString dkv         ="...";
+    int     startindex  =1234;
+    int     minPayout   =100;
+    int     minContract =500;
+    QString dbId        ="ESP1234";
     double  dbVersion=CURRENT_DB_VERSION;
+
+    inline friend bool operator!=(const dbConfig& lhs, const dbConfig& rhs) {
+        return !(lhs==rhs);
+    }
 
     inline friend bool operator==(const dbConfig& lhs, const dbConfig& rhs) {
         bool ret =false;
         do{
-            if( lhs.address1 != rhs.address1) break;
-            if( lhs.address2 != rhs.address2) break;
-            if( lhs.street   != rhs.street)   break;
-            if( lhs.plz      != rhs.plz)      break;
-            if( lhs.city     != rhs.city)     break;
-            if( lhs.email    != rhs.email)    break;
-            if( lhs.url      != rhs.url)      break;
-            if( lhs.pi       != rhs.pi)       break;
-            if( lhs.hre      != rhs.hre)      break;
-            if( lhs.gefue1   != rhs.gefue1)   break;
-            if( lhs.gefue2   != rhs.gefue2)   break;
-            if( lhs.gefue3   != rhs.gefue3)   break;
-            if( lhs.dkv      != rhs.dkv)      break;
+            if( lhs.address1 != rhs.address1)   break;
+            if( lhs.address2 != rhs.address2)   break;
+            if( lhs.street   != rhs.street)     break;
+            if( lhs.plz      != rhs.plz)        break;
+            if( lhs.city     != rhs.city)       break;
+            if( lhs.email    != rhs.email)      break;
+            if( lhs.url      != rhs.url)        break;
+            if( lhs.pi       != rhs.pi)         break;
+            if( lhs.hre      != rhs.hre)        break;
+            if( lhs.gefue1   != rhs.gefue1)     break;
+            if( lhs.gefue2   != rhs.gefue2)     break;
+            if( lhs.gefue3   != rhs.gefue3)     break;
+            if( lhs.dkv      != rhs.dkv)        break;
             if( lhs.startindex!= rhs.startindex)break;
-            if( lhs.dbId     != rhs.dbId)   break;
+            if( lhs.dbId     != rhs.dbId)       break;
+            if( lhs.minPayout!= rhs.minPayout)  break;
+            if( lhs.minContract!= rhs.minContract) break;
+            if( lhs.dbVersion != rhs.dbVersion) break;
             ret =true;
         } while(false);
         return ret;

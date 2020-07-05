@@ -138,7 +138,7 @@ void MainWindow::on_action_menu_database_start_triggered()
 QString askUserDbFilename(QString title, bool onlyExistingFiles=false)
 {   // this function is used with openDb, creaetDbCopy, createAnony.DbCopy but NOT newDb
     LOG_CALL;
-    fileSelectionWiz wiz;
+    wizFileSelectionWiz wiz;
     wiz.title =title;
     wiz.subtitle ="Mit dieser Dialogfolge wählst Du eine DKV2 Datenbank aus";
     wiz.fileTypeDescription ="dk-DB Dateien (*.dkdb)";
@@ -158,7 +158,7 @@ QString askUserDbFilename(QString title, bool onlyExistingFiles=false)
 }
 QString askUserNewDb()
 {   LOG_CALL;
-    newDatabaseWiz wiz;
+    wizNewDatabaseWiz wiz;
     QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     QFileInfo lastdb (appConfig::CurrentDb());
     if( lastdb.exists())
@@ -166,24 +166,9 @@ QString askUserNewDb()
     else
         wiz.openInFolder =QStandardPaths::writableLocation((QStandardPaths::AppDataLocation));
     wiz.title = "Neue DKV2 Datenbank Datei";
-    wiz.exec();
-    dbConfig c;
-    c.address1 =wiz.field(GMBH_ADDRESS1).toString();
-    c.address2 =wiz.field(GMBH_ADDRESS2).toString();
-    c.street   =wiz.field(GMBH_STREET).toString();
-    c.plz      =wiz.field(GMBH_PLZ).toString();
-    c.city     =wiz.field(GMBH_CITY).toString();
-    c.email    =wiz.field(GMBH_EMAIL).toString();
-    c.url      =wiz.field(GMBH_URL).toString();
-    c.pi       =wiz.field(GMBH_PI).toString();
-    c.startindex=wiz.field(STARTINDEX).toDouble();
-    c.dbId     =c.pi +QString::number(c.startindex);
-    c.hre      =wiz.field(GMBH_HRE).toString();
-    c.gefue1   =wiz.field(GMBH_GEFUE1).toString();
-    c.gefue2   =wiz.field(GMBH_GEFUE2).toString();
-    c.gefue3   =wiz.field(GMBH_GEFUE3).toString();
-    c.dkv      =wiz.field(GMBH_DKV).toString();
-    c.toRuntimeData();
+    if( wiz.exec() == QDialog::Accepted)
+        wiz.updateDbConfig();
+
     return wiz.field("selectedFile").toString();
 }
 void MainWindow::on_action_menu_database_new_triggered()
@@ -251,6 +236,12 @@ void MainWindow::on_action_menu_database_anonymous_copy_triggered()
         qCritical() << "creating depersonaliced copy failed";
     }
     return;
+}
+void MainWindow::on_actionProjektkonfiguration_ndern_triggered()
+{   LOG_CALL;
+    wizConfigureProjectWiz wiz;
+    if(wiz.exec() == QDialog::Accepted)
+        wiz.updateDbConfig();
 }
 void MainWindow::on_action_menu_database_configure_outdir_triggered()
 {   LOG_CALL;
@@ -1056,5 +1047,3 @@ void MainWindow::on_action_about_DKV2_triggered()
     msg += "Viel Spaß mit DKV2 !";
     QMessageBox::information(this, "I n f o", msg);
 }
-
-

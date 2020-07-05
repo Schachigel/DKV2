@@ -136,7 +136,8 @@ void appConfig::delLastDb()
 /* static */
 void appConfig::setCurrentDb(const QString& path)
 {   LOG_CALL_W(path);
-    setRuntimeData( keyCurrentDb, path);
+    QFileInfo fi(path);
+    setRuntimeData( keyCurrentDb, fi.absoluteFilePath());
 }
 /* static */
 QString appConfig::CurrentDb()
@@ -187,29 +188,33 @@ void appConfig::deleteRuntimeData(const QString& name)
     runtimedata.remove(name);
 }
 
-/* static */ dbConfig dbConfig::fromRuntimeData()
+void dbConfig::loadRuntimeData()
 {
-    dbConfig c;
-    c.address1 =appConfig::getRuntimeData(GMBH_ADDRESS1);
-    c.address2 =appConfig::getRuntimeData(GMBH_ADDRESS2);
-    c.street   =appConfig::getRuntimeData(GMBH_STREET);
-    c.plz      =appConfig::getRuntimeData(GMBH_PLZ);
-    c.city     =appConfig::getRuntimeData(GMBH_CITY);
-    c.email    =appConfig::getRuntimeData(GMBH_EMAIL);
-    c.url      =appConfig::getRuntimeData(GMBH_URL);
-    c.pi       =appConfig::getRuntimeData(GMBH_PI);
-    c.startindex=appConfig::getRuntimeData(STARTINDEX).toInt();
-    c.dbId     =appConfig::getRuntimeData(DBID);
-    c.dbVersion=appConfig::getRuntimeData(DB_VERSION).toDouble();
-    c.hre      =appConfig::getRuntimeData(GMBH_HRE);
-    c.gefue1   =appConfig::getRuntimeData(GMBH_GEFUE1);
-    c.gefue2   =appConfig::getRuntimeData(GMBH_GEFUE2);
-    c.gefue3   =appConfig::getRuntimeData(GMBH_GEFUE3);
-    c.dkv      =appConfig::getRuntimeData(GMBH_DKV);
-    return c;
+    if( appConfig::getRuntimeData(DBID) == "") {
+        // runtime data is uninitialized
+        return;
+    }
+    address1   =appConfig::getRuntimeData(GMBH_ADDRESS1);
+    address2   =appConfig::getRuntimeData(GMBH_ADDRESS2);
+    street     =appConfig::getRuntimeData(GMBH_STREET);
+    plz        =appConfig::getRuntimeData(GMBH_PLZ);
+    city       =appConfig::getRuntimeData(GMBH_CITY);
+    email      =appConfig::getRuntimeData(GMBH_EMAIL);
+    url        =appConfig::getRuntimeData(GMBH_URL);
+    pi         =appConfig::getRuntimeData(GMBH_PI);
+    hre        =appConfig::getRuntimeData(GMBH_HRE);
+    gefue1     =appConfig::getRuntimeData(GMBH_GEFUE1);
+    gefue2     =appConfig::getRuntimeData(GMBH_GEFUE2);
+    gefue3     =appConfig::getRuntimeData(GMBH_GEFUE3);
+    dkv        =appConfig::getRuntimeData(GMBH_DKV);
+    startindex =appConfig::getRuntimeData(STARTINDEX).toInt();
+    minPayout  =appConfig::getRuntimeData(MIN_PAYOUT).toInt();
+    minContract=appConfig::getRuntimeData(MIN_AMOUNT).toInt();
+    dbId       =appConfig::getRuntimeData(DBID);
+    dbVersion  =appConfig::getRuntimeData(DB_VERSION).toDouble();
 }
 
-void dbConfig::toRuntimeData()
+void dbConfig::storeRuntimeData()
 {
     appConfig::setRuntimeData(GMBH_ADDRESS1, address1);
     appConfig::setRuntimeData(GMBH_ADDRESS2, address2);
@@ -219,54 +224,58 @@ void dbConfig::toRuntimeData()
     appConfig::setRuntimeData(GMBH_EMAIL,    email);
     appConfig::setRuntimeData(GMBH_URL,      url);
     appConfig::setRuntimeData(GMBH_PI,       pi);
-    appConfig::setRuntimeData(STARTINDEX,    QString::number(startindex));
-    appConfig::setRuntimeData(DBID,          dbId);
-    appConfig::setRuntimeData(DB_VERSION,    QString::number(dbVersion));
     appConfig::setRuntimeData(GMBH_HRE,      hre);
     appConfig::setRuntimeData(GMBH_GEFUE1,   gefue1);
     appConfig::setRuntimeData(GMBH_GEFUE2,   gefue2);
     appConfig::setRuntimeData(GMBH_GEFUE3,   gefue3);
     appConfig::setRuntimeData(GMBH_DKV,      dkv);
+    appConfig::setRuntimeData(STARTINDEX,    QString::number(startindex));
+    appConfig::setRuntimeData(MIN_PAYOUT,    QString::number(minPayout));
+    appConfig::setRuntimeData(MIN_AMOUNT,    QString::number(minContract));
+    appConfig::setRuntimeData(DBID,          dbId);
+    appConfig::setRuntimeData(DB_VERSION,    QString::number(dbVersion));
 }
 
-void dbConfig::toDb(QSqlDatabase db)
+void dbConfig::writeDb(QSqlDatabase db)
 {
-    setMetaInfo(GMBH_ADDRESS1, address1, db);
-    setMetaInfo(GMBH_ADDRESS2, address2, db);
-    setMetaInfo(GMBH_STREET,   street,   db);
-    setMetaInfo(GMBH_PLZ,      plz,      db);
-    setMetaInfo(GMBH_CITY,     city,     db);
-    setMetaInfo(GMBH_EMAIL,    email,    db);
-    setMetaInfo(GMBH_URL,      url,      db);
-    setMetaInfo(GMBH_PI,       pi,       db);
-    setNumMetaInfo(STARTINDEX,    startindex, db);
-    setMetaInfo(DBID,          dbId,     db);
-    setNumMetaInfo(DB_VERSION, dbVersion,db);
-    setMetaInfo(GMBH_HRE,      hre,      db);
-    setMetaInfo(GMBH_GEFUE1,   gefue1,   db);
-    setMetaInfo(GMBH_GEFUE2,   gefue2,   db);
-    setMetaInfo(GMBH_GEFUE3,   gefue3,   db);
-    setMetaInfo(GMBH_DKV,      dkv,      db);
+    setMetaInfo(GMBH_ADDRESS1, address1,    db);
+    setMetaInfo(GMBH_ADDRESS2, address2,    db);
+    setMetaInfo(GMBH_STREET,   street,      db);
+    setMetaInfo(GMBH_PLZ,      plz,         db);
+    setMetaInfo(GMBH_CITY,     city,        db);
+    setMetaInfo(GMBH_EMAIL,    email,       db);
+    setMetaInfo(GMBH_URL,      url,         db);
+    setMetaInfo(GMBH_PI,       pi,          db);
+    setMetaInfo(GMBH_HRE,      hre,         db);
+    setMetaInfo(GMBH_GEFUE1,   gefue1,      db);
+    setMetaInfo(GMBH_GEFUE2,   gefue2,      db);
+    setMetaInfo(GMBH_GEFUE3,   gefue3,      db);
+    setMetaInfo(GMBH_DKV,      dkv,         db);
+    setNumMetaInfo(STARTINDEX, startindex,  db);
+    setNumMetaInfo(MIN_PAYOUT, minPayout,   db);
+    setNumMetaInfo(MIN_AMOUNT, minContract, db);
+    setMetaInfo(DBID,          dbId,        db);
+    setNumMetaInfo(DB_VERSION, dbVersion,   db);
 }
 
-/* static */ dbConfig dbConfig::fromDb(QSqlDatabase db)
+void dbConfig::readDb(QSqlDatabase db)
 {
-    dbConfig c;
-    c.address1 =getMetaInfo(GMBH_ADDRESS1, c.address1,  db);
-    c.address2 =getMetaInfo(GMBH_ADDRESS2, c.address2,  db);
-    c.street   =getMetaInfo(GMBH_STREET,   c.street,    db);
-    c.plz      =getMetaInfo(GMBH_PLZ,      c.plz,       db);
-    c.city     =getMetaInfo(GMBH_CITY,     c.city,      db);
-    c.email    =getMetaInfo(GMBH_EMAIL,    c.email,     db);
-    c.url      =getMetaInfo(GMBH_URL,      c.url,       db);
-    c.pi       =getMetaInfo(GMBH_PI,       c.pi,        db);
-    c.startindex=getNumMetaInfo(STARTINDEX, c.startindex, db);
-    c.dbId     =getMetaInfo(DBID,          c.dbId,      db);
-    c.dbVersion=getNumMetaInfo(DB_VERSION, c.dbVersion, db);
-    c.hre      =getMetaInfo(GMBH_HRE,      c.hre,       db);
-    c.gefue1   =getMetaInfo(GMBH_GEFUE1,   c.gefue1,    db);
-    c.gefue2   =getMetaInfo(GMBH_GEFUE2,   c.gefue2,    db);
-    c.gefue3   =getMetaInfo(GMBH_GEFUE3,   c.gefue3,    db);
-    c.dkv      =getMetaInfo(GMBH_DKV,      c.dkv,       db);
-    return c;
+    address1   =getMetaInfo(GMBH_ADDRESS1, address1,   db);
+    address2   =getMetaInfo(GMBH_ADDRESS2, address2,   db);
+    street     =getMetaInfo(GMBH_STREET,   street,     db);
+    plz        =getMetaInfo(GMBH_PLZ,      plz,        db);
+    city       =getMetaInfo(GMBH_CITY,     city,       db);
+    email      =getMetaInfo(GMBH_EMAIL,    email,      db);
+    url        =getMetaInfo(GMBH_URL,      url,        db);
+    pi         =getMetaInfo(GMBH_PI,       pi,         db);
+    hre        =getMetaInfo(GMBH_HRE,      hre,        db);
+    gefue1     =getMetaInfo(GMBH_GEFUE1,   gefue1,     db);
+    gefue2     =getMetaInfo(GMBH_GEFUE2,   gefue2,     db);
+    gefue3     =getMetaInfo(GMBH_GEFUE3,   gefue3,     db);
+    dkv        =getMetaInfo(GMBH_DKV,      dkv,        db);
+    startindex =getNumMetaInfo(STARTINDEX, startindex, db);
+    minPayout  =getNumMetaInfo(MIN_PAYOUT, minPayout,  db);
+    minContract=getNumMetaInfo(MIN_AMOUNT, minContract,db);
+    dbId       =getMetaInfo(DBID,          dbId,       db);
+    dbVersion  =getNumMetaInfo(DB_VERSION, dbVersion,  db);
 }
