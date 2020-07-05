@@ -50,14 +50,12 @@ bool createCsvActiveContracts();
 struct DbSummary
 {
     int AnzahlDkGeber;
-    int AnzahlDkGeberEin;
-    int AnzahlDkGeberZwei;
-    int AnzahlDkGeberMehr;
+    double AnzahlDkProDkGeber;
+
     double DurchschnittZins;
     double MittlererZins;
 
     int     AnzahlAktive;
-    double  BetragAktive;
     double  WertAktive;
 
     int     AnzahlAuszahlende;
@@ -65,7 +63,6 @@ struct DbSummary
 
     int     AnzahlThesaurierende;
     double  WertThesaurierende;
-    double  BetragThesaurierende;
 
     int     AnzahlPassive;
     double  BetragPassive;

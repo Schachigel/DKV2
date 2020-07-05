@@ -903,10 +903,12 @@ QString MainWindow::prepare_overview_page(Uebersichten u)
         calculateSummary(dbs);
         lbl += h1("Übersicht DKs und DK Geber")+ newLine( "Stand: " + QDate::currentDate().toString("dd.MM.yyyy<br>"));
         lbl += startTable();
-        lbl += tableRow("Anzahl aktiver Direktkredite:" , QString::number(dbs.AnzahlAktive));
         lbl += tableRow("Anzahl DK Geber*innen von aktiven Verträgen:", QString::number(dbs.AnzahlDkGeber));
-        lbl += tableRow("Summe aktiver Direktkredite:"  , locale.toCurrencyString(dbs.BetragAktive) + "<br><small>(Ø " + locale.toCurrencyString(dbs.BetragAktive/dbs.AnzahlAktive) + ")</small>");
-        lbl += tableRow("Wert inklusive Zinsen:", locale.toCurrencyString(dbs.WertAktive) + "<br><small>(Ø " + locale.toCurrencyString(dbs.WertAktive/dbs.AnzahlAktive) + ")</small>");
+        lbl += tableRow("Anzahl aktiver Direktkredite:" , QString::number(dbs.AnzahlAktive));
+        lbl += tableRow("Wert der aktiven Direktkredite:"  , locale.toCurrencyString(dbs.WertAktive) + "<br><small>(Ø " + locale.toCurrencyString(dbs.WertAktive/dbs.AnzahlAktive) + ")</small>");
+
+
+
         lbl += tableRow("Durchschnittlicher Zinssatz:<br><small>(Gewichtet mit Vertragswert)</small>", QString::number(dbs.DurchschnittZins, 'f', 3) + "%");
         lbl += tableRow("Jährliche Zinskosten:", locale.toCurrencyString(dbs.WertAktive * dbs.DurchschnittZins/100.));
         lbl += tableRow("Mittlerer Zinssatz:", QString::number(dbs.MittlererZins, 'f', 3) + "%");
@@ -915,7 +917,6 @@ QString MainWindow::prepare_overview_page(Uebersichten u)
         lbl += tableRow("Summe:", locale.toCurrencyString(dbs.BetragAuszahlende));
         lbl += emptyRow();
         lbl += tableRow("Anzahl ohne jährl. Zinsauszahlung:", QString::number(dbs.AnzahlThesaurierende));
-        lbl += tableRow("Summe:", locale.toCurrencyString(dbs.BetragThesaurierende));
         lbl += tableRow("Wert inkl. Zinsen:", locale.toCurrencyString(dbs.WertThesaurierende));
         lbl += emptyRow();
         lbl += tableRow("Anzahl ausstehender (inaktiven) DK", QString::number(dbs.AnzahlPassive));

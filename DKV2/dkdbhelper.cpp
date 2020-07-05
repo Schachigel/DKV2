@@ -90,7 +90,9 @@ void insert_DbProperties(QSqlDatabase db = QSqlDatabase::database())
 bool createView(QString name, QString sql, QSqlDatabase db) {
     QSqlQuery q(db);
     q.exec("DROP VIEW " + name);
-    if( q.exec(sql)) {
+    QString createViewSql = "CREATE VIEW %1 AS " + sql;
+    createViewSql = createViewSql.arg(name);
+    if( q.exec(createViewSql)) {
         qInfo() << "successfully created view " << name;
         return true;
     }
@@ -99,51 +101,45 @@ bool createView(QString name, QString sql, QSqlDatabase db) {
 }
 bool insert_views( QSqlDatabase db)
 {   LOG_CALL;
-    QString WertAktiveVertraege = "CREATE VIEW WertAktiveVertraege AS "
-        "SELECT Vertraege.id AS id, Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, Vertraege.Kennung AS Vertragskennung, Vertraege.ZSatz/100. AS Zinssatz, "
-        "(SELECT sum(Buchungen.betrag) FROM Buchungen "
-        "WHERE Vertraege.id = Buchungen.VertragsId) AS Wert, "
-        "MIN(Buchungen.Datum) AS Datum, Vertraege.Kfrist AS Kündigungsfrist, Vertraege.LaufzeitEnde AS Vertragsende, thesaurierend AS thesa, Kreditoren.id AS KreditorId "
-        "FROM Vertraege "
-        "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
-        "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
-        "Group by Vertraege.id";
+    QString sqlWertAktiveVertraege =
+            "SELECT Vertraege.id AS id, Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, Vertraege.Kennung AS Vertragskennung, Vertraege.ZSatz/100. AS Zinssatz, "
+            "(SELECT sum(Buchungen.betrag) FROM Buchungen "
+            "WHERE Vertraege.id = Buchungen.VertragsId) AS Wert, "
+            "MIN(Buchungen.Datum) AS Datum, Vertraege.Kfrist AS Kündigungsfrist, Vertraege.LaufzeitEnde AS Vertragsende, thesaurierend AS thesa, Kreditoren.id AS KreditorId "
+            "FROM Vertraege "
+            "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
+            "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
+            "Group by Vertraege.id";
+    bool ret = createView( "WertAktiveVertraege", sqlWertAktiveVertraege, db);
 
-    bool ret = createView( "WertAktiveVertraege", WertAktiveVertraege, db);
+    QString sqlWertPassiveVertraege =
+            "SELECT Vertraege.id AS id, "    // 0
+            "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 1
+            "Vertraege.Kennung AS Vertragskennung, " // 2
+            "Vertraege.ZSatz/100. AS Zinssatz, "     // 3
+            "-1* Vertraege.Betrag AS Wert, "         // 4
+            "Vertraege.Vertragsdatum AS Datum, " // 5
+            "Vertraege.Kfrist AS Kündigungsfrist, "      // 6
+            "Vertraege.LaufzeitEnde AS Vertragsende, "   // 7
+            "Vertraege.thesaurierend AS thesa, "          // 8
+            "Kreditoren.id AS KreditorId " // 9
+            "FROM Vertraege "
+            "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
+            "WHERE (SELECT count(*) FROM Buchungen WHERE Buchungen.VertragsId=Vertraege.id) = 0";
+    ret &= createView("WertPassiveVertraege", sqlWertPassiveVertraege, db);
 
-    QString WertPassiveVertraege = "CREATE VIEW WertPassiveVertraege AS "
-    "SELECT Vertraege.id AS id, "    // 0
-    "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 1
-    "Vertraege.Kennung AS Vertragskennung, " // 2
-    "Vertraege.ZSatz/100. AS Zinssatz, "     // 3
-    "-1* Vertraege.Betrag AS Wert, "         // 4
-    "Vertraege.Vertragsdatum AS Datum, " // 5
-    "Vertraege.Kfrist AS Kündigungsfrist, "      // 6
-    "Vertraege.LaufzeitEnde AS Vertragsende, "   // 7
-    "Vertraege.thesaurierend AS thesa, "          // 8
-    "Kreditoren.id AS KreditorId " // 9
-    "FROM Vertraege "
-    "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
-    "WHERE (SELECT count(*) FROM Buchungen WHERE Buchungen.VertragsId=Vertraege.id) = 0";
-    ret &= createView("WertPassiveVertraege", WertPassiveVertraege, db);
+    QString sqlWertAlleVertraege ="SELECT * FROM WertAktiveVertraege "
+                                  "UNION "
+                                  "SELECT * FROM WertPassiveVertraege ";
+    ret &= createView("WertAlleVertraege", sqlWertAlleVertraege, db);
 
-    QString WertAlleVertraege = "CREATE VIEW WertAlleVertraege AS "
-                                "SELECT * FROM WertAktiveVertraege "
-                                "UNION "
-                                "SELECT * FROM WertPassiveVertraege ";
+//    QString sqlAktiveVertraege ="SELECT DISTINCT Vertraege.* "
+//            "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id=buchungen.VertragsId ";
+//    ret &= createView("AktiveVertraege", sqlAktiveVertraege, db);
 
-    ret &= createView("WertAlleVertraege", WertAlleVertraege, db);
-
-    QString aktiveVertraege = "CREATE VIEW AktiveVertraege AS "
-            "SELECT DISTINCT Vertraege.* "
-            "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id=buchungen.VertragsId ";
-    ret &= createView("AktiveVertraege", aktiveVertraege, db);
-
-    QString WertExVertraege ="CREATE VIEW WertExVertraege AS "
-                             "SELECT exVertraege.id AS id, "
+    QString sqlWertExVertraege ="SELECT exVertraege.id AS id, "
                              "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, "
-                             "exVertraege.Kennung AS Vertragskennung, "
-                             "exVertraege.ZSatz/100. AS Zinssatz, "
+                             "exVertraege.Kennung AS Vertragskennung, exVertraege.ZSatz/100. AS Zinssatz, "
                              "(SELECT sum(exBuchungen.betrag) FROM exBuchungen WHERE exVertraege.id = exBuchungen.VertragsId) AS Wert, "
                              "MIN(exBuchungen.Datum) AS Datum, exVertraege.Kfrist AS Kündigungsfrist, "
                              "exVertraege.LaufzeitEnde AS Vertragsende, thesaurierend AS thesa, Kreditoren.id AS KreditorId "
@@ -151,36 +147,32 @@ bool insert_views( QSqlDatabase db)
                              "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
                              "INNER JOIN Kreditoren ON Kreditoren.id = exVertraege.KreditorId "
                              "Group by exVertraege.id";
-    ret &= createView( "WertExVertraege", WertExVertraege, db);
+    ret &= createView( "WertExVertraege", sqlWertExVertraege, db);
 
     /* Wann muss die Abrechnung für Verträge gemacht werden, die noch keine Zinsabrechnung hatten? */
-    QString firstInterestDates = "CREATE VIEW NextAnnualS_first AS "
+    QString sqlFirstInterestDates =
             "SELECT STRFTIME('%Y-%m-%d', MIN(Datum), '1 year', 'start of year')  as nextInterestDate "
             "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id = buchungen.VertragsId "
             /* buchungen von Verträgen für die es keine Zinsbuchungen gibt */
             "WHERE (SELECT count(*) FROM Buchungen WHERE (Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8) AND Buchungen.VertragsId=Vertraege.id)=0 "
             "GROUP BY Vertraege.id ";
-    createView("NextAnnualS_first", firstInterestDates, db);
+    createView("NextAnnualS_first", sqlFirstInterestDates, db);
 
     /* Wann muss die Abrechnung für Verträge gemacht werden, die bereits Zinsabrechnung(en) hatten? */
-    QString nextInterestDates = "CREATE VIEW NextAnnualS_next AS "
+    QString sqlNextInterestDates =
         "SELECT STRFTIME('%Y-%m-%d', MAX(Datum), '1 year', 'start of year') as nextInterestDate "
         "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id=buchungen.VertragsId "
         "WHERE Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8 "
         "GROUP BY Buchungen.VertragsId "
         "ORDER BY Datum ASC LIMIT 1";
-    ret &= createView("NextAnnualS_next", nextInterestDates, db);
+    ret &= createView("NextAnnualS_next", sqlNextInterestDates, db);
 
-
-    QString nextInterestDate("CREATE VIEW NextAnnualSettlement AS "
-            "SELECT MIN(nextInterestDate) AS date FROM "
-            "(SELECT nextInterestDate FROM NextAnnualS_first "
-            "UNION SELECT nextInterestDate from NextAnnualS_next)");
-
-    ret &= createView("NextAnnualSettlement", nextInterestDate, db);
+    QString sqlNextInterestDate( "SELECT MIN(nextInterestDate) AS date FROM "
+                              "(SELECT nextInterestDate FROM NextAnnualS_first "
+                              "UNION SELECT nextInterestDate from NextAnnualS_next)");
+    ret &= createView("NextAnnualSettlement", sqlNextInterestDate, db);
 
     QString sqlDeletedContracts =
-            "CREATE VIEW  WertBeendeteVertraege AS "
             "SELECT exVertraege.id AS id, Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, exVertraege.Kennung AS Vertragskennung, exVertraege.ZSatz/100. AS Zinssatz, "
             "(SELECT sum(exBuchungen.betrag) FROM exBuchungen "
             "WHERE exVertraege.id = exBuchungen.VertragsId) AS Wert, "
@@ -191,6 +183,8 @@ bool insert_views( QSqlDatabase db)
             "Group by exVertraege.id";
     ret &= createView("WertBeendeteVertraege", sqlDeletedContracts, db);
 
+    QString sqlAnzahlAktiveDkGeber = "SELECT COUNT(DISTINCT KreditorId) AS AnzahlDkgeber FROM AktiveVertraege";
+    ret &= createView("AnzahlAktiveDkGeber", sqlAnzahlAktiveDkGeber, db);
     return ret;
 }
 
@@ -452,23 +446,21 @@ QString contractList_SQL(const QVector<dbfield>& fields, const QString& filter)
 // todo: update for new contract structure
 void calculateSummary(DbSummary& dbs)
 {   LOG_CALL;
-    dbs.AnzahlDkGeber = executeSingleValueSql("count(DISTINCT(KreditorId))", "[Kreditoren],[Vertraege]", "aktiv != 0 AND Kreditoren.id = Vertraege.KreditorId").toInt();
+    dbs.AnzahlDkGeber = executeSingleValueSql("AnzahlDkgeber", "AnzahlAktiveDkGeber").toInt();
+    dbs.AnzahlAktive  = executeSingleValueSql("COUNT(*)", "WertAktiveVertraege").toInt();
+    dbs.WertAktive  = executeSingleValueSql("SUM(Wert)", "WertAktiveVertraege").toInt() /100.;
 
-    dbs.AnzahlAuszahlende = executeSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0").toInt();
-    dbs.BetragAuszahlende = executeSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] = 0").toReal();
+    dbs.DurchschnittZins = executeSingleValueSql("z/w AS median", "(SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertAktiveVertraege)").toReal();
+    dbs.MittlererZins = executeSingleValueSql("AVG(Zinssatz)", "WertAktiveVertraege").toDouble();
 
-    dbs.AnzahlThesaurierende= executeSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0").toInt();
-    dbs.BetragThesaurierende= executeSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0").toReal();
-    dbs.WertThesaurierende  = executeSingleValueSql("SUM([Wert])", "[Vertraege]", "[aktiv] != 0 AND [thesaurierend] != 0").toReal();
+    dbs.AnzahlAuszahlende = executeSingleValueSql("COUNT(*)", "WertAktiveVertraege", "NOT thesa").toInt();
+    dbs.BetragAuszahlende = executeSingleValueSql("SUM(Wert)", "WertAktiveVertraege", "NOT thesa").toInt() /100.;
 
-    dbs.AnzahlAktive  = executeSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] != 0").toInt();
-    dbs.BetragAktive  = executeSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] != 0").toReal();
-    dbs.WertAktive    = dbs.BetragAuszahlende+dbs.WertThesaurierende;
+    dbs.AnzahlThesaurierende= executeSingleValueSql("COUNT(*)", "WertAktiveVertraege", "thesa").toInt();
+    dbs.WertThesaurierende  = executeSingleValueSql("SUM(Wert)", "WertAktiveVertraege", "thesa").toInt() /100.;
 
-    dbs.DurchschnittZins = executeSingleValueSql("SELECT SUM( w*z ) / SUM( W ) FROM  (SELECT MAX(Betrag, Wert) AS W, Zinssaetze.Zinssatz AS Z FROM Vertraege, Zinssaetze WHERE Zinssaetze.id = Vertraege.ZSatz AND Vertraege.aktiv)").toReal();
-    dbs.MittlererZins = executeSingleValueSql("SELECT AVG(Zinssaetze.Zinssatz) FROM Vertraege, Zinssaetze WHERE Zinssaetze.id = Vertraege.ZSatz AND Vertraege.aktiv").toDouble();
-    dbs.AnzahlPassive = executeSingleValueSql("COUNT([Betrag])", "[Vertraege]", "[aktiv] = 0").toInt();
-    dbs.BetragPassive = executeSingleValueSql("SUM([Betrag])", "[Vertraege]", "[aktiv] = 0").toReal();
+    dbs.AnzahlPassive = executeSingleValueSql("COUNT(*)", "WertPassiveVertraege").toInt();
+    dbs.BetragPassive = executeSingleValueSql("SUM(Wert)", "WertPassiveVertraege").toReal() /-100.;
 }
 bool createCsvActiveContracts()
 {   LOG_CALL;
