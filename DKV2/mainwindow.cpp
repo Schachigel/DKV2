@@ -138,7 +138,7 @@ void MainWindow::on_action_menu_database_start_triggered()
 QString askUserDbFilename(QString title, bool onlyExistingFiles=false)
 {   // this function is used with openDb, creaetDbCopy, createAnony.DbCopy but NOT newDb
     LOG_CALL;
-    wizFileSelectionWiz wiz;
+    wizFileSelectionWiz wiz(getMainWindow());
     wiz.title =title;
     wiz.subtitle ="Mit dieser Dialogfolge wählst Du eine DKV2 Datenbank aus";
     wiz.fileTypeDescription ="dk-DB Dateien (*.dkdb)";
@@ -158,7 +158,7 @@ QString askUserDbFilename(QString title, bool onlyExistingFiles=false)
 }
 QString askUserNewDb()
 {   LOG_CALL;
-    wizNewDatabaseWiz wiz;
+    wizNewDatabaseWiz wiz(getMainWindow());
     QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     QFileInfo lastdb (appConfig::CurrentDb());
     if( lastdb.exists())
@@ -239,7 +239,7 @@ void MainWindow::on_action_menu_database_anonymous_copy_triggered()
 }
 void MainWindow::on_actionProjektkonfiguration_ndern_triggered()
 {   LOG_CALL;
-    wizConfigureProjectWiz wiz;
+    wizConfigureProjectWiz wiz(getMainWindow());
     if(wiz.exec() == QDialog::Accepted)
         wiz.updateDbConfig();
 }

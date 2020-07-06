@@ -1,6 +1,12 @@
 #ifndef HELPER_H
 #define HELPER_H
 
+#include <QMainWindow>
+#include <QWidget>
+#include <QApplication>
+#include <QObject>
+
+
 #include <QString>
 #include <QElapsedTimer>
 #include <QFile>
@@ -50,5 +56,8 @@ extern QFile* outFile_p;
 
 void logger(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 QString logFilePath();
+
+QMainWindow* getMainWindow();
+
 
 #endif // HELPER_H

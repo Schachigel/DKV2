@@ -19,7 +19,7 @@ void activateContract(qlonglong cid)
     contract v(cid);
     creditor cred(v.creditorId());
 
-    activateContractWiz wiz;
+    activateContractWiz wiz(getMainWindow());
     QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     wiz.label = v.label();
     wiz.creditorName = cred.firstname() + " " + cred.lastname();
@@ -48,7 +48,7 @@ void changeContractValue(qlonglong cid)
     }
 
     creditor cre(con.creditorId());
-    wizChangeContract wiz;
+    wizChangeContract wiz(getMainWindow());
     QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     wiz.creditorName = cre.firstname() + " " + cre.lastname();
     wiz.contractLabel= con.label();
@@ -89,7 +89,7 @@ void terminateContract(qlonglong cid)
 }
 void terminateContract_Final( contract& c)
 {   LOG_CALL;
-    wizTerminateContract wiz(nullptr, c);
+    wizTerminateContract wiz(getMainWindow(), c);
     QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     wiz.exec();
     if( ! wiz.field("confirm").toBool())
@@ -103,7 +103,7 @@ void terminateContract_Final( contract& c)
 
 void cancelContract( contract& c)
 {   LOG_CALL;
-    wizCancelContract wiz(nullptr);
+    wizCancelContract wiz(getMainWindow());
     QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     wiz.c = c;
     wiz.creditorName = executeSingleValueSql("Vorname || ' ' || Nachname", "Kreditoren", "id=" + QString::number(c.creditorId())).toString();
@@ -125,7 +125,7 @@ void annualSettlement()
             "Es keine Verträge für die eine Abrechnung gemacht werden kann.");
         return;
     }
-    wizAnnualSettlement wiz;
+    wizAnnualSettlement wiz(getMainWindow());
     wiz.setField("year", vYear.year() -1);
     wiz.exec();
 }

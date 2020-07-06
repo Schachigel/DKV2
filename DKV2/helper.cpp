@@ -1,9 +1,11 @@
+
 #include <QDate>
 #include <QString>
 #include <QFile>
 #include <QDir>
 #include <QTextStream>
 #include <QTime>
+
 // #include <QMutex>
 
 #include "helper.h"
@@ -64,4 +66,14 @@ QString logFilePath()
     filename = fi.completeBaseName() + ".log";
     static QString logFilePath(QDir::toNativeSeparators(QDir::tempPath()) + QDir::separator() + filename);
     return logFilePath;
+}
+
+QMainWindow* getMainWindow()
+{
+    foreach(QWidget *widget, qApp->topLevelWidgets()) {
+        QMainWindow* mainWindow = qobject_cast<QMainWindow*>(widget);
+        if( mainWindow)
+            return mainWindow;
+    }
+    return nullptr;
 }

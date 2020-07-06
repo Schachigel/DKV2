@@ -22,8 +22,6 @@ struct busycursor
 };
 
 namespace Ui {
-
-
 class MainWindow;
 }
 
