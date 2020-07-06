@@ -7,13 +7,13 @@
 void csvwriter::addColumn(QString header)
 {   LOG_CALL_W(header);
     Q_ASSERT(rows.empty()); // no add. columns after adding data
-    header.replace(";", "#");
+    header.replace(separator, "#");
     headers.append(header.trimmed());
 }
 
 int csvwriter::addColumns(QString headers)
 {   LOG_CALL_W(headers);
-    QList<QString> list = headers.split(";");
+    QList<QString> list = headers.split(separator);
     for(auto s : list)
     {
         addColumn(s);
@@ -23,7 +23,7 @@ int csvwriter::addColumns(QString headers)
 
 void csvwriter::appendToRow( QString value)
 {   LOG_CALL_W(value);
-    value.replace(";", "#");
+    value.replace(separator, "#");
     currentRow.append(value.trimmed());
     if( currentRow.size() == headers.size())
     {
@@ -43,13 +43,13 @@ void csvwriter::addRow(QList<QString> cols)
 
 void csvwriter::addRow(QString row)
 {   LOG_CALL_W(row);
-    QList<QString> list = row.split(";");
+    QList<QString> list = row.split(separator);
     addRow(list);
 }
 
-QString appendCsvLine( QString line, QString appendix)
+QString csvwriter::appendCsvLine( QString line, QString appendix)
 {   LOG_CALL_W(line);
-    if( line.size()) line += "; ";
+    if( line.size()) line += separator + " ";
     return line + appendix;
 }
 
@@ -86,15 +86,14 @@ bool csvwriter::save(QString filename)
     return true;
 }
 
-bool table2csv(QVector<dbfield>& fields, QVector<QVariant::Type>& types, QString where, QString filename)
+bool table2csv(QString filename, QVector<dbfield> fields, QVector<QVariant::Type> types, QString where)
 {    LOG_CALL;
-    csvwriter csv;
+    csvwriter csv (";");
     for(auto f : fields)
         csv.addColumn(f.name());
     QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where);
     QSqlQuery q;
-    if( !q.exec(sql))
-    {
+    if( !q.exec(sql)) {
         qCritical() << "sql faild to execute" << q.lastError() << endl << "SQL: " << q.lastQuery();
         return false;
     }
@@ -102,7 +101,8 @@ bool table2csv(QVector<dbfield>& fields, QVector<QVariant::Type>& types, QString
     QLocale locale;
     while( q.next()) {
         for (int i = 0; i < fields.count(); i++) {
-            switch(types[i]) {
+            QVariant::Type t = types.isEmpty() ? fields[i].type() : types[i];
+            switch(t) {
             case QVariant::Type::Int: {
                 int v = q.record().value(fields[i].name()).toInt();
                 csv.appendToRow(QString::number(v));

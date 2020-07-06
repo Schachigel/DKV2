@@ -11,6 +11,7 @@
     if( t == QVariant::Date)     return true;
     if( t == QVariant::String)   return true;
     if( t == QVariant::Bool)     return true;
+    if( t == QVariant::Double)   return true;
     return false;
 }
 

@@ -10,6 +10,7 @@
 class csvwriter
 {
 public:
+    csvwriter(QString sep =",") : separator(sep){ Q_ASSERT(sep.length()==1);}
     void addColumn(QString header);
     int  addColumns(QString headers);
     void appendToRow(QString value);
@@ -19,11 +20,14 @@ public:
     QString out();
     bool save(QString filname);
 private:
+    QString appendCsvLine( QString line, QString appendix);
+
+    QString separator;
     QList<QString> headers;
     QList<QList<QString>> rows;
     QList<QString> currentRow;
 };
 
-bool table2csv(QVector<dbfield>& fields, QVector<QVariant::Type>& types, QString where, QString filename);
+bool table2csv(QString filename, QVector<dbfield> fields, QVector<QVariant::Type> types =QVector<QVariant::Type>(), QString where ="");
 
 #endif // CSVWRITER_H

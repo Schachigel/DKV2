@@ -185,6 +185,31 @@ bool insert_views( QSqlDatabase db)
 
     QString sqlAnzahlAktiveDkGeber = "SELECT COUNT(DISTINCT KreditorId) AS AnzahlDkgeber FROM AktiveVertraege";
     ret &= createView("AnzahlAktiveDkGeber", sqlAnzahlAktiveDkGeber, db);
+
+    QString sqlContractDataActiveContracts = "SELECT "
+      "Vertraege.id AS Id, "
+      "Kreditoren.Nachname AS Nachname, "
+      "Kreditoren.Vorname AS Vorname, "
+      "Kreditoren.Strasse AS Strasse, "
+      "Kreditoren.Plz AS Plz, "
+      "Kreditoren.Stadt AS Stadt, "
+      "Kreditoren.Email AS Email, "
+      "Kreditoren.IBAN AS Iban, "
+      "Kreditoren.BIC AS Bic, "
+      "Vertraege.Kennung AS Vertragskennung, "
+      "Vertraege.ZSatz/100. AS Zinssatz, "
+      "(SELECT sum(Buchungen.betrag)/100. FROM Buchungen WHERE Vertraege.id = Buchungen.VertragsId) AS Wert, "
+      "MIN(Buchungen.Datum) AS Aktivierungsdatum, "
+      "Vertraege.Kfrist AS Kuendigungsfrist, "
+      "Vertraege.LaufzeitEnde AS Vertragsende, "
+      "thesaurierend AS thesa, "
+      "Kreditoren.id AS KreditorId "
+      "FROM Vertraege "
+        "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
+        "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
+      "Group by Vertraege.id";
+    ret &= createView("ContractDataActiveContracts", sqlContractDataActiveContracts);
+
     return ret;
 }
 
@@ -469,30 +494,26 @@ bool createCsvActiveContracts()
 
     filename = appConfig::Outdir() + "/" + filename;
 
-    QVector<dbfield> fields; QVector<QVariant::Type> types;
-    fields.append(dkdbstructur["Vertraege"]["id"]);
-    types.append(QVariant::Int);
-    fields.append(dkdbstructur["Vertraege"]["KreditorId"]);
-    types.append(QVariant::Int);
-    fields.append(dkdbstructur["Kreditoren"]["Vorname"]);
-    types.append(QVariant::String);
-    fields.append(dkdbstructur["Kreditoren"]["Nachname"]);
-    types.append(QVariant::String);
-    fields.append(dkdbstructur["Kreditoren"]["Strasse"]);
-    types.append(QVariant::String);
-    fields.append(dkdbstructur["Kreditoren"]["Stadt"]);
-    types.append(QVariant::String);
-    fields.append(dkdbstructur["Kreditoren"]["Nachname"]);
-    types.append(QVariant::String);
-    fields.append(dkdbstructur["Vertraege"]["Betrag"]);
-    types.append(QVariant::Double);
-    fields.append(dkdbstructur["Vertraege"]["Wert"]);
-    types.append(QVariant::Double);
-    fields.append(dkdbstructur["Vertraege"]["Vertragsdatum"]);
-    types.append(QVariant::Date);
+    dbtable t("ContractDataActiveContracts");
+    t.append(dbfield("Id", QVariant::Type::Int));
+    t.append(dbfield("KreditorId", QVariant::Type::Int));
+    t.append(dbfield("Vorname"));
+    t.append(dbfield("Nachname"));
+    t.append(dbfield("Strasse"));
+    t.append(dbfield("Plz"));
+    t.append(dbfield("Stadt"));
+    t.append(dbfield("Email"));
+    t.append(dbfield("Iban"));
+    t.append(dbfield("Bic"));
+    t.append(dbfield("Strasse"));
+    t.append(dbfield("Zinssatz", QVariant::Type::Double));
+    t.append(dbfield("Wert", QVariant::Type::Double));
+    t.append(dbfield("Aktivierungsdatum", QVariant::Type::Date));
+    t.append(dbfield("Kuendigungsfrist", QVariant::Type::Int));
+    t.append(dbfield("Vertragsende", QVariant::Type::Date));
+    t.append(dbfield("thesa", QVariant::Type::Bool));
 
-    if( table2csv( fields, types, "[aktiv] = 1", filename))
-    {
+    if( table2csv( filename, t.Fields())) {
         showFileInFolder(filename);
         return true;
     }
