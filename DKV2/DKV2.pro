@@ -41,6 +41,7 @@ SOURCES += \
         letters.cpp \
         main.cpp \
         mainwindow.cpp \
+        reporthtml.cpp \
         tabledatainserter.cpp \
         transaktionen.cpp \
         uicustomtoolbutton.cpp \
@@ -69,6 +70,7 @@ HEADERS += \
         letterTemplate.h \
         letters.h \
         mainwindow.h \
+        reporthtml.h \
         tabledatainserter.h \
         transaktionen.h \
         uicustomtoolbutton.h \

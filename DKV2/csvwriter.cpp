@@ -97,7 +97,6 @@ bool table2csv(QString filename, QVector<dbfield> fields, QVector<QVariant::Type
         qCritical() << "sql faild to execute" << q.lastError() << endl << "SQL: " << q.lastQuery();
         return false;
     }
-
     QLocale locale;
     while( q.next()) {
         for (int i = 0; i < fields.count(); i++) {

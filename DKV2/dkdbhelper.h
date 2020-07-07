@@ -75,7 +75,7 @@ struct ContractEnd
     double value;
 };
 void calc_contractEnd(QVector<ContractEnd>& ce);
-void calculateSummary(DbSummary& dbs);
+DbSummary calculateSummary();
 
 struct YZV
 {

@@ -102,10 +102,12 @@ bool createView(QString name, QString sql, QSqlDatabase db) {
 bool insert_views( QSqlDatabase db)
 {   LOG_CALL;
     QString sqlWertAktiveVertraege =
-            "SELECT Vertraege.id AS id, Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, Vertraege.Kennung AS Vertragskennung, Vertraege.ZSatz/100. AS Zinssatz, "
+            "SELECT Vertraege.id AS id, Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, "
+            "Vertraege.Kennung AS Vertragskennung, Vertraege.ZSatz/100. AS Zinssatz, "
             "(SELECT sum(Buchungen.betrag) FROM Buchungen "
             "WHERE Vertraege.id = Buchungen.VertragsId) AS Wert, "
-            "MIN(Buchungen.Datum) AS Datum, Vertraege.Kfrist AS Kündigungsfrist, Vertraege.LaufzeitEnde AS Vertragsende, thesaurierend AS thesa, Kreditoren.id AS KreditorId "
+            "MIN(Buchungen.Datum) AS Datum, Vertraege.Kfrist AS Kündigungsfrist, "
+            "Vertraege.LaufzeitEnde AS Vertragsende, thesaurierend AS thesa, Kreditoren.id AS KreditorId "
             "FROM Vertraege "
             "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
             "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
@@ -209,6 +211,15 @@ bool insert_views( QSqlDatabase db)
         "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
       "Group by Vertraege.id";
     ret &= createView("ContractDataActiveContracts", sqlContractDataActiveContracts);
+
+
+    QString sqlContractsByYearByInterest ="SELECT SUBSTR(Vertraege.Vertragsdatum, 0, 5) as Year, "
+    "Vertraege.ZSatz /100. AS Zinssatz, count(*) AS Anzahl, sum(Vertraege.Betrag) AS Summe "
+    "FROM Vertraege "
+    "GROUP BY Year, Zinssatz ";
+    ret &= createView("ContractsByYearByInterest", sqlContractsByYearByInterest);
+
+
 
     return ret;
 }
@@ -467,26 +478,6 @@ QString contractList_SQL(const QVector<dbfield>& fields, const QString& filter)
     return sql;
 }
 
-// summary stuff
-// todo: update for new contract structure
-void calculateSummary(DbSummary& dbs)
-{   LOG_CALL;
-    dbs.AnzahlDkGeber = executeSingleValueSql("AnzahlDkgeber", "AnzahlAktiveDkGeber").toInt();
-    dbs.AnzahlAktive  = executeSingleValueSql("COUNT(*)", "WertAktiveVertraege").toInt();
-    dbs.WertAktive  = executeSingleValueSql("SUM(Wert)", "WertAktiveVertraege").toInt() /100.;
-
-    dbs.DurchschnittZins = executeSingleValueSql("z/w AS median", "(SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertAktiveVertraege)").toReal();
-    dbs.MittlererZins = executeSingleValueSql("AVG(Zinssatz)", "WertAktiveVertraege").toDouble();
-
-    dbs.AnzahlAuszahlende = executeSingleValueSql("COUNT(*)", "WertAktiveVertraege", "NOT thesa").toInt();
-    dbs.BetragAuszahlende = executeSingleValueSql("SUM(Wert)", "WertAktiveVertraege", "NOT thesa").toInt() /100.;
-
-    dbs.AnzahlThesaurierende= executeSingleValueSql("COUNT(*)", "WertAktiveVertraege", "thesa").toInt();
-    dbs.WertThesaurierende  = executeSingleValueSql("SUM(Wert)", "WertAktiveVertraege", "thesa").toInt() /100.;
-
-    dbs.AnzahlPassive = executeSingleValueSql("COUNT(*)", "WertPassiveVertraege").toInt();
-    dbs.BetragPassive = executeSingleValueSql("SUM(Wert)", "WertPassiveVertraege").toReal() /-100.;
-}
 bool createCsvActiveContracts()
 {   LOG_CALL;
     QDate today = QDate::currentDate();
@@ -519,6 +510,67 @@ bool createCsvActiveContracts()
     }
     return false;
 }
+
+DbSummary calculateSummary()
+{   LOG_CALL;
+    DbSummary dbs;
+    dbs.AnzahlDkGeber = executeSingleValueSql("AnzahlDkgeber", "AnzahlAktiveDkGeber").toInt();
+    dbs.AnzahlAktive  = executeSingleValueSql("COUNT(*)", "WertAktiveVertraege").toInt();
+    dbs.WertAktive  = executeSingleValueSql("SUM(Wert)", "WertAktiveVertraege").toInt() /100.;
+
+    dbs.DurchschnittZins = executeSingleValueSql("z/w AS median", "(SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertAktiveVertraege)").toReal();
+    dbs.MittlererZins = executeSingleValueSql("AVG(Zinssatz)", "WertAktiveVertraege").toDouble();
+
+    dbs.AnzahlAuszahlende = executeSingleValueSql("COUNT(*)", "WertAktiveVertraege", "NOT thesa").toInt();
+    dbs.BetragAuszahlende = executeSingleValueSql("SUM(Wert)", "WertAktiveVertraege", "NOT thesa").toInt() /100.;
+
+    dbs.AnzahlThesaurierende= executeSingleValueSql("COUNT(*)", "WertAktiveVertraege", "thesa").toInt();
+    dbs.WertThesaurierende  = executeSingleValueSql("SUM(Wert)", "WertAktiveVertraege", "thesa").toInt() /100.;
+
+    dbs.AnzahlPassive = executeSingleValueSql("COUNT(*)", "WertPassiveVertraege").toInt();
+    dbs.BetragPassive = executeSingleValueSql("SUM(Wert)", "WertPassiveVertraege").toReal() /-100.;
+    return dbs;
+}
+QVector<rowData> contractRuntimeDistribution()
+{   LOG_CALL;
+    int AnzahlBisEinJahr=0, AnzahlBisFuenfJahre=0, AnzahlLaenger=0, AnzahlUnbegrenzet = 0;
+    double SummeBisEinJahr=0., SummeBisFuenfJahre=0., SummeLaenger=0., SummeUnbegrenzet = 0.;
+    QString sql = "SELECT Wert, Datum, Vertragsende "
+                  "FROM WertAktiveVertraege";
+    QSqlQuery q;
+    if( !q.exec(sql)) {
+        qCritical() << "calculation of runtime distribution failed: " << q.lastError() << endl << q.lastQuery();
+        return QVector<rowData>();
+    }
+
+    while( q.next()) {
+        double wert =   q.value("Wert").toReal() /100.;
+        QDate von = q.value("Datum").toDate();
+        QDate bis = q.value("Vertragsende").toDate();
+        if(! bis.isValid() || bis == EndOfTheFuckingWorld) {
+            AnzahlUnbegrenzet++;
+            SummeUnbegrenzet += wert;
+        } else if( von.addYears(5) < bis) {
+            AnzahlLaenger++;
+            SummeLaenger += wert;
+        } else if( von.addYears(1) > bis) {
+            AnzahlBisEinJahr++;
+            SummeBisEinJahr +=wert;
+        } else {
+            AnzahlBisFuenfJahre ++;
+            SummeBisFuenfJahre += wert;
+        }
+    }
+    QLocale locale;
+    QVector<rowData> ret;
+    ret.push_back({"Zeitraum", "Anzahl", "Wert"});
+    ret.push_back({"Bis ein Jahr ", QString::number(AnzahlBisEinJahr), locale.toCurrencyString(SummeBisEinJahr)});
+    ret.push_back({"Ein bis fünf Jahre ", QString::number(AnzahlBisFuenfJahre), locale.toCurrencyString(SummeBisFuenfJahre)});
+    ret.push_back({"Länger als fünf Jahre ", QString::number(AnzahlLaenger), locale.toCurrencyString(SummeLaenger) });
+    ret.push_back({"Unbegrenzte Verträge ", QString::number(AnzahlUnbegrenzet), locale.toCurrencyString(SummeUnbegrenzet) });
+    return ret;
+}
+
 void calc_contractEnd( QVector<ContractEnd>& ce)
 {   LOG_CALL;
 
@@ -553,51 +605,15 @@ void calc_contractEnd( QVector<ContractEnd>& ce)
 }
 void calc_anualInterestDistribution( QVector<YZV>& yzv)
 {   LOG_CALL;
-    QString sql = "SELECT Substr([Vertragsdatum], 0, 5), [Zinssaetze].[Zinssatz], count(*), sum([Betrag]) "
-                  "FROM [Vertraege], [Zinssaetze] "
-                  "WHERE [ZSatz] = [Zinssaetze].[id] " // TODO
-                  "GROUP BY Substr([Vertragsdatum], 0, 4), [ZSatz]";
+
+    QString sql ="SELECT * FROM ContractsByYearByInterest ORDER BY Year";
     QSqlQuery query;
     query.exec(sql);
     while( query.next()) {
         QSqlRecord r =query.record();
-        yzv.push_back({r.value(0).toInt(), r.value(1).toReal(), r.value(2).toInt(), r.value(3).toReal() });
+        yzv.push_back({r.value("Year").toInt(), r.value("Zinssatz").toReal(),
+                       r.value("Anzahl").toInt(), r.value("Summe").toReal() /100. });
     }
     return;
-}
-QVector<rowData> contractRuntimeDistribution()
-{
-    int AnzahlBisEinJahr=0, AnzahlBisFuenfJahre=0, AnzahlLaenger=0, AnzahlUnbegrenzet = 0;
-    double SummeBisEinJahr=0., SummeBisFuenfJahre=0., SummeLaenger=0., SummeUnbegrenzet = 0.;
-    QString sql = "SELECT [Betrag], [Wert], [Vertragsdatum], [LaufzeitEnde] FROM [Vertraege]"; // TODO
-    QSqlQuery q;
-    q.exec(sql);
-    while( q.next()) {
-        double betrag = q.value("Betrag").toReal();
-        double wert =   q.value("Wert").toReal();
-        QDate von = q.value("Vertragsdatum").toDate();
-        QDate bis = q.value("LaufzeitEnde").toDate();
-        if(! bis.isValid() || bis == EndOfTheFuckingWorld) {
-            AnzahlUnbegrenzet++;
-            SummeUnbegrenzet += wert > betrag ? wert : betrag;
-        } else if( von.addYears(5) < bis) {
-            AnzahlLaenger++;
-            SummeLaenger+= wert > betrag ? wert : betrag;
-        } else if( von.addYears(1) > bis) {
-            AnzahlBisEinJahr++;
-            SummeBisEinJahr += wert > betrag ? wert : betrag;
-        } else {
-            AnzahlBisFuenfJahre ++;
-            SummeBisFuenfJahre += wert > betrag ? wert : betrag;
-        }
-    }
-    QLocale locale;
-    QVector<rowData> ret;
-    ret.push_back({"Zeitraum", "Anzahl", "Wert"});
-    ret.push_back({"Bis ein Jahr ", QString::number(AnzahlBisEinJahr), locale.toCurrencyString(SummeBisEinJahr)});
-    ret.push_back({"Ein bis fünf Jahre ", QString::number(AnzahlBisFuenfJahre), locale.toCurrencyString(SummeBisFuenfJahre)});
-    ret.push_back({"Länger als fünf Jahre ", QString::number(AnzahlLaenger), locale.toCurrencyString(SummeLaenger) });
-    ret.push_back({"Unbegrenzte Verträge ", QString::number(AnzahlUnbegrenzet), locale.toCurrencyString(SummeUnbegrenzet) });
-    return ret;
 }
 

@@ -6,6 +6,7 @@
 #include <QSplashScreen>
 #include <QSqlQueryModel>
 #include <QMainWindow>
+#include "reporthtml.h"
 #include <dkdbhelper.h>
 #include "contract.h"
 
@@ -162,13 +163,6 @@ private:
     void empty_create_creditor_form();
     void init_creditor_form(int id);
     void empty_new_contract_form();
-    enum Uebersichten
-    {
-        UEBERSICHT = 0,
-        VERTRAGSENDE,
-        ZINSVERTEILUNG,
-        LAUFZEITEN
-    };
     QVector<QString> Uebersichten_kurz{
         QString("Uebersicht"),
         QString("Vertragsenden"),
