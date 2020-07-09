@@ -343,8 +343,8 @@ bool copy_TableContent(QString table, QSqlDatabase targetDB)
         QSqlRecord rec = q.record();
         qDebug() << "dePe Copy: working on Record " << rec;
         TableDataInserter tdi( dkdbstructur[table]);
-        if( (!tdi.setValues(rec)) || (tdi.InsertOrReplaceData(targetDB) == -1)) {
-            qCritical() << "Error inserting Data into deperso.Copy Table" << q.record();
+        if( (!tdi.setValues(rec)) || (tdi.InsertData_noAuto(targetDB) == -1)) {
+            qCritical() << "Error inserting Data into Table copy " << table << ": " << q.record();
             success = false;
             break;
         }
@@ -436,46 +436,6 @@ void create_sampleData(int datensaetze)
     saveRandomContracts(datensaetze);
     activateRandomContracts(90);
 
-}
-
-// todo: update for new contract structure, use sql helper functions
-QString contractList_SELECT(const QVector<dbfield>& fields)
-{   LOG_CALL;
-    QString sql("SELECT ");
-    for( int i = 0; i < fields.size(); i++)
-    {
-        if( i) sql +=", ";
-        sql += fields[i].tableName() +"." +fields[i].name();
-    }
-    return sql;
-}
-QString contractList_FROM()
-{   LOG_CALL;
-    return  "FROM Vertraege, Kreditoren, Zinssaetze";
-}
-QString contractList_WHERE(const QString& Filter)
-{   LOG_CALL;
-    QString s ("WHERE Kreditoren.id = Vertraege.KreditorId AND Vertraege.ZSatz = Zinssaetze.id");
-    bool isNumber (false);
-    int index = Filter.toInt(&isNumber);
-    if (isNumber)
-    {
-        s += " AND Kreditoren.id = '" + QString::number(index) + "'";
-        return s;
-    }
-    s += " AND ( "
-    "Vorname  LIKE '%" + Filter + "%' OR "
-    "Nachname LIKE '%" + Filter + "%' OR "
-    "Kennung  LIKE '%" + Filter + "%')";
-    return s;
-}
-QString contractList_SQL(const QVector<dbfield>& fields, const QString& filter)
-{   LOG_CALL;
-    QString sql = contractList_SELECT(fields) + " "
-            + contractList_FROM() + " "
-            + contractList_WHERE(filter);
-    qDebug() << "ContractList SQL: \n" << sql;
-    return sql;
 }
 
 bool createCsvActiveContracts()
@@ -570,30 +530,27 @@ QVector<rowData> contractRuntimeDistribution()
     ret.push_back({"Unbegrenzte Verträge ", QString::number(AnzahlUnbegrenzet), locale.toCurrencyString(SummeUnbegrenzet) });
     return ret;
 }
-
 void calc_contractEnd( QVector<ContractEnd>& ce)
 {   LOG_CALL;
-
     QMap<int, int> m_count;
     QMap<int, double> m_sum;
     const int maxYear = QDate::currentDate().year() +99;
 
     QSqlQuery sql;
     sql.setForwardOnly(true);
-    sql.exec("SELECT * FROM [Vertraege] WHERE [aktiv] = 1");// TODO
+    sql.exec("SELECT Wert, Vertragsende FROM WertAktiveVertraege");
     while( sql.next())
     {
-        QDate end = sql.record().value("LaufzeitEnde").toDate();
+        QDate end = sql.record().value("Vertragsende").toDate();
         if( !end.isValid()) continue;
         if( end.year() > maxYear) continue;
         if( end.year() < QDate::currentDate().year()) continue;
         if( m_count.contains(end.year())) {
             m_count[end.year()] = m_count[end.year()] +1;
-            m_sum[end.year()]   = m_sum[end.year()] +
-                                (sql.record().value("thesaurierend").toBool() ? sql.record().value("Wert").toReal() : sql.record().value("Betrag").toReal());
+            m_sum[end.year()]   = m_sum[end.year()] +sql.record().value("Wert").toReal();
         } else {
             m_count[end.year()] = 1;
-            m_sum[end.year()]   = (sql.record().value("thesaurierend").toBool() ? sql.record().value("Wert").toReal() : sql.record().value("Betrag").toReal());
+            m_sum[end.year()]   = sql.record().value("Wert").toReal();
         }
     }
     QMapIterator<int, int> i(m_count);
@@ -605,7 +562,6 @@ void calc_contractEnd( QVector<ContractEnd>& ce)
 }
 void calc_anualInterestDistribution( QVector<YZV>& yzv)
 {   LOG_CALL;
-
     QString sql ="SELECT * FROM ContractsByYearByInterest ORDER BY Year";
     QSqlQuery query;
     query.exec(sql);

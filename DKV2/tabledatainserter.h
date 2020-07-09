@@ -19,6 +19,7 @@ struct TableDataInserter
     // interface
     int InsertData(QSqlDatabase db = QSqlDatabase::database()) const;
     int InsertOrReplaceData(QSqlDatabase db = QSqlDatabase::database()) const;
+    int InsertData_noAuto(QSqlDatabase db = QSqlDatabase::database()) const;
     int UpdateData() const;
     void reset() {tablename =""; record =QSqlRecord();}
 private:
@@ -29,6 +30,7 @@ private:
     // helper
     QString getInsertRecordSQL() const;
     QString getInsertOrReplaceRecordSQL() const;
+    QString getInsert_noAuto_RecordSQL() const;
     QString getUpdateRecordSQL() const;
 public:
     friend inline bool operator==(const TableDataInserter& lhs, const TableDataInserter& rhs)

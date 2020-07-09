@@ -824,28 +824,28 @@ void MainWindow::on_action_save_contract_new_contract_triggered()
 
 void MainWindow::on_action_menu_contracts_statistics_view_triggered()
 {   LOG_CALL;
-    if(ui->comboUebersicht->count() == 0)
-    {
-        ui->comboUebersicht->clear();
-        ui->comboUebersicht->addItem("Übersicht aller Kredite", QVariant(UEBERSICHT));
-        ui->comboUebersicht->addItem("Anzahl auslaufender Verträge nach Jahr", QVariant(VERTRAGSENDE));
-        ui->comboUebersicht->addItem("Anzahl Verträge nach Zinssatz und Jahr", QVariant(ZINSVERTEILUNG));
-        ui->comboUebersicht->addItem("Anzahl Verträge nach Laufzeiten", QVariant(LAUFZEITEN));
-        ui->comboUebersicht->setCurrentIndex(0);
+    QComboBox* combo =ui->comboUebersicht;
+    if(combo->count() == 0) {
+        combo->clear();
+        combo->addItem("Übersicht aller Kredite",                QVariant(OVERVIEW));
+        combo->addItem("Anzahl auslaufender Verträge nach Jahr", QVariant(BY_CONTRACT_END));
+        combo->addItem("Anzahl Verträge nach Zinssatz und Jahr", QVariant(INTEREST_DISTRIBUTION));
+        combo->addItem("Anzahl Verträge nach Laufzeiten",        QVariant(CONTRACT_TERMS));
+        // combo->addItem("Gesamtübersicht aller aktiven Verträge", QVariant(ALL_CONTRACT_INFO));
+        combo->setCurrentIndex(0);
+        ui->stackedWidget->setCurrentIndex(overviewsPageIndex);
     }
-    int currentIndex = ui->comboUebersicht->currentIndex();
-    Uebersichten u = static_cast<Uebersichten>( ui->comboUebersicht->itemData(currentIndex).toInt());
-    ui->txtOverview->setText( reportHtml(u));
-    ui->stackedWidget->setCurrentIndex(overviewsPageIndex);
 }
 void MainWindow::on_comboUebersicht_currentIndexChanged(int )
 {   LOG_CALL;
-    on_action_menu_contracts_statistics_view_triggered();
+//    on_action_menu_contracts_statistics_view_triggered();
+    QComboBox* combo =ui->comboUebersicht;
+    Uebersichten u = static_cast<Uebersichten>( combo->itemData(combo->currentIndex()).toInt());
+    ui->txtOverview->setText( reportHtml(u));
 }
 void MainWindow::on_pbPrint_clicked()
 {   LOG_CALL;
     QString filename = appConfig::Outdir();
-
     filename += "\\" + QDate::currentDate().toString("yyyy-MM-dd_");
     filename += Uebersichten_kurz[ui->comboUebersicht->currentIndex()];
     filename += ".pdf";

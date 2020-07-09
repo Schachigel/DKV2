@@ -167,7 +167,8 @@ private:
         QString("Uebersicht"),
         QString("Vertragsenden"),
         QString("Zinsverteilungen"),
-        QString("Laufzeiten")
+        QString("Laufzeiten"),
+        QString("Gesamtübersicht")
     };
     QString prepare_overview_page(Uebersichten u);
     QMenu* menuSaveKreditorAnd;

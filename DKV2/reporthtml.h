@@ -5,10 +5,11 @@
 
 enum Uebersichten
 {
-    UEBERSICHT = 0,
-    VERTRAGSENDE,
-    ZINSVERTEILUNG,
-    LAUFZEITEN
+    OVERVIEW = 0,
+    BY_CONTRACT_END,
+    INTEREST_DISTRIBUTION,
+    CONTRACT_TERMS,
+    ALL_CONTRACT_INFO
 };
 
 QString reportHtml(Uebersichten u);
