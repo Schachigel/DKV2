@@ -185,7 +185,7 @@ bool insert_views( QSqlDatabase db)
             "Group by exVertraege.id";
     ret &= createView("WertBeendeteVertraege", sqlDeletedContracts, db);
 
-    QString sqlAnzahlAktiveDkGeber = "SELECT COUNT(DISTINCT KreditorId) AS AnzahlDkgeber FROM AktiveVertraege";
+    QString sqlAnzahlAktiveDkGeber = "SELECT count(*) AS AnzahlAktiveDkGeber FROM (SELECT DISTINCT KreditorId FROM WertAktiveVertraege)";
     ret &= createView("AnzahlAktiveDkGeber", sqlAnzahlAktiveDkGeber, db);
 
     QString sqlContractDataActiveContracts = "SELECT "
@@ -474,7 +474,7 @@ bool createCsvActiveContracts()
 DbSummary calculateSummary()
 {   LOG_CALL;
     DbSummary dbs;
-    dbs.AnzahlDkGeber = executeSingleValueSql("AnzahlDkgeber", "AnzahlAktiveDkGeber").toInt();
+    dbs.AnzahlDkGeber = executeSingleValueSql("AnzahlAktiveDkGeber", "AnzahlAktiveDkGeber").toInt();
     dbs.AnzahlAktive  = executeSingleValueSql("COUNT(*)", "WertAktiveVertraege").toInt();
     dbs.WertAktive  = executeSingleValueSql("SUM(Wert)", "WertAktiveVertraege").toInt() /100.;
 
@@ -530,33 +530,18 @@ QVector<rowData> contractRuntimeDistribution()
     ret.push_back({"Unbegrenzte Verträge ", QString::number(AnzahlUnbegrenzet), locale.toCurrencyString(SummeUnbegrenzet) });
     return ret;
 }
-void calc_contractEnd( QVector<ContractEnd>& ce)
+void calc_contractEnd( QVector<ContractEnd>& ces)
 {   LOG_CALL;
     QMap<int, int> m_count;
     QMap<int, double> m_sum;
-    const int maxYear = QDate::currentDate().year() +99;
 
     QSqlQuery sql;
     sql.setForwardOnly(true);
-    sql.exec("SELECT Wert, Vertragsende FROM WertAktiveVertraege");
-    while( sql.next())
-    {
-        QDate end = sql.record().value("Vertragsende").toDate();
-        if( !end.isValid()) continue;
-        if( end.year() > maxYear) continue;
-        if( end.year() < QDate::currentDate().year()) continue;
-        if( m_count.contains(end.year())) {
-            m_count[end.year()] = m_count[end.year()] +1;
-            m_sum[end.year()]   = m_sum[end.year()] +sql.record().value("Wert").toReal();
-        } else {
-            m_count[end.year()] = 1;
-            m_sum[end.year()]   = sql.record().value("Wert").toReal();
-        }
-    }
-    QMapIterator<int, int> i(m_count);
-    while (i.hasNext()) {
-        i.next();
-        ce.append({i.key(), i.value(), m_sum[i.key()]});
+    sql.exec("SELECT count(*) AS Anzahl, sum(Wert) /100. AS Wert, strftime('%Y',Vertragsende) AS Jahr "
+             "FROM WertAktiveVertraege "
+             "WHERE Vertragsende < 9999-01-01 GROUP BY strftime('%Y',Vertragsende) ORDER BY Jahr");
+    while( sql.next()) {
+        ces.push_back({sql.value("Jahr").toInt(), sql.value("Anzahl").toInt(), sql.value("Wert").toDouble()});
     }
     return;
 }

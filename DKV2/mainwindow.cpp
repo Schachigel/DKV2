@@ -833,12 +833,12 @@ void MainWindow::on_action_menu_contracts_statistics_view_triggered()
         combo->addItem("Anzahl Verträge nach Laufzeiten",        QVariant(CONTRACT_TERMS));
         // combo->addItem("Gesamtübersicht aller aktiven Verträge", QVariant(ALL_CONTRACT_INFO));
         combo->setCurrentIndex(0);
-        ui->stackedWidget->setCurrentIndex(overviewsPageIndex);
     }
+    combo->setCurrentIndex(combo->currentIndex());
+    ui->stackedWidget->setCurrentIndex(overviewsPageIndex);
 }
 void MainWindow::on_comboUebersicht_currentIndexChanged(int )
 {   LOG_CALL;
-//    on_action_menu_contracts_statistics_view_triggered();
     QComboBox* combo =ui->comboUebersicht;
     Uebersichten u = static_cast<Uebersichten>( combo->itemData(combo->currentIndex()).toInt());
     ui->txtOverview->setText( reportHtml(u));
