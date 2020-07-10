@@ -9,6 +9,7 @@
 #include <QVBoxLayout>
 #include <QMessageBox>
 
+#include "appconfig.h"
 #include "helperfin.h"
 #include "wizchangecontractvalue.h"
 
@@ -36,11 +37,16 @@ bool wizChangeContract_IntroPage::validatePage()
 {
     wizChangeContract* wiz= dynamic_cast<wizChangeContract*>(this->wizard());
 
-    if( ! field("deposit_notPayment").toBool() && wiz->currentAmount < 601.) {
-        QMessageBox::information(this, "Keine Auszahlung möglich",
-            "Die kleinste Einlage beträgt 500 Euro. Die kleinste Auszahlung beträgt 100 Euro. "
-            "Daher ist im Moment keine Auszahlung möglich.<p>Du kannst einen Einzahlung machen oder "
-            "über den entsprechenden Menüpunkt den Vertrag beenden");
+    double minContract =getNumMetaInfo(MIN_AMOUNT);
+    double minPayout   =getNumMetaInfo(MIN_PAYOUT);
+    double minAmountToMakeA_Payout = minContract + minPayout +1;
+    QLocale l;
+    if( ! field("deposit_notPayment").toBool() && wiz->currentAmount < minAmountToMakeA_Payout) {
+        QString msg("Die kleinste Einlage beträgt %1. Die kleinste Auszahlung beträgt %2. "
+                    "Daher ist im Moment keine Auszahlung möglich.<p>Du kannst einen Einzahlung machen oder "
+                    "über den entsprechenden Menüpunkt den Vertrag beenden");
+        msg = msg.arg(l.toCurrencyString(minContract)).arg(l.toCurrencyString(minPayout));
+        QMessageBox::information(this, "Keine Auszahlung möglich", msg);
         return false;
     }
     return true;
@@ -58,21 +64,27 @@ wizChangeContract_AmountPage::wizChangeContract_AmountPage(QWidget* parent) : QW
 void wizChangeContract_AmountPage::initializePage()
 {
     bool deposit = field("deposit_notPayment").toBool();
+    double minPayout =getNumMetaInfo(MIN_PAYOUT);
+    double minAmount =getNumMetaInfo(MIN_AMOUNT);
+    QLocale l;
     if( deposit) {
         setTitle("Einzahlungsbetrag");
-        setSubTitle("Gib den eingezahlten Betrag in ganzen Euro an. Der Betrag muss größer als 100 Euro sein.");
-        setField("amount", 10000.);
+        QString subt ="Gib den eingezahlten Betrag in ganzen Euro an. Der Betrag muss größer als %1 sein.";
+        subt =subt.arg(l.toCurrencyString(minPayout));
+        setSubTitle(subt);
+
+        setField("amount", 1000.);
     } else {
         setTitle("Auszahlungsbetrag");
         wizChangeContract* wiz= dynamic_cast<wizChangeContract*>(this->wizard());
         double currentAmount = wiz->currentAmount;
         // double minPayment = 100., minRemains = 500.;
-        double maxPayout = currentAmount - 500;
+        double maxPayout = currentAmount - minAmount;
         QLocale locale;
         QString subtitle ="Der Auszahlungsbetrag kann zwischen %1 und %2 liegen.";
-        subtitle = subtitle.arg(locale.toCurrencyString(100)).arg(locale.toCurrencyString(maxPayout));
+        subtitle = subtitle.arg(locale.toCurrencyString(minPayout)).arg(locale.toCurrencyString(maxPayout));
         setSubTitle(subtitle);
-        setField("amount", 100.);
+        setField("amount", minPayout);
     }
 }
 

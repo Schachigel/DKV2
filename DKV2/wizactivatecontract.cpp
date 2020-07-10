@@ -5,6 +5,7 @@
 #include <QVBoxLayout>
 #include <QDebug>
 
+#include "appconfig.h"
 #include "helperfin.h"
 #include "wizactivatecontract.h"
 
@@ -57,7 +58,7 @@ bool wizActiateContract_AmountPage::validatePage()
 {
     activateContractWiz* wiz = dynamic_cast<activateContractWiz*>(wizard());
     double amount = field("amount").toDouble();
-    if( amount < 500)
+    if( amount < getNumMetaInfo(MIN_AMOUNT))
         return false;
     setField("amount", round2(amount));
     if( wiz->expectedAmount != amount) {
