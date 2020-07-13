@@ -45,7 +45,7 @@ void wizCancelContract_DatePage::initializePage()
 bool wizCancelContract_DatePage::validatePage()
 {
     wizCancelContract* wiz = dynamic_cast<wizCancelContract*>(wizard());
-    return field("date").toDate() > wiz->c.latestBooking();
+    return field("date").toDate() > wiz->c.latestBooking().date;
 }
 
 wizCancelContract_SummaryPage::wizCancelContract_SummaryPage(QWidget* p) : QWizardPage(p)

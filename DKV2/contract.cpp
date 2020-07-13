@@ -55,6 +55,12 @@ bool contract::remove(qlonglong id)
     return false;
 
 }
+QString contract::booking_csv_header()
+{
+    return "Vorname; Nachname; Email; Strasse; Plz; Stadt; IBAN; Kennung; Auszahlend;"
+           " Buchungsdatum; Zinssatz; Kreditbetrag; Zins; Endbetrag";
+}
+
 // construction
 void contract::init()
 {
@@ -94,9 +100,18 @@ double contract::value(QDate d) const
         return euroFromCt(v.toInt());
     return 0.;
 }
-QDate contract::latestBooking() const
+booking contract::
+latestBooking()
 {
-    return executeSingleValueSql("MAX(Datum)", "Buchungen", "VertragsId="+QString::number(id())).toDate();
+    if( latest.type != booking::Type::non)
+        return latest;
+    QSqlRecord rec = executeSingleRecordSql(dkdbstructur["Buchungen"].Fields(), "VertragsId=" + id_aS(), "Datum DESC LIMIT 1");
+    if( ! rec.isEmpty()) {
+        latest.type   =booking::Type(rec.value("BuchungsArt").toInt());
+        latest.date   =rec.value("Datum").toDate();
+        latest.amount =euroFromCt(rec.value("Betrag").toInt());
+    }
+    return latest;
 }
 // write to db
 int  contract::saveNewContract()
@@ -138,28 +153,25 @@ bool contract::validateAndSaveNewContract(QString& meldung)
     return buchungserfolg;
 }
 // contract activation
-bool contract::activate(const QDate& aDate, int amount_ct) const
-{   LOG_CALL;
-    Q_ASSERT (id()>=0);
-    if( isActive()) {
-        qCritical() << "Already active contract can not be activated";
-        return false;
-    }
-    if( ! aDate.isValid()) {
-        qCritical() << "Invalid Date";
-        return false;
-    }
-    if( amount_ct < 0 || ! booking::makeDeposit( id(), aDate, euroFromCt(amount_ct))) {
-        qCritical() << "failed to conduct activation on contract " << id() << "[" << aDate << ", " << amount_ct << "]";
-        return false;
-    }
-    qInfo() << "Successfully activated contract " << id() << "[" << aDate << ", " << amount_ct << " ct]";
-    return true;
-}
-bool contract::activate( const QDate& aDate, double amount) const
+bool contract::activate( const QDate& aDate, double amount)
 {
-    int ct = ctFromEuro(amount);
-    return activate(aDate, ct);
+    LOG_CALL;
+     Q_ASSERT (id()>=0);
+     if( isActive()) {
+         qCritical() << "Already active contract can not be activated";
+         return false;
+     }
+     if( ! aDate.isValid()) {
+         qCritical() << "Invalid Date";
+         return false;
+     }
+     if( amount < 0 || ! booking::makeDeposit( id(), aDate, amount )) {
+         qCritical() << "failed to conduct activation on contract " << id() << "[" << aDate << ", " << amount << "]";
+         return false;
+     }
+     latest ={booking::Type::deposit, aDate, amount};
+     qInfo() << "Successfully activated contract " << id() << "[" << aDate << ", " << amount << " Euro]";
+     return true;
 }
 bool contract::isActive() const
 {
@@ -175,23 +187,35 @@ QDate contract::activationDate() const
     return aDate =executeSingleValueSql("MIN(Datum)", "Buchungen", where.arg(id())).toDate();
 }
 // booking actions
-int contract::annualSettlement() const
+int contract::annualSettlement( int year)
 {   LOG_CALL;
     if( ! isActive()) return 0;
-    QDate lastBooking =latestBooking();
-    QDate target =QDate(lastBooking.year() +1, 1, 1);
-    double zins =ZinsesZins(interestRate(), value(), lastBooking, target);
-    if( reinvesting()
-            ? booking::investInterest(id(), target, zins)
-            : booking::payoutInterest(id(), target, -1*zins)) {
-        qInfo() << "Successfull annual settlement: contract id " << id() << ": " << target << " Zins: " << zins;
-        return lastBooking.year() +1;
-    } else {
-        qDebug() << "failed annual settlement: Vertrag " << id() << ": " << target << " Zins: " << zins;
-        return 0;
+    QDate nextTarget = QDate(latestBooking().date.year() +1, 1, 1);
+    QDate target = (year == 0) ? nextTarget : QDate(year+1, 1, 1);
+
+    bool bookingSuccess =false;
+    while(latestBooking().date < target) {
+        double zins =ZinsesZins(interestRate(), value(), latestBooking().date, nextTarget);
+        if( reinvesting()) {
+            if( (bookingSuccess =booking::investInterest(id(), nextTarget, zins)))
+                latest ={booking::Type::interestDeposit, nextTarget, zins};
+        } else {
+            zins *= -1.;
+            if( (bookingSuccess =booking::payoutInterest(id(), nextTarget, zins)))
+                latest ={booking::Type::interestPayout, nextTarget, zins};
+        }
+        if( bookingSuccess) {
+            qInfo() << "Successfull annual settlement: contract id " << id() << ": " << nextTarget << " Zins: " << zins;
+            continue;
+        } else {
+            qDebug() << "failed annual settlement: Vertrag " << id() << ": " << nextTarget << " Zins: " << zins;
+            return 0;
+        }
     }
+    return bookingSuccess ? target.year() : 0;
 }
-bool contract::bookInterest(QDate d, bool transactual) const
+// booking actions
+bool contract::bookInterest(QDate d, bool transactual)
 {   LOG_CALL;
     if( ! isActive()) {
         qCritical() << "interest booking on inactive contract not possible";
@@ -202,14 +226,13 @@ bool contract::bookInterest(QDate d, bool transactual) const
         qCritical() << "Invalid Date";
         return false;
     }
-    QDate lastBooking =latestBooking();
-    if( lastBooking > d) {
+    if( latestBooking().date > d) {
         qCritical() << "could not book interest because there are already more recent bookings";
         return false;
     }
     if( transactual)
         QSqlDatabase::database().transaction();
-    while( d.year() > lastBooking.year()) {
+    while( d.year() > latestBooking().date.year()) {
         qInfo() << "perform annual settlement first";
         if(0 == annualSettlement()) {
             qCritical() << "annual settlement during interest booking failed";
@@ -217,22 +240,24 @@ bool contract::bookInterest(QDate d, bool transactual) const
                 QSqlDatabase::database().rollback();
             return false;
         }
-        lastBooking =latestBooking();
     }
-    double zins = ZinsesZins(interestRate(), value(), lastBooking, d);
+    double zins = ZinsesZins(interestRate(), value(), latestBooking().date, d);
     if( reinvesting()
         ? booking::investInterest(id(), d, zins)
         : booking::payoutInterest(id(), d, -1.*zins))
     {
         if( transactual)
             QSqlDatabase::database().commit();
+        latest = { reinvesting() ? booking::Type::interestDeposit : booking::Type::interestPayout,
+                   d,
+                   reinvesting() ? zins : -1.*zins};
         return true;
     }
     if( transactual)
         QSqlDatabase::database().rollback();
     return false;
 }
-bool contract::deposit(QDate d, double amount) const
+bool contract::deposit(QDate d, double amount)
 {   LOG_CALL;
     Q_ASSERT(amount > 0);
     if( ! isActive()) {
@@ -243,8 +268,8 @@ bool contract::deposit(QDate d, double amount) const
         qCritical() << "Invalid Date" << d;
         return false;
     }
-    if( latestBooking() >= d) {
-        qCritical() << "bookings have to be in a consecutive order. Last booking: " << latestBooking()
+    if( latestBooking().date >= d) {
+        qCritical() << "bookings have to be in a consecutive order. Last booking: " << latestBooking().date
                     << " this booking: " << d;
         return false;
     }
@@ -255,9 +280,10 @@ bool contract::deposit(QDate d, double amount) const
     if( ! booking::makeDeposit(id(), d, amount)) {
         return false;
     }
+    latest ={booking::Type::deposit, d, amount};
     return true;
 }
-bool contract::payout(QDate d, double amount) const
+bool contract::payout(QDate d, double amount)
 {   LOG_CALL;
     if( amount < 0) amount *= -1.;
     if( amount > value()) {
@@ -269,9 +295,8 @@ bool contract::payout(QDate d, double amount) const
         qCritical() << "Invalid Date";
         return false;
     }
-    QDate last=latestBooking();
-    if( last >= d) {
-        qCritical() << "bookings have to be in a consecutive order. Last booking: " << last
+    if( latestBooking().date >= d) {
+        qCritical() << "bookings have to be in a consecutive order. Last booking: " << latestBooking().date
                     << " this booking: " << d;
         return false;
     }
@@ -279,7 +304,12 @@ bool contract::payout(QDate d, double amount) const
     if( ! bookInterest(d)) {
         return false;
     }
-    return booking::makePayout(id(), d, amount);
+    if( booking::makePayout(id(), d, amount)) {
+        latest ={booking::Type::payout, d, amount};
+        return true;
+    }
+    qCritical() << "booking of payout failed";
+    return false;
 }
 bool contract::cancel(QDate d)
 {   LOG_CALL;
@@ -290,7 +320,6 @@ bool contract::cancel(QDate d)
     QString sql ="UPDATE Vertraege SET LaufzeitEnde=?, Kfrist=? WHERE id=?";
     QVector<QVariant> v {d.toString(Qt::ISODate), -1, id()};
     if( ! executeSql(sql, v)) {
-        qDebug() << "contract update to cancel can not be done. ";
         return false;
     }
     setPlannedEndDate(d);
@@ -299,7 +328,7 @@ bool contract::cancel(QDate d)
 bool contract::finalize(bool simulate, const QDate finDate,
                         double& finInterest, double& finPayout)
 {   LOG_CALL;
-    if( ! finDate.isValid() || finDate < latestBooking() || id() == -1) {
+    if( ! finDate.isValid() || finDate < latestBooking().date || id() == -1) {
         qDebug() << "invalid date to finalize contract";
         return false;
     }
@@ -311,14 +340,14 @@ bool contract::finalize(bool simulate, const QDate finDate,
     QSqlDatabase::database().transaction();
     // as we are terminating the contract we have to sum up all interests
     setReinvesting(true);
-    while( latestBooking().year() < finDate.year()) {
+    while( latestBooking().date.year() < finDate.year()) {
         if( ! annualSettlement()) {
             QSqlDatabase::database().rollback();
             return false;
         }
     }
     double cv = value(finDate);
-    finInterest = ZinsesZins(interestRate(), cv, latestBooking(), finDate);
+    finInterest = ZinsesZins(interestRate(), cv, latestBooking().date, finDate);
     finPayout = cv +finInterest;
     if( simulate) {
         QSqlDatabase::database().rollback();
@@ -327,8 +356,10 @@ bool contract::finalize(bool simulate, const QDate finDate,
     bool allGood =false;
     do {
         if( ! booking::investInterest(id(), finDate, finInterest)) break;
+        latest ={booking::Type::interestDeposit, finDate, finInterest};
         if( ! booking::makePayout(id(), finDate, finPayout)) break;
-        if( ! (value() == 0.)) break;
+        latest ={booking::Type::payout, finDate, finPayout};
+        if( value() != 0.) break;
         if( ! storeTerminationDate(finDate)) break;
         if( ! archive()) break;
         allGood = true;

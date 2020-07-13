@@ -86,7 +86,6 @@ void insert_DbProperties(QSqlDatabase db = QSqlDatabase::database())
     dbConfig c(dbConfig::FROM_RTD); // get configuration defaults
     c.writeDb(db);
 }
-
 bool createView(QString name, QString sql, QSqlDatabase db) {
     QSqlQuery q(db);
     q.exec("DROP VIEW " + name);
@@ -139,17 +138,17 @@ bool insert_views( QSqlDatabase db)
 //            "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id=buchungen.VertragsId ";
 //    ret &= createView("AktiveVertraege", sqlAktiveVertraege, db);
 
-    QString sqlWertExVertraege ="SELECT exVertraege.id AS id, "
-                             "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, "
-                             "exVertraege.Kennung AS Vertragskennung, exVertraege.ZSatz/100. AS Zinssatz, "
-                             "(SELECT sum(exBuchungen.betrag) FROM exBuchungen WHERE exVertraege.id = exBuchungen.VertragsId) AS Wert, "
-                             "MIN(exBuchungen.Datum) AS Datum, exVertraege.Kfrist AS Kündigungsfrist, "
-                             "exVertraege.LaufzeitEnde AS Vertragsende, thesaurierend AS thesa, Kreditoren.id AS KreditorId "
-                             "FROM Vertraege "
-                             "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
-                             "INNER JOIN Kreditoren ON Kreditoren.id = exVertraege.KreditorId "
-                             "Group by exVertraege.id";
-    ret &= createView( "WertExVertraege", sqlWertExVertraege, db);
+//    QString sqlWertExVertraege ="SELECT exVertraege.id AS id, "
+//                             "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, "
+//                             "exVertraege.Kennung AS Vertragskennung, exVertraege.ZSatz/100. AS Zinssatz, "
+//                             "(SELECT sum(exBuchungen.betrag) FROM exBuchungen WHERE exVertraege.id = exBuchungen.VertragsId) AS Wert, "
+//                             "MIN(exBuchungen.Datum) AS Datum, exVertraege.Kfrist AS Kündigungsfrist, "
+//                             "exVertraege.LaufzeitEnde AS Vertragsende, thesaurierend AS thesa, Kreditoren.id AS KreditorId "
+//                             "FROM Vertraege "
+//                             "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
+//                             "INNER JOIN Kreditoren ON Kreditoren.id = exVertraege.KreditorId "
+//                             "Group by exVertraege.id";
+//    ret &= createView( "WertExVertraege", sqlWertExVertraege, db);
 
     /* Wann muss die Abrechnung für Verträge gemacht werden, die noch keine Zinsabrechnung hatten? */
     QString sqlFirstInterestDates =
@@ -223,7 +222,6 @@ bool insert_views( QSqlDatabase db)
 
     return ret;
 }
-
 bool create_DK_TablesAndContent(QSqlDatabase db)
 {   LOG_CALL;
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
@@ -437,12 +435,9 @@ void create_sampleData(int datensaetze)
     activateRandomContracts(90);
 
 }
-
 bool createCsvActiveContracts()
 {   LOG_CALL;
-    QDate today = QDate::currentDate();
-    QString filename(today.toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
-
+    QString filename(QDate::currentDate().toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
     filename = appConfig::Outdir() + "/" + filename;
 
     dbtable t("ContractDataActiveContracts");
@@ -471,6 +466,7 @@ bool createCsvActiveContracts()
     return false;
 }
 
+// statistics, overviews
 DbSummary calculateSummary()
 {   LOG_CALL;
     DbSummary dbs;

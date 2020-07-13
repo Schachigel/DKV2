@@ -42,7 +42,7 @@ void test_appConfig::test_overwrite_value()
     appConfig::setOutDir(newValue +"od");
     QCOMPARE(appConfig::Outdir(), newValue +"od");
     appConfig::setCurrentDb(newValue +"cdb");
-    QCOMPARE(appConfig::CurrentDb(), newValue +"cdb");
+    QVERIFY(appConfig::CurrentDb().endsWith( newValue +"cdb"));
 }
 
 void test_appConfig::test_dbConfig_RuntimeData()

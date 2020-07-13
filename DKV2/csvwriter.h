@@ -10,7 +10,7 @@
 class csvwriter
 {
 public:
-    csvwriter(QString sep =",") : separator(sep){ Q_ASSERT(sep.length()==1);}
+    csvwriter(QString sep =";") : separator(sep){ Q_ASSERT(sep.length()==1);}
     void addColumn(QString header);
     int  addColumns(QString headers);
     void appendToRow(QString value);

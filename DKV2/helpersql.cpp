@@ -262,9 +262,9 @@ QVector<QVariant> executeSingleColumnSql( const dbfield field, const QString& wh
 
     return result;
 }
-QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where)
+QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where, const QString& order)
 {
-    QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where);
+    QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where, order);
     qDebug() << "ExecuteSingleRecordSql:\n" << sql;
 
     QSqlQuery q;

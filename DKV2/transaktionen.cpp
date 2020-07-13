@@ -4,6 +4,8 @@
 #include <QMessageBox>
 #include <QDate>
 
+#include "csvwriter.h"
+#include "appconfig.h"
 #include "helper.h"
 #include "booking.h"
 #include "wizchangecontractvalue.h"
@@ -53,7 +55,7 @@ void changeContractValue(qlonglong cid)
     wiz.creditorName = cre.firstname() + " " + cre.lastname();
     wiz.contractLabel= con.label();
     wiz.currentAmount= con.value();
-    wiz.earlierstDate = con.latestBooking().addDays(1);
+    wiz.earlierstDate = con.latestBooking().date.addDays(1);
     wiz.setField("deposit_notPayment", QVariant(true));
 
     wiz.exec();
@@ -122,10 +124,56 @@ void annualSettlement()
     if( ! vYear.isValid() || vYear.isNull()) {
         QMessageBox::information(nullptr, "Fehler",
             "Ein Jahr für die nächste Zinsberechnung konnte nicht gefunden werden."
-            "Es keine Verträge für die eine Abrechnung gemacht werden kann.");
+            "Es gibt keine Verträge für die eine Abrechnung gemacht werden kann.");
         return;
     }
     wizAnnualSettlement wiz(getMainWindow());
     wiz.setField("year", vYear.year() -1);
     wiz.exec();
+    if( ! wiz.field("confirm").toBool())
+        return;
+    QSqlQuery q;
+    q.setForwardOnly(true);
+    q.exec("SELECT id FROM Vertraege");
+    QVector<contract> changedContracts;
+    QVector<booking>  asBookings;
+    double payedInterest =0.;
+    while(q.next()) {
+        contract c(q.value("id").toLongLong());
+        if(c.annualSettlement(wiz.field("year").toInt())) {
+            changedContracts.push_back(c);
+            asBookings.push_back(c.latestBooking());
+            payedInterest += c.latestBooking().amount;
+        }
+    }
+    if( ! wiz.field("printCsv").toBool())
+        return;
+
+    csvwriter csv(";");
+    csv.addColumns(contract::booking_csv_header());
+    // Vorname; Nachname; Email; Strasse; Plz; Stadt; IBAN;
+    // Kennung; Auszahlend; Buchungsdatum; Zinssatz; Kreditbetrag;
+    // Zins; Endbetrag
+    QLocale l;
+    for(int i =0; i < changedContracts.count(); i++) {
+        contract& c =changedContracts[i];
+        booking&  b =asBookings[i];
+        // write data to CSV
+        creditor cont(c.creditorId());
+        csv.appendToRow(cont.firstname()); csv.appendToRow(cont.lastname());
+        csv.appendToRow(cont.email());     csv.appendToRow(cont.street());
+        csv.appendToRow(cont.postalCode());csv.appendToRow(cont.city());
+        csv.appendToRow(cont.iban());      csv.appendToRow(c.label());
+        c.reinvesting() ? csv.appendToRow("thesaurierend") : csv.appendToRow("ausschüttend");
+        csv.appendToRow(QDate(wiz.field("year").toInt(), 1, 1).toString("dd.MM.yyyy"));
+        csv.appendToRow(l.toString(c.interestRate(), 'f', 2));
+        csv.appendToRow(l.toString(c.value()-b.amount, 'f', 2));
+        csv.appendToRow(l.toString(b.amount, 'f', 2));
+        csv.appendToRow(l.toString(c.value(), 'f', 2));
+    }
+    QString filename(QDate::currentDate().toString(Qt::ISODate) + "-Jahresabrechnung.csv");
+    filename = appConfig::Outdir() + "/" + filename;
+    csv.save(filename);
+    showFileInFolder(filename);
+    return;
 }

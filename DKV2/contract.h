@@ -18,6 +18,7 @@ struct contract
     static const dbtable& getTableDef();
     static const dbtable& getTableDef_deletedContracts();
     static bool remove(qlonglong id);
+    static QString booking_csv_header();
     inline friend bool operator==(const contract& lhs, const contract& rhs)
     {   // friend functions - even in the class definition - are not member
         return lhs.td == rhs.td;
@@ -51,25 +52,25 @@ struct contract
     // interface
     double value() const;
     double value(QDate d) const;
-    QDate latestBooking() const;
+    booking latestBooking();
     // write to db
     int saveNewContract();
     bool validateAndSaveNewContract(QString& meldung);
     // contract activation
-    bool activate(const QDate& aDate, int amount_ct) const;
-    bool activate(const QDate& aDate, double amount) const;
+    bool activate(const QDate& aDate, double amount);
     bool isActive() const;
     QDate activationDate() const;
     // booking actions
-    int annualSettlement() const;
-    bool bookInterest(QDate d, bool transactual =true) const;
-    bool deposit(QDate d, double amount) const;
-    bool payout(QDate d, double amount) const;
+    int annualSettlement(int year =0);
+    bool bookInterest(QDate d, bool transactual =true);
+    bool deposit(QDate d, double amount);
+    bool payout(QDate d, double amount);
     bool cancel(QDate);
     bool finalize(bool simulate, const QDate finDate, double& finInterest, double& finPayout);
 private:
     // data
     TableDataInserter td;
+    booking latest;
     // helper
     bool storeTerminationDate(QDate d) const;
     bool archive();

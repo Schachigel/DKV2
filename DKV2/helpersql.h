@@ -30,7 +30,7 @@ QString selectQueryFromFields(const QVector<dbfield>& fields,
                               const QString& where ="", const QString& order ="");
 // QVector<QVariant> executeSingleColumnSql( const QString field, const QString table, const QString& where);
 QVector<QVariant> executeSingleColumnSql( const dbfield field, const QString& where="");
-QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where ="");
+QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where ="", const QString& order ="");
 QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where="", const QString& order="");
 bool executeSql(QString sql, QVariant v =QVariant());
 bool executeSql(QString sql, QVector<QVariant> v);

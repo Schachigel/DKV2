@@ -8,6 +8,7 @@ struct wizAnnualSettlement_IntroPage : public QWizardPage
 {
     wizAnnualSettlement_IntroPage(QWidget* p =nullptr);
     void initializePage() override;
+    bool validatePage() override;
 };
 
 struct wizAnnualSettlement : public QWizard
