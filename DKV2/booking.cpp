@@ -6,8 +6,7 @@
 /* static */ const dbtable& booking::getTableDef()
 {
     static dbtable bookings("Buchungen");
-    if( 0 == bookings.Fields().size())
-    {
+    if( 0 == bookings.Fields().size()) {
         bookings.append(dbfield("id",          QVariant::LongLong).setPrimaryKey().setAutoInc());
         bookings.append(dbfield("VertragsId",  QVariant::LongLong).setDefault(0).setNotNull());
         bookings.append(dbForeignKey(bookings["VertragsId"], dkdbstructur["Vertraege"]["id"], "ON DELETE RESTRICT"));
@@ -20,12 +19,13 @@
 /* static */ const dbtable& booking::getTableDef_deletedBookings()
 {
     static dbtable deletedBookings("exBuchungen");
-    deletedBookings.append(dbfield("id", QVariant::LongLong).setPrimaryKey());
-    for( int i =1 /* not 0 */ ; i < getTableDef().Fields().count(); i++) {
-        deletedBookings.append(getTableDef().Fields()[i]);
+    if( 0 == deletedBookings.Fields().size()) {
+        deletedBookings.append(dbfield("id", QVariant::LongLong).setPrimaryKey());
+        for( int i =1 /* not 0 */ ; i < getTableDef().Fields().count(); i++) {
+            deletedBookings.append(getTableDef().Fields()[i]);
+        }
+        deletedBookings.append(dbForeignKey(deletedBookings["VertragsId"], dkdbstructur["exVertraege"]["id"], "ON DELETE RESTRICT"));
     }
-
-    deletedBookings.append(dbForeignKey(deletedBookings["VertragsId"], dkdbstructur["exVertraege"]["id"], "ON DELETE RESTRICT"));
     return deletedBookings;
 }
 
