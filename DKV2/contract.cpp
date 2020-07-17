@@ -443,19 +443,20 @@ void activateRandomContracts(int percent)
 {   LOG_CALL;
     if( percent < 0 || percent > 100) return;
 
-    QVector<QSqlRecord> contracts = executeSql(contract::getTableDef().Fields());
-    int activations = contracts.count() * percent / 100;
+    QVector<QSqlRecord> contractData = executeSql(contract::getTableDef().Fields());
+    int activations = contractData.count() * percent / 100;
     static QRandomGenerator* rand = QRandomGenerator::system();
     for (int i=0; i < activations; i++) {
-        int amount = contracts[i].value("Betrag").toInt();
+        // contractData -> from database all amounts are in ct
+        double amount = euroFromCt(contractData[i].value("Betrag").toInt());
         if( rand->bounded(100)%10 == 0) {
             // some contracts get activated with a different amount
             amount = amount * rand->bounded(90, 110) / 100;
         }
-        QDate activationDate(contracts[i].value("Vertragsdatum").toDate());
+        QDate activationDate(contractData[i].value("Vertragsdatum").toDate());
         activationDate = activationDate.addDays(rand->bounded(50));
 
-        contract c(contracts[i].value("id").toInt());
+        contract c(contractData[i].value("id").toInt());
         c.activate(activationDate, amount);
     }
 }

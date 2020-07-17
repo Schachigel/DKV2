@@ -252,8 +252,8 @@ void dbConfig::writeDb(QSqlDatabase db)
     setMetaInfo(GMBH_GEFUE3,   gefue3,      db);
     setMetaInfo(GMBH_DKV,      dkv,         db);
     setNumMetaInfo(STARTINDEX, startindex,  db);
-    setNumMetaInfo(MIN_PAYOUT, minPayout,   db);
-    setNumMetaInfo(MIN_AMOUNT, minContract, db);
+    setNumMetaInfo(MIN_PAYOUT, double(minPayout),   db);
+    setNumMetaInfo(MIN_AMOUNT, double(minContract), db);
     setMetaInfo(DBID,          dbId,        db);
     setNumMetaInfo(DB_VERSION, dbVersion,   db);
 }
