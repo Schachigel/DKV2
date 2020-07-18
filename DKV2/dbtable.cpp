@@ -62,7 +62,7 @@ bool dbtable::create(QSqlDatabase db) const
     QSqlQuery q(db);
     if( !q.exec(createTableSql()))
     {
-        qCritical() << "dbtable::create failed" << q.lastError() << endl << "SQL: " << q.lastQuery();
+        qCritical() << "dbtable::create failed" << q.lastError() << Qt::endl << "SQL: " << q.lastQuery();
         return false;
     }
     else

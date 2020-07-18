@@ -21,8 +21,8 @@ class dbgTimer
     QString fname;
 public:
     dbgTimer() {t.start();}
-    dbgTimer(QString fu) : fname(fu){t.start(); qInfo().noquote() << "Debug Timer " + fname << " start" << endl;}
-    ~dbgTimer() {qInfo().noquote() << endl << (fname.isEmpty() ? "" : fname+ " end" )<< endl << "Elapsed time: "<< t.elapsed() << endl;}
+    dbgTimer(QString fu) : fname(fu){t.start(); qInfo().noquote() << "Debug Timer " + fname << " start" << Qt::endl;}
+    ~dbgTimer() {qInfo().noquote() << Qt::endl << (fname.isEmpty() ? "" : fname+ " end" )<< Qt::endl << "Elapsed time: "<< t.elapsed() << Qt::endl;}
 };
 
 class functionlogging {
@@ -38,7 +38,7 @@ public:
     ~functionlogging(){
         QString fill=QString("<").repeated(depth);
         depth--;
-        qInfo().noquote() << fill << fname << endl;
+        qInfo().noquote() << fill << fname << Qt::endl;
     }
 };
 

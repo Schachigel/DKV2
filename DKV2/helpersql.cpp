@@ -94,7 +94,7 @@ int rowCount(const QString& table)
     if( q.first())
         return q.value(0).toInt();
     else {
-        qCritical() << "row counting query failed" << q.lastError() << endl << q.lastQuery();
+        qCritical() << "row counting query failed" << q.lastError() << Qt::endl << q.lastQuery();
         return -1;
     }
 }
@@ -141,18 +141,18 @@ QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db)
     QSqlQuery q(db);
     if( !q.exec(sql))
     {
-        qCritical() << "SingleValueSql failed to execute: " << q.lastError() << endl << q.lastQuery() << endl;;
+        qCritical() << "SingleValueSql failed to execute: " << q.lastError() << Qt::endl << q.lastQuery() << Qt::endl;;
         return QVariant();
     }
     q.last();
     if(q.at() > 0)
     {
-        qDebug() << "SingleValueSql returned more than one value\n" << q.lastQuery() << endl;;
+        qDebug() << "SingleValueSql returned more than one value\n" << q.lastQuery() << Qt::endl;;
         return QVariant();
     }
     if(q.at() < 0)
     {
-        qDebug() << "SingleValueSql returned no value\n" << q.lastQuery() << endl;;
+        qDebug() << "SingleValueSql returned no value\n" << q.lastQuery() << Qt::endl;;
         return QVariant();
     }
     qInfo() << "sql " << sql << " returned " << q.value(0);
@@ -239,7 +239,7 @@ QSqlField adjustedType(const QSqlField& f, QVariant::Type t)
 //        }
 //        return result;
 //    }
-//    qCritical() << "Failed to execute single column sql " << q.lastError() << endl << q.lastQuery();
+//    qCritical() << "Failed to execute single column sql " << q.lastError() << Qt::endl << q.lastQuery();
 //    return QVector<QVariant>();
 //}
 
@@ -258,7 +258,7 @@ QVector<QVariant> executeSingleColumnSql( const dbfield field, const QString& wh
             result.push_back(adjustedType(q.record().field(0), field.type()).value());
         }
     else
-        qCritical() << "SingleColumnSql failed " << q.lastError() << endl << q.lastQuery();
+        qCritical() << "SingleColumnSql failed " << q.lastError() << Qt::endl << q.lastQuery();
 
     return result;
 }
@@ -269,7 +269,7 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
 
     QSqlQuery q;
     if( !q.exec(sql)) {
-        qCritical() << "SingleRecordSql failed " << q.lastError() << endl << q.lastQuery();
+        qCritical() << "SingleRecordSql failed " << q.lastError() << Qt::endl << q.lastQuery();
         return QSqlRecord();
     }
     q.last();
@@ -291,7 +291,7 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
     QVector<QSqlRecord> result;
     QSqlQuery q; q.setForwardOnly(true);
     if( !q.exec(sql)) {
-        qCritical() << "executeSql failed " << q.lastError() << endl << q.lastQuery();
+        qCritical() << "executeSql failed " << q.lastError() << Qt::endl << q.lastQuery();
         return result;
     }
     while( q.next()) {
@@ -317,7 +317,7 @@ bool executeSql(QString sql, QVariant v)
         qInfo() << "Successfully executed query \n" << q.lastQuery();
         return true;
     }
-    qDebug() << "failed to execute query. Error: " << q.lastError() << endl << q.lastQuery();
+    qDebug() << "failed to execute query. Error: " << q.lastError() << Qt::endl << q.lastQuery();
     return false;
 }
 bool executeSql(QString sql, QVector<QVariant> v)
@@ -338,7 +338,7 @@ bool executeSql(QString sql, QVector<QVariant> v)
         qInfo() << "executeSql w V Successfully executed query \n" << q.lastQuery();
         return true;
     }
-    qDebug() << "executeSql w V failed to execute query. Error: " << q.lastError() << endl << q.lastQuery();
+    qDebug() << "executeSql w V failed to execute query. Error: " << q.lastError() << Qt::endl << q.lastQuery();
     return false;
 }
 

@@ -126,7 +126,7 @@ void MainWindow::prepare_startPage()
     QString messageHtml = "<table width='100%'><tr><td><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></td></tr>";
 // todo: add DK status information
     messageHtml += "<tr><td><img src=\":/res/splash.png\"/></td></tr></table>";
-    qDebug() <<"welcome Screen html: " << endl << messageHtml << endl;
+    qDebug() <<"welcome Screen html: " << Qt::endl << messageHtml << Qt::endl;
     ui->teWelcome->setText(messageHtml);
 }
 void MainWindow::on_action_menu_database_start_triggered()

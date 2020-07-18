@@ -95,7 +95,7 @@ bool createView(QString name, QString sql, QSqlDatabase db) {
         qInfo() << "successfully created view " << name;
         return true;
     }
-    qCritical() << "faild to create view " << name << endl << q.lastQuery() << endl << q.lastError();
+    qCritical() << "faild to create view " << name << Qt::endl << q.lastQuery() << Qt::endl << q.lastError();
     return false;
 }
 bool insert_views( QSqlDatabase db)
@@ -495,7 +495,7 @@ QVector<rowData> contractRuntimeDistribution()
                   "FROM WertAktiveVertraege";
     QSqlQuery q;
     if( !q.exec(sql)) {
-        qCritical() << "calculation of runtime distribution failed: " << q.lastError() << endl << q.lastQuery();
+        qCritical() << "calculation of runtime distribution failed: " << q.lastError() << Qt::endl << q.lastQuery();
         return QVector<rowData>();
     }
 

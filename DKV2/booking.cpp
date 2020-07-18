@@ -84,6 +84,7 @@
 }
 /* static */ QVector<booking> bookings::getBookings(qlonglong cid, QDate from, QDate to)
 {   LOG_CALL;
+    // used in tests
     QString where = "Buchungen.VertragsId=%1 "
                   "AND Buchungen.Datum >='%2' "
                   "AND Buchungen.Datum <='%3'";

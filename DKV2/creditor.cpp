@@ -126,9 +126,9 @@ bool creditor::remove()
         return true;
 
     if( "19" == deleteQ.lastError().nativeErrorCode())
-        qDebug() << "Delete Kreditor failed due to refer. integrity rules" << endl << deleteQ.lastQuery();
+        qDebug() << "Delete Kreditor failed due to refer. integrity rules" << Qt::endl << deleteQ.lastQuery();
     else
-        qCritical() << "Delete Kreditor failed "<< deleteQ.lastError() << endl << deleteQ.lastQuery();
+        qCritical() << "Delete Kreditor failed "<< deleteQ.lastError() << Qt::endl << deleteQ.lastQuery();
     return false;
 }
 

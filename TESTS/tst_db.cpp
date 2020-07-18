@@ -145,12 +145,12 @@ void test_db::test_addRecords_wDep()
     QVERIFY( 0<= tdi.InsertData());
     QVERIFY(tableRecordCount("p") == 1);
 
-    qDebug() << "add depending data sets" << endl;
+    qDebug() << "add depending data sets" << Qt::endl;
     TableDataInserter tdiChild1(s["c"]);
     tdiChild1.setValue("pid", QVariant(1)); // should work
     QVERIFY( 0<= tdiChild1.InsertData());
 
-    qDebug() << "add INVALID depending data sets" << endl;
+    qDebug() << "add INVALID depending data sets" << Qt::endl;
     TableDataInserter tdiChild2(s["c"]);
     tdiChild2.setValue("pid", 2); // should fail - no matching parent in table p
     QVERIFY( 0> tdiChild2.InsertData());
@@ -178,7 +178,7 @@ void test_db::test_deleteRecord_wDep()
     QVERIFY( 0<= tdi.InsertData());
     QVERIFY(tableRecordCount("p") == 1);
 
-    qDebug() << "add depending data sets" << endl;
+    qDebug() << "add depending data sets" << Qt::endl;
     TableDataInserter tdiChild1(s["c"]);
     tdiChild1.setValue("pid", QVariant(1)); // should work
     QVERIFY( 0<= tdiChild1.InsertData());
@@ -188,7 +188,7 @@ void test_db::test_deleteRecord_wDep()
     QVERIFY(tableRecordCount("p") == 1);
     QVERIFY(tableRecordCount("c") == 2);
 
-    qDebug() << "removing connected datasets" << endl;
+    qDebug() << "removing connected datasets" << Qt::endl;
     QSqlQuery deleteQ;
     deleteQ.exec("DELETE FROM p WHERE id = 1");
     QVERIFY(tableRecordCount("p") == 0);

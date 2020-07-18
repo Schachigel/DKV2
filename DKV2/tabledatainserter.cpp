@@ -149,10 +149,10 @@ int TableDataInserter::InsertData(QSqlDatabase db) const
     bool ret = q.exec(getInsertRecordSQL());
     qlonglong lastRecord = q.lastInsertId().toLongLong();
     if( !ret) {
-        qCritical() << "Insert record failed: " << q.lastError() << endl << q.lastQuery() << endl;
+        qCritical() << "Insert record failed: " << q.lastError() << Qt::endl << q.lastQuery() << Qt::endl;
         return -1;
     }
-    qInfo() << "Successfully inserted Data into " << tablename << " at index " << q.lastInsertId().toLongLong() << endl <<  q.lastQuery() << endl;
+    qInfo() << "Successfully inserted Data into " << tablename << " at index " << q.lastInsertId().toLongLong() << Qt::endl <<  q.lastQuery() << Qt::endl;
     return lastRecord;
 }
 
@@ -163,10 +163,10 @@ int TableDataInserter::InsertData_noAuto(QSqlDatabase db) const
     bool ret = q.exec(getInsert_noAuto_RecordSQL());
     qlonglong lastRecord = q.lastInsertId().toLongLong();
     if( !ret) {
-        qCritical() << "Insert/replace record failed: " << q.lastError() << endl << q.lastQuery() << endl;
+        qCritical() << "Insert/replace record failed: " << q.lastError() << Qt::endl << q.lastQuery() << Qt::endl;
         return -1;
     }
-    qDebug() << "successfully inserted Data at index " << q.lastInsertId().toLongLong() << endl <<  q.lastQuery() << endl;
+    qDebug() << "successfully inserted Data at index " << q.lastInsertId().toLongLong() << Qt::endl <<  q.lastQuery() << Qt::endl;
     return lastRecord;
 }
 
@@ -177,10 +177,10 @@ int TableDataInserter::InsertOrReplaceData(QSqlDatabase db) const
     bool ret = q.exec(getInsertOrReplaceRecordSQL());
     qlonglong lastRecord = q.lastInsertId().toLongLong();
     if( !ret) {
-        qCritical() << "Insert/replace record failed: " << q.lastError() << endl << q.lastQuery() << endl;
+        qCritical() << "Insert/replace record failed: " << q.lastError() << Qt::endl << q.lastQuery() << Qt::endl;
         return -1;
     }
-    qDebug() << "successfully inserted Data at index " << q.lastInsertId().toLongLong() << endl <<  q.lastQuery() << endl;
+    qDebug() << "successfully inserted Data at index " << q.lastInsertId().toLongLong() << Qt::endl <<  q.lastQuery() << Qt::endl;
     return lastRecord;
 }
 
@@ -191,10 +191,10 @@ int TableDataInserter::UpdateData() const
     bool ret = q.exec(getUpdateRecordSQL());
     int lastRecord = q.lastInsertId().toInt();
     if( !ret) {
-        qCritical() << "TDI.Update record failed: " << q.lastError() << endl << q.lastQuery() << endl;
+        qCritical() << "TDI.Update record failed: " << q.lastError() << Qt::endl << q.lastQuery() << Qt::endl;
         return -1;
     }
-    qDebug() << "TDI.Update: successfull at index " << q.lastInsertId().toInt() << endl <<  q.lastQuery() << endl;
+    qDebug() << "TDI.Update: successfull at index " << q.lastInsertId().toInt() << Qt::endl <<  q.lastQuery() << Qt::endl;
     return lastRecord;
 }
 

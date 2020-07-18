@@ -67,7 +67,7 @@ void setMetaInfo(const QString& name, const QString& Wert, QSqlDatabase db)
     QString sql="INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('%1', '%2')";
     sql = sql.arg(name).arg(Wert);
     if( !q.exec(sql))
-        qCritical() << "Failed to insert Meta information " << q.lastError() << endl << q.lastQuery();
+        qCritical() << "Failed to insert Meta information " << q.lastError() << Qt::endl << q.lastQuery();
 }
 void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db)
 {   LOG_CALL_W(name);
@@ -75,7 +75,7 @@ void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db)
     sql = sql.arg(name).arg(QString::number(Wert));
     QSqlQuery q(db);
     if( !q.exec(sql))
-        qCritical() << "Failed to insert Meta information " << q.lastError() << endl << q.lastQuery();
+        qCritical() << "Failed to insert Meta information " << q.lastError() << Qt::endl << q.lastQuery();
 }
 
 /* statics */

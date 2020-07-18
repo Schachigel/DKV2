@@ -49,9 +49,9 @@ bool contract::remove(qlonglong id)
     if( deleteQ.exec(sql))
         return true;
     if( "19" == deleteQ.lastError().nativeErrorCode())
-        qDebug() << "Delete contract failed due to refer. integrity rules" << endl << deleteQ.lastQuery();
+        qDebug() << "Delete contract failed due to refer. integrity rules" << Qt::endl << deleteQ.lastQuery();
     else
-        qCritical() << "Delete contract failed "<< deleteQ.lastError() << endl << deleteQ.lastQuery();
+        qCritical() << "Delete contract failed "<< deleteQ.lastError() << Qt::endl << deleteQ.lastQuery();
     return false;
 
 }

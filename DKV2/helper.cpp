@@ -47,7 +47,7 @@ void logger(QtMsgType type, const QMessageLogContext &, const QString &msg)
 #ifdef QT_DEBUG
     ts << " (" << context.file << ")";
 #endif
-    while(lfCount-->=0) ts << endl;
+    while(lfCount-->=0) ts << Qt::endl;
 
     if (type == QtFatalMsg)
         abort();

@@ -39,7 +39,7 @@ int tableRecordCount( QString tname)
         qDebug() << "#Datensätze: " << q.record().value(0).toInt();
         return q.record().value(0).toInt();
     } else {
-        qCritical() << "tableRecordCount: SELECT failed " << q.lastError() << endl << q.lastQuery() << endl;
+        qCritical() << "tableRecordCount: SELECT failed " << q.lastError() << Qt::endl << q.lastQuery() << Qt::endl;
         return -1;
     }
 }
