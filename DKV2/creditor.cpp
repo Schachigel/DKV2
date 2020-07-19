@@ -1,3 +1,4 @@
+#include <QStringBuilder>
 #include <QSqlRecord>
 #include <QRegularExpression>
 #include <QRandomGenerator>
@@ -6,13 +7,44 @@
 #include "helperfin.h"
 #include "helpersql.h"
 #include "creditor.h"
+#define qsl(x) QStringLiteral(x)
 
-QList<QString> Vornamen {"Holger", "Volker", "Peter", "Hans", "Susi", "Roland", "Claudia", "Emil", "Evelyn", "Ötzgür", "Thomas", "Elke", "Berta", "Malte", "Jori", "Paul", "Jonas", "Finn", "Leon", "Luca", "Emma", "Mia", "Lena", "Anna", "Anne", "Martha", "Ruth", "Rosemie", "Rosemarie", "Verena", "Ursula", "Erika", "Adrian", "Avan", "Anton", "Benno", "Karl", "Merlin", "Noah", "Oliver","Olaf", "Pepe", "Zeno", "Apollo", "Edward", "Ronaldo", "Siegbert", "Thomas", "Michael"};
-QList<QString> Nachnamen {"Maier", "Müller", "Schmit", "Kramp", "Adams", "Häcker", "Maresch", "Beutl", "Chauchev", "Chen", "Kirk", "Ohura", "Gorbatschov", "Merkel", "Karrenbauer", "Tritin", "Schmidt", "Rao", "Lassen", "Hurgedü", "vom Dach", "Langstrumpf", "Lederstrumpf", "Potter", "Poppins", "Wisley", "Li", "Wang", "Ran", "vom Dach", "Eckrich", "Staar", "Funke", "Engelein", "Kruffel", "Calzone"};
-QList<QString> Strassen {"Hauptstrasse", "Nebenstrasse", "Bahnhofstrasse", "Kirchstraße", "Dorfstrasse", "Süterlinweg", "Sorbenstrasse", "Kleines Gässchen", "Industriestrasse", "Sesamstrasse", "Lindenstrasse", "Theaterstrasse", "Museumsstrasse", "Opernplatz", "Schillerstrasse", "Lessingstrasse", "Rathausplatz", "Parkstrasse", "Turmstrasse", "Neuer Weg", "Neuer Anfang", "Main Street", "Center Court" };
-QList<QString> emailprovider {"gmail.com", "googlemail.com", "mailbox.org", "t-online.de", "mail.de", "mail.com", "online.de", "yahoo.de", "yahoo.com", "telekom.de", "proivder.co.uk", "AOL.de", "outlook.com", "microsoft.com", "sap.com", "sap-ag.de", "abb.de", "skype.de", "provider.de"};
-QList<QString> ibans {"BG80BNBG96611020345678", "DE38531742365852502530", "DE63364408232964251731", "DE38737364268384258531", "DE69037950954001627624", "DE63377045386819730665", "DE18851420444163951769", "DE77921850720298609321", "DE70402696485599313572", "DE70455395581860402838", "DE94045704387963352767", "DE30724236236062816411", "DE62772043290447861437", "DE33387723124963875990", "DE15867719874951165967", "DE96720348741083219766", "DE23152931057149592044", "DE13220161295670898833", "DE49737651031822324605", "DE38017168378078601588", "DE07717138875827514267"};
-QList <QPair<QString, QString>> Cities {{"68305", "Mannheim"}, {"69123", "Heidelberg"}, {"69123", "Karlsruhe"}, {"90345", "Hamburg"}, {"90334", "Rottenburg"}, {"23345", "Reinfeld"}, {"83475", "Dresden"}, {"35725", "Weissnich"}, {"23245", "Drieben"}};
+QList<QString> Vornamen {qsl("Holger"), qsl("Volker"), qsl("Peter"), qsl("Hans"), qsl("Susi"), qsl("Roland"),
+            qsl("Claudia"), qsl("Emil"), qsl("Evelyn"), qsl("Ötzgür"), qsl("Thomas"), qsl("Elke"), qsl("Berta"),
+            qsl("Malte"), qsl("Jori"), qsl("Paul"), qsl("Jonas"), qsl("Finn"), qsl("Leon"), qsl("Luca"),
+            qsl("Emma"), qsl("Mia"), qsl("Lena"), qsl("Anna"), qsl("Anne"), qsl("Martha"), qsl("Ruth"),
+            qsl("Rosemie"), qsl("Rosemarie"), qsl("Verena"), qsl("Ursula"), qsl("Erika"), qsl("Adrian"),
+            qsl("Avan"), qsl("Anton"), qsl("Benno"), qsl("Karl"), qsl("Merlin"), qsl("Noah"), qsl("Oliver"),
+            qsl("Olaf"), qsl("Pepe"), qsl("Zeno"), qsl("Apollo"), qsl("Edward"), qsl("Ronaldo"), qsl("Siegbert"),
+            qsl("Thomas"), qsl("Michael")};
+QList<QString> Nachnamen {qsl("Maier"), qsl("Müller"), qsl("Schmit"), qsl("Kramp"), qsl("Adams"), qsl("Häcker"),
+            qsl("Maresch"), qsl("Beutl"), qsl("Chauchev"), qsl("Chen"), qsl("Kirk"), qsl("Ohura"),
+            qsl("Gorbatschov"), qsl("Merkel"), qsl("Karrenbauer"), qsl("Tritin"), qsl("Schmidt"), qsl("Rao"),
+            qsl("Lassen"), qsl("Hurgedü"), qsl("vom Dach"), qsl("Langstrumpf"), qsl("Lederstrumpf"),
+            qsl("Potter"), qsl("Poppins"), qsl("Wisley"), qsl("Li"), qsl("Wang"), qsl("Ran"), qsl("vom Docht"),
+            qsl("Eckrich"), qsl("Staar"), qsl("Funke"), qsl("Engelein"), qsl("Kruffel"), qsl("Calzone")};
+QList<QString> Strassen {qsl("Hauptstrasse"), qsl("Nebenstrasse"), qsl("Bahnhofstrasse"), qsl("Kirchstraße"),
+            qsl("Dorfstrasse"), qsl("Süterlinweg"), qsl("Sorbenstrasse"), qsl("Kleines Gässchen"),
+            qsl("Industriestrasse"), qsl("Sesamstrasse"), qsl("Lindenstrasse"), qsl("Theaterstrasse"),
+            qsl("Museumsstrasse"), qsl("Opernplatz"), qsl("Schillerstrasse"), qsl("Lessingstrasse"),
+            qsl("Rathausplatz"), qsl("Parkstrasse"), qsl("Turmstrasse"), qsl("Neuer Weg"), qsl("Neuer Anfang"),
+            qsl("Main Street"), qsl("Center Court")};
+QList<QString> emailprovider {qsl("gmail.com"), qsl("googlemail.com"), qsl("mailbox.org"), qsl("t-online.de"),
+            qsl("mail.de"), qsl("mail.com"), qsl("online.de"), qsl("yahoo.de"), qsl("yahoo.com"), qsl("telekom.de"),
+            qsl("proivder.co.uk"), qsl("AOL.de"), qsl("outlook.com"), qsl("microsoft.com"), qsl("sap.com"),
+            qsl("sap-ag.de"), qsl("abb.de"), qsl("skype.de"), qsl("provider.de")};
+QList<QString> ibans {qsl("BG80BNBG96611020345678"), qsl("DE38531742365852502530"), qsl("DE63364408232964251731"),
+            qsl("DE38737364268384258531"), qsl("DE69037950954001627624"), qsl("DE63377045386819730665"),
+            qsl("DE18851420444163951769"), qsl("DE77921850720298609321"), qsl("DE70402696485599313572"),
+            qsl("DE70455395581860402838"), qsl("DE94045704387963352767"), qsl("DE30724236236062816411"),
+            qsl("DE62772043290447861437"), qsl("DE33387723124963875990"), qsl("DE15867719874951165967"),
+            qsl("DE96720348741083219766"), qsl("DE23152931057149592044"), qsl("DE13220161295670898833"),
+            qsl("DE49737651031822324605"), qsl("DE38017168378078601588"), qsl("DE07717138875827514267")};
+QList <QPair<QString, QString>> Cities {{qsl("68305"), qsl("Mannheim")}, {qsl("69123"), qsl("Heidelberg")},
+                                        {qsl("69123"), qsl("Karlsruhe")}, {qsl("90345"), qsl("Hamburg")},
+                                        {qsl("90334"), qsl("Rottenburg")}, {qsl("23345"), qsl("Reinfeld")},
+                                        {qsl("83475"), qsl("Dresden")}, {qsl("35725"), qsl("Weissnich")},
+                                        {qsl("23245"), qsl("Drieben")}};
 
 bool creditor::operator==(const creditor& c) const
 {
@@ -36,7 +68,7 @@ bool creditor::operator==(const creditor& c) const
 bool creditor::fromDb( int i)
 {   LOG_CALL;
 
-    QSqlRecord rec = executeSingleRecordSql(dkdbstructur["Kreditoren"].Fields(), "id="+QString::number(i));
+    QSqlRecord rec = executeSingleRecordSql(dkdbstructur[qsl("Kreditoren")].Fields(), qsl("id=")+QString::number(i));
     if( rec.isEmpty()) return false;
 
     for(int i=0; i<rec.count(); i++)
@@ -44,9 +76,9 @@ bool creditor::fromDb( int i)
         qDebug() << "reading Kreditor from db; Field:" << rec.field(i).name() << "-value:" << rec.field(i).value() << "(" << rec.field(i).value().type() << ")";
         if( dkdbstructur["Kreditoren"][rec.field(i).name()].type() == QVariant::Type::String)
             ti.setValue(rec.field(i).name(), rec.field(i).value().toString());
-        else if( dkdbstructur["Kreditoren"][rec.field(i).name()].type() == QVariant::Type::LongLong)
+        else if( dkdbstructur[qsl("Kreditoren")][rec.field(i).name()].type() == QVariant::Type::LongLong)
             ti.setValue(rec.field(i).name(), rec.field(i).value().toLongLong());
-        else if( dkdbstructur["Kreditoren"][rec.field(i).name()].type() == QVariant::Type::Double)
+        else if( dkdbstructur[qsl("Kreditoren")][rec.field(i).name()].type() == QVariant::Type::Double)
             ti.setValue(rec.field(i).name(), rec.field(i).value().toDouble());
         else
             ti.setValue(rec.field(i).name(), rec.field(i).value());
@@ -63,17 +95,17 @@ bool creditor::isValid() const
 bool creditor::isValid( QString& errortext) const
 {//   LOG_CALL;
     errortext.clear();
-    if( (ti.getValue("Vorname").toString().isEmpty() && ti.getValue("Vorname").toString().isEmpty())
+    if( (ti.getValue(qsl("Vorname")).toString().isEmpty() && ti.getValue(qsl("Vorname")).toString().isEmpty())
          ||
-        ti.getValue("Strasse").toString().isEmpty()
+        ti.getValue(qsl("Strasse")).toString().isEmpty()
          ||
-        ti.getValue("Plz").toString().isEmpty()
+        ti.getValue(qsl("Plz")).toString().isEmpty()
          ||
-        ti.getValue("Stadt").toString().isEmpty())
-        errortext = "Die Adressdaten sind unvollständig";
+        ti.getValue(qsl("Stadt")).toString().isEmpty())
+        errortext = qsl("Die Adressdaten sind unvollständig");
 
-    QString email = ti.getValue("Email").toString();
-    if( !email.isEmpty() || email == "NULL_STRING")
+    QString email = ti.getValue(qsl("Email")).toString();
+    if( !email.isEmpty() || email == qsl("NULL_STRING"))
     {
         QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b",
                               QRegularExpression::CaseInsensitiveOption);
@@ -82,10 +114,10 @@ bool creditor::isValid( QString& errortext) const
     }
 
     IbanValidator iv; int pos = 0;
-    QString iban = ti.getValue("IBAN").toString();
+    QString iban = ti.getValue(qsl("IBAN")).toString();
     if( !iban.isEmpty())
         if( iv.validate(iban, pos) != IbanValidator::State::Acceptable)
-            errortext = "Das Format der IBAN ist nicht korrekt: " + iban;
+            errortext = qsl("Das Format der IBAN ist nicht korrekt: ") + iban;
 
     if( errortext.isEmpty())
         return true;
@@ -122,13 +154,13 @@ bool creditor::remove()
     // deletion with active contracts will fail due to ref. integrity contracts <> bookings
     // [ contract <-> booking ] On Delete Restrict
     QSqlQuery deleteQ;
-    if( deleteQ.exec("DELETE FROM Kreditoren WHERE Id=" +QString::number(index)))
+    if( deleteQ.exec(qsl("DELETE FROM Kreditoren WHERE Id=") +QString::number(index)))
         return true;
 
     if( "19" == deleteQ.lastError().nativeErrorCode())
-        qDebug() << "Delete Kreditor failed due to refer. integrity rules" << Qt::endl << deleteQ.lastQuery();
+        qDebug() << qsl("Delete Kreditor failed due to refer. integrity rules") << Qt::endl << deleteQ.lastQuery();
     else
-        qCritical() << "Delete Kreditor failed "<< deleteQ.lastError() << Qt::endl << deleteQ.lastQuery();
+        qCritical() << qsl("Delete Kreditor failed ")<< deleteQ.lastError() << Qt::endl << deleteQ.lastQuery();
     return false;
 }
 
@@ -136,9 +168,9 @@ bool creditor::remove()
 {
     // SELECT sum(Buchungen.Betrag) FROM Buchungen
     // WHERE Buchungen.VertragsId IN (SELECT Vertraege.id FROM Vertraege WHERE Vertraege.KreditorId = 14)
-    QString where = "Buchungen.VertragsId IN (SELECT Vertraege.id FROM Vertraege WHERE Vertraege.KreditorId = %1)";
+    QString where = qsl("Buchungen.VertragsId IN (SELECT Vertraege.id FROM Vertraege WHERE Vertraege.KreditorId = %1)");
     where = where.arg(i);
-    QVariant a = executeSingleValueSql("SUM(Buchungen.Betrag)", "Buchungen", where);
+    QVariant a = executeSingleValueSql(qsl("SUM(Buchungen.Betrag)"), qsl("Buchungen"), where);
     if( a.toDouble() > 0)
         return true;
     return false;
@@ -146,7 +178,7 @@ bool creditor::remove()
 
 /* static */ const dbtable& creditor::getTableDef()
 {
-    static dbtable creditortable("Kreditoren");
+    static dbtable creditortable(qsl("Kreditoren"));
     if( 0 == creditortable.Fields().size())
     {
         creditortable.append(dbfield("id",       QVariant::LongLong).setPrimaryKey().setAutoInc());
@@ -173,7 +205,7 @@ void creditor::KreditorenListeMitId(QList<QPair<int,QString>> &entries) const
 {   LOG_CALL;
     QSqlQuery query;
     query.setForwardOnly(true);
-    if( !query.exec("SELECT id,  Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse FROM Kreditoren ORDER BY Nachname ASC, Vorname ASC"))
+    if( !query.exec(qsl("SELECT id,  Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse FROM Kreditoren ORDER BY Nachname ASC, Vorname ASC")))
     {
         qCritical() << "Error reading DKGeber while creating a contract: " << query.lastError().text();
         return;
@@ -182,7 +214,7 @@ void creditor::KreditorenListeMitId(QList<QPair<int,QString>> &entries) const
     while(query.next())
     {
         QString Entry = query.value(1).toString();
-        QList<QPair<int,QString>> entry {{query.value("id").toInt(), Entry}};
+        QList<QPair<int,QString>> entry {{query.value(qsl("id")).toInt(), Entry}};
         entries.append(entry);
     }
 }
@@ -197,16 +229,16 @@ creditor saveRandomCreditor()
     int indexCity = rand->bounded(Cities.count());
     c.setPostalCode(Cities[indexCity].first);
     c.setCity(Cities[indexCity].second);
-    QString email = c.firstname() + "." + c.lastname() + "@" + emailprovider[rand->bounded(emailprovider.count())];
+    QString email = c.firstname() % qsl(".") % c.lastname() % qsl("@") + emailprovider[rand->bounded(emailprovider.count())];
     email = email.toLower();
-    email = email.replace("ü", "ue");
-    email = email.replace("ä", "ae");
-    email = email.replace("ö", "oe");
-    email = email.replace("ß", "ss");
+    email = email.replace(qsl("ü"), qsl("ue"));
+    email = email.replace(qsl("ä"), qsl("ae"));
+    email = email.replace(qsl("ö"), qsl("oe"));
+    email = email.replace(qsl("ß"), qsl("ss"));
 
     c.setEmail(email);
     c.setIban(ibans[rand->bounded(ibans.count())]);
-    c.setBic("bic...         .");
+    c.setBic(qsl("bic...         ."));
     Q_ASSERT(c.isValid());
     c.save();
     return c;

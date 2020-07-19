@@ -3,6 +3,8 @@
 
 #include <QSqlField>
 #include <QString>
+#include <QStringLiteral>
+#define qsl(x) QStringLiteral(x)
 
 struct dbtable;
 
@@ -13,28 +15,28 @@ public: // types
     explicit dbfield() : QSqlField(){}
     dbfield(QString name,
             QVariant::Type type=QVariant::String,
-            QString td="")
+            QString td=qsl(""))
      :  QSqlField(name), SqlTypeDetails(td)
     {
         Q_ASSERT(isSupportedType(type));
-        Q_ASSERT( ! name.contains("-"));
+        Q_ASSERT( ! name.contains(qsl("-")));
         outputType = type;
         setType(type);
 
         SqlTypeDetails = SqlTypeDetails.toUpper();
-        setAutoValue(SqlTypeDetails.contains("AUTOINCREMENT"));
-        SqlTypeDetails = SqlTypeDetails.replace("AUTOINCREMENT", "").trimmed();
-        setRequired(SqlTypeDetails.contains("NOT NULL"));
-        SqlTypeDetails = SqlTypeDetails.replace("NOT NULL", "").trimmed();
-        setPrimaryKey(SqlTypeDetails.contains("PRIMARY KEY"));
-        SqlTypeDetails = SqlTypeDetails.replace("PRIMARY KEY", "").trimmed();
-        setUnique(SqlTypeDetails.contains("UNIQUE"));
-        SqlTypeDetails = SqlTypeDetails.replace("UNIQUE", "").trimmed();
+        setAutoValue(SqlTypeDetails.contains(qsl("AUTOINCREMENT")));
+        SqlTypeDetails = SqlTypeDetails.replace(qsl("AUTOINCREMENT"), qsl("")).trimmed();
+        setRequired(SqlTypeDetails.contains(qsl("NOT NULL")));
+        SqlTypeDetails = SqlTypeDetails.replace(qsl("NOT NULL"), qsl("")).trimmed();
+        setPrimaryKey(SqlTypeDetails.contains(qsl("PRIMARY KEY")));
+        SqlTypeDetails = SqlTypeDetails.replace(qsl("PRIMARY KEY"), qsl("")).trimmed();
+        setUnique(SqlTypeDetails.contains(qsl("UNIQUE")));
+        SqlTypeDetails = SqlTypeDetails.replace(qsl("UNIQUE"), qsl("")).trimmed();
     }
     bool operator ==(const dbfield &b) const;
     QString typeDetails()     const {return SqlTypeDetails;}
     // interface
-    QString get_CreateSqlSnippet();
+    QString get_CreateSqlSnippet() const;
     dbfield setUnique(bool u=true){unique = u; return *this;}
     dbfield setPrimaryKey(bool p=true){ primaryKey = p; return *this;}
     dbfield setNotNull(bool nn=true){ setRequired(nn); return *this;}
@@ -53,7 +55,7 @@ public: // types
 struct dbForeignKey
 {
     // const. destr. & access fu
-    dbForeignKey(dbfield local, dbfield parent, QString onDelete ="", QString onUpdate="")
+    dbForeignKey(dbfield local, dbfield parent, QString onDelete =QString(), QString onUpdate=QString())
         : onDelete(onDelete), onUpdate( onUpdate)
     {
         table = local.tableName();

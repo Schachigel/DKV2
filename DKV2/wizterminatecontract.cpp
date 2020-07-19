@@ -9,13 +9,13 @@
 
 wizTerminateContract_DatePage::wizTerminateContract_DatePage(QWidget* p) : QWizardPage(p)
 {
-    setTitle("Vertrag beenden");
-    setSubTitle("Mit dieser Dialogfolge kannst Du einen Vertrag beenden.<p>"
+    setTitle(qsl("Vertrag beenden"));
+    setSubTitle(qsl("Mit dieser Dialogfolge kannst Du einen Vertrag beenden.<p>"
                 "Gib das Datum an, zu dem der Vertrag ausgezahlt wird. "
-                "Bis zu diesem Datum werden die Zinsen berechnet. ");
+                "Bis zu diesem Datum werden die Zinsen berechnet. "));
     QDateEdit* de = new QDateEdit;
-    de->setDisplayFormat("dd.MM.yyyy");
-    registerField("date", de);
+    de->setDisplayFormat(qsl("dd.MM.yyyy"));
+    registerField(qsl("date"), de);
     QVBoxLayout* layout = new QVBoxLayout;
     layout->addWidget(de);
     setLayout(layout);
@@ -24,27 +24,27 @@ wizTerminateContract_DatePage::wizTerminateContract_DatePage(QWidget* p) : QWiza
 void wizTerminateContract_DatePage::initializePage()
 {
     wizTerminateContract* wiz = dynamic_cast<wizTerminateContract*>(wizard());
-    setField("date", wiz->c.plannedEndDate());
+    setField(qsl("date"), wiz->c.plannedEndDate());
 }
 
 bool wizTerminateContract_DatePage::validatePage()
 {
     wizTerminateContract* wiz = dynamic_cast<wizTerminateContract*>(wizard());
-    if( field("date").toDate() >= wiz->c.latestBooking().date)
+    if( field(qsl("date")).toDate() >= wiz->c.latestBooking().date)
         return true;
-    QString msg ("Das Vertragsende muss nach der letzten Buchung des Vertrags am %1 sein");
-    msg = msg.arg(wiz->c.latestBooking().date.toString("dd.MM.yyyy"));
-    QMessageBox::information(this, "Ungültiges Datum", msg);
+    QString msg (qsl("Das Vertragsende muss nach der letzten Buchung des Vertrags am %1 sein"));
+    msg = msg.arg(wiz->c.latestBooking().date.toString(qsl("dd.MM.yyyy")));
+    QMessageBox::information(this, qsl("Ungültiges Datum"), msg);
     return false;
 }
 
 wizTerminateContract_ConfirmationPage::wizTerminateContract_ConfirmationPage(QWidget* p) : QWizardPage(p)
 {
-    setTitle("Vertrag beenden");
-    QCheckBox* cbPrint = new QCheckBox("Beleg als CSV Datei speichern");
-    registerField("print", cbPrint);
-    QCheckBox* cbConfirm = new QCheckBox("Daten bestätigen");
-    registerField("confirm", cbConfirm);
+    setTitle(qsl("Vertrag beenden"));
+    QCheckBox* cbPrint = new QCheckBox(qsl("Beleg als CSV Datei speichern"));
+    registerField(qsl("print"), cbPrint);
+    QCheckBox* cbConfirm = new QCheckBox(qsl("Die Engaben sind korrekt"));
+    registerField(qsl("confirm"), cbConfirm);
     QVBoxLayout* layout = new QVBoxLayout;
     layout->addWidget(cbPrint);
     layout->addWidget(cbConfirm);
@@ -55,21 +55,21 @@ void wizTerminateContract_ConfirmationPage::initializePage()
 {
     wizTerminateContract* wiz = dynamic_cast<wizTerminateContract*>(wizard());
     double interest =0., finalValue =0.;
-    wiz->c.finalize(true, field("date").toDate(), interest, finalValue);
+    wiz->c.finalize(true, field(qsl("date")).toDate(), interest, finalValue);
 
-    QString subtitle = "<table width=100%>"
+    QString subtitle = qsl("<table width=100%>"
                        "<tr><td>Bewertung des Vertrags zum Laufzeitende</td><td align=right><b>%1</b> </td></tr>"
                        "<tr><td>Zinsen der letzten Zinsphase</td>            <td align=right><b>%2</b> </td></tr>"
                        "<tr><td>Auszahlungsbetrag </td>                      <td align=right><b>%3</b> </td></tr>"
-                       "</table>";
+                       "</table>");
     QLocale locale;
-    subtitle = subtitle.arg(locale.toCurrencyString(wiz->c.value())).arg(locale.toCurrencyString(interest)).arg(locale.toCurrencyString(finalValue));
+    subtitle = subtitle.arg(locale.toCurrencyString(wiz->c.value()), locale.toCurrencyString(interest), locale.toCurrencyString(finalValue));
     setSubTitle(subtitle);
 }
 
 bool wizTerminateContract_ConfirmationPage::validatePage()
 {
-    return field("confirm").toBool();
+    return field(qsl("confirm")).toBool();
 }
 
 wizTerminateContract::wizTerminateContract(QWidget* p, contract c) : QWizard(p), c(c)

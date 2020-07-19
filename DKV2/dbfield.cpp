@@ -22,16 +22,16 @@ bool dbfield::operator ==(const dbfield &b) const
             && (type() == b.type()));
 }
 
-QString dbfield::get_CreateSqlSnippet()
+QString dbfield::get_CreateSqlSnippet() const
 {
     return name()
-            + " " + dbCreateTable_type(type())
-            + (primaryKey ? " PRIMARY KEY" : "")
-            + (!typeDetails().isEmpty() ? " " + typeDetails() : "")
-            + (isAutoValue()? " AUTOINCREMENT" : "")
-            + ((requiredStatus()==Required)? " NOT NULL" : "")
-            + ((unique ? " UNIQUE" : "" ))
-            + (defaultValue().isValid() ? " DEFAULT "+ dbInsertableString(defaultValue()) : "");
+            + qsl(" ") + dbCreateTable_type(type())
+            + (primaryKey ? qsl(" PRIMARY KEY") : qsl(""))
+            + (!typeDetails().isEmpty() ? qsl(" ") + typeDetails() : qsl(""))
+            + (isAutoValue()? qsl(" AUTOINCREMENT") : qsl(""))
+            + ((requiredStatus()==Required)? qsl(" NOT NULL") : qsl(""))
+            + ((unique ? qsl(" UNIQUE") : qsl("") ))
+            + (defaultValue().isValid() ? qsl(" DEFAULT ")+ dbInsertableString(defaultValue()) : qsl(""));
 }
 
 //////////////////////

@@ -32,7 +32,7 @@ void logger(QtMsgType type, const QMessageLogContext &, const QString &msg)
             abort();
     }
 
-    static QHash<QtMsgType, QString> msgLevelHash({{QtDebugMsg, "DBuG"}, {QtInfoMsg, "INFo"}, {QtWarningMsg, "WaRN"}, {QtCriticalMsg, "ERRo"}, {QtFatalMsg, "FaTl"}});
+    static QHash<QtMsgType, QString> msgLevelHash({{QtDebugMsg, qsl("DBuG")}, {QtInfoMsg, qsl("INFo")}, {QtWarningMsg, qsl("WaRN")}, {QtCriticalMsg, qsl("ERRo")}, {QtFatalMsg, qsl("FaTl")}});
 
     QString endlCorrectedMsg (msg);
     int lfCount = 0;
@@ -43,7 +43,7 @@ void logger(QtMsgType type, const QMessageLogContext &, const QString &msg)
 //    QMutexLocker lock(&mutex);
 
     QTextStream ts(outFile_p);
-    ts << QTime::currentTime().toString("hh:mm:ss.zzz") << " " << msgLevelHash[type] << " : " << endlCorrectedMsg;
+    ts << QTime::currentTime().toString(qsl("hh:mm:ss.zzz")) << " " << msgLevelHash[type] << " : " << endlCorrectedMsg;
 #ifdef QT_DEBUG
     ts << " (" << context.file << ")";
 #endif

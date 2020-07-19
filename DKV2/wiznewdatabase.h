@@ -1,6 +1,8 @@
 #ifndef FILESELECTIONWIZ_H
 #define FILESELECTIONWIZ_H
 
+#include <QStringLiteral>
+#define qsl(x) QStringLiteral(x)
 #include <QLineEdit>
 #include <QWizard>
 
@@ -81,8 +83,8 @@ struct wizNewDatabaseWiz : public QWizard
     // data
     const bool existingFile =false;
     QString openInFolder;
-    const QString fileTypeDescription ="dk-DB Dateien (*.dkdb)";
-    const QString bffTitle ="Neue Datenbank Datei";
+    const QString fileTypeDescription =qsl("dk-DB Dateien (*.dkdb)");
+    const QString bffTitle =qsl("Neue Datenbank Datei");
 
     QString title;
     QString subtitle;

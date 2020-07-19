@@ -1,6 +1,9 @@
 #ifndef DBTABLE_H
 #define DBTABLE_H
 
+#include <QStringLiteral>
+#define qsl(x) QStringLiteral(x)
+
 #include <QSqlDatabase>
 
 #include "dbfield.h"
@@ -11,7 +14,7 @@ struct dbtable
 {
     friend class dbstructure;
     // constr. destr. & access fu
-    dbtable(QString n="") : name(n) {}
+    dbtable(QString n=qsl("")) : name(n) {}
     void setName(QString n) { name = n;}
     QString Name() const {return name;}
     QVector<dbfield> Fields() const { return fields;}

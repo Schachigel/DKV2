@@ -11,7 +11,7 @@ TableDataInserter::TableDataInserter(const dbtable& t)
 void TableDataInserter::init(const dbtable& t)
 {   //LOG_CALL;
     tablename = t.Name();
-    for (auto dbfield : t.Fields()) {
+    for (auto& dbfield : t.Fields()) {
         QSqlField sqlField(dbfield.name(), dbfield.type(), tablename);
         if( dbfield.isAutoValue())
             sqlField.setAutoValue(true);
@@ -63,18 +63,18 @@ QString TableDataInserter::getInsertRecordSQL() const
 
     for( int i=0; i<record.count(); i++) {
         if( i!=0) {
-            FieldList +=", ";
-            ValueList +=", ";
+            FieldList +=qsl(", ");
+            ValueList +=qsl(", ");
         }
         FieldList += record.field(i).name();
         if( record.field(i).isAutoValue())
-            ValueList += "NULL";
+            ValueList += qsl("NULL");
         else {
             ValueList += dbInsertableString(record.field(i).value());
         }
     }
-    QString sql="INSERT INTO %1 (%2) VALUES (%3) ";
-    sql = sql.arg(tablename).arg(FieldList).arg(ValueList);
+    QString sql =qsl("INSERT INTO %1 (%2) VALUES (%3) ");
+    sql = sql.arg(tablename, FieldList, ValueList);
     qDebug() << "insertRecordSql: " << sql;
     return sql;
 }
@@ -82,21 +82,21 @@ QString TableDataInserter::getInsertRecordSQL() const
 QString TableDataInserter::getInsertOrReplaceRecordSQL() const
 {   LOG_CALL;
     if( record.isEmpty()) return QString();
-    QString sql("INSERT OR REPLACE INTO " + tablename +" (%1) VALUES (%2)");
+    QString sql(qsl("INSERT OR REPLACE INTO ") + tablename +qsl(" (%1) VALUES (%2)"));
     QString fieldnames, values;
 
     for( int i=0; i<record.count(); i++) {
         if( i>0) {
-            fieldnames += ", ";
-            values += ", ";
+            fieldnames += qsl(", ");
+            values += qsl(", ");
         }
         fieldnames +=record.fieldName(i);
         if( record.field(i).isAutoValue())
-            values += "NULL";
+            values += qsl("NULL");
         else
             values += dbInsertableString(record.field(i).value());
     }
-    sql = sql.arg(fieldnames).arg(values);
+    sql = sql.arg(fieldnames, values);
     qDebug() << sql;
     return sql;
 }
@@ -104,18 +104,18 @@ QString TableDataInserter::getInsertOrReplaceRecordSQL() const
 QString TableDataInserter::getInsert_noAuto_RecordSQL() const
 {   LOG_CALL;
     if( record.isEmpty()) return QString();
-    QString sql("INSERT OR REPLACE INTO " + tablename +" (%1) VALUES (%2)");
+    QString sql(qsl("INSERT OR REPLACE INTO ") + tablename +qsl(" (%1) VALUES (%2)"));
     QString fieldnames, values;
 
     for( int i=0; i<record.count(); i++) {
         if( i>0) {
-            fieldnames += ", ";
-            values += ", ";
+            fieldnames += qsl(", ");
+            values += qsl(", ");
         }
         fieldnames +=record.fieldName(i);
         values += dbInsertableString(record.field(i).value());
     }
-    sql = sql.arg(fieldnames).arg(values);
+    sql = sql.arg(fieldnames, values);
     qDebug() << sql;
     return sql;
 }
@@ -123,17 +123,17 @@ QString TableDataInserter::getInsert_noAuto_RecordSQL() const
 QString TableDataInserter::getUpdateRecordSQL() const
 {   LOG_CALL;
     if( record.isEmpty()) return QString();
-    QString sql("UPDATE " + tablename +" SET ");
-    QString where(" WHERE ");
+    QString sql(qsl("UPDATE ") + tablename +qsl(" SET "));
+    QString where(qsl(" WHERE "));
 
     bool firstField = true;
     for( int i=0; i<record.count(); i++) {
-        if( ! firstField) sql += ", ";
+        if( ! firstField) sql += qsl(", ");
         // WARN ! THIS will work with exactly 1 AutoValue
         if( record.field(i).isAutoValue())
-            where += record.field(i).name() + "=" + record.field(i).value().toString();
+            where += record.field(i).name() + qsl("=") + record.field(i).value().toString();
         else {
-            sql += record.field(i).name() + "=" + dbInsertableString(record.field(i).value());
+            sql += record.field(i).name() + qsl("=") + dbInsertableString(record.field(i).value());
             firstField = false;
         }
     }

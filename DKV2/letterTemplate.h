@@ -6,6 +6,7 @@
 #include <QTextDocument>
 #include <QPrinter>
 
+#include "helper.h"
 #include "helpersql.h"
 #include "appconfig.h"
 
@@ -24,11 +25,11 @@ public:
     enum templateId{ Geldeingang, JA_thesa, JA_auszahlend, Kontoabschluss, Kuendigung, maxTemplateId
     };
     QMap<QString, QString> placeholders
-    {   {"datum",""}, {"abrechnungsjahr", "2020"}, {"kuendigungsdatum", ""},
-        {GMBH_ADDRESS1,"Esperanza Franklin GmbH"}, {GMBH_ADDRESS2,""}, {GMBH_STREET,"Turley-Platz 9"}, {GMBH_PLZ, "68167"}, {GMBH_CITY, "Mannheim"}, {GMBH_EMAIL, "info@esperanza-mannheim.de"}, {GMBH_URL, "www.esperanza-mannheim.de"},{"gmbh.dkKontakt", "Jutta Sichau"},
-        {"kreditoren.vorname", ""}, {"kreditoren.nachname", ""}, {"kreditoren.strasse", ""}, {"kreditoren.plz", ""}, {"kreditoren.stadt", ""}, {"kreditoren.email", ""}, {"kreditoren.iban", ""},
-        {"vertraege.kennung", ""}, {"vertraege.betrag", ""}, {"vertraege.buchungsdatum", ""}, {"vertraege.kfrist", ""}, {"vertraege.laufzeitende", ""},
-        {"tbh.kennung", "Vertragskennung"}, {"tbh.old", "Vorjahreswert"}, {"tbh.zins", "Zinssatz"}, {"tbh.new", "Neuer Wert"}
+    {   {qsl("datum"),QString()}, {qsl("abrechnungsjahr"), qsl("2020")}, {qsl("kuendigungsdatum"), QString()},
+        {GMBH_ADDRESS1,qsl("Esperanza Franklin GmbH")}, {GMBH_ADDRESS2,QString()}, {GMBH_STREET,qsl("Turley-Platz 9")}, {GMBH_PLZ, qsl("68167")}, {GMBH_CITY, qsl("Mannheim")}, {GMBH_EMAIL, qsl("info@esperanza-mannheim.de")}, {GMBH_URL, qsl("www.esperanza-mannheim.de")},{qsl("gmbh.dkKontakt"), qsl("Jutta Sichau")},
+        {qsl("kreditoren.vorname"), QString()}, {qsl("kreditoren.nachname"), QString()}, {qsl("kreditoren.strasse"), QString()}, {qsl("kreditoren.plz"), QString()}, {qsl("kreditoren.stadt"), QString()}, {qsl("kreditoren.email"), QString()}, {qsl("kreditoren.iban"), QString()},
+        {qsl("vertraege.kennung"), QString()}, {qsl("vertraege.betrag"), QString()}, {qsl("vertraege.buchungsdatum"), QString()}, {qsl("vertraege.kfrist"), QString()}, {qsl("vertraege.laufzeitende"), QString()},
+        {qsl("tbh.kennung"), qsl("Vertragskennung")}, {qsl("tbh.old"), qsl("Vorjahreswert")}, {qsl("tbh.zins"), qsl("Zinssatz")}, {qsl("tbh.new"), qsl("Neuer Wert")}
     };
 
 public:
@@ -65,7 +66,6 @@ private:
     QMap<int, double>  length;
     QString fontFamily{"Verdana"};
     double fontOutputFactor{0.65};
-
 };
 
 #endif // LETTER_H

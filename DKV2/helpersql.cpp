@@ -8,7 +8,7 @@ bool vTypesShareDbType( QVariant::Type t1, QVariant::Type t2)
 QString dbInsertableString(QVariant v)
 {
     if( v.isNull() || !v.isValid())
-        return "''";
+        return qsl("''");
     QString s;
     switch(v.type())
     {
@@ -21,7 +21,7 @@ QString dbInsertableString(QVariant v)
         break;
     }
     case QVariant::Bool:
-        s = (v.toBool()) ? "1" : "0";
+        s = (v.toBool()) ? qsl("1") : qsl("0");
         break;
     case QVariant::Int:
     case QVariant::UInt:
@@ -48,21 +48,21 @@ QString dbCreateTable_type(QVariant::Type t)
     {
     case QVariant::String:
     case QVariant::Char:
-        return "TEXT"; // affinity: TEXT
+        return qsl("TEXT"); // affinity: TEXT
     case QVariant::Date:
-        return "TEXTDATE"; // affinity: TEXT
+        return qsl("TEXTDATE"); // affinity: TEXT
     case QVariant::Int:
     case QVariant::LongLong:
     case QVariant::UInt:
     case QVariant::ULongLong:
-        return "INTEGER"; // affinity: INTEGER
+        return qsl("INTEGER"); // affinity: INTEGER
     case QVariant::Bool:
-        return "BOOLEAN";
+        return qsl("BOOLEAN");
     case QVariant::Double:
-        return "DOUBLE"; // affinity: REAL
+        return qsl("DOUBLE"); // affinity: REAL
     default:
         Q_ASSERT(!bool("invalid database type"));
-        return "INVALID";
+        return qsl("INVALID");
     }
 }
 QString dbAffinityType(QVariant::Type t)
@@ -73,24 +73,24 @@ QString dbAffinityType(QVariant::Type t)
     case QVariant::String:
     case QVariant::Char:
     case QVariant::Date:
-        return "TEXT";
+        return qsl("TEXT");
     case QVariant::Int:
     case QVariant::LongLong:
     case QVariant::UInt:
     case QVariant::ULongLong:
     case QVariant::Bool:
-        return "INTEGER";
+        return qsl("INTEGER");
     case QVariant::Double:
-        return "REAL";
+        return qsl("REAL");
     default:
         Q_ASSERT(!bool("invalid database type"));
-        return "INVALID";
+        return qsl("INVALID");
     }
 }
 
 int rowCount(const QString& table)
 {
-    QSqlQuery q("SELECT count(*) FROM " + table);
+    QSqlQuery q(qsl("SELECT count(*) FROM ") + table);
     if( q.first())
         return q.value(0).toInt();
     else {
@@ -110,7 +110,7 @@ bool verifyTable( const dbtable& tableDef, QSqlDatabase db)
         qDebug() << "verifyTable() failed: number of fields mismatch. expected / actual: " << tableDef.Fields().count() << " / " << recordFromDb.count();
         return false;
     }
-    for( auto field: tableDef.Fields()) {
+    for( auto& field: tableDef.Fields()) {
         QSqlField FieldFromDb = recordFromDb.field(field.name());
         if( ! FieldFromDb.isValid()) {
             qDebug() << "verifyTable() failed: table exists but field is missing" << field.name();
@@ -160,7 +160,7 @@ QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db)
 }
 QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where, QSqlDatabase db)
 {
-    QString sql = "SELECT " + fieldName + " FROM " + tableName + (where.isEmpty()? "" : (" WHERE " + where));
+    QString sql = qsl("SELECT ") + fieldName + qsl(" FROM ") + tableName + (where.isEmpty() ? qsl("") : (qsl(" WHERE ") + where));
     return executeSingleValueSql(sql, db);
 }
 QVariant executeSingleValueSql(const dbfield& field, const QString& where, QSqlDatabase db)
@@ -189,32 +189,31 @@ QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbFo
     QString calculatedWhere;
     QSet<QString> usedTables;
 
-    for( auto f : fields) {
+    for( auto& f : qAsConst(fields)) {
         if( f.tableName().isEmpty() || f.name().isEmpty())
             qCritical() << "selectQueryFromFields: missing table or field name";
         if( ! FieldList.isEmpty())
-            FieldList +=", ";
-        FieldList +=f.tableName() +"." +f.name();
+            FieldList +=qsl(", ");
+        FieldList +=f.tableName() +qsl(".") +f.name();
 
         if( ! usedTables.contains(f.tableName())) {
             usedTables.insert(f.tableName());
             if( ! TableList.isEmpty())
-                TableList +=", ";
+                TableList +=qsl(", ");
             TableList += f.tableName();
         }
     }
     for( auto key: keys) {
-        if( ! calculatedWhere.isEmpty()) calculatedWhere += " AND ";
+        if( ! calculatedWhere.isEmpty()) calculatedWhere += qsl(" AND ");
         calculatedWhere += key.get_SelectSqpSnippet();
     }
-    QString Where ="%1 AND %2";
-    Where = Where.arg(incomingWhere.isEmpty() ? "true" : incomingWhere);
-    Where = Where.arg(calculatedWhere.isEmpty() ? "true" : calculatedWhere);
+    QString Where =qsl("%1 AND %2");
+    Where = Where.arg((incomingWhere.isEmpty() ? qsl("true") : incomingWhere), (calculatedWhere.isEmpty() ? qsl("true") : calculatedWhere));
 
-    QString Query = "SELECT %1 FROM %2 WHERE %3";
-    Query = Query.arg(FieldList).arg(TableList).arg(Where);
+    QString Query =qsl("SELECT %1 FROM %2 WHERE %3");
+    Query = Query.arg(FieldList, TableList, Where);
     if( ! order.isEmpty())
-        Query = Query +" ORDER BY " +order;
+        Query = Query +qsl(" ORDER BY ") +order;
     qInfo() << "selectQueryFromFields created Query: " << Query;
     return Query;
 }
@@ -227,30 +226,14 @@ QSqlField adjustedType(const QSqlField& f, QVariant::Type t)
     return ret;
 }
 
-//QVector<QVariant> executeSingleColumnSql( const QString field, const QString table, const QString& where)
-//{
-//    QString sql = "SELECT %1 FROM %2 WHERE %3";
-//    sql = sql.arg(field).arg(table).arg(where.isEmpty() ? "true" : where);
-//    QSqlQuery q;
-//    QVector<QVariant> result;
-//    if( q.exec(sql)){
-//        while(q.next()) {
-//            result.push_back(q.record().field(0).value());
-//        }
-//        return result;
-//    }
-//    qCritical() << "Failed to execute single column sql " << q.lastError() << Qt::endl << q.lastQuery();
-//    return QVector<QVariant>();
-//}
-
 QVector<QVariant> executeSingleColumnSql( const dbfield field, const QString& where)
 {   LOG_CALL;
     if( field.tableName().isEmpty() || field.name().isEmpty()) {
         qCritical() << "incomplete dbfield";
         return QVector<QVariant>();
     }
-    QString sql = "SELECT %1 FROM %2 %3";
-    sql = sql.arg(field.name()).arg(field.tableName()).arg((where.isEmpty() ? "" : (" WHERE " + where)));
+    QString sql {qsl("SELECT %1 FROM %2 %3")};
+    sql = sql.arg(field.name(), field.tableName(), (where.isEmpty() ? qsl("") : (qsl(" WHERE ") + where)));
     QSqlQuery q;
     QVector<QVariant> result;
     if( q.exec(sql))
@@ -279,7 +262,7 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
     }
     // adjust the database types to the expected types
     QSqlRecord result;
-    for( auto dbFieldEntry : fields) {
+    for( auto& dbFieldEntry : qAsConst(fields)) {
         QSqlField tmpField =q.record().field(dbFieldEntry.name());
         result.append(adjustedType(tmpField,dbFieldEntry.type()));
     }
@@ -297,7 +280,7 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
     while( q.next()) {
         // adjust the database types to the expected types
         QSqlRecord oneRecord;
-        for( auto dbFieldEntry : fields) {
+        for( auto& dbFieldEntry : qAsConst(fields)) {
             // adjust to original variant data type
             QSqlField tmpField {adjustedType(q.record().field(dbFieldEntry.name()), dbFieldEntry.type())};
             oneRecord.append(tmpField);
@@ -344,5 +327,5 @@ bool executeSql(QString sql, QVector<QVariant> v)
 
 int getHighestRowId(const QString& tablename)
 {   LOG_CALL;
-    return executeSingleValueSql("max(rowid)", tablename).toInt();
+    return executeSingleValueSql(qsl("MAX(rowid)"), tablename).toInt();
 }

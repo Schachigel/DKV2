@@ -22,16 +22,16 @@ bool verifyTable( const dbtable& table, QSqlDatabase db);
 bool ensureTable(const dbtable& table, QSqlDatabase db = QSqlDatabase::database());
 
 QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db = QSqlDatabase::database());
-QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where = "", QSqlDatabase db = QSqlDatabase::database());
+QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where =QString(), QSqlDatabase db = QSqlDatabase::database());
 QVariant executeSingleValueSql(const dbfield&, const QString& where, QSqlDatabase db=QSqlDatabase::database());
 
 QString selectQueryFromFields(const QVector<dbfield>& fields,
                               const QVector<dbForeignKey> keys =QVector<dbForeignKey>(),
-                              const QString& where ="", const QString& order ="");
+                              const QString& where =QString(), const QString& order =QString());
 // QVector<QVariant> executeSingleColumnSql( const QString field, const QString table, const QString& where);
-QVector<QVariant> executeSingleColumnSql( const dbfield field, const QString& where="");
-QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where ="", const QString& order ="");
-QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where="", const QString& order="");
+QVector<QVariant> executeSingleColumnSql( const dbfield field, const QString& where =QString());
+QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString());
+QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString());
 bool executeSql(QString sql, QVariant v =QVariant());
 bool executeSql(QString sql, QVector<QVariant> v);
 

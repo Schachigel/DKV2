@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QStringLiteral>
+#define qsl(x) QStringLiteral(x)
 #include <QGuiApplication>
 #include <QItemSelection>
 #include <QSplashScreen>
@@ -164,11 +166,11 @@ private:
     void init_creditor_form(int id);
     void empty_new_contract_form();
     QVector<QString> Uebersichten_kurz{
-        QString("Uebersicht"),
-        QString("Vertragsenden"),
-        QString("Zinsverteilungen"),
-        QString("Laufzeiten"),
-        QString("Gesamtübersicht")
+        qsl("Uebersicht"),
+        qsl("Vertragsenden"),
+        qsl("Zinsverteilungen"),
+        qsl("Laufzeiten"),
+        qsl("Gesamtübersicht")
     };
     QString prepare_overview_page(Uebersichten u);
     QMenu* menuSaveKreditorAnd;

@@ -1,3 +1,4 @@
+
 #include <QVariant>
 #include <QLabel>
 #include <QCheckBox>
@@ -7,14 +8,14 @@
 
 wizAnnualSettlement_IntroPage::wizAnnualSettlement_IntroPage(QWidget* p)  : QWizardPage(p)
 {
-    setTitle("Jahresabrechnung");
-    setSubTitle("Die Abrechnung für das Folgende Jahr kann gemacht werden:");
+    setTitle(qsl("Jahresabrechnung"));
+    setSubTitle(qsl("Die Abrechnung für das Folgende Jahr kann gemacht werden:"));
     QLabel* l =new QLabel;
-    registerField("year", l, "text");
-    QCheckBox* csv = new QCheckBox("Buchungen als csv Datei ausgeben.");
-    registerField("printCsv", csv);
-    QCheckBox* confirm =new QCheckBox("Jahresabrechnung jetzt durchführen.");
-    registerField("confirm", confirm);
+    registerField(qsl("year"), l, "text");
+    QCheckBox* csv = new QCheckBox(qsl("Buchungen als csv Datei ausgeben."));
+    registerField(qsl("printCsv"), csv);
+    QCheckBox* confirm =new QCheckBox(qsl("Jahresabrechnung jetzt durchführen."));
+    registerField(qsl("confirm"), confirm);
     QVBoxLayout* bl = new QVBoxLayout;
     bl->addWidget(l);
     bl->addWidget(csv);
@@ -24,13 +25,13 @@ wizAnnualSettlement_IntroPage::wizAnnualSettlement_IntroPage(QWidget* p)  : QWiz
 
 void wizAnnualSettlement_IntroPage::initializePage()
 {
-    setField("printCsv", true);
-    setField("confirm", false);
+    setField(qsl("printCsv"), true);
+    setField(qsl("confirm"), false);
 }
 
 bool wizAnnualSettlement_IntroPage::validatePage()
 {
-    return this->field("confirm").toBool();
+    return this->field(qsl("confirm")).toBool();
 }
 
 wizAnnualSettlement::wizAnnualSettlement(QWidget* p) : QWizard(p)

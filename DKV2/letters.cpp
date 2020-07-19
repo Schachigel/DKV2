@@ -5,9 +5,8 @@
 
 void printThankyouLetter( const contract& )
 {   LOG_CALL;
-    QLocale locale;
     letterTemplate tlate(letterTemplate::Geldeingang);
-    tlate.setPlaceholder("datum", QDate::currentDate().toString("dd. MMM yyyy"));
+    tlate.setPlaceholder(qsl("datum"), QDate::currentDate().toString(qsl("dd. MMM yyyy")));
     tlate.setPlaceholder(GMBH_ADDRESS1, getMetaInfo(GMBH_ADDRESS1));
     tlate.setPlaceholder(GMBH_ADDRESS2, getMetaInfo(GMBH_ADDRESS2));
     tlate.setPlaceholder(GMBH_PLZ, getMetaInfo(GMBH_PLZ));
@@ -34,10 +33,9 @@ Q_ASSERT(!"repair");
 
 void printTerminationLetter( const contract& , QDate kDate, int )
 {   LOG_CALL;
-    QLocale locale;
     letterTemplate tlate(letterTemplate::Kuendigung);
-    tlate.setPlaceholder("datum", QDate::currentDate().toString("dd. MMM yyyy"));
-    tlate.setPlaceholder("kuendigungsdatum", kDate.toString("dd.MM.yyyy"));
+    tlate.setPlaceholder(qsl("datum"), QDate::currentDate().toString(qsl("dd. MMM yyyy")));
+    tlate.setPlaceholder(qsl("kuendigungsdatum"), kDate.toString(qsl("dd.MM.yyyy")));
     tlate.setPlaceholder(GMBH_ADDRESS1, getMetaInfo(GMBH_ADDRESS1));
     tlate.setPlaceholder(GMBH_ADDRESS2, getMetaInfo(GMBH_ADDRESS2));
     tlate.setPlaceholder(GMBH_PLZ, getMetaInfo(GMBH_PLZ));
@@ -63,7 +61,6 @@ Q_ASSERT(!"repair");
 
 void printFinalLetter( const contract& , QDate )
 {   LOG_CALL;
-    QLocale locale;
     letterTemplate tlate(letterTemplate::Kontoabschluss);
     tlate.setPlaceholder(GMBH_ADDRESS1, getMetaInfo(GMBH_ADDRESS1));
     tlate.setPlaceholder(GMBH_ADDRESS2, getMetaInfo(GMBH_ADDRESS2));

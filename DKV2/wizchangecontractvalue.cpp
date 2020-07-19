@@ -27,9 +27,9 @@ wizChangeContract_IntroPage::wizChangeContract_IntroPage(QWidget* parent) : QWiz
 
 void wizChangeContract_IntroPage::initializePage()
 {
-    QString subtitle = "In dieser Dialogfolge kannst Du Ein- oder Auszahlungen zum Vertrag <b>%1</b> von <b>%2</b> verbuchen.";
+    QString subtitle =qsl("In dieser Dialogfolge kannst Du Ein- oder Auszahlungen zum Vertrag <b>%1</b> von <b>%2</b> verbuchen.");
     wizChangeContract* wiz= dynamic_cast<wizChangeContract*>(wizard());
-    subtitle = subtitle.arg(wiz->contractLabel).arg(wiz->creditorName);
+    subtitle = subtitle.arg(wiz->contractLabel, wiz->creditorName);
     setSubTitle(subtitle);
 }
 
@@ -41,12 +41,12 @@ bool wizChangeContract_IntroPage::validatePage()
     double minPayout   =getNumMetaInfo(MIN_PAYOUT);
     double minAmountToMakeA_Payout = minContract + minPayout +1;
     QLocale l;
-    if( ! field("deposit_notPayment").toBool() && wiz->currentAmount < minAmountToMakeA_Payout) {
-        QString msg("Die kleinste Einlage beträgt %1. Die kleinste Auszahlung beträgt %2. "
+    if( ! field(qsl("deposit_notPayment")).toBool() && wiz->currentAmount < minAmountToMakeA_Payout) {
+        QString msg(qsl("Die kleinste Einlage beträgt %1. Die kleinste Auszahlung beträgt %2. "
                     "Daher ist im Moment keine Auszahlung möglich.<p>Du kannst einen Einzahlung machen oder "
-                    "über den entsprechenden Menüpunkt den Vertrag beenden");
-        msg = msg.arg(l.toCurrencyString(minContract)).arg(l.toCurrencyString(minPayout));
-        QMessageBox::information(this, "Keine Auszahlung möglich", msg);
+                    "über den entsprechenden Menüpunkt den Vertrag beenden"));
+        msg = msg.arg(l.toCurrencyString(minContract), l.toCurrencyString(minPayout));
+        QMessageBox::information(this, qsl("Keine Auszahlung möglich"), msg);
         return false;
     }
     return true;
@@ -56,35 +56,35 @@ wizChangeContract_AmountPage::wizChangeContract_AmountPage(QWidget* parent) : QW
 {
     QVBoxLayout*  layout = new QVBoxLayout;
     QLineEdit* le = new QLineEdit;
-    registerField("amount", le);
+    registerField(qsl("amount"), le);
     layout->addWidget(le);
     setLayout(layout);
 }
 
 void wizChangeContract_AmountPage::initializePage()
 {
-    bool deposit = field("deposit_notPayment").toBool();
+    bool deposit = field(qsl("deposit_notPayment")).toBool();
     double minPayout =getNumMetaInfo(MIN_PAYOUT);
     double minAmount =getNumMetaInfo(MIN_AMOUNT);
     QLocale l;
     if( deposit) {
-        setTitle("Einzahlungsbetrag");
-        QString subt ="Gib den eingezahlten Betrag in ganzen Euro an. Der Betrag muss größer als %1 sein.";
+        setTitle(qsl("Einzahlungsbetrag"));
+        QString subt =qsl("Gib den eingezahlten Betrag in ganzen Euro an. Der Betrag muss größer als %1 sein.");
         subt =subt.arg(l.toCurrencyString(minPayout));
         setSubTitle(subt);
 
-        setField("amount", 1000.);
+        setField(qsl("amount"), 1000.);
     } else {
-        setTitle("Auszahlungsbetrag");
+        setTitle(qsl("Auszahlungsbetrag"));
         wizChangeContract* wiz= dynamic_cast<wizChangeContract*>(this->wizard());
         double currentAmount = wiz->currentAmount;
         // double minPayment = 100., minRemains = 500.;
         double maxPayout = currentAmount - minAmount;
         QLocale locale;
-        QString subtitle ="Der Auszahlungsbetrag kann zwischen %1 und %2 liegen.";
-        subtitle = subtitle.arg(locale.toCurrencyString(minPayout)).arg(locale.toCurrencyString(maxPayout));
+        QString subtitle =qsl("Der Auszahlungsbetrag kann zwischen %1 und %2 liegen.");
+        subtitle = subtitle.arg(locale.toCurrencyString(minPayout), locale.toCurrencyString(maxPayout));
         setSubTitle(subtitle);
-        setField("amount", minPayout);
+        setField(qsl("amount"), minPayout);
     }
 }
 
@@ -110,8 +110,8 @@ bool wizChangeContract_AmountPage::validatePage()
 wizChangeContract_DatePage::wizChangeContract_DatePage(QWidget* parent) : QWizardPage(parent)
 {
     QDateEdit* de = new QDateEdit;
-    de->setDisplayFormat("dd.MM.yyyy");
-    registerField("date", de);
+    de->setDisplayFormat(qsl("dd.MM.yyyy"));
+    registerField(qsl("date"), de);
 
     QVBoxLayout*  layout = new QVBoxLayout;
     layout->addWidget(de);
@@ -121,32 +121,32 @@ wizChangeContract_DatePage::wizChangeContract_DatePage(QWidget* parent) : QWizar
 void wizChangeContract_DatePage::initializePage()
 {
     wizChangeContract* wiz= dynamic_cast<wizChangeContract*>(this->wizard());
-    QString subt=QString("Das Datum muss nach der letzten Buchung zu diesem Vertrag (%1) liegen. ").arg(wiz->earlierstDate.toString("dd.MM.yyyy"));
+    QString subt=QString(qsl("Das Datum muss nach der letzten Buchung zu diesem Vertrag (%1) liegen. ")).arg(wiz->earlierstDate.toString(qsl("dd.MM.yyyy")));
 
-    bool deposit = field("deposit_notPayment").toBool();
+    bool deposit = field(qsl("deposit_notPayment")).toBool();
     if( deposit) {
-        setTitle("Datum des Geldeingangs");
-        setSubTitle(subt + "<p>Gib das Datum an, an dem das Geld auf unserem Konto gutgeschrieben wurde.");
+        setTitle(qsl("Datum des Geldeingangs"));
+        setSubTitle(subt + qsl("<p>Gib das Datum an, an dem das Geld auf unserem Konto gutgeschrieben wurde."));
     } else {
-        setTitle("Überweisungsdatum");
-        setSubTitle(subt + "<p>Gib das Datum ein, zu dem die Überweisung durchgeführt wird.");
+        setTitle(qsl("Überweisungsdatum"));
+        setSubTitle(subt + qsl("<p>Gib das Datum ein, zu dem die Überweisung durchgeführt wird."));
     }
-    setField("date", wiz->earlierstDate);
+    setField(qsl("date"), wiz->earlierstDate);
 }
 
 bool wizChangeContract_DatePage::validatePage()
 {
     wizChangeContract* wiz= dynamic_cast<wizChangeContract*>(this->wizard());
-    if( field("date").toDate() < wiz->earlierstDate)
+    if( field(qsl("date")).toDate() < wiz->earlierstDate)
         return false;
     return true;
 }
 
 wizChangeContract_Summary::wizChangeContract_Summary(QWidget* p) : QWizardPage(p)
 {
-    setTitle("Zusammenfassung");
-    QCheckBox* cb = new QCheckBox("Die Eingaben sind korrekt!");
-    registerField("confirmed", cb);
+    setTitle(qsl("Zusammenfassung"));
+    QCheckBox* cb = new QCheckBox(qsl("Die Eingaben sind korrekt!"));
+    registerField(qsl("confirmed"), cb);
     QVBoxLayout* layout = new QVBoxLayout;
     layout-> addWidget(cb);
     setLayout(layout);
@@ -155,35 +155,31 @@ void wizChangeContract_Summary::initializePage()
 {
     wizChangeContract* wiz= dynamic_cast<wizChangeContract*>(this->wizard());
 
-    QString subtitle ="zum Vertrag <b>%1</b><p>von <b>%2</b>:<p>"
+    QString subtitle =qsl("zum Vertrag <b>%1</b><p>von <b>%2</b>:<p>"
                       "<table width=100%><tr><td align=center>Vorheriger Wert</td><td align=center>Änderungsbetrag</td><td align=center>neuer Wert</td></tr>"
                       "<tr><td align=center>%3</td><td align=center>%4%5</td><td align=center>%6</td></tr></table>"
-                      "<p>Datum: %7</b>";
-    bool deposit = field("deposit_notPayment").toBool();
+                      "<p>Datum: %7</b>");
+    bool deposit = field(qsl("deposit_notPayment")).toBool();
     double oldValue = wiz->currentAmount, newValue =0;
-    double change = field("amount").toDouble();
+    double change = field(qsl("amount")).toDouble();
     if( deposit) {
-        setTitle("Zusammenfassung der Einzahlung");
-        subtitle = "Einzahlung " +subtitle;
+        setTitle(qsl("Zusammenfassung der Einzahlung"));
+        subtitle = qsl("Einzahlung ") +subtitle;
         newValue = wiz->currentAmount + change;
     } else {
-        setTitle("Zusammenfassung der Auszahlung");
-        subtitle = "Auszahlung " +subtitle;
+        setTitle(qsl("Zusammenfassung der Auszahlung"));
+        subtitle = qsl("Auszahlung ") +subtitle;
         newValue = wiz->currentAmount - change;
     }
     QLocale locale;
-    setSubTitle(subtitle.arg(wiz->contractLabel)
-                .arg(wiz->creditorName)
-                .arg(locale.toCurrencyString(oldValue))
-                .arg(deposit? "+" : "-")
-                .arg(locale.toCurrencyString(change))
-                .arg(locale.toCurrencyString(newValue))
-                .arg(field("date").toDate().toString("dd.MM.yyyy")));
+    setSubTitle(subtitle.arg(wiz->contractLabel, wiz->creditorName, locale.toCurrencyString(oldValue),
+                   deposit? qsl("+") : qsl("-"), locale.toCurrencyString(change),
+                   locale.toCurrencyString(newValue), field(qsl("date")).toDate().toString(qsl("dd.MM.yyyy"))));
 }
 
 bool wizChangeContract_Summary::validatePage()
 {
-    return field("confirmed").toBool();
+    return field(qsl("confirmed")).toBool();
 }
 
 wizChangeContract::wizChangeContract(QWidget* p) : QWizard(p)

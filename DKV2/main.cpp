@@ -35,54 +35,6 @@ void initLogging()
     qInstallMessageHandler(logger);
 }
 
-//QString interactW_UserForDB(QString dbfile)
-//{   LOG_CALL;
-//    do
-//    {
-//        dbfile = QFileDialog::getSaveFileName(nullptr,
-//            "Wähle eine Datenbank oder gib einen Namen für eine Neue ein",
-//            QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +"/DKV2", "dk-DB Dateien (*.dkdb)", nullptr,QFileDialog::DontConfirmOverwrite);
-//        qDebug() << "DbFile from user: " << dbfile;
-//        if( dbfile == "")
-//            return QString();  // canceled by user
-
-//        if( QFile::exists(dbfile))
-//        {
-//            if( isValidDatabase(dbfile))
-//                return dbfile;
-//            else
-//            {   // overwrite?
-//                QMessageBox::StandardButton sb = QMessageBox::question(nullptr, "Die gewählte Datenbank ist ungültig", "Soll die Datei für eine neue DB überschrieben werden?");
-//                qDebug() << "users choice: replace file? " << sb;
-//                if( QMessageBox::Yes != sb)
-//                    continue;
-//                else
-//                {
-//                    if( create_DK_databaseFile(dbfile))
-//                        return dbfile;
-//                    else
-//                    {
-//                        qCritical() << "Overwrite of existing db failed";
-//                        QMessageBox::critical(nullptr, "Feher", "Die Datei konnte nicht überschrieben werden. Wähle eine andere!");
-//                        continue;
-//                    }
-//                }
-//            }
-//        }
-//        // new file ...
-//        if( create_DK_databaseFile(dbfile))
-//            return dbfile;
-//        else
-//        {
-//            qCritical() << "Creating of existing db failed";
-//            if( QMessageBox::Yes != QMessageBox::question(nullptr, "Feher", "Die Datei konnte nicht angelegt werden. Möchten Sie eine andere auswählen?"))
-//                return QString();
-//            continue;
-//        }
-//    }
-//    while(true);
-//}
-
 QString getInitialDbFile()
 {   LOG_CALL;
     // command line argument 1 has precedence
@@ -115,7 +67,7 @@ QString getInitialDbFile()
 
 QSplashScreen* doSplash()
 {   LOG_CALL;
-    QPixmap pixmap(":/res/splash.png");
+    QPixmap pixmap(qsl(":/res/splash.png"));
     QSplashScreen *splash = new QSplashScreen(pixmap, Qt::SplashScreen|Qt::WindowStaysOnTopHint);
     splash->show();
     return splash;
@@ -124,7 +76,7 @@ QSplashScreen* doSplash()
 void setGermanUi()
 {   LOG_CALL;
     QTranslator trans;
-    QString translationFile = QDir::currentPath() + "/translations/qt_de.qm";
+    QString translationFile = QDir::currentPath() + qsl("/translations/qt_de.qm");
     if( trans.load(QLocale(),translationFile))
         QCoreApplication::installTranslator(&trans);
     else
@@ -138,12 +90,12 @@ int main(int argc, char *argv[])
     QLocale locale(QLocale::German, QLocale::LatinScript, QLocale::Germany);
     QLocale::setDefault(locale); // do before starting the event loop
 
-    qInfo() << "DKV2 started " << QDate::currentDate().toString("dd.MM.yyyy") << "-" << QTime::currentTime().toString();
+    qInfo() << "DKV2 started " << QDate::currentDate().toString(qsl("dd.MM.yyyy")) << qsl("-") << QTime::currentTime().toString();
 
 
     QApplication a(argc, argv);
-    a.setOrganizationName("4-MHS"); // used to store our settings
-    a.setApplicationName("DKV2");
+    a.setOrganizationName(qsl("4-MHS")); // used to store our settings
+    a.setApplicationName(qsl("DKV2"));
 
     setGermanUi();
 

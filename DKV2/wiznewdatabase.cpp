@@ -1,5 +1,7 @@
 #include <windows.h>
 
+#include <QStringLiteral>
+#define qsl(x) QStringLiteral(x)
 #include <QLineEdit>
 #include <QLabel>
 #include <QVBoxLayout>
@@ -18,8 +20,8 @@
 */
 wizFileSelection_IntroPage::wizFileSelection_IntroPage(QWidget* p) : QWizardPage(p) {
     QLineEdit* le = new QLineEdit;
-    registerField("selectedFile", le);
-    QLabel* l =new QLabel("Klicke auf 'durchsuchen' um eine Dateiauswahlfenster zu öffnen.");
+    registerField(qsl("selectedFile"), le);
+    QLabel* l =new QLabel(qsl("Klicke auf 'durchsuchen' um eine Dateiauswahlfenster zu öffnen."));
     QVBoxLayout* layout =new QVBoxLayout;
     layout->addWidget(l);
     layout->addWidget(le);
@@ -46,23 +48,23 @@ void wizFileSelection_IntroPage::browseButtonClicked() {
             : QFileDialog::getSaveFileName(nullptr, wiz->bffTitle, wiz->openInFolder, wiz->fileTypeDescription, nullptr);
     if(selectedFile.isEmpty())
         return;
-    setField( "selectedFile", selectedFile);
+    setField(qsl("selectedFile"), selectedFile);
 }
 
 bool wizFileSelection_IntroPage::validatePage() {
     wizFileSelectionWiz* wiz = dynamic_cast<wizFileSelectionWiz*>(wizard());
     if( wiz->existingFile) {
-        return QFile::exists(field("selectedFile").toString());
+        return QFile::exists(field(qsl("selectedFile")).toString());
     }
     else
-        return ! field("selectedFile").toString().isEmpty();
+        return ! field(qsl("selectedFile")).toString().isEmpty();
 }
 
 void wizFileSelection_IntroPage::setVisible(bool v) {
     QWizardPage::setVisible(v);
     wizard()->setOption(QWizard::HaveCustomButton1, v);
     if( v) {
-        wizard()->setButtonText(QWizard::CustomButton1, "durch&suchen");
+        wizard()->setButtonText(QWizard::CustomButton1, qsl("durch&suchen"));
         connect(wizard(), &QWizard::customButtonClicked,
                 this, &wizFileSelection_IntroPage::browseButtonClicked);
     } else {
@@ -84,8 +86,8 @@ wizFileSelectionWiz::wizFileSelectionWiz(QWidget* p) : QWizard(p) {
 */
 wizFileSelectionNewDb_IntroPage::wizFileSelectionNewDb_IntroPage(QWidget* p) : QWizardPage(p) {
     QLineEdit* le = new QLineEdit;
-    registerField("selectedFile", le);
-    QLabel* l =new QLabel("Klicke auf 'durchsuchen' um eine Dateiauswahl Fenster zu öffnen.");
+    registerField(qsl("selectedFile"), le);
+    QLabel* l =new QLabel(qsl("Klicke auf 'durchsuchen' um eine Dateiauswahl Fenster zu öffnen."));
     QVBoxLayout* layout =new QVBoxLayout;
     layout->addWidget(l);
     layout->addWidget(le);
@@ -106,23 +108,23 @@ void wizFileSelectionNewDb_IntroPage::browseButtonClicked() {
             : QFileDialog::getSaveFileName(nullptr, wiz->bffTitle, wiz->openInFolder, wiz->fileTypeDescription, nullptr);
     if(selectedFile.isEmpty())
         return;
-    setField( "selectedFile", selectedFile);
+    setField(qsl("selectedFile"), selectedFile);
 }
 
 bool wizFileSelectionNewDb_IntroPage::validatePage() {
     wizNewDatabaseWiz* wiz = dynamic_cast<wizNewDatabaseWiz*>(wizard());
     if( wiz->existingFile) {
-        return QFile::exists(field("selectedFile").toString());
+        return QFile::exists(field(qsl("selectedFile")).toString());
     }
     else
-        return ! field("selectedFile").toString().isEmpty();
+        return ! field(qsl("selectedFile")).toString().isEmpty();
 }
 
 void wizFileSelectionNewDb_IntroPage::setVisible(bool v) {
     QWizardPage::setVisible(v);
     wizard()->setOption(QWizard::HaveCustomButton1, v);
     if( v) {
-        wizard()->setButtonText(QWizard::CustomButton1, "durch&suchen");
+        wizard()->setButtonText(QWizard::CustomButton1, qsl("durch&suchen"));
         connect(wizard(), &QWizard::customButtonClicked,
                 this, &wizFileSelectionNewDb_IntroPage::browseButtonClicked);
     } else {
@@ -136,9 +138,9 @@ void wizFileSelectionNewDb_IntroPage::setVisible(bool v) {
 */
 wizProjectAddress_Page::wizProjectAddress_Page(QWidget* p) : QWizardPage(p)
 {
-    setTitle("Adresse der Projekt GmbH");
+    setTitle(qsl("Adresse der Projekt GmbH"));
     //QLabel* lDisclaimer = new QLabel();
-    setSubTitle("*<small>Diese Daten werden für Briefdruck benötigt und können auch später eingegeben und geändert werden.</small>");
+    setSubTitle(qsl("*<small>Diese Daten werden für Briefdruck benötigt und können auch später eingegeben und geändert werden.</small>"));
     QLineEdit* leAddress1 = new QLineEdit;
     registerField(GMBH_ADDRESS1, leAddress1);
     QLineEdit* leAddress2 = new QLineEdit;
@@ -182,19 +184,19 @@ void wizProjectAddress_Page::initializePage()
 
 wizProjectDetails_Page::wizProjectDetails_Page(QWidget* p) : QWizardPage(p)
 {
-    setTitle("Weitere Daten der Projekt GmbH");
-    setSubTitle("*<small>Diese Daten werden für Briefdruck benötigt und können auch später eingegeben und geändert werden.</small>");
-    QLabel* lHre = new QLabel ("Eintrag im Handeslregister");
+    setTitle(qsl("Weitere Daten der Projekt GmbH"));
+    setSubTitle(qsl("*<small>Diese Daten werden für Briefdruck benötigt und können auch später eingegeben und geändert werden.</small>"));
+    QLabel* lHre = new QLabel (qsl("Eintrag im Handeslregister"));
     QLineEdit* leHre = new QLineEdit;
     registerField(GMBH_HRE, leHre);
-    QLabel* lGefue = new QLabel ("Geschäftsführer*innen");
+    QLabel* lGefue = new QLabel (qsl("Geschäftsführer*innen"));
     QLineEdit* leGefue1 = new QLineEdit;
     registerField(GMBH_GEFUE1, leGefue1);
     QLineEdit* leGefue2 = new QLineEdit;
     registerField(GMBH_GEFUE2, leGefue2);
     QLineEdit* leGefue3 = new QLineEdit;
     registerField(GMBH_GEFUE3, leGefue3);
-    QLabel* lDkv =new QLabel("DK Verwaltung");
+    QLabel* lDkv =new QLabel(qsl("DK Verwaltung"));
     QLineEdit* leDkv = new QLineEdit;
     registerField(GMBH_DKV, leDkv);
 
@@ -224,15 +226,15 @@ void wizProjectDetails_Page::initializePage()
 
 wizContractLableInfo_Page::wizContractLableInfo_Page(QWidget* p) : QWizardPage(p)
 {
-    setTitle("Vertragskennung");
-    setSubTitle("Diese Informationen werden verwendet um eindeutige Kennzeichen für die einzelnen Verträge zu erzeugen");
+    setTitle(qsl("Vertragskennung"));
+    setSubTitle(qsl("Diese Informationen werden verwendet um eindeutige Kennzeichen für die einzelnen Verträge zu erzeugen"));
 
-    QLabel* lProject= new QLabel("Projekt Kürzel (2-5 Zeichen):");
+    QLabel* lProject= new QLabel(qsl("Projekt Kürzel (2-5 Zeichen):"));
     QLineEdit* leProject = new QLineEdit;
     lProject->setBuddy(leProject);
     registerField(GMBH_PI, leProject);
 
-    QLabel* lIndex = new QLabel("Start Index:");
+    QLabel* lIndex = new QLabel(qsl("Start Index:"));
     leStartIndex = new QLineEdit;
     lIndex->setBuddy(leStartIndex);
     registerField(STARTINDEX, leStartIndex);
@@ -266,18 +268,18 @@ bool wizContractLableInfo_Page::validatePage()
 
 wizContractMinValues_Page:: wizContractMinValues_Page(QWidget* p) : QWizardPage(p)
 {
-    setTitle("Weitere Configuration");
-    setSubTitle("Hier kannst Du den minimalen Auszahlungsbetrag und Vertragswert festlegen, für den das Programm eine Buchung erlaubt. "
+    setTitle(qsl("Weitere Configuration"));
+    setSubTitle(qsl("Hier kannst Du den minimalen Auszahlungsbetrag und Vertragswert festlegen, für den das Programm eine Buchung erlaubt. "
                 "Dieser Werte werden bei Auszahlungen und beim Anlegen von Verträgen berücksichtigt.<p>"
-                "<small>Da Auszahlungen z.T. mit Überweisungskosten einhergehen und kleine Verträge unrentabel sind sollte man kleine Werte vermeiden.</small>");
+                "<small>Da Auszahlungen z.T. mit Überweisungskosten einhergehen und kleine Verträge unrentabel sind sollte man kleine Werte vermeiden.</small>"));
     QLineEdit* leMa =new QLineEdit;
     registerField(MIN_PAYOUT, leMa);
-    QLabel* lma     =new QLabel("Kleinster Auszahlungsbetrag in Euro:");
+    QLabel* lma     =new QLabel(qsl("Kleinster Auszahlungsbetrag in Euro:"));
     lma->setBuddy(leMa);
 
     QLineEdit* leMc =new QLineEdit;
     registerField(MIN_AMOUNT, leMc);
-    QLabel* lmc     =new QLabel("Kleinster Vertragswert in Euro:");
+    QLabel* lmc     =new QLabel(qsl("Kleinster Vertragswert in Euro:"));
     lmc->setBuddy(leMc);
 
     QGridLayout* grid =new QGridLayout;
@@ -297,38 +299,38 @@ void wizContractMinValues_Page::initializePage()
 
 wizNewDatabase_SummaryPage::wizNewDatabase_SummaryPage(QWidget* p) : QWizardPage(p)
 {
-    setTitle("Zusammenfassung");
-    QCheckBox* cb = new QCheckBox("Die Eingaben sind korrekt!");
-    registerField("confirmed", cb);
+    setTitle(qsl("Zusammenfassung"));
+    QCheckBox* cb = new QCheckBox(qsl("Die Eingaben sind korrekt!"));
+    registerField(qsl("confirmed"), cb);
     QVBoxLayout* layout = new QVBoxLayout;
     layout-> addWidget(cb);
     setLayout(layout);
 }
 void wizNewDatabase_SummaryPage::initializePage()
 {
-    QString subt = "<b>Projekt Daten:</b>"
+    QString subt = qsl("<b>Projekt Daten:</b>"
                    "<table><tr><td>Adresse:</td><td>%1</td></tr>"
                    "<tr><td></td><td>%2</td></tr>"
                    "<tr><td></td><td>%3</td></tr>"
-                   "<tr><td></td><td>%4 %5<br></td></tr>";
+                   "<tr><td></td><td>%4 %5<br></td></tr>");
     subt = subt.arg(field(GMBH_ADDRESS1).toString());
     subt = subt.arg(field(GMBH_ADDRESS2).toString());
     subt = subt.arg(field(GMBH_STREET).toString());
     subt = subt.arg(field(GMBH_PLZ).toString());
     subt = subt.arg(field(GMBH_CITY).toString());
 
-    subt += "<tr><td>E-Mail:</td><td>%1</td></tr>"
+    subt += qsl("<tr><td>E-Mail:</td><td>%1</td></tr>"
             "<tr><td>Web:</td><td>%2</td></tr>"
             "<tr><td>Kürzel:    </td><td>%3</td></tr>"
-            "<tr><td>Start Index:&nbsp;&nbsp;</td><td>%4</td></tr></table>";
-    subt = subt.arg(field(GMBH_EMAIL).toString()).arg(field(GMBH_URL).toString());
+            "<tr><td>Start Index:&nbsp;&nbsp;</td><td>%4</td></tr></table>");
+    subt = subt.arg(field(GMBH_EMAIL).toString(), field(GMBH_URL).toString());
     subt = subt.arg(field(GMBH_PI).toString());
     subt = subt.arg(field(STARTINDEX).toString());
     setSubTitle(subt);
 }
 bool wizNewDatabase_SummaryPage::validatePage()
 {
-    return field("confirmed").toBool();
+    return field(qsl("confirmed")).toBool();
 }
 
 /*
@@ -365,9 +367,9 @@ void wizNewDatabaseWiz::updateDbConfig()
 
 wizConfigure_IntroPage::wizConfigure_IntroPage(QWidget* p) : QWizardPage(p)
 {
-    setTitle("Konfiguration");
-    setSubTitle("Mit dieser Dialogfolge kannst du Konfigurationen "
-                "für Briefdruck und die Datenbank vornehmen.");
+    setTitle(qsl("Konfiguration"));
+    setSubTitle(qsl("Mit dieser Dialogfolge kannst du Konfigurationen "
+                "für Briefdruck und die Datenbank vornehmen."));
 }
 
 /*

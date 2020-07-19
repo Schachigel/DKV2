@@ -2,7 +2,7 @@
 #define FILEHELPER_H
 #include <QString>
 
-bool backupFile(const QString& filename, const QString& subfolder="");
+bool backupFile(const QString& filename, const QString& subfolder=QString());
 
 void showFileInFolder(const QString &path);
 

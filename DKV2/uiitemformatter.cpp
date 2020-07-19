@@ -11,7 +11,7 @@ QString DateItemFormatter::displayText(const QVariant& value, const QLocale& )co
     if( date == QDate() || date > QDate(9990, 12, 31))
         return "";
     else
-        return date.toString("dd.MM.yyyy");
+        return date.toString(qsl("dd.MM.yyyy"));
 };
 void DateItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
@@ -24,7 +24,7 @@ QString PercentItemFormatter::displayText(const QVariant& value, const QLocale& 
 {
     double percent = value.toDouble();
     // data is stored as 100th percent but the query compensatates that
-    return QString("%1%").arg(percent, 2, 'g');
+    return qsl("%1%").arg(percent, 2, 'g');
 };
 void PercentItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
@@ -38,9 +38,9 @@ QString ContractValueItemFormatter::displayText(const QVariant& value, const QLo
     double w = round2(value.toDouble()/100);
     QLocale l;
     if( w < 0)
-        return "[" + l.toCurrencyString(-1 *w) + " "  + "] offen";
+        return qsl("[") + l.toCurrencyString(-1 *w) + qsl(" ")  + qsl("] offen");
     else
-        return l.toCurrencyString(w)+ " ";
+        return l.toCurrencyString(w)+ qsl(" ");
 };
 void ContractValueItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
@@ -70,9 +70,9 @@ QString KFristItemFormatter::displayText(const QVariant &value, const QLocale &)
 {
     int v = value.toInt();
     if( v == -1)
-        return "(festes Vertragsende)";
+        return qsl("(festes Vertragsende)");
     else
-        return QString("%L1 Monate").arg(v);
+        return qsl("%L1 Monate").arg(v);
 }
 void KFristItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
@@ -84,9 +84,9 @@ void KFristItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &o
 QString thesaItemFormatter::displayText(const QVariant &value, const QLocale &) const
 {
     if( value.toBool())
-        return "thesaur.";
+        return qsl("thesaur.");
     else
-        return "auszahlend";
+        return qsl("auszahlend");
 }
 void thesaItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
@@ -100,15 +100,15 @@ QString bookingTypeFormatter::displayText(const QVariant &value, const QLocale &
     switch(value.toInt())
     {
     case booking::Type::deposit :
-        return "Einzahlung";
+        return qsl("Einzahlung");
     case booking::Type::payout :
-        return "Auszahlung";
+        return qsl("Auszahlung");
     case booking::Type::interestPayout:
-        return "Zinsauszahlung";
+        return qsl("Zinsauszahlung");
     case booking::Type::interestDeposit:
-        return "Zinsanrechnung";
+        return qsl("Zinsanrechnung");
     default:
-        return "FEHLER";
+        return qsl("FEHLER");
     }
 }
 void bookingTypeFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const

@@ -1,5 +1,3 @@
-
-#include <QString>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QFileDialog>
@@ -10,25 +8,25 @@
 
 /* static data */
 #ifndef QT_DEBUG
-QString appConfig::keyOutdir = "outdir";
-QString appConfig::keyLastDb = "db/last";
-QString appConfig::keyCurrentDb = "db/current";
+QString appConfig::keyOutdir = qsl("outdir");
+QString appConfig::keyLastDb = qsl("db/last");
+QString appConfig::keyCurrentDb = qsl("db/current");
 #else
-QString appConfig::keyOutdir = "dbg-outdir";
-QString appConfig::keyLastDb = "dbg-db/last";
-QString appConfig::keyCurrentDb = "dbg-db/current";
+QString appConfig::keyOutdir = qsl("dbg-outdir");
+QString appConfig::keyLastDb = qsl("dbg-db/last");
+QString appConfig::keyCurrentDb = qsl("dbg-db/current");
 #endif
 
 // db config info in 'meta' table
 void initMetaInfo( const QString& name, const QString& initialValue, QSqlDatabase db)
 {   LOG_CALL;
-    QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'", db);
+    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='") + name +qsl("'"), db);
     if( value.type() == QVariant::Type::Invalid)
         setMetaInfo(name, initialValue, db);
 }
 void initNumMetaInfo( const QString& name, const double& newValue, QSqlDatabase db)
 {   LOG_CALL;
-    QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'", db);
+    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='") + name +qsl("'"), db);
     if( value.type() == QVariant::Type::Invalid)
         setNumMetaInfo(name, newValue, db);
 }
@@ -38,7 +36,7 @@ QString getMetaInfo(const QString& name, const QString& def, QSqlDatabase db)
         qInfo() << "no database ready (yet), defaulting";
         return def;
     }
-    QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'");
+    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='") + name +qsl("'"));
     if( ! value.isValid()) {
         qInfo() << "read uninitialized property " << name << " -> using default " << def;
         return def;
@@ -53,7 +51,7 @@ double getNumMetaInfo(const QString& name, const double def, QSqlDatabase db)
         return def;
     }
 
-    QVariant value= executeSingleValueSql(dkdbstructur["Meta"]["Wert"], "Name='" + name +"'", db);
+    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='") +name +qsl("'"), db);
     if( ! value.isValid()) {
         qInfo() << "getNumProperty read empty property " << name << " -> using default";
         return def;
@@ -64,15 +62,15 @@ double getNumMetaInfo(const QString& name, const double def, QSqlDatabase db)
 void setMetaInfo(const QString& name, const QString& Wert, QSqlDatabase db)
 {   LOG_CALL_W(name);
     QSqlQuery q(db);
-    QString sql="INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('%1', '%2')";
-    sql = sql.arg(name).arg(Wert);
+    QString sql{qsl("INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('%1', '%2')")};
+    sql = sql.arg(name, Wert);
     if( !q.exec(sql))
         qCritical() << "Failed to insert Meta information " << q.lastError() << Qt::endl << q.lastQuery();
 }
 void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db)
 {   LOG_CALL_W(name);
-    QString sql= "INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('%1', '%2')";
-    sql = sql.arg(name).arg(QString::number(Wert));
+    QString sql {qsl("INSERT OR REPLACE INTO Meta (Name, Wert) VALUES ('%1', '%2')")};
+    sql = sql.arg(name, QString::number(Wert));
     QSqlQuery q(db);
     if( !q.exec(sql))
         qCritical() << "Failed to insert Meta information " << q.lastError() << Qt::endl << q.lastQuery();
@@ -92,7 +90,7 @@ void appConfig::setOutDir(const QString& od)
 void appConfig::setOutDirInteractive(QWidget* parent)
 {   LOG_CALL;
     QString dir(getUserData(keyOutdir, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)));
-    dir = QFileDialog::getExistingDirectory(parent, "Ausgabeverzeichnis", dir,
+    dir = QFileDialog::getExistingDirectory(parent, qsl("Ausgabeverzeichnis"), dir,
                QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     setOutDir(dir);
 }
@@ -190,7 +188,7 @@ void appConfig::deleteRuntimeData(const QString& name)
 
 void dbConfig::loadRuntimeData()
 {
-    if( appConfig::getRuntimeData(DBID) == "") {
+    if( appConfig::getRuntimeData(DBID) == qsl("")) {
         // runtime data is uninitialized
         return;
     }

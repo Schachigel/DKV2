@@ -8,57 +8,57 @@
 // statics & friends
 const dbtable& contract::getTableDef()
 {
-    static dbtable contractTable("Vertraege");
+    static dbtable contractTable(qsl("Vertraege"));
     if( 0 != contractTable.Fields().size())
         return contractTable;
 
-    contractTable.append(dbfield("id",         QVariant::LongLong).setPrimaryKey().setAutoInc());
-    contractTable.append(dbfield("KreditorId", QVariant::LongLong).setNotNull());
-    contractTable.append(dbForeignKey(contractTable["KreditorId"],
-                         dkdbstructur["Kreditoren"]["id"], "ON DELETE CASCADE"));
+    contractTable.append(dbfield(qsl("id"),         QVariant::LongLong).setPrimaryKey().setAutoInc());
+    contractTable.append(dbfield(qsl("KreditorId"), QVariant::LongLong).setNotNull());
+    contractTable.append(dbForeignKey(contractTable[qsl("KreditorId")],
+                         dkdbstructur[qsl("Kreditoren")][qsl("id")], qsl("ON DELETE CASCADE")));
     // deleting a creditor will delete inactive contracts but not
     // contracts with existing bookings (=active or terminated contracts)
-    contractTable.append(dbfield("Kennung",    QVariant::String, "UNIQUE"));
-    contractTable.append(dbfield("ZSatz",      QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
-    contractTable.append(dbfield("Betrag",     QVariant::Int).setNotNull().setDefault(0)); // ct
-    contractTable.append(dbfield("thesaurierend", QVariant::Bool).setNotNull().setDefault(1));
-    contractTable.append(dbfield("Vertragsdatum", QVariant::Date).setNotNull());
-    contractTable.append(dbfield("Kfrist" ,    QVariant::Int).setNotNull().setDefault(6));
-    contractTable.append(dbfield("LaufzeitEnde",  QVariant::Date).setNotNull().setDefault("9999-12-31"));
+    contractTable.append(dbfield(qsl("Kennung"),    QVariant::String, qsl("UNIQUE")));
+    contractTable.append(dbfield(qsl("ZSatz"),      QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
+    contractTable.append(dbfield(qsl("Betrag"),     QVariant::Int).setNotNull().setDefault(0)); // ct
+    contractTable.append(dbfield(qsl("thesaurierend"), QVariant::Bool).setNotNull().setDefault(1));
+    contractTable.append(dbfield(qsl("Vertragsdatum"), QVariant::Date).setNotNull());
+    contractTable.append(dbfield(qsl("Kfrist") ,    QVariant::Int).setNotNull().setDefault(6));
+    contractTable.append(dbfield(qsl("LaufzeitEnde"),  QVariant::Date).setNotNull().setDefault(qsl("9999-12-31")));
 
     return contractTable;
 }
 const dbtable& contract::getTableDef_deletedContracts()
 {
-    static dbtable exContractTable("exVertraege");
+    static dbtable exContractTable(qsl("exVertraege"));
     if( 0 != exContractTable.Fields().size())
         return exContractTable;
 
-    exContractTable.append(dbfield("id", QVariant::LongLong).setPrimaryKey());
+    exContractTable.append(dbfield(qsl("id"), QVariant::LongLong).setPrimaryKey());
     for(int i= 1 /* not 0 */; i < getTableDef().Fields().count(); i++) {
         exContractTable.append(getTableDef().Fields()[i]);
     }
-    exContractTable.append(dbForeignKey(exContractTable["KreditorId"],
-                         dkdbstructur["Kreditoren"]["id"], "ON DELETE CASCADE"));
+    exContractTable.append(dbForeignKey(exContractTable[qsl("KreditorId")],
+                         dkdbstructur[qsl("Kreditoren")][qsl("id")], qsl("ON DELETE CASCADE")));
     return exContractTable;
 }
 bool contract::remove(qlonglong id)
 {
-    QString sql="DELETE FROM Vertraege WHERE id=" + QString::number(id);
+    QString sql=qsl("DELETE FROM Vertraege WHERE id=") + QString::number(id);
     QSqlQuery deleteQ;
     if( deleteQ.exec(sql))
         return true;
-    if( "19" == deleteQ.lastError().nativeErrorCode())
-        qDebug() << "Delete contract failed due to refer. integrity rules" << Qt::endl << deleteQ.lastQuery();
+    if( qsl("19") == deleteQ.lastError().nativeErrorCode())
+        qDebug() << qsl("Delete contract failed due to refer. integrity rules") << Qt::endl << deleteQ.lastQuery();
     else
-        qCritical() << "Delete contract failed "<< deleteQ.lastError() << Qt::endl << deleteQ.lastQuery();
+        qCritical() << qsl("Delete contract failed ")<< deleteQ.lastError() << Qt::endl << deleteQ.lastQuery();
     return false;
 
 }
 QString contract::booking_csv_header()
 {
-    return "Vorname; Nachname; Email; Strasse; Plz; Stadt; IBAN; Kennung; Auszahlend;"
-           " Buchungsdatum; Zinssatz; Kreditbetrag; Zins; Endbetrag";
+    return qsl("Vorname; Nachname; Email; Strasse; Plz; Stadt; IBAN; Kennung; Auszahlend;"
+           " Buchungsdatum; Zinssatz; Kreditbetrag; Zins; Endbetrag");
 }
 
 // construction
@@ -91,11 +91,9 @@ double contract::value() const
 double contract::value(QDate d) const
 {
     // what is the value of the contract at a given time?
-    QString where = "VertragsId=%1 AND BuchungsArt!=%2 AND Datum <='%3'";
-    where =where.arg(id());
-    where =where.arg(booking::Type::interestPayout);
-    where =where.arg(d.toString(Qt::ISODate));
-    QVariant v = executeSingleValueSql("SUM(Betrag)", "Buchungen", where);
+    QString where {qsl("VertragsId=%1 AND BuchungsArt!=%2 AND Datum <='%3'")};
+    where =where.arg(QString::number(id()), QString::number(booking::Type::interestPayout), d.toString(Qt::ISODate));
+    QVariant v = executeSingleValueSql(qsl("SUM(Betrag)"), qsl("Buchungen"), where);
     if( v.isValid())
         return euroFromCt(v.toInt());
     return 0.;
@@ -105,26 +103,26 @@ latestBooking()
 {
     if( latest.type != booking::Type::non)
         return latest;
-    QSqlRecord rec = executeSingleRecordSql(dkdbstructur["Buchungen"].Fields(), "VertragsId=" + id_aS(), "Datum DESC LIMIT 1");
+    QSqlRecord rec = executeSingleRecordSql(dkdbstructur[qsl("Buchungen")].Fields(), qsl("VertragsId=") + id_aS(), qsl("Datum DESC LIMIT 1"));
     if( ! rec.isEmpty()) {
-        latest.type   =booking::Type(rec.value("BuchungsArt").toInt());
-        latest.date   =rec.value("Datum").toDate();
-        latest.amount =euroFromCt(rec.value("Betrag").toInt());
+        latest.type   =booking::Type(rec.value(qsl("BuchungsArt")).toInt());
+        latest.date   =rec.value(qsl("Datum")).toDate();
+        latest.amount =euroFromCt(rec.value(qsl("Betrag")).toInt());
     }
     return latest;
 }
 // write to db
 int  contract::saveNewContract()
 {   LOG_CALL;
-    TableDataInserter ti(dkdbstructur["Vertraege"]);
-    ti.setValue(dkdbstructur["Vertraege"]["KreditorId"].name(), creditorId());
-    ti.setValue(dkdbstructur["Vertraege"]["Kennung"].name(), label());
-    ti.setValue(dkdbstructur["Vertraege"]["Betrag"].name(), ctFromEuro(plannedInvest()));
-    ti.setValue(dkdbstructur["Vertraege"]["ZSatz"].name(), interestRate()*100);
-    ti.setValue(dkdbstructur["Vertraege"]["thesaurierend"].name(), reinvesting());
-    ti.setValue(dkdbstructur["Vertraege"]["Vertragsdatum"].name(), conclusionDate());
-    ti.setValue(dkdbstructur["Vertraege"]["LaufzeitEnde"].name(), plannedEndDate().isValid() ? plannedEndDate() : EndOfTheFuckingWorld);
-    ti.setValue(dkdbstructur["Vertraege"]["Kfrist"].name(), noticePeriod());
+    TableDataInserter ti(dkdbstructur[qsl("Vertraege")]);
+    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("KreditorId")].name(), creditorId());
+    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("Kennung")].name(), label());
+    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("Betrag")].name(), ctFromEuro(plannedInvest()));
+    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("ZSatz")].name(), interestRate()*100);
+    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("thesaurierend")].name(), reinvesting());
+    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("Vertragsdatum")].name(), conclusionDate());
+    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("LaufzeitEnde")].name(), plannedEndDate().isValid() ? plannedEndDate() : EndOfTheFuckingWorld);
+    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("Kfrist")].name(), noticePeriod());
     int lastid =ti.InsertData();
     if( lastid >= 0)
     {
@@ -139,11 +137,11 @@ bool contract::validateAndSaveNewContract(QString& meldung)
 {   LOG_CALL;
     meldung.clear();
     if( plannedInvest() <=0)
-        meldung = "Der Kreditbetrag muss größer als null sein";
+        meldung = qsl("Der Kreditbetrag muss größer als null sein");
     else if( creditorId() <= 0 )
-        meldung = "Wähle den Kreditgeber. Ist die Auswahl leer muss zuerst ein Kreditor angelegt werden";
+        meldung = qsl("Wähle den Kreditgeber. Ist die Auswahl leer muss zuerst ein Kreditor angelegt werden");
     else if( label() == "")
-        meldung= "Du solltest eine eindeutige Kennung vergeben, damit der Kredit besser zugeordnet werden kann";
+        meldung= qsl("Du solltest eine eindeutige Kennung vergeben, damit der Kredit besser zugeordnet werden kann");
     if( !meldung.isEmpty())
         return false;
 
@@ -175,7 +173,7 @@ bool contract::activate( const QDate& aDate, double amount)
 }
 bool contract::isActive() const
 {
-    QString sql = "SELECT count(*) FROM Buchungen WHERE VertragsId=" + QString::number(id());
+    QString sql = qsl("SELECT count(*) FROM Buchungen WHERE VertragsId=") + QString::number(id());
     return 0 < executeSingleValueSql(sql).toInt();
 }
 QDate contract::activationDate() const
@@ -183,8 +181,8 @@ QDate contract::activationDate() const
     static QDate aDate;
     if( aDate.isValid())
         return aDate;
-    QString where = "Buchungen.VertragsId=%1";
-    return aDate =executeSingleValueSql("MIN(Datum)", "Buchungen", where.arg(id())).toDate();
+    QString where = qsl("Buchungen.VertragsId=%1");
+    return aDate =executeSingleValueSql(qsl("MIN(Datum)"), qsl("Buchungen"), where.arg(id())).toDate();
 }
 // booking actions
 int contract::annualSettlement( int year)
@@ -317,7 +315,7 @@ bool contract::cancel(QDate d)
         qInfo() << "an inactive contract can not be canceled. It should be deleted.";
         return false;
     }
-    QString sql ="UPDATE Vertraege SET LaufzeitEnde=?, Kfrist=? WHERE id=?";
+    QString sql =qsl("UPDATE Vertraege SET LaufzeitEnde=?, Kfrist=? WHERE id=?");
     QVector<QVariant> v {d.toString(Qt::ISODate), -1, id()};
     if( ! executeSql(sql, v)) {
         return false;
@@ -380,7 +378,7 @@ bool contract::finalize(bool simulate, const QDate finDate,
 bool contract::storeTerminationDate(QDate d) const
 {   LOG_CALL;
     QVector<QVariant> v {d, id()};
-    return executeSql("UPDATE Vertraege SET LaufzeitEnde=? WHERE id=?", v);
+    return executeSql(qsl("UPDATE Vertraege SET LaufzeitEnde=? WHERE id=?"), v);
 }
 
 bool contract::archive()
@@ -392,10 +390,10 @@ bool contract::archive()
     // move all bookings and the contract to the archive tables
     bool res = false;
     do {
-        if( ! executeSql("INSERT INTO exVertraege SELECT * FROM Vertraege WHERE id=?", id())) break;
-        if( ! executeSql("INSERT INTO exBuchungen SELECT * FROM Buchungen WHERE VertragsId=?", id())) break;
-        if( ! executeSql("DELETE FROM Buchungen WHERE VertragsId=?", id())) break;
-        if( ! executeSql("DELETE FROM Vertraege WHERE id=?", id())) break;
+        if( ! executeSql(qsl("INSERT INTO exVertraege SELECT * FROM Vertraege WHERE id=?"), id())) break;
+        if( ! executeSql(qsl("INSERT INTO exBuchungen SELECT * FROM Buchungen WHERE VertragsId=?"), id())) break;
+        if( ! executeSql(qsl("DELETE FROM Buchungen WHERE VertragsId=?"), id())) break;
+        if( ! executeSql(qsl("DELETE FROM Vertraege WHERE id=?"), id())) break;
         res =true;
     } while( false);
     if(res) {
@@ -431,7 +429,7 @@ contract saveRandomContract(qlonglong creditorId)
 void saveRandomContracts(int count)
 {   LOG_CALL;
     Q_ASSERT(count>0);
-    QVector<QVariant> creditorIds = executeSingleColumnSql(dkdbstructur["Kreditoren"]["id"]);
+    QVector<QVariant> creditorIds = executeSingleColumnSql(dkdbstructur[qsl("Kreditoren")][qsl("id")]);
     if( creditorIds.size() == 0)
         qDebug() << "No Creditors to create contracts for";
 
@@ -453,10 +451,10 @@ void activateRandomContracts(int percent)
             // some contracts get activated with a different amount
             amount = amount * rand->bounded(90, 110) / 100;
         }
-        QDate activationDate(contractData[i].value("Vertragsdatum").toDate());
+        QDate activationDate(contractData[i].value(qsl("Vertragsdatum")).toDate());
         activationDate = activationDate.addDays(rand->bounded(50));
 
-        contract c(contractData[i].value("id").toInt());
+        contract c(contractData[i].value(qsl("id")).toInt());
         c.activate(activationDate, amount);
     }
 }

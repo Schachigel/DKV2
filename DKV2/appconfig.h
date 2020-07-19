@@ -1,36 +1,39 @@
 #ifndef APPCONFIG_H
 #define APPCONFIG_H
 
+#include <QString>
+#include <QStringLiteral>
+#define qsl(x) QStringLiteral(x)
 #include <QMap>
 #include <QWidget>
 #include <QSqlDatabase>
 
-const QString DB_VERSION {"Version"};
-const double CURRENT_DB_VERSION {2.0};
-const QString GMBH_ADDRESS1 {"gmbh.address1"};
-const QString GMBH_ADDRESS2 {"gmbh.address2"};
-const QString GMBH_STREET {"gmbh.strasse"};
-const QString GMBH_PLZ {"gmbh.plz"};
-const QString GMBH_CITY{"gmbh.stadt"};
-const QString GMBH_EMAIL {"gmbh.email"};
-const QString GMBH_URL {"gmbh.url"};
-const QString GMBH_PI {"gmbh.Projektinitialen"};
-const QString STARTINDEX {"startindex"};
-const QString MIN_PAYOUT {"minAuszahlung"};
-const QString MIN_AMOUNT {"minVertragswert"};
-const QString DBID {"dbId"};
-const QString GMBH_HRE {"gmbh.Handelsregister"};
-const QString GMBH_GEFUE1{"gmbh.gefue1"};
-const QString GMBH_GEFUE2{"gmbh.gefue2"};
-const QString GMBH_GEFUE3{"gmbh.gefue3"};
-const QString GMBH_DKV{"gmbh.dkv"};
+#define DB_VERSION    qsl("Version")
+#define CURRENT_DB_VERSION 2.0
+#define GMBH_ADDRESS1 qsl("gmbh.address1")
+#define GMBH_ADDRESS2 qsl("gmbh.address2")
+#define GMBH_STREET   qsl("gmbh.strasse")
+#define GMBH_PLZ      qsl("gmbh.plz")
+#define GMBH_CITY     qsl("gmbh.stadt")
+#define GMBH_EMAIL    qsl("gmbh.email")
+#define GMBH_URL      qsl("gmbh.url")
+#define GMBH_PI       qsl("gmbh.Projektinitialen")
+#define STARTINDEX    qsl("startindex")
+#define MIN_PAYOUT    qsl("minAuszahlung")
+#define MIN_AMOUNT    qsl("minVertragswert")
+#define DBID          qsl("dbId")
+#define GMBH_HRE      qsl("gmbh.Handelsregister")
+#define GMBH_GEFUE1   qsl("gmbh.gefue1")
+#define GMBH_GEFUE2   qsl("gmbh.gefue2")
+#define GMBH_GEFUE3   qsl("gmbh.gefue3")
+#define GMBH_DKV      qsl("gmbh.dkv")
 
 // db config info in 'meta' table
 // init = write only if not set
 void initMetaInfo( const QString& name, const QString& wert, QSqlDatabase db=QSqlDatabase::database());
 void initNumMetaInfo( const QString& name, const double& wert, QSqlDatabase db=QSqlDatabase::database());
 // reading
-QString getMetaInfo(const QString& name, const QString& def="", QSqlDatabase db = QSqlDatabase::database());
+QString getMetaInfo(const QString& name, const QString& def=QString(), QSqlDatabase db = QSqlDatabase::database());
 double getNumMetaInfo(const QString& name, const double def =0., QSqlDatabase db = QSqlDatabase::database());
 // writing
 void setMetaInfo(const QString& name, const QString& value, QSqlDatabase db = QSqlDatabase::database());

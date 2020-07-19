@@ -1,4 +1,6 @@
 
+#include <QStringLiteral>
+#define qsl(x) QStringLiteral(x)
 #include <QFile>
 #include <math.h>
 #include <QDebug>
@@ -101,7 +103,7 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
 
 IbanValidator::IbanValidator() : QRegExpValidator()
 {
-    QFile f (":/res/IbanRegExp.txt");
+    QFile f (qsl(":/res/IbanRegExp.txt"));
     f.open(QIODevice::ReadOnly);
     QString exp =f.readAll();
     setRegExp(QRegExp(exp));

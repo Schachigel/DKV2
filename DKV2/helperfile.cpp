@@ -21,17 +21,17 @@ bool backupFile(const QString&  fn, const QString& subfolder)
     if( subfolder.length()!= 0)
     {
         QDir d(path); d.mkdir(subfolder);
-        backupname =d.path() + "/" + subfolder + "/" + fi.fileName();
+        backupname =d.path() + qsl("/") + subfolder + qsl("/") + fi.fileName();
     }
     backupname.chop(suffix.size()+1/*dot*/);
-    backupname += "_" + QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss") + "." + suffix;
+    backupname += "_" + QDateTime::currentDateTime().toString(qsl("yyyyMMdd_hhmmss")) + qsl(".") + suffix;
     // copy the file
     if(!QFile().copy(fn, backupname))
     {
         qDebug() << "Backup copy failed. File to be copied: " << backupname;
         return false;
     }
-    QString names(fi.baseName() + "_????????_??????." + suffix);
+    QString names(fi.baseName() + qsl("_????????_??????.") + suffix);
     QDir backups(fi.absolutePath(), names, QDir::Name | QDir::Reversed, QDir::Files);
     for (uint i = 15; i < backups.count(); i++) {
         QFile().remove(backups[i]);
@@ -42,7 +42,7 @@ bool backupFile(const QString&  fn, const QString& subfolder)
 void showFileInFolder(const QString &path)
 {   LOG_CALL_W(path);
 #ifdef _WIN32    //Code for Windows
-    QProcess::startDetached("explorer.exe", {"/select,", QDir::toNativeSeparators(path)});
+    QProcess::startDetached(qsl("explorer.exe"), {qsl("/select,"), QDir::toNativeSeparators(path)});
 #elif defined(__APPLE__)    //Code for Mac
     QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to reveal POSIX file \"" + path + "\""});
     QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to activate"});
@@ -55,8 +55,9 @@ void printHtmlToPdf( QString html, QString fn)
     td.setHtml(html);
 
     QPdfWriter pdfw(fn);
-    pdfw.setCreator("Esperanza Franklin GmbH 4 MHS");
-    pdfw.setPageSize(QPagedPaintDevice::A4);
+    pdfw.setCreator(qsl("Esperanza Franklin GmbH 4 MHS"));
+    //pdfw.setPageSize(QPagedPaintDevice::A4);
+    pdfw.setPageSize(QPageSize(QPageSize::A4));
     pdfw.setPageOrientation(QPageLayout::Portrait);
     pdfw.setPdfVersion(QPagedPaintDevice::PdfVersion_1_6);
     pdfw.setResolution(120 );

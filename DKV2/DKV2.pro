@@ -13,6 +13,7 @@ TEMPLATE = app
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
+DEFINES *= QT_USE_QSTRINGBUILDER
 #DEFINES += Q_QDOC
 
 # You can also make your code fail to compile if you use deprecated APIs.

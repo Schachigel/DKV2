@@ -2,6 +2,8 @@
 #define WIZANNUALSETTLEMENT_H
 
 #include <QDate>
+#include <QStringLiteral>
+#define qsl(x) QStringLiteral(x)
 #include <QWizard>
 
 struct wizAnnualSettlement_IntroPage : public QWizardPage

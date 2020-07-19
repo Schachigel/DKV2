@@ -7,72 +7,72 @@
 // statistics pages - Helper Fu
 QString tag(QString string, QString tag, QStringList attribs =QStringList())
 {
-    QString ret("<"+tag);
-    for(QString s : attribs) {
-        ret += " " +s;
+    QString ret(qsl("<")+tag);
+    for(auto& s : qAsConst(attribs)) {
+        ret += qsl(" ") +s;
     }
-    return ret + ">" + string + "</" + tag + ">";
+    return ret + qsl(">") + string + qsl("</") + tag + qsl(">");
 }
 
 QString tableRow4( QString left, QString center, QString center2, QString right)
 {
-    left   =tag(left, "td", {"style='text-align: right;'"});
-    center =tag(center, "td", {"style='text-align: center;'"});
-    center2=tag(center2, "td", {"style='text-align: center;'"});
-    right  =tag(right, "td", {"style='text-align: left;'"});
+    left   =tag(left,    qsl("td"), {qsl("style='text-align: right;'")});
+    center =tag(center,  qsl("td"), {qsl("style='text-align: center;'")});
+    center2=tag(center2, qsl("td"), {qsl("style='text-align: center;'")});
+    right  =tag(right,   qsl("td"), {qsl("style='text-align: left;'")});
     return tag( left + center + center2 + right, "tr");
 }
 QString tableRow3( QString left, QString center, QString right)
 {
-    left   = "<td style='text-align: right;' >" + left   + "</td>";
-    center = "<td style='text-align: center;'>" + center + "</td>";
-    right  = "<td style='text-align: left;'  >" + right  + "</td>";
+    left   = qsl("<td style='text-align: right;' >") + left   + qsl("</td>");
+    center = qsl("<td style='text-align: center;'>") + center + qsl("</td>");
+    right  = qsl("<td style='text-align: left;'  >") + right  + qsl("</td>");
     return "<tr>" + left + center + right  + "</tr>";
 }
 QString tableRow2(QString left, QString right)
 {
-    left = "<td style='text-align: right;'>" + left  + "</td>";
-    right= "<td style='text-align: left;' >" + right + "</td>";
-    return "<tr>" + left + right  + "</tr>";
+    left = qsl("<td style='text-align: right;'>") + left  + qsl("</td>");
+    right= qsl("<td style='text-align: left;' >") + right + qsl("</td>");
+    return qsl("<tr>") + left + right  + qsl("</tr>");
 }
 QString emptyRow( )
 {
-    return "<tr><td style='padding: 1px; font-size: small;'></td><td style='padding: 1px; font-size: small';></td></tr>";
+    return qsl("<tr><td style='padding: 1px; font-size: small;'></td><td style='padding: 1px; font-size: small';></td></tr>");
 }
 
 QString h2(QString v) {
-    return tag(v, "h2");
+    return tag(v, qsl("h2"));
 }
 QString h1(QString v) {
-    return tag(v, "h1");
+    return tag(v, qsl("h1"));
 }
 QString td( QString v)
 {
-    return "<td>" + v + "</td>";
+    return qsl("<td>") + v + qsl("</td>");
 }
 QString startTable()
 {
-    return "<table cellpadding='8' bgcolor=#DDD>";
+    return qsl("<table cellpadding='8' bgcolor=#DDD>");
 }
 QString endTable()
 {
-    return "</table>";
+    return qsl("</table>");
 }
 QString row( QString cont)
 {
-    return "<tr>" + cont + "</tr>";
+    return qsl("<tr>") + cont + qsl("</tr>");
 }
 QString startRow()
 {
-    return "<tr>";
+    return qsl("<tr>");
 }
 QString endRow()
 {
-    return "</t>";
+    return qsl("</t>");
 }
 QString newLine(QString line)
 {
-    return "<br>" + line;
+    return qsl("<br>") + line;
 }
 
 QString htmlOverviewTable()
@@ -80,23 +80,23 @@ QString htmlOverviewTable()
     QLocale locale;
     QString ret;
     DbSummary dbs =calculateSummary();
-    ret += h1("Übersicht DKs und DK Geber")+ newLine( "Stand: " + QDate::currentDate().toString("dd.MM.yyyy<br>"));
+    ret += h1(qsl("Übersicht DKs und DK Geber"))+ newLine( qsl("Stand: ") + QDate::currentDate().toString(qsl("dd.MM.yyyy<br>")));
     ret += startTable();
-    ret += tableRow2("Anzahl DK Geber*innen von aktiven Verträgen:", QString::number(dbs.AnzahlDkGeber));
-    ret += tableRow2("Anzahl aktiver Direktkredite:" , QString::number(dbs.AnzahlAktive));
-    ret += tableRow2("Wert der aktiven Direktkredite:"  , locale.toCurrencyString(dbs.WertAktive) + "<br><small>(Ø " + locale.toCurrencyString(dbs.WertAktive/dbs.AnzahlAktive) + ")</small>");
-    ret += tableRow2("Durchschnittlicher Zinssatz:<br><small>(Gewichtet mit Vertragswert)</small>", QString::number(dbs.DurchschnittZins, 'f', 3) + "%");
-    ret += tableRow2("Jährliche Zinskosten:", locale.toCurrencyString(dbs.WertAktive * dbs.DurchschnittZins/100.));
-    ret += tableRow2("Mittlerer Zinssatz:", QString::number(dbs.MittlererZins, 'f', 3) + "%");
+    ret += tableRow2(qsl("Anzahl DK Geber*innen von aktiven Verträgen:"), QString::number(dbs.AnzahlDkGeber));
+    ret += tableRow2(qsl("Anzahl aktiver Direktkredite:") , QString::number(dbs.AnzahlAktive));
+    ret += tableRow2(qsl("Wert der aktiven Direktkredite:")  , locale.toCurrencyString(dbs.WertAktive) + qsl("<br><small>(Ø ") + locale.toCurrencyString(dbs.WertAktive/dbs.AnzahlAktive) + qsl(")</small>"));
+    ret += tableRow2(qsl("Durchschnittlicher Zinssatz:<br><small>(Gewichtet mit Vertragswert)</small>"), QString::number(dbs.DurchschnittZins, 'f', 3) + qsl("%"));
+    ret += tableRow2(qsl("Jährliche Zinskosten:"), locale.toCurrencyString(dbs.WertAktive * dbs.DurchschnittZins/100.));
+    ret += tableRow2(qsl("Mittlerer Zinssatz:"), QString::number(dbs.MittlererZins, 'f', 3) + "%");
     ret += emptyRow();
-    ret += tableRow2("Anzahl mit jährl. Zinsauszahlung:", QString::number(dbs.AnzahlAuszahlende));
-    ret += tableRow2("Summe:", locale.toCurrencyString(dbs.BetragAuszahlende));
+    ret += tableRow2(qsl("Anzahl mit jährl. Zinsauszahlung:"), QString::number(dbs.AnzahlAuszahlende));
+    ret += tableRow2(qsl("Summe:"), locale.toCurrencyString(dbs.BetragAuszahlende));
     ret += emptyRow();
-    ret += tableRow2("Anzahl ohne jährl. Zinsauszahlung:", QString::number(dbs.AnzahlThesaurierende));
-    ret += tableRow2("Wert inkl. Zinsen:", locale.toCurrencyString(dbs.WertThesaurierende));
+    ret += tableRow2(qsl("Anzahl ohne jährl. Zinsauszahlung:"), QString::number(dbs.AnzahlThesaurierende));
+    ret += tableRow2(qsl("Wert inkl. Zinsen:"), locale.toCurrencyString(dbs.WertThesaurierende));
     ret += emptyRow();
-    ret += tableRow2("Anzahl ausstehender (inaktiven) DK", QString::number(dbs.AnzahlPassive));
-    ret += tableRow2("Summe ausstehender (inaktiven) DK", locale.toCurrencyString(dbs.BetragPassive));
+    ret += tableRow2(qsl("Anzahl ausstehender (inaktiven) DK"), QString::number(dbs.AnzahlPassive));
+    ret += tableRow2(qsl("Summe ausstehender (inaktiven) DK"), locale.toCurrencyString(dbs.BetragPassive));
     ret += endTable();
     return ret;
 }
@@ -104,18 +104,18 @@ QString htmlContractsByContractEndTable()
 {
     QLocale locale;
     QString ret;
-    ret += h1("Auslaufende Verträge") + newLine( "Stand: "  + QDate::currentDate().toString("dd.MM.yyyy<br>"));
+    ret += h1(qsl("Auslaufende Verträge")) + newLine( qsl("Stand: ")  + QDate::currentDate().toString(qsl("dd.MM.yyyy<br>")));
      QVector<ContractEnd> ce;
      calc_contractEnd(ce);
      if( !ce.isEmpty()) {
          ret += startTable();
-         ret += tableRow3( h2("Jahr"), h2( "Anzahl"),  h2( "Summe"));
-         for( auto x: ce)
+         ret += tableRow3(h2(qsl("Jahr")), h2(qsl("Anzahl")),  h2(qsl("Summe")));
+         for( auto& x: qAsConst(ce))
              ret += tableRow3( QString::number(x.year), QString::number(x.count), locale.toCurrencyString(x.value));
          ret += endTable();
      }
      else
-         ret += "<br><br><i>keine Verträge mit vorgemerktem Vertragsende</i>";
+         ret += qsl("<br><br><i>keine Verträge mit vorgemerktem Vertragsende</i>");
      return ret;
 }
 QString htmlContractsByYearByInterestTable()
@@ -125,12 +125,12 @@ QString htmlContractsByYearByInterestTable()
     QVector<YZV> yzv;
     calc_anualInterestDistribution( yzv);
     if( !yzv.isEmpty()) {
-        ret += h1("Verteilung der Zinssätze pro Jahr") + "<br> Stand:"  + QDate::currentDate().toString("dd.MM.yyyy<br>");
+        ret += h1(qsl("Verteilung der Zinssätze pro Jahr")) + qsl("<br> Stand:")  + QDate::currentDate().toString(qsl("dd.MM.yyyy<br>"));
         ret += startTable() +  startRow();
-        ret += td(h2("Jahr")) + td( h2( "Zinssatz")) +td(h2("Anzahl")) + td( h2( "Summe"));
+        ret += td(h2(qsl("Jahr"))) + td( h2(qsl("Zinssatz"))) +td(h2(qsl("Anzahl"))) + td( h2( qsl("Summe")));
         ret += endRow();
-        for( auto x: yzv) {
-            ret += tableRow4( QString::number(x.year), QString("%1%").arg(x.intrest, 2, 'g'), QString::number(x.count), locale.toCurrencyString(x.sum));
+        for( auto& x: qAsConst(yzv)) {
+            ret += tableRow4( QString::number(x.year), QString(qsl("%1%")).arg(x.intrest, 2, 'g'), QString::number(x.count), locale.toCurrencyString(x.sum));
         }
         ret += endTable();
     }
@@ -139,7 +139,7 @@ QString htmlContractsByYearByInterestTable()
 QString htmlContractsByRuntimeTable()
 {
     QString ret;
-    ret += h1("Vertragslaufzeiten") + "<br> Stand:" + QDate::currentDate().toString("dd.MM.yyyy<br>");
+    ret += h1(qsl("Vertragslaufzeiten")) + qsl("<br> Stand:") + QDate::currentDate().toString(qsl("dd.MM.yyyy<br>"));
     ret += startTable();
     QVector<rowData> rows = contractRuntimeDistribution();
     ret += tableRow3( h2(rows[0].text), h2(rows[0].value), h2(rows[0].number));
@@ -151,33 +151,33 @@ QString htmlContractsByRuntimeTable()
 }
 QString htmlAllContractInfo()
 {
-    dbtable t("ContractDataActiveContracts");
-    t.append(dbfield("Id", QVariant::Type::Int));
-    t.append(dbfield("KreditorId", QVariant::Type::Int));
-    t.append(dbfield("Vorname"));
-    t.append(dbfield("Nachname"));
-    t.append(dbfield("Strasse"));
-    t.append(dbfield("Plz"));
-    t.append(dbfield("Stadt"));
-    t.append(dbfield("Email"));
-    t.append(dbfield("Iban"));
-    t.append(dbfield("Bic"));
-    t.append(dbfield("Strasse"));
-    t.append(dbfield("Zinssatz", QVariant::Type::Double));
-    t.append(dbfield("Wert", QVariant::Type::Double));
-    t.append(dbfield("Aktivierungsdatum", QVariant::Type::Date));
-    t.append(dbfield("Kuendigungsfrist", QVariant::Type::Int));
-    t.append(dbfield("Vertragsende", QVariant::Type::Date));
-    t.append(dbfield("thesa", QVariant::Type::Bool));
+    dbtable t(qsl("ContractDataActiveContracts"));
+    t.append(dbfield(qsl("Id"), QVariant::Type::Int));
+    t.append(dbfield(qsl("KreditorId"), QVariant::Type::Int));
+    t.append(dbfield(qsl("Vorname")));
+    t.append(dbfield(qsl("Nachname")));
+    t.append(dbfield(qsl("Strasse")));
+    t.append(dbfield(qsl("Plz")));
+    t.append(dbfield(qsl("Stadt")));
+    t.append(dbfield(qsl("Email")));
+    t.append(dbfield(qsl("Iban")));
+    t.append(dbfield(qsl("Bic")));
+    t.append(dbfield(qsl("Strasse")));
+    t.append(dbfield(qsl("Zinssatz"), QVariant::Type::Double));
+    t.append(dbfield(qsl("Wert"), QVariant::Type::Double));
+    t.append(dbfield(qsl("Aktivierungsdatum"), QVariant::Type::Date));
+    t.append(dbfield(qsl("Kuendigungsfrist"), QVariant::Type::Int));
+    t.append(dbfield(qsl("Vertragsende"), QVariant::Type::Date));
+    t.append(dbfield(qsl("thesa"), QVariant::Type::Bool));
 
     QString ret =startTable();
     ret += startRow();
-    for(auto field : t.Fields()) {
-        ret +=tag(field.name(), "th");
+    for(auto& field : t.Fields()) {
+        ret +=tag(field.name(), qsl("th"));
     }
     ret += endRow();
     QVector<QSqlRecord> data = executeSql(t.Fields());
-    for(auto rec : data) {
+    for(auto& rec : qAsConst(data)) {
         ret += startRow();
         for( int i =0; i<rec.count(); i++) {
             ret += td(rec.field(i).value().toString());
@@ -189,13 +189,13 @@ QString htmlAllContractInfo()
 }
 QString reportHtml(Uebersichten u)
 {
-    QString html ="<html><body>"
+    QString html =qsl("<html><body>"
                     "<style>"
                       "table { border-width: 0px; font-family: Verdana; font-size: large; }"
                       "td { }"
                     "</style>"
                     "%1"
-                  "</body></html>";
+                  "</body></html>");
     switch( u ) {
     case OVERVIEW: {
         html =html.arg(htmlOverviewTable());

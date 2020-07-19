@@ -10,17 +10,17 @@
 class csvwriter
 {
 public:
-    csvwriter(QString sep =";") : separator(sep){ Q_ASSERT(sep.length()==1);}
+    csvwriter(QString sep =qsl(";")) : separator(sep){ Q_ASSERT(sep.length()==1);}
     void addColumn(QString header);
     int  addColumns(QString headers);
     void appendToRow(QString value);
     void addRow(QList<QString> cols);
     void addRow(QString row);
 
-    QString out();
-    bool save(QString filname);
+    QString out() const;
+    bool save(const QString filname) const;
 private:
-    QString appendCsvLine( QString line, QString appendix);
+    QString appendCsvLine( QString line, QString appendix) const;
 
     QString separator;
     QList<QString> headers;
@@ -28,6 +28,6 @@ private:
     QList<QString> currentRow;
 };
 
-bool table2csv(QString filename, QVector<dbfield> fields, QVector<QVariant::Type> types =QVector<QVariant::Type>(), QString where ="");
+bool table2csv(const QString filename, const QVector<dbfield> fields, const QVector<QVariant::Type> types =QVector<QVariant::Type>(), const QString where =QString());
 
 #endif // CSVWRITER_H

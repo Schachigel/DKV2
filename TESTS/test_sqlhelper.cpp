@@ -303,27 +303,27 @@ void test_sqlhelper::test_executeSingleColumnSql()
     }
     QVector<QVariant> result = executeSingleColumnSql(t["col_ll"]);
     QCOMPARE( result.count(), 16);
-    for ( auto v : result) {
+    for ( auto& v : result) {
         QVERIFY(v.type() == t["col_ll"].type());
     }
     result = executeSingleColumnSql(t["col_I"]);
     QCOMPARE( result.count(), 16);
-    for ( auto v : result) {
+    for ( auto& v : result) {
         QVERIFY(v.type() == t["col_I"].type());
     }
     result = executeSingleColumnSql(t["col_S"]);
     QCOMPARE( result.count(), 16);
-    for ( auto v : result) {
+    for ( auto& v : result) {
         QVERIFY(v.type() == t["col_S"].type());
     }
     result = executeSingleColumnSql(t["col_D"]);
     QCOMPARE( result.count(), 16);
-    for ( auto v : result) {
+    for ( auto& v : result) {
         QVERIFY(v.type() == t["col_D"].type());
     }
     result = executeSingleColumnSql(t["col_B"]);
     QCOMPARE( result.count(), 16);
-    for ( auto v : result) {
+    for ( auto& v : result) {
         QVERIFY(v.type() == t["col_B"].type());
     }
 }

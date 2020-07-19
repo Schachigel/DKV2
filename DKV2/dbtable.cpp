@@ -31,20 +31,20 @@ dbtable dbtable::append(const dbForeignKey& fk)
 void dbtable::setUnique( const QVector<dbfield>& fs)
 {   // LOG_CALL;
     QString tmp;
-    for( auto f : fs)
+    for( auto& f : qAsConst(fs))
     {
-        if( ! tmp.isEmpty()) tmp += ", ";
-        tmp += f.name();
+        if( ! tmp.isEmpty()) tmp = tmp + qsl(", ");
+        tmp =tmp + f.name();
     }
-    unique = ", UNIQUE (" +tmp +")";
+    unique = qsl(", UNIQUE (") +tmp +qsl(")");
 }
 
 QString dbtable::createTableSql() const
 {   LOG_CALL;
-    QString sql("CREATE TABLE " + name + " (");
+    QString sql(qsl("CREATE TABLE ") + name + qsl(" ("));
     for( int i = 0; i< Fields().count(); i++) {
-        if( i>0) sql.append(", ");
-        sql.append(Fields()[i].get_CreateSqlSnippet());
+        if( i>0) sql.append(qsl(", "));
+        sql.append(Fields().at(i).get_CreateSqlSnippet());
     }
     for( auto fk : foreignKeys) {
         sql.append(", ");

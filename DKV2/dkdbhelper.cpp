@@ -247,7 +247,7 @@ bool check_db_version(QSqlDatabase db)
 }
 bool has_allTablesAndFields(QSqlDatabase db)
 {   LOG_CALL;
-    for( auto table : dkdbstructur.getTables()) {
+    for( auto& table : dkdbstructur.getTables()) {
         if( !verifyTable(table, db))
             return false;
     }
@@ -360,9 +360,9 @@ bool copy_mangledCreditors(QSqlDatabase targetDB)
         QSqlRecord rec = q.record();
         qDebug() << "dePe Copy: working on Record " << rec;
         TableDataInserter tdi(dkdbstructur["Kreditoren"]);
-
-        tdi.setValue("Vorname", QString("Vorname")+QString::number(recCount));
-        tdi.setValue("Nachname", QString("Nachname")+QString::number(recCount));
+        QString vn {qsl("Vorname")}, nn {qsl("Nachname")};
+        tdi.setValue(qsl("Vorname"),  QVariant(vn + QString::number(recCount)));
+        tdi.setValue(qsl("Nachname"), QVariant(nn + QString::number(recCount)));
         tdi.setValue("Strasse", QString("Strasse"));
         tdi.setValue("Plz", QString("D-xxxxx"));
         tdi.setValue("Stadt", QString("Stadt"));
@@ -400,7 +400,7 @@ bool create_DB_copy(QString targetfn, bool deper)
 
     bool result = true;
     QVector<dbtable> tables = dkdbstructur.getTables();
-    for( auto table : tables) {
+    for( auto& table : qAsConst(tables)) {
         if( deper && table.Name() == "Kreditoren")
             result = result && copy_mangledCreditors(backupDB);
         else
@@ -528,9 +528,6 @@ QVector<rowData> contractRuntimeDistribution()
 }
 void calc_contractEnd( QVector<ContractEnd>& ces)
 {   LOG_CALL;
-    QMap<int, int> m_count;
-    QMap<int, double> m_sum;
-
     QSqlQuery sql;
     sql.setForwardOnly(true);
     sql.exec("SELECT count(*) AS Anzahl, sum(Wert) /100. AS Wert, strftime('%Y',Vertragsende) AS Jahr "
