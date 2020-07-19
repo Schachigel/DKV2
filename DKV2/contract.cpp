@@ -69,19 +69,18 @@ void contract::init()
     setNoticePeriod(6);
     setReinvesting(true);
     setConclusionDate(QDate::currentDate());
-    setInterest100th(150);
+    setInterestRate(1.50);
     setPlannedInvest(1000000);
 }
 contract::contract(qlonglong i) : td(getTableDef())
 {
-    if( i >0) {
+    if( i <= 0) {
+        init();
+    } else {
         QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), "id=" + QString::number(i));
-        if( td.setValues(rec))
-            return;
-        else
+        if( ! td.setValues(rec))
             qCritical() << "contract from id could not be created";
     }
-    init();
 }
 // interface
 double contract::value() const
@@ -412,7 +411,7 @@ contract saveRandomContract(qlonglong creditorId)
     c.setLabel(proposeKennung());
     c.setCreditorId(creditorId);
     c.setReinvesting(rand->bounded(100)%6);// 16% auszahlend
-    c.setInterest100th(1 +rand->bounded(149));
+    c.setInterestRate((1 +rand->bounded(149)) /100);
     c.setPlannedInvest(    rand->bounded(50)*1000.
                            + rand->bounded(1,3) *500.
                            + rand->bounded(10) *100);

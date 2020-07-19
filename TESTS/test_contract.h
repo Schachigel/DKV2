@@ -21,7 +21,7 @@ private slots:
     void init();
     void cleanup();
     // the actual tests
-    void test_createContract();
+    void test_createUninit_Contract();
     void test_set_get_interest();
     void test_activateContract();
     void test_randomContract();

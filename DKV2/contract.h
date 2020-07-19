@@ -34,7 +34,7 @@ struct contract
     qlonglong creditorId() const{ return td.getValue(qsl("KreditorId")).toLongLong();}
     void setLabel(QString l) { td.setValue(qsl("Kennung"), l);}
     QString label() const { return td.getValue(qsl("Kennung")).toString();};
-    void setInterest100th( int percentpercent) {td.setValue(qsl("ZSatz"), percentpercent);}
+//    void setInterest100th( int percentpercent) {td.setValue(qsl("ZSatz"), percentpercent);}
     void setInterestRate( double percent) {td.setValue(qsl("ZSatz"), int(percent*100));}
     double interestRate() const { return double(td.getValue(qsl("ZSatz")).toInt())/100.;}
     void setPlannedInvest(double d) { td.setValue(qsl("Betrag"), ctFromEuro(d));}

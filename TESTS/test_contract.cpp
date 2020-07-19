@@ -25,7 +25,7 @@ void test_contract::cleanup()
     cleanupTestDb();
 }
 
-void test_contract::test_createContract()
+void test_contract::test_createUninit_Contract()
 {   LOG_CALL;
     contract c;
 }
@@ -35,7 +35,7 @@ void test_contract::test_set_get_interest()
     contract c;
     c.setInterestRate(1.5);
     QCOMPARE( c.interestRate(), 1.5);
-    c.setInterest100th(149);
+    c.setInterestRate(1.49);
     QCOMPARE( c.interestRate(), 1.49);
     creditor cre = saveRandomCreditor();
     c.setCreditorId(cre.id());
@@ -115,7 +115,7 @@ void test_contract::test_annualSettlement_inactive_fails()
 {
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
-    cont.setInterest100th(100);
+    cont.setInterestRate(1.);
     cont.setReinvesting(true);
     QVERIFY( ! cont.annualSettlement());
 
@@ -128,7 +128,7 @@ void test_contract::test_annualSettlement_fullYear()
 {
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
-    cont.setInterest100th(100);
+    cont.setInterestRate(1.);
     cont.setReinvesting(true);
 
     cont.activate(QDate(2019, 1, 1), 1000.);
@@ -140,7 +140,7 @@ void test_contract::test_annualSettlement_twoYear()
 {
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
-    cont.setInterest100th(100);
+    cont.setInterestRate(1.);
     cont.setReinvesting(true);
 
     cont.activate(QDate(2019, 1, 1), 1000.);
