@@ -21,11 +21,20 @@ public slots:
     void onExistingCreditor_toggled(bool );
 
     bool validatePage() override;
-//    int nextId() const override;
+    int nextId() const override;
 private:
     QRadioButton* rbNew;
     QRadioButton* rbExisting;
     QComboBox*    cbCreditors;
+};
+
+struct wizNewCreditorAddress : public QWizardPage{
+    wizNewCreditorAddress(QWidget* p);
+    void initializePage() override;
+};
+
+struct wizNewContractData : public QWizardPage{
+    wizNewContractData(QWidget* p);
 };
 
 struct wizNew : public QWizard

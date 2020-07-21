@@ -156,7 +156,7 @@ wizProjectAddress_Page::wizProjectAddress_Page(QWidget* p) : QWizardPage(p)
     QLineEdit* leUrl   =    new QLineEdit;
     registerField(GMBH_URL, leUrl);
 
-    QGridLayout* grid  = new QGridLayout;
+    QGridLayout* grid      =new QGridLayout;
     grid->addWidget(leAddress1, 0, 0, 1, 3);
     grid->addWidget(leAddress2, 1, 0, 1, 3);
     grid->addWidget(leStrasse,  2, 0, 1, 3);
