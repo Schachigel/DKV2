@@ -1,5 +1,6 @@
 #include <QLabel>
 #include <QLineEdit>
+#include <QPlainTextEdit>
 #include <QVBoxLayout>
 
 #include "helper.h"
@@ -56,7 +57,7 @@ int wizNewOrExistingPage::nextId() const
         return page_contract_data;
 }
 
-wizNewCreditorAddress::wizNewCreditorAddress(QWidget* p) : QWizardPage(p)
+wizNewCreditorAddressPage::wizNewCreditorAddressPage(QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("Adresse"));
     setSubTitle(qsl("Gib die Adressdaten ein."));
@@ -95,11 +96,47 @@ wizNewCreditorAddress::wizNewCreditorAddress(QWidget* p) : QWizardPage(p)
 
     setLayout(grid);
 }
-void wizNewCreditorAddress::initializePage()
+void wizNewCreditorAddressPage::initializePage()
 {
 
 }
+bool wizNewCreditorAddressPage::validatePage()
+{
+    if( field(qsl("firstname")).toString().isEmpty()
+            &&
+        field(qsl("lastname")).toString().isEmpty())
+    {
+        return false;
+    }
+    return true;
+}
+int wizNewCreditorAddressPage::nextId() const
+{
+    return page_email;
+}
 
+wizEmailPage::wizEmailPage(QWidget* p) : QWizardPage(p)
+{
+    setTitle(qsl("E-mail"));
+    setSubTitle(qsl("Gib hier die E-Mail Adresse und eine Anmerkung an. Als Anmerkung könntest du den Kontakt im Projekt oder sonstige Besonderheiten speichern."));
+    QLabel* l1 =new QLabel(qsl("E-mail"));
+    QLineEdit* leEmail =new QLineEdit;
+    registerField(qsl("email"), leEmail);
+    QLabel* l2 =new QLabel(qsl("Anmerkung"));
+    QPlainTextEdit* eComment     =new QPlainTextEdit;
+    registerField(qsl("comment"), eComment);
+    QGridLayout* g =new QGridLayout;
+    g->addWidget(l1,      0, 0, 1, 1);
+    g->addWidget(leEmail, 0, 1, 1, 4);
+    g->addWidget(l2,      1, 0, 1, 1);
+    g->addWidget(eComment, 1, 1, 3, 4);
+    g->setColumnStretch(0, 1);
+    g->setColumnStretch(1, 2);
+    g->setColumnStretch(2, 2);
+    g->setColumnStretch(3, 2);
+    g->setColumnStretch(4, 2);
+    setLayout(g);
+}
 
 wizNewContractData::wizNewContractData(QWidget* p) : QWizardPage(p)
 {
@@ -109,6 +146,7 @@ wizNewContractData::wizNewContractData(QWidget* p) : QWizardPage(p)
 wizNew::wizNew(QWidget *p) : QWizard(p)
 {
     setPage(page_new_or_existing, new wizNewOrExistingPage(p));
-    setPage(page_address, new wizNewCreditorAddress(p));
+    setPage(page_address, new wizNewCreditorAddressPage(p));
+    setPage(page_email,   new wizEmailPage(p));
     setPage(page_contract_data, new wizNewContractData(p));
 }

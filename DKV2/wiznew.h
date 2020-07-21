@@ -28,9 +28,18 @@ private:
     QComboBox*    cbCreditors;
 };
 
-struct wizNewCreditorAddress : public QWizardPage{
-    wizNewCreditorAddress(QWidget* p);
+struct wizNewCreditorAddressPage : public QWizardPage{
+    wizNewCreditorAddressPage(QWidget* p);
     void initializePage() override;
+    bool validatePage()   override;
+    int nextId() const    override;
+};
+
+struct wizEmailPage : public QWizardPage {
+    wizEmailPage (QWidget* p);
+//    void initializePage() override;
+//    bool validatePage()   override;
+//    int nextId() const    override;
 };
 
 struct wizNewContractData : public QWizardPage{
