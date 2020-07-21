@@ -201,7 +201,7 @@ bool creditor::remove()
     return creditortable;
 }
 
-void creditor::KreditorenListeMitId(QList<QPair<int,QString>> &entries) const
+void KreditorenListeMitId(QList<QPair<int,QString>> &entries)
 {   LOG_CALL;
     QSqlQuery query;
     query.setForwardOnly(true);

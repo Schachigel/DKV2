@@ -45,7 +45,6 @@ struct creditor
     bool isValid() const;
     int save();
     int update() const;
-    void KreditorenListeMitId(QList<QPair<int,QString>> &entries) const;
     bool hasActiveContracts(){return hasActiveContracts(id());};
     static bool hasActiveContracts(qlonglong i);
     bool remove();
@@ -55,6 +54,9 @@ private:
     TableDataInserter ti;
     // helper
 };
+
+void KreditorenListeMitId(QList<QPair<int,QString>> &entries);
+
 
 // sample data for testing
 extern QList<QString> Vornamen;// {"Holger", "Volker", "Peter", "Hans", ...

@@ -622,6 +622,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="separator"/>
     <addaction name="action_menu_creditors_create"/>
     <addaction name="action_menu_creditors_delete"/>
+    <addaction name="actionNeu"/>
    </widget>
    <widget class="QMenu" name="manu_contracts">
     <property name="title">
@@ -925,6 +926,14 @@ p, li { white-space: pre-wrap; }
   <action name="actionProjektkonfiguration_ndern">
    <property name="text">
     <string>Projektkonfiguration ändern</string>
+   </property>
+  </action>
+  <action name="actionNeu">
+   <property name="text">
+    <string>&amp;Neu</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
  </widget>

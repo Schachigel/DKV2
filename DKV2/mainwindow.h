@@ -138,6 +138,8 @@ private slots:
 
     void on_actionProjektkonfiguration_ndern_triggered();
 
+    void on_actionNeu_triggered();
+
 private:
     Ui::MainWindow *ui;
     QSplashScreen* splash;

@@ -13,6 +13,7 @@
 #include "wizterminatecontract.h"
 #include "wizcancelcontract.h"
 #include "wizannualsettlement.h"
+#include "wiznew.h"
 #include "transaktionen.h"
 
 
@@ -79,7 +80,6 @@ void deleteInactiveContract(qlonglong cid)
 // if creditor has no other contracts: delete creditor
     contract::remove(cid);
 }
-
 void terminateContract(qlonglong cid)
 {   LOG_CALL;
     contract c(cid);
@@ -102,7 +102,6 @@ void terminateContract_Final( contract& c)
     }
     return;
 }
-
 void cancelContract( contract& c)
 {   LOG_CALL;
     wizCancelContract wiz(getMainWindow());
@@ -176,4 +175,12 @@ void annualSettlement()
     csv.save(filename);
     showFileInFolder(filename);
     return;
+}
+
+void newCreditorAndContract()
+{
+    wizNew wiz(getMainWindow());
+    QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
+    wiz.setField(qsl("create_new"), true);
+    wiz.exec();
 }

@@ -13,4 +13,6 @@ void cancelContract( contract& v);
 
 void annualSettlement();
 
+void newCreditorAndContract();
+
 #endif // TRANSAKTIONEN_H

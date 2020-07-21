@@ -361,6 +361,12 @@ void MainWindow::on_action_cmenu_go_contracts_triggered()
     on_action_menu_contracts_listview_triggered();
 }
 
+// new creditor and contract Wiz
+void MainWindow::on_actionNeu_triggered()
+{
+    newCreditorAndContract();
+}
+
 // new Creditor page
 void MainWindow::on_action_menu_creditors_create_triggered()
 {   LOG_CALL;
@@ -769,7 +775,7 @@ void MainWindow::fill_creditors_dropdown()
 {   LOG_CALL;
     ui->comboKreditoren->clear();
     QList<QPair<int, QString>> Personen;
-    creditor k; k.KreditorenListeMitId(Personen);
+    KreditorenListeMitId(Personen);
     for(auto& Entry :qAsConst(Personen)) {
         ui->comboKreditoren->addItem( Entry.second, QVariant((Entry.first)));
     }

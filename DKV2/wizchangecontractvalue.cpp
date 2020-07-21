@@ -15,9 +15,9 @@
 
 wizChangeContract_IntroPage::wizChangeContract_IntroPage(QWidget* parent) : QWizardPage(parent)
 {
-    setTitle("Ein- / Auszahlung");
-    QRadioButton* rbDeposit = new QRadioButton("Einzahlung");
-    QRadioButton* rbPayout = new QRadioButton("Auszahlung");
+    setTitle(qsl("Ein- / Auszahlung"));
+    QRadioButton* rbDeposit = new QRadioButton(qsl("Einzahlung"));
+    QRadioButton* rbPayout = new QRadioButton(qsl("Auszahlung"));
     registerField("deposit_notPayment", rbDeposit);
     QVBoxLayout* layout = new QVBoxLayout;
     layout->addWidget(rbDeposit);
