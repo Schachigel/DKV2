@@ -684,7 +684,7 @@ void MainWindow::on_action_menu_contracts_create_triggered()
     busycursor b;
     fill_creditors_dropdown();
     fill_rates_dropdown();
-    ui->leKennung->setText( proposeKennung());
+    ui->leKennung->setText( proposeContractLabel());
     if( ui->stackedWidget->currentIndex() == creditorsListPageIndex)
         set_creditors_combo_by_id(id_SelectedCreditor());
     if( ui->stackedWidget->currentIndex() == newCreditorPageIndex)

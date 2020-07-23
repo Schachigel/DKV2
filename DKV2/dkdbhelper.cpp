@@ -410,7 +410,7 @@ bool create_DB_copy(QString targetfn, bool deper)
 }
 
 // general stuff
-QString proposeKennung()
+QString proposeContractLabel()
 {   LOG_CALL;
     static int idOffset = getMetaInfo(STARTINDEX).toInt();
     static int iMaxid = idOffset + getHighestRowId("Vertraege");

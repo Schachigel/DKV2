@@ -21,6 +21,7 @@
 #define STARTINDEX    qsl("startindex")
 #define MIN_PAYOUT    qsl("minAuszahlung")
 #define MIN_AMOUNT    qsl("minVertragswert")
+#define MAX_INTEREST  qsl("maxZins")
 #define DBID          qsl("dbId")
 #define GMBH_HRE      qsl("gmbh.Handelsregister")
 #define GMBH_GEFUE1   qsl("gmbh.gefue1")
@@ -108,6 +109,7 @@ struct dbConfig
     int     startindex  =1234;
     int     minPayout   =100;
     int     minContract =500;
+    int     maxInterest =200;
     QString dbId        ="ESP1234";
     double  dbVersion=CURRENT_DB_VERSION;
 

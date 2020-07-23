@@ -95,7 +95,7 @@ bool creditor::isValid() const
 bool creditor::isValid( QString& errortext) const
 {//   LOG_CALL;
     errortext.clear();
-    if( (ti.getValue(qsl("Vorname")).toString().isEmpty() && ti.getValue(qsl("Vorname")).toString().isEmpty())
+    if( (ti.getValue(qsl("Vorname")).toString().isEmpty() && ti.getValue(qsl("Nachname")).toString().isEmpty())
          ||
         ti.getValue(qsl("Strasse")).toString().isEmpty()
          ||

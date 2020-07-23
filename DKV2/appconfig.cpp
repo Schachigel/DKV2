@@ -3,6 +3,7 @@
 #include <QFileDialog>
 
 #include "helper.h"
+#include "helperfin.h"
 #include "appconfig.h"
 #include "dkdbhelper.h"
 
@@ -208,6 +209,7 @@ void dbConfig::loadRuntimeData()
     startindex =appConfig::getRuntimeData(STARTINDEX).toInt();
     minPayout  =appConfig::getRuntimeData(MIN_PAYOUT).toInt();
     minContract=appConfig::getRuntimeData(MIN_AMOUNT).toInt();
+    maxInterest=appConfig::getRuntimeData(MAX_INTEREST).toInt();
     dbId       =appConfig::getRuntimeData(DBID);
     dbVersion  =appConfig::getRuntimeData(DB_VERSION).toDouble();
 }
@@ -230,6 +232,7 @@ void dbConfig::storeRuntimeData()
     appConfig::setRuntimeData(STARTINDEX,    QString::number(startindex));
     appConfig::setRuntimeData(MIN_PAYOUT,    QString::number(minPayout));
     appConfig::setRuntimeData(MIN_AMOUNT,    QString::number(minContract));
+    appConfig::setRuntimeData(MAX_INTEREST,  QString::number(maxInterest));
     appConfig::setRuntimeData(DBID,          dbId);
     appConfig::setRuntimeData(DB_VERSION,    QString::number(dbVersion));
 }
@@ -252,28 +255,30 @@ void dbConfig::writeDb(QSqlDatabase db)
     setNumMetaInfo(STARTINDEX, startindex,  db);
     setNumMetaInfo(MIN_PAYOUT, double(minPayout),   db);
     setNumMetaInfo(MIN_AMOUNT, double(minContract), db);
+    setNumMetaInfo(MAX_INTEREST,double(maxInterest),db);
     setMetaInfo(DBID,          dbId,        db);
     setNumMetaInfo(DB_VERSION, dbVersion,   db);
 }
 
 void dbConfig::readDb(QSqlDatabase db)
 {
-    address1   =getMetaInfo(GMBH_ADDRESS1, address1,   db);
-    address2   =getMetaInfo(GMBH_ADDRESS2, address2,   db);
-    street     =getMetaInfo(GMBH_STREET,   street,     db);
-    plz        =getMetaInfo(GMBH_PLZ,      plz,        db);
-    city       =getMetaInfo(GMBH_CITY,     city,       db);
-    email      =getMetaInfo(GMBH_EMAIL,    email,      db);
-    url        =getMetaInfo(GMBH_URL,      url,        db);
-    pi         =getMetaInfo(GMBH_PI,       pi,         db);
-    hre        =getMetaInfo(GMBH_HRE,      hre,        db);
-    gefue1     =getMetaInfo(GMBH_GEFUE1,   gefue1,     db);
-    gefue2     =getMetaInfo(GMBH_GEFUE2,   gefue2,     db);
-    gefue3     =getMetaInfo(GMBH_GEFUE3,   gefue3,     db);
-    dkv        =getMetaInfo(GMBH_DKV,      dkv,        db);
-    startindex =getNumMetaInfo(STARTINDEX, startindex, db);
-    minPayout  =getNumMetaInfo(MIN_PAYOUT, minPayout,  db);
-    minContract=getNumMetaInfo(MIN_AMOUNT, minContract,db);
-    dbId       =getMetaInfo(DBID,          dbId,       db);
-    dbVersion  =getNumMetaInfo(DB_VERSION, dbVersion,  db);
+    address1   =getMetaInfo(GMBH_ADDRESS1,  address1,   db);
+    address2   =getMetaInfo(GMBH_ADDRESS2,  address2,   db);
+    street     =getMetaInfo(GMBH_STREET,    street,     db);
+    plz        =getMetaInfo(GMBH_PLZ,       plz,        db);
+    city       =getMetaInfo(GMBH_CITY,      city,       db);
+    email      =getMetaInfo(GMBH_EMAIL,     email,      db);
+    url        =getMetaInfo(GMBH_URL,       url,        db);
+    pi         =getMetaInfo(GMBH_PI,        pi,         db);
+    hre        =getMetaInfo(GMBH_HRE,       hre,        db);
+    gefue1     =getMetaInfo(GMBH_GEFUE1,    gefue1,     db);
+    gefue2     =getMetaInfo(GMBH_GEFUE2,    gefue2,     db);
+    gefue3     =getMetaInfo(GMBH_GEFUE3,    gefue3,     db);
+    dkv        =getMetaInfo(GMBH_DKV,       dkv,        db);
+    startindex =int(getNumMetaInfo(STARTINDEX,  double(startindex), db));
+    minPayout  =int(getNumMetaInfo(MIN_PAYOUT,  double(minPayout),  db));
+    minContract=int(getNumMetaInfo(MIN_AMOUNT,  double(minContract),db));
+    maxInterest=int(getNumMetaInfo(MAX_INTEREST,double(maxInterest),db));
+    dbId       =getMetaInfo(DBID,           dbId,       db);
+    dbVersion  =getNumMetaInfo(DB_VERSION,  dbVersion,  db);
 }

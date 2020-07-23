@@ -1,20 +1,33 @@
 #include <QLabel>
 #include <QLineEdit>
+#include <QRegExpValidator>
 #include <QPlainTextEdit>
+#include <QCheckBox>
 #include <QVBoxLayout>
+#include <QMessageBox>
 
-#include "helper.h"
+#include "helperfin.h"
+#include "appconfig.h"
 #include "creditor.h"
 #include "wiznew.h"
 
+/*
+ * wizNewOrExistingPage - ask user if a new user should be created or an existing
+ * one should be used
+*/
 wizNewOrExistingPage::wizNewOrExistingPage(QWidget* p) : QWizardPage(p)
-{
+{   LOG_CALL;
     setTitle(qsl("Vertrag anlegen"));
     setSubTitle(qsl("Mit dieser Dialogfolge kannst Du einen Kredigeber*in und Vertrag anlegen."));
     rbNew =new QRadioButton(qsl("Neuen Kreditgeber*in anlegen"));
+    rbNew->setToolTip(qsl("Wähle diese Option um einen Kreditgeber oder eine Kreditgeberin anzulegen. "
+                          "Danach kannst Du die Eingabe beenden oder einen Vertrag anlegen."));
     rbExisting =new QRadioButton(qsl("Existierenden Kreditgeber*in verwenden"));
+    rbExisting->setToolTip(qsl("Wähle diese Option um einen Vertrag zu einem bereits erfassten "
+                               "Kreditgeber*in einzugeben."));
     registerField(qsl("create_new"), rbNew);
     cbCreditors = new QComboBox();
+    cbCreditors->setToolTip(qsl("Wähle hier den Kreditgeber*in aus, für den der Vertrag angelegt werden soll."));
     registerField(qsl("creditor"), cbCreditors);
     QVBoxLayout* l =new QVBoxLayout();
     l->addWidget(rbNew);
@@ -24,17 +37,22 @@ wizNewOrExistingPage::wizNewOrExistingPage(QWidget* p) : QWizardPage(p)
     connect(rbExisting, SIGNAL(toggled(bool)), this, SLOT(onExistingCreditor_toggled(bool)));
 }
 void wizNewOrExistingPage::initializePage()
-{
-    setField(qsl("create_new"), true);
-    QList<QPair<int, QString>> Personen;
-    KreditorenListeMitId(Personen);
-    for(auto& Entry :qAsConst(Personen)) {
-        cbCreditors->addItem( Entry.second, QVariant((Entry.first)));
+{   LOG_CALL;
+    static bool init =true;
+    if( init) {
+        setField(qsl("create_new"), true);
+        QList<QPair<int, QString>> Personen;
+        cbCreditors->clear();
+        KreditorenListeMitId(Personen);
+        for(auto& Entry :qAsConst(Personen)) {
+            cbCreditors->addItem( Entry.second, QVariant((Entry.first)));
+        }
+        cbCreditors->setEnabled(false);
     }
-    cbCreditors->setEnabled(false);
+    init =false; // do not repeat after "back"
 }
 void wizNewOrExistingPage::onExistingCreditor_toggled(bool b)
-{
+{   LOG_CALL;
     cbCreditors->setEnabled(b);
 }
 bool wizNewOrExistingPage::validatePage()
@@ -45,32 +63,50 @@ bool wizNewOrExistingPage::validatePage()
     else {
         wizNew* wiz =dynamic_cast<wizNew*> (wizard());
         wiz->creditorId = cbCreditors->itemData(field("creditor").toInt()).toLongLong();
+        creditor c(wiz->creditorId);
+        setField(qsl("firstname"), c.firstname());
+        setField(qsl("lastname"), c.lastname());
+        setField(qsl("street"), c.street());
+        setField(qsl("pcode"), c.postalCode());
+        setField(qsl("city"), c.city());
+        setField(qsl("email"), c.email());
+        setField(qsl("comment"), c.comment());
+        setField(qsl("iban"), c.iban());
+        setField(qsl("bic"), c.bic());
         qInfo() << "User selected user Id " << wiz->creditorId;
     }
     return true;
 }
 int wizNewOrExistingPage::nextId() const
-{
+{   LOG_CALL;
     if( field(qsl("create_new")).toBool())
         return page_address;
     else
         return page_contract_data;
 }
 
+/*
+ * wizNewCreditorAddressPage - ask address data for the new creditor
+*/
 wizNewCreditorAddressPage::wizNewCreditorAddressPage(QWidget* p) : QWizardPage(p)
-{
+{   LOG_CALL;
     setTitle(qsl("Adresse"));
-    setSubTitle(qsl("Gib die Adressdaten ein."));
+    setSubTitle(qsl("Gib hier Namen und die Adressdaten ein."));
     QLineEdit* leFirstName =new QLineEdit;
+    leFirstName->setToolTip(qsl("Die Felder für Vor- und Nachname dürfen nicht beide leer sein"));
     registerField(qsl("firstname"), leFirstName);
-    QLineEdit* leLastName  =new QLineEdit;
-    registerField(qsl("lastname"),  leLastName);
-    QLineEdit* leStreet    =new QLineEdit;
-    registerField(qsl("street"),    leStreet);
-    QLineEdit* lePlz       =new QLineEdit;
-    registerField(qsl("pcode"),     lePlz);
-    QLineEdit* leCity      =new QLineEdit;
-    registerField(qsl("city"),     leCity);
+    QLineEdit* leLastName =new QLineEdit;
+    registerField(qsl("lastname"), leLastName);
+    leLastName->setToolTip(qsl("Die Felder für Vor- und Nachname dürfen nicht beide leer sein"));
+    QLineEdit* leStreet =new QLineEdit;
+    leStreet->setToolTip(qsl("Die Felder Straße, Postleitzahl und Stadt dürfen nicht leer sein"));
+    registerField(qsl("street"), leStreet);
+    QLineEdit* lePlz =new QLineEdit;
+    lePlz->setToolTip(qsl("Die Felder Straße, Postleitzahl und Stadt dürfen nicht leer sein"));
+    registerField(qsl("pcode"), lePlz);
+    QLineEdit* leCity =new QLineEdit;
+    leCity->setToolTip(qsl("Die Felder Straße, Postleitzahl und Stadt dürfen nicht leer sein"));
+    registerField(qsl("city"), leCity);
 
     QLabel* l1 =new QLabel(qsl("Name"));
     QLabel* l2 =new QLabel(qsl("Straße"));
@@ -96,40 +132,53 @@ wizNewCreditorAddressPage::wizNewCreditorAddressPage(QWidget* p) : QWizardPage(p
 
     setLayout(grid);
 }
-void wizNewCreditorAddressPage::initializePage()
-{
-
-}
 bool wizNewCreditorAddressPage::validatePage()
-{
+{   LOG_CALL;
+    setField(qsl("firstname"), field(qsl("firstname")).toString().trimmed());
+    setField(qsl("lastname"),  field(qsl("lastname")) .toString().trimmed());
+    setField(qsl("street"),    field(qsl("street"))   .toString().trimmed());
+    setField(qsl("pcode"),     field(qsl("pcode"))    .toString().trimmed());
+    setField(qsl("city"),      field(qsl("city"))     .toString().trimmed());
+
     if( field(qsl("firstname")).toString().isEmpty()
             &&
         field(qsl("lastname")).toString().isEmpty())
-    {
         return false;
-    }
-    return true;
+    if( field(qsl("street")).toString().isEmpty() ||
+            field(qsl("pcode")).toString().isEmpty() ||
+            field(qsl("city")).toString().isEmpty())
+        return false;
+    else
+        return true;
 }
 int wizNewCreditorAddressPage::nextId() const
-{
+{   LOG_CALL;
     return page_email;
 }
 
+/*
+ * wizEmailPage - ask e-mail and comment for the new creditor
+*/
 wizEmailPage::wizEmailPage(QWidget* p) : QWizardPage(p)
-{
+{   LOG_CALL;
     setTitle(qsl("E-mail"));
-    setSubTitle(qsl("Gib hier die E-Mail Adresse und eine Anmerkung an. Als Anmerkung könntest du den Kontakt im Projekt oder sonstige Besonderheiten speichern."));
+    setSubTitle(qsl("Gib hier die E-Mail Adresse und eine Anmerkung an."));
+
     QLabel* l1 =new QLabel(qsl("E-mail"));
     QLineEdit* leEmail =new QLineEdit;
+    leEmail->setToolTip(qsl("Die E-Mail Adresse muss im gültigen Format vorliegen "
+                            "(s. https://de.wikipedia.org/wiki/E-Mail-Adresse)."));
     registerField(qsl("email"), leEmail);
     QLabel* l2 =new QLabel(qsl("Anmerkung"));
     QPlainTextEdit* eComment     =new QPlainTextEdit;
-    registerField(qsl("comment"), eComment);
+    registerField(qsl("comment"), eComment, "plainText", "textChanged");
+    eComment->setToolTip(qsl("Es ist hilfreich in der Anmerkung den Kontakt "
+                             "im Projekt oder sonstige Besonderheiten vermerken."));
     QGridLayout* g =new QGridLayout;
     g->addWidget(l1,      0, 0, 1, 1);
     g->addWidget(leEmail, 0, 1, 1, 4);
     g->addWidget(l2,      1, 0, 1, 1);
-    g->addWidget(eComment, 1, 1, 3, 4);
+    g->addWidget(eComment, 1, 1, 2, 4);
     g->setColumnStretch(0, 1);
     g->setColumnStretch(1, 2);
     g->setColumnStretch(2, 2);
@@ -137,16 +186,364 @@ wizEmailPage::wizEmailPage(QWidget* p) : QWizardPage(p)
     g->setColumnStretch(4, 2);
     setLayout(g);
 }
-
-wizNewContractData::wizNewContractData(QWidget* p) : QWizardPage(p)
-{
-    setTitle(qsl("Vertragsdaten"));
+bool wizEmailPage::validatePage()
+{   LOG_CALL;
+    QString email =field(qsl("email")).toString().trimmed().toLower();
+    setField(qsl("email"), email);
+    if( ! email.isEmpty())
+    {
+        QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b",
+                              QRegularExpression::CaseInsensitiveOption);
+        if( !rx.match(field(qsl("email")).toString()).hasMatch()) {
+            QMessageBox::information(this, qsl("Fehler"), qsl("Das Format der e-mail Adresse ist ungültig: ") + email);
+            return false;
+        }
+    }
+    setField(qsl("comment"), field(qsl("comment")).toString().trimmed());
+    return true;
+}
+int wizEmailPage::nextId() const
+{   LOG_CALL;
+    return page_bankaccount;
 }
 
+/*
+ * wizEmailPage - ask bank account data
+*/
+wizBankAccountPage::wizBankAccountPage(QWidget* p) : QWizardPage(p)
+{   LOG_CALL;
+    setTitle(qsl("Bankdaten"));
+    setSubTitle(qsl("Gib die Bankdaten der neuen Kreditor*in ein."));
+    QLabel* l1 =new QLabel(qsl("IBAN"));
+    QLineEdit* leIban =new QLineEdit;
+    leIban->setToolTip(qsl("Es muss eine gültige IBAN eingegeben werden "
+                           "(s. https://de.wikipedia.org/wiki/Internationale_Bankkontonummer)."));
+    l1->setBuddy(leIban);
+    registerField(qsl("iban"), leIban);
+    QLabel* l2 =new QLabel(qsl("BIC <small>(optional)</small>"));
+    QLineEdit* leBic =new QLineEdit;
+    l2->setBuddy(leBic);
+    registerField(qsl("bic"), leBic);
+
+    QGridLayout* g =new QGridLayout;
+    g->addWidget(l1);
+    g->addWidget(leIban);
+    g->addWidget(l2);
+    g->addWidget(leBic);
+    setLayout(g);
+}
+bool wizBankAccountPage::validatePage()
+{   LOG_CALL;
+    QString iban =field(qsl("iban")).toString().trimmed();
+    setField(qsl("iban"), iban);
+    if( ! iban.isEmpty()) {
+        IbanValidator iv; int pos =0;
+        if( iv.validate(iban, pos) != IbanValidator::State::Acceptable) {
+            QMessageBox::information(this, "Fehler", "Die Iban ist ungültig");
+            return false;
+        }
+    }
+    setField(qsl("bic"), field(qsl("bic")).toString().trimmed());
+    return true;
+}
+int wizBankAccountPage::nextId() const
+{   LOG_CALL;
+    return page_confirm_creditor;
+}
+
+/*
+ * wizConfirmCreditorData : ask if creditor data is OK and if a contract should be created
+*/
+wizConfirmCreditorPage::wizConfirmCreditorPage(QWidget* p) : QWizardPage(p)
+{   LOG_CALL;
+    setTitle(qsl("Daten bestätigen"));
+    QCheckBox* cbConfirmCreditor =new QCheckBox(qsl("Die Angaben sind richtig!"));
+    cbConfirmCreditor->setToolTip(qsl("Du musst die Daten prüfen und ihre Richtigkeit "
+                                      "bestätigen um sie speichern zu können."));
+    registerField(qsl("confirmCreditor"), cbConfirmCreditor);
+    cbConfirmCreditor->setChecked(false);
+    QCheckBox* cbCreateContract =new QCheckBox(qsl("Im Anschluß Vertragsdaten eingeben"));
+    cbCreateContract->setToolTip(qsl("Selektiere dieses Feld, um gleich einen neuen Vertrag anzulegen"));
+    registerField(qsl("confirmCreateContract"), cbCreateContract);
+    cbCreateContract->setChecked(true);
+    QVBoxLayout* l =new QVBoxLayout;
+    l->addWidget(cbConfirmCreditor);
+    l->addWidget(cbCreateContract);
+    setLayout(l);
+    connect(cbCreateContract, SIGNAL(stateChanged(int)), this, SLOT(onConfirmCreateContract_toggled(int)));
+    setCommitPage(true);
+}
+void wizConfirmCreditorPage::initializePage()
+{   LOG_CALL;
+    QString creditorSummary {qsl("<table><tr><td>Name:</td><td><b>%1 %2</b><br></td></tr>"
+                                 "<tr><td>Straße:</td><td>%3</td></tr>"
+                                 "<tr><td>Plz/Ort:</td><td>%4 %5</td></tr>"
+                                 "<tr><td>E-Mail:</td><td>%6<br></td></tr>"
+                                 "<tr><td>Kommentar:</td><td><small>%7<small></td></tr>"
+                                 "<tr><td>Bankdaten:</td><td><table><tr><td>IBAN:</td><td>%8</td></tr><tr><td>BIC:</td><td>%9<td></tr></table></td></tr></table>")};
+    QString firstn =field(qsl("firstname")).toString().isEmpty() ? qsl("(kein Vorname)")  : field(qsl("firstname")).toString();
+    QString lastn  =field(qsl("lastname")).toString().isEmpty()  ? qsl("(kein Nachname)") : field(qsl("lastname")).toString();
+    QString street =field(qsl("street")).toString().isEmpty()    ? qsl("(keine Strasse)") : field(qsl("street")).toString();
+    QString pcode  =field(qsl("pcode")).toString().isEmpty()     ? qsl("(keine PLZ)")     : field(qsl("pcode")).toString();
+    QString city   =field(qsl("city")).toString().isEmpty()      ? qsl("(keine Stadt)")   : field(qsl("city")).toString();
+    QString email  =field(qsl("email")).toString().isEmpty()     ? qsl("(keine E-Mail Adresse)") :field(qsl("email")).toString();
+    QString comment=field(qsl("comment")).toString().isEmpty()   ? qsl("(keine Anmerkung)"): field(qsl("comment")).toString();
+    QString iban   =field(qsl("iban")).toString().isEmpty()      ? qsl("(keine IBAN)")     : field(qsl("iban")).toString();
+    QString bic    =field(qsl("bic")).toString().isEmpty()       ? qsl("(keine BIC)")      : field(qsl("bic")).toString();
+
+    setSubTitle(creditorSummary.arg(firstn, lastn, street, pcode,
+                                    city, email, comment, iban, bic));
+}
+bool wizConfirmCreditorPage::validatePage()
+{   LOG_CALL;
+    wizNew* wiz =dynamic_cast<wizNew*> (wizard());
+
+    if( field(qsl("confirmCreditor")).toBool()) {
+        creditor c;
+        c.setFirstname( field(qsl("firstname")).toString());
+        c.setLastname(  field(qsl("lastname")).toString());
+        c.setStreet(    field(qsl("street")).toString());
+        c.setPostalCode(field(qsl("pcode")).toString());
+        c.setCity(      field(qsl("city")).toString());
+        c.setEmail(     field(qsl("email")).toString());
+        c.setComment(   field(qsl("comment")).toString());
+        c.setIban(      field(qsl("iban")).toString());
+        c.setBic(       field(qsl("bic")).toString());
+        QString errorText;
+        if( c.isValid(errorText))
+            wiz->creditorId =c.save();
+        if( wiz->creditorId == -1) {
+            QMessageBox::critical(this, qsl("Fehler"), qsl("Der Kreditor konnte nicht gespeichert werden. ") + errorText);
+            return false;
+        } else {
+            qInfo() << "successfully created creditor " << c.id();
+            return true;
+        }
+    } else {
+        QMessageBox::information(this, qsl("Bestätigung fehlt"), qsl("Du musst die Richtigkeit der Daten bestätigen oder die Dialogfolge abbrechen."));
+        return false;
+    }
+}
+int wizConfirmCreditorPage::nextId() const
+{   LOG_CALL;
+    if( field(qsl("confirmCreateContract")).toBool())
+        return page_contract_data;
+    else
+        return -1;
+}
+void wizConfirmCreditorPage::onConfirmCreateContract_toggled(int state)
+{   LOG_CALL;
+    qInfo() << "onConfirmCreateContract..." << state;
+    setFinalPage( ! state);
+}
+
+/*
+ * wizNewContractData - ask basic contract data
+*/
+wizNewContractDataPage::wizNewContractDataPage(QWidget* p) : QWizardPage(p)
+{   LOG_CALL;
+    setTitle(qsl("Vertragsdaten"));
+
+    QLabel* l1 =new QLabel(qsl("Kennung"));
+    QLineEdit* leKennung =new QLineEdit;
+    leKennung->setToolTip(qsl("Über die Kennung wird der Vertrag z.B. in einem Schriftwechsel identifiziert."));
+    registerField(qsl("label"), leKennung);
+    l1->setBuddy(leKennung);
+
+    QLabel* l2 =new QLabel(qsl("Betrag"));
+    QLineEdit* leAmount =new QLineEdit;
+    leAmount->setToolTip(qsl("Nach Vertragsabschluß wird eine Überweisung über diesen Betrag vom Kreditor /von der Kreditorin erwartet."));
+    registerField(qsl("amount"), leAmount);
+    leAmount->setValidator(new QIntValidator(this));
+    l2->setBuddy(leAmount);
+
+    QLabel* l3 =new QLabel(qsl("Zinssatz"));
+    cbInterest =new QComboBox;
+    l3->setBuddy(cbInterest);
+    int maxIndex =appConfig::getRuntimeData(MAX_INTEREST).toInt();
+    for( int i =0; i <= maxIndex; i++)
+        cbInterest->addItem(QString::number(double(i)/100., 'f', 2), QVariant(i));
+    cbInterest->setCurrentIndex(std::min(100, cbInterest->count()));
+    QCheckBox* cbThesa =new QCheckBox(qsl("thesa"));
+    cbThesa->setToolTip("Bei thesaurierenden Verträgen erfolgt keine jährliche Auszahlung der Zinsen."
+                        " Die Zinsen werden dem Kreditbetrag hinzugerechnet und in Folgejahren mit verzinst.");
+    cbThesa->setCheckState(Qt::CheckState::Checked);
+    registerField(qsl("thesa"), cbThesa);
+    QGridLayout* g =new QGridLayout;
+    g->addWidget(l1, 0, 0);
+    g->addWidget(leKennung, 0, 1);
+    g->addWidget(l2, 1, 0);
+    g->addWidget(leAmount, 1, 1);
+    g->addWidget(l3, 2, 0);
+    g->addWidget(cbInterest, 2, 1);
+    g->addWidget(cbThesa, 3, 0, 1, 5);
+    g->setColumnStretch(0, 1);
+    g->setColumnStretch(1, 4);
+
+    setLayout(g);
+}
+void wizNewContractDataPage::initializePage()
+{   LOG_CALL;
+    static bool init =true;
+    if( init) {
+        QString creditorInfo { qsl("%1, %2<p><small>%3 %4 %5</small>")};
+        setSubTitle(creditorInfo.arg(field(qsl("lastname")).toString(),
+                                     field(qsl("firstname")).toString(), field(qsl("street")).toString(),
+                                     field(qsl("pcode")).toString(), field(qsl("city")).toString()));
+        setField(qsl("label"), proposeContractLabel());
+    }
+    init =false;
+}
+bool wizNewContractDataPage::validatePage()
+{   LOG_CALL;
+    QString msg;
+    if( field(qsl("label")).toString().isEmpty()) msg =qsl("Die Vertragskennung darf nicht leer sein");
+    if( field(qsl("amount")).toInt() <=appConfig::getRuntimeData(MIN_AMOUNT))
+        msg =qsl("Der Wert des Vertrags muss größer sein als der konfigurierte Minimalwert "
+                 "eines Vertrages von ") +appConfig::getRuntimeData(MIN_AMOUNT) +qsl(" Euro");
+    if( ! msg.isEmpty()) {
+        QMessageBox::critical(this, qsl("Fehler"), msg);
+        return false;
+    }
+    wizNew* wiz =dynamic_cast<wizNew*> (wizard());
+    wiz->interest = double(cbInterest->currentIndex())/100.;
+    return true;
+}
+int wizNewContractDataPage::nextId() const
+{   LOG_CALL;
+    return page_contract_term;
+}
+
+/*
+ * wizContractTiming - contract date, notice period, termination date
+*/
+wizContractTimingPage::wizContractTimingPage(QWidget* p) : QWizardPage(p)
+{   LOG_CALL;
+    setTitle(qsl("Vertragsbeginn und -Ende"));
+    setSubTitle(qsl("Für das Vertragsende kann eine Kündigungsfrist <b>oder</b> ein festes Vertragsende vereinbart werden."));
+    deCDate =new QDateEdit(QDate::currentDate());
+    deCDate->setDisplayFormat("dd.MM.yyyy");
+    QLabel* l1 =new QLabel(qsl("Vertragsdatum"));
+    l1->setBuddy(deCDate);
+
+    cbNoticePeriod =new QComboBox;
+    cbNoticePeriod->addItem(qsl("festes Vertragsende"), QVariant(-1));
+    for (int i=3; i<12; i++)
+        cbNoticePeriod->addItem(QString::number(i) + qsl(" Monate"), QVariant(i));
+    cbNoticePeriod->addItem(qsl("1 Jahr"), QVariant(12));
+    cbNoticePeriod->addItem(qsl("1 Jahr und 1 Monat"), QVariant(13));
+    for (int i=14; i<24; i++)
+        cbNoticePeriod->addItem(qsl("1 Jahr und ") + QString::number( i-12) + qsl(" Monate"), QVariant(i));
+    cbNoticePeriod->addItem(qsl("2 Jahre"), QVariant(24));
+    connect(cbNoticePeriod, SIGNAL(currentIndexChanged(int)), this, SLOT(onNoticePeriod_currentIndexChanged(int)));
+    cbNoticePeriod->setToolTip(qsl("Wird eine Kündigungsfrist vereinbart, "
+                                   "so gibt es kein festes Vertragsende. "
+                                   "Um ein festes Vertragsende einzugeben wähle "
+                                   "in dieser Liste \"festes Vertragsende\""));
+    QLabel* l2 =new QLabel(qsl("Kündigungsfrist"));
+    l2->setBuddy(cbNoticePeriod);
+
+    deTerminationDate =new QDateEdit;
+    deTerminationDate->setDisplayFormat("dd.MM.yyyy");
+    QLabel* l3=new QLabel(qsl("Vertragsende"));
+    l3->setBuddy(deTerminationDate);
+
+    QGridLayout* g =new QGridLayout;
+    g->addWidget(l1, 0, 0);
+    g->addWidget(deCDate, 0, 1);
+    g->addWidget(l2, 1, 0);
+    g->addWidget(cbNoticePeriod, 1, 1);
+    g->addWidget(l3, 2, 0);
+    g->addWidget(deTerminationDate, 2, 1);
+    g->setColumnStretch(0, 1);
+    g->setColumnStretch(1, 4);
+    setLayout(g);
+}
+void wizContractTimingPage::initializePage()
+{   LOG_CALL;
+    static bool init =true;
+    if( init) {
+        cbNoticePeriod->setCurrentIndex(4);
+        deTerminationDate->setDate(EndOfTheFuckingWorld);
+        deTerminationDate->setEnabled(false);
+    }
+    init =false;
+}
+void wizContractTimingPage::onNoticePeriod_currentIndexChanged(int i)
+{   LOG_CALL;
+    if( i == 0) {
+        deTerminationDate->setDate(QDate::currentDate().addYears(5));
+        deTerminationDate->setEnabled(true);
+    } else {
+        deTerminationDate->setDate(EndOfTheFuckingWorld);
+        deTerminationDate->setEnabled(false);
+    }
+}
+bool wizContractTimingPage::validatePage()
+{   LOG_CALL;
+    wizNew* wiz =dynamic_cast<wizNew*> (wizard());
+    wiz->noticePeriod =cbNoticePeriod->itemData(cbNoticePeriod->currentIndex()).toInt();
+    wiz->date =deCDate->date();
+    wiz->termination =deTerminationDate->date();
+    return true;
+}
+int wizContractTimingPage::nextId() const
+{   LOG_CALL;
+    return page_confirm_contract;
+}
+
+/*
+* wizConfirmContract  -confirm the contract data before contract creation
+*/
+wizContractConfirmationPage::wizContractConfirmationPage(QWidget* p) : QWizardPage(p)
+{   LOG_CALL;
+    setTitle(qsl("Bestätige die Vertragsdaten"));
+    QCheckBox* cbConfirm =new QCheckBox(qsl("Die Angaben sind korrekt!"));
+    cbConfirm->setCheckState(Qt::CheckState::Unchecked);
+    registerField(qsl("confirmContract"), cbConfirm);
+    QVBoxLayout* bl =new QVBoxLayout;
+    bl->addWidget(cbConfirm);
+    setLayout(bl);
+}
+void wizContractConfirmationPage::initializePage()
+{   LOG_CALL;
+    wizNew* wiz =dynamic_cast<wizNew*> (wizard());
+    QString summary {qsl("Vertrag <b>%3</b> von <b>%1 %2</b> <p><table>"
+                         //"<tr><td>Kennung: </td><td><b>%3</b><p></td></tr>"
+                         "<tr><td>Betrag: </td><td><b>%4</b></td></tr>"
+                         "<tr><td>Zinssatz: </td><td><b>%5 %</b></td></tr>"
+                         "<tr><td>Zinsanrechnung: </td><td><b>%6<p></b></td></tr>"
+                         "<tr><td>Abschlußdatum: </td><td><b>%7</b></td></tr>"
+                         "<tr><td>Vertragsende: </td><td><b>%8</b></td></tr>"
+                         "</table>")};
+    QLocale l;
+    setSubTitle(summary.arg(field(qsl("firstname")).toString(), field(qsl("lastname")).toString(),
+                 field(qsl("label")).toString(),
+                 l.toCurrencyString(field(qsl("amount")).toDouble()),
+                 QString::number(wiz->interest, 'f', 2),
+                 field(qsl("thesa")).toBool() ? qsl("thesaurierend") : qsl("auszahlend"),
+                 wiz->date.toString("dd.MM.yyyy"),
+                 (wiz->noticePeriod == -1) ?
+                   wiz->termination.toString(qsl("dd.MM.yyyy")) :
+                   QString::number(wiz->noticePeriod) +qsl(" Monate nach Kündigung")));
+}
+bool wizContractConfirmationPage::validatePage()
+{   LOG_CALL;
+    return field(qsl("confirmContract")).toBool();
+}
+
+/*
+* wizNew - the wizard containing the pages to create a cerditor and a contract
+*/
 wizNew::wizNew(QWidget *p) : QWizard(p)
-{
+{   LOG_CALL;
     setPage(page_new_or_existing, new wizNewOrExistingPage(p));
     setPage(page_address, new wizNewCreditorAddressPage(p));
     setPage(page_email,   new wizEmailPage(p));
-    setPage(page_contract_data, new wizNewContractData(p));
+    setPage(page_bankaccount, new wizBankAccountPage(p));
+    setPage(page_confirm_creditor, new wizConfirmCreditorPage(p));
+    setPage(page_contract_data, new wizNewContractDataPage(p));
+    setPage(page_contract_term, new wizContractTimingPage(p));
+    setPage(page_confirm_contract, new wizContractConfirmationPage(p));
 }
+

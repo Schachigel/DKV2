@@ -31,7 +31,7 @@ bool open_databaseForApplication( QString newDbFile="");
 
 bool create_DB_copy(QString targetfn, bool anonym);
 
-QString proposeKennung();
+QString proposeContractLabel();
 void create_sampleData(int datensaetze =20);
 
 int BuchungsartIdFromArt(QString s);

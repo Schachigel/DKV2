@@ -4,8 +4,11 @@
 #include <QStringLiteral>
 #define qsl(x) QStringLiteral(x)
 #include <QRadioButton>
+#include <QDateEdit>
 #include <QComboBox>
 #include <QWizard>
+
+#include "helper.h"
 
 enum { page_new_or_existing, page_address, page_email, page_bankaccount,
      page_confirm_creditor, page_contract_data, page_contract_term, page_confirm_contract};
@@ -17,11 +20,11 @@ public:
     wizNewOrExistingPage(QWidget* );
     ~wizNewOrExistingPage(){}
     void initializePage() override;
+    bool validatePage() override;
+    int nextId() const override;
 public slots:
     void onExistingCreditor_toggled(bool );
 
-    bool validatePage() override;
-    int nextId() const override;
 private:
     QRadioButton* rbNew;
     QRadioButton* rbExisting;
@@ -30,26 +33,74 @@ private:
 
 struct wizNewCreditorAddressPage : public QWizardPage{
     wizNewCreditorAddressPage(QWidget* p);
-    void initializePage() override;
+//    void initializePage() override;
     bool validatePage()   override;
     int nextId() const    override;
 };
 
 struct wizEmailPage : public QWizardPage {
     wizEmailPage (QWidget* p);
-//    void initializePage() override;
-//    bool validatePage()   override;
-//    int nextId() const    override;
+    bool validatePage()   override;
+    int nextId() const    override;
 };
 
-struct wizNewContractData : public QWizardPage{
-    wizNewContractData(QWidget* p);
+struct wizBankAccountPage : public QWizardPage{
+    wizBankAccountPage(QWidget* p);
+    bool validatePage()   override;
+    int nextId() const    override;
+};
+
+class wizConfirmCreditorPage : public QWizardPage{
+    Q_OBJECT
+public:
+    wizConfirmCreditorPage(QWidget* p);
+    void initializePage() override;
+    bool validatePage()   override;
+    int nextId() const    override;
+public slots:
+    void onConfirmCreateContract_toggled(int state);
+};
+
+struct wizNewContractDataPage : public QWizardPage{
+    wizNewContractDataPage(QWidget* p);
+    void initializePage() override;
+    bool validatePage() override;
+    int nextId() const    override;
+private:
+    QComboBox* cbInterest =nullptr;
+};
+
+class wizContractTimingPage : public QWizardPage{
+    Q_OBJECT
+public:
+    wizContractTimingPage(QWidget*);
+    void initializePage() override;
+    bool validatePage()   override;
+    int nextId() const    override;
+public slots:
+    void onNoticePeriod_currentIndexChanged(int i);
+
+private:
+    QComboBox* cbNoticePeriod;
+    QDateEdit* deTerminationDate;
+    QDateEdit* deCDate;
+};
+
+struct wizContractConfirmationPage : public QWizardPage
+{
+    wizContractConfirmationPage(QWidget*);
+    void initializePage() override;
+    bool validatePage()   override;
 };
 
 struct wizNew : public QWizard
 {
     wizNew(QWidget* p);
-    qlonglong creditorId =0;
+    qlonglong creditorId =-1;
+    double interest =0.;
+    QDate date =QDate::currentDate();
+    int noticePeriod =-1;
+    QDate termination =EndOfTheFuckingWorld;
 };
 
 #endif // WIZNEW_H

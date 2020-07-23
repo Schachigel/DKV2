@@ -42,7 +42,7 @@ void activateContract(qlonglong cid)
 }
 
 void changeContractValue(qlonglong cid)
-{
+{   LOG_CALL;
     contract con(cid);
     if( ! con.isActive()) {
         qCritical() << "tried to changeContractValue of an inactive contract";
@@ -118,7 +118,7 @@ void cancelContract( contract& c)
 }
 
 void annualSettlement()
-{
+{   LOG_CALL;
     QDate vYear=bookings::dateOfnextSettlement();
     if( ! vYear.isValid() || vYear.isNull()) {
         QMessageBox::information(nullptr, qsl("Fehler"),
@@ -178,9 +178,28 @@ void annualSettlement()
 }
 
 void newCreditorAndContract()
-{
+{   LOG_CALL;
     wizNew wiz(getMainWindow());
     QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     wiz.setField(qsl("create_new"), true);
     wiz.exec();
+    if( wiz.field(qsl("confirmContract")).toBool()) {
+        contract c;
+        c.setCreditorId(wiz.creditorId);
+        c.setPlannedInvest(wiz.field(qsl("amount")).toDouble());
+        c.setInterestRate(wiz.interest);
+        c.setLabel(wiz.field(qsl("label")).toString());
+        c.setConclusionDate(wiz.date);
+        c.setNoticePeriod(wiz.noticePeriod);
+        c.setPlannedEndDate(wiz.termination);
+        c.setReinvesting(wiz.field(qsl("thesa")).toBool());
+        if( -1 == c.saveNewContract()) {
+            qCritical() << "New contract could not be saved";
+            QMessageBox::critical(getMainWindow(), "Fehler", "Der Vertrag konnte nicht "
+                                  "gespeichert werden. Details findest Du in der Log Datei");
+        } else {
+            qInfo() << "New contract successfully saved";
+        }
+    }
+    return;
 }

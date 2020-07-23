@@ -408,7 +408,7 @@ contract saveRandomContract(qlonglong creditorId)
     static QRandomGenerator *rand = QRandomGenerator::system();
 
     contract c;
-    c.setLabel(proposeKennung());
+    c.setLabel(proposeContractLabel());
     c.setCreditorId(creditorId);
     c.setReinvesting(rand->bounded(100)%6);// 16% auszahlend
     c.setInterestRate((1 +rand->bounded(149)) /100);
