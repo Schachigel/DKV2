@@ -26,6 +26,7 @@ public slots:
     void onExistingCreditor_toggled(bool );
 
 private:
+    bool init =true;
     QRadioButton* rbNew;
     QRadioButton* rbExisting;
     QComboBox*    cbCreditors;
@@ -67,6 +68,7 @@ struct wizNewContractDataPage : public QWizardPage{
     bool validatePage() override;
     int nextId() const    override;
 private:
+    bool init =true;
     QComboBox* cbInterest =nullptr;
 };
 
@@ -81,6 +83,7 @@ public slots:
     void onNoticePeriod_currentIndexChanged(int i);
 
 private:
+    bool init=true;
     QComboBox* cbNoticePeriod;
     QDateEdit* deTerminationDate;
     QDateEdit* deCDate;
@@ -95,7 +98,7 @@ struct wizContractConfirmationPage : public QWizardPage
 
 struct wizNew : public QWizard
 {
-    wizNew(QWidget* p);
+    wizNew(QWidget* p =nullptr);
     qlonglong creditorId =-1;
     double interest =0.;
     QDate date =QDate::currentDate();

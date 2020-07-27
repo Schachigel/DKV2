@@ -205,16 +205,15 @@ void KreditorenListeMitId(QList<QPair<int,QString>> &entries)
 {   LOG_CALL;
     QSqlQuery query;
     query.setForwardOnly(true);
-    if( !query.exec(qsl("SELECT id,  Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse FROM Kreditoren ORDER BY Nachname ASC, Vorname ASC")))
-    {
+    QString sql{qsl("SELECT id,  Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse "
+                    "FROM Kreditoren ORDER BY Nachname ASC, Vorname ASC")};
+    if( ! query.exec(sql)) {
         qCritical() << "Error reading DKGeber while creating a contract: " << query.lastError().text();
         return;
     }
-
-    while(query.next())
-    {
+    while(query.next()){
         QString Entry = query.value(1).toString();
-        QList<QPair<int,QString>> entry {{query.value(qsl("id")).toInt(), Entry}};
+        QPair<int,QString> entry {query.value(qsl("id")).toInt(), Entry};
         entries.append(entry);
     }
 }

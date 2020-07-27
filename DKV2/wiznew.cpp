@@ -38,7 +38,6 @@ wizNewOrExistingPage::wizNewOrExistingPage(QWidget* p) : QWizardPage(p)
 }
 void wizNewOrExistingPage::initializePage()
 {   LOG_CALL;
-    static bool init =true;
     if( init) {
         setField(qsl("create_new"), true);
         QList<QPair<int, QString>> Personen;
@@ -364,7 +363,7 @@ wizNewContractDataPage::wizNewContractDataPage(QWidget* p) : QWizardPage(p)
     for( int i =0; i <= maxIndex; i++)
         cbInterest->addItem(QString::number(double(i)/100., 'f', 2), QVariant(i));
     cbInterest->setCurrentIndex(std::min(100, cbInterest->count()));
-    QCheckBox* cbThesa =new QCheckBox(qsl("thesa"));
+    QCheckBox* cbThesa =new QCheckBox(qsl("Thesaurierend"));
     cbThesa->setToolTip("Bei thesaurierenden Verträgen erfolgt keine jährliche Auszahlung der Zinsen."
                         " Die Zinsen werden dem Kreditbetrag hinzugerechnet und in Folgejahren mit verzinst.");
     cbThesa->setCheckState(Qt::CheckState::Checked);
@@ -384,7 +383,6 @@ wizNewContractDataPage::wizNewContractDataPage(QWidget* p) : QWizardPage(p)
 }
 void wizNewContractDataPage::initializePage()
 {   LOG_CALL;
-    static bool init =true;
     if( init) {
         QString creditorInfo { qsl("%1, %2<p><small>%3 %4 %5</small>")};
         setSubTitle(creditorInfo.arg(field(qsl("lastname")).toString(),
@@ -461,7 +459,6 @@ wizContractTimingPage::wizContractTimingPage(QWidget* p) : QWizardPage(p)
 }
 void wizContractTimingPage::initializePage()
 {   LOG_CALL;
-    static bool init =true;
     if( init) {
         cbNoticePeriod->setCurrentIndex(4);
         deTerminationDate->setDate(EndOfTheFuckingWorld);
@@ -537,13 +534,13 @@ bool wizContractConfirmationPage::validatePage()
 */
 wizNew::wizNew(QWidget *p) : QWizard(p)
 {   LOG_CALL;
-    setPage(page_new_or_existing, new wizNewOrExistingPage(p));
-    setPage(page_address, new wizNewCreditorAddressPage(p));
-    setPage(page_email,   new wizEmailPage(p));
-    setPage(page_bankaccount, new wizBankAccountPage(p));
-    setPage(page_confirm_creditor, new wizConfirmCreditorPage(p));
-    setPage(page_contract_data, new wizNewContractDataPage(p));
-    setPage(page_contract_term, new wizContractTimingPage(p));
-    setPage(page_confirm_contract, new wizContractConfirmationPage(p));
+    setPage(page_new_or_existing, new wizNewOrExistingPage(this));
+    setPage(page_address, new wizNewCreditorAddressPage(this));
+    setPage(page_email,   new wizEmailPage(this));
+    setPage(page_bankaccount, new wizBankAccountPage(this));
+    setPage(page_confirm_creditor, new wizConfirmCreditorPage(this));
+    setPage(page_contract_data, new wizNewContractDataPage(this));
+    setPage(page_contract_term, new wizContractTimingPage(this));
+    setPage(page_confirm_contract, new wizContractConfirmationPage(this));
 }
 

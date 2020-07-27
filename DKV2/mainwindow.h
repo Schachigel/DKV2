@@ -140,6 +140,8 @@ private slots:
 
     void on_actionNeu_triggered();
 
+    void on_action_Neu_triggered();
+
 private:
     Ui::MainWindow *ui;
     void fillCombo_NoticePeriods();

@@ -639,6 +639,11 @@ void MainWindow::on_action_cmenu_change_contract_triggered()
     changeContractValue(contractId);
     on_action_menu_contracts_listview_triggered();
 }
+// new creditor or contract from contract menu
+void MainWindow::on_action_Neu_triggered()
+{
+    newCreditorAndContract();
+}
 
 // terminated contracts list
 void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
@@ -900,3 +905,4 @@ void MainWindow::on_action_about_DKV2_triggered()
     msg += qsl("Viel Spaß mit DKV2 !");
     QMessageBox::information(this, qsl("I n f o"), msg);
 }
+

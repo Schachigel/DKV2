@@ -593,7 +593,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>1075</width>
-     <height>25</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_database">
@@ -620,9 +620,8 @@ p, li { white-space: pre-wrap; }
     </property>
     <addaction name="action_menu_creditors_listview"/>
     <addaction name="separator"/>
-    <addaction name="action_menu_creditors_create"/>
-    <addaction name="action_menu_creditors_delete"/>
     <addaction name="actionNeu"/>
+    <addaction name="action_menu_creditors_delete"/>
    </widget>
    <widget class="QMenu" name="manu_contracts">
     <property name="title">
@@ -635,12 +634,13 @@ p, li { white-space: pre-wrap; }
      <addaction name="action_menu_contracts_print_lists"/>
     </widget>
     <addaction name="action_menu_contracts_listview"/>
+    <addaction name="actionBeendete_Vertr_ge_anzeigen"/>
+    <addaction name="action_Neu"/>
     <addaction name="separator"/>
     <addaction name="action_menu_contracts_anual_interest_settlement"/>
     <addaction name="separator"/>
     <addaction name="action_menu_contracts_statistics_view"/>
     <addaction name="menu_contracts_subm_print_lists"/>
-    <addaction name="actionBeendete_Vertr_ge_anzeigen"/>
    </widget>
    <widget class="QMenu" name="menu_debug">
     <property name="enabled">
@@ -933,6 +933,11 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="action_Neu">
+   <property name="text">
+    <string>&amp;Neu</string>
    </property>
   </action>
  </widget>
