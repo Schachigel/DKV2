@@ -16,6 +16,7 @@ wizTerminateContract_DatePage::wizTerminateContract_DatePage(QWidget* p) : QWiza
     QDateEdit* de = new QDateEdit;
     de->setDisplayFormat(qsl("dd.MM.yyyy"));
     registerField(qsl("date"), de);
+    de->setToolTip(qsl("Rückerstattungsdatum"));
     QVBoxLayout* layout = new QVBoxLayout;
     layout->addWidget(de);
     setLayout(layout);
@@ -43,8 +44,10 @@ wizTerminateContract_ConfirmationPage::wizTerminateContract_ConfirmationPage(QWi
     setTitle(qsl("Vertrag beenden"));
     QCheckBox* cbPrint = new QCheckBox(qsl("Beleg als CSV Datei speichern"));
     registerField(qsl("print"), cbPrint);
+    cbPrint->setToolTip(qsl("Die Datei wird in dem konfigurierten Ausgabeordner gespeichert"));
     QCheckBox* cbConfirm = new QCheckBox(qsl("Die Engaben sind korrekt"));
     registerField(qsl("confirm"), cbConfirm);
+    cbConfirm->setToolTip(qsl("Bestätige, dass die Eingaben richtig sind!"));
     QVBoxLayout* layout = new QVBoxLayout;
     layout->addWidget(cbPrint);
     layout->addWidget(cbConfirm);

@@ -20,6 +20,7 @@
 */
 wizFileSelection_IntroPage::wizFileSelection_IntroPage(QWidget* p) : QWizardPage(p) {
     QLineEdit* le = new QLineEdit;
+    le->setToolTip(qsl("Hier kannst du einen vollständigen Pfad zu einer Datei angeben"));
     registerField(qsl("selectedFile"), le);
     QLabel* l =new QLabel(qsl("Klicke auf 'durchsuchen' um eine Dateiauswahlfenster zu öffnen."));
     QVBoxLayout* layout =new QVBoxLayout;
@@ -53,9 +54,8 @@ void wizFileSelection_IntroPage::browseButtonClicked() {
 
 bool wizFileSelection_IntroPage::validatePage() {
     wizFileSelectionWiz* wiz = dynamic_cast<wizFileSelectionWiz*>(wizard());
-    if( wiz->existingFile) {
+    if( wiz->existingFile)
         return QFile::exists(field(qsl("selectedFile")).toString());
-    }
     else
         return ! field(qsl("selectedFile")).toString().isEmpty();
 }
@@ -87,6 +87,7 @@ wizFileSelectionWiz::wizFileSelectionWiz(QWidget* p) : QWizard(p) {
 wizFileSelectionNewDb_IntroPage::wizFileSelectionNewDb_IntroPage(QWidget* p) : QWizardPage(p) {
     QLineEdit* le = new QLineEdit;
     registerField(qsl("selectedFile"), le);
+    le->setToolTip(qsl("Hier kannst Du einen vollständigen Pfad zu einer DKV2 Datenbank eingeben."));
     QLabel* l =new QLabel(qsl("Klicke auf 'durchsuchen' um eine Dateiauswahl Fenster zu öffnen."));
     QVBoxLayout* layout =new QVBoxLayout;
     layout->addWidget(l);
@@ -143,16 +144,22 @@ wizProjectAddress_Page::wizProjectAddress_Page(QWidget* p) : QWizardPage(p)
     setSubTitle(qsl("*<small>Diese Daten werden für Briefdruck benötigt und können auch später eingegeben und geändert werden.</small>"));
     QLineEdit* leAddress1 = new QLineEdit;
     registerField(GMBH_ADDRESS1, leAddress1);
+    leAddress1->setToolTip(qsl("Gib hier die erste Adresszeile der GmbH ein"));
     QLineEdit* leAddress2 = new QLineEdit;
     registerField(GMBH_ADDRESS2, leAddress2);
+    leAddress2->setToolTip(qsl("Gib hier die zweite Adresszeile der GmbH ein"));
     QLineEdit* leStrasse =  new QLineEdit;
     registerField(GMBH_STREET, leStrasse);
+    leStrasse->setToolTip(qsl("Gib hier die Straße der GmbH ein."));
     QLineEdit* lePlz =      new QLineEdit;
     registerField(GMBH_PLZ, lePlz);
+    lePlz->setToolTip(qsl("Gib hier die Postleitzahl der GmbH ein"));
     QLineEdit* leStadt =    new QLineEdit;
     registerField(GMBH_CITY, leStadt);
+    leStadt->setToolTip(qsl("Gib hier die Stadt ein, in der die GmbH ist."));
     QLineEdit* leEmail =    new QLineEdit;
     registerField(GMBH_EMAIL, leEmail);
+    leEmail->setToolTip(qsl("Gib hier die E-Mailadresse an, unter der die GmbH erreichbar ist."));
     QLineEdit* leUrl   =    new QLineEdit;
     registerField(GMBH_URL, leUrl);
 
@@ -189,16 +196,21 @@ wizProjectDetails_Page::wizProjectDetails_Page(QWidget* p) : QWizardPage(p)
     QLabel* lHre = new QLabel (qsl("Eintrag im Handeslregister"));
     QLineEdit* leHre = new QLineEdit;
     registerField(GMBH_HRE, leHre);
+    leHre->setToolTip(qsl("Gib hier an, wie der Handelsregistereintrag der GmbH lautet."));
     QLabel* lGefue = new QLabel (qsl("Geschäftsführer*innen"));
     QLineEdit* leGefue1 = new QLineEdit;
     registerField(GMBH_GEFUE1, leGefue1);
+    leGefue1->setToolTip(qsl("Gib hier den Namen eines Geschäftsführers oder einer Geschäftsführerin ein."));
     QLineEdit* leGefue2 = new QLineEdit;
     registerField(GMBH_GEFUE2, leGefue2);
+    leGefue2->setToolTip(qsl("Gib hier den Namen eines Geschäftsführers oder einer Geschäftsführerin ein."));
     QLineEdit* leGefue3 = new QLineEdit;
     registerField(GMBH_GEFUE3, leGefue3);
+    leGefue3->setToolTip(qsl("Gib hier den Namen eines Geschäftsführers oder einer Geschäftsführerin ein."));
     QLabel* lDkv =new QLabel(qsl("DK Verwaltung"));
     QLineEdit* leDkv = new QLineEdit;
     registerField(GMBH_DKV, leDkv);
+    leDkv->setToolTip(qsl("Gib hier ein, wer bei Euch die Briefe der DK Verwaltung erstellt."));
 
     QGridLayout* grid  = new QGridLayout;
     grid->addWidget(lHre,     0, 0, 1, 2);
@@ -233,11 +245,13 @@ wizContractLableInfo_Page::wizContractLableInfo_Page(QWidget* p) : QWizardPage(p
     QLineEdit* leProject = new QLineEdit;
     lProject->setBuddy(leProject);
     registerField(GMBH_PI, leProject);
+    leProject->setToolTip(qsl("Das Kürzel wird bei der Erstellung von Vertragskennzeichen verwendet"));
 
     QLabel* lIndex = new QLabel(qsl("Start Index:"));
     leStartIndex = new QLineEdit;
     lIndex->setBuddy(leStartIndex);
     registerField(STARTINDEX, leStartIndex);
+    lIndex->setToolTip(qsl("Mit diesem Index beginnt die laufende Nummer in den Vertragskennzeichen"));
 
     QVBoxLayout* layout =new QVBoxLayout;
     layout->addWidget(lProject);
@@ -268,7 +282,7 @@ bool wizContractLableInfo_Page::validatePage()
 
 wizContractMinValues_Page:: wizContractMinValues_Page(QWidget* p) : QWizardPage(p)
 {
-    setTitle(qsl("Weitere Configuration"));
+    setTitle(qsl("Weitere Konfiguration"));
     setSubTitle(qsl("Hier kannst Du den minimalen Auszahlungsbetrag und Vertragswert festlegen, für den das Programm eine Buchung erlaubt. "
                 "Dieser Werte werden bei Auszahlungen und beim Anlegen von Verträgen berücksichtigt.<p>"
                 "<small>Da Auszahlungen z.T. mit Überweisungskosten einhergehen und kleine Verträge unrentabel sind sollte man kleine Werte vermeiden.</small>"));
@@ -302,6 +316,7 @@ wizNewDatabase_SummaryPage::wizNewDatabase_SummaryPage(QWidget* p) : QWizardPage
     setTitle(qsl("Zusammenfassung"));
     QCheckBox* cb = new QCheckBox(qsl("Die Eingaben sind korrekt!"));
     registerField(qsl("confirmed"), cb);
+    cb->setToolTip(qsl("Mit diesem Ankreuzfeld bestätigst Du, dass die Angaben richtig sind."));
     QVBoxLayout* layout = new QVBoxLayout;
     layout-> addWidget(cb);
     setLayout(layout);

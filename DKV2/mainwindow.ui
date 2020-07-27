@@ -635,7 +635,6 @@ p, li { white-space: pre-wrap; }
      <addaction name="action_menu_contracts_print_lists"/>
     </widget>
     <addaction name="action_menu_contracts_listview"/>
-    <addaction name="action_menu_contracts_create"/>
     <addaction name="separator"/>
     <addaction name="action_menu_contracts_anual_interest_settlement"/>
     <addaction name="separator"/>

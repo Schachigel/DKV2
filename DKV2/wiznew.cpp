@@ -352,7 +352,7 @@ wizNewContractDataPage::wizNewContractDataPage(QWidget* p) : QWizardPage(p)
 
     QLabel* l2 =new QLabel(qsl("Betrag"));
     QLineEdit* leAmount =new QLineEdit;
-    leAmount->setToolTip(qsl("Nach Vertragsabschluß wird eine Überweisung über diesen Betrag vom Kreditor /von der Kreditorin erwartet."));
+    leAmount->setToolTip(qsl("Der Kreditbetrag muss größer als ") + appConfig::getRuntimeData(MIN_AMOUNT) + qsl("Euro sein"));
     registerField(qsl("amount"), leAmount);
     leAmount->setValidator(new QIntValidator(this));
     l2->setBuddy(leAmount);
