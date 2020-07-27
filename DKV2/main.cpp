@@ -11,6 +11,7 @@
 #include <QSplashScreen>
 #include <QPixmap>
 #include <QTextStream>
+#include <QTimer>
 
 #include "helperfile.h"
 #include "appconfig.h"
@@ -106,13 +107,13 @@ int main(int argc, char *argv[])
 
 #ifndef QT_DEBUG
     QSplashScreen* splash = doSplash(); // do only AFTER having an app. object
+    splash->show();
+    QTimer::singleShot(3500, splash, &QWidget::close);
 #else
     QSplashScreen* splash = nullptr;
 #endif
 
     MainWindow w;
-    w.setSplash(splash);
-    w.show();
 
     int ret = a.exec();
 

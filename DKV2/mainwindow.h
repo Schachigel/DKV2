@@ -142,7 +142,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QSplashScreen* splash;
     void fillCombo_NoticePeriods();
     void createButtonMenu_saveCreditorAnd();
     void createBtnMenu_saveContractAnd();
@@ -179,15 +178,6 @@ private:
     QMenu* menuSaveContractAnd;
 private:
     bool showDeletedContracts =false;
-    void timerEvent(QTimerEvent* te) override
-    {
-        if( splash)
-        {
-            splash->finish(this);
-            delete splash;
-        }
-        killTimer(te->timerId());
-    }
 };
 
 #endif // MAINWINDOW_H

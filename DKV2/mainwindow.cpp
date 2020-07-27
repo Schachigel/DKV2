@@ -62,11 +62,6 @@ MainWindow::~MainWindow()
 }
 
 // generell functions
-void MainWindow::setSplash(QSplashScreen* s)
-{   LOG_CALL;
-    splash = s;
-    startTimer(2333);
-}
 bool MainWindow::useDb(const QString& dbfile)
 {   LOG_CALL;
     if( open_databaseForApplication(dbfile)) {
