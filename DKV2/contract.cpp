@@ -411,7 +411,7 @@ contract saveRandomContract(qlonglong creditorId)
     c.setLabel(proposeContractLabel());
     c.setCreditorId(creditorId);
     c.setReinvesting(rand->bounded(100)%6);// 16% auszahlend
-    c.setInterestRate((1 +rand->bounded(149)) /100);
+    c.setInterestRate((1 +rand->bounded(149)) /100.);
     c.setPlannedInvest(    rand->bounded(50)*1000.
                            + rand->bounded(1,3) *500.
                            + rand->bounded(10) *100);

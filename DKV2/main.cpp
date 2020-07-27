@@ -109,12 +109,10 @@ int main(int argc, char *argv[])
     QSplashScreen* splash = doSplash(); // do only AFTER having an app. object
     splash->show();
     QTimer::singleShot(3500, splash, &QWidget::close);
-#else
-    QSplashScreen* splash = nullptr;
 #endif
 
     MainWindow w;
-
+    w.show();
     int ret = a.exec();
 
     qInfo() << "DKV2 finished";
