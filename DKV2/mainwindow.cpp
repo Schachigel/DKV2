@@ -119,7 +119,13 @@ void MainWindow::prepare_startPage()
 {   LOG_CALL;
     busycursor b;
     QString messageHtml {qsl( "<table width='100%'><tr><td><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></td></tr>")};
-// todo: add DK status information
+    DbSummary dbs =calculateSummary();
+    double allContracts = dbs.WertAktive + dbs.BetragPassive;
+    if( allContracts > 0) {
+        QLocale l;
+        QString valueRow = qsl("<tr><td>Die Summer aller DK beträgt <big><font color=red>") + l.toCurrencyString(allContracts) + qsl("</font></big></td></tr>");
+        messageHtml += valueRow;
+    }
     messageHtml += qsl("<tr><td><img src=\":/res/splash.png\"/></td></tr></table>");
     qDebug() <<"welcome Screen html: " << Qt::endl << messageHtml << Qt::endl;
     ui->teWelcome->setText(messageHtml);
@@ -644,7 +650,6 @@ void MainWindow::on_action_Neu_triggered()
 {
     newCreditorAndContract();
 }
-
 // terminated contracts list
 void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
 {
@@ -654,7 +659,6 @@ void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
         ui->contractsTableView->selectRow(0);
     ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
 }
-
 // new Contract helper
 void MainWindow::createBtnMenu_saveContractAnd()
 {   LOG_CALL;
@@ -827,7 +831,7 @@ void MainWindow::on_action_save_contract_new_contract_triggered()
         on_action_menu_contracts_create_triggered();
     }
 }
-
+// statistics
 void MainWindow::on_action_menu_contracts_statistics_view_triggered()
 {   LOG_CALL;
     QComboBox* combo =ui->comboUebersicht;
@@ -843,11 +847,9 @@ void MainWindow::on_action_menu_contracts_statistics_view_triggered()
     combo->setCurrentIndex(combo->currentIndex());
     ui->stackedWidget->setCurrentIndex(overviewsPageIndex);
 }
-void MainWindow::on_comboUebersicht_currentIndexChanged(int )
+void MainWindow::on_comboUebersicht_currentIndexChanged(int i)
 {   LOG_CALL;
-    QComboBox* combo =ui->comboUebersicht;
-    Uebersichten u = static_cast<Uebersichten>( combo->itemData(combo->currentIndex()).toInt());
-    ui->txtOverview->setText( reportHtml(u));
+    ui->txtOverview->setText( reportHtml(static_cast<Uebersichten>( i)));
 }
 void MainWindow::on_pbPrint_clicked()
 {   LOG_CALL;
