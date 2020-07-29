@@ -34,7 +34,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->action_menu_debug_create_sample_data->setVisible(false);
 #endif
 
-    ui->leBetrag->setValidator(new QIntValidator(0,999999,this));
     ui->statusBar->addPermanentWidget(ui->statusLabel);
 
     setCentralWidget(ui->stackedWidget);
@@ -50,9 +49,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->bookingsTableView->setItemDelegateForColumn(2, new bookingTypeFormatter);
 
-    fillCombo_NoticePeriods();
     createButtonMenu_saveCreditorAnd();
-    createBtnMenu_saveContractAnd();
 
     ui->stackedWidget->setCurrentIndex(startPageIndex);
 }
@@ -97,9 +94,6 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
         ui->action_menu_creditors_delete->setEnabled(true);
         break;
     case newCreditorPageIndex:
-        ui->action_menu_creditors_delete->setEnabled(false);
-        break;
-    case newContractPageIndex:
         ui->action_menu_creditors_delete->setEnabled(false);
         break;
     case contractsListPageIndex:
@@ -317,7 +311,6 @@ void MainWindow::on_CreditorsTableView_customContextMenuRequested(const QPoint &
     if( index.isValid()) {
         QMenu menu( qsl("PersonContextMenu"), this);
         menu.addAction(ui->action_cmenu_edit_creditor);
-        menu.addAction(ui->action_menu_contracts_create);
         menu.addAction(ui->action_cmenu_delete_creaditor);
         menu.addAction(ui->action_cmenu_go_contracts);
         menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
@@ -378,11 +371,10 @@ void MainWindow::createButtonMenu_saveCreditorAnd()
 {   LOG_CALL;
     // Kreditor anlegen: "Speichern und ..." Menü anlegen
     menuSaveKreditorAnd = new QMenu;
-    menuSaveKreditorAnd->addAction(ui->action_saveCreditor_go_contract);
     menuSaveKreditorAnd->addAction(ui->action_saveCreditor_go_creditors);
     menuSaveKreditorAnd->addAction(ui->action_saveCreditor_go_new_creditor);
     ui->customBtn_saveCreditorAnd->setMenu(menuSaveKreditorAnd);
-    ui->customBtn_saveCreditorAnd->setDefaultAction(ui->action_saveCreditor_go_contract);
+    ui->customBtn_saveCreditorAnd->setDefaultAction(ui->action_saveCreditor_go_new_creditor);
 }
 int  MainWindow::save_creditor()
 {   LOG_CALL;
@@ -461,7 +453,6 @@ void MainWindow::on_action_saveCreditor_go_contract_triggered()
     int kid = save_creditor();
     if(  kid != -1) {
         empty_create_creditor_form();
-        on_action_menu_contracts_create_triggered();
     }
 }
 void MainWindow::on_action_saveCreditor_go_creditors_triggered()
@@ -659,189 +650,15 @@ void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
         ui->contractsTableView->selectRow(0);
     ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
 }
-// new Contract helper
-void MainWindow::createBtnMenu_saveContractAnd()
-{   LOG_CALL;
-    // Vertrag anlegen: "Speichern und ... " Menü anlegen
-    menuSaveContractAnd = new QMenu;
-    menuSaveContractAnd->addAction(ui->action_save_contract_new_contract);
-    menuSaveContractAnd->addAction(ui->action_save_contract_go_kreditors);
-    menuSaveContractAnd->addAction(ui->action_save_contract_go_contracts);
-    ui->saveContractAnd->setMenu(menuSaveContractAnd);
-    ui->saveContractAnd->setDefaultAction(ui->action_save_contract_go_kreditors);
-}
-void MainWindow::fillCombo_NoticePeriods()
-{   LOG_CALL;
-    // combo box für Kündigungsfristen füllen
-    ui->cbKFrist->addItem(qsl("festes Vertragsende"), QVariant(-1));
-    for (int i=3; i<12; i++)
-        ui->cbKFrist->addItem(QString::number(i) + qsl(" Monate"), QVariant(i));
-    ui->cbKFrist->addItem(qsl("1 Jahr"), QVariant(12));
-    ui->cbKFrist->addItem(qsl("1 Jahr und 1 Monat"), QVariant(13));
-    for (int i=14; i<24; i++)
-        ui->cbKFrist->addItem(qsl("1 Jahr und ") + QString::number( i-12) + qsl(" Monate"), QVariant(i));
-    ui->cbKFrist->addItem(qsl("2 Jahre"), QVariant(24));
-}
-// new contract
-void MainWindow::on_action_menu_contracts_create_triggered()
-{   LOG_CALL;
-    busycursor b;
-    fill_creditors_dropdown();
-    fill_rates_dropdown();
-    ui->leKennung->setText( proposeContractLabel());
-    if( ui->stackedWidget->currentIndex() == creditorsListPageIndex)
-        set_creditors_combo_by_id(id_SelectedCreditor());
-    if( ui->stackedWidget->currentIndex() == newCreditorPageIndex)
-        set_creditors_combo_by_id(passNewCreditorIdToNewContract);
-    else
-        set_creditors_combo_by_id(-1);
-    contract cd; // this is to get the defaults of the class definition
-    ui->deLaufzeitEnde->setDate(cd.plannedEndDate());
-    int cbkFristStartIndex = ui->cbKFrist->findText(qsl("6 Monate"));
-    if( cbkFristStartIndex <0)
-        qDebug() << "error setting kFrist Combo default value";
-    else
-        ui->cbKFrist->setCurrentIndex(cbkFristStartIndex);
-    ui->deVertragsabschluss->setDate(cd.conclusionDate());
-    ui->chkbThesaurierend->setChecked(cd.reinvesting());
-
-    ui->stackedWidget->setCurrentIndex(newContractPageIndex);
-}
-contract MainWindow::get_contract_data_from_form()
-{   LOG_CALL;
-    contract c;
-    c.setCreditorId (ui->comboKreditoren->itemData(ui->comboKreditoren->currentIndex()).toInt());
-    c.setLabel(ui->leKennung->text());
-    c.setPlannedInvest (ui->leBetrag->text().remove('.').toDouble());
-    c.setReinvesting (ui->chkbThesaurierend->checkState() == Qt::Checked);
-
-    // interface to comboBox -> 1/100th of the itemdata
-    int interrestIndex= ui->cbZins->itemData(ui->cbZins->currentIndex()).toInt();
-    c.setInterestRate(round2(double(interrestIndex) /100.));
-    c.setConclusionDate (ui->deVertragsabschluss->date());
-
-    int kFrist = ui->cbKFrist->currentData().toInt();
-    QDate LaufzeitEnde = ui->deLaufzeitEnde->date();  // QDateTimeEdit default: 2000/1/1
-    c.setPlannedEndDate(LaufzeitEnde);
-    c.setNoticePeriod(kFrist);
-    return c;
-}
-bool MainWindow::save_new_contract()
-{   LOG_CALL;
-    contract c =get_contract_data_from_form();
-
-    QString errortext;
-    if( !c.validateAndSaveNewContract(errortext)) {
-        QMessageBox::critical( this, qsl("Fehler"), errortext);
-        return false;
-    }
-    else {
-        if( !errortext.isEmpty())
-            QMessageBox::information(this, qsl("Warnung"), errortext);
-        return true;
-    }
-}
-void MainWindow::empty_new_contract_form()
-{   LOG_CALL;
-    ui->leKennung->setText(QString());
-    ui->leBetrag->setText(QString());
-    ui->chkbThesaurierend->setChecked(true);
-}
-void MainWindow::on_deLaufzeitEnde_userDateChanged(const QDate &date)
-{   LOG_CALL;
-    if( date == EndOfTheFuckingWorld) {
-        if( ui->cbKFrist->currentIndex() == 0)
-            ui->cbKFrist->setCurrentIndex(6);
-    }
-    else
-        ui->cbKFrist->setCurrentIndex(0);
-}
-void MainWindow::on_cbKFrist_currentIndexChanged(int index)
-{   LOG_CALL;
-    if( -1 == ui->cbKFrist->itemData(index).toInt()) {
-        // Vertragsende wird fest vorgegeben
-        if( EndOfTheFuckingWorld == ui->deLaufzeitEnde->date())
-            ui->deLaufzeitEnde->setDate(QDate::currentDate().addYears(5));
-    }
-    else {
-        // Vertragsende wird durch Kündigung eingeleitet
-        ui->deLaufzeitEnde->setDate(EndOfTheFuckingWorld);
-    }
-}
-void MainWindow::on_leBetrag_editingFinished()
-{   LOG_CALL;
-    double userInput = ui->leBetrag->text().toDouble();
-    ui->leBetrag->setText(QString("%L1").arg(round2(userInput)));
-}
-
-// helper: switch to "new contract"
-void MainWindow::fill_creditors_dropdown()
-{   LOG_CALL;
-    ui->comboKreditoren->clear();
-    QList<QPair<int, QString>> Personen;
-    KreditorenListeMitId(Personen);
-    for(auto& Entry :qAsConst(Personen)) {
-        ui->comboKreditoren->addItem( Entry.second, QVariant((Entry.first)));
-    }
-}
-void MainWindow::fill_rates_dropdown()
-{   LOG_CALL;
-    ui->cbZins->clear();
-    for(int i = 0; i < 200; i++) {
-        ui->cbZins->addItem(QString::number(double(i)/100, 'f', 2), QVariant(i));
-    }
-    ui->cbZins->setCurrentIndex(100);
-}
-void MainWindow::set_creditors_combo_by_id(int KreditorenId)
-{   LOG_CALL;
-    if( KreditorenId < 0) return;
-    // select the correct person
-    for( int i = 0; i < ui->comboKreditoren->count(); i++) {
-        if( KreditorenId == ui->comboKreditoren->itemData(i)) {
-            ui->comboKreditoren->setCurrentIndex(i);
-            break;
-        }
-    }
-}
-// leave new contract
-void MainWindow::on_cancelCreateContract_clicked()
-{   LOG_CALL;
-    empty_new_contract_form();
-    ui->stackedWidget->setCurrentIndex(startPageIndex);
-}
-void MainWindow::on_action_save_contract_go_contracts_triggered()
-{   LOG_CALL;
-    if( save_new_contract()) {
-        empty_new_contract_form();
-        prepare_contracts_list_view();
-        ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
-    }
-}
-void MainWindow::on_action_save_contract_go_kreditors_triggered()
-{   LOG_CALL;
-    if( save_new_contract()) {
-        empty_new_contract_form();
-        on_action_menu_creditors_listview_triggered();
-    }
-}
-void MainWindow::on_action_save_contract_new_contract_triggered()
-{   LOG_CALL;
-    if( save_new_contract()) {
-        empty_new_contract_form();
-        on_action_menu_contracts_create_triggered();
-    }
-}
 // statistics
 void MainWindow::on_action_menu_contracts_statistics_view_triggered()
 {   LOG_CALL;
     QComboBox* combo =ui->comboUebersicht;
     if(combo->count() == 0) {
-        combo->clear();
         combo->addItem(qsl("Übersicht aller Kredite"),                QVariant(OVERVIEW));
         combo->addItem(qsl("Anzahl auslaufender Verträge nach Jahr"), QVariant(BY_CONTRACT_END));
         combo->addItem(qsl("Anzahl Verträge nach Zinssatz und Jahr"), QVariant(INTEREST_DISTRIBUTION));
         combo->addItem(qsl("Anzahl Verträge nach Laufzeiten"),        QVariant(CONTRACT_TERMS));
-        // combo->addItem("Gesamtübersicht aller aktiven Verträge", QVariant(ALL_CONTRACT_INFO));
         combo->setCurrentIndex(0);
     }
     combo->setCurrentIndex(combo->currentIndex());

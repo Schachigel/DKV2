@@ -24,7 +24,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>5</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -312,194 +312,6 @@ p, li { white-space: pre-wrap; }
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="NewContract">
-       <property name="maximumSize">
-        <size>
-         <width>800</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <layout class="QVBoxLayout" name="vlNeuerVertrag">
-        <item>
-         <layout class="QHBoxLayout" name="hlNeuerVertragButtons">
-          <property name="spacing">
-           <number>3</number>
-          </property>
-          <item>
-           <widget class="uiCustomToolButton" name="saveContractAnd">
-            <property name="toolTip">
-             <string>Speichert den Vertrag und kehrt zur Liste der DK Geber zurück</string>
-            </property>
-            <property name="text">
-             <string>Speichern, dann zur &amp;Kreditoren Liste</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="cancelCreateContract">
-            <property name="toolTip">
-             <string>Abbrechen und zurück zur Start Seite</string>
-            </property>
-            <property name="text">
-             <string>Abbrechen</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QFormLayout" name="formLayout_2">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>Kreditgeber</string>
-            </property>
-            <property name="buddy">
-             <cstring>comboKreditoren</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="comboKreditoren"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>Kennung</string>
-            </property>
-            <property name="buddy">
-             <cstring>leKennung</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="leKennung">
-            <property name="toolTip">
-             <string>ein eindeutiger Wert, um den Vertrag zu identifizieren</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>Betrag (Euro)</string>
-            </property>
-            <property name="buddy">
-             <cstring>leBetrag</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="leBetrag">
-            <property name="toolTip">
-             <string>nur ganzalige Werte eingeben</string>
-            </property>
-            <property name="inputMask">
-             <string notr="true"/>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Zinssatz</string>
-            </property>
-            <property name="buddy">
-             <cstring>cbZins</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QComboBox" name="cbZins"/>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_6">
-            <property name="text">
-             <string>Vertragsabschluss (Datum)</string>
-            </property>
-            <property name="buddy">
-             <cstring>deVertragsabschluss</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QDateEdit" name="deVertragsabschluss">
-            <property name="displayFormat">
-             <string notr="true">dd.MM.yyyy</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_9">
-            <property name="text">
-             <string>Kündigungsfrist</string>
-            </property>
-            <property name="buddy">
-             <cstring>cbKFrist</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QComboBox" name="cbKFrist">
-            <property name="toolTip">
-             <string>bei Verträgen ohne Laufzeitende sollte eine Kündigungsfrist in Monaten vereinbart sein</string>
-            </property>
-            <property name="currentText">
-             <string notr="true"/>
-            </property>
-            <property name="currentIndex">
-             <number>-1</number>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_7">
-            <property name="text">
-             <string>Laufzeitende (Datum)</string>
-            </property>
-            <property name="buddy">
-             <cstring>deLaufzeitEnde</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="1">
-           <widget class="QDateEdit" name="deLaufzeitEnde">
-            <property name="displayFormat">
-             <string notr="true">dd.MM.yyyy</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="label_8">
-            <property name="text">
-             <string>Zinsenauszahlung</string>
-            </property>
-            <property name="buddy">
-             <cstring>chkbThesaurierend</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="1">
-           <widget class="QCheckBox" name="chkbThesaurierend">
-            <property name="text">
-             <string>OHNE  jährl. Zinsauszahlung</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QLabel" name="lblHinweis">
-          <property name="text">
-           <string>&lt;H3&gt; Nach dem Anlegen müssen die Verträge nach Zahlungseingang aktiviert werden, damit die Zinsberechnung beginnt!</string>
-          </property>
-          <property name="wordWrap">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
       <widget class="QWidget" name="ContractsListPage">
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
@@ -738,20 +550,6 @@ p, li { white-space: pre-wrap; }
     <string>Löschen</string>
    </property>
   </action>
-  <action name="action_menu_contracts_create">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Vertrag anlegen</string>
-   </property>
-   <property name="toolTip">
-    <string>Vertrag für ausgewählten DK Geber anlegen</string>
-   </property>
-   <property name="shortcut">
-    <string>Ins</string>
-   </property>
-  </action>
   <action name="action_cmenu_delete_creaditor">
    <property name="text">
     <string>Löschen</string>
@@ -851,14 +649,6 @@ p, li { white-space: pre-wrap; }
     <string>Kopie anlegen</string>
    </property>
   </action>
-  <action name="action_saveCreditor_go_contract">
-   <property name="text">
-    <string>Speichern, dann Vertrag anlegen</string>
-   </property>
-   <property name="toolTip">
-    <string>Kontakt speichern und einen Vertrag zu diesem Kontakt anlegen</string>
-   </property>
-  </action>
   <action name="action_saveCreditor_go_creditors">
    <property name="text">
     <string>Speichern und zu Kreditoren</string>
@@ -889,14 +679,6 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="toolTip">
     <string>Speichern und zur Kreditor Liste wechseln</string>
-   </property>
-  </action>
-  <action name="action_save_contract_new_contract">
-   <property name="text">
-    <string>Speichern und Vertrag anlegen</string>
-   </property>
-   <property name="toolTip">
-    <string>Speichern und dann einen weiteren Vertrag anlegen</string>
    </property>
   </action>
   <action name="action_about_DKV2">
@@ -961,16 +743,6 @@ p, li { white-space: pre-wrap; }
   <tabstop>txtAnmerkung</tabstop>
   <tabstop>leIban</tabstop>
   <tabstop>leBic</tabstop>
-  <tabstop>saveContractAnd</tabstop>
-  <tabstop>cancelCreateContract</tabstop>
-  <tabstop>comboKreditoren</tabstop>
-  <tabstop>leKennung</tabstop>
-  <tabstop>leBetrag</tabstop>
-  <tabstop>cbZins</tabstop>
-  <tabstop>deVertragsabschluss</tabstop>
-  <tabstop>cbKFrist</tabstop>
-  <tabstop>deLaufzeitEnde</tabstop>
-  <tabstop>chkbThesaurierend</tabstop>
   <tabstop>le_ContractsFilter</tabstop>
   <tabstop>reset_contracts_filter</tabstop>
   <tabstop>contractsTableView</tabstop>

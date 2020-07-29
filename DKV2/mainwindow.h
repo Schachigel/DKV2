@@ -37,13 +37,8 @@ public:
     ~MainWindow() override;
     void setSplash(QSplashScreen* s);
 
-    void fill_creditors_dropdown();
-    void fill_rates_dropdown();
-    void set_creditors_combo_by_id(int id);
     int id_SelectedCreditor();
     int get_current_id_from_contracts_list();
-    contract get_contract_data_from_form();
-
 
 private slots:
 
@@ -56,7 +51,6 @@ private slots:
     void on_action_menu_debug_create_sample_data_triggered();
     void on_action_menu_creditors_create_triggered();
     void on_action_menu_creditors_delete_triggered();
-    void on_action_menu_contracts_create_triggered();
 
     void on_cancelCreateCreditor_clicked();
     void on_action_cmenu_edit_creditor_triggered();
@@ -64,7 +58,6 @@ private slots:
     void on_stackedWidget_currentChanged(int arg1);
 
     // Buttons on the "Vertrag anlegen" page
-    void on_cancelCreateContract_clicked();
 
     void on_action_menu_contracts_listview_triggered();
 
@@ -96,8 +89,6 @@ private slots:
 
     void on_action_menu_contracts_anual_interest_settlement_triggered();
 
-    void on_leBetrag_editingFinished();
-
     void on_action_menu_database_configure_outdir_triggered();
 
     void on_action_menu_contracts_print_lists_triggered();
@@ -108,8 +99,6 @@ private slots:
 
     void on_action_menu_database_start_triggered();
 
-    void on_cbKFrist_currentIndexChanged(int index);
-
     void on_action_menu_database_copy_triggered();
 
     void on_action_menu_database_anonymous_copy_triggered();
@@ -119,14 +108,6 @@ private slots:
     void on_action_saveCreditor_go_creditors_triggered();
 
     void on_action_saveCreditor_go_new_creditor_triggered();
-
-    void on_action_save_contract_go_contracts_triggered();
-
-    void on_action_save_contract_go_kreditors_triggered();
-
-    void on_action_save_contract_new_contract_triggered();
-
-    void on_deLaufzeitEnde_userDateChanged(const QDate &date);
 
     void on_action_about_DKV2_triggered();
 
@@ -144,9 +125,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    void fillCombo_NoticePeriods();
     void createButtonMenu_saveCreditorAnd();
-    void createBtnMenu_saveContractAnd();
     void prepare_CreditorsListPage();
     void prepare_contracts_list_view();
     void prepare_startPage();
@@ -154,20 +133,17 @@ private:
     void showDbInStatusbar(QString filename = "");
     int save_creditor();
     qlonglong passNewCreditorIdToNewContract =-1;
-    bool save_new_contract();
     enum stackedWidgedsPageIndex
     {
         startPageIndex =0,
         creditorsListPageIndex =1,
         newCreditorPageIndex =2,
-        newContractPageIndex =3,
-        contractsListPageIndex =4,
-        overviewsPageIndex=5,
-        bookingsListIndex=6
+        contractsListPageIndex =3,
+        overviewsPageIndex=4,
+        bookingsListIndex=5
     };
     void empty_create_creditor_form();
     void init_creditor_form(int id);
-    void empty_new_contract_form();
     QVector<QString> Uebersichten_kurz{
         qsl("Uebersicht"),
         qsl("Vertragsenden"),
