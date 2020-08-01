@@ -438,8 +438,6 @@ void create_sampleData(int datensaetze)
 bool createCsvActiveContracts()
 {   LOG_CALL;
     QString filename(QDate::currentDate().toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
-    filename = appConfig::Outdir() + "/" + filename;
-
     dbtable t("ContractDataActiveContracts");
     t.append(dbfield("Id", QVariant::Type::Int));
     t.append(dbfield("KreditorId", QVariant::Type::Int));

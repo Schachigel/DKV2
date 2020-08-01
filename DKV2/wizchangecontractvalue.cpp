@@ -57,6 +57,7 @@ wizChangeContract_AmountPage::wizChangeContract_AmountPage(QWidget* parent) : QW
     QVBoxLayout*  layout = new QVBoxLayout;
     QLineEdit* le = new QLineEdit;
     registerField(qsl("amount"), le);
+    le->setValidator(new QIntValidator(this));
     layout->addWidget(le);
     setLayout(layout);
 }

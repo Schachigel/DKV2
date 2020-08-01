@@ -137,6 +137,7 @@ struct dbConfig
             if( lhs.dbId     != rhs.dbId)       break;
             if( lhs.minPayout!= rhs.minPayout)  break;
             if( lhs.minContract!= rhs.minContract) break;
+            if( lhs.maxInterest!= rhs.maxInterest) break;
             if( lhs.dbVersion != rhs.dbVersion) break;
             ret =true;
         } while(false);

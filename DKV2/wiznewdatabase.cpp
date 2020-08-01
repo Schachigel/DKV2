@@ -3,6 +3,7 @@
 #include <QStringLiteral>
 #define qsl(x) QStringLiteral(x)
 #include <QLineEdit>
+#include <QIntValidator>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QCheckBox>
@@ -288,19 +289,29 @@ wizContractMinValues_Page:: wizContractMinValues_Page(QWidget* p) : QWizardPage(
                 "<small>Da Auszahlungen z.T. mit Überweisungskosten einhergehen und kleine Verträge unrentabel sind sollte man kleine Werte vermeiden.</small>"));
     QLineEdit* leMa =new QLineEdit;
     registerField(MIN_PAYOUT, leMa);
+    leMa->setValidator(new QIntValidator(this));
     QLabel* lma     =new QLabel(qsl("Kleinster Auszahlungsbetrag in Euro:"));
     lma->setBuddy(leMa);
 
     QLineEdit* leMc =new QLineEdit;
     registerField(MIN_AMOUNT, leMc);
+    leMc->setValidator(new QIntValidator(this));
     QLabel* lmc     =new QLabel(qsl("Kleinster Vertragswert in Euro:"));
     lmc->setBuddy(leMc);
+
+    QLineEdit* leMi =new QLineEdit;
+    registerField(MAX_INTEREST, leMi);
+    leMi->setValidator(new QIntValidator(this));
+    QLabel* lmi     =new QLabel(qsl("Größter auswählbarer Zins in 100tel (100 entspricht 1%)"));
+    lmi->setBuddy(leMi);
 
     QGridLayout* grid =new QGridLayout;
     grid->addWidget(lma,  0, 0);
     grid->addWidget(leMa, 0, 1);
     grid->addWidget(lmc,  1, 0);
     grid->addWidget(leMc, 1, 1);
+    grid->addWidget(lmi,  2, 0);
+    grid->addWidget(leMi, 2, 1);
     setLayout(grid);
 }
 
@@ -309,6 +320,7 @@ void wizContractMinValues_Page::initializePage()
     dbConfig c(dbConfig::FROM_RTD);
     setField(MIN_PAYOUT, c.minPayout);
     setField(MIN_AMOUNT, c.minContract);
+    setField(MAX_INTEREST, c.maxInterest);
 }
 
 wizNewDatabase_SummaryPage::wizNewDatabase_SummaryPage(QWidget* p) : QWizardPage(p)
@@ -415,6 +427,7 @@ void wizConfigureProjectWiz::updateDbConfig()
 
     c.minPayout=field(MIN_PAYOUT).toInt();
     c.minContract=field(MIN_AMOUNT).toInt();
+    c.maxInterest=field(MAX_INTEREST).toInt();
     c.storeRuntimeData();
     c.writeDb();
 }

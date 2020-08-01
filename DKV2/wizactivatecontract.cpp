@@ -48,6 +48,7 @@ wizActiateContract_AmountPage::wizActiateContract_AmountPage(QWidget* p) : QWiza
     QLabel* l = new QLabel(qsl("Betrag in Euro"));
     QLineEdit* le = new QLineEdit;
     registerField(qsl("amount"), le);
+    le->setValidator(new QIntValidator(this));
     l->setBuddy(le);
     layout->addWidget(l);
     layout->addWidget(le);
