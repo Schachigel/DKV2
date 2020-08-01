@@ -83,6 +83,8 @@ bool csvwriter::save(const QString filename) const
         return false;
     }
     QTextStream s(&file);
+    s.setCodec("UTF-8");
+    s.setGenerateByteOrderMark(true);
     s << out();
     return true;
 }

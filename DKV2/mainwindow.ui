@@ -24,7 +24,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -444,6 +444,7 @@ p, li { white-space: pre-wrap; }
       <string>Listen drucken</string>
      </property>
      <addaction name="action_menu_contracts_print_lists"/>
+     <addaction name="actionAktuelle_Auswahl"/>
     </widget>
     <addaction name="action_menu_contracts_listview"/>
     <addaction name="actionBeendete_Vertr_ge_anzeigen"/>
@@ -478,9 +479,6 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="toolTip">
     <string>Legen Sie hiermit eine leere DK Datenbank an</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+N</string>
    </property>
   </action>
   <action name="action_menu_database_open">
@@ -720,6 +718,11 @@ p, li { white-space: pre-wrap; }
   <action name="action_Neu">
    <property name="text">
     <string>&amp;Neu</string>
+   </property>
+  </action>
+  <action name="actionAktuelle_Auswahl">
+   <property name="text">
+    <string>Aktuelle Auswahl</string>
    </property>
   </action>
  </widget>

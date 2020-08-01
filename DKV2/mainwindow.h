@@ -123,6 +123,8 @@ private slots:
 
     void on_action_Neu_triggered();
 
+    void on_actionAktuelle_Auswahl_triggered();
+
 private:
     Ui::MainWindow *ui;
     void createButtonMenu_saveCreditorAnd();

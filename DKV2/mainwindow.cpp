@@ -19,10 +19,12 @@
 #include "appconfig.h"
 #include "wiznewdatabase.h"
 #include "appconfig.h"
+#include "csvwriter.h"
 #include "uiitemformatter.h"
 #include "dkdbhelper.h"
 #include "letters.h"
 #include "transaktionen.h"
+
 
 // construction, destruction
 MainWindow::MainWindow(QWidget *parent) :
@@ -101,6 +103,8 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
         break;
     case bookingsListIndex:
         ui->action_menu_creditors_delete->setEnabled(false);
+        break;
+    case overviewsPageIndex:
         break;
     default:
         qWarning() << "stackedWidget current change not implemented for this index";
@@ -661,7 +665,8 @@ void MainWindow::on_action_menu_contracts_statistics_view_triggered()
         combo->addItem(qsl("Anzahl Verträge nach Laufzeiten"),        QVariant(CONTRACT_TERMS));
         combo->setCurrentIndex(0);
     }
-    combo->setCurrentIndex(combo->currentIndex());
+    // combo->setCurrentIndex(combo->currentIndex());
+    on_comboUebersicht_currentIndexChanged(combo->currentIndex());
     ui->stackedWidget->setCurrentIndex(overviewsPageIndex);
 }
 void MainWindow::on_comboUebersicht_currentIndexChanged(int i)
@@ -689,6 +694,22 @@ void MainWindow::on_action_menu_contracts_print_lists_triggered()
 {   LOG_CALL;
     if( !createCsvActiveContracts())
         QMessageBox::critical(this, qsl("Fehler"), qsl("Die Datei konnte nicht angelegt werden. Ist sie z.B. in Excel geöffnet?"));
+}
+void MainWindow::on_actionAktuelle_Auswahl_triggered()
+{
+    csvwriter csv;
+    QSqlTableModel* model = dynamic_cast<QSqlTableModel*>(ui->contractsTableView->model());
+    QSqlRecord rec =model->record();
+    for( int i=0; i<rec.count(); i++) {
+        csv.addColumn(rec.fieldName(i));
+    }
+    for( int i=0; i<model->rowCount(); i++) {
+        QSqlRecord rec =model->record(i);
+        for( int j=0; j<rec.count(); j++) {
+            csv.appendToRow(rec.value(j).toString());
+        }
+    }
+    csv.save("c:\\temp\\test.csv");
 }
 // debug funktions
 void MainWindow::on_action_menu_debug_create_sample_data_triggered()
