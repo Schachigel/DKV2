@@ -629,7 +629,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="action_menu_contracts_print_lists">
    <property name="text">
-    <string>Aktive Verträge (CSV)</string>
+    <string>Aktive Verträge mit Kontaktdaten</string>
    </property>
   </action>
   <action name="action_menu_database_start">
@@ -722,7 +722,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionAktuelle_Auswahl">
    <property name="text">
-    <string>Aktuelle Auswahl</string>
+    <string>Vertragstabelle (gefiltert)</string>
    </property>
   </action>
  </widget>

@@ -91,20 +91,27 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
     case startPageIndex:
         prepare_startPage();
         ui->action_menu_creditors_delete->setEnabled(false);
+        ui->menu_contracts_subm_print_lists->setEnabled(false);
         break;
     case creditorsListPageIndex:
         ui->action_menu_creditors_delete->setEnabled(true);
+        ui->menu_contracts_subm_print_lists->setEnabled(false);
         break;
     case newCreditorPageIndex:
         ui->action_menu_creditors_delete->setEnabled(false);
+        ui->menu_contracts_subm_print_lists->setEnabled(false);
         break;
     case contractsListPageIndex:
         ui->action_menu_creditors_delete->setEnabled(false);
+        ui->menu_contracts_subm_print_lists->setEnabled(true);
         break;
     case bookingsListIndex:
         ui->action_menu_creditors_delete->setEnabled(false);
+        ui->menu_contracts_subm_print_lists->setEnabled(false);
         break;
     case overviewsPageIndex:
+        ui->action_menu_creditors_delete->setEnabled(false);
+        ui->menu_contracts_subm_print_lists->setEnabled(false);
         break;
     default:
         qWarning() << "stackedWidget current change not implemented for this index";
@@ -709,7 +716,7 @@ void MainWindow::on_actionAktuelle_Auswahl_triggered()
             csv.appendToRow(rec.value(j).toString());
         }
     }
-    csv.save("c:\\temp\\test.csv");
+    csv.save(QDate::currentDate().toString("yyyy-MM-dd_Vertragsliste.csv"));
 }
 // debug funktions
 void MainWindow::on_action_menu_debug_create_sample_data_triggered()

@@ -2,6 +2,7 @@
 #include "helper.h"
 #include "helpersql.h"
 #include "helperfile.h"
+#include "appconfig.h"
 #include "csvwriter.h"
 
 void csvwriter::addColumn(QString header)
@@ -75,10 +76,11 @@ QString csvwriter::out() const
 
 bool csvwriter::save(const QString filename) const
 {   LOG_CALL_W(filename);
-    backupFile(filename);
-    QFile file(filename);
-    if( !file.open(QIODevice::WriteOnly|QIODevice::Truncate))
+    QString path {appConfig::Outdir() + qsl("/") + filename};
+    backupFile(path);
     {
+    QFile file(path);
+    if( !file.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
         qCritical() << "could not open csv file for writing: " << filename;
         return false;
     }
@@ -86,6 +88,8 @@ bool csvwriter::save(const QString filename) const
     s.setCodec("UTF-8");
     s.setGenerateByteOrderMark(true);
     s << out();
+    }
+    showFileInFolder(path);
     return true;
 }
 
