@@ -138,8 +138,14 @@ void wizChangeContract_DatePage::initializePage()
 bool wizChangeContract_DatePage::validatePage()
 {
     wizChangeContract* wiz= dynamic_cast<wizChangeContract*>(this->wizard());
-    if( field(qsl("date")).toDate() < wiz->earlierstDate)
+    QDate d {field(qsl("date")).toDate()};
+    if( d < wiz->earlierstDate)
         return false;
+    if( d.month() == 1 && d.day() == 1)
+        // avoid interest bookings on the date of anual settlements.
+        // it is a holiday anyways
+        return false;
+
     return true;
 }
 
