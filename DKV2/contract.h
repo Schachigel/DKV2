@@ -34,7 +34,6 @@ struct contract
     qlonglong creditorId() const{ return td.getValue(qsl("KreditorId")).toLongLong();}
     void setLabel(QString l) { td.setValue(qsl("Kennung"), l);}
     QString label() const { return td.getValue(qsl("Kennung")).toString();};
-//    void setInterest100th( int percentpercent) {td.setValue(qsl("ZSatz"), percentpercent);}
     void setInterestRate( double percent) {td.setValue(qsl("ZSatz"), int(percent*100));}
     double interestRate() const { return double(td.getValue(qsl("ZSatz")).toInt())/100.;}
     void setPlannedInvest(double d) { td.setValue(qsl("Betrag"), ctFromEuro(d));}
@@ -55,14 +54,14 @@ struct contract
     booking latestBooking();
     // write to db
     int saveNewContract();
-    bool validateAndSaveNewContract(QString& meldung);
+    /* not used?  int validateAndSaveNewContract(QString& meldung); */
     // contract activation
     bool activate(const QDate& aDate, double amount);
     bool isActive() const;
     QDate activationDate() const;
-    // booking actions
-    int annualSettlement(int year =0);
-    bool bookInterest(QDate d, bool transactual =true);
+    // other booking actions
+    int annualSettlement(int year, const bool transactual =true);
+    bool bookInterest(QDate d);
     bool deposit(QDate d, double amount);
     bool payout(QDate d, double amount);
     bool cancel(QDate);
@@ -75,6 +74,8 @@ private:
     bool storeTerminationDate(QDate d) const;
     bool archive();
     void reset() {init();}
+    mutable enum { invalid =-1, passive =0, active =1 } activated=invalid;
+    mutable QDate aDate = EndOfTheFuckingWorld;
 };
 
 // test helper

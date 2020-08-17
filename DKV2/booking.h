@@ -9,14 +9,15 @@ struct booking
 {
 enum Type{
     non, // means all
-    deposit = 1,
-    payout  = 2,
+    deposit = 1, payout  = 2,
     interestDeposit = 4,
-    interestPayout  = 8
-};
-Type type;
-QDate date;
-double amount;
+    annualInterestDeposit = 8
+    };
+static QString displayString(Type t);
+
+Type type =non;
+QDate date =EndOfTheFuckingWorld;
+double amount =0.;
 qlonglong contractId;
     // construction
     booking(booking::Type t =non, QDate d =EndOfTheFuckingWorld, double a =0.) : type(t), date(d), amount(a) {};
@@ -27,7 +28,6 @@ qlonglong contractId;
     static bool makeDeposit(   const qlonglong contractId, const QDate date, const double amount);
     static bool makePayout(    const qlonglong contractId, const QDate date, const double amount);
     static bool investInterest(const qlonglong contractId, const QDate date, const double amount);
-    static bool payoutInterest(const qlonglong contractId, const QDate date, const double amount);
     bool executeBooking();
 private:
     static bool doBooking( const booking::Type, const qlonglong contractId, const QDate date, const double amount);

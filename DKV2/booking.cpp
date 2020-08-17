@@ -29,7 +29,24 @@
     }
     return deletedBookings;
 }
-
+/* static */ QString booking::displayString(Type t)
+{
+    switch(t)
+    {
+    case booking::Type::deposit :
+        return qsl("Einzahlung");
+    case booking::Type::payout :
+        return qsl("Auszahlung");
+    case booking::Type::interestDeposit:
+        return qsl("Zinsanrechnung");
+    case booking::Type::annualInterestDeposit:
+        return qsl("Jahreszins");
+    default:
+        QString error{qsl("FEHLER: ungültiger Buchungstyp")};
+        Q_ASSERT(true);
+        return error;
+    }
+}
 /* static */ QString booking::typeName(Type t)
 {
     switch(t) {
@@ -37,7 +54,6 @@
     case booking::deposit: return qsl("deposit");
     case booking::payout: return qsl("payout");
     case booking::interestDeposit: return qsl("reinvest interest");
-    case booking::interestPayout: return qsl("interest payout");
     default: return qsl("ERROR");
     }
 }
@@ -72,11 +88,6 @@
 {
     Q_ASSERT( amount >= 0.);
     return doBooking(Type::interestDeposit, contractId, date, amount);
-}
-/* static */ bool booking::payoutInterest(qlonglong contractId, QDate date, double amount)
-{
-    if( amount > 0) amount *= -1.;
-    return doBooking(Type::interestPayout, contractId, date, amount);
 }
 
 /* static */ QDate bookings::dateOfnextSettlement()

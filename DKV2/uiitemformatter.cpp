@@ -97,19 +97,7 @@ void thesaItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &op
 
 QString bookingTypeFormatter::displayText(const QVariant &value, const QLocale &) const
 {
-    switch(value.toInt())
-    {
-    case booking::Type::deposit :
-        return qsl("Einzahlung");
-    case booking::Type::payout :
-        return qsl("Auszahlung");
-    case booking::Type::interestPayout:
-        return qsl("Zinsauszahlung");
-    case booking::Type::interestDeposit:
-        return qsl("Zinsanrechnung");
-    default:
-        return qsl("FEHLER");
-    }
+    return booking::displayString( (booking::Type) value.toInt());
 }
 void bookingTypeFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {

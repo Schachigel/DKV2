@@ -117,31 +117,29 @@ struct dbConfig
         return !(lhs==rhs);
     }
 
-    inline friend bool operator==(const dbConfig& lhs, const dbConfig& rhs) {
-        bool ret =false;
-        do{
-            if( lhs.address1 != rhs.address1)   break;
-            if( lhs.address2 != rhs.address2)   break;
-            if( lhs.street   != rhs.street)     break;
-            if( lhs.plz      != rhs.plz)        break;
-            if( lhs.city     != rhs.city)       break;
-            if( lhs.email    != rhs.email)      break;
-            if( lhs.url      != rhs.url)        break;
-            if( lhs.pi       != rhs.pi)         break;
-            if( lhs.hre      != rhs.hre)        break;
-            if( lhs.gefue1   != rhs.gefue1)     break;
-            if( lhs.gefue2   != rhs.gefue2)     break;
-            if( lhs.gefue3   != rhs.gefue3)     break;
-            if( lhs.dkv      != rhs.dkv)        break;
-            if( lhs.startindex!= rhs.startindex)break;
-            if( lhs.dbId     != rhs.dbId)       break;
-            if( lhs.minPayout!= rhs.minPayout)  break;
-            if( lhs.minContract!= rhs.minContract) break;
-            if( lhs.maxInterest!= rhs.maxInterest) break;
-            if( lhs.dbVersion != rhs.dbVersion) break;
-            ret =true;
-        } while(false);
-        return ret;
+    inline friend bool operator==(const dbConfig &lhs, const dbConfig &rhs)
+    {
+        if (lhs.address1 == rhs.address1)
+         if (lhs.address2 == rhs.address2)
+          if (lhs.street == rhs.street)
+           if (lhs.plz == rhs.plz)
+            if (lhs.city == rhs.city)
+             if (lhs.email == rhs.email)
+              if (lhs.url == rhs.url)
+               if (lhs.pi == rhs.pi)
+                if (lhs.hre == rhs.hre)
+                 if (lhs.gefue1 == rhs.gefue1)
+                  if (lhs.gefue2 == rhs.gefue2)
+                   if (lhs.gefue3 == rhs.gefue3)
+                    if (lhs.dkv == rhs.dkv)
+                     if (lhs.startindex == rhs.startindex)
+                      if (lhs.dbId == rhs.dbId)
+                       if (lhs.minPayout == rhs.minPayout)
+                        if (lhs.minContract == rhs.minContract)
+                         if (lhs.maxInterest == rhs.maxInterest)
+                          if (lhs.dbVersion == rhs.dbVersion)
+                              return true;
+        return false;
     }
 };
 
