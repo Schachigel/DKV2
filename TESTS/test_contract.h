@@ -36,14 +36,17 @@ private slots:
     void test_annualSettlement_twoYear();
     void test_deposit01();
     void test_depositFailsOn_1_1();
-    void test_deposit_wSettlement();
+    void test_deposit_wSettlement_reinvesting();
+    void test_deposit_wSettlement_wPayout();
     void test_payout();
-    void test_payout_wSettlement();
+    void test_payout_wSettlement_reinvesting();
+    void test_payout_wSettlement_wPayout();
 
     void test_activationDate();
     //void test_latestSettlementDate();
     void test_getValue_byDate();
-    void test_getValue_byDate_wInterestPayout();
+    void test_contract_cv_wInterestPayout();
+    void test_contract_cv_reInvesting();
     void test_finalize();
 };
 

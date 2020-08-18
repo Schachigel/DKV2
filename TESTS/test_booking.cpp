@@ -49,7 +49,7 @@ void test_booking::test_dateONSettelment_contractsW_interestBookings00()
     contract cont(saveRandomContract(cred.id()));
     cont.setInterestRate(1.);
     cont.activate(QDate( 2000,6,1), 1000.);
-    booking::investInterest(cred.id(), QDate(2001,1,1), 5.);
+    booking::bookReInvestInterest(cred.id(), QDate(2001,1,1), 5.);
     QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2002, 1, 1));
 }
 void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings01()
@@ -58,7 +58,7 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings01()
     contract cont(saveRandomContract(cred.id()));
     cont.setInterestRate(1.);
     cont.activate(QDate( 2000,6,1), 1000.);
-    booking::investInterest(cred.id(), QDate(2001,1,1), 5.);
+    booking::bookReInvestInterest(cred.id(), QDate(2001,1,1), 5.);
 
     contract cont2(saveRandomContract(cred.id()));
     cont2.activate(QDate(2000, 6,1), 1000.); // EARLIER
@@ -71,7 +71,7 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings02()
     contract cont(saveRandomContract(cred.id()));
     cont.setInterestRate(1.);
     cont.activate(QDate( 2000,6,1), 1000.);
-    booking::investInterest(cred.id(), QDate(2001,1,1), 5.); // EARLIER
+    booking::bookReInvestInterest(cred.id(), QDate(2001,1,1), 5.); // EARLIER
 
     contract cont2(saveRandomContract(cred.id()));
     cont2.activate(QDate(2002, 6,1), 1000.);

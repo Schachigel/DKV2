@@ -23,6 +23,10 @@ struct contract
     {   // friend functions - even in the class definition - are not member
         return lhs.td == rhs.td;
     }
+    inline friend bool operator!=(const contract& lhs, const contract& rhs)
+    {
+        return !(lhs==rhs);
+    }
     // construction
     contract(qlonglong id =-1);
     void init();
@@ -54,14 +58,13 @@ struct contract
     booking latestBooking();
     // write to db
     int saveNewContract();
-    /* not used?  int validateAndSaveNewContract(QString& meldung); */
+/* not used?  int validateAndSaveNewContract(QString& meldung); */
     // contract activation
     bool activate(const QDate& aDate, double amount);
     bool isActive() const;
     QDate activationDate() const;
     // other booking actions
     int annualSettlement(int year, const bool transactual =true);
-    bool bookInterest(QDate d);
     bool deposit(QDate d, double amount);
     bool payout(QDate d, double amount);
     bool cancel(QDate);
@@ -71,10 +74,12 @@ private:
     TableDataInserter td;
     booking latest;
     // helper
+    bool bookInterest(QDate d);
     bool storeTerminationDate(QDate d) const;
     bool archive();
     void reset() {init();}
-    mutable enum { invalid =-1, passive =0, active =1 } activated=invalid;
+    mutable enum constract_activation_status
+         { uninit =-1, passive =0, active =1 } activated=uninit;
     mutable QDate aDate = EndOfTheFuckingWorld;
 };
 

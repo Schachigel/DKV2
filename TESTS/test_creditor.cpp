@@ -76,7 +76,8 @@ void test_creditor::test_saveManyRandomCreditors()
     dbgTimer t;
     int numberOfCreditors = 50;
     saveRandomCreditors(numberOfCreditors);
-    QVERIFY2(rowCount("Kreditoren") == numberOfCreditors, "random creditor creation failed");
+    //QVERIFY2(rowCount("Kreditoren") == numberOfCreditors, "random creditor creation failed");
+    QCOMPARE(rowCount("Kreditoren"), numberOfCreditors);
 }
 
 void test_creditor::test_hasActiveContracts_noContracts()

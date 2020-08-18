@@ -37,7 +37,7 @@
         return qsl("Einzahlung");
     case booking::Type::payout :
         return qsl("Auszahlung");
-    case booking::Type::interestDeposit:
+    case booking::Type::reInvestInterest:
         return qsl("Zinsanrechnung");
     case booking::Type::annualInterestDeposit:
         return qsl("Jahreszins");
@@ -50,10 +50,11 @@
 /* static */ QString booking::typeName(Type t)
 {
     switch(t) {
-    case booking::non: return qsl("invalid booking");
-    case booking::deposit: return qsl("deposit");
-    case booking::payout: return qsl("payout");
-    case booking::interestDeposit: return qsl("reinvest interest");
+    case booking::Type::non: return qsl("invalid booking");
+    case booking::Type::deposit: return qsl("deposit");
+    case booking::Type::payout: return qsl("payout");
+    case booking::Type::reInvestInterest: return qsl("reinvest interest");
+    case booking::Type::annualInterestDeposit: return qsl("annual Interest");
     default: return qsl("ERROR");
     }
 }
@@ -72,22 +73,27 @@
     qCritical() << "booking failed for contract#: " << contractId << " Amount: " << ctFromEuro(amount) << " date: " << date;;
     return false;
 }
-/* static */ bool booking::makeDeposit(const qlonglong contractId, const QDate date, const double amount)
+/* static */ bool booking::bookDeposit(const qlonglong contractId, const QDate date, const double amount)
 {
     Q_ASSERT( amount > 0.);
     return doBooking( Type::deposit, contractId, date, amount);
 }
-/* static */ bool booking::makePayout(qlonglong contractId, QDate date, double amount)
+/* static */ bool booking::bookPayout(qlonglong contractId, QDate date, double amount)
 {
     if( amount > 0. ) amount = -1. * amount;
     // contract has to check that a payout is possible
     return doBooking(Type::payout, contractId, date, amount);
 
 }
-/* static */ bool booking::investInterest(qlonglong contractId, QDate date, double amount)
+/* static */ bool booking::bookReInvestInterest(qlonglong contractId, QDate date, double amount)
 {
     Q_ASSERT( amount >= 0.);
-    return doBooking(Type::interestDeposit, contractId, date, amount);
+    return doBooking(Type::reInvestInterest, contractId, date, amount);
+}
+/* static */ bool booking::bookAnnualInterestDeposit(qlonglong contractId, QDate date, double amount)
+{
+    Q_ASSERT( amount >= 0.);
+    return doBooking(Type::annualInterestDeposit, contractId, date, amount);
 }
 
 /* static */ QDate bookings::dateOfnextSettlement()
@@ -102,12 +108,12 @@
                   "AND Buchungen.Datum <='%3'");
     where = where.arg(QString::number(cid), from.toString(Qt::ISODate), to.toString(Qt::ISODate));
     QVector<QSqlRecord> records = executeSql(booking::getTableDef().Fields(), where, qsl("Datum DESC"));
-    QVector<booking> ret;
+    QVector<booking> vRet;
     for( auto& rec: qAsConst(records)) {
         booking::Type t = booking::Type(rec.value(qsl("BuchungsArt")).toInt());
         QDate d = rec.value(qsl("Datum")).toDate();
         double amount = euroFromCt(rec.value(qsl("Betrag")).toInt());
-        ret.push_back(booking(t, d, amount));
+        vRet.push_back(booking(t, d, amount));
     }
-    return ret;
+    return vRet;
 }
