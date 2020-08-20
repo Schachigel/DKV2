@@ -370,13 +370,19 @@ void MainWindow::on_action_cmenu_go_contracts_triggered()
 void MainWindow::on_actionNeu_triggered()
 {
     newCreditorAndContract();
+    if( ui->stackedWidget->currentIndex() == creditorsListPageIndex)
+        qobject_cast<QSqlTableModel*>(ui->CreditorsTableView->model())->select();
+    if( ui->stackedWidget->currentIndex() == contractsListPageIndex)
+        qobject_cast<QSqlTableModel*>(ui->contractsTableView->model())->select();
+    if( ui->stackedWidget->currentIndex() == overviewsPageIndex)
+        on_action_menu_contracts_statistics_view_triggered();
 }
 
 // new Creditor page
 void MainWindow::on_action_menu_creditors_create_triggered()
 {   LOG_CALL;
     empty_create_creditor_form();
-    ui->stackedWidget->setCurrentIndex(newCreditorPageIndex);
+    ui->stackedWidget->currentWidget()->update();
 }
 void MainWindow::createButtonMenu_saveCreditorAnd()
 {   LOG_CALL;
@@ -650,7 +656,7 @@ void MainWindow::on_action_cmenu_change_contract_triggered()
 // new creditor or contract from contract menu
 void MainWindow::on_action_Neu_triggered()
 {
-    newCreditorAndContract();
+    on_actionNeu_triggered();
 }
 // terminated contracts list
 void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
