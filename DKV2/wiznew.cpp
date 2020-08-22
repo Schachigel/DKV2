@@ -43,10 +43,18 @@ void wizNewOrExistingPage::initializePage()
         QList<QPair<int, QString>> Personen;
         cbCreditors->clear();
         KreditorenListeMitId(Personen);
-        for(auto& Entry :qAsConst(Personen)) {
-            cbCreditors->addItem( Entry.second, QVariant((Entry.first)));
+        if( Personen.count()) {
+            for(auto& Entry :qAsConst(Personen)) {
+                cbCreditors->addItem( Entry.second, QVariant((Entry.first)));
+            }
+            rbExisting->setChecked(false);
+            rbNew->setChecked(true);
+            cbCreditors->setEnabled(false);
+        } else {
+            rbNew->setChecked(true);
+            cbCreditors->setEnabled(false);
+            rbExisting->setEnabled(false);
         }
-        cbCreditors->setEnabled(false);
     }
     init =false; // do not repeat after "back"
 }
@@ -543,4 +551,3 @@ wizNew::wizNew(QWidget *p) : QWizard(p)
     setPage(page_contract_term, new wizContractTimingPage(this));
     setPage(page_confirm_contract, new wizContractConfirmationPage(this));
 }
-
