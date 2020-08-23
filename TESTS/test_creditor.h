@@ -29,9 +29,10 @@ private slots:
     void test_hasActiveContracts_noContracts();
     void test_hasActiveContracts_hasInactContract();
     void test_hasActiveContracts_hasActContract();
-    void test_deleteContract_woContract();
-    void test_deleteContract_wInactiveContract();
-    void test_deleteContract_wActiveContractFails();
+    void test_deleteCreditor_woContract();
+    void test_deleteCreditor_wInactiveContract();
+    void test_deleteCredtior_wActiveContractFails();
+    void test_deleteCreditor_wTerminatedContractFails();
 };
 
 #endif // TEST_CREDITOR_H

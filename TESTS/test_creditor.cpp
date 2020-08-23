@@ -100,23 +100,33 @@ void test_creditor::test_hasActiveContracts_hasActContract()
     co.activate(QDate::currentDate(), 1000.0);
     QCOMPARE(c.hasActiveContracts(), true);
 }
-void test_creditor::test_deleteContract_woContract()
+void test_creditor::test_deleteCreditor_woContract()
 {
     creditor c = saveRandomCreditor();
     QVERIFY(c.remove());
 }
 
-void test_creditor::test_deleteContract_wInactiveContract()
+void test_creditor::test_deleteCreditor_wInactiveContract()
 {
     creditor c = saveRandomCreditor();
     contract co = saveRandomContract(c.id());
     QVERIFY(c.remove());
 }
 
-void test_creditor::test_deleteContract_wActiveContractFails()
+void test_creditor::test_deleteCredtior_wActiveContractFails()
 {
     creditor c = saveRandomCreditor();
     contract co = saveRandomContract(c.id());
     co.activate(QDate::currentDate(), 1000.0);
+    QCOMPARE(c.remove(), false);
+}
+
+void test_creditor::test_deleteCreditor_wTerminatedContractFails()
+{
+    creditor c = saveRandomCreditor();
+    contract co = saveRandomContract(c.id());
+    co.activate(QDate(2000, 6, 1), 1000);
+    double interestPayout =0, payout =0.;
+    co.finalize(false, QDate(2020, 5, 31), interestPayout, payout);
     QCOMPARE(c.remove(), false);
 }
