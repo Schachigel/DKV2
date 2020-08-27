@@ -24,7 +24,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -96,219 +96,6 @@ p, li { white-space: pre-wrap; }
            <string>Doppelklick oder F2 um ein Feld zu ändern. Rechte Maustaste für weitere Optionen</string>
           </property>
          </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="NewPerson">
-       <property name="maximumSize">
-        <size>
-         <width>800</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <layout class="QHBoxLayout" name="hlNeuePersonButtons">
-          <item>
-           <widget class="uiCustomToolButton" name="customBtn_saveCreditorAnd">
-            <property name="toolTip">
-             <string>Der DK Geber wird gespeichert und ein weiterer Datensatz zur Eingabe angelegt</string>
-            </property>
-            <property name="text">
-             <string>Speichern und ... </string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="cancelCreateCreditor">
-            <property name="toolTip">
-             <string>Das Anlegen des DK Gebers wird abgebrochen</string>
-            </property>
-            <property name="text">
-             <string>Abbrechen</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <layout class="QFormLayout" name="formLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="lVorname">
-            <property name="text">
-             <string>Vorname:</string>
-            </property>
-            <property name="buddy">
-             <cstring>leVorname</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="leVorname"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="lNachname">
-            <property name="text">
-             <string>Nachname:</string>
-            </property>
-            <property name="buddy">
-             <cstring>leNachname</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="leNachname"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="lStrasse">
-            <property name="text">
-             <string>Straße:</string>
-            </property>
-            <property name="buddy">
-             <cstring>leStrasse</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="leStrasse"/>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="lPlzStadt">
-            <property name="text">
-             <string>PLZ - Stadt</string>
-            </property>
-            <property name="buddy">
-             <cstring>lePlz</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,5">
-            <item>
-             <widget class="QLineEdit" name="lePlz">
-              <property name="maxLength">
-               <number>8</number>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="leStadt"/>
-            </item>
-           </layout>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="lblEMail">
-            <property name="text">
-             <string>E-Mail</string>
-            </property>
-            <property name="buddy">
-             <cstring>leEMail</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QLineEdit" name="leEMail"/>
-          </item>
-          <item row="6" column="0" colspan="2">
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
-            <item>
-             <widget class="QLabel" name="lblAnmerkung">
-              <property name="text">
-               <string>Anmerkung</string>
-              </property>
-              <property name="buddy">
-               <cstring>txtAnmerkung</cstring>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPlainTextEdit" name="txtAnmerkung">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>50</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>50</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </item>
-          <item row="9" column="0">
-           <widget class="QLabel" name="lIban">
-            <property name="text">
-             <string>IBAN:</string>
-            </property>
-            <property name="buddy">
-             <cstring>leIban</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="1">
-           <widget class="QLineEdit" name="leIban"/>
-          </item>
-          <item row="10" column="0">
-           <widget class="QLabel" name="lBic">
-            <property name="text">
-             <string>BIC:</string>
-            </property>
-            <property name="buddy">
-             <cstring>leBic</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="10" column="1">
-           <widget class="QLineEdit" name="leBic"/>
-          </item>
-          <item row="11" column="0">
-           <widget class="QLabel" name="lblPersId">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="11" column="1">
-           <widget class="QLabel" name="lblHiddenPersId">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-         </layout>
         </item>
        </layout>
       </widget>
@@ -538,11 +325,6 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
   </action>
-  <action name="action_menu_creditors_create">
-   <property name="text">
-    <string>Anlegen</string>
-   </property>
-  </action>
   <action name="action_menu_creditors_delete">
    <property name="text">
     <string>Löschen</string>
@@ -647,38 +429,6 @@ p, li { white-space: pre-wrap; }
     <string>Kopie anlegen</string>
    </property>
   </action>
-  <action name="action_saveCreditor_go_creditors">
-   <property name="text">
-    <string>Speichern und zu Kreditoren</string>
-   </property>
-   <property name="toolTip">
-    <string>Speichern und die Liste der Kreditoren anzeigen</string>
-   </property>
-  </action>
-  <action name="action_saveCreditor_go_new_creditor">
-   <property name="text">
-    <string>Speichern, dann neuen K. anlegen</string>
-   </property>
-   <property name="toolTip">
-    <string>Speichern und dann weiteren Kreditor anlegen</string>
-   </property>
-  </action>
-  <action name="action_save_contract_go_contracts">
-   <property name="text">
-    <string>Speichern und zu Verträgen</string>
-   </property>
-   <property name="toolTip">
-    <string>Speichern und zur Liste der Verträgen wechseln</string>
-   </property>
-  </action>
-  <action name="action_save_contract_go_kreditors">
-   <property name="text">
-    <string>Speichern und zu Kreditoren</string>
-   </property>
-   <property name="toolTip">
-    <string>Speichern und zur Kreditor Liste wechseln</string>
-   </property>
-  </action>
   <action name="action_about_DKV2">
    <property name="text">
     <string>Über DKV2</string>
@@ -727,34 +477,16 @@ p, li { white-space: pre-wrap; }
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <customwidgets>
-  <customwidget>
-   <class>uiCustomToolButton</class>
-   <extends>QToolButton</extends>
-   <header>uicustomtoolbutton.h</header>
-  </customwidget>
- </customwidgets>
  <tabstops>
   <tabstop>le_CreditorsFilter</tabstop>
   <tabstop>btn_reset_filter_creditors</tabstop>
   <tabstop>CreditorsTableView</tabstop>
-  <tabstop>leNachname</tabstop>
-  <tabstop>leStrasse</tabstop>
-  <tabstop>lePlz</tabstop>
-  <tabstop>leStadt</tabstop>
-  <tabstop>leEMail</tabstop>
-  <tabstop>txtAnmerkung</tabstop>
-  <tabstop>leIban</tabstop>
-  <tabstop>leBic</tabstop>
   <tabstop>le_ContractsFilter</tabstop>
   <tabstop>reset_contracts_filter</tabstop>
   <tabstop>contractsTableView</tabstop>
   <tabstop>comboUebersicht</tabstop>
   <tabstop>pbPrint</tabstop>
   <tabstop>txtOverview</tabstop>
-  <tabstop>cancelCreateCreditor</tabstop>
-  <tabstop>customBtn_saveCreditorAnd</tabstop>
-  <tabstop>leVorname</tabstop>
   <tabstop>teWelcome</tabstop>
  </tabstops>
  <resources/>

@@ -13,6 +13,7 @@ struct wizFileSelection_IntroPage : public QWizardPage
     void initializePage() override;
     void setVisible(bool v) override;
     bool validatePage() override;
+    Q_OBJECT
 private slots:
     void browseButtonClicked();
 };
@@ -27,6 +28,7 @@ struct wizFileSelectionWiz : public QWizard
 
     QString title;
     QString subtitle;
+    Q_OBJECT;
 };
 /* database -> new */
 /* file selection Page */
@@ -36,6 +38,7 @@ struct wizFileSelectionNewDb_IntroPage : public QWizardPage
     void initializePage() override;
     void setVisible(bool v) override;
     bool validatePage() override;
+    Q_OBJECT
 private slots:
     void browseButtonClicked();
 };
@@ -52,6 +55,7 @@ struct wizProjectDetails_Page : public QWizardPage
 {
     wizProjectDetails_Page(QWidget* p= nullptr);
     void initializePage() override;
+    Q_OBJECT;
 };
 /* contract label Page */
 struct wizContractLableInfo_Page : public QWizardPage
@@ -62,6 +66,7 @@ struct wizContractLableInfo_Page : public QWizardPage
 //    void disableStartIndex() { leStartIndex->setDisabled(true);};
 private:
     QLineEdit* leStartIndex;
+    Q_OBJECT;
 };
 /* min values Page */
 struct wizContractMinValues_Page : public QWizardPage
@@ -70,10 +75,14 @@ struct wizContractMinValues_Page : public QWizardPage
     void initializePage() override;
 };
 /* new db summary Page */
-struct wizNewDatabase_SummaryPage : public QWizardPage{
+class wizNewDatabase_SummaryPage : public QWizardPage{
+    Q_OBJECT;
+public:
     wizNewDatabase_SummaryPage (QWidget* p=nullptr);
     void initializePage() override;
-    bool validatePage() override;
+    bool isComplete() const override;
+public slots:
+    void onConfirmData_toggled(int);
 };
 /* project address WIZ */
 struct wizNewDatabaseWiz : public QWizard
@@ -88,18 +97,21 @@ struct wizNewDatabaseWiz : public QWizard
 
     QString title;
     QString subtitle;
+    Q_OBJECT;
 };
 /* configure project intro PAGE*/
 struct wizConfigure_IntroPage : public QWizardPage
 {
     wizConfigure_IntroPage(QWidget* p =nullptr);
     // void initializePage() override;
+    Q_OBJECT;
 };
 /* project config WIZ*/
 struct wizConfigureProjectWiz : public QWizard
 {
     wizConfigureProjectWiz(QWidget* p =nullptr);
     void updateDbConfig();
+    Q_OBJECT;
 };
 
 #endif // FILESELECTIONWIZ_H

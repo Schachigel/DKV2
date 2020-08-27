@@ -32,19 +32,19 @@ wizFileSelection_IntroPage::wizFileSelection_IntroPage(QWidget* p) : QWizardPage
 
 void wizFileSelection_IntroPage::initializePage()
 {
-    wizFileSelectionWiz* wiz = dynamic_cast<wizFileSelectionWiz*>(wizard());
+    wizFileSelectionWiz* wiz = qobject_cast<wizFileSelectionWiz*>(wizard());
     if( wiz) {
         setTitle(wiz->title);
         setSubTitle(wiz->subtitle);
     } else {
-        wizNewDatabaseWiz* nDbWiz = dynamic_cast<wizNewDatabaseWiz*>(wizard());
+        wizNewDatabaseWiz* nDbWiz = qobject_cast<wizNewDatabaseWiz*>(wizard());
         setTitle(nDbWiz->title);
         setSubTitle(nDbWiz->subtitle);
     }
 }
 
 void wizFileSelection_IntroPage::browseButtonClicked() {
-    wizFileSelectionWiz* wiz = dynamic_cast<wizFileSelectionWiz*>(wizard());
+    wizFileSelectionWiz* wiz = qobject_cast<wizFileSelectionWiz*>(wizard());
 
     QString selectedFile =( wiz->existingFile) ? QFileDialog::getOpenFileName(nullptr, wiz->bffTitle, wiz->openInFolder, wiz->fileTypeDescription, nullptr)
             : QFileDialog::getSaveFileName(nullptr, wiz->bffTitle, wiz->openInFolder, wiz->fileTypeDescription, nullptr);
@@ -54,7 +54,7 @@ void wizFileSelection_IntroPage::browseButtonClicked() {
 }
 
 bool wizFileSelection_IntroPage::validatePage() {
-    wizFileSelectionWiz* wiz = dynamic_cast<wizFileSelectionWiz*>(wizard());
+    wizFileSelectionWiz* wiz = qobject_cast<wizFileSelectionWiz*>(wizard());
     if( wiz->existingFile)
         return QFile::exists(field(qsl("selectedFile")).toString());
     else
@@ -98,13 +98,13 @@ wizFileSelectionNewDb_IntroPage::wizFileSelectionNewDb_IntroPage(QWidget* p) : Q
 
 void wizFileSelectionNewDb_IntroPage::initializePage()
 {
-    wizNewDatabaseWiz* wiz = dynamic_cast<wizNewDatabaseWiz*>(wizard());
+    wizNewDatabaseWiz* wiz = qobject_cast<wizNewDatabaseWiz*>(wizard());
     setTitle(wiz->title);
     setSubTitle(wiz->subtitle);
 }
 
 void wizFileSelectionNewDb_IntroPage::browseButtonClicked() {
-    wizNewDatabaseWiz* wiz = dynamic_cast<wizNewDatabaseWiz*>(wizard());
+    wizNewDatabaseWiz* wiz = qobject_cast<wizNewDatabaseWiz*>(wizard());
 
     QString selectedFile =( wiz->existingFile) ? QFileDialog::getOpenFileName(nullptr, wiz->bffTitle, wiz->openInFolder, wiz->fileTypeDescription, nullptr)
             : QFileDialog::getSaveFileName(nullptr, wiz->bffTitle, wiz->openInFolder, wiz->fileTypeDescription, nullptr);
@@ -114,7 +114,7 @@ void wizFileSelectionNewDb_IntroPage::browseButtonClicked() {
 }
 
 bool wizFileSelectionNewDb_IntroPage::validatePage() {
-    wizNewDatabaseWiz* wiz = dynamic_cast<wizNewDatabaseWiz*>(wizard());
+    wizNewDatabaseWiz* wiz = qobject_cast<wizNewDatabaseWiz*>(wizard());
     if( wiz->existingFile) {
         return QFile::exists(field(qsl("selectedFile")).toString());
     }
@@ -332,6 +332,7 @@ wizNewDatabase_SummaryPage::wizNewDatabase_SummaryPage(QWidget* p) : QWizardPage
     QVBoxLayout* layout = new QVBoxLayout;
     layout-> addWidget(cb);
     setLayout(layout);
+    connect(cb, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
 }
 void wizNewDatabase_SummaryPage::initializePage()
 {
@@ -355,9 +356,13 @@ void wizNewDatabase_SummaryPage::initializePage()
     subt = subt.arg(field(STARTINDEX).toString());
     setSubTitle(subt);
 }
-bool wizNewDatabase_SummaryPage::validatePage()
+void wizNewDatabase_SummaryPage::onConfirmData_toggled(int)
 {
-    return field(qsl("confirmed")).toBool();
+    completeChanged();
+}
+bool wizNewDatabase_SummaryPage::isComplete() const
+{
+    return field("confirmed").toBool();
 }
 
 /*

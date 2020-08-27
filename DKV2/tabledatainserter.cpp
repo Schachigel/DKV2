@@ -120,7 +120,7 @@ QString TableDataInserter::getInsert_noAuto_RecordSQL() const
     return sql;
 }
 
-QString TableDataInserter::getUpdateRecordSQL() const
+QString TableDataInserter::getUpdateRecordSQL(qlonglong& autovalue) const
 {   LOG_CALL;
     if( record.isEmpty()) return QString();
     QString sql(qsl("UPDATE ") + tablename +qsl(" SET "));
@@ -129,10 +129,11 @@ QString TableDataInserter::getUpdateRecordSQL() const
     bool firstField = true;
     for( int i=0; i<record.count(); i++) {
         if( ! firstField) sql += qsl(", ");
-        // WARN ! THIS will work with exactly 1 AutoValue
-        if( record.field(i).isAutoValue())
+        // WARN ! THIS will work with exactly 1 AutoValue. if it is missing ...
+        if( record.field(i).isAutoValue()) {
             where += record.field(i).name() + qsl("=") + record.field(i).value().toString();
-        else {
+            autovalue =record.field(i).value().toLongLong();
+        } else {
             sql += record.field(i).name() + qsl("=") + dbInsertableString(record.field(i).value());
             firstField = false;
         }
@@ -188,13 +189,13 @@ int TableDataInserter::UpdateData() const
 {
     if( record.isEmpty()) return false;
     QSqlQuery q;
-    bool ret = q.exec(getUpdateRecordSQL());
-    int lastRecord = q.lastInsertId().toInt();
+    qlonglong changedRecordId =0;
+    bool ret = q.exec(getUpdateRecordSQL(changedRecordId));
     if( !ret) {
         qCritical() << "TDI.Update record failed: " << q.lastError() << Qt::endl << q.lastQuery() << Qt::endl;
         return -1;
     }
-    qDebug() << "TDI.Update: successfull at index " << q.lastInsertId().toInt() << Qt::endl <<  q.lastQuery() << Qt::endl;
-    return lastRecord;
+    qDebug() << "TDI.Update: successfull at index " << changedRecordId << Qt::endl <<  q.lastQuery() << Qt::endl;
+    return changedRecordId;
 }
 

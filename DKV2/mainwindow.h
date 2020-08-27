@@ -40,6 +40,8 @@ public:
     int id_SelectedCreditor();
     int get_current_id_from_contracts_list();
 
+    void updateListViews();
+
 private slots:
 
     void currentChange_ctv(const QModelIndex & , const QModelIndex & );
@@ -49,10 +51,8 @@ private slots:
 
     void on_action_menu_creditors_listview_triggered();
     void on_action_menu_debug_create_sample_data_triggered();
-    void on_action_menu_creditors_create_triggered();
     void on_action_menu_creditors_delete_triggered();
 
-    void on_cancelCreateCreditor_clicked();
     void on_action_cmenu_edit_creditor_triggered();
 
     void on_stackedWidget_currentChanged(int arg1);
@@ -103,12 +103,6 @@ private slots:
 
     void on_action_menu_database_anonymous_copy_triggered();
 
-    void on_action_saveCreditor_go_contract_triggered();
-
-    void on_action_saveCreditor_go_creditors_triggered();
-
-    void on_action_saveCreditor_go_new_creditor_triggered();
-
     void on_action_about_DKV2_triggered();
 
     void on_action_cmenu_change_contract_triggered();
@@ -127,25 +121,20 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    void createButtonMenu_saveCreditorAnd();
     void prepare_CreditorsListPage();
     void prepare_contracts_list_view();
     void prepare_startPage();
     bool useDb(const QString& dbfile);
     void showDbInStatusbar(QString filename = "");
-    int save_creditor();
+
     qlonglong passNewCreditorIdToNewContract =-1;
     enum stackedWidgedsPageIndex
     {
         startPageIndex =0,
         creditorsListPageIndex =1,
-        newCreditorPageIndex =2,
-        contractsListPageIndex =3,
-        overviewsPageIndex=4,
-        bookingsListIndex=5
+        contractsListPageIndex =2,
+        overviewsPageIndex=3,
     };
-    void empty_create_creditor_form();
-    void init_creditor_form(int id);
     QVector<QString> Uebersichten_kurz{
         qsl("Uebersicht"),
         qsl("Vertragsenden"),

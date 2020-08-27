@@ -9,6 +9,7 @@
 #include "helperfin.h"
 #include "appconfig.h"
 #include "creditor.h"
+#include "contract.h"
 #include "wiznew.h"
 
 /*
@@ -68,7 +69,7 @@ bool wizNewOrExistingPage::validatePage()
     if( field(qsl("create_new")).toBool())
         qInfo() << "User chose to create a new creditor";
     else {
-        wizNew* wiz =dynamic_cast<wizNew*> (wizard());
+        wizNew* wiz =qobject_cast<wizNew*> (wizard());
         wiz->creditorId = cbCreditors->itemData(field("creditor").toInt()).toLongLong();
         creditor c(wiz->creditorId);
         setField(qsl("firstname"), c.firstname());
@@ -303,10 +304,8 @@ void wizConfirmCreditorPage::initializePage()
 }
 bool wizConfirmCreditorPage::validatePage()
 {   LOG_CALL;
-    wizNew* wiz =dynamic_cast<wizNew*> (wizard());
-
+    creditor c;
     if( field(qsl("confirmCreditor")).toBool()) {
-        creditor c;
         c.setFirstname( field(qsl("firstname")).toString());
         c.setLastname(  field(qsl("lastname")).toString());
         c.setStreet(    field(qsl("street")).toString());
@@ -316,20 +315,34 @@ bool wizConfirmCreditorPage::validatePage()
         c.setComment(   field(qsl("comment")).toString());
         c.setIban(      field(qsl("iban")).toString());
         c.setBic(       field(qsl("bic")).toString());
-        QString errorText;
-        if( c.isValid(errorText))
-            wiz->creditorId =c.save();
-        if( wiz->creditorId == -1) {
-            QMessageBox::critical(this, qsl("Fehler"), qsl("Der Kreditor konnte nicht gespeichert werden. ") + errorText);
-            return false;
-        } else {
-            qInfo() << "successfully created creditor " << c.id();
-            return true;
-        }
     } else {
         QMessageBox::information(this, qsl("Bestätigung fehlt"), qsl("Du musst die Richtigkeit der Daten bestätigen oder die Dialogfolge abbrechen."));
         return false;
     }
+    {
+        wizNew* wiz =qobject_cast<wizNew*> (wizard());
+        if( wiz) {
+            QString errorText;
+            if( c.isValid(errorText))
+                wiz->creditorId =c.save();
+            if( wiz->creditorId == -1) {
+                QMessageBox::critical(this, qsl("Fehler"), qsl("Der Kreditor konnte nicht gespeichert werden. ") + errorText);
+                return false;
+            } else {
+                qInfo() << "successfully created creditor " << c.id();
+                return true;
+            }
+        }
+    }
+    {
+        wizEditCreditor* wizEdit =qobject_cast<wizEditCreditor*> (wizard());
+        if( wizEdit) {
+            c.setId(wizEdit->creditorId);
+            return (c.update() >0);
+        }
+    }
+    Q_ASSERT("one should never come here");
+    return false;
 }
 int wizConfirmCreditorPage::nextId() const
 {   LOG_CALL;
@@ -411,8 +424,10 @@ bool wizNewContractDataPage::validatePage()
         QMessageBox::critical(this, qsl("Fehler"), msg);
         return false;
     }
-    wizNew* wiz =dynamic_cast<wizNew*> (wizard());
-    wiz->interest = double(cbInterest->currentIndex())/100.;
+    wizNew* wiz =qobject_cast<wizNew*>( wizard());
+    if( wiz) wiz->interest = double(cbInterest->currentIndex())/100.;
+    wizEditCreditor* wizE =qobject_cast<wizEditCreditor*>( wizard());
+    if( wizE) wizE->interest = double(cbInterest->currentIndex())/100.;
     return true;
 }
 int wizNewContractDataPage::nextId() const
@@ -486,10 +501,22 @@ void wizContractTimingPage::onNoticePeriod_currentIndexChanged(int i)
 }
 bool wizContractTimingPage::validatePage()
 {   LOG_CALL;
-    wizNew* wiz =dynamic_cast<wizNew*> (wizard());
-    wiz->noticePeriod =cbNoticePeriod->itemData(cbNoticePeriod->currentIndex()).toInt();
-    wiz->date =deCDate->date();
-    wiz->termination =deTerminationDate->date();
+
+    wizNew* wiz =qobject_cast<wizNew*> (wizard());
+    if( wiz) {
+        wiz->noticePeriod =cbNoticePeriod->itemData(cbNoticePeriod->currentIndex()).toInt();
+        wiz->date =deCDate->date();
+        wiz->termination =deTerminationDate->date();
+        return true;
+    }
+    wizEditCreditor* wizE =qobject_cast<wizEditCreditor*> (wizard());
+    if( wizE) {
+        wizE->noticePeriod =cbNoticePeriod->itemData(cbNoticePeriod->currentIndex()).toInt();
+        wizE->date =deCDate->date();
+        wizE->termination =deTerminationDate->date();
+        return true;
+    }
+    Q_ASSERT(true);
     return true;
 }
 int wizContractTimingPage::nextId() const
@@ -500,6 +527,28 @@ int wizContractTimingPage::nextId() const
 /*
 * wizConfirmContract  -confirm the contract data before contract creation
 */
+template <typename t>
+bool saveContractFromWizard(t wiz)
+{
+    contract c;
+    c.setCreditorId(wiz->creditorId);
+    c.setPlannedInvest(wiz->field(qsl("amount")).toDouble());
+    c.setInterestRate(wiz->interest);
+    c.setLabel(wiz->field(qsl("label")).toString());
+    c.setConclusionDate(wiz->date);
+    c.setNoticePeriod(wiz->noticePeriod);
+    c.setPlannedEndDate(wiz->termination);
+    c.setReinvesting(wiz->field(qsl("thesa")).toBool());
+    if( -1 == c.saveNewContract()) {
+        qCritical() << "New contract could not be saved";
+        QMessageBox::critical(getMainWindow(), "Fehler", "Der Vertrag konnte nicht "
+                                                         "gespeichert werden. Details findest Du in der Log Datei");
+        return false;
+    } else {
+        qInfo() << "New contract successfully saved";
+        return true;
+    }
+}
 wizContractConfirmationPage::wizContractConfirmationPage(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Bestätige die Vertragsdaten"));
@@ -509,10 +558,11 @@ wizContractConfirmationPage::wizContractConfirmationPage(QWidget* p) : QWizardPa
     QVBoxLayout* bl =new QVBoxLayout;
     bl->addWidget(cbConfirm);
     setLayout(bl);
+    connect(cbConfirm, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
 }
 void wizContractConfirmationPage::initializePage()
 {   LOG_CALL;
-    wizNew* wiz =dynamic_cast<wizNew*> (wizard());
+
     QString summary {qsl("Vertrag <b>%3</b> von <b>%1 %2</b> <p><table>"
                          //"<tr><td>Kennung: </td><td><b>%3</b><p></td></tr>"
                          "<tr><td>Betrag: </td><td><b>%4</b></td></tr>"
@@ -522,7 +572,10 @@ void wizContractConfirmationPage::initializePage()
                          "<tr><td>Vertragsende: </td><td><b>%8</b></td></tr>"
                          "</table>")};
     QLocale l;
-    setSubTitle(summary.arg(field(qsl("firstname")).toString(), field(qsl("lastname")).toString(),
+    {
+        wizNew* wiz =qobject_cast<wizNew*> (wizard());
+        if( wiz)
+            setSubTitle(summary.arg(field(qsl("firstname")).toString(), field(qsl("lastname")).toString(),
                  field(qsl("label")).toString(),
                  l.toCurrencyString(field(qsl("amount")).toDouble()),
                  QString::number(wiz->interest, 'f', 2),
@@ -531,11 +584,48 @@ void wizContractConfirmationPage::initializePage()
                  (wiz->noticePeriod == -1) ?
                    wiz->termination.toString(qsl("dd.MM.yyyy")) :
                    QString::number(wiz->noticePeriod) +qsl(" Monate nach Kündigung")));
+    }
+    {
+        wizEditCreditor* wizE =qobject_cast<wizEditCreditor*> (wizard());
+        if( wizE)
+            setSubTitle(summary.arg(field(qsl("firstname")).toString(), field(qsl("lastname")).toString(),
+                                    field(qsl("label")).toString(),
+                                    l.toCurrencyString(field(qsl("amount")).toDouble()),
+                                    QString::number(wizE->interest, 'f', 2),
+                                    field(qsl("thesa")).toBool() ? qsl("thesaurierend") : qsl("auszahlend"),
+                                    wizE->date.toString("dd.MM.yyyy"),
+                                    (wizE->noticePeriod == -1) ?
+                                                               wizE->termination.toString(qsl("dd.MM.yyyy")) :
+                                                               QString::number(wizE->noticePeriod) +qsl(" Monate nach Kündigung")));
+    }
+    return;
 }
 bool wizContractConfirmationPage::validatePage()
 {   LOG_CALL;
-    return field(qsl("confirmContract")).toBool();
+    // we only get here, if finish was enabled -> we do not have to check
+    // the checkbox. user can only cancel if checkbox not checked
+    {
+        wizNew* wiz =qobject_cast<wizNew*>(wizard());
+        if( wiz)
+            return saveContractFromWizard(wiz);
+    }
+    {
+        wizEditCreditor* wiz =qobject_cast<wizEditCreditor*>(wizard());
+        if( wiz)
+            return saveContractFromWizard(wiz);
+    }
+    Q_ASSERT(true);
+    return false;
 }
+void wizContractConfirmationPage::onConfirmData_toggled(int )
+{ LOG_CALL;
+    completeChanged();
+}
+bool wizContractConfirmationPage::isComplete() const
+{
+    return field("confirmContract").toBool();
+}
+
 
 /*
 * wizNew - the wizard containing the pages to create a cerditor and a contract
@@ -543,6 +633,17 @@ bool wizContractConfirmationPage::validatePage()
 wizNew::wizNew(QWidget *p) : QWizard(p)
 {   LOG_CALL;
     setPage(page_new_or_existing, new wizNewOrExistingPage(this));
+    setPage(page_address, new wizNewCreditorAddressPage(this));
+    setPage(page_email,   new wizEmailPage(this));
+    setPage(page_bankaccount, new wizBankAccountPage(this));
+    setPage(page_confirm_creditor, new wizConfirmCreditorPage(this));
+    setPage(page_contract_data, new wizNewContractDataPage(this));
+    setPage(page_contract_term, new wizContractTimingPage(this));
+    setPage(page_confirm_contract, new wizContractConfirmationPage(this));
+}
+
+wizEditCreditor::wizEditCreditor(QWidget *p) : QWizard(p)
+{   LOG_CALL;
     setPage(page_address, new wizNewCreditorAddressPage(this));
     setPage(page_email,   new wizEmailPage(this));
     setPage(page_bankaccount, new wizBankAccountPage(this));

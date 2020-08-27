@@ -31,7 +31,7 @@ private:
     QString getInsertRecordSQL() const;
     QString getInsertOrReplaceRecordSQL() const;
     QString getInsert_noAuto_RecordSQL() const;
-    QString getUpdateRecordSQL() const;
+    QString getUpdateRecordSQL(qlonglong& autovalue) const;
 public:
     friend inline bool operator==(const TableDataInserter& lhs, const TableDataInserter& rhs)
     { /* do actual comparison */

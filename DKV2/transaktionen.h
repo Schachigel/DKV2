@@ -13,6 +13,7 @@ void cancelContract( contract& v);
 
 void annualSettlement();
 
+void editCreditor(qlonglong creditorId);
 void newCreditorAndContract();
 
 #endif // TRANSAKTIONEN_H

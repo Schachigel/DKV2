@@ -34,7 +34,6 @@ private:
 
 struct wizNewCreditorAddressPage : public QWizardPage{
     wizNewCreditorAddressPage(QWidget* p);
-//    void initializePage() override;
     bool validatePage()   override;
     int nextId() const    override;
 };
@@ -89,11 +88,16 @@ private:
     QDateEdit* deCDate;
 };
 
-struct wizContractConfirmationPage : public QWizardPage
+class wizContractConfirmationPage : public QWizardPage
 {
+    Q_OBJECT;
+public:
     wizContractConfirmationPage(QWidget*);
     void initializePage() override;
     bool validatePage()   override;
+    bool isComplete() const override;
+public slots:
+    void onConfirmData_toggled(int );
 };
 
 struct wizNew : public QWizard
@@ -104,6 +108,18 @@ struct wizNew : public QWizard
     QDate date =QDate::currentDate();
     int noticePeriod =-1;
     QDate termination =EndOfTheFuckingWorld;
+    Q_OBJECT;
+};
+
+struct wizEditCreditor : public QWizard
+{
+    wizEditCreditor(QWidget* p =nullptr);
+    qlonglong creditorId =-1;
+    double interest =0.;
+    QDate date =QDate::currentDate();
+    int noticePeriod =-1;
+    QDate termination =EndOfTheFuckingWorld;
+    Q_OBJECT;
 };
 
 #endif // WIZNEW_H

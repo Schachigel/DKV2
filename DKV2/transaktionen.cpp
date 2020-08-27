@@ -177,29 +177,32 @@ void annualSettlement()
     return;
 }
 
+void editCreditor(qlonglong creditorId)
+{   LOG_CALL;
+    wizEditCreditor wiz(getMainWindow());
+    QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
+    creditor cred(creditorId);
+    wiz.setField(qsl("firstname"), cred.firstname());
+    wiz.setField(qsl("lastname"), cred.lastname());
+    wiz.setField(qsl("street"), cred.street());
+    wiz.setField(qsl("pcode"), cred.postalCode());
+    wiz.setField(qsl("city"), cred.city());
+    wiz.setField(qsl("email"), cred.email());
+    wiz.setField(qsl("comment"), cred.comment());
+    wiz.setField(qsl("iban"), cred.iban());
+    wiz.setField(qsl("bic"), cred.bic());
+    wiz.setField(qsl("confirmContract"), false);
+    wiz.creditorId = creditorId;
+    if( QDialog::Accepted == wiz.exec()) {
+        qInfo() << "successfully updated creditor";
+    }
+}
 void newCreditorAndContract()
 {   LOG_CALL;
     wizNew wiz(getMainWindow());
     QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     wiz.setField(qsl("create_new"), true);
+    wiz.setField(qsl("confirmContract"), false);
     wiz.exec();
-    if( wiz.field(qsl("confirmContract")).toBool()) {
-        contract c;
-        c.setCreditorId(wiz.creditorId);
-        c.setPlannedInvest(wiz.field(qsl("amount")).toDouble());
-        c.setInterestRate(wiz.interest);
-        c.setLabel(wiz.field(qsl("label")).toString());
-        c.setConclusionDate(wiz.date);
-        c.setNoticePeriod(wiz.noticePeriod);
-        c.setPlannedEndDate(wiz.termination);
-        c.setReinvesting(wiz.field(qsl("thesa")).toBool());
-        if( -1 == c.saveNewContract()) {
-            qCritical() << "New contract could not be saved";
-            QMessageBox::critical(getMainWindow(), "Fehler", "Der Vertrag konnte nicht "
-                                  "gespeichert werden. Details findest Du in der Log Datei");
-        } else {
-            qInfo() << "New contract successfully saved";
-        }
-    }
     return;
 }

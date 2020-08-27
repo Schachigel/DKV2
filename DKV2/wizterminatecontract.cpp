@@ -24,13 +24,13 @@ wizTerminateContract_DatePage::wizTerminateContract_DatePage(QWidget* p) : QWiza
 
 void wizTerminateContract_DatePage::initializePage()
 {
-    wizTerminateContract* wiz = dynamic_cast<wizTerminateContract*>(wizard());
+    wizTerminateContract* wiz = qobject_cast<wizTerminateContract*>(wizard());
     setField(qsl("date"), wiz->c.plannedEndDate());
 }
 
 bool wizTerminateContract_DatePage::validatePage()
 {
-    wizTerminateContract* wiz = dynamic_cast<wizTerminateContract*>(wizard());
+    wizTerminateContract* wiz = qobject_cast<wizTerminateContract*>(wizard());
     if( field(qsl("date")).toDate() >= wiz->c.latestBooking().date)
         return true;
     QString msg (qsl("Das Vertragsende muss nach der letzten Buchung des Vertrags am %1 sein"));
@@ -52,11 +52,12 @@ wizTerminateContract_ConfirmationPage::wizTerminateContract_ConfirmationPage(QWi
     layout->addWidget(cbPrint);
     layout->addWidget(cbConfirm);
     setLayout(layout);
+    connect(cbConfirm, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
 }
 
 void wizTerminateContract_ConfirmationPage::initializePage()
 {
-    wizTerminateContract* wiz = dynamic_cast<wizTerminateContract*>(wizard());
+    wizTerminateContract* wiz = qobject_cast<wizTerminateContract*>(wizard());
     double interest =0., finalValue =0.;
     wiz->c.finalize(true, field(qsl("date")).toDate(), interest, finalValue);
 
@@ -69,10 +70,13 @@ void wizTerminateContract_ConfirmationPage::initializePage()
     subtitle = subtitle.arg(locale.toCurrencyString(wiz->c.value()), locale.toCurrencyString(interest), locale.toCurrencyString(finalValue));
     setSubTitle(subtitle);
 }
-
-bool wizTerminateContract_ConfirmationPage::validatePage()
+void wizTerminateContract_ConfirmationPage::onConfirmData_toggled(int)
 {
-    return field(qsl("confirm")).toBool();
+    completeChanged();
+}
+bool wizTerminateContract_ConfirmationPage::isComplete() const
+{
+    return field("confirm").toBool();
 }
 
 wizTerminateContract::wizTerminateContract(QWidget* p, contract c) : QWizard(p), c(c)

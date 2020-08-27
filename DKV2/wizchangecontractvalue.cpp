@@ -28,14 +28,14 @@ wizChangeContract_IntroPage::wizChangeContract_IntroPage(QWidget* parent) : QWiz
 void wizChangeContract_IntroPage::initializePage()
 {
     QString subtitle =qsl("In dieser Dialogfolge kannst Du Ein- oder Auszahlungen zum Vertrag <b>%1</b> von <b>%2</b> verbuchen.");
-    wizChangeContract* wiz= dynamic_cast<wizChangeContract*>(wizard());
+    wizChangeContract* wiz= qobject_cast<wizChangeContract*>(wizard());
     subtitle = subtitle.arg(wiz->contractLabel, wiz->creditorName);
     setSubTitle(subtitle);
 }
 
 bool wizChangeContract_IntroPage::validatePage()
 {
-    wizChangeContract* wiz= dynamic_cast<wizChangeContract*>(this->wizard());
+    wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
 
     double minContract =getNumMetaInfo(MIN_AMOUNT);
     double minPayout   =getNumMetaInfo(MIN_PAYOUT);
@@ -77,7 +77,7 @@ void wizChangeContract_AmountPage::initializePage()
         setField(qsl("amount"), 1000.);
     } else {
         setTitle(qsl("Auszahlungsbetrag"));
-        wizChangeContract* wiz= dynamic_cast<wizChangeContract*>(this->wizard());
+        wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
         double currentAmount = wiz->currentAmount;
         // double minPayment = 100., minRemains = 500.;
         double maxPayout = currentAmount - minAmount;
@@ -98,7 +98,7 @@ bool wizChangeContract_AmountPage::validatePage()
     setField("amount", amount);
 
     if( ! deposit) {
-        wizChangeContract* wiz= dynamic_cast<wizChangeContract*>(this->wizard());
+        wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
         double currentAmount = wiz->currentAmount;
         double amount = field("amount").toDouble();
         // double minPayout = 100., minRemains = 500.
@@ -121,7 +121,7 @@ wizChangeContract_DatePage::wizChangeContract_DatePage(QWidget* parent) : QWizar
 
 void wizChangeContract_DatePage::initializePage()
 {
-    wizChangeContract* wiz= dynamic_cast<wizChangeContract*>(this->wizard());
+    wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
     QString subt=QString(qsl("Das Datum muss nach der letzten Buchung zu diesem Vertrag (%1) liegen. ")).arg(wiz->earlierstDate.toString(qsl("dd.MM.yyyy")));
 
     bool deposit = field(qsl("deposit_notPayment")).toBool();
@@ -137,7 +137,7 @@ void wizChangeContract_DatePage::initializePage()
 
 bool wizChangeContract_DatePage::validatePage()
 {
-    wizChangeContract* wiz= dynamic_cast<wizChangeContract*>(this->wizard());
+    wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
     QDate d {field(qsl("date")).toDate()};
     if( d < wiz->earlierstDate)
         return false;
@@ -157,10 +157,11 @@ wizChangeContract_Summary::wizChangeContract_Summary(QWidget* p) : QWizardPage(p
     QVBoxLayout* layout = new QVBoxLayout;
     layout-> addWidget(cb);
     setLayout(layout);
+    connect(cb, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
 }
 void wizChangeContract_Summary::initializePage()
 {
-    wizChangeContract* wiz= dynamic_cast<wizChangeContract*>(this->wizard());
+    wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
 
     QString subtitle =qsl("zum Vertrag <b>%1</b><p>von <b>%2</b>:<p>"
                       "<table width=100%><tr><td align=center>Vorheriger Wert</td><td align=center>Änderungsbetrag</td><td align=center>neuer Wert</td></tr>"
@@ -183,11 +184,15 @@ void wizChangeContract_Summary::initializePage()
                    deposit? qsl("+") : qsl("-"), locale.toCurrencyString(change),
                    locale.toCurrencyString(newValue), field(qsl("date")).toDate().toString(qsl("dd.MM.yyyy"))));
 }
-
-bool wizChangeContract_Summary::validatePage()
+bool wizChangeContract_Summary::isComplete() const
 {
-    return field(qsl("confirmed")).toBool();
+    return field("confirmed").toBool();
 }
+void wizChangeContract_Summary::onConfirmData_toggled(int)
+{
+    completeChanged();
+}
+
 
 wizChangeContract::wizChangeContract(QWidget* p) : QWizard(p)
 {

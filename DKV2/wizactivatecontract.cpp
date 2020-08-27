@@ -16,7 +16,7 @@ wizActivateContract_IntroPage::wizActivateContract_IntroPage(QWidget* p) : QWiza
 
 void wizActivateContract_IntroPage::initializePage()
 {
-    activateContractWiz* wiz = dynamic_cast<activateContractWiz*>(wizard());
+    activateContractWiz* wiz = qobject_cast<activateContractWiz*>(wizard());
     QString subtitle = qsl("Mit dieser Dialogfolge kannst Du den Vertrag <p><b>%1</b> von <b>%2</b> <p>aktivieren, "
                        "so dass die Zinsberechnung beginnt.<br>"
                        "Die Aktivierung muss nach dem Geldeingang durchgeführt werden.<br>");
@@ -57,7 +57,7 @@ wizActiateContract_AmountPage::wizActiateContract_AmountPage(QWidget* p) : QWiza
 
 bool wizActiateContract_AmountPage::validatePage()
 {
-    activateContractWiz* wiz = dynamic_cast<activateContractWiz*>(wizard());
+    activateContractWiz* wiz = qobject_cast<activateContractWiz*>(wizard());
     double amount = field(qsl("amount")).toDouble();
     if( amount < getNumMetaInfo(MIN_AMOUNT))
         return false;
@@ -76,13 +76,14 @@ wizActivateContract_SummaryPage::wizActivateContract_SummaryPage( QWidget* p) : 
     QVBoxLayout* layout = new QVBoxLayout;
     layout-> addWidget(cb);
     setLayout(layout);
+    connect(cb, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
 }
 
 void wizActivateContract_SummaryPage::initializePage()
 {
     QString subt =qsl("Der Vertrag <p><b>%1</b> von <b>%2</b><p> soll mit einem Betrag von <p>"
                   "<b>%3 Euro</b><p> zum %4 aktiviert werden. <br>");
-    activateContractWiz* wiz = dynamic_cast<activateContractWiz*>(wizard());
+    activateContractWiz* wiz = qobject_cast<activateContractWiz*>(wizard());
     double amount = field(qsl("amount")).toDouble();
     subt = subt.arg(wiz->label, wiz->creditorName);
     QLocale locale;
@@ -99,6 +100,14 @@ bool wizActivateContract_SummaryPage::validatePage()
     if( field(qsl("confirmed")).toBool())
         return true;
     return false;
+}
+void wizActivateContract_SummaryPage::onConfirmData_toggled(int )
+{
+    completeChanged();
+}
+bool wizActivateContract_SummaryPage::isComplete() const
+{
+    return field("confirmed").toBool();
 }
 
 activateContractWiz::activateContractWiz(QWidget* p) : QWizard (p)

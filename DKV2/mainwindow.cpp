@@ -45,13 +45,10 @@ MainWindow::MainWindow(QWidget *parent) :
         // there should be a valid DB - checked in main.cpp
         Q_ASSERT(!"useDb failed in construcor of mainwindow");
 
-    ui->txtAnmerkung->setTabChangesFocus(true);
     ui->CreditorsTableView->setStyleSheet(qsl("QTableView::item { padding-right: 10px; padding-left: 10px; }"));
     ui->contractsTableView->setStyleSheet(qsl("QTableView::item { padding-right: 10px; padding-left: 10px; }"));
 
     ui->bookingsTableView->setItemDelegateForColumn(2, new bookingTypeFormatter);
-
-    createButtonMenu_saveCreditorAnd();
 
     ui->stackedWidget->setCurrentIndex(startPageIndex);
 }
@@ -97,17 +94,9 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
         ui->action_menu_creditors_delete->setEnabled(true);
         ui->menu_contracts_subm_print_lists->setEnabled(false);
         break;
-    case newCreditorPageIndex:
-        ui->action_menu_creditors_delete->setEnabled(false);
-        ui->menu_contracts_subm_print_lists->setEnabled(false);
-        break;
     case contractsListPageIndex:
         ui->action_menu_creditors_delete->setEnabled(false);
         ui->menu_contracts_subm_print_lists->setEnabled(true);
-        break;
-    case bookingsListIndex:
-        ui->action_menu_creditors_delete->setEnabled(false);
-        ui->menu_contracts_subm_print_lists->setEnabled(false);
         break;
     case overviewsPageIndex:
         ui->action_menu_creditors_delete->setEnabled(false);
@@ -193,6 +182,7 @@ void MainWindow::on_action_menu_database_new_triggered()
         QMessageBox::information(this, qsl("Fehler"), qsl("Die neue Datenbankdatei konnte nicht angelegt und geöffnet werden."));
         return;
     }
+    prepare_startPage();
     ui->stackedWidget->setCurrentIndex(startPageIndex);
 }
 void MainWindow::on_action_menu_database_open_triggered()
@@ -330,13 +320,11 @@ void MainWindow::on_CreditorsTableView_customContextMenuRequested(const QPoint &
 }
 void MainWindow::on_action_cmenu_edit_creditor_triggered()
 {   LOG_CALL;
-    busycursor b;
     QModelIndex mi(ui->CreditorsTableView->currentIndex());
     QVariant index = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(0));
-    ui->lblPersId->setText(index.toString());
 
-    init_creditor_form(index.toInt());
-    ui->stackedWidget->setCurrentIndex(newCreditorPageIndex);
+    editCreditor(index.toInt());
+    updateListViews();
 }
 void MainWindow::on_action_cmenu_delete_creaditor_triggered()
 {   LOG_CALL;
@@ -367,9 +355,8 @@ void MainWindow::on_action_cmenu_go_contracts_triggered()
 }
 
 // new creditor and contract Wiz
-void MainWindow::on_actionNeu_triggered()
+void MainWindow::updateListViews()
 {
-    newCreditorAndContract();
     if( ui->stackedWidget->currentIndex() == creditorsListPageIndex)
         qobject_cast<QSqlTableModel*>(ui->CreditorsTableView->model())->select();
     if( ui->stackedWidget->currentIndex() == contractsListPageIndex)
@@ -378,114 +365,10 @@ void MainWindow::on_actionNeu_triggered()
         on_action_menu_contracts_statistics_view_triggered();
 }
 
-// new Creditor page
-void MainWindow::on_action_menu_creditors_create_triggered()
-{   LOG_CALL;
-    empty_create_creditor_form();
-    ui->stackedWidget->currentWidget()->update();
-}
-void MainWindow::createButtonMenu_saveCreditorAnd()
-{   LOG_CALL;
-    // Kreditor anlegen: "Speichern und ..." Menü anlegen
-    menuSaveKreditorAnd = new QMenu;
-    menuSaveKreditorAnd->addAction(ui->action_saveCreditor_go_creditors);
-    menuSaveKreditorAnd->addAction(ui->action_saveCreditor_go_new_creditor);
-    ui->customBtn_saveCreditorAnd->setMenu(menuSaveKreditorAnd);
-    ui->customBtn_saveCreditorAnd->setDefaultAction(ui->action_saveCreditor_go_new_creditor);
-}
-int  MainWindow::save_creditor()
-{   LOG_CALL;
-    creditor c;
-    c.setFirstname(ui->leVorname->text().trimmed());
-    c.setLastname(ui->leNachname->text().trimmed());
-    c.setStreet(ui->leStrasse->text().trimmed());
-    c.setPostalCode(ui->lePlz->text().trimmed());
-    c.setCity(ui->leStadt->text().trimmed());
-    c.setEmail(ui->leEMail->text().trimmed().toLower());
-    c.setComment(ui->txtAnmerkung->toPlainText());
-    c.setIban(ui->leIban->text().trimmed());
-    c.setBic(ui->leBic->text().trimmed());
-
-    QString errortext;
-    if( !c.isValid(errortext)) {
-        errortext = qsl("Die Daten können nicht gespeichert werden: <br>") + errortext;
-        QMessageBox::information(this, qsl("Fehler"), errortext );
-        qDebug() << qsl("prüfung der Kreditor Daten:") << errortext;
-        return -1;
-    }
-    int kid = -1;
-    if( ! ui->lblPersId->text().isEmpty()) {
-        kid = ui->lblPersId->text().toInt();
-        c.setId(kid);     // update not insert
-        c.update();
-    }
-    else
-       kid = c.save();
-
-    if(kid == -1) {
-        QMessageBox::information( this, qsl("Fehler"), qsl("Der Datensatz konnte nicht gespeichert werden. "
-                     "Ist die E-Mail Adresse einmalig? Gibt es die Adressdaten in der Datenbank bereits?"
-                     "\nBitte überprüfen Sie ihre Eingaben"));
-        qCritical() << "Kreditgeber konnte nicht gespeichert werden";
-        return -1;
-    }
-
-    return passNewCreditorIdToNewContract = kid;
-}
-void MainWindow::empty_create_creditor_form()
-{   LOG_CALL;
-    QString empty;
-    ui->leVorname->setText(empty);
-    ui->leNachname->setText(empty);
-    ui->leStrasse->setText(empty);
-    ui->lePlz->setText(empty);
-    ui->leStadt->setText(empty);
-    ui->leEMail->setText(empty);
-    ui->txtAnmerkung->setPlainText(empty);
-    ui->leIban->setText(empty);
-    ui->leBic->setText(empty);
-    ui->lblPersId->setText(empty);
-}
-void MainWindow::init_creditor_form(int id)
-{   LOG_CALL;
-    busycursor b;
-    QSqlRecord rec = executeSingleRecordSql(dkdbstructur[qsl("Kreditoren")].Fields(), qsl("Id=") +QString::number(id));
-    ui->leVorname->setText(rec.field(qsl("Vorname")).value().toString());
-    ui->leNachname->setText(rec.field(qsl("Nachname")).value().toString());
-    ui->leStrasse->setText(rec.field(qsl("Strasse")).value().toString());
-    ui->lePlz->setText(rec.field(qsl("Plz")).value().toString());
-    ui->leStadt->setText(rec.field(qsl("Stadt")).value().toString());
-    ui->leEMail->setText(rec.field(qsl("Email")).value().toString());
-    ui->txtAnmerkung->setPlainText(rec.field(qsl("Anmerkung")).value().toString());
-    ui->leIban  ->setText(rec.field(qsl("IBAN")).value().toString());
-    ui->leBic  ->setText(rec.field(qsl("BIC")).value().toString());
-}
-void MainWindow::on_cancelCreateCreditor_clicked()
-{   LOG_CALL;
-    empty_create_creditor_form();
-    ui->stackedWidget->setCurrentIndex(startPageIndex);
-}
-void MainWindow::on_action_saveCreditor_go_contract_triggered()
-{   LOG_CALL;
-    int kid = save_creditor();
-    if(  kid != -1) {
-        empty_create_creditor_form();
-    }
-}
-void MainWindow::on_action_saveCreditor_go_creditors_triggered()
-{   LOG_CALL;
-    if( save_creditor() != -1) {
-        empty_create_creditor_form();
-        on_action_menu_creditors_listview_triggered();
-    }
-}
-void MainWindow::on_action_saveCreditor_go_new_creditor_triggered()
-{   LOG_CALL;
-    if( save_creditor() == -1) {
-        qDebug() << "Fehler beim Speichern eines Kreditors";
-        return;
-    }
-    on_action_menu_creditors_create_triggered();
+void MainWindow::on_actionNeu_triggered()
+{
+    newCreditorAndContract();
+    updateListViews();
 }
 
 // Contract List
@@ -711,7 +594,7 @@ void MainWindow::on_action_menu_contracts_print_lists_triggered()
 void MainWindow::on_actionAktuelle_Auswahl_triggered()
 {
     csvwriter csv;
-    QSqlTableModel* model = dynamic_cast<QSqlTableModel*>(ui->contractsTableView->model());
+    QSqlTableModel* model = qobject_cast<QSqlTableModel*>(ui->contractsTableView->model());
     QSqlRecord rec =model->record();
     for( int i=0; i<rec.count(); i++) {
         csv.addColumn(rec.fieldName(i));

@@ -6,23 +6,30 @@
 
 #include "contract.h"
 
-struct wizTerminateContract_DatePage : QWizardPage
+struct wizTerminateContract_DatePage : public QWizardPage
 {
     wizTerminateContract_DatePage(QWidget* p=nullptr);
     void initializePage() override;
     bool validatePage() override;
+    Q_OBJECT;
 };
 
-struct wizTerminateContract_ConfirmationPage : QWizardPage{
+class wizTerminateContract_ConfirmationPage : public QWizardPage
+{
+    Q_OBJECT;
+public:
     wizTerminateContract_ConfirmationPage(QWidget* p=nullptr);
     void initializePage() override;
-    bool validatePage() override;
+    bool isComplete() const override;
+public slots:
+    void onConfirmData_toggled(int);
 };
 
-struct wizTerminateContract : QWizard
+struct wizTerminateContract : public QWizard
 {
     wizTerminateContract(QWidget* p, contract c);
     contract c;
+    Q_OBJECT;
 };
 
 #endif // WIZTERMINATECONTRACT_H
