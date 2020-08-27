@@ -21,6 +21,7 @@ wizAnnualSettlement_IntroPage::wizAnnualSettlement_IntroPage(QWidget* p)  : QWiz
     bl->addWidget(csv);
     bl->addWidget(confirm);
     setLayout(bl);
+    connect(confirm, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
 }
 
 void wizAnnualSettlement_IntroPage::initializePage()
@@ -28,10 +29,13 @@ void wizAnnualSettlement_IntroPage::initializePage()
     setField(qsl("printCsv"), true);
     setField(qsl("confirm"), false);
 }
-
-bool wizAnnualSettlement_IntroPage::validatePage()
+bool wizAnnualSettlement_IntroPage::isComplete() const
 {
-    return this->field(qsl("confirm")).toBool();
+    return field("confirm").toBool();
+}
+void wizAnnualSettlement_IntroPage::onConfirmData_toggled(int)
+{
+    completeChanged();
 }
 
 wizAnnualSettlement::wizAnnualSettlement(QWidget* p) : QWizard(p)

@@ -6,12 +6,15 @@
 #define qsl(x) QStringLiteral(x)
 #include <QWizard>
 
-struct wizAnnualSettlement_IntroPage : public QWizardPage
+class wizAnnualSettlement_IntroPage : public QWizardPage
 {
+    Q_OBJECT;
+public:
     wizAnnualSettlement_IntroPage(QWidget* p =nullptr);
     void initializePage() override;
-    bool validatePage() override;
-    Q_OBJECT;
+    bool isComplete() const override;
+public slots:
+    void onConfirmData_toggled(int);
 };
 
 struct wizAnnualSettlement : public QWizard

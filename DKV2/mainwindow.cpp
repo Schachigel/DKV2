@@ -203,7 +203,7 @@ void MainWindow::on_action_menu_database_open_triggered()
             exit( 1);
         }
     }
-
+    prepare_startPage();
     ui->stackedWidget->setCurrentIndex(startPageIndex);
 }
 void MainWindow::on_action_menu_database_copy_triggered()
@@ -359,12 +359,13 @@ void MainWindow::updateListViews()
 {
     if( ui->stackedWidget->currentIndex() == creditorsListPageIndex)
         qobject_cast<QSqlTableModel*>(ui->CreditorsTableView->model())->select();
-    if( ui->stackedWidget->currentIndex() == contractsListPageIndex)
+    if( ui->stackedWidget->currentIndex() == contractsListPageIndex) {
         qobject_cast<QSqlTableModel*>(ui->contractsTableView->model())->select();
+        qobject_cast<QSqlTableModel*>(ui->bookingsTableView ->model())->select();
+    }
     if( ui->stackedWidget->currentIndex() == overviewsPageIndex)
         on_action_menu_contracts_statistics_view_triggered();
 }
-
 void MainWindow::on_actionNeu_triggered()
 {
     newCreditorAndContract();
@@ -486,12 +487,12 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &
     QModelIndex index = tv->indexAt(pos).siblingAtColumn(0);
 
     contract c(index.data().toInt());
-    bool hatLaufzeitende = c.noticePeriod() == -1;
+    bool gotTerminationDate = c.noticePeriod() == -1;
 
     QMenu menu( qsl("ContractContextMenu"), this);
     if(c.isActive())
     {
-        if( hatLaufzeitende)
+        if( gotTerminationDate)
             ui->action_cmenu_terminate_contract->setText(qsl("Vertrag beenden"));
         else
             ui->action_cmenu_terminate_contract->setText(qsl("Vertrag kündigen"));
@@ -509,7 +510,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &
 void MainWindow::on_action_cmenu_activate_contract_triggered()
 {   LOG_CALL;
     activateContract(get_current_id_from_contracts_list());
-    prepare_contracts_list_view();
+    updateListViews();
 }
 void MainWindow::on_action_cmenu_terminate_contract_triggered()
 {   LOG_CALL;
@@ -517,8 +518,7 @@ void MainWindow::on_action_cmenu_terminate_contract_triggered()
     if( !mi.isValid()) return;
     int index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toInt();
     terminateContract(index);
-
-    prepare_contracts_list_view();
+    updateListViews();
 }
 void MainWindow::on_action_cmenu_delete_inactive_contract_triggered()
 {   LOG_CALL;
@@ -526,7 +526,7 @@ void MainWindow::on_action_cmenu_delete_inactive_contract_triggered()
     if( !mi.isValid()) return;
 
     deleteInactiveContract(ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toLongLong());
-    prepare_contracts_list_view();
+    updateListViews();
 }
 void MainWindow::on_action_cmenu_change_contract_triggered()
 {   // deposit or payout...
@@ -534,7 +534,7 @@ void MainWindow::on_action_cmenu_change_contract_triggered()
     if( !mi.isValid()) return;
     qlonglong contractId = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toLongLong();
     changeContractValue(contractId);
-    on_action_menu_contracts_listview_triggered();
+    updateListViews();
 }
 // new creditor or contract from contract menu
 void MainWindow::on_action_Neu_triggered()
@@ -561,7 +561,7 @@ void MainWindow::on_action_menu_contracts_statistics_view_triggered()
         combo->addItem(qsl("Anzahl Verträge nach Laufzeiten"),        QVariant(CONTRACT_TERMS));
         combo->setCurrentIndex(0);
     }
-    // combo->setCurrentIndex(combo->currentIndex());
+
     on_comboUebersicht_currentIndexChanged(combo->currentIndex());
     ui->stackedWidget->setCurrentIndex(overviewsPageIndex);
 }
@@ -583,7 +583,7 @@ void MainWindow::on_pbPrint_clicked()
 void MainWindow::on_action_menu_contracts_anual_interest_settlement_triggered()
 {   LOG_CALL;
     annualSettlement();
-    on_action_menu_contracts_listview_triggered( );
+    updateListViews();
 }
 // list creation csv, printouts
 void MainWindow::on_action_menu_contracts_print_lists_triggered()
