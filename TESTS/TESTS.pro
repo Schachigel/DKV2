@@ -54,6 +54,7 @@ SOURCES +=  tst_db.cpp \
     test_properties.cpp \
     test_sqlhelper.cpp \
     test_tabledatainserter.cpp \
+    test_views.cpp \
     testhelper.cpp
 
 HEADERS += \
@@ -69,6 +70,7 @@ HEADERS += \
     test_properties.h \
     test_sqlhelper.h \
     test_tabledatainserter.h \
+    test_views.h \
     testhelper.h \
     tst_db.h
 

@@ -1,0 +1,39 @@
+#ifndef DBSTATISTICS_H
+#define DBSTATISTICS_H
+
+
+struct dbStatistics
+{
+    // all contract summary
+    int nbrCreditors();
+    int nbrContracts();
+    double valueContracts();
+    double weightedAverageInterest();
+    double averageInterest();
+    double annualInterest();
+    // active vs ...
+    int nbrCreditorsWithActiveContracts();
+    int     nbrActiveContracts();
+    double  valueActiveContracts();
+    double weightedAverageInterestActiveContracts();
+    double averageInterestActiveContracts();
+    double annualInterestActiveContracts();
+    // ... inactive
+    int nbrCreditorsWithInactiveContracts();
+    int nbrInactiveContracts();
+    double  valueInactiveContracts();
+    double weightedAverageInterestInactiveContracts();
+    double averageInterestInactiveContracts();
+    double annualInterestInactiveContracts();
+    
+    // active: reinvesting vs. ...
+    int nbrNotReinvesting();
+    double valueNotReinvesting();
+    double annualInterestPayout();
+    // ... wPayout
+    int nbrReinvesting();
+    double valueReinvesting();
+    double annualInterestReinvestment();
+};
+
+#endif // DBSTATISTICS_H

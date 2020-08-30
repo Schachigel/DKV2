@@ -30,6 +30,7 @@ struct contract
     // construction
     contract(qlonglong id =-1);
     void init();
+    void initRandom(qlonglong creditorId =-1);
     // getter & setter
     void setId(qlonglong id) { td.setValue(qsl("id"), id);}
     qlonglong id() const { return td.getValue(qsl("id")).toLongLong();}

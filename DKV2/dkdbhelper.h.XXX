@@ -40,8 +40,8 @@ int numberOfActiveContracts();
 double valueOfActiveContracts();
 int numberOfInactiveContracts();
 double valueOfInactiveContracts();
-double weightedAverageInterestRate();
-double avgInterestRate();
+double weightedAverageInterest();
+double averageInterest();
 
 int numberOfActiveAccumulatingContracts();
 double valueOfActiveAccumulatingContracts();
@@ -63,7 +63,7 @@ struct DbSummary
     int creditorsWithInactiveContracts =0;
     int     inactiveContracts =0;
     double  valueInactiveContracts =0.;
-
+    
     // active: reinvesting vs. wPayout
     int     AnzahlAuszahlende =0;
     double  BetragAuszahlende =0.;

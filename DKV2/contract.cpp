@@ -72,6 +72,23 @@ void contract::init()
     setInterestRate(1.50);
     setPlannedInvest(1000000);
 }
+void contract::initRandom(qlonglong creditorId)
+{
+    static QRandomGenerator *rand = QRandomGenerator::system();
+    setLabel(proposeContractLabel());
+    setCreditorId(creditorId);
+    setReinvesting(rand->bounded(100)%6);// 16% auszahlend
+    setInterestRate((1 +rand->bounded(149)) /100.);
+    setPlannedInvest(    rand->bounded(50)*1000.
+                       + rand->bounded(1,3) *500.
+                       + rand->bounded(10) *100);
+    setConclusionDate(QDate::currentDate().addYears(-2).addDays(rand->bounded(720)));
+    if( rand->bounded(100)%5)
+        // in 4 von 5 Fällen
+        setNoticePeriod(3 + rand->bounded(21));
+    else
+        setPlannedEndDate(conclusionDate().addYears(rand->bounded(3)).addMonths(rand->bounded(12)));
+}
 contract::contract(qlonglong i) : td(getTableDef())
 {
     if( i <= 0) {
@@ -409,23 +426,8 @@ bool contract::archive()
 // test helper
 contract saveRandomContract(qlonglong creditorId)
 {   LOG_CALL;
-    static QRandomGenerator *rand = QRandomGenerator::system();
-
     contract c;
-    c.setLabel(proposeContractLabel());
-    c.setCreditorId(creditorId);
-    c.setReinvesting(rand->bounded(100)%6);// 16% auszahlend
-    c.setInterestRate((1 +rand->bounded(149)) /100.);
-    c.setPlannedInvest(    rand->bounded(50)*1000.
-                           + rand->bounded(1,3) *500.
-                           + rand->bounded(10) *100);
-    c.setConclusionDate(QDate::currentDate().addYears(-2).addDays(rand->bounded(720)));
-    if( rand->bounded(100)%5)
-        // in 4 von 5 Fällen
-        c.setNoticePeriod(3 + rand->bounded(21));
-    else
-        c.setPlannedEndDate(c.conclusionDate().addYears(rand->bounded(3)).addMonths(rand->bounded(12)));
-
+    c.initRandom(creditorId);
     c.saveNewContract();
     return c;
 }

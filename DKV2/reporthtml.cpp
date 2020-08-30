@@ -88,11 +88,11 @@ QString htmlOverviewTable()
     ret += appConfig::getRuntimeData(GMBH_ADDRESS1);
     ret += qsl(" - Stand: ") + QDate::currentDate().toString(qsl("dd.MM.yyyy<br>"));
     ret += startTable();
-    ret += tableRow2(qsl("Anzahl DK Geber*innen von aktiven Verträgen:"), QString::number(dbs.AnzahlDkGeber));
-    ret += tableRow2(qsl("Anzahl aktiver Direktkredite:") , b(QString::number(dbs.AnzahlAktive)));
-    ret += tableRow2(qsl("Wert der aktiven Direktkredite:")  , b(locale.toCurrencyString(dbs.WertAktive)) + qsl("<br><small>(Ø ") + locale.toCurrencyString(dbs.WertAktive/dbs.AnzahlAktive) + qsl(")</small>"));
-    ret += tableRow2(qsl("Durchschnittlicher Zinssatz:<br><small>(Gewichtet mit Vertragswert)</small>"), QString::number(dbs.DurchschnittZins, 'f', 4) + qsl("%"));
-    ret += tableRow2(qsl("Jährliche Zinskosten:"), locale.toCurrencyString(dbs.WertAktive * dbs.DurchschnittZins/100.));
+    ret += tableRow2(qsl("Anzahl DK Geber*innen von aktiven Verträgen:"), QString::number(dbs.creditorsWithActiveContracts));
+    ret += tableRow2(qsl("Anzahl aktiver Direktkredite:") , b(QString::number(dbs.activeContracts)));
+    ret += tableRow2(qsl("Wert der aktiven Direktkredite:")  , b(locale.toCurrencyString(dbs.valueActiveContracts)) + qsl("<br><small>(Ø ") + locale.toCurrencyString(dbs.valueActiveContracts/dbs.activeContracts) + qsl(")</small>"));
+    ret += tableRow2(qsl("Durchschnittlicher Zinssatz:<br><small>(Gewichtet mit Vertragswert)</small>"), QString::number(dbs.weightedAverageInterest, 'f', 4) + qsl("%"));
+    ret += tableRow2(qsl("Jährliche Zinskosten:"), locale.toCurrencyString(dbs.valueActiveContracts * dbs.weightedAverageInterest/100.));
     ret += tableRow2(qsl("Mittlerer Zinssatz:"), QString::number(dbs.MittlererZins, 'f', 4) + "%");
     ret += emptyRow();
     ret += tableRow2(qsl("Anzahl mit jährl. Zinsauszahlung:"), QString::number(dbs.AnzahlAuszahlende));
@@ -101,8 +101,8 @@ QString htmlOverviewTable()
     ret += tableRow2(qsl("Anzahl ohne jährl. Zinsauszahlung:"), QString::number(dbs.AnzahlThesaurierende));
     ret += tableRow2(qsl("Wert inkl. Zinsen:"), locale.toCurrencyString(dbs.WertThesaurierende));
     ret += emptyRow();
-    ret += tableRow2(qsl("Anzahl ausstehender (inaktiven) DK"), b(QString::number(dbs.AnzahlPassive)));
-    ret += tableRow2(qsl("Summe ausstehender (inaktiven) DK"), b(locale.toCurrencyString(dbs.BetragPassive)));
+    ret += tableRow2(qsl("Anzahl ausstehender (inaktiven) DK"), b(QString::number(dbs.inactiveContracts)));
+    ret += tableRow2(qsl("Summe ausstehender (inaktiven) DK"), b(locale.toCurrencyString(dbs.valueInactiveContracts)));
     ret += endTable();
     return ret;
 }

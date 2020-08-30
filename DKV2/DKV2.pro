@@ -31,6 +31,7 @@ SOURCES += \
         creditor.cpp \
         csvwriter.cpp \
         dbfield.cpp \
+        dbstatistics.cpp \
         dbstructure.cpp \
         dbtable.cpp \
         dkdbhelper.cpp \
@@ -62,6 +63,7 @@ HEADERS += \
         creditor.h \
         csvwriter.h \
         dbfield.h \
+        dbstatistics.h \
         dbstructure.h \
         dbtable.h \
         dkdbhelper.h \

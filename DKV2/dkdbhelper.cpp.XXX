@@ -100,9 +100,9 @@ bool createView(QString name, QString sql, QSqlDatabase db =QSqlDatabase::databa
 }
 bool insert_views( QSqlDatabase db)
 {   LOG_CALL;
-    QString sqlAnzahlCreditoren =qsl("SELECT count(*) AS AnzahlDkGeber FROM (SELECT DISTINCT KreditorId FROM Vertraege)");
+    QString sqlAnzahlCreditoren =qsl("SELECT count(*) FROM (SELECT DISTINCT KreditorId FROM Vertraege)");
     bool ret = createView(qsl("AnzahlAlleKreditoren"), sqlAnzahlCreditoren, db);
-
+    
     QString sqlWertAktiveVertraege =qsl(
             "SELECT Vertraege.id AS id, Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, "
             "Vertraege.Kennung AS Vertragskennung, Vertraege.ZSatz/100. AS Zinssatz, "
@@ -115,18 +115,10 @@ bool insert_views( QSqlDatabase db)
             "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
         "Group by Vertraege.id");
     ret &= createView( "WertAktiveVertraege", sqlWertAktiveVertraege, db);
-
+    
     QString sqlGewichteterMittlererZinsAktiveVertraege =
-        qsl("SELECT z/w AS median FROM (SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertAktiveVertraege)");
+        qsl("SELECT z/w AS median fROM (SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertAktiveVertraege");
     ret &= createView("GewichteterMittlererZinsAktiverVerträge", sqlGewichteterMittlererZinsAktiveVertraege);
-
-    QString sqlGewichteterMittlererZinsInaktiveVertraege =
-        qsl("SELECT z/w AS median FROM (SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertPassiveVertraege)");
-    ret &= createView("GewichteterMittlererZinsInaktiverVerträge", sqlGewichteterMittlererZinsInaktiveVertraege);
-
-    QString sqlGewichteterMittlererZinsAlleVertraege =
-        qsl("SELECT z/w AS median FROM (SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertAlleVertraege)");
-    ret &= createView("GewichteterMittlererZinsAktiverVerträge", sqlGewichteterMittlererZinsAlleVertraege);
 
     QString sqlWertPassiveVertraege =
             "SELECT Vertraege.id AS id, "    // 0
@@ -199,12 +191,8 @@ bool insert_views( QSqlDatabase db)
             "Group by exVertraege.id";
     ret &= createView("WertBeendeteVertraege", sqlDeletedContracts, db);
 
-    QString sqlAnzahlAktiveDkGeber = "SELECT count(*) AS AnzahlDkGeber FROM (SELECT DISTINCT KreditorId FROM WertAktiveVertraege)";
+    QString sqlAnzahlAktiveDkGeber = "SELECT count(*) AS AnzahlAktiveDkGeber FROM (SELECT DISTINCT KreditorId FROM WertAktiveVertraege)";
     ret &= createView("AnzahlAktiveDkGeber", sqlAnzahlAktiveDkGeber, db);
-
-    QString sqlAnzahlInaktiveDkGeber = "SELECT count(*) AS AnzahlDkGeber FROM (SELECT DISTINCT KreditorId FROM WertInaktiveVertraege)";
-    ret &= createView("AnzahlInaktiveDkGeber", sqlAnzahlInaktiveDkGeber, db);
-
 
     QString sqlContractDataActiveContracts = "SELECT "
       "Vertraege.id AS Id, "
@@ -506,11 +494,11 @@ double valueOfInactiveContracts()
     return executeSingleValueSql("SUM(Wert)", "WertPassiveVertraege").toReal() /-100.;
 }
 
-double weightedAverageInterestRate()
+double weightedAverageInterest()
 {
     return executeSingleValueSql("z/w AS median", "(SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertAktiveVertraege)").toReal();
 }
-double avgInterestRate()
+double averageInterest()
 {
     return executeSingleValueSql("AVG(Zinssatz)", "WertAktiveVertraege").toDouble();
 }
@@ -538,15 +526,15 @@ DbSummary calculateSummary()
     // all contracts
     dbs.creditorsWithActiveContracts =numberOfCreditorsWithActiveContracts();
 
-    dbs.weightedAverageInterest =weightedAverageInterestRate();
-    dbs.MittlererZins    =avgInterestRate();
-
+    dbs.weightedAverageInterest =weightedAverageInterest();
+    dbs.MittlererZins    =averageInterest();
+    
     dbs.activeContracts  =numberOfActiveContracts();
     dbs.valueActiveContracts  =valueOfActiveContracts();
     dbs.inactiveContracts =numberOfInactiveContracts();
     dbs.valueInactiveContracts =valueOfInactiveContracts();
-
-    // active ...
+    
+    // active ... 
     dbs.AnzahlAuszahlende =numberOfActivePayoutContracts();
     dbs.BetragAuszahlende =valueOfActivePayoutContracts();
     dbs.AnzahlThesaurierende=numberOfActiveAccumulatingContracts();
