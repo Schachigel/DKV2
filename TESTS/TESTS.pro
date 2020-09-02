@@ -30,6 +30,7 @@ SOURCES +=  tst_db.cpp \
     ../DKV2/booking.cpp \
     ../DKV2/contract.cpp \
     ../DKV2/creditor.cpp \
+    ../DKV2/dbstatistics.cpp \
     ../DKV2/dkdbhelper.cpp \
     ../DKV2/helperfin.cpp \
     ../DKV2/letterTemplate.cpp \

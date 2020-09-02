@@ -170,7 +170,7 @@ QVariant executeSingleValueSql(const dbfield& field, const QString& where, QSqlD
     QVariant result = executeSingleValueSql(field.name(), field.tableName(), where, db);
 
     if( ! result.isValid()) {
-        qDebug() << "executeSingleValueSql found no value";
+//        qDebug() << "executeSingleValueSql found no value";
         return result;
     }
     if(result.convert(field.type()))

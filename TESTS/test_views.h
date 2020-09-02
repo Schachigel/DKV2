@@ -22,7 +22,12 @@ private slots:
     void init();
     void cleanup();
 
-    void test_wertPassiveVertraege_oneContract();
+    void test_statistics_activateContract();
+    void test_statistics_multipleContract();
+
+    void test_statistics_mny_contracts();
+
+
 };
 
 #endif // TEST_VIEWS_H

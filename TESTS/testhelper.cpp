@@ -16,6 +16,8 @@ void initTestDb()
     QDir().mkdir(QString("..\\data"));
     if (QFile::exists(testDbFilename))
         QFile::remove(testDbFilename);
+    if (QFile::exists(testDbFilename))
+        QFAIL("test db still in use");
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(testDbFilename);
     QVERIFY(db.open());

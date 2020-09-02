@@ -133,7 +133,7 @@ int  contract::saveNewContract()
     ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("KreditorId")].name(), creditorId());
     ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("Kennung")].name(), label());
     ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("Betrag")].name(), ctFromEuro(plannedInvest()));
-    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("ZSatz")].name(), interestRate()*100);
+    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("ZSatz")].name(), int(interestRate()*100.));
     ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("thesaurierend")].name(), reinvesting());
     ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("Vertragsdatum")].name(), conclusionDate());
     ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("LaufzeitEnde")].name(), plannedEndDate().isValid() ? plannedEndDate() : EndOfTheFuckingWorld);

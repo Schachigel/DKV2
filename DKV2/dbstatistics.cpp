@@ -4,118 +4,163 @@
 
 bool dbStatistics::fillall()
 {
-    numberOfContracts =nbrCreditors();
-    numberOfContracts =nbrContracts();
-    valueOfAllContracts =valueContracts();
-    weightedAverageInterestRateOfAllContracts =weightedAverageInterestRate_();
-    averageInterestRateOfAllContracts =avgInterestRate_();
-    annualInterestOfAllContracts =annualInterest();
+    nbrCreditors =getNbrCreditors();
+    nbrContracts =getNbrContracts();
+    valueContracts =getValueContracts();
+    weightedAvgInterestRate =getWeightedAvgInterestRate();
+    avgInterestRate =getAvgInterestRate();
+    annualInterest =getAnnualInterest();
     // active contracts vs...
-    numberOfCreditorsOfActiveContracts=nbrCreditorsWithActiveContracts();
-    numberOfActiveContracts =nbrActiveContracts();
-    valueOfActiveContracts =valueActiveContracts();
-    weightedAverageInterestRateOfActiveContracts =weightedAvgInterestActiveContracts();
-    averageInterestOfActiveContracts =avgInterestActiveContracts();
-    annualInterestOfActiveContrasts =annualInterestActiveContracts();
+    nbrCreditors_activeContracts=getNbrCreditors_activeContracts();
+    nbrActiveContracts =getNbrActiveContracts();
+    valueActiveContracts =getValueActiveContracts();
+    weightedAvgInterestActiveContracts =getWeightedAvgInterestActiveContracts();
+    avgInterestActiveContracts =getAvgInterestActiveContracts();
+    annualInterestActiveContracts =getAnnualInterestActiveContracts();
     // inactive contracts
-    numberOfCreditorsOfInactiveContracts =nbrCreditorsInactiveContracts();
-    numberOfInactiveContracts =nbrInactiveContracts();
-    valueOfInactiveContracts =valueInactiveContracts();
-    weightedAverageInterestOfInactiveContracts =weightedAvgInterestInactiveContracts();
-    averageInterestOfInactiveContracts =avgInterestInactiveContracts();
-    annualInterestOfInactiveContrasts =annualInterestInactiveContracts();
+    nbrCreditors_inactiveContracts =getNbrCreditors_inactiveContracts();
+    nbrInactiveContracts =getNbrInactiveContracts();
+    valueInactiveContracts =getValueInactiveContracts();
+    weightedAvgInterestInactiveContracts =getWeightedAvgInterestInactiveContracts();
+    avgInterestInactiveContracts =getAvgInterestInactiveContracts();
+    expectedAnnualInterestInactiveContrasts =getAnnualInterestInactiveContracts();
     // off all active contracts: reinvesting vs. ...
-    numberOfReinvestingContracts =nbrReinvesting();
-    valueOfReinvestingContracts =valueReinvesting();
-    annualInterestWithReinvestment = annualInterestReinvest();
+    nbrActiveReinvesting =getNbrActiveReinvesting();
+    valueActiveReinvesting =getValueActiveReinvesting();
+    annualInterestReinvestment = getAnnualInterestActiveReinvesting();
     // non reinvesting
-    numberOf_nonReinvestingContracts =nbrNotReinvesting();
-    valueOf_nonReinvestingContracts =valueNotReinvesting();
-    annualInterestWithPayout =annualInterestPayout();
+    nbrActiveNotReinvesting =getNbrActiveNotReinvesting();
+    valueActiveNotReinvesting =getValueActiveNotReinvesting();
+    annualInterestPayout =getAnnualInterestActiveNotReinvesting();
 
     return false;
 }
+#define n2s(x) QString::number(x)
+#define n2d_2s(x) QString::number(x, 'f', 2)
+QString dbStatistics::toString()
+{
+    QString all {qsl("\nAll Contracts / Active / inactive\n"
+                     "Creditors: %1 / %2 / %3\n"
+                     "Contracts: %4 / %5 / %6\n"
+                     "Wert:      %7 / %8 / %9\n")};
+    all = all.arg(n2s(nbrCreditors), n2s(nbrCreditors_activeContracts), n2s(nbrCreditors_inactiveContracts),
+                  n2s(nbrContracts), n2s(nbrActiveContracts), n2s(nbrInactiveContracts),
+                  n2d_2s(valueContracts), n2d_2s(valueActiveContracts), n2d_2s(valueInactiveContracts));
+    all += qsl( "gew.Avg.I: %1 / %2 / %3\n"
+                "Avg. I.  : %4 / %5 / %6\n"
+                "Annual I.: %7 / %8 / %9\n\n");
+    all = all.arg(n2d_2s(weightedAvgInterestRate), n2d_2s(weightedAvgInterestActiveContracts), n2d_2s(weightedAvgInterestInactiveContracts),
+                  n2d_2s(avgInterestRate), n2d_2s(avgInterestActiveContracts), n2d_2s(avgInterestInactiveContracts),
+                  n2d_2s(annualInterest), n2d_2s(annualInterestActiveContracts), n2d_2s(expectedAnnualInterestInactiveContrasts));
+
+    all += qsl("Active Contracts reinvesting / w payout\n"
+                "nbr      : %1 / %2\n"
+                "value    : %3 / %4\n"
+                "Interest : %5 / %6\n\n");
+    all = all.arg( n2s(nbrActiveReinvesting), n2s(nbrActiveNotReinvesting),
+                  n2d_2s(valueActiveReinvesting), n2d_2s(valueActiveNotReinvesting),
+                  n2d_2s(annualInterestReinvestment), n2d_2s(annualInterestPayout));
+    return all;
+}
 // all contract summary
-int nbrCreditors()
+int getNbrCreditors()
 {   // does not count creditors w/o a contract
-    return executeSingleValueSql(qsl("*"), qsl("AnzahlAlleKreditoren")).toInt();
+    return executeSingleValueSql(qsl("AnzahlDkGeber"), qsl("AnzahlAlleKreditoren")).toInt();
 }
-int nbrContracts()
+int getNbrContracts()
 {
-    return executeSingleValueSql(qsl("COUNT(*)"), qsl("Verträge")).toInt();
+    return executeSingleValueSql(qsl("COUNT(*)"), qsl("Vertraege")).toInt();
 }
-double valueContracts()
+double getValueContracts()
 {
-    return executeSingleValueSql(qsl("SUM(Wert)"), qsl("WertAlleVerträge")).toDouble();
+    return executeSingleValueSql(qsl("SUM(ABS(Wert))"), qsl("WertAlleVertraege")).toDouble() / 100.;
 }
-double weightedAverageInterestRate_()
+double getWeightedAvgInterestRate()
 {
-    return executeSingleValueSql(qsl("*"), qsl("GewichteterMittlererZinsAlleVerträge")).toDouble();
+    return executeSingleValueSql(qsl("median"), qsl("GewichteterMittlererZinsAlleVertraege")).toDouble();
 }
-double avgInterestRate_()
+double getAvgInterestRate()
 {
     return executeSingleValueSql(qsl("AVG(Zinssatz)"), qsl("WertAlleVertraege")).toDouble();
 }
-double annualInterest()
+double getAnnualInterest()
 {
-    return weightedAverageInterestRate_()*valueContracts();
+    return getWeightedAvgInterestRate()*getValueContracts() /100.;
 }
 // active vs ...
-int nbrCreditorsWithActiveContracts()
+int getNbrCreditors_activeContracts()
 {
     return executeSingleValueSql(qsl("AnzahlDkGeber"), qsl("AnzahlAktiveDkGeber")).toInt();
 }
-int nbrActiveContracts()
+int getNbrActiveContracts()
 {
     return executeSingleValueSql(qsl("COUNT(*)"), qsl("WertAktiveVertraege")).toInt();
 }
-double valueActiveContracts()
+double getValueActiveContracts()
 {
     return executeSingleValueSql(qsl("SUM(Wert)"), qsl("WertAktiveVertraege")).toInt() /100.;
 }
-double weightedAvgInterestActiveContracts()
+double getWeightedAvgInterestActiveContracts()
 {
-    return executeSingleValueSql(qsl("*"), qsl("GewichteterMittlererZinsAktiverVerträge")).toDouble();
+    return executeSingleValueSql(qsl("median"), qsl("GewichteterMittlererZinsAktiverVertraege")).toDouble();
 }
-double avgInterestActiveContracts()
+double getAvgInterestActiveContracts()
 {
     return executeSingleValueSql(qsl("AVG(Zinssatz)"), qsl("WertAktiveVertraege")).toDouble();
 }
-double annualInterestActiveContracts()
+double getAnnualInterestActiveContracts()
 {
-    return weightedAvgInterestActiveContracts()*valueActiveContracts();
+    return getWeightedAvgInterestActiveContracts() *getValueActiveContracts() /100.;
 };
 // ... inactive
-int nbrCreditorsInactiveContracts()
+int getNbrCreditors_inactiveContracts()
 {
     return executeSingleValueSql(qsl("AnzahlDkGeber"), qsl("AnzahlInaktiveDkGeber")).toInt();
 }
-int nbrInactiveContracts()
+int getNbrInactiveContracts()
 {
-    return executeSingleValueSql(qsl("COUNT(*)"), qsl("WertInaktiveVertraege")).toInt();
+    return executeSingleValueSql(qsl("COUNT(*)"), qsl("WertPassiveVertraege")).toInt();
 }
-double valueInactiveContracts()
+double getValueInactiveContracts()
 {
-    return executeSingleValueSql(qsl("SUM(Wert)"), qsl("WertPassiveVertraege")).toDouble();
+    return executeSingleValueSql(qsl("SUM(Wert)"), qsl("WertPassiveVertraege")).toDouble() / -100.;
 }
-double weightedAvgInterestInactiveContracts()
+double getWeightedAvgInterestInactiveContracts()
 {
-    return executeSingleValueSql("*", "GewichteterMittlererZinsInaktiverVerträge").toDouble();
+    return executeSingleValueSql("*", "GewichteterMittlererZinsInaktiverVertraege").toDouble();
 }
-double avgInterestInactiveContracts()
+double getAvgInterestInactiveContracts()
 {
     return executeSingleValueSql(qsl("AVG(Zinssatz)"), qsl("WertPassiveVertraege")).toDouble();
 }
-double annualInterestInactiveContracts()
+double getAnnualInterestInactiveContracts()
 {
-    return weightedAvgInterestInactiveContracts()*valueInactiveContracts();
+    return getWeightedAvgInterestInactiveContracts() *getValueInactiveContracts() /100.;
 }
 
 // active: reinvesting vs. ...
-int nbrReinvesting(){}
-double valueReinvesting(){}
-double annualInterestReinvest(){}
+int getNbrActiveReinvesting()
+{
+    return executeSingleValueSql("COUNT(*)", "WertAktiveVertraege", "thesa").toInt();
+}
+double getValueActiveReinvesting()
+{
+    return executeSingleValueSql("SUM(Wert)", "WertAktiveVertraege", "thesa").toInt() /100.;
+}
+double getAnnualInterestActiveReinvesting()
+{
+    return executeSingleValueSql(qsl("SUM(Wert*Zinssatz/100)"), qsl("WertAktiveVertraege"), "thesa").toDouble() /100.;
+}
 // ... wPayout
-int nbrNotReinvesting(){}
-double valueNotReinvesting(){}
-double annualInterestPayout(){}
+int getNbrActiveNotReinvesting()
+{
+    return executeSingleValueSql("COUNT(*)", "WertAktiveVertraege", "NOT thesa").toInt();
+}
+double getValueActiveNotReinvesting()
+{
+    return executeSingleValueSql("SUM(Wert)", "WertAktiveVertraege", "NOT thesa").toInt() /100.;
+}
+double getAnnualInterestActiveNotReinvesting()
+{
+    return executeSingleValueSql(qsl("SUM(Wert*Zinssatz/100)"), qsl("WertAktiveVertraege"), "NOT thesa").toDouble() /100.;
+}

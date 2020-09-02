@@ -100,7 +100,7 @@ bool createView(QString name, QString sql, QSqlDatabase db =QSqlDatabase::databa
 }
 bool insert_views( QSqlDatabase db)
 {   LOG_CALL;
-    QString sqlAnzahlCreditoren =qsl("SELECT count(*) AS AnzahlDkGeber FROM (SELECT DISTINCT KreditorId FROM Vertraege)");
+    QString sqlAnzahlCreditoren =qsl("SELECT COUNT(*) AS AnzahlDkGeber FROM (SELECT DISTINCT KreditorId FROM Vertraege)");
     bool ret = createView(qsl("AnzahlAlleKreditoren"), sqlAnzahlCreditoren, db);
 
     QString sqlWertAktiveVertraege =qsl(
@@ -118,15 +118,15 @@ bool insert_views( QSqlDatabase db)
 
     QString sqlGewichteterMittlererZinsAktiveVertraege =
         qsl("SELECT z/w AS median FROM (SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertAktiveVertraege)");
-    ret &= createView("GewichteterMittlererZinsAktiverVerträge", sqlGewichteterMittlererZinsAktiveVertraege);
+    ret &= createView("GewichteterMittlererZinsAktiverVertraege", sqlGewichteterMittlererZinsAktiveVertraege);
 
     QString sqlGewichteterMittlererZinsInaktiveVertraege =
         qsl("SELECT z/w AS median FROM (SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertPassiveVertraege)");
-    ret &= createView("GewichteterMittlererZinsInaktiverVerträge", sqlGewichteterMittlererZinsInaktiveVertraege);
+    ret &= createView("GewichteterMittlererZinsInaktiverVertraege", sqlGewichteterMittlererZinsInaktiveVertraege);
 
     QString sqlGewichteterMittlererZinsAlleVertraege =
         qsl("SELECT z/w AS median FROM (SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertAlleVertraege)");
-    ret &= createView("GewichteterMittlererZinsAktiverVerträge", sqlGewichteterMittlererZinsAlleVertraege);
+    ret &= createView("GewichteterMittlererZinsAlleVertraege", sqlGewichteterMittlererZinsAlleVertraege);
 
     QString sqlWertPassiveVertraege =
             "SELECT Vertraege.id AS id, "    // 0
@@ -202,7 +202,7 @@ bool insert_views( QSqlDatabase db)
     QString sqlAnzahlAktiveDkGeber = "SELECT count(*) AS AnzahlDkGeber FROM (SELECT DISTINCT KreditorId FROM WertAktiveVertraege)";
     ret &= createView("AnzahlAktiveDkGeber", sqlAnzahlAktiveDkGeber, db);
 
-    QString sqlAnzahlInaktiveDkGeber = "SELECT count(*) AS AnzahlDkGeber FROM (SELECT DISTINCT KreditorId FROM WertInaktiveVertraege)";
+    QString sqlAnzahlInaktiveDkGeber = "SELECT count(*) AS AnzahlDkGeber FROM (SELECT DISTINCT KreditorId FROM WertPassiveVertraege)";
     ret &= createView("AnzahlInaktiveDkGeber", sqlAnzahlInaktiveDkGeber, db);
 
 
