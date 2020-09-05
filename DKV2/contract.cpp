@@ -1,5 +1,7 @@
 #include <QVector>
 #include <QRandomGenerator>
+#include <QTextStream>
+
 
 #include "helper.h"
 #include "contract.h"
@@ -397,6 +399,28 @@ bool contract::finalize(bool simulate, const QDate finDate,
         QSqlDatabase::database().rollback();
         return false;
     }
+}
+
+QString contract::toString(QString title)
+{
+    QString ret;
+    QTextStream stream(&ret);
+    stream << title << Qt::endl;
+    if( id() <=0)
+        stream << qsl("[contract was not saved or loaded from DB]") << Qt::endl;
+    else
+        stream << qsl("[id:") << id_aS() << qsl("]") << Qt::endl;
+    if( bookings::getBookings(id()).count() == 0) {
+        stream << "Wert (gepl.):     " << plannedInvest() << Qt::endl;
+        stream << "Zinssatz (gepl.): " << interestRate() << Qt::endl;
+        return ret;
+    }
+    stream << "Wert:     " << value() << Qt::endl;
+    stream << "Zinssatz: " << interestRate() << Qt::endl;
+    stream << "Buchungen:" << bookings::getBookings(id()).count() << Qt::endl;
+    stream << "Letzte B. " << booking::typeName(latestBooking().type) << qsl(", ")
+           << latestBooking().amount << qsl(", ") << latestBooking().date.toString() << Qt::endl;
+    return ret;
 }
 
 bool contract::storeTerminationDate(QDate d) const

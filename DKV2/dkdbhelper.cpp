@@ -116,6 +116,28 @@ bool insert_views( QSqlDatabase db)
         "Group by Vertraege.id");
     ret &= createView( "WertAktiveVertraege", sqlWertAktiveVertraege, db);
 
+    QString sqlWertPassiveVertraege =
+        "SELECT Vertraege.id AS id, "    // 0
+        "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 1
+        "Vertraege.Kennung AS Vertragskennung, " // 2
+        "Vertraege.ZSatz/100. AS Zinssatz, "     // 3
+        "Vertraege.Betrag AS Wert, "         // 4
+        "Vertraege.Vertragsdatum AS Datum, " // 5
+        "Vertraege.Kfrist AS Kündigungsfrist, "      // 6
+        "Vertraege.LaufzeitEnde AS Vertragsende, "   // 7
+        "Vertraege.thesaurierend AS thesa, "          // 8
+        "Kreditoren.id AS KreditorId " // 9
+        "FROM Vertraege "
+        "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
+        "WHERE (SELECT count(*) FROM Buchungen WHERE Buchungen.VertragsId=Vertraege.id) = 0";
+    ret &= createView("WertPassiveVertraege", sqlWertPassiveVertraege, db);
+
+    QString sqlWertAlleVertraege ="SELECT * FROM WertAktiveVertraege "
+                                   "UNION "
+                                   "SELECT * FROM WertPassiveVertraege ";
+    ret &= createView("WertAlleVertraege", sqlWertAlleVertraege, db);
+
+
     QString sqlGewichteterMittlererZinsAktiveVertraege =
         qsl("SELECT z/w AS median FROM (SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertAktiveVertraege)");
     ret &= createView("GewichteterMittlererZinsAktiverVertraege", sqlGewichteterMittlererZinsAktiveVertraege);
@@ -127,27 +149,6 @@ bool insert_views( QSqlDatabase db)
     QString sqlGewichteterMittlererZinsAlleVertraege =
         qsl("SELECT z/w AS median FROM (SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertAlleVertraege)");
     ret &= createView("GewichteterMittlererZinsAlleVertraege", sqlGewichteterMittlererZinsAlleVertraege);
-
-    QString sqlWertPassiveVertraege =
-            "SELECT Vertraege.id AS id, "    // 0
-            "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 1
-            "Vertraege.Kennung AS Vertragskennung, " // 2
-            "Vertraege.ZSatz/100. AS Zinssatz, "     // 3
-            "-1* Vertraege.Betrag AS Wert, "         // 4
-            "Vertraege.Vertragsdatum AS Datum, " // 5
-            "Vertraege.Kfrist AS Kündigungsfrist, "      // 6
-            "Vertraege.LaufzeitEnde AS Vertragsende, "   // 7
-            "Vertraege.thesaurierend AS thesa, "          // 8
-            "Kreditoren.id AS KreditorId " // 9
-            "FROM Vertraege "
-            "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
-            "WHERE (SELECT count(*) FROM Buchungen WHERE Buchungen.VertragsId=Vertraege.id) = 0";
-    ret &= createView("WertPassiveVertraege", sqlWertPassiveVertraege, db);
-
-    QString sqlWertAlleVertraege ="SELECT * FROM WertAktiveVertraege "
-                                  "UNION "
-                                  "SELECT * FROM WertPassiveVertraege ";
-    ret &= createView("WertAlleVertraege", sqlWertAlleVertraege, db);
 
 //    QString sqlAktiveVertraege ="SELECT DISTINCT Vertraege.* "
 //            "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id=buchungen.VertragsId ";

@@ -70,6 +70,8 @@ struct contract
     bool payout(QDate d, double amount);
     bool cancel(QDate);
     bool finalize(bool simulate, const QDate finDate, double& finInterest, double& finPayout);
+    // helper
+    QString toString(QString name =qsl(""));
 private:
     // data
     TableDataInserter td;

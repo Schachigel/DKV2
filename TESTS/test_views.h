@@ -24,10 +24,9 @@ private slots:
 
     void test_statistics_activateContract();
     void test_statistics_multipleContract();
+    void test_statistics_annualSettelemnt();
 
     void test_statistics_mny_contracts();
-
-
 };
 
 #endif // TEST_VIEWS_H

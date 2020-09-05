@@ -123,7 +123,7 @@ int getNbrInactiveContracts()
 }
 double getValueInactiveContracts()
 {
-    return executeSingleValueSql(qsl("SUM(Wert)"), qsl("WertPassiveVertraege")).toDouble() / -100.;
+    return executeSingleValueSql(qsl("SUM(Wert)"), qsl("WertPassiveVertraege")).toDouble() / 100.;
 }
 double getWeightedAvgInterestInactiveContracts()
 {
