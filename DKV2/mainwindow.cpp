@@ -401,9 +401,9 @@ void MainWindow::prepare_contracts_list_view()
     busycursor b;
     QSqlTableModel* model = new QSqlTableModel(this);
     if( showDeletedContracts)
-        model->setTable(qsl("WertBeendeteVertraege"));
+        model->setTable(qsl("vBeendeteVertraege"));
     else
-        model->setTable(qsl("WertAlleVertraege"));
+        model->setTable(qsl("vAlleVertraege"));
     model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
     qDebug() << "contract list model filter: " << model->filter();
 

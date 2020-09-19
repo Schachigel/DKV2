@@ -4,9 +4,30 @@
 #include <QDate>
 #include <QRegExpValidator>
 
-double round2(const double d);
-int ctFromEuro( const double d);
-double euroFromCt( const int i);
+inline double r2(const double d)
+{
+    return (qRound(d * 100.))/100.;
+}
+inline double r4(const double d)
+{
+    return (qRound(d * 10000.))/10000.;
+}
+inline int ctFromEuro( const double d)
+{
+    if( d>=0)
+        return int( d * 100. +.5);
+    return int( d * 100. -.5);
+}
+inline double euroFromCt( const int i)
+{
+    return double (i)/100.;
+}
+
+inline QString i2s(int x)       {return QString::number(x);}
+inline QString d2s_2d(double x) {return QString::number(x, 'f', 2);}
+inline QString d2s_4d(double x) {return QString::number(x, 'f', 4);}
+inline QString d2s_6d(double x) {return QString::number(x, 'f', 6);}
+
 
 int TageBisJahresende(const QDate& d);
 int TageBisJahresende_lookup(const QDate& d);

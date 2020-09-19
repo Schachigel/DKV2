@@ -92,7 +92,7 @@ void wizChangeContract_AmountPage::initializePage()
 bool wizChangeContract_AmountPage::validatePage()
 {
     bool deposit = field("deposit_notPayment").toBool();
-    double amount = round2(field("amount").toDouble());
+    double amount = r2(field("amount").toDouble());
     if( amount < 100)
         return false;
     setField("amount", amount);

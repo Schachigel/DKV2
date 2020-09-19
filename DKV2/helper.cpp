@@ -55,7 +55,7 @@ void logger(QtMsgType type, const QMessageLogContext &, const QString &msg)
 
 QString logFilePath()
 {
-    DWORD size=256;
+    const DWORD size=256;
     WCHAR exe[size+1];
     QString filename("qtexe");
     if( GetModuleFileNameW(HMODULE(0), exe, size))

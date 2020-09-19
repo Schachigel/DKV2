@@ -4,134 +4,119 @@
 #include <QStringList>
 
 #include "helper.h"
+#include "helperfin.h"
+#include "contract.h"
 
-struct dbStatistics
+inline bool icmp (QString s, int l, int r) {
+    if( l != r) {
+        qInfo() << "comparison of stat.data failed. " << s + qsl(" (%1, %2)").arg(i2s(l), i2s(r));
+        return false;
+    }
+    return true;
+}
+
+inline bool dcmp (QString s, double l, double r) {
+    if( ! qFuzzyCompare(1. +l, 1.+ r)) {
+        qInfo() << "comparison of stat.data failed. " << s + qsl(" (%1, %2)").arg(d2s_6d(l), d2s_6d(r));;
+        return false;
+    }
+    return true;
+};
+
+struct dataset
 {
-    // active contracts vs...
-    int nbrCreditors_activeContracts =0;
-    int nbrActiveContracts =0;
-    double valueActiveContracts =0.;
-    double avgInterestActiveContracts =0.;
-    double weightedAvgInterestActiveContracts =0.;
-    double annualInterestActiveContracts =0.;
-    // inactive contracts
-    int nbrCreditors_inactiveContracts =0;
-    int nbrInactiveContracts =0;
-    double valueInactiveContracts =0.;
-    double avgInterestInactiveContracts =0.;
-    double weightedAvgInterestInactiveContracts =0.;
-    double expectedAnnualInterestInactiveContrasts =0.;
-    // all contract summary
-    int nbrCreditors =0;
+    dataset(QString n) {name =n;}
+    QString name;
+    // int nbrCreditors =0;
+    QMap<int, int> credCount;
     int nbrContracts =0;
-    double valueContracts;
+    double value =0.;
     double avgInterestRate =0.;
     double weightedAvgInterestRate =0.;
     double annualInterest =0.;
-
-    // off all active contracts: reinvesting vs. ...
-    int nbrActiveReinvesting =0;
-    double valueActiveReinvesting =0.;
-    double annualInterestReinvestment =0.;
-    // non reinvesting
-    int nbrActiveNotReinvesting =0;
-    double valueActiveNotReinvesting =0.;
-    double annualInterestPayout =0.;
-
-    inline friend bool operator==(const dbStatistics& lhs, const dbStatistics& rhs)
-    {
-        auto icmp = [ ](QString s, int l, int r) {
-            if( l != r) {
-                s = s + qsl(" (%1, %2)");
-                s = s.arg(QString::number(l), QString::number(r));
-                qInfo() << "comparison of dbStatistics failed in " << s;
-                return false;
-            }
-            return true;
-        };
-        auto dcmp = [ ](QString s, double l, double r) {
-
-            if( ! qFuzzyCompare(1. +l, 1.+ r)) {
-                s = s + qsl(" (%1, %2)");
-                s = s.arg(QString::number(l), QString::number(r));
-                qInfo() << "comparison of dbStatistics failed in " << s;
-                return false;
-            }
-            return true;
-        };
-        bool ret =
-               icmp(qsl("nbrCreditors_activeContracts"), lhs.nbrCreditors_activeContracts, rhs.nbrCreditors_activeContracts);
-        ret &= icmp(qsl("nbrActiveContracts"), lhs.nbrActiveContracts, rhs.nbrActiveContracts);
-        ret &= dcmp(qsl("valueActiveContracts"), lhs.valueActiveContracts, rhs.valueActiveContracts);
-        ret &= dcmp(qsl("avgInterestActiveContracts"), lhs.avgInterestActiveContracts, rhs.avgInterestActiveContracts);
-        ret &= dcmp(qsl("weightedAvgInterestActiveContracts"), lhs.weightedAvgInterestActiveContracts, rhs.weightedAvgInterestActiveContracts);
-        ret &= dcmp(qsl("annualInterestActiveContracts"), lhs.annualInterestActiveContracts, rhs.annualInterestActiveContracts);
-
-        ret &= icmp(qsl("nbrCreditors_inactiveContracts"), lhs.nbrCreditors_inactiveContracts, rhs.nbrCreditors_inactiveContracts);
-        ret &= icmp(qsl("nbrInactiveContracts"), lhs.nbrInactiveContracts, rhs.nbrInactiveContracts);
-        ret &= dcmp(qsl("valueInactiveContracts"), lhs.valueInactiveContracts, rhs.valueInactiveContracts);
-        ret &= icmp(qsl("avgInterestInactiveContracts"), lhs.avgInterestInactiveContracts, rhs.avgInterestInactiveContracts);
-        ret &= icmp(qsl("weightedAvgInterestInactiveContracts"), lhs.weightedAvgInterestInactiveContracts, rhs.weightedAvgInterestInactiveContracts);
-        ret &= dcmp(qsl("expectedAnnualInterestInactiveContrasts"), lhs.expectedAnnualInterestInactiveContrasts, rhs.expectedAnnualInterestInactiveContrasts);
-
-        ret &= icmp(qsl("nbrCreditors"), lhs.nbrCreditors, rhs.nbrCreditors);
-        ret &= icmp(qsl("nbrContracts"), lhs.nbrContracts, rhs.nbrContracts);
-        ret &= dcmp(qsl("valueContracts"), lhs.valueContracts, rhs.valueContracts);
-        ret &= dcmp(qsl("avgInterestRate"), lhs.avgInterestRate, rhs.avgInterestRate);
-        ret &= dcmp(qsl("weightedAvgInterestRate"), lhs.weightedAvgInterestRate, rhs.weightedAvgInterestRate);
-        ret &= dcmp(qsl("annualInterest"), lhs.annualInterest, rhs.annualInterest);
-
-        ret &= icmp(qsl("nbrActiveReinvesting"), lhs.nbrActiveReinvesting, rhs.nbrActiveReinvesting);
-        ret &= dcmp(qsl("valueActiveReinvesting"), lhs.valueActiveReinvesting, rhs.valueActiveReinvesting);
-        ret &= dcmp(qsl("annualInterestReinvestment"), lhs.annualInterestReinvestment, rhs.annualInterestReinvestment);
-
-        ret &= icmp(qsl("nbrActiveNotReinvesting"), lhs.nbrActiveNotReinvesting, rhs.nbrActiveNotReinvesting);
-        ret &= dcmp(qsl("valueActiveNotReinvesting"), lhs.valueActiveNotReinvesting, rhs.valueActiveNotReinvesting);
-        ret &= dcmp(qsl("annualInterestPayout"), lhs.annualInterestPayout, rhs.annualInterestPayout);
+    inline friend bool operator==(const dataset& lhs, const dataset& rhs) {
+        bool ret =true;
+        ret &= icmp(lhs.name + qsl(" - nbr Creditors  "), lhs.credCount.size(), rhs.credCount.size());
+        ret &= icmp(lhs.name + qsl(" - nbr Contracts  "), lhs.nbrContracts, rhs.nbrContracts);
+        ret &= dcmp(lhs.name + qsl(" - Value  (euro)  "), lhs.value, rhs.value);
+        ret &= dcmp(lhs.name + qsl(" - annaul int. %  "), lhs.annualInterest, rhs.annualInterest);
+        ret &= dcmp(lhs.name + qsl(" - avg Interest % "), lhs.value, rhs.value);
+        ret &= dcmp(lhs.name + qsl(" - wAvg Interest% "), lhs.weightedAvgInterestRate, rhs.weightedAvgInterestRate);
         return ret;
     }
+    inline friend bool operator!=(const dataset& lhs, const dataset& rhs) {
+        return ! (lhs == rhs);
+    }
+    QString toString() const;
+};
+
+struct dbStats
+{
+    enum payoutType {
+        t_nt =0, thesa =1, pout =2, pt_size =3
+    };
+    enum activationStatus {
+        act_nInact =0, active =1, inactive =2, as_size =3
+    };
+
+    // all contract summary
+    dataset allContracts[activationStatus::as_size]      ={qsl("act+Inact-all  "), qsl("thesa          "), qsl("payout         ")};
+    dataset activeContracts[activationStatus::as_size]   ={qsl("active-all     "), qsl("active-thesa   "), qsl("active-payout  ")};
+    dataset inactiveContracts[activationStatus::as_size] ={qsl("inactive-all   "), qsl("inactive-thesa "), qsl("inactive-payout")};
+    inline friend bool operator==(const dbStats& lhs, const dbStats& rhs)
+    {
+        for( int i =0; i<3; i++) {
+            if( lhs.allContracts[i]     != rhs.allContracts[i] )    return false;
+            if( lhs.activeContracts[i]   != rhs.activeContracts[i])   return false;
+            if( lhs.inactiveContracts[i] != rhs.inactiveContracts[i]) return false;
+        }
+        return true;
+    }
+    inline friend bool operator!=(const dbStats& lhs, const dbStats& rhs) {
+        return ! (lhs == rhs);
+    }
     bool fillall();
-    dbStatistics(bool calc=false) {
-        if( calc)
+    static const bool calculate;
+    dbStats(bool init=false) {
+        if( init)
             fillall();
     }
     QString toString();
+    void addContract(double value, double interest, dbStats::payoutType kind, qlonglong creditorId);
+    void activateContract(double value, double plannedInvest, double interestRate, dbStats::payoutType kind, qlonglong creditorId);
+
+private:
+    void countCred_addContract(QMap<int, int> &credCount, int id)
+    {
+        int current =credCount.value(id, -1);
+        if( current == -1)
+            credCount.insert(id, 1);
+        else
+            credCount.insert(id, current +1);
+    }
+    void countCred_removeContract(QMap<int, int> &credCount, int id)
+    {
+        int current = credCount.value(id, -1);
+        if( current == -1) {
+            Q_ASSERT(true);// remove creditor that not yet had a contract
+        } else if( current == 1) {
+            credCount.remove(id);
+        } else {
+            credCount.insert(id, current-1);
+        }
+        return;
+    }
+
+
 };
 
-inline dbStatistics getStatistic() {
-    dbStatistics dbs (true);
+inline dbStats getStatistic() {
+    dbStats dbs (true);
     qInfo().noquote() << dbs.toString();
     return dbs;
 }
 
 // all contract summary
-int    getNbrCreditors();
-int    getNbrContracts();
-double getValueContracts();
-double getWeightedAvgInterestRate();
-double getAvgInterestRate();
-double getAnnualInterest();
-// active vs ...
-int    getNbrCreditors_activeContracts();
-int    getNbrActiveContracts();
-double getValueActiveContracts();
-double getWeightedAvgInterestActiveContracts();
-double getAvgInterestActiveContracts();
-double getAnnualInterestActiveContracts();
-// ... inactive
-int    getNbrCreditors_inactiveContracts();
-int    getNbrInactiveContracts();
-double getValueInactiveContracts();
-double getWeightedAvgInterestInactiveContracts();
-double getAvgInterestInactiveContracts();
-double getAnnualInterestInactiveContracts();
-// active: reinvesting vs. ...
-int    getNbrActiveReinvesting();
-double getValueActiveReinvesting();
-double getAnnualInterestActiveReinvesting();
-// ... wPayout
-int    getNbrActiveNotReinvesting();
-double getValueActiveNotReinvesting();
-double getAnnualInterestActiveNotReinvesting();
+
 
 #endif // DBSTATISTICS_H

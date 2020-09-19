@@ -22,11 +22,14 @@ private slots:
     void init();
     void cleanup();
 
-    void test_statistics_activateContract();
-    void test_statistics_multipleContract();
-    void test_statistics_annualSettelemnt();
+    void test_stat_activateContract_reinvesting();
+    void test_stat_activateContract_wpayout();
 
-    void test_statistics_mny_contracts();
+    void test_stat_create_activate_multipleContract();
+//    void test_stat_annualSettelemnt();
+//    void test_stat_extend_contract_sameYear();
+
+//    void test_stat_mny_contracts();
 };
 
 #endif // TEST_VIEWS_H

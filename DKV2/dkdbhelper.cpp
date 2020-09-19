@@ -86,161 +86,148 @@ void insert_DbProperties(QSqlDatabase db = QSqlDatabase::database())
     dbConfig c(dbConfig::FROM_RTD); // get configuration defaults
     c.writeDb(db);
 }
+
+struct dbViewDev{
+    QString name;
+    QString sql;
+};
+
 bool createView(QString name, QString sql, QSqlDatabase db =QSqlDatabase::database()) {
+    db.transaction();
     QSqlQuery q(db);
     q.exec("DROP VIEW " + name);
     QString createViewSql = "CREATE VIEW %1 AS " + sql;
     createViewSql = createViewSql.arg(name);
-    if( q.exec(createViewSql)) {
+    if( q.exec(createViewSql) && q.lastError().type() == QSqlError::NoError) {
+        db.commit();
         qInfo() << "successfully created view " << name;
         return true;
     }
+    db.rollback();
     qCritical() << "faild to create view " << name << Qt::endl << q.lastQuery() << Qt::endl << q.lastError();
     return false;
 }
+bool createViews( QVector<dbViewDev>& views, QSqlDatabase db)
+{
+    for( auto view: views) {
+        if( ! createView(view.name, view.sql, db))
+            return false;
+    }
+    return true;
+}
+
 bool insert_views( QSqlDatabase db)
 {   LOG_CALL;
-    QString sqlAnzahlCreditoren =qsl("SELECT COUNT(*) AS AnzahlDkGeber FROM (SELECT DISTINCT KreditorId FROM Vertraege)");
-    bool ret = createView(qsl("AnzahlAlleKreditoren"), sqlAnzahlCreditoren, db);
+    QVector<dbViewDev> views = {
+        {qsl("vVertraege_aktiv_detail"),          qsl("SELECT "
+                                                          "Vertraege.id          AS id, "
+                                                          "Vertraege.Kennung     AS Vertragskennung, "
+                                                          "Vertraege.ZSatz /100. AS Zinssatz, "
+                                                          "SUM(Buchungen.Betrag) /100. as Wert, "
+                                                          "MIN(Buchungen.Datum)  AS Aktivierungsdatum, "
+                                                          "Vertraege.Kfrist AS Kündigungsfrist, "
+                                                          "Vertraege.LaufzeitEnde AS Vertragsende, "
+                                                          "Vertraege.thesaurierend AS thesa, "
+                                                          "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, "
+                                                          "Kreditoren.id AS KreditorId, "
+                                                          "Kreditoren.Nachname AS Nachname, "
+                                                          "Kreditoren.Vorname AS Vorname, "
+                                                          "Kreditoren.Strasse AS Strasse, "
+                                                          "Kreditoren.Plz AS Plz, "
+                                                          "Kreditoren.Stadt AS Stadt, "
+                                                          "Kreditoren.Email AS Email, "
+                                                          "Kreditoren.IBAN AS Iban, "
+                                                          "Kreditoren.BIC AS Bic "
+                                                        "FROM Vertraege "
+                                                            "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
+                                                            "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
+                                                        "GROUP BY Vertraege.id")},
+        {qsl("vVertraege_aktiv"),      qsl("SELECT id, Vertragskennung, Zinssatz, Wert, Aktivierungsdatum, Kündigungsfrist, Vertragsende, thesa, Kreditorin, KreditorId FROM vVertraege_aktiv_detail")},
+        {qsl("vVertraege_passiv"),     qsl("SELECT Vertraege.id AS id, "    // 0
+                                             "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 1
+                                             "Vertraege.Kennung AS Vertragskennung, " // 2
+                                             "Vertraege.ZSatz /100. AS Zinssatz, "     // 3
+                                             "Vertraege.Betrag /100. AS Wert, "         // 4
+                                             "Vertraege.Vertragsdatum AS Abschlussdatum, " // 5
+                                             "Vertraege.Kfrist AS Kündigungsfrist, "      // 6
+                                             "Vertraege.LaufzeitEnde AS Vertragsende, "   // 7
+                                             "Vertraege.thesaurierend AS thesa, "          // 8
+                                             "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, "
+                                             "Kreditoren.id AS KreditorId " // 9
+                                           "FROM Vertraege "
+                                             "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
+                                           "WHERE (SELECT count(*) FROM Buchungen WHERE Buchungen.VertragsId=Vertraege.id) = 0")},
+        {qsl("vVertraege_alle"),        qsl("SELECT id, Vertragskennung, Zinssatz, Wert, Aktivierungsdatum AS Datum, Kündigungsfrist, Vertragsende, thesa, Kreditorin, KreditorId "
+                                           "FROM vVertraege_aktiv"
+                                           "  UNION  "
+                                           "SELECT id, Vertragskennung, Zinssatz, Wert, Abschlussdatum  AS Datum,  Kündigungsfrist, Vertragsende, thesa, Kreditorin, KreditorId "
+                                           "FROM vVertraege_passiv")},
+        {qsl("vVertraege_geloescht"),    qsl("SELECT "
+                                              "exVertraege.id AS id, "
+                                              "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, "
+                                              "exVertraege.Kennung AS Vertragskennung, "
+                                              "exVertraege.ZSatz/100. AS Zinssatz, "
+                                              "SUM(exBuchungen.betrag)  AS Wert, "
+                                             "MIN(exBuchungen.Datum) AS Datum, exVertraege.Kfrist AS Kuendigungsfrist, "
+                                             "exVertraege.LaufzeitEnde AS Vertragsende, "
+                                             "thesaurierend AS thesa, "
+                                             "Kreditoren.id AS KreditorId "
+                                           "FROM exVertraege "
+                                              "INNER JOIN exBuchungen ON exBuchungen.VertragsId = exVertraege.id "
+                                              "INNER JOIN Kreditoren ON Kreditoren.id = exVertraege.KreditorId "
+                                           "Group by exVertraege.id")},
 
-    QString sqlWertAktiveVertraege =qsl(
-            "SELECT Vertraege.id AS id, Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, "
-            "Vertraege.Kennung AS Vertragskennung, Vertraege.ZSatz/100. AS Zinssatz, "
-            "(SELECT sum(Buchungen.betrag) FROM Buchungen "
-            "WHERE Vertraege.id = Buchungen.VertragsId) AS Wert, "
-            "MIN(Buchungen.Datum) AS Datum, Vertraege.Kfrist AS Kündigungsfrist, "
-            "Vertraege.LaufzeitEnde AS Vertragsende, thesaurierend AS thesa, Kreditoren.id AS KreditorId "
-            "FROM Vertraege "
-            "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
-            "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
-        "Group by Vertraege.id");
-    ret &= createView( "WertAktiveVertraege", sqlWertAktiveVertraege, db);
+        {qsl("NextAnnualS_first"),      qsl("SELECT STRFTIME('%Y-%m-%d', MIN(Datum), '1 year', 'start of year')  as nextInterestDate "
+                                            "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id = buchungen.VertragsId "
+                                            /* buchungen von Verträgen für die es keine Zinsbuchungen gibt */
+                                            "WHERE (SELECT count(*) FROM Buchungen WHERE (Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8) AND Buchungen.VertragsId=Vertraege.id)=0 "
+                                            "GROUP BY Vertraege.id ")},
+        {qsl("NextAnnualS_next"),       qsl("SELECT STRFTIME('%Y-%m-%d', MAX(Datum), '1 year', 'start of year') as nextInterestDate "
+                                            "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id=buchungen.VertragsId "
+                                            "WHERE Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8 "
+                                            "GROUP BY Buchungen.VertragsId "
+                                            "ORDER BY Datum ASC LIMIT 1")},
+        {qsl("NextAnnualSettlement"),    qsl("SELECT MIN(nextInterestDate) AS date FROM "
+                                         "(SELECT nextInterestDate FROM NextAnnualS_first "
+                                         "UNION SELECT nextInterestDate from NextAnnualS_next)")},
+        {qsl("ContractsByYearByInterest"),qsl("SELECT SUBSTR(Vertraege.Vertragsdatum, 0, 5) as Year, "
+                                               "Vertraege.ZSatz /100. AS Zinssatz, count(*) AS Anzahl, sum(Vertraege.Betrag) /100. AS Summe "
+                                               "FROM Vertraege "
+                                               "GROUP BY Year, Zinssatz ")},
 
-    QString sqlWertPassiveVertraege =
-        "SELECT Vertraege.id AS id, "    // 0
-        "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 1
-        "Vertraege.Kennung AS Vertragskennung, " // 2
-        "Vertraege.ZSatz/100. AS Zinssatz, "     // 3
-        "Vertraege.Betrag AS Wert, "         // 4
-        "Vertraege.Vertragsdatum AS Datum, " // 5
-        "Vertraege.Kfrist AS Kündigungsfrist, "      // 6
-        "Vertraege.LaufzeitEnde AS Vertragsende, "   // 7
-        "Vertraege.thesaurierend AS thesa, "          // 8
-        "Kreditoren.id AS KreditorId " // 9
-        "FROM Vertraege "
-        "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
-        "WHERE (SELECT count(*) FROM Buchungen WHERE Buchungen.VertragsId=Vertraege.id) = 0";
-    ret &= createView("WertPassiveVertraege", sqlWertPassiveVertraege, db);
+        {qsl("vAnzahl_aktiverKreditoren"),          qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_aktiv)")},
+        {qsl("vAnzahl_aktiverKreditoren_thesa"),    qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_aktiv WHERE thesa)")},
+        {qsl("vAnzahl_aktiverKreditoren_ausz"),qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_aktiv WHERE NOT thesa)")},
 
-    QString sqlWertAlleVertraege ="SELECT * FROM WertAktiveVertraege "
-                                   "UNION "
-                                   "SELECT * FROM WertPassiveVertraege ";
-    ret &= createView("WertAlleVertraege", sqlWertAlleVertraege, db);
+        {qsl("vAnzahl_allerKreditoren"),           qsl("SELECT COUNT(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM Vertraege)")},
+        {qsl("vAnzahl_allerKreditoren_thesa"),     qsl("SELECT COUNT(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM Vertraege WHERE thesaurierend)")},
+        {qsl("vAnzahl_allerKreditoren_ausz"), qsl("SELECT COUNT(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM Vertraege WHERE NOT thesaurierend)")},
 
+        {qsl("vAnzahl_passiverKreditoren"),        qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_passiv)")},
+        {qsl("vAnzahl_passiverKreditoren_thesa"),        qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_passiv WHERE thesa)")},
+        {qsl("vAnzahl_passiverKreditoren_ausz"),        qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_passiv WHERE NOT thesa)")},
 
-    QString sqlGewichteterMittlererZinsAktiveVertraege =
-        qsl("SELECT z/w AS median FROM (SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertAktiveVertraege)");
-    ret &= createView("GewichteterMittlererZinsAktiverVertraege", sqlGewichteterMittlererZinsAktiveVertraege);
+    };
 
-    QString sqlGewichteterMittlererZinsInaktiveVertraege =
-        qsl("SELECT z/w AS median FROM (SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertPassiveVertraege)");
-    ret &= createView("GewichteterMittlererZinsInaktiverVertraege", sqlGewichteterMittlererZinsInaktiveVertraege);
+    QString sql_precalc {
+        qsl("SELECT *, ROUND(100* Jahreszins/Wert,4) as gewMittel FROM ("
+           "SELECT "
+              "count(*) as Anzahl, "
+              "SUM(Wert) as Wert, "
+              "SUM(ROUND(Zinssatz *Wert /100,2)) AS Jahreszins,"
+              "ROUND(AVG(Zinssatz),4) as mittlereRate "
+           "FROM %1 %2)")};
+    views.append({qsl("vStat_allerVertraege"),         sql_precalc.arg(qsl("vVertraege_alle"), qsl(""))});
+    views.append({qsl("vStat_allerVertraege_thesa"),   sql_precalc.arg(qsl("vVertraege_alle"), qsl("WHERE thesa"))});
+    views.append({qsl("vStat_allerVertraege_ausz"),    sql_precalc.arg(qsl("vVertraege_alle"), qsl("WHERE NOT thesa"))});
+    views.append({qsl("vStat_aktiverVertraege"),       sql_precalc.arg(qsl("vVertraege_aktiv"), qsl(""))});
+    views.append({qsl("vStat_aktiverVertraege_thesa"), sql_precalc.arg(qsl("vVertraege_aktiv"), qsl("WHERE thesa"))});
+    views.append({qsl("vStat_aktiverVertraege_ausz"),  sql_precalc.arg(qsl("vVertraege_aktiv"), qsl("WHERE NOT thesa"))});
+    views.append({qsl("vStat_passiverVertraege"),      sql_precalc.arg(qsl("vVertraege_passiv"), qsl(""))});
+    views.append({qsl("vStat_passiverVertraege_thesa"),sql_precalc.arg(qsl("vVertraege_passiv"), qsl("WHERE thesa"))});
+    views.append({qsl("vStat_passiverVertraege_ausz"), sql_precalc.arg(qsl("vVertraege_passiv"), qsl("WHERE NOT thesa"))});
 
-    QString sqlGewichteterMittlererZinsAlleVertraege =
-        qsl("SELECT z/w AS median FROM (SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertAlleVertraege)");
-    ret &= createView("GewichteterMittlererZinsAlleVertraege", sqlGewichteterMittlererZinsAlleVertraege);
-
-//    QString sqlAktiveVertraege ="SELECT DISTINCT Vertraege.* "
-//            "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id=buchungen.VertragsId ";
-//    ret &= createView("AktiveVertraege", sqlAktiveVertraege, db);
-
-//    QString sqlWertExVertraege ="SELECT exVertraege.id AS id, "
-//                             "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, "
-//                             "exVertraege.Kennung AS Vertragskennung, exVertraege.ZSatz/100. AS Zinssatz, "
-//                             "(SELECT sum(exBuchungen.betrag) FROM exBuchungen WHERE exVertraege.id = exBuchungen.VertragsId) AS Wert, "
-//                             "MIN(exBuchungen.Datum) AS Datum, exVertraege.Kfrist AS Kündigungsfrist, "
-//                             "exVertraege.LaufzeitEnde AS Vertragsende, thesaurierend AS thesa, Kreditoren.id AS KreditorId "
-//                             "FROM Vertraege "
-//                             "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
-//                             "INNER JOIN Kreditoren ON Kreditoren.id = exVertraege.KreditorId "
-//                             "Group by exVertraege.id";
-//    ret &= createView( "WertExVertraege", sqlWertExVertraege, db);
-
-    /* Wann muss die Abrechnung für Verträge gemacht werden, die noch keine Zinsabrechnung hatten? */
-    QString sqlFirstInterestDates =
-            "SELECT STRFTIME('%Y-%m-%d', MIN(Datum), '1 year', 'start of year')  as nextInterestDate "
-            "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id = buchungen.VertragsId "
-            /* buchungen von Verträgen für die es keine Zinsbuchungen gibt */
-            "WHERE (SELECT count(*) FROM Buchungen WHERE (Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8) AND Buchungen.VertragsId=Vertraege.id)=0 "
-            "GROUP BY Vertraege.id ";
-    createView("NextAnnualS_first", sqlFirstInterestDates, db);
-
-    /* Wann muss die Abrechnung für Verträge gemacht werden, die bereits Zinsabrechnung(en) hatten? */
-    QString sqlNextInterestDates =
-        "SELECT STRFTIME('%Y-%m-%d', MAX(Datum), '1 year', 'start of year') as nextInterestDate "
-        "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id=buchungen.VertragsId "
-        "WHERE Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8 "
-        "GROUP BY Buchungen.VertragsId "
-        "ORDER BY Datum ASC LIMIT 1";
-    ret &= createView("NextAnnualS_next", sqlNextInterestDates, db);
-
-    QString sqlNextInterestDate( "SELECT MIN(nextInterestDate) AS date FROM "
-                              "(SELECT nextInterestDate FROM NextAnnualS_first "
-                              "UNION SELECT nextInterestDate from NextAnnualS_next)");
-    ret &= createView("NextAnnualSettlement", sqlNextInterestDate, db);
-
-    QString sqlDeletedContracts =
-            "SELECT exVertraege.id AS id, Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, exVertraege.Kennung AS Vertragskennung, exVertraege.ZSatz/100. AS Zinssatz, "
-            "(SELECT sum(exBuchungen.betrag) FROM exBuchungen "
-            "WHERE exVertraege.id = exBuchungen.VertragsId) AS Wert, "
-            "MIN(exBuchungen.Datum) AS Datum, exVertraege.Kfrist AS Kündigungsfrist, exVertraege.LaufzeitEnde AS Vertragsende, thesaurierend AS thesa, Kreditoren.id AS KreditorId "
-            "FROM exVertraege "
-            "INNER JOIN exBuchungen ON exBuchungen.VertragsId = exVertraege.id "
-            "INNER JOIN Kreditoren ON Kreditoren.id = exVertraege.KreditorId "
-            "Group by exVertraege.id";
-    ret &= createView("WertBeendeteVertraege", sqlDeletedContracts, db);
-
-    QString sqlAnzahlAktiveDkGeber = "SELECT count(*) AS AnzahlDkGeber FROM (SELECT DISTINCT KreditorId FROM WertAktiveVertraege)";
-    ret &= createView("AnzahlAktiveDkGeber", sqlAnzahlAktiveDkGeber, db);
-
-    QString sqlAnzahlInaktiveDkGeber = "SELECT count(*) AS AnzahlDkGeber FROM (SELECT DISTINCT KreditorId FROM WertPassiveVertraege)";
-    ret &= createView("AnzahlInaktiveDkGeber", sqlAnzahlInaktiveDkGeber, db);
-
-
-    QString sqlContractDataActiveContracts = "SELECT "
-      "Vertraege.id AS Id, "
-      "Kreditoren.Nachname AS Nachname, "
-      "Kreditoren.Vorname AS Vorname, "
-      "Kreditoren.Strasse AS Strasse, "
-      "Kreditoren.Plz AS Plz, "
-      "Kreditoren.Stadt AS Stadt, "
-      "Kreditoren.Email AS Email, "
-      "Kreditoren.IBAN AS Iban, "
-      "Kreditoren.BIC AS Bic, "
-      "Vertraege.Kennung AS Vertragskennung, "
-      "Vertraege.ZSatz/100. AS Zinssatz, "
-      "(SELECT sum(Buchungen.betrag)/100. FROM Buchungen WHERE Vertraege.id = Buchungen.VertragsId) AS Wert, "
-      "MIN(Buchungen.Datum) AS Aktivierungsdatum, "
-      "Vertraege.Kfrist AS Kuendigungsfrist, "
-      "Vertraege.LaufzeitEnde AS Vertragsende, "
-      "thesaurierend AS thesa, "
-      "Kreditoren.id AS KreditorId "
-      "FROM Vertraege "
-        "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
-        "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
-      "Group by Vertraege.id";
-    ret &= createView("ContractDataActiveContracts", sqlContractDataActiveContracts);
-
-
-    QString sqlContractsByYearByInterest ="SELECT SUBSTR(Vertraege.Vertragsdatum, 0, 5) as Year, "
-    "Vertraege.ZSatz /100. AS Zinssatz, count(*) AS Anzahl, sum(Vertraege.Betrag) AS Summe "
-    "FROM Vertraege "
-    "GROUP BY Year, Zinssatz ";
-    ret &= createView("ContractsByYearByInterest", sqlContractsByYearByInterest);
-
-
-
-    return ret;
+    return createViews(views, db);
 }
 bool create_DK_TablesAndContent(QSqlDatabase db)
 {   LOG_CALL;
@@ -492,45 +479,45 @@ int numberOfCreditorsWithActiveContracts()
 
 int numberOfActiveContracts()
 {
-    return executeSingleValueSql("COUNT(*)", "WertAktiveVertraege").toInt();
+    return executeSingleValueSql("COUNT(*)", "vAktiveVertraege").toInt();
 }
 double valueOfActiveContracts()
 {
-    return executeSingleValueSql("SUM(Wert)", "WertAktiveVertraege").toInt() /100.;
+    return executeSingleValueSql("SUM(Wert)", "vAktiveVertraege").toInt() /100.;
 }
 int numberOfInactiveContracts()
 {
-    return executeSingleValueSql("COUNT(*)", "WertPassiveVertraege").toInt();
+    return executeSingleValueSql("COUNT(*)", "vPassiveVertraege").toInt();
 }
 double valueOfInactiveContracts()
 {
-    return executeSingleValueSql("SUM(Wert)", "WertPassiveVertraege").toReal() /-100.;
+    return executeSingleValueSql("SUM(Wert)", "vPassiveVertraege").toReal() /-100.;
 }
 
 double weightedAverageInterestRate()
 {
-    return executeSingleValueSql("z/w AS median", "(SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM WertAktiveVertraege)").toReal();
+    return executeSingleValueSql("z/w AS gewMittel", "(SELECT SUM(Zinssatz *Wert) AS z, SUM(Wert) AS w FROM vAktiveVertraege)").toReal();
 }
 double avgInterestRate()
 {
-    return executeSingleValueSql("AVG(Zinssatz)", "WertAktiveVertraege").toDouble();
+    return executeSingleValueSql("AVG(Zinssatz)", "vAktiveVertraege").toDouble();
 }
 
 int numberOfActiveAccumulatingContracts()
 {
-    return executeSingleValueSql("COUNT(*)", "WertAktiveVertraege", "thesa").toInt();
+    return executeSingleValueSql("COUNT(*)", "vAktiveVertraege", "thesa").toInt();
 }
 double valueOfActiveAccumulatingContracts()
 {
-    return executeSingleValueSql("SUM(Wert)", "WertAktiveVertraege", "thesa").toInt() /100.;
+    return executeSingleValueSql("SUM(Wert)", "vAktiveVertraege", "thesa").toInt() /100.;
 }
 int numberOfActivePayoutContracts()
 {
-    return executeSingleValueSql("COUNT(*)", "WertAktiveVertraege", "NOT thesa").toInt();
+    return executeSingleValueSql("COUNT(*)", "vAktiveVertraege", "NOT thesa").toInt();
 }
 double valueOfActivePayoutContracts()
 {
-    return executeSingleValueSql("SUM(Wert)", "WertAktiveVertraege", "NOT thesa").toInt() /100.;
+    return executeSingleValueSql("SUM(Wert)", "vAktiveVertraege", "NOT thesa").toInt() /100.;
 }
 
 DbSummary calculateSummary()
@@ -560,7 +547,7 @@ QVector<rowData> contractRuntimeDistribution()
     int AnzahlBisEinJahr=0, AnzahlBisFuenfJahre=0, AnzahlLaenger=0, AnzahlUnbegrenzet = 0;
     double SummeBisEinJahr=0., SummeBisFuenfJahre=0., SummeLaenger=0., SummeUnbegrenzet = 0.;
     QString sql = "SELECT Wert, Datum, Vertragsende "
-                  "FROM WertAktiveVertraege";
+                  "FROM vAktiveVertraege";
     QSqlQuery q;
     if( !q.exec(sql)) {
         qCritical() << "calculation of runtime distribution failed: " << q.lastError() << Qt::endl << q.lastQuery();
@@ -599,7 +586,7 @@ void calc_contractEnd( QVector<ContractEnd>& ces)
     QSqlQuery sql;
     sql.setForwardOnly(true);
     sql.exec("SELECT count(*) AS Anzahl, sum(Wert) /100. AS Wert, strftime('%Y',Vertragsende) AS Jahr "
-             "FROM WertAktiveVertraege "
+             "FROM vAktiveVertraege "
              "WHERE Vertragsende < 9999-01-01 GROUP BY strftime('%Y',Vertragsende) ORDER BY Jahr");
     while( sql.next()) {
         ces.push_back({sql.value("Jahr").toInt(), sql.value("Anzahl").toInt(), sql.value("Wert").toDouble()});

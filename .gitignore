@@ -2,12 +2,13 @@ debug/
 release/
 test/
 data/
+out/
 *.db3
 *db3bak
 #created from qmake
-.qmake.stash 
+.qmake.stash
 .qmake.cash
-Makefile 
+Makefile
 Makefile.debug
 Makefile.release
 .vscode/
@@ -64,7 +65,7 @@ target_wrapper.*
 # QtCreator CMake
 CMakeLists.txt.user*
 
-# QtCreator 4.8< compilation database 
+# QtCreator 4.8< compilation database
 compile_commands.json
 
 # QtCreator local machine specific files for imported projects

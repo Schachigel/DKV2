@@ -104,7 +104,7 @@ double computeDkZinsenZeitraum(double Betrag, double Zinssatz, const QDate &date
         }
         Zinsen += computeDkZinsen(Betrag + Zinsen, Zinssatz, tageVon);
     }
-    return round2(Zinsen);
+    return r2(Zinsen);
 }
 
 int TageImZeitraum(const QDate &von, const QDate &bis)
@@ -318,7 +318,7 @@ void test_finance::test_ZinsesZins()
     QCOMPARE(TageImErstenJahr, tageBis);
     QCOMPARE(JahreZwischen, ganzeJahre);
     QCOMPARE(TageImLetztenJahr, tageVon);
-    QCOMPARE(round2(computeDkZinsen(wert, zinssatz, tageBis)), round2(double(TageImErstenJahr)/360. *zinssatz/100. *wert));
+    QCOMPARE(r2(computeDkZinsen(wert, zinssatz, tageBis)), r2(double(TageImErstenJahr)/360. *zinssatz/100. *wert));
     QCOMPARE(computeDkZinsenZeitraum(wert, zinssatz, von, bis ), ZinsThesauriert);
     qInfo()<< "\n------------------------------------------------------------------------------\n";
 }

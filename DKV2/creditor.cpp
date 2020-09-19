@@ -20,7 +20,7 @@ QList<QString> Vornamen {qsl("Holger"), qsl("Volker"), qsl("Peter"), qsl("Hans")
 QList<QString> Nachnamen {qsl("Maier"), qsl("Müller"), qsl("Schmit"), qsl("Kramp"), qsl("Adams"), qsl("Häcker"),
             qsl("Maresch"), qsl("Beutl"), qsl("Chauchev"), qsl("Chen"), qsl("Kirk"), qsl("Ohura"),
             qsl("Gorbatschov"), qsl("Merkel"), qsl("Karrenbauer"), qsl("Tritin"), qsl("Schmidt"), qsl("Rao"),
-            qsl("Lassen"), qsl("Hurgedü"), qsl("vom Dach"), qsl("Langstrumpf"), qsl("Lederstrumpf"),
+            qsl("Lassen"), qsl("Hurgedue"), qsl("vom Dach"), qsl("Langstrumpf"), qsl("Lederstrumpf"),
             qsl("Potter"), qsl("Poppins"), qsl("Wisley"), qsl("Li"), qsl("Wang"), qsl("Ran"), qsl("vom Docht"),
             qsl("Eckrich"), qsl("Staar"), qsl("Funke"), qsl("Engelein"), qsl("Kruffel"), qsl("Calzone")};
 QList<QString> Strassen {qsl("Hauptstrasse"), qsl("Nebenstrasse"), qsl("Bahnhofstrasse"), qsl("Kirchstraße"),

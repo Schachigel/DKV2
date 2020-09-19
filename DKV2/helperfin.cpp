@@ -7,21 +7,6 @@
 
 #include "helperfin.h"
 
-double round2(const double d)
-{
-    return (qRound(d * 100.))/100.;
-}
-int ctFromEuro( const double d)
-{
-    if( d>=0)
-        return int( d * 100. +.5);
-    return int( d * 100. -.5);
-}
-double euroFromCt( const int i)
-{
-    return double (i)/100.;
-}
-
 int TageZwischen(const QDate& von, const QDate& bis)
 {   // finanzmathematischer Abstand zwischen zwei Daten im selben Jahr
     if( bis == von) return 0;
@@ -75,7 +60,7 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
     if( wert <= 0.) return 0.;
 
     if( von.year() == bis.year()) {
-        return round2(TageZwischen(von, bis)/360. *zins/100. *wert);
+        return r2(TageZwischen(von, bis)/360. *zins/100. *wert);
     }
     int TageImErstenJahr = TageBisJahresende(von); // first day no intrest
     double ZinsImErstenJahr = TageImErstenJahr/360. *zins/100. *wert;
@@ -92,13 +77,13 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
     int TageImLetztenJahr = TageSeitJahresAnfang(bis);
     double ZinsRestjahr = TageImLetztenJahr/360. *zins/100. *zwischenWert;
     gesamtZins += ZinsRestjahr;
-    gesamtZins = round2(gesamtZins);
+    gesamtZins = r2(gesamtZins);
     qDebug().noquote()
         << "\nErstes Jahr : " << ZinsImErstenJahr << "(" << TageImErstenJahr << " Tage)"
         << "\nVolle Jahre : " << ZinsVolleJahre << "(" << jahre << " Jahre)"
         << "\nLetztes Jahr: " << ZinsRestjahr << "(" << TageImLetztenJahr << " Tage)"
         << "\nGesamtzins  : " << gesamtZins << Qt::endl;
-    return round2(gesamtZins);
+    return r2(gesamtZins);
 }
 
 IbanValidator::IbanValidator() : QRegExpValidator()

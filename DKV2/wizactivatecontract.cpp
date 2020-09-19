@@ -61,7 +61,7 @@ bool wizActiateContract_AmountPage::validatePage()
     double amount = field(qsl("amount")).toDouble();
     if( amount < getNumMetaInfo(MIN_AMOUNT))
         return false;
-    setField(qsl("amount"), round2(amount));
+    setField(qsl("amount"), r2(amount));
     if( wiz->expectedAmount != amount) {
         qInfo() << "activation with different amount";
     }
