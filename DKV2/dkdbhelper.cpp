@@ -210,7 +210,7 @@ bool insert_views( QSqlDatabase db)
     };
 
     QString sql_precalc {
-        qsl("SELECT *, ROUND(100* Jahreszins/Wert,4) as gewMittel FROM ("
+        qsl("SELECT *, ROUND(100* Jahreszins/Wert,6) as gewMittel FROM ("
            "SELECT "
               "count(*) as Anzahl, "
               "SUM(Wert) as Wert, "

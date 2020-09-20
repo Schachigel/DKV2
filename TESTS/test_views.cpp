@@ -131,54 +131,64 @@ void test_views::test_stat_create_activate_multipleContract()
     QCOMPARE(expected, getStatistic());
 }
 
-//void test_views::test_stat_annualSettelemnt()
-//{
-//    dbStats expected;
-//    QDate conclusionDate (2000, 1, 1),  activationDate(2000, 7, 1);
-//    /* have contracts and test statistics over an annual settlement
-//    *  having 5 contracts:
-//    *  1 inactive, 2 activ & reinvesting, 2 active & not reinvesting
-//    * */
-//    creditor inactiveCred(saveRandomCreditor());
-//    contract inactive; inactive.initRandom(inactiveCred.id());
-//    inactive.saveNewContract();
-//    qInfo().noquote() << inactive.toString(qsl("Inactive Contract:")) << Qt::endl;
-//    expected =getStatistic();
+void test_views::test_stat_annualSettelemnt()
+{
+    dbStats expected;
+    QDate conclusionDate (2000, 1, 1),  activationDate(2000, 7, 1);
+    /* have contracts and test statistics over an annual settlement
+    *  having 5 contracts:
+    *  1 inactive, 2 activ & reinvesting, 2 active & not reinvesting
+    * */
+    creditor inactiveCred(saveRandomCreditor());
+    contract inactive; inactive.initRandom(inactiveCred.id());
+    inactive.setPlannedInvest(5000.);
+    inactive.saveNewContract();
+    qInfo().noquote() << inactive.toString(qsl("Inactive Contract:")) << Qt::endl;
+    expected =getStatistic();
 
-//    creditor activeCred1(saveRandomCreditor());
-//    contract activeReInv1; activeReInv1.initRandom(activeCred1.id());
-//    activeReInv1.setReinvesting(true);
-//    double v =1000, ir =0.5; // %
-//    activeReInv1.setPlannedInvest(v);
-//    activeReInv1.setInterestRate(ir);
-//    activeReInv1.setConclusionDate(conclusionDate);
-//    activeReInv1.saveNewContract();
-//    activeReInv1.activate(activationDate, activeReInv1.plannedInvest());
+    creditor activeCred1(saveRandomCreditor());
+    contract activeReInv1; activeReInv1.initRandom(activeCred1.id());
+    activeReInv1.setReinvesting(true);
+    double v =1000, ir =0.5; // %
+    activeReInv1.setPlannedInvest(v);
+    activeReInv1.setInterestRate(ir);
+    activeReInv1.setConclusionDate(conclusionDate);
+    activeReInv1.saveNewContract();
+    expected.addContract(v, ir, dbStats::payoutType::thesa, activeCred1.id());
+    activeReInv1.activate(activationDate, activeReInv1.plannedInvest());
+    expected.activateContract(v, v, ir, dbStats::payoutType::thesa,activeCred1.id());
 
-//    contract activeReInv2; activeReInv2.initRandom(activeCred1.id());
-//    activeReInv2.setReinvesting(true);
-//    activeReInv2.setPlannedInvest(2 *v);
-//    activeReInv2.setInterestRate(2 *ir);
-//    activeReInv2.setConclusionDate(conclusionDate);
-//    activeReInv2.saveNewContract();
-//    activeReInv2.activate(activationDate, activeReInv2.plannedInvest());
+    contract activeReInv2; activeReInv2.initRandom(activeCred1.id());
+    activeReInv2.setReinvesting(true);
+    activeReInv2.setPlannedInvest(2 *v);
+    activeReInv2.setInterestRate(2 *ir);
+    activeReInv2.setConclusionDate(conclusionDate);
+    activeReInv2.saveNewContract();
+    expected.addContract(2*v, 2*ir, dbStats::payoutType::thesa, activeCred1.id());
+    activeReInv2.activate(activationDate, activeReInv2.plannedInvest());
+    expected.activateContract(2*v, 2*v, 2*ir,dbStats::payoutType::thesa, activeCred1.id());
 
-//    creditor activeCred2(saveRandomCreditor());
-//    contract activeNonReIn1;activeNonReIn1.initRandom(activeCred2.id());
-//    activeNonReIn1.setReinvesting(false);
-//    activeNonReIn1.setPlannedInvest(3 *v);
-//    activeNonReIn1.setInterestRate(3 *ir);
-//    activeNonReIn1.setConclusionDate(conclusionDate);
-//    activeNonReIn1.saveNewContract();
-//    activeNonReIn1.activate(activationDate, activeNonReIn1.plannedInvest());
+    creditor activeCred2(saveRandomCreditor());
+    contract activeNonReIn1;activeNonReIn1.initRandom(activeCred2.id());
+    activeNonReIn1.setReinvesting(false);
+    activeNonReIn1.setPlannedInvest(3 *v);
+    activeNonReIn1.setInterestRate(3 *ir);
+    activeNonReIn1.setConclusionDate(conclusionDate);
+    activeNonReIn1.saveNewContract();
+    expected.addContract(3*v, 3*ir, dbStats::payoutType::pout, activeCred2.id());
+    activeNonReIn1.activate(activationDate, activeNonReIn1.plannedInvest());
+    expected.activateContract(3*v, 3*v, 3*ir, dbStats::payoutType::pout, activeCred2.id());
 
-//    contract activeNonReIn2;activeNonReIn2.initRandom(activeCred2.id());
-//    activeNonReIn2.setReinvesting(false);
-//    activeNonReIn2.setPlannedInvest(4 *v);
-//    activeNonReIn2.setInterestRate(4 *ir);
-//    activeNonReIn2.setConclusionDate(conclusionDate);
-//    activeNonReIn2.saveNewContract();
-//    activeNonReIn2.activate(activationDate, activeNonReIn2.plannedInvest());
+    contract activeNonReIn2;activeNonReIn2.initRandom(activeCred2.id());
+    activeNonReIn2.setReinvesting(false);
+    activeNonReIn2.setPlannedInvest(4 *v);
+    activeNonReIn2.setInterestRate(4 *ir);
+    activeNonReIn2.setConclusionDate(conclusionDate);
+    activeNonReIn2.saveNewContract();
+    expected.addContract(4*v, 4*ir, dbStats::payoutType::pout, activeCred2.id());
+    activeNonReIn2.activate(activationDate, activeNonReIn2.plannedInvest());
+    expected.activateContract(4*v, 4*v, 4*ir, dbStats::payoutType::pout, activeCred2.id());
+
 
 //    /* values:
 //     * v=1000
@@ -188,62 +198,51 @@ void test_views::test_stat_create_activate_multipleContract()
 //    sum: 10 *v = 10000
 //    avg: 1.25%, w avg 1.5%
 //    */
-//    // update expectations from activations
 
-//    //...todo: setup expected ...
-//    qInfo().noquote() << "pre settlement check. Expected Values: " << Qt::endl << expected.toString();
-//    QCOMPARE(expected, getStatistic());
+    qInfo().noquote() << "pre settlement check. Expected Values: " << Qt::endl << expected.toString();
+    QCOMPARE(expected, getStatistic());
 
-//    /*
-//     * run annual settlement and check statistics
-//     */
-//    activeReInv1.annualSettlement(activationDate.year());
-//    activeReInv2.annualSettlement(activationDate.year());
-//    activeNonReIn1.annualSettlement(activationDate.year());
-//    activeNonReIn2.annualSettlement(activationDate.year());
+    /*
+     * run annual settlement and check statistics
+     */
+    activeReInv1.annualSettlement(activationDate.year());
+    activeReInv2.annualSettlement(activationDate.year());
+    activeNonReIn1.annualSettlement(activationDate.year());
+    activeNonReIn2.annualSettlement(activationDate.year());
+    qInfo().noquote() << activeReInv1.toString("Re1") << Qt::endl << activeReInv2.toString("Re2") << Qt::endl <<
+        activeNonReIn1.toString("nRe1") << Qt::endl << activeNonReIn2.toString("nRe2");
 
-//    contract activeReInv1_s(activeReInv1.id());
-//    contract activeReInv2_s(activeReInv2.id());
-//    contract activeNonReIn1_s(activeNonReIn1.id());
-//    contract activeNonReIn2_s(activeNonReIn2.id());
+    // setup expected ...
+    expected.reinvest(v, ir, 180);
+    expected.reinvest(2* v, 2* ir, 180);
+    // no change with inactive contracts
 
-//    qInfo().noquote() << activeReInv1_s.toString("Re1") << Qt::endl << activeReInv2_s.toString("Re2") << Qt::endl <<
-//        activeNonReIn1_s.toString("nRe1") << Qt::endl << activeNonReIn2_s.toString("nRe2");
+    QCOMPARE(expected, getStatistic());
+}
 
-//    //...todo: setup expected ...
+void test_views::test_stat_extend_contract_sameYear()
+{
+    QDate activationDate(2020, 3, 31);
+    creditor c(saveRandomCreditor());
+    contract cont;
+    cont.initRandom(c.id());
+    double v =1000.;
+    cont.setPlannedInvest(v);
+    double ir =3.3;
+    cont.setInterestRate(ir);
+    cont.setReinvesting(false);
+    cont.setConclusionDate(activationDate.addMonths(1));
+    cont.saveNewContract();
 
-//    // no change with inactive contracts
+    // active contract
+    cont.activate(activationDate, cont.plannedInvest());
+    dbStats expected( dbStats::calculate);
+    cont.deposit(activationDate.addDays(36), v);
+    expected.changeContract(v, ir, 36, dbStats::payoutType::pout);
 
-//    //...todo: setup expected ...
+    QCOMPARE(expected, getStatistic());
 
-//    qInfo().noquote() << "post settlement check. Expected Values: " << Qt::endl << expected.toString();
-//    QCOMPARE(expected, getStatistic());
-
-//}
-
-//void test_views::test_stat_extend_contract_sameYear()
-//{
-//    QDate activationDate(2020, 3, 31);
-//    creditor c(saveRandomCreditor());
-//    contract cont;
-//    cont.initRandom(c.id());
-//    double v =1000.;
-//    cont.setPlannedInvest(v);
-//    double ir =3.3;
-//    cont.setInterestRate(ir);
-//    cont.setReinvesting(false);
-//    cont.setConclusionDate(activationDate.addMonths(1));
-//    cont.saveNewContract();
-
-//    // active contract
-//    cont.activate(activationDate, cont.plannedInvest());
-//    dbStats expected( dbStats::calculate);
-//    cont.deposit(activationDate.addDays(36), v);
-//    //...todo: setup expected ...
-
-//    QCOMPARE(expected, getStatistic());
-
-//}
+}
 
 //void test_views::test_stat_mny_contracts()
 //{

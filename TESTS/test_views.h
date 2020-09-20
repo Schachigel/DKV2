@@ -26,8 +26,8 @@ private slots:
     void test_stat_activateContract_wpayout();
 
     void test_stat_create_activate_multipleContract();
-//    void test_stat_annualSettelemnt();
-//    void test_stat_extend_contract_sameYear();
+    void test_stat_annualSettelemnt();
+    void test_stat_extend_contract_sameYear();
 
 //    void test_stat_mny_contracts();
 };

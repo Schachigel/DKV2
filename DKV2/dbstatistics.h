@@ -17,7 +17,7 @@ inline bool icmp (QString s, int l, int r) {
 
 inline bool dcmp (QString s, double l, double r) {
     if( ! qFuzzyCompare(1. +l, 1.+ r)) {
-        qInfo() << "comparison of stat.data failed. " << s + qsl(" (%1, %2)").arg(d2s_6d(l), d2s_6d(r));;
+        qInfo() << "comparison of stat.data failed. " << s + qsl(" (%1, %2)").arg(d2s_4d(l), d2s_4d(r));;
         return false;
     }
     return true;
@@ -41,7 +41,7 @@ struct dataset
         ret &= dcmp(lhs.name + qsl(" - Value  (euro)  "), lhs.value, rhs.value);
         ret &= dcmp(lhs.name + qsl(" - annaul int. %  "), lhs.annualInterest, rhs.annualInterest);
         ret &= dcmp(lhs.name + qsl(" - avg Interest % "), lhs.value, rhs.value);
-        ret &= dcmp(lhs.name + qsl(" - wAvg Interest% "), lhs.weightedAvgInterestRate, rhs.weightedAvgInterestRate);
+        ret &= dcmp(lhs.name + qsl(" - wAvg Interest% "), r4(lhs.weightedAvgInterestRate), r4(rhs.weightedAvgInterestRate));
         return ret;
     }
     inline friend bool operator!=(const dataset& lhs, const dataset& rhs) {
@@ -84,7 +84,8 @@ struct dbStats
     QString toString();
     void addContract(double value, double interest, dbStats::payoutType kind, qlonglong creditorId);
     void activateContract(double value, double plannedInvest, double interestRate, dbStats::payoutType kind, qlonglong creditorId);
-
+    void reinvest(double value, double interestRate, int days);
+    void changeContract(double value, double interestRate, int days, dbStats::payoutType kind);
 private:
     void countCred_addContract(QMap<int, int> &credCount, int id)
     {

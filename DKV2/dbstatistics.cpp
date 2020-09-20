@@ -133,16 +133,16 @@ void dbStats::addContract(double value, double interest, dbStats::payoutType kin
         r4((old.inactiveContracts[kind].avgInterestRate * old.inactiveContracts[kind].nbrContracts +interest)
          / (old.inactiveContracts[kind].nbrContracts+1));
     // weighted average
-    allContracts[dbStats::t_nt].weightedAvgInterestRate =r4(100. *
+    allContracts[dbStats::t_nt].weightedAvgInterestRate =r6(100. *
                                                            (old.allContracts[dbStats::t_nt].annualInterest +annualInterest)
                                                            / (old.allContracts[dbStats::t_nt].value +value));
-    allContracts[kind].weightedAvgInterestRate = r4(100. *
+    allContracts[kind].weightedAvgInterestRate = r6(100. *
                                                   (old.allContracts[kind].annualInterest +annualInterest)
                                                   / (old.allContracts[kind].value +value));
-    inactiveContracts[dbStats::t_nt].weightedAvgInterestRate = r4(100*
+    inactiveContracts[dbStats::t_nt].weightedAvgInterestRate = r6(100*
                                                                 (old.inactiveContracts[dbStats::t_nt].annualInterest +annualInterest)
                                                                 / (old.inactiveContracts[dbStats::t_nt].value +value));
-    inactiveContracts[kind].weightedAvgInterestRate =r4(100.*
+    inactiveContracts[kind].weightedAvgInterestRate =r6(100.*
                                                        (old.inactiveContracts[kind].annualInterest +annualInterest)
                                                        / (old.inactiveContracts[kind].value +value));
     // annualinterest
@@ -201,12 +201,12 @@ void dbStats::activateContract(double value, double plannedInvest, double intere
         (old.inactiveContracts[kind].avgInterestRate *old.inactiveContracts[kind].nbrContracts -interestRate)
          /inactiveContracts[kind].nbrContracts;
 
-    activeContracts[dbStats::t_nt].weightedAvgInterestRate = r4(100.*
-                                                              (r2(old.activeContracts[dbStats::t_nt].weightedAvgInterestRate *old.activeContracts[dbStats::t_nt].value /100.) +r2(interestRate *value /100.))
-                                                              /(old.activeContracts[dbStats::t_nt].value +value));
-    activeContracts[kind].weightedAvgInterestRate = r4(100.*
-                                                       (r2(old.activeContracts[kind].weightedAvgInterestRate *old.activeContracts[kind].value /100.) +r2(interestRate *value /100.))
-                                                       /(old.activeContracts[kind].value +value));
+    activeContracts[dbStats::t_nt].weightedAvgInterestRate = r6(100.*
+           (r2(old.activeContracts[dbStats::t_nt].weightedAvgInterestRate *old.activeContracts[dbStats::t_nt].value /100.) +r2(interestRate *value /100.))
+            /(old.activeContracts[dbStats::t_nt].value +value));
+    activeContracts[kind].weightedAvgInterestRate = r6(100.*
+           (r2(old.activeContracts[kind].weightedAvgInterestRate *old.activeContracts[kind].value /100.) +r2(interestRate *value /100.))
+            /(old.activeContracts[kind].value +value));
 
     double oldAnnualInterest =r2(old.inactiveContracts[dbStats::t_nt].weightedAvgInterestRate *old.inactiveContracts[dbStats::t_nt].value /100.);
     double annualInterestOfActivatedContract =r2(interestRate *plannedInvest /100.);
@@ -214,12 +214,12 @@ void dbStats::activateContract(double value, double plannedInvest, double intere
 
     inactiveContracts[dbStats::t_nt].weightedAvgInterestRate = dcmp(QString(), oldAnnualInterest,
                                                                     annualInterestOfActivatedContract) ? 0. :
-                                                             r4(100.* (oldAnnualInterest-annualInterestOfActivatedContract)/newAnnualInterest);
+                                                             r6(100.* (oldAnnualInterest-annualInterestOfActivatedContract)/newAnnualInterest);
 
     inactiveContracts[kind].weightedAvgInterestRate =
         dcmp(QString(), old.inactiveContracts[kind].value,
              plannedInvest) ? 0. :
-             r4(100.*
+             r6(100.*
                (r2(old.inactiveContracts[kind].weightedAvgInterestRate *old.inactiveContracts[kind].value /100.) -r2(interestRate *plannedInvest /100.))
                 /(old.inactiveContracts[kind].value -plannedInvest));
 
@@ -227,6 +227,57 @@ void dbStats::activateContract(double value, double plannedInvest, double intere
     activeContracts[kind].annualInterest =old.activeContracts[kind].annualInterest +(value *interestRate /100.);
     inactiveContracts[dbStats::t_nt].annualInterest =old.inactiveContracts[dbStats::t_nt].annualInterest -(plannedInvest *interestRate /100.);
     inactiveContracts[kind].annualInterest =old.inactiveContracts[kind].annualInterest -(plannedInvest *interestRate /100.);
+}
+void dbStats::reinvest(double oldContValue, double interestRate, int days)
+{
+    double oldValue =allContracts[t_nt].value;
+    double oldAnnualInterest =r2(allContracts[t_nt].weightedAvgInterestRate *oldValue /100.);
+    const double interest = r2(days /360. *oldContValue *interestRate /100. );
+    const double newContValue =oldContValue +interest;
+    const double newAnnualInterest =r2((newContValue -oldContValue)*interestRate /100.);
+    allContracts[t_nt].value +=interest;
+    allContracts[t_nt].annualInterest +=newAnnualInterest;
+    allContracts[t_nt].weightedAvgInterestRate =r6(100. *(oldAnnualInterest +newAnnualInterest) /(oldValue +interest));
+
+    oldValue =allContracts[thesa].value;
+    oldAnnualInterest =r2(allContracts[thesa].weightedAvgInterestRate *oldValue /100.);
+    allContracts[thesa].value +=interest;
+    allContracts[thesa].annualInterest +=newAnnualInterest;
+    allContracts[thesa].weightedAvgInterestRate =r6(100. *(oldAnnualInterest +newAnnualInterest) /(oldValue +interest));
+
+    // activeContracts...
+    oldValue =activeContracts[t_nt].value;
+    oldAnnualInterest =r2(activeContracts[t_nt].weightedAvgInterestRate *oldValue /100.);
+    activeContracts[t_nt].value +=interest;
+    activeContracts[t_nt].annualInterest +=newAnnualInterest;
+    activeContracts[t_nt].weightedAvgInterestRate =r6(100. *(oldAnnualInterest +newAnnualInterest) /(oldValue +interest));
+
+    oldValue =activeContracts[thesa].value;
+    oldAnnualInterest =r2(activeContracts[thesa].weightedAvgInterestRate *oldValue /100.);
+    activeContracts[thesa].value +=interest;
+    activeContracts[thesa].annualInterest +=newAnnualInterest;
+    activeContracts[thesa].weightedAvgInterestRate =r6(100. *(oldAnnualInterest +newAnnualInterest) /(oldValue +interest));
+}
+
+void dbStats::changeContract(double value, double interestRate, int days, dbStats::payoutType kind)
+{
+    double interest =allContracts[t_nt].value *interestRate /100. *days /360.;
+
+    allContracts[t_nt].value +=value +interest;
+    allContracts[t_nt].annualInterest =r2(allContracts[t_nt].value *interestRate /100.);
+    allContracts[t_nt].weightedAvgInterestRate =r6(100. *allContracts[t_nt].annualInterest /allContracts[t_nt].value);
+
+    allContracts[kind].value +=value +interest;
+    allContracts[kind].annualInterest =r2(allContracts[kind].value *interestRate /100.);
+    allContracts[kind].weightedAvgInterestRate =r6(100. *allContracts[kind].annualInterest /allContracts[kind].value);
+
+    activeContracts[t_nt].value +=value +interest;
+    activeContracts[t_nt].annualInterest =r2(activeContracts[t_nt].value *interestRate /100.);
+    activeContracts[t_nt].weightedAvgInterestRate =r6(100. *activeContracts[t_nt].annualInterest /activeContracts[t_nt].value);
+
+    activeContracts[kind].value +=value +interest;
+    activeContracts[kind].annualInterest =r2(activeContracts[kind].value *interestRate /100.);
+    activeContracts[kind].weightedAvgInterestRate =r6(100. *activeContracts[kind].annualInterest /activeContracts[kind].value);
 }
 
 // all contract summary
