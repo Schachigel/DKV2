@@ -9,6 +9,7 @@
 #include <QVBoxLayout>
 #include <QMessageBox>
 
+#include "helper.h"
 #include "appconfig.h"
 #include "helperfin.h"
 #include "wizchangecontractvalue.h"

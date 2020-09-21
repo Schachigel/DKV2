@@ -5,6 +5,7 @@
 #include <QPair>
 #include <QList>
 
+#include "helper.h"
 #include "tabledatainserter.h"
 #include "dkdbhelper.h"
 

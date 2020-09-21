@@ -1,9 +1,10 @@
 
 #include <QStringLiteral>
-#define qsl(x) QStringLiteral(x)
 #include <QFile>
 #include <math.h>
 #include <QDebug>
+
+#include "helper.h"
 
 #include "helperfin.h"
 

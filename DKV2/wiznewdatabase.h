@@ -2,9 +2,10 @@
 #define FILESELECTIONWIZ_H
 
 #include <QStringLiteral>
-#define qsl(x) QStringLiteral(x)
 #include <QLineEdit>
 #include <QWizard>
+
+#include "helper.h"
 
 /* file selection Page  */
 struct wizFileSelection_IntroPage : public QWizardPage

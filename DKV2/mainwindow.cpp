@@ -22,6 +22,7 @@
 #include "csvwriter.h"
 #include "uiitemformatter.h"
 #include "dkdbhelper.h"
+#include "dbstatistics.h"
 #include "letters.h"
 #include "transaktionen.h"
 
@@ -113,11 +114,13 @@ void MainWindow::prepare_startPage()
 {   LOG_CALL;
     busycursor b;
     QString messageHtml {qsl( "<table width='100%'><tr><td><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></td></tr>")};
-    DbSummary dbs =calculateSummary();
-    double allContracts = dbs.valueActiveContracts + dbs.valueInactiveContracts;
-    if( allContracts > 0) {
+
+    dbStats stats(dbStats::calculate);
+    ;
+    double allContractsValue = stats.allContracts[dbStats::t_nt].value;
+    if( allContractsValue > 0) {
         QLocale l;
-        QString valueRow = qsl("<tr><td>Die Summer aller DK beträgt <big><font color=red>") + l.toCurrencyString(allContracts) + qsl("</font></big></td></tr>");
+        QString valueRow = qsl("<tr><td>Die Summer aller DK beträgt <big><font color=red>") + l.toCurrencyString(allContractsValue) + qsl("</font></big></td></tr>");
         messageHtml += valueRow;
     }
     messageHtml += qsl("<tr><td><img src=\":/res/splash.png\"/></td></tr></table>");
@@ -401,9 +404,9 @@ void MainWindow::prepare_contracts_list_view()
     busycursor b;
     QSqlTableModel* model = new QSqlTableModel(this);
     if( showDeletedContracts)
-        model->setTable(qsl("vBeendeteVertraege"));
+        model->setTable(qsl("vVertraege_geloescht"));
     else
-        model->setTable(qsl("vAlleVertraege"));
+        model->setTable(qsl("vVertraege_alle"));
     model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
     qDebug() << "contract list model filter: " << model->filter();
 

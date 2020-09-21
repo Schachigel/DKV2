@@ -6,6 +6,7 @@
 #include <QDebug>
 
 #include "appconfig.h"
+#include "helper.h"
 #include "helperfin.h"
 #include "wizactivatecontract.h"
 

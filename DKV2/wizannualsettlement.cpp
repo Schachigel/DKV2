@@ -4,6 +4,7 @@
 #include <QCheckBox>
 #include <QVBoxLayout>
 
+#include "helper.h"
 #include "wizannualsettlement.h"
 
 wizAnnualSettlement_IntroPage::wizAnnualSettlement_IntroPage(QWidget* p)  : QWizardPage(p)

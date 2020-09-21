@@ -1,7 +1,6 @@
 #include <windows.h>
 
 #include <QStringLiteral>
-#define qsl(x) QStringLiteral(x)
 #include <QLineEdit>
 #include <QIntValidator>
 #include <QLabel>

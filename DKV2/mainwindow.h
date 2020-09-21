@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QStringLiteral>
-#define qsl(x) QStringLiteral(x)
 #include <QGuiApplication>
 #include <QItemSelection>
 #include <QSplashScreen>

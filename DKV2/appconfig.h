@@ -3,7 +3,6 @@
 
 #include <QString>
 #include <QStringLiteral>
-#define qsl(x) QStringLiteral(x)
 #include <QMap>
 #include <QWidget>
 #include <QSqlDatabase>

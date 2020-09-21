@@ -35,43 +35,6 @@ void create_sampleData(int datensaetze =20);
 
 bool createCsvActiveContracts();
 
-int numberOfCreditorsWithActiveContracts();
-int numberOfActiveContracts();
-double valueOfActiveContracts();
-int numberOfInactiveContracts();
-double valueOfInactiveContracts();
-double weightedAverageInterestRate();
-double avgInterestRate();
-
-int numberOfActiveAccumulatingContracts();
-double valueOfActiveAccumulatingContracts();
-int numberOfActivePayoutContracts();
-double valueOfActivePayoutContracts();
-
-struct DbSummary
-{
-    // all contract summary
-    int creditors =0;
-    int contracts =0;
-    double valueContracts =0.;
-    double weightedAverageInterest =0.;
-    double MittlererZins =0.;
-    // active vs inactive
-    int creditorsWithActiveContracts =0;
-    int     activeContracts =0;
-    double  valueActiveContracts =0.;
-    int creditorsWithInactiveContracts =0;
-    int     inactiveContracts =0;
-    double  valueInactiveContracts =0.;
-
-    // active: reinvesting vs. wPayout
-    int     AnzahlAuszahlende =0;
-    double  BetragAuszahlende =0.;
-    int     AnzahlThesaurierende =0;
-    double  WertThesaurierende =0.;
-
-};
-
 struct ContractEnd
 {
     int year;
@@ -79,7 +42,6 @@ struct ContractEnd
     double value;
 };
 void calc_contractEnd(QVector<ContractEnd>& ce);
-DbSummary calculateSummary();
 
 struct YZV
 {

@@ -4,7 +4,8 @@
 #include <QSqlField>
 #include <QString>
 #include <QStringLiteral>
-#define qsl(x) QStringLiteral(x)
+
+#include "helper.h"
 
 struct dbtable;
 

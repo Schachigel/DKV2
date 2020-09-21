@@ -3,7 +3,6 @@
 
 #include <QDate>
 #include <QStringLiteral>
-#define qsl(x) QStringLiteral(x)
 #include <QWizard>
 
 class wizAnnualSettlement_IntroPage : public QWizardPage

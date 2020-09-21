@@ -2,7 +2,6 @@
 #define DBTABLE_H
 
 #include <QStringLiteral>
-#define qsl(x) QStringLiteral(x)
 
 #include <QSqlDatabase>
 

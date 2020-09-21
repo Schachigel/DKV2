@@ -7,7 +7,6 @@
 #include "helperfin.h"
 #include "helpersql.h"
 #include "creditor.h"
-#define qsl(x) QStringLiteral(x)
 
 QList<QString> Vornamen {qsl("Holger"), qsl("Volker"), qsl("Peter"), qsl("Hans"), qsl("Susi"), qsl("Roland"),
             qsl("Claudia"), qsl("Emil"), qsl("Evelyn"), qsl("Ötzgür"), qsl("Thomas"), qsl("Elke"), qsl("Berta"),

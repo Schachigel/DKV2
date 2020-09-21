@@ -2,7 +2,6 @@
 #define WIZNEW_H
 
 #include <QStringLiteral>
-#define qsl(x) QStringLiteral(x)
 #include <QRadioButton>
 #include <QDateEdit>
 #include <QComboBox>
