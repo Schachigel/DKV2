@@ -113,7 +113,7 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
 void MainWindow::prepare_startPage()
 {   LOG_CALL;
     busycursor b;
-    QString messageHtml {qsl( "<table width='100%'><tr><td><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></td></tr>")};
+    QString messageHtml {qsl("<table width='100%'><tr><td><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></td></tr>")};
 
     dbStats stats(dbStats::calculate);
     ;

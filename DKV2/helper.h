@@ -5,7 +5,6 @@
 #include <QApplication>
 #include <QString>
 #include <QStringLiteral>
-#define qsl(x) QStringLiteral(x)
 #include <QMainWindow>
 #include <QWidget>
 #include <QElapsedTimer>
@@ -14,6 +13,7 @@
 
 #include "helperfile.h"
 
+#define qsl(x) QStringLiteral(x)
 
 class dbgTimer
 {

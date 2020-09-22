@@ -8,6 +8,12 @@
 
 #include "helperfin.h"
 
+QString d2euro(double x)
+{
+    static QLocale locale;
+    return locale.toCurrencyString(x);
+}
+
 int TageZwischen(const QDate& von, const QDate& bis)
 {   // finanzmathematischer Abstand zwischen zwei Daten im selben Jahr
     if( bis == von) return 0;
