@@ -35,7 +35,7 @@ void PercentItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &
 
 QString ContractValueItemFormatter::displayText(const QVariant& value, const QLocale& )const
 {
-    double w = r2(value.toDouble()/100);
+    double w =value.toDouble();
     QLocale l;
     if( w < 0)
         return qsl("[") + l.toCurrencyString(-1 *w) + qsl(" ")  + qsl("] offen");

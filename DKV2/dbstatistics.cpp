@@ -6,7 +6,7 @@
 
 const bool dbStats::calculate =true;
 
-QString dataset::toString() const
+QString dbStats::dataset::toString() const
 {
     QString all;
     QTextStream sout(&all);
@@ -23,7 +23,7 @@ QString dataset::toString() const
     return all;
 }
 
-bool datasetFromViews(dataset& ds, QString statsView, QString creditorNbrView)
+bool datasetFromViews(dbStats::dataset& ds, QString statsView, QString creditorNbrView)
 {   LOG_CALL_W(statsView);
     QVector<dbfield> v;
     dbfield contractCount(qsl("Anzahl"), QVariant::Type::Int);
@@ -122,16 +122,16 @@ void dbStats::addContract(double value, double interest, dbStats::payoutType kin
     // avgInterrest
     allContracts[dbStats::t_nt].avgInterestRate =
         r4((old.allContracts[dbStats::t_nt].avgInterestRate * old.allContracts[dbStats::t_nt].nbrContracts +interest)
-         / (old.allContracts[dbStats::t_nt].nbrContracts +1));
+         / (old.allContracts[dbStats::t_nt].nbrContracts +1l));
     allContracts[kind].avgInterestRate =
         r4((old.allContracts[kind].avgInterestRate * old.allContracts[kind].nbrContracts +interest)
-         / (old.allContracts[kind].nbrContracts+1));
+         / (old.allContracts[kind].nbrContracts+1l));
     inactiveContracts[dbStats::t_nt].avgInterestRate =
         r4((old.inactiveContracts[dbStats::t_nt].avgInterestRate * old.inactiveContracts[dbStats::t_nt].nbrContracts +interest)
-         / (old.inactiveContracts[dbStats::t_nt].nbrContracts+1));
+         / (old.inactiveContracts[dbStats::t_nt].nbrContracts+1l));
     inactiveContracts[kind].avgInterestRate =
         r4((old.inactiveContracts[kind].avgInterestRate * old.inactiveContracts[kind].nbrContracts +interest)
-         / (old.inactiveContracts[kind].nbrContracts+1));
+         / (old.inactiveContracts[kind].nbrContracts+1l));
     // weighted average
     allContracts[dbStats::t_nt].weightedAvgInterestRate =r6(100. *
                                                            (old.allContracts[dbStats::t_nt].annualInterest +annualInterest)

@@ -58,6 +58,32 @@ struct dbStats
     enum activationStatus {
         act_nInact =0, active =1, inactive =2, as_size =3
     };
+    struct dataset
+    {
+        dataset(QString n) { name = n; }
+        QString name;
+        // int nbrCreditors =0;
+        QMap<int, int> credCount;
+        int nbrContracts = 0;
+        double value = 0.;
+        double avgInterestRate = 0.;
+        double weightedAvgInterestRate = 0.;
+        double annualInterest = 0.;
+        inline friend bool operator==(const dataset& lhs, const dataset& rhs) {
+            bool ret = true;
+            ret &= icmp(lhs.name + qsl(" - nbr Creditors  "), lhs.credCount.size(), rhs.credCount.size());
+            ret &= icmp(lhs.name + qsl(" - nbr Contracts  "), lhs.nbrContracts, rhs.nbrContracts);
+            ret &= dcmp(lhs.name + qsl(" - Value  (euro)  "), lhs.value, rhs.value);
+            ret &= dcmp(lhs.name + qsl(" - annaul int. %  "), lhs.annualInterest, rhs.annualInterest);
+            ret &= dcmp(lhs.name + qsl(" - avg Interest % "), lhs.value, rhs.value);
+            ret &= dcmp(lhs.name + qsl(" - wAvg Interest% "), r4(lhs.weightedAvgInterestRate), r4(rhs.weightedAvgInterestRate));
+            return ret;
+        }
+        inline friend bool operator!=(const dataset& lhs, const dataset& rhs) {
+            return !(lhs == rhs);
+        }
+        QString toString() const;
+    };
 
     // all contract summary
     dataset allContracts[activationStatus::as_size]      ={qsl("act+Inact-all  "), qsl("thesa          "), qsl("payout         ")};

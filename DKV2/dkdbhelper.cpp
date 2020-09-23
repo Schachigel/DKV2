@@ -125,7 +125,7 @@ bool insert_views( QSqlDatabase db)
                                                           "Vertraege.ZSatz /100. AS Zinssatz, "
                                                           "SUM(Buchungen.Betrag) /100. as Wert, "
                                                           "MIN(Buchungen.Datum)  AS Aktivierungsdatum, "
-                                                          "Vertraege.Kfrist AS Kündigungsfrist, "
+                                                          "Vertraege.Kfrist AS Kuendigungsfrist, "
                                                           "Vertraege.LaufzeitEnde AS Vertragsende, "
                                                           "Vertraege.thesaurierend AS thesa, "
                                                           "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, "
@@ -142,36 +142,50 @@ bool insert_views( QSqlDatabase db)
                                                             "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
                                                             "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
                                                         "GROUP BY Vertraege.id")},
-        {qsl("vVertraege_aktiv"),      qsl("SELECT id, Vertragskennung, Zinssatz, Wert, Aktivierungsdatum, Kündigungsfrist, Vertragsende, thesa, Kreditorin, KreditorId FROM vVertraege_aktiv_detail")},
-        {qsl("vVertraege_passiv"),     qsl("SELECT Vertraege.id AS id, "    // 0
-                                             "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 1
-                                             "Vertraege.Kennung AS Vertragskennung, " // 2
-                                             "Vertraege.ZSatz /100. AS Zinssatz, "     // 3
-                                             "Vertraege.Betrag /100. AS Wert, "         // 4
-                                             "Vertraege.Vertragsdatum AS Abschlussdatum, " // 5
-                                             "Vertraege.Kfrist AS Kündigungsfrist, "      // 6
-                                             "Vertraege.LaufzeitEnde AS Vertragsende, "   // 7
-                                             "Vertraege.thesaurierend AS thesa, "          // 8
-                                             "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, "
-                                             "Kreditoren.id AS KreditorId " // 9
+        {qsl("vVertraege_aktiv"),      qsl("SELECT id, " // 0
+                                            "Kreditorin, " // 1
+                                           "Vertragskennung, " // 2
+                                            "Zinssatz, " // 3
+                                            "Wert, " // 4
+                                            "Aktivierungsdatum, " // 5
+                                            "Kuendigungsfrist, "  // 6
+                                            "Vertragsende, " // 7
+                                            "thesa, "       // 8
+                                            "KreditorId " // 9
+                                            "FROM vVertraege_aktiv_detail")},
+        {qsl("vVertraege_passiv"),     qsl("SELECT Vertraege.id AS id, "    // 0: id
+                                             "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 1: kreditor name
+                                             "Vertraege.Kennung AS Vertragskennung, " // 2: contract label
+                                             "Vertraege.ZSatz /100. AS Zinssatz, "     // 3: interest in %
+                                             "Vertraege.Betrag /100. AS Wert, "         // 4: value in Euro
+                                             "Vertraege.Vertragsdatum AS Abschlussdatum, " // 5: Abschlussdatum / akt. Datum
+                                             "Vertraege.Kfrist AS Kuendigungsfrist, "      // 6: kfrist (monate)
+                                             "Vertraege.LaufzeitEnde AS Vertragsende, "   // 7: LZende
+                                             "Vertraege.thesaurierend AS thesa, "          // 8: payout?
+                                             "Kreditoren.id AS KreditorId " // 9: kredid
                                            "FROM Vertraege "
                                              "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
                                            "WHERE (SELECT count(*) FROM Buchungen WHERE Buchungen.VertragsId=Vertraege.id) = 0")},
-        {qsl("vVertraege_alle"),        qsl("SELECT id, Vertragskennung, Zinssatz, Wert, Aktivierungsdatum AS Datum, Kündigungsfrist, Vertragsende, thesa, Kreditorin, KreditorId "
-                                           "FROM vVertraege_aktiv"
-                                           "  UNION  "
-                                           "SELECT id, Vertragskennung, Zinssatz, Wert, Abschlussdatum  AS Datum,  Kündigungsfrist, Vertragsende, thesa, Kreditorin, KreditorId "
-                                           "FROM vVertraege_passiv")},
+        {qsl("vVertraege_alle"),        qsl("SELECT id, Kreditorin, Vertragskennung, Zinssatz, Wert, Aktivierungsdatum AS Datum, Kuendigungsfrist, Vertragsende, thesa, KreditorId "
+                                             "FROM vVertraege_aktiv"
+                                            "  UNION  "
+                                            "SELECT id, Kreditorin, Vertragskennung, Zinssatz, Wert, Abschlussdatum  AS Datum,  Kuendigungsfrist, Vertragsende, thesa, KreditorId "
+                                             "FROM vVertraege_passiv")},
+        {qsl("vVertraege_alle_4view"),  qsl("SELECT id, Kreditorin, Vertragskennung, Zinssatz, Wert, Aktivierungsdatum AS Datum, Kuendigungsfrist, Vertragsende, thesa, KreditorId "
+                                             "FROM vVertraege_aktiv"
+                                            "  UNION  "
+                                            "SELECT id, Kreditorin, Vertragskennung, Zinssatz, -1*Wert, Abschlussdatum  AS Datum,  Kuendigungsfrist, Vertragsende, thesa, KreditorId "
+                                             "FROM vVertraege_passiv")},
         {qsl("vVertraege_geloescht"),    qsl("SELECT "
-                                              "exVertraege.id AS id, "
-                                              "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, "
-                                              "exVertraege.Kennung AS Vertragskennung, "
-                                              "exVertraege.ZSatz/100. AS Zinssatz, "
-                                              "SUM(exBuchungen.betrag)  AS Wert, "
-                                             "MIN(exBuchungen.Datum) AS Datum, exVertraege.Kfrist AS Kuendigungsfrist, "
-                                             "exVertraege.LaufzeitEnde AS Vertragsende, "
-                                             "thesaurierend AS thesa, "
-                                             "Kreditoren.id AS KreditorId "
+                                              "exVertraege.id AS id, " // 0: id
+                                              "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 1: kreditorin
+                                              "exVertraege.Kennung AS Vertragskennung, " // 2: contract label
+                                              "exVertraege.ZSatz/100. AS Zinssatz, " // 3: interest in %
+                                              "SUM(exBuchungen.betrag)  AS Wert, "   //4: value in Euro
+                                             "MIN(exBuchungen.Datum) AS Datum, exVertraege.Kfrist AS Kuendigungsfrist, " // 5: act. date, 6: kfrist (monate)
+                                             "exVertraege.LaufzeitEnde AS Vertragsende, " // 7: Vertragsende
+                                             "thesaurierend AS thesa, " // 8: payout?
+                                             "Kreditoren.id AS KreditorId " // 9: kredid
                                            "FROM exVertraege "
                                               "INNER JOIN exBuchungen ON exBuchungen.VertragsId = exVertraege.id "
                                               "INNER JOIN Kreditoren ON Kreditoren.id = exVertraege.KreditorId "
@@ -476,8 +490,8 @@ QVector<rowData> contractRuntimeDistribution()
 {   LOG_CALL;
     int AnzahlBisEinJahr=0, AnzahlBisFuenfJahre=0, AnzahlLaenger=0, AnzahlUnbegrenzet = 0;
     double SummeBisEinJahr=0., SummeBisFuenfJahre=0., SummeLaenger=0., SummeUnbegrenzet = 0.;
-    QString sql = "SELECT Wert, Datum, Vertragsende "
-                  "FROM vAktiveVertraege";
+    QString sql = "SELECT Wert, Aktivierungsdatum, Vertragsende "
+                  "FROM vVertraege_aktiv";
     QSqlQuery q;
     if( !q.exec(sql)) {
         qCritical() << "calculation of runtime distribution failed: " << q.lastError() << Qt::endl << q.lastQuery();
@@ -485,16 +499,16 @@ QVector<rowData> contractRuntimeDistribution()
     }
 
     while( q.next()) {
-        double wert =   q.value("Wert").toReal() /100.;
+        double wert =   q.value("Wert").toReal();
         QDate von = q.value("Datum").toDate();
         QDate bis = q.value("Vertragsende").toDate();
-        if(! bis.isValid() || bis == EndOfTheFuckingWorld) {
+        if( ! bis.isValid() || bis == EndOfTheFuckingWorld) {
             AnzahlUnbegrenzet++;
             SummeUnbegrenzet += wert;
-        } else if( von.addYears(5) < bis) {
+        } else if( bis > von.addYears(1) && bis < von.addYears(5)) {
             AnzahlLaenger++;
             SummeLaenger += wert;
-        } else if( von.addYears(1) > bis) {
+        } else if( bis < von.addYears(1)) {
             AnzahlBisEinJahr++;
             SummeBisEinJahr +=wert;
         } else {
@@ -515,8 +529,8 @@ void calc_contractEnd( QVector<ContractEnd>& ces)
 {   LOG_CALL;
     QSqlQuery sql;
     sql.setForwardOnly(true);
-    sql.exec("SELECT count(*) AS Anzahl, sum(Wert) /100. AS Wert, strftime('%Y',Vertragsende) AS Jahr "
-             "FROM vAktiveVertraege "
+    sql.exec("SELECT count(*) AS Anzahl, sum(Wert) AS Wert, strftime('%Y',Vertragsende) AS Jahr "
+             "FROM vVertraege_aktiv "
              "WHERE Vertragsende < 9999-01-01 GROUP BY strftime('%Y',Vertragsende) ORDER BY Jahr");
     while( sql.next()) {
         ces.push_back({sql.value("Jahr").toInt(), sql.value("Anzahl").toInt(), sql.value("Wert").toDouble()});

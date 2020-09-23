@@ -402,11 +402,23 @@ QString filterFromFilterphrase(QString fph)
 void MainWindow::prepare_contracts_list_view()
 {   LOG_CALL;
     busycursor b;
+    enum colmn_Pos {
+        cp_id = 0,
+        cp_Kreditorin,
+        cp_Vertragskennung,
+        cp_Zinssatz,
+        cp_Wert,
+        cp_Aktivierungsdatum,
+        cp_Kuendigungsfrist,
+        cp_Vertragsende,
+        cp_thesa,
+        cp_KreditorId
+    };
     QSqlTableModel* model = new QSqlTableModel(this);
     if( showDeletedContracts)
         model->setTable(qsl("vVertraege_geloescht"));
     else
-        model->setTable(qsl("vVertraege_alle"));
+        model->setTable(qsl("vVertraege_alle_4view"));
     model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
     qDebug() << "contract list model filter: " << model->filter();
 
@@ -418,14 +430,14 @@ void MainWindow::prepare_contracts_list_view()
     tv->setSelectionBehavior(QAbstractItemView::SelectRows);
     tv->setAlternatingRowColors(true);
     tv->setSortingEnabled(true);
-    tv->hideColumn(0);
-    tv->hideColumn(9);
-    tv->setItemDelegateForColumn(3, new PercentItemFormatter(tv));
-    tv->setItemDelegateForColumn(4, new ContractValueItemFormatter(tv));
-    tv->setItemDelegateForColumn(5, new DateItemFormatter(tv));
-    tv->setItemDelegateForColumn(6, new KFristItemFormatter(tv));
-    tv->setItemDelegateForColumn(7, new DateItemFormatter(tv));
-    tv->setItemDelegateForColumn(8, new thesaItemFormatter(tv));
+    tv->setItemDelegateForColumn(cp_Zinssatz, new PercentItemFormatter(tv));
+    tv->setItemDelegateForColumn(cp_Wert, new ContractValueItemFormatter(tv));
+    tv->setItemDelegateForColumn(cp_Aktivierungsdatum, new DateItemFormatter(tv));
+    tv->setItemDelegateForColumn(cp_Kuendigungsfrist, new KFristItemFormatter(tv));
+    tv->setItemDelegateForColumn(cp_Vertragsende, new DateItemFormatter(tv));
+    tv->setItemDelegateForColumn(cp_thesa, new thesaItemFormatter(tv));
+    tv->hideColumn(cp_id);
+    tv->hideColumn(cp_KreditorId);
 
     tv->resizeColumnsToContents();
     auto c = connect(ui->contractsTableView->selectionModel(),
@@ -562,6 +574,7 @@ void MainWindow::on_action_menu_contracts_statistics_view_triggered()
         combo->addItem(qsl("Anzahl auslaufender Verträge nach Jahr"), QVariant(BY_CONTRACT_END));
         combo->addItem(qsl("Anzahl Verträge nach Zinssatz und Jahr"), QVariant(INTEREST_DISTRIBUTION));
         combo->addItem(qsl("Anzahl Verträge nach Laufzeiten"),        QVariant(CONTRACT_TERMS));
+        combo->addItem(qsl("Überblick über alle Verträge"),           QVariant(ALL_CONTRACT_INFO));
         combo->setCurrentIndex(0);
     }
 

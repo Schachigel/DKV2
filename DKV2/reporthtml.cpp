@@ -81,6 +81,22 @@ QString newLine(QString line)
     return qsl("<br>") + line;
 }
 
+QString htmlOverviewTableBlock(QString headline, dbStats::dataset ds)
+{
+    QString ret;
+    ret += tableRow1(qsl("<b>") +headline +qsl("</b>"));
+    ret += tableRow2(qsl("Anzahl DK Geber*innen"), i2s(ds.nbrContracts));
+    ret += tableRow2(qsl("Anzahl Verträge  "),     i2s(ds.nbrContracts));
+    ret += tableRow2(qsl("Gesamtwert "),           d2euro(ds.value)
+        + qsl("<br><small>(Ø ") + d2euro(ds.value / ds.nbrContracts) + qsl(")</small>"));
+    ret += tableRow2(qsl("Durchschnittlicher Zinssatz:<br><small>(Gewichtet mit Vertragswert)</small>"), d2percent(ds.weightedAvgInterestRate));
+    ret += tableRow2(qsl("Jährliche Zinskosten:"), d2euro(ds.annualInterest));
+    ret += tableRow2(qsl("Mittlerer Zinssatz:"), d2percent(ds.avgInterestRate));
+    ret += emptyRow();
+
+    return ret;
+}
+
 QString htmlOverviewTable()
 {
     QString ret;
@@ -89,63 +105,17 @@ QString htmlOverviewTable()
     ret += appConfig::getRuntimeData(GMBH_ADDRESS1);
     ret += qsl(" - Stand: ") + QDate::currentDate().toString(qsl("dd.MM.yyyy<br>"));
     dbStats stats(dbStats::calculate);
-    ret += startTable();
-    ret += tableRow1(qsl("<b>Übersich über alle aktiven Verträge</b>"));
-    ret += tableRow2(qsl("Anzahl DK Geber*innen"), i2s(stats.activeContracts[dbStats::t_nt].nbrContracts));
-    ret += tableRow2(qsl("Anzahl der Verträge  "), i2s(stats.activeContracts[dbStats::t_nt].nbrContracts));
-    ret += tableRow2(qsl("Gesamtwert           "), d2euro(stats.activeContracts[dbStats::t_nt].value)
-                        +qsl("<br><small>(Ø ") + d2euro(stats.activeContracts[dbStats::t_nt].value/stats.activeContracts[dbStats::t_nt].nbrContracts) + qsl(")</small>"));
-    ret += tableRow2(qsl("Durchschnittlicher Zinssatz:<br><small>(Gewichtet mit Vertragswert)</small>"), d2percent(stats.activeContracts[dbStats::t_nt].weightedAvgInterestRate));
-    ret += tableRow2(qsl("Jährliche Zinskosten:"), d2euro(stats.activeContracts[dbStats::t_nt].annualInterest));
-    ret += tableRow2(qsl("Mittlerer Zinssatz:"), d2percent(stats.activeContracts[dbStats::t_nt].avgInterestRate));
-    ret += emptyRow();
-    ret += tableRow1(qsl("<b>Aktive thesaurierende Verträge</b>"));
-    ret += tableRow2(qsl("Anzahl DK Geber*innen"), i2s(stats.activeContracts[dbStats::thesa].nbrContracts));
-    ret += tableRow2(qsl("Anzahl der Verträge  "), i2s(stats.activeContracts[dbStats::thesa].nbrContracts));
-    ret += tableRow2(qsl("Gesamtwert           "), d2euro(stats.activeContracts[dbStats::thesa].value)
-                                                       +qsl("<br><small>(Ø ") + d2euro(stats.activeContracts[dbStats::thesa].value/stats.activeContracts[dbStats::thesa].nbrContracts) + qsl(")</small>"));
-    ret += tableRow2(qsl("Durchschnittlicher Zinssatz:<br><small>(Gewichtet mit Vertragswert)</small>"), d2percent(stats.activeContracts[dbStats::thesa].weightedAvgInterestRate));
-    ret += tableRow2(qsl("Jährliche Zinskosten:"), d2euro(stats.activeContracts[dbStats::thesa].annualInterest));
-    ret += tableRow2(qsl("Mittlerer Zinssatz:"), d2percent(stats.activeContracts[dbStats::thesa].avgInterestRate));
-    ret += emptyRow();
-    ret += tableRow1(qsl("<b>Aktive Verträge mit Ausschüttung<b>"));
-    ret += tableRow2(qsl("Anzahl DK Geber*innen"), i2s(stats.activeContracts[dbStats::pout].nbrContracts));
-    ret += tableRow2(qsl("Anzahl der Verträge  "), i2s(stats.activeContracts[dbStats::pout].nbrContracts));
-    ret += tableRow2(qsl("Gesamtwert           "), d2euro(stats.activeContracts[dbStats::pout].value)
-                                                       +qsl("<br><small>(Ø ") + d2euro(stats.activeContracts[dbStats::pout].value/stats.activeContracts[dbStats::pout].nbrContracts) + qsl(")</small>"));
-    ret += tableRow2(qsl("Durchschnittlicher Zinssatz:<br><small>(Gewichtet mit Vertragswert)</small>"), d2percent(stats.activeContracts[dbStats::pout].weightedAvgInterestRate));
-    ret += tableRow2(qsl("Jährliche Zinskosten:"), d2euro(stats.activeContracts[dbStats::pout].annualInterest));
-    ret += tableRow2(qsl("Mittlerer Zinssatz:"), d2percent(stats.activeContracts[dbStats::pout].avgInterestRate));
-    ret += emptyRow();
+    ret += htmlOverviewTableBlock(qsl("Alle Aktiven Verträge"), stats.activeContracts[dbStats::t_nt]);
+    ret += htmlOverviewTableBlock(qsl("Aktive Verträge ohne Zinsauszahlung"), stats.activeContracts[dbStats::thesa]);
+    ret += htmlOverviewTableBlock(qsl("Aktive Verträge mit Zinsauszahlung"), stats.activeContracts[dbStats::pout]);
+    
+    ret += htmlOverviewTableBlock(qsl("Alle noch nicht aktiven Verträge"), stats.inactiveContracts[dbStats::t_nt]);
+    ret += htmlOverviewTableBlock(qsl("Inaktive Verträge ohne Zinsauszahlung"), stats.inactiveContracts[dbStats::thesa]);
+    ret += htmlOverviewTableBlock(qsl("Inaktive Verträge mit Zinsauszahlung"), stats.inactiveContracts[dbStats::pout]);
 
-    ret += tableRow1(qsl("<b>Übersich über alle noch nicht aktivierten Verträge</b>"));
-    ret += tableRow2(qsl("Anzahl DK Geber*innen"), i2s(stats.inactiveContracts[dbStats::t_nt].nbrContracts));
-    ret += tableRow2(qsl("Anzahl der Verträge  "), i2s(stats.inactiveContracts[dbStats::t_nt].nbrContracts));
-    ret += tableRow2(qsl("Gesamtwert           "), d2euro(stats.inactiveContracts[dbStats::t_nt].value)
-        + qsl("<br><small>(Ø ") + d2euro(stats.inactiveContracts[dbStats::t_nt].value / stats.inactiveContracts[dbStats::t_nt].nbrContracts) + qsl(")</small>"));
-    ret += tableRow2(qsl("Durchschnittlicher Zinssatz:<br><small>(Gewichtet mit Vertragswert)</small>"), d2percent(stats.inactiveContracts[dbStats::t_nt].weightedAvgInterestRate));
-    ret += tableRow2(qsl("Jährliche Zinskosten:"), d2euro(stats.inactiveContracts[dbStats::t_nt].annualInterest));
-    ret += tableRow2(qsl("Mittlerer Zinssatz:"), d2percent(stats.inactiveContracts[dbStats::t_nt].avgInterestRate));
-    ret += emptyRow();
-    ret += tableRow1(qsl("<b>Inaktive thesaurierende Verträge</b>"));
-    ret += tableRow2(qsl("Anzahl DK Geber*innen"), i2s(stats.inactiveContracts[dbStats::thesa].nbrContracts));
-    ret += tableRow2(qsl("Anzahl der Verträge  "), i2s(stats.inactiveContracts[dbStats::thesa].nbrContracts));
-    ret += tableRow2(qsl("Gesamtwert           "), d2euro(stats.inactiveContracts[dbStats::thesa].value)
-        + qsl("<br><small>(Ø ") + d2euro(stats.inactiveContracts[dbStats::thesa].value / stats.inactiveContracts[dbStats::thesa].nbrContracts) + qsl(")</small>"));
-    ret += tableRow2(qsl("Durchschnittlicher Zinssatz:<br><small>(Gewichtet mit Vertragswert)</small>"), d2percent(stats.inactiveContracts[dbStats::thesa].weightedAvgInterestRate));
-    ret += tableRow2(qsl("Jährliche Zinskosten:"), d2euro(stats.inactiveContracts[dbStats::thesa].annualInterest));
-    ret += tableRow2(qsl("Mittlerer Zinssatz:"), d2percent(stats.inactiveContracts[dbStats::thesa].avgInterestRate));
-    ret += emptyRow();
-    ret += tableRow1(qsl("<b>Inktive Verträge mit Ausschüttung<b>"));
-    ret += tableRow2(qsl("Anzahl DK Geber*innen"), i2s(stats.inactiveContracts[dbStats::pout].nbrContracts));
-    ret += tableRow2(qsl("Anzahl der Verträge  "), i2s(stats.inactiveContracts[dbStats::pout].nbrContracts));
-    ret += tableRow2(qsl("Gesamtwert           "), d2euro(stats.inactiveContracts[dbStats::pout].value)
-        + qsl("<br><small>(Ø ") + d2euro(stats.inactiveContracts[dbStats::pout].value / stats.inactiveContracts[dbStats::pout].nbrContracts) + qsl(")</small>"));
-    ret += tableRow2(qsl("Durchschnittlicher Zinssatz:<br><small>(Gewichtet mit Vertragswert)</small>"), d2percent(stats.inactiveContracts[dbStats::pout].weightedAvgInterestRate));
-    ret += tableRow2(qsl("Jährliche Zinskosten:"), d2euro(stats.inactiveContracts[dbStats::pout].annualInterest));
-    ret += tableRow2(qsl("Mittlerer Zinssatz:"), d2percent(stats.inactiveContracts[dbStats::pout].avgInterestRate));
-    ret += emptyRow();
-
+    ret += htmlOverviewTableBlock(qsl("Alle Verträge"), stats.allContracts[dbStats::t_nt]);
+    ret += htmlOverviewTableBlock(qsl("Verträge ohne Zinsauszahlung"), stats.allContracts[dbStats::thesa]);
+    ret += htmlOverviewTableBlock(qsl("Verträge mit Zinsauszahlung"), stats.allContracts[dbStats::pout]);
     return ret;
 }
 QString htmlContractsByContractEndTable()
@@ -190,6 +160,8 @@ QString htmlContractsByRuntimeTable()
     ret += h1(qsl("Vertragslaufzeiten")) + qsl("<br> Stand:") + QDate::currentDate().toString(qsl("dd.MM.yyyy<br>"));
     ret += startTable();
     QVector<rowData> rows = contractRuntimeDistribution();
+    if (rows.count() == 0)
+        return qsl("");
     ret += tableRow3( h2(rows[0].text), h2(rows[0].value), h2(rows[0].number));
     for( int i = 1; i < rows.count(); i++)
         ret += tableRow3
@@ -199,9 +171,10 @@ QString htmlContractsByRuntimeTable()
 }
 QString htmlAllContractInfo()
 {
-    dbtable t(qsl("ContractDataActiveContracts"));
+    dbtable t(qsl("vVertraege_aktiv_detail"));
     t.append(dbfield(qsl("Id"), QVariant::Type::Int));
     t.append(dbfield(qsl("KreditorId"), QVariant::Type::Int));
+    t.append(dbfield(qsl("Vertragskennung")));
     t.append(dbfield(qsl("Vorname")));
     t.append(dbfield(qsl("Nachname")));
     t.append(dbfield(qsl("Strasse")));
@@ -239,8 +212,9 @@ QString reportHtml(Uebersichten u)
 {
     QString html =qsl("<html><body>"
                     "<style>"
-                      "table { border-width: 0px; font-family: Verdana; font-size: large; }"
-                      "td { background-color:rgb(235,235,235);}"
+                      "table { font-family: Verdana; font-size: medium; border: 1px solid black; border-collapse: collapse; }"
+                      "td { background-color:rgb(235,235,235); padding: 6px; border: 1px solid black; }"
+                      "tr { background-color: #f5f5f5; border: 1px solid black; }"
                     "</style>"
                     "%1"
                   "</body></html>");
@@ -267,6 +241,7 @@ QString reportHtml(Uebersichten u)
     }
     default:
     {Q_ASSERT(false);}
+    return QString();
     }
 }
 
