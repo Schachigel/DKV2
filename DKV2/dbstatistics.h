@@ -25,7 +25,7 @@ inline bool dcmp (QString s, double l, double r) {
 
 struct dataset
 {
-    dataset(QString n) {name =n;}
+    dataset(QString n) :name(n) {}
     QString name;
     // int nbrCreditors =0;
     QMap<int, int> credCount;

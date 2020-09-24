@@ -85,7 +85,7 @@ QString htmlOverviewTableBlock(QString headline, dbStats::dataset ds)
 {
     QString ret;
     ret += tableRow1(qsl("<b>") +headline +qsl("</b>"));
-    ret += tableRow2(qsl("Anzahl DK Geber*innen"), i2s(ds.nbrContracts));
+    ret += tableRow2(qsl("Anzahl DK Geber*innen"), i2s(ds.credCount.size()));
     ret += tableRow2(qsl("Anzahl Verträge  "),     i2s(ds.nbrContracts));
     ret += tableRow2(qsl("Gesamtwert "),           d2euro(ds.value)
         + qsl("<br><small>(Ø ") + d2euro(ds.value / ds.nbrContracts) + qsl(")</small>"));

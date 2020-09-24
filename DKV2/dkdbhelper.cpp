@@ -209,17 +209,17 @@ bool insert_views( QSqlDatabase db)
                                                "FROM Vertraege "
                                                "GROUP BY Year, Zinssatz ")},
 
-        {qsl("vAnzahl_aktiverKreditoren"),          qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_aktiv)")},
-        {qsl("vAnzahl_aktiverKreditoren_thesa"),    qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_aktiv WHERE thesa)")},
-        {qsl("vAnzahl_aktiverKreditoren_ausz"),qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_aktiv WHERE NOT thesa)")},
-
         {qsl("vAnzahl_allerKreditoren"),           qsl("SELECT COUNT(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM Vertraege)")},
         {qsl("vAnzahl_allerKreditoren_thesa"),     qsl("SELECT COUNT(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM Vertraege WHERE thesaurierend)")},
-        {qsl("vAnzahl_allerKreditoren_ausz"), qsl("SELECT COUNT(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM Vertraege WHERE NOT thesaurierend)")},
+        {qsl("vAnzahl_allerKreditoren_ausz"),      qsl("SELECT COUNT(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM Vertraege WHERE NOT thesaurierend)")},
+
+        {qsl("vAnzahl_aktiverKreditoren"),          qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_aktiv)")},
+        {qsl("vAnzahl_aktiverKreditoren_thesa"),    qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_aktiv WHERE thesa)")},
+        {qsl("vAnzahl_aktiverKreditoren_ausz"),     qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_aktiv WHERE NOT thesa)")},
 
         {qsl("vAnzahl_passiverKreditoren"),        qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_passiv)")},
-        {qsl("vAnzahl_passiverKreditoren_thesa"),        qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_passiv WHERE thesa)")},
-        {qsl("vAnzahl_passiverKreditoren_ausz"),        qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_passiv WHERE NOT thesa)")},
+        {qsl("vAnzahl_passiverKreditoren_thesa"),  qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_passiv WHERE thesa)")},
+        {qsl("vAnzahl_passiverKreditoren_ausz"),   qsl("SELECT count(*) AS Anzahl FROM (SELECT DISTINCT KreditorId FROM vVertraege_passiv WHERE NOT thesa)")},
 
     };
 

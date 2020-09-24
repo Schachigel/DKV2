@@ -3,6 +3,7 @@ release/
 test/
 data/
 out/
+.vs/
 *.db3
 *db3bak
 #created from qmake
