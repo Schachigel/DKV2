@@ -1,4 +1,6 @@
+#ifdef Q_OS_WIN
 #include <windows.h>
+#endif
 
 #include <QStringLiteral>
 #include <QLineEdit>
@@ -263,7 +265,11 @@ wizContractLableInfo_Page::wizContractLableInfo_Page(QWidget* p) : QWizardPage(p
 
 void wizContractLableInfo_Page::initializePage()
 {
+#ifdef Q_OS_WIN
     QRandomGenerator rand(::GetTickCount());
+#else
+    QRandomGenerator rand = *QRandomGenerator::system();
+#endif
     dbConfig c(dbConfig::FROM_RTD);
     setField(GMBH_PI, c.pi);
     int startindex = rand.bounded(1000, 9999);
