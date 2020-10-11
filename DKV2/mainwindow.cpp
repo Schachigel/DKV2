@@ -636,7 +636,7 @@ void MainWindow::on_action_menu_debug_show_log_triggered()
     #if defined(Q_OS_WIN)
     ::ShellExecuteA(nullptr, "open", logFilePath().toUtf8(), "", QDir::currentPath().toUtf8(), 1);
     #else
-    QString cmd = "open " + logFilePath().toUtf8();
+    QString cmd = QStringLiteral("open ") + logFilePath();
     system(cmd.toUtf8().constData());
     #endif
 }
