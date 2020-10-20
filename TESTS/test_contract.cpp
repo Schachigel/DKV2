@@ -306,7 +306,7 @@ void test_contract::test_contract_cv_wInterestPayout()
     QCOMPARE(cont.value(anydate), 1000.);
     QCOMPARE(cont.value(anydate.addMonths(1)), 1000.); // 1.6.2020
     QCOMPARE(cont.latestBooking().date, anydate);
-    QCOMPARE(cont.latestBooking().type, booking::deposit);
+    QCOMPARE(cont.latestBooking().type, booking::Type::deposit);
 
     cont.deposit(anydate.addMonths(6), 1000.); // 1.11.2020
     // deposit forces interest depoits, even for not reinvesting contracts
@@ -315,7 +315,7 @@ void test_contract::test_contract_cv_wInterestPayout()
     QCOMPARE(cont.value(anydate.addMonths(7)), 2005.); // 1.12.2020
     QCOMPARE(bookings::getBookings(cont.id()).count(), 3);
     QCOMPARE(cont.latestBooking().date, anydate.addMonths(6));
-    QCOMPARE(cont.latestBooking().type, booking::deposit);
+    QCOMPARE(cont.latestBooking().type, booking::Type::deposit);
 
     // payout forces settlement of 2021
     // bookint 4: interest deposit 1.11.2020 - 1.1.2021
@@ -328,14 +328,14 @@ void test_contract::test_contract_cv_wInterestPayout()
     QCOMPARE(cont.value(), 1911.68); // verified in excel
     QCOMPARE(bookings::getBookings(cont.id()).count(), 9);
     QCOMPARE(cont.latestBooking().date, anydate.addYears(2));
-    QCOMPARE(cont.latestBooking().type, booking::payout);
+    QCOMPARE(cont.latestBooking().type, booking::Type::payout);
 
     // perform settlement of year 2022, 1.1.2023
     cont.annualSettlement(2022);
     QCOMPARE(cont.value(), 1911.68); // no change due to payout
     QCOMPARE(bookings::getBookings(cont.id()).count(), 11);
     QCOMPARE(cont.latestBooking().date, QDate(2023, 1,1));
-    QCOMPARE(cont.latestBooking().type, booking::payout);
+    QCOMPARE(cont.latestBooking().type, booking::Type::payout);
     QCOMPARE(cont.latestBooking().amount, 12.74);
 }
 
@@ -353,7 +353,7 @@ void test_contract::test_contract_cv_reInvesting()
     QCOMPARE(cont.value(anydate), 1000.);
     QCOMPARE(cont.value(anydate.addMonths(1)), 1000.); // 1.6.2020
     QCOMPARE(cont.latestBooking().date, anydate);
-    QCOMPARE(cont.latestBooking().type, booking::deposit);
+    QCOMPARE(cont.latestBooking().type, booking::Type::deposit);
 
     cont.deposit(anydate.addMonths(6), 1000.); // 1.11.2020
     // deposit forces interest depoit
@@ -362,7 +362,7 @@ void test_contract::test_contract_cv_reInvesting()
     QCOMPARE(cont.value(anydate.addMonths(7)), 2005.); // 1.12.2020
     QCOMPARE(bookings::getBookings(cont.id()).count(), 3);
     QCOMPARE(cont.latestBooking().date, anydate.addMonths(6));
-    QCOMPARE(cont.latestBooking().type, booking::deposit);
+    QCOMPARE(cont.latestBooking().type, booking::Type::deposit);
 
     // payout forces settlement of 2021
     // bookint 4: interest deposit 1.11.2020 - 1.1.2021 (2005€, 1m -> 3.34€)
@@ -373,7 +373,7 @@ void test_contract::test_contract_cv_reInvesting()
     QCOMPARE(cont.value(), 1935.18); // verified in excel
     QCOMPARE(bookings::getBookings(cont.id()).count(), 7);
     QCOMPARE(cont.latestBooking().date, anydate.addYears(2));
-    QCOMPARE(cont.latestBooking().type, booking::payout);
+    QCOMPARE(cont.latestBooking().type, booking::Type::payout);
 
     // perform settlement of year 2022, 1.1.2023
     // 7Monate
@@ -382,7 +382,7 @@ void test_contract::test_contract_cv_reInvesting()
     QCOMPARE(cont.value(), 1948.08);
     QCOMPARE(bookings::getBookings(cont.id()).count(), 8);
     QCOMPARE(cont.latestBooking().date, QDate(2023, 1,1));
-    QCOMPARE(cont.latestBooking().type, booking::annualInterestDeposit);
+    QCOMPARE(cont.latestBooking().type, booking::Type::annualInterestDeposit);
     QCOMPARE(cont.latestBooking().amount, 12.90);
 }
 

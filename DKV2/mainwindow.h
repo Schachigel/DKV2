@@ -118,32 +118,34 @@ private slots:
 
     void on_actionAktuelle_Auswahl_triggered();
 
+    void on_actionTEST();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();
     void prepare_contracts_list_view();
     void prepare_startPage();
+    QVector<booking> toBePrinted;
+    void prepare_printPreview();
     bool useDb(const QString& dbfile);
     void showDbInStatusbar(QString filename = "");
 
-    qlonglong passNewCreditorIdToNewContract =-1;
     enum stackedWidgedsPageIndex
     {
         startPageIndex =0,
         creditorsListPageIndex =1,
         contractsListPageIndex =2,
         overviewsPageIndex=3,
+        printPreviewPageIndex=4
     };
-    QVector<QString> Uebersichten_kurz{
+    QVector<QString> Statistics_Filenames{
         qsl("Uebersicht"),
         qsl("Vertragsenden"),
         qsl("Zinsverteilungen"),
         qsl("Laufzeiten"),
         qsl("Gesamtübersicht")
     };
-    QString prepare_overview_page(Uebersichten u);
-    QMenu* menuSaveKreditorAnd;
-    QMenu* menuSaveContractAnd;
+    
 private:
     bool showDeletedContracts =false;
 };

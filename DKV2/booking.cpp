@@ -5,16 +5,16 @@
 
 /* static */ const dbtable& booking::getTableDef()
 {
-    static dbtable bookings(qsl("Buchungen"));
-    if( 0 == bookings.Fields().size()) {
-        bookings.append(dbfield(qsl("id"),          QVariant::LongLong).setPrimaryKey().setAutoInc());
-        bookings.append(dbfield(qsl("VertragsId"),  QVariant::LongLong).setDefault(0).setNotNull());
-        bookings.append(dbForeignKey(bookings[qsl("VertragsId")], dkdbstructur[qsl("Vertraege")][qsl("id")], qsl("ON DELETE RESTRICT")));
-        bookings.append(dbfield(qsl("Datum"),       QVariant::Date).setDefault(qsl("9999-12-31")).setNotNull());
-        bookings.append(dbfield(qsl("BuchungsArt"), QVariant::Int).setDefault(0).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
-        bookings.append(dbfield(qsl("Betrag"),      QVariant::Int).setDefault(0).setNotNull()); // in cent
+    static dbtable bookingsTable(qsl("Buchungen"));
+    if( 0 == bookingsTable.Fields().size()) {
+        bookingsTable.append(dbfield(qsl("id"),          QVariant::LongLong).setPrimaryKey().setAutoInc());
+        bookingsTable.append(dbfield(qsl("VertragsId"),  QVariant::LongLong).setDefault(0).setNotNull());
+        bookingsTable.append(dbForeignKey(bookingsTable[qsl("VertragsId")], dkdbstructur[qsl("Vertraege")][qsl("id")], qsl("ON DELETE RESTRICT")));
+        bookingsTable.append(dbfield(qsl("Datum"),       QVariant::Date).setDefault(qsl("9999-12-31")).setNotNull());
+        bookingsTable.append(dbfield(qsl("BuchungsArt"), QVariant::Int).setDefault(0).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
+        bookingsTable.append(dbfield(qsl("Betrag"),      QVariant::Int).setDefault(0).setNotNull()); // in cent
     }
-    return bookings;
+    return bookingsTable;
 }
 /* static */ const dbtable& booking::getTableDef_deletedBookings()
 {
@@ -63,7 +63,7 @@
 {   LOG_CALL_W(typeName(t));
     TableDataInserter tdi(booking::getTableDef());
     tdi.setValue(qsl("VertragsId"), contractId);
-    tdi.setValue(qsl("BuchungsArt"), t);
+    tdi.setValue(qsl("BuchungsArt"), static_cast<int>(t));
     tdi.setValue(qsl("Betrag"), ctFromEuro(amount));
     tdi.setValue(qsl("Datum"), date);
     if( tdi.InsertData()) {
@@ -100,6 +100,19 @@
 {   LOG_CALL;
     return  executeSingleValueSql(qsl("date"), qsl("NextAnnualSettlement")).toDate();
 }
+/*static */ QVector<booking> bookings::bookingsFromSql(QString where, QString order)
+{
+    QVector<QSqlRecord> records = executeSql(booking::getTableDef().Fields(), where, order);
+    QVector<booking> vRet;
+    for (auto& rec : qAsConst(records)) {
+        booking::Type t = booking::Type(rec.value(qsl("BuchungsArt")).toInt());
+        QDate d = rec.value(qsl("Datum")).toDate();
+        double amount = euroFromCt(rec.value(qsl("Betrag")).toInt());
+        vRet.push_back(booking(t, d, amount));
+    }
+    return vRet;
+}
+
 /* static */ QVector<booking> bookings::getBookings(qlonglong cid, QDate from, QDate to)
 {   LOG_CALL;
     // used in tests
@@ -107,13 +120,21 @@
                   "AND Buchungen.Datum >='%2' "
                   "AND Buchungen.Datum <='%3'");
     where = where.arg(QString::number(cid), from.toString(Qt::ISODate), to.toString(Qt::ISODate));
-    QVector<QSqlRecord> records = executeSql(booking::getTableDef().Fields(), where, qsl("Datum DESC"));
-    QVector<booking> vRet;
-    for( auto& rec: qAsConst(records)) {
-        booking::Type t = booking::Type(rec.value(qsl("BuchungsArt")).toInt());
-        QDate d = rec.value(qsl("Datum")).toDate();
-        double amount = euroFromCt(rec.value(qsl("Betrag")).toInt());
-        vRet.push_back(booking(t, d, amount));
-    }
-    return vRet;
+
+    return bookingsFromSql(where, qsl("Datum DESC"));
+    //QVector<QSqlRecord> records = executeSql(booking::getTableDef().Fields(), where, qsl("Datum DESC"));
+    //QVector<booking> vRet;
+    //for( auto& rec: qAsConst(records)) {
+    //    booking::Type t = booking::Type(rec.value(qsl("BuchungsArt")).toInt());
+    //    QDate d = rec.value(qsl("Datum")).toDate();
+    //    double amount = euroFromCt(rec.value(qsl("Betrag")).toInt());
+    //    vRet.push_back(booking(t, d, amount));
+    //}
+    //return vRet;
+}
+/* static */ QVector<booking> bookings::getAnnualSettelments(int year)
+{   LOG_CALL;
+    QString where = qsl("Buchungen.BuchungsArt = %1 AND Buchungen.Datum = %2");
+    where = where.arg(QString::number(static_cast<int>(booking::Type::annualInterestDeposit)), QDate(year + 1, 1, 1).toString(Qt::ISODate));
+    return bookingsFromSql(where);
 }

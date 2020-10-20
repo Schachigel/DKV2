@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1075</width>
-    <height>810</height>
+    <width>1154</width>
+    <height>865</height>
    </rect>
   </property>
   <property name="font">
@@ -24,7 +24,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -182,14 +182,14 @@ p, li { white-space: pre-wrap; }
           <item>
            <widget class="QPushButton" name="btnPrint">
             <property name="text">
-             <string>PushButton</string>
+             <string>als PDF speichern</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="btnPrintAll">
             <property name="text">
-             <string>PushButton</string>
+             <string>alle als PDF speichern</string>
             </property>
            </widget>
           </item>
@@ -203,7 +203,57 @@ p, li { white-space: pre-wrap; }
           <widget class="QWidget" name="layoutWidget">
            <layout class="QVBoxLayout" name="vLayout_splitterLeft">
             <item>
-             <layout class="QHBoxLayout" name="hlayout_FontInfo" stretch="4,1,1">
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QPushButton" name="btnPrev">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>1</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>&lt;</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="lblLetter">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>6</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>DK Brief an DK Geber</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btnNext">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>1</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>&gt;</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="hlayout_FontInfo" stretch="0,4,1,1">
+              <item>
+               <widget class="QLabel" name="lblFont">
+                <property name="text">
+                 <string>Schriftart</string>
+                </property>
+               </widget>
+              </item>
               <item>
                <widget class="QFontComboBox" name="fontComboBox"/>
               </item>
@@ -298,7 +348,7 @@ p, li { white-space: pre-wrap; }
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="wPreview" native="true">
+          <widget class="QPrintPreviewWidget" name="wPreview" native="true">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
              <horstretch>2</horstretch>
@@ -326,7 +376,7 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1075</width>
+     <width>1154</width>
      <height>29</height>
     </rect>
    </property>
@@ -388,6 +438,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="action_menu_debug_show_log"/>
     <addaction name="action_about_DKV2"/>
     <addaction name="actionDatenbank_Views_schreiben"/>
+    <addaction name="actionTEST"/>
    </widget>
    <addaction name="menu_database"/>
    <addaction name="manu_creditors"/>
@@ -610,8 +661,21 @@ p, li { white-space: pre-wrap; }
     <string>Vertragstabelle (gefiltert)</string>
    </property>
   </action>
+  <action name="actionTEST">
+   <property name="text">
+    <string>TEST</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>QPrintPreviewWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">qprintpreviewwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>le_CreditorsFilter</tabstop>
   <tabstop>btn_reset_filter_creditors</tabstop>

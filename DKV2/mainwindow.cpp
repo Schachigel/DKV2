@@ -589,7 +589,7 @@ void MainWindow::on_pbPrint_clicked()
 {   LOG_CALL;
     QString filename = appConfig::Outdir();
     filename += qsl("\\") + QDate::currentDate().toString("yyyy-MM-dd_");
-    filename += Uebersichten_kurz[ui->comboUebersicht->currentIndex()];
+    filename += Statistics_Filenames[ui->comboUebersicht->currentIndex()];
     filename += qsl(".pdf");
     QPdfWriter write(filename);
     ui->txtOverview->print(&write);
@@ -658,3 +658,13 @@ void MainWindow::on_action_about_DKV2_triggered()
     QMessageBox::information(this, qsl("I n f o"), msg);
 }
 
+void MainWindow::prepare_printPreview()
+{
+}
+
+void MainWindow::on_actionTEST()
+{
+    // input nec. to display the dialog: a Vector of bookings
+    toBePrinted.clear();
+    toBePrinted = bookings::getAnnualSettelments(2020);
+}
