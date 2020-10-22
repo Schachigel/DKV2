@@ -20,7 +20,7 @@ QDate date =EndOfTheFuckingWorld;
 double amount =0.;
 qlonglong contractId =-1;
     // construction
-    booking(booking::Type t = Type::non, QDate d =EndOfTheFuckingWorld, double a =0.) : type(t), date(d), amount(a) {};
+    booking(qlonglong cId, booking::Type t = Type::non, QDate d =EndOfTheFuckingWorld, double a =0.) : contractId(cId), type(t), date(d), amount(a) {};
 
     // statics
     static const dbtable& getTableDef();

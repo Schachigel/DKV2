@@ -75,7 +75,7 @@ struct contract
 private:
     // data
     TableDataInserter td;
-    booking latest;
+    booking latest{ -1 };
     // helper
     bool bookInterest(QDate d);
     bool storeTerminationDate(QDate d) const;

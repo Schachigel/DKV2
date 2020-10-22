@@ -118,15 +118,18 @@ private slots:
 
     void on_actionAktuelle_Auswahl_triggered();
 
-    void on_actionTEST();
+    void on_actionTEST_triggered();
 
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();
     void prepare_contracts_list_view();
     void prepare_startPage();
-    QVector<booking> toBePrinted;
+
     void prepare_printPreview();
+    QVector<booking> toBePrinted;
+    QVector<booking>::iterator currentBooking;
+    
     bool useDb(const QString& dbfile);
     void showDbInStatusbar(QString filename = "");
 

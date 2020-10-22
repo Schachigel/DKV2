@@ -51,6 +51,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->bookingsTableView->setItemDelegateForColumn(2, new bookingTypeFormatter);
 
+    ui->fontComboBox->setEditable(false);
+    ui->fontComboBox->setWritingSystem(QFontDatabase::Latin);
+    ui->fontComboBox->setFontFilters(QFontComboBox::ScalableFonts | QFontComboBox::ProportionalFonts);
+    ui->spinFontSize->setMinimum(8);
+    ui->spinFontSize->setMaximum(12);
+
+
     ui->stackedWidget->setCurrentIndex(startPageIndex);
 }
 MainWindow::~MainWindow()
@@ -103,6 +110,9 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
         ui->action_menu_creditors_delete->setEnabled(false);
         ui->menu_contracts_subm_print_lists->setEnabled(false);
         break;
+    case printPreviewPageIndex:
+        ui->action_menu_creditors_delete->setEnabled(false);
+        ui->menu_contracts_subm_print_lists->setEnabled(false);
     default:
         qWarning() << "stackedWidget current change not implemented for this index";
     }// e.o. switch
@@ -658,13 +668,40 @@ void MainWindow::on_action_about_DKV2_triggered()
     QMessageBox::information(this, qsl("I n f o"), msg);
 }
 
-void MainWindow::prepare_printPreview()
+void MainWindow::on_actionTEST_triggered()
 {
-}
-
-void MainWindow::on_actionTEST()
-{
+    LOG_CALL;
     // input nec. to display the dialog: a Vector of bookings
     toBePrinted.clear();
-    toBePrinted = bookings::getAnnualSettelments(2020);
+    toBePrinted = bookings::getAnnualSettelments(2019);
+    if (!toBePrinted.size()) {
+        qWarning() << "nothing to be printed";
+        return;
+    }
+    currentBooking = toBePrinted.begin();
+    
+    prepare_printPreview();
 }
+
+QString buildLetterInfo(booking b)
+{
+    QString txt = qsl("<small>%1, %2<br>%3<br>%4</small>");
+    contract cont(b.contractId);
+    creditor cred(cont.creditorId());
+
+    txt = txt.arg(cred.lastname(), cred.firstname(), cont.label(), booking::displayString(b.type));
+    return txt;
+}
+
+void MainWindow::prepare_printPreview()
+{
+    ui->btnPrevBooking->setEnabled(currentBooking != toBePrinted.begin());
+    ui->btnNextBooking->setEnabled(currentBooking != toBePrinted.end());
+
+    ui->lblLetter->setText (buildLetterInfo(*currentBooking));
+
+    QFont f(qsl("verdana"));
+    ui->fontComboBox->setCurrentFont(f);
+    ui->stackedWidget->setCurrentIndex(printPreviewPageIndex);
+}
+

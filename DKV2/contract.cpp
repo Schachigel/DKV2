@@ -185,7 +185,7 @@ bool contract::activate(const QDate &actDate, double amount)
         qCritical() << error;
         return false;
     }
-    latest = {booking::Type::deposit, actDate, amount};
+    latest = {id(), booking::Type::deposit, actDate, amount};
     aDate = actDate;
     activated = active;
     qInfo() << "Successfully activated contract " << id() << "[" << actDate << ", " << amount
@@ -226,11 +226,11 @@ int contract::annualSettlement( int year, bool transactual)
                      //////////
         if( reinvesting()) {
             if( (bookingSuccess =booking::bookAnnualInterestDeposit(id(), newYearAfterLastBooking, zins)))
-                latest ={booking::Type::annualInterestDeposit, newYearAfterLastBooking, zins};
+                latest = { id(),  booking::Type::annualInterestDeposit, newYearAfterLastBooking, zins };
         } else {
             bookingSuccess =booking::bookAnnualInterestDeposit(id(), newYearAfterLastBooking, zins);
             bookingSuccess &= booking::bookPayout(id(), newYearAfterLastBooking, zins);
-            latest ={booking::Type::payout, newYearAfterLastBooking, zins};
+            latest = { id(), booking::Type::payout, newYearAfterLastBooking, zins };
         }
         if( bookingSuccess) {
             qInfo() << "Successfull annual settlement: contract id " << id() << ": " << newYearAfterLastBooking << " Zins: " << zins;
@@ -272,7 +272,7 @@ bool contract::bookInterest(QDate nextBookingDate)
                    //////////
     // only annualSettlements can be payed out
     if( booking::bookReInvestInterest(id(), nextBookingDate, zins)) {
-        latest = { booking::Type::reInvestInterest, nextBookingDate, zins};
+        latest = {id(), booking::Type::reInvestInterest, nextBookingDate, zins};
         return true;
     }
 
@@ -305,7 +305,7 @@ bool contract::deposit(QDate d, double amount)
         return false;
     }
     QSqlDatabase::database().commit();
-    latest ={booking::Type::deposit, d, amount};
+    latest = { id(),  booking::Type::deposit, d, amount };
     return true;
 }
 bool contract::payout(QDate d, double amount)
@@ -330,7 +330,7 @@ bool contract::payout(QDate d, double amount)
     }
     if( booking::bookPayout(id(), d, amount)) {
         QSqlDatabase::database().commit();
-        latest ={booking::Type::payout, d, amount};
+        latest ={id(), booking::Type::payout, d, amount};
         return true;
     }
     QSqlDatabase::database().rollback();
@@ -380,9 +380,9 @@ bool contract::finalize(bool simulate, const QDate finDate,
     bool allGood =false;
     do {
         if( ! booking::bookReInvestInterest(id(), finDate, finInterest)) break;
-        latest ={booking::Type::reInvestInterest, finDate, finInterest};
+        latest = { id(), booking::Type::reInvestInterest, finDate, finInterest };
         if( ! booking::bookPayout(id(), finDate, finPayout)) break;
-        latest ={booking::Type::payout, finDate, finPayout};
+        latest = { id(), booking::Type::payout, finDate, finPayout };
         if( value() != 0.) break;
         if( ! storeTerminationDate(finDate)) break;
         if( ! archive()) break;

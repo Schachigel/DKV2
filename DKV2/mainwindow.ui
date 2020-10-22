@@ -24,7 +24,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -193,6 +193,13 @@ p, li { white-space: pre-wrap; }
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="btnUpdatePreview">
+            <property name="text">
+             <string>Ansicht aktualisieren</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item>
@@ -205,9 +212,9 @@ p, li { white-space: pre-wrap; }
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
               <item>
-               <widget class="QPushButton" name="btnPrev">
+               <widget class="QPushButton" name="btnPrevBooking">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>1</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
@@ -220,8 +227,8 @@ p, li { white-space: pre-wrap; }
               <item>
                <widget class="QLabel" name="lblLetter">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                  <horstretch>6</horstretch>
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                  <horstretch>10</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
@@ -231,9 +238,9 @@ p, li { white-space: pre-wrap; }
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="btnNext">
+               <widget class="QPushButton" name="btnNextBooking">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>1</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>

@@ -105,10 +105,11 @@
     QVector<QSqlRecord> records = executeSql(booking::getTableDef().Fields(), where, order);
     QVector<booking> vRet;
     for (auto& rec : qAsConst(records)) {
+        qlonglong cid = rec.value(qsl("VertragsId")).toLongLong();
         booking::Type t = booking::Type(rec.value(qsl("BuchungsArt")).toInt());
         QDate d = rec.value(qsl("Datum")).toDate();
         double amount = euroFromCt(rec.value(qsl("Betrag")).toInt());
-        vRet.push_back(booking(t, d, amount));
+        vRet.push_back(booking(cid, t, d, amount));
     }
     return vRet;
 }
@@ -134,7 +135,7 @@
 }
 /* static */ QVector<booking> bookings::getAnnualSettelments(int year)
 {   LOG_CALL;
-    QString where = qsl("Buchungen.BuchungsArt = %1 AND Buchungen.Datum = %2");
+    QString where = qsl("Buchungen.BuchungsArt = %1 AND Buchungen.Datum = '%2'");
     where = where.arg(QString::number(static_cast<int>(booking::Type::annualInterestDeposit)), QDate(year + 1, 1, 1).toString(Qt::ISODate));
     return bookingsFromSql(where);
 }
