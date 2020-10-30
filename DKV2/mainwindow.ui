@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1154</width>
-    <height>865</height>
+    <width>1128</width>
+    <height>907</height>
    </rect>
   </property>
   <property name="font">
@@ -180,6 +180,13 @@ p, li { white-space: pre-wrap; }
         <item>
          <layout class="QHBoxLayout" name="hlayout_topButtons">
           <item>
+           <widget class="QPushButton" name="btnUpdatePreview">
+            <property name="text">
+             <string>Ansicht aktualisieren</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="btnPrint">
             <property name="text">
              <string>als PDF speichern</string>
@@ -190,13 +197,6 @@ p, li { white-space: pre-wrap; }
            <widget class="QPushButton" name="btnPrintAll">
             <property name="text">
              <string>alle als PDF speichern</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnUpdatePreview">
-            <property name="text">
-             <string>Ansicht aktualisieren</string>
             </property>
            </widget>
           </item>
@@ -231,6 +231,9 @@ p, li { white-space: pre-wrap; }
                   <horstretch>10</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">background-color:powderblue;</string>
                 </property>
                 <property name="text">
                  <string>DK Brief an DK Geber</string>
@@ -300,6 +303,12 @@ p, li { white-space: pre-wrap; }
                 <verstretch>1</verstretch>
                </sizepolicy>
               </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>50</height>
+               </size>
+              </property>
              </widget>
             </item>
             <item>
@@ -314,7 +323,7 @@ p, li { white-space: pre-wrap; }
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                 <horstretch>0</horstretch>
-                <verstretch>3</verstretch>
+                <verstretch>4</verstretch>
                </sizepolicy>
               </property>
              </widget>
@@ -331,7 +340,7 @@ p, li { white-space: pre-wrap; }
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                 <horstretch>0</horstretch>
-                <verstretch>3</verstretch>
+                <verstretch>4</verstretch>
                </sizepolicy>
               </property>
              </widget>
@@ -346,10 +355,22 @@ p, li { white-space: pre-wrap; }
             <item>
              <widget class="QPlainTextEdit" name="txtGruss">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
                 <horstretch>0</horstretch>
-                <verstretch>1</verstretch>
+                <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>50</height>
+               </size>
               </property>
              </widget>
             </item>
@@ -383,7 +404,7 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1154</width>
+     <width>1128</width>
      <height>29</height>
     </rect>
    </property>

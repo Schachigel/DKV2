@@ -7,6 +7,8 @@
 #include <QSplashScreen>
 #include <QSqlQueryModel>
 #include <QMainWindow>
+#include <QPrinter>
+
 #include "reporthtml.h"
 #include <dkdbhelper.h>
 #include "contract.h"
@@ -120,6 +122,11 @@ private slots:
 
     void on_actionTEST_triggered();
 
+    void on_btnNextBooking_clicked();
+    void on_btnPrevBooking_clicked();
+    void on_btnUpdatePreview_clicked();
+    void doPaint(QPrinter*);
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();
@@ -128,7 +135,7 @@ private:
 
     void prepare_printPreview();
     QVector<booking> toBePrinted;
-    QVector<booking>::iterator currentBooking;
+    QVector<booking>::const_iterator currentBooking;
     
     bool useDb(const QString& dbfile);
     void showDbInStatusbar(QString filename = "");

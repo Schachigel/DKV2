@@ -12,6 +12,7 @@
 #include <QSortFilterProxyModel>
 #include <QSqlRelationalTableModel>
 #include <QPdfWriter>
+#include <QPainter>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -55,8 +56,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->fontComboBox->setWritingSystem(QFontDatabase::Latin);
     ui->fontComboBox->setFontFilters(QFontComboBox::ScalableFonts | QFontComboBox::ProportionalFonts);
     ui->spinFontSize->setMinimum(8);
-    ui->spinFontSize->setMaximum(12);
-
+    ui->spinFontSize->setMaximum(11);
+    connect(ui->wPreview, SIGNAL(paintRequested(QPrinter*)), SLOT(doPaint(QPrinter*)));
 
     ui->stackedWidget->setCurrentIndex(startPageIndex);
 }
@@ -681,27 +682,70 @@ void MainWindow::on_actionTEST_triggered()
     currentBooking = toBePrinted.begin();
     
     prepare_printPreview();
+    ui->stackedWidget->setCurrentIndex(printPreviewPageIndex);
 }
-
-QString buildLetterInfo(booking b)
+/////////////////////////////////////////////////
+//              PRINTING wprev.                //
+/////////////////////////////////////////////////
+QString letterName(booking b)
 {
-    QString txt = qsl("<small>%1, %2<br>%3<br>%4</small>");
+    QString txt = qsl("<table width=100%><tr><td align=center style='padding-top:5px;padding-bottom:5px;'>%1, %2; %3<br><b>%4</b></td></tr></table>");
     contract cont(b.contractId);
     creditor cred(cont.creditorId());
+    QString lettertype = booking::displayString(b.type) +qsl(" ");
+    lettertype += (b.type == booking::Type::annualInterestDeposit) ? QString::number(b.date.year() - 1) : b.date.toString();
 
-    txt = txt.arg(cred.lastname(), cred.firstname(), cont.label(), booking::displayString(b.type));
+    txt = txt.arg(cred.lastname(), cred.firstname(), cont.label(), lettertype);
     return txt;
 }
 
 void MainWindow::prepare_printPreview()
 {
-    ui->btnPrevBooking->setEnabled(currentBooking != toBePrinted.begin());
-    ui->btnNextBooking->setEnabled(currentBooking != toBePrinted.end());
+    LOG_CALL;
+    ui->btnPrevBooking->setEnabled(currentBooking != toBePrinted.cbegin());
+    ui->btnNextBooking->setEnabled((currentBooking +1) != toBePrinted.cend());
 
-    ui->lblLetter->setText (buildLetterInfo(*currentBooking));
+    ui->lblLetter->setText (letterName(*currentBooking));
 
-    QFont f(qsl("verdana"));
+    QFont f(qsl("Verdana"));
     ui->fontComboBox->setCurrentFont(f);
-    ui->stackedWidget->setCurrentIndex(printPreviewPageIndex);
+    ui->spinFontSize->setValue(10);
 }
 
+void MainWindow::on_btnNextBooking_clicked()
+{
+    LOG_CALL;
+    if ((currentBooking+1) == toBePrinted.end())
+        return;
+    else
+        currentBooking = currentBooking +1;
+    prepare_printPreview();
+}
+
+void MainWindow::on_btnPrevBooking_clicked()
+{
+    LOG_CALL;
+    if (currentBooking == toBePrinted.begin())
+        return;
+    else
+        currentBooking = currentBooking -1;
+    prepare_printPreview();
+}
+
+void MainWindow::on_btnUpdatePreview_clicked()
+{
+    ui->wPreview->updatePreview();
+}
+
+void MainWindow::doPaint(QPrinter* pri)
+{
+    QPainter p(dynamic_cast<QPaintDevice*>(pri));
+    p.drawText(QPoint(100, 100), "Hallo World");
+
+    // Logo
+    // Adresse
+    // Datum
+    // Anrede
+    // Fußzeile
+    // text(e)
+}

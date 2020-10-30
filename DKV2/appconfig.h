@@ -8,7 +8,7 @@
 #include <QSqlDatabase>
 
 #define DB_VERSION    qsl("Version")
-#define CURRENT_DB_VERSION 2.0
+#define CURRENT_DB_VERSION 2.5
 #define GMBH_ADDRESS1 qsl("gmbh.address1")
 #define GMBH_ADDRESS2 qsl("gmbh.address2")
 #define GMBH_STREET   qsl("gmbh.strasse")

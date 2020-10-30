@@ -11,6 +11,7 @@
 #include "creditor.h"
 #include "contract.h"
 #include "booking.h"
+#include "letterTemplate.h"
 #include "dbstructure.h"
 
 class dbCloser
@@ -44,15 +45,8 @@ void init_DKDBStruct()
     meta.append(dbfield("Wert", QVariant::String).setNotNull());
     dkdbstructur.appendTable(meta);
 
-    dbtable letters("Briefvorlagen");
-    letters.append(dbfield("templateId",    QVariant::Int).setNotNull());
-    letters.append(dbfield("EigenschaftId", QVariant::Int).setNotNull());
-    letters.append(dbfield("Wert",          QVariant::String).setNotNull());
-    QVector<dbfield> uniqueLetterFields;
-    uniqueLetterFields.append(letters["templateId"]);
-    uniqueLetterFields.append(letters["EigenschaftId"]);
-    letters.setUnique(uniqueLetterFields);
-    dkdbstructur.appendTable(letters);
+    dkdbstructur.appendTable(letterTemplate::getTabelDef_sections());
+    dkdbstructur.appendTable(letterTemplate::getTableDef());
 
     done = true;
 }
@@ -82,11 +76,33 @@ bool create_DK_databaseFile(const QString& filename) /*in the default connection
 }
 // initial database tables and content
 void insert_DbProperties(QSqlDatabase db = QSqlDatabase::database())
-{   LOG_CALL;
+{
+    LOG_CALL;
     dbConfig c(dbConfig::FROM_RTD); // get configuration defaults
     c.writeDb(db);
 }
+bool create_DK_TablesAndContent(QSqlDatabase db)
+{
+    LOG_CALL;
+    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
+    bool ret = false;
+    db.transaction();
+    do {
+        if (!dkdbstructur.createDb(db)) break;
+        if (!insert_views(db)) break;
+        insert_DbProperties(db);
+        if (!letterTemplate::insert_sections(db)) break;
+        if (!letterTemplate::insert_letters(db)) break;
+        ret = true;
+    } while (false);
+    if (ret)
+        db.commit();
+    else
+        db.rollback();
+    return ret ? isValidDatabase(db) : false;
+}
 
+// create db views
 struct dbViewDev{
     QString name;
     QString sql;
@@ -242,19 +258,6 @@ bool insert_views( QSqlDatabase db)
     views.append({qsl("vStat_passiverVertraege_ausz"), sql_precalc.arg(qsl("vVertraege_passiv"), qsl("WHERE NOT thesa"))});
 
     return createViews(views, db);
-}
-bool create_DK_TablesAndContent(QSqlDatabase db)
-{   LOG_CALL;
-    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
-
-    db.transaction();
-    if( ! (dkdbstructur.createDb(db) && insert_views(db))) {
-        db.rollback();
-        return false;
-    }
-    insert_DbProperties(db);
-    db.commit();
-    return isValidDatabase(db);
 }
 
 // database validation

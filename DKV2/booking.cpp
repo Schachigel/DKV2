@@ -109,6 +109,7 @@
         booking::Type t = booking::Type(rec.value(qsl("BuchungsArt")).toInt());
         QDate d = rec.value(qsl("Datum")).toDate();
         double amount = euroFromCt(rec.value(qsl("Betrag")).toInt());
+        qInfo() << "Buchung: cid=" << cid << "; type=" << booking::displayString(t) << "; Datum=" << d.toString() << "; Betrag=" << amount;
         vRet.push_back(booking(cid, t, d, amount));
     }
     return vRet;
