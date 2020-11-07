@@ -77,12 +77,28 @@ void test_contract::test_randomContracts()
 
 void test_contract::test_write_read_contract()
 {   LOG_CALL;
-    creditor c(saveRandomCreditor());
-    contract cont_write(saveRandomContract(c.id()));
-    contract cont_loaded(cont_write.id());
-    QCOMPARE(cont_write, cont_loaded);
-    cont_loaded.setReinvesting( ! cont_loaded.reinvesting());
-    QVERIFY(cont_write != cont_loaded);
+    for( int i=0; i<100; i++) {
+        creditor c(saveRandomCreditor());
+        contract cont_write(saveRandomContract(c.id()));
+        contract cont_read(cont_write.id());
+        QCOMPARE(cont_write, cont_read);
+        cont_read.setReinvesting( ! cont_read.reinvesting());
+        QVERIFY(cont_write != cont_read);
+    }
+}
+
+void test_contract::test_get_set_interest()
+{
+    for (int i=0; i<100; i++) {
+        creditor c(saveRandomCreditor());
+        contract cont(saveRandomContract(c.id()));
+
+        const double expected =cont.interestRate();
+        for (int i=0; i<10; i++) {
+            cont.setInterestRate(cont.interestRate());
+            QCOMPARE(cont.interestRate(), expected);
+        }
+    }
 }
 
 void test_contract::deposit_inactive_contract_fails()

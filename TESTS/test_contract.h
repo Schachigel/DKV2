@@ -27,6 +27,7 @@ private slots:
     void test_randomContract();
     void test_randomContracts();
     void test_write_read_contract();
+    void test_get_set_interest();
     void deposit_inactive_contract_fails();
     void too_high_payout_fails();
     void unsequenced_bookings_fail();

@@ -39,8 +39,11 @@ struct contract
     qlonglong creditorId() const{ return td.getValue(qsl("KreditorId")).toLongLong();}
     void setLabel(QString l) { td.setValue(qsl("Kennung"), l);}
     QString label() const { return td.getValue(qsl("Kennung")).toString();};
-    void setInterestRate( double percent) {td.setValue(qsl("ZSatz"), QVariant(int(percent*100.)));}
-    double interestRate() const { return double(td.getValue(qsl("ZSatz")).toInt())/100.;}
+    void setInterestRate( double percent) { td.setValue(qsl("ZSatz"), QVariant (qRound(percent * 100.))); }
+    double interestRate() const {
+        QVariant p(td.getValue(qsl("ZSatz"))); // stored as a int (100th percent)
+        return r2(double(p.toInt())/100.);
+    }
     void setPlannedInvest(double d) { td.setValue(qsl("Betrag"), ctFromEuro(d));}
     double plannedInvest() const { return euroFromCt( td.getValue(qsl("Betrag")).toInt());}
     void setReinvesting( bool b =true) { td.setValue(qsl("thesaurierend"), b);}
@@ -89,6 +92,6 @@ private:
 // test helper
 contract saveRandomContract(qlonglong creditorId);
 void saveRandomContracts(int count);
-void activateRandomContracts(int percent);
+QDate activateRandomContracts(int percent);
 
 #endif // VERTRAG_H

@@ -10,24 +10,24 @@
 // statics & friends
 const dbtable& contract::getTableDef()
 {
-	static dbtable contractTable(qsl("Vertraege"));
-	if (0 == contractTable.Fields().size())
-	{
-		contractTable.append(dbfield(qsl("id"), QVariant::LongLong).setPrimaryKey().setAutoInc());
-		contractTable.append(dbfield(qsl("KreditorId"), QVariant::LongLong).setNotNull());
-		contractTable.append(dbForeignKey(contractTable[qsl("KreditorId")],
-			dkdbstructur[qsl("Kreditoren")][qsl("id")], qsl("ON DELETE CASCADE")));
-		// deleting a creditor will delete inactive contracts but not
-		// contracts with existing bookings (=active or terminated contracts)
-		contractTable.append(dbfield(qsl("Kennung"), QVariant::String, qsl("UNIQUE")));
-		contractTable.append(dbfield(qsl("ZSatz"), QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
-		contractTable.append(dbfield(qsl("Betrag"), QVariant::Int).setNotNull().setDefault(0)); // ct
-		contractTable.append(dbfield(qsl("thesaurierend"), QVariant::Bool).setNotNull().setDefault(1));
-		contractTable.append(dbfield(qsl("Vertragsdatum"), QVariant::Date).setNotNull());
-		contractTable.append(dbfield(qsl("Kfrist"), QVariant::Int).setNotNull().setDefault(6));
-		contractTable.append(dbfield(qsl("LaufzeitEnde"), QVariant::Date).setNotNull().setDefault(qsl("9999-12-31")));
-	}
-	return contractTable;
+    static dbtable contractTable(qsl("Vertraege"));
+    if (0 == contractTable.Fields().size())
+    {
+        contractTable.append(dbfield(qsl("id"), QVariant::LongLong).setPrimaryKey().setAutoInc());
+        contractTable.append(dbfield(qsl("KreditorId"), QVariant::LongLong).setNotNull());
+        contractTable.append(dbForeignKey(contractTable[qsl("KreditorId")],
+            dkdbstructur[qsl("Kreditoren")][qsl("id")], qsl("ON DELETE CASCADE")));
+        // deleting a creditor will delete inactive contracts but not
+        // contracts with existing bookings (=active or terminated contracts)
+        contractTable.append(dbfield(qsl("Kennung"), QVariant::String, qsl("UNIQUE")));
+        contractTable.append(dbfield(qsl("ZSatz"), QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
+        contractTable.append(dbfield(qsl("Betrag"), QVariant::Int).setNotNull().setDefault(0)); // ct
+        contractTable.append(dbfield(qsl("thesaurierend"), QVariant::Bool).setNotNull().setDefault(1));
+        contractTable.append(dbfield(qsl("Vertragsdatum"), QVariant::Date).setNotNull());
+        contractTable.append(dbfield(qsl("Kfrist"), QVariant::Int).setNotNull().setDefault(6));
+        contractTable.append(dbfield(qsl("LaufzeitEnde"), QVariant::Date).setNotNull().setDefault(qsl("9999-12-31")));
+    }
+    return contractTable;
 }
 const dbtable& contract::getTableDef_deletedContracts()
 {
@@ -66,20 +66,22 @@ QString contract::booking_csv_header()
 void contract::init()
 {
     setId(-1);
-    //setPlannedEndDate(EndOfTheFuckingWorld);
+    setCreditorId(-1);
     setNoticePeriod(6);
+    //setPlannedEndDate(EndOfTheFuckingWorld); - implicit
     setReinvesting(true);
     setConclusionDate(QDate::currentDate());
     setInterestRate(1.50);
     setPlannedInvest(1000000);
 }
 void contract::initRandom(qlonglong creditorId)
-{
+{   //LOG_CALL_W(QString::number(creditorId));
+
     static QRandomGenerator *rand = QRandomGenerator::system();
     setLabel(proposeContractLabel());
     setCreditorId(creditorId);
-    setReinvesting(rand->bounded(100)%6);// 16% auszahlend
-    setInterestRate((1 +rand->bounded(149)) /100.);
+    setReinvesting(0 != rand->bounded(100)%5);// 20% auszahlend
+    setInterestRate(1 +rand->bounded(149) /100.);
     setPlannedInvest(    rand->bounded(50)*1000.
                        + rand->bounded(1,3) *500.
                        + rand->bounded(10) *100);
@@ -89,6 +91,7 @@ void contract::initRandom(qlonglong creditorId)
         setNoticePeriod(3 + rand->bounded(21));
     else
         setPlannedEndDate(conclusionDate().addYears(rand->bounded(3)).addMonths(rand->bounded(12)));
+//    qDebug() << toString();
 }
 contract::contract(qlonglong i) : td(getTableDef())
 {
@@ -130,16 +133,7 @@ booking contract::latestBooking()
 // write to db
 int  contract::saveNewContract()
 {   LOG_CALL;
-    TableDataInserter ti(dkdbstructur[qsl("Vertraege")]);
-    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("KreditorId")].name(), creditorId());
-    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("Kennung")].name(), label());
-    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("Betrag")].name(), ctFromEuro(plannedInvest()));
-    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("ZSatz")].name(), int(interestRate()*100.));
-    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("thesaurierend")].name(), reinvesting());
-    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("Vertragsdatum")].name(), conclusionDate());
-    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("LaufzeitEnde")].name(), plannedEndDate().isValid() ? plannedEndDate() : EndOfTheFuckingWorld);
-    ti.setValue(dkdbstructur[qsl("Vertraege")][qsl("Kfrist")].name(), noticePeriod());
-    int lastid =ti.InsertData();
+    int lastid =td.InsertData();
     if( lastid >= 0) {
         setId(lastid);
         qDebug() << "Neuer Vertrag wurde eingefügt mit id:" << lastid;
@@ -148,23 +142,6 @@ int  contract::saveNewContract()
     qCritical() << "Fehler beim Einfügen eines neuen Vertrags";
     return -1;
 }
-//int contract::validateAndSaveNewContract(QString& msg)
-//{   LOG_CALL;
-//    msg.clear();
-//    if( plannedInvest() <=0)
-//        msg = qsl("Der Kreditbetrag muss größer als null sein");
-//    else if( creditorId() <= 0 )
-//        msg = qsl("Wähle den Kreditgeber. Ist die Auswahl leer muss zuerst ein Kreditor angelegt werden");
-//    else if( label() == "")
-//        msg= qsl("Du solltest eine eindeutige Kennung vergeben, damit der Kredit besser zugeordnet werden kann");
-//    if( !msg.isEmpty())
-//        return false;
-
-//    int success = saveNewContract();
-//    if( success < 0)
-//        msg = qsl("Der Vertrag konnte nicht gespeichert werden. Ist die Kennung des Vertrags eindeutig?");
-//    return success;
-//}
 
 // contract activation
 bool contract::activate(const QDate &actDate, double amount)
@@ -465,13 +442,15 @@ void saveRandomContracts(int count)
     for (int i = 0; i<count; i++)
         saveRandomContract(creditorIds[rand->bounded(creditorIds.size())].toLongLong());
 }
-void activateRandomContracts(int percent)
+QDate activateRandomContracts(int percent)
 {   LOG_CALL;
-    if( percent < 0 || percent > 100) return;
+    QDate minimumActivationDate =EndOfTheFuckingWorld; // needed for tests
+    if( percent < 0 || percent > 100) return minimumActivationDate;
 
     QVector<QSqlRecord> contractData = executeSql(contract::getTableDef().Fields());
     int activations = contractData.count() * percent / 100;
     static QRandomGenerator* rand = QRandomGenerator::system();
+
     for (int i=0; i < activations; i++) {
         // contractData -> from database all amounts are in ct
         double amount = euroFromCt(contractData[i].value("Betrag").toInt());
@@ -481,8 +460,10 @@ void activateRandomContracts(int percent)
         }
         QDate activationDate(contractData[i].value(qsl("Vertragsdatum")).toDate());
         activationDate = activationDate.addDays(rand->bounded(50));
-
+        if( activationDate < minimumActivationDate)
+            minimumActivationDate =activationDate;
         contract c(contractData[i].value(qsl("id")).toInt());
         c.activate(activationDate, amount);
     }
+    return minimumActivationDate;
 }

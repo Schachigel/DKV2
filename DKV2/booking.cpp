@@ -66,7 +66,7 @@
     tdi.setValue(qsl("BuchungsArt"), static_cast<int>(t));
     tdi.setValue(qsl("Betrag"), ctFromEuro(amount));
     tdi.setValue(qsl("Datum"), date);
-    if( tdi.InsertData()) {
+    if( -1 != tdi.InsertData()) {
         qInfo() << "successful booking: " << typeName(t) << " contract#: " << contractId << " Amount: " << ctFromEuro(amount) << " date: " << date;
         return true;
     }

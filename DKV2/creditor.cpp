@@ -61,6 +61,19 @@ bool creditor::operator==(const creditor& c) const
         if( bic()       != c.bic()) break;
         ret = true;
     } while(false);
+    if( !ret) {
+        qInfo() << id() << " vs. " << c.id();
+        qInfo() << firstname() << " vs. " << c.firstname();
+        qInfo() << lastname() << " vs. " << c.lastname();
+        qInfo() << street() << " vs. " << c.street();
+        qInfo() << postalCode() << " vs. " << c.postalCode();
+        qInfo() << city() << " vs. " << c.city();
+        qInfo() << comment() << " vs. " << c.comment();
+        qInfo() << email() << " vs. " << c.email();
+        qInfo() << iban() << " vs. " << c.iban();
+        qInfo() << bic() << " vs. " << c.bic();
+    }
+
     return ret;
 }
 
@@ -220,10 +233,11 @@ void KreditorenListeMitId(QList<QPair<int,QString>> &entries)
 creditor saveRandomCreditor()
 {
     static QRandomGenerator* rand { QRandomGenerator::system()};
+    static int count =0;
     creditor c;
     c.setFirstname(Vornamen [rand->bounded(Vornamen.count ())]);
     c.setLastname(Nachnamen [rand->bounded(Nachnamen.count ())]);
-    c.setStreet(Strassen[rand->bounded(Strassen.count())]);
+    c.setStreet(Strassen[rand->bounded(Strassen.count())] +QString::number(count++));
     int indexCity = rand->bounded(Cities.count());
     c.setPostalCode(Cities[indexCity].first);
     c.setCity(Cities[indexCity].second);
@@ -237,6 +251,7 @@ creditor saveRandomCreditor()
     c.setEmail(email);
     c.setIban(ibans[rand->bounded(ibans.count())]);
     c.setBic(qsl("bic...         ."));
+    c.setComment(qsl(""));
     Q_ASSERT(c.isValid());
     c.save();
     return c;

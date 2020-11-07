@@ -45,8 +45,9 @@ void init_DKDBStruct()
     meta.append(dbfield("Wert", QVariant::String).setNotNull());
     dkdbstructur.appendTable(meta);
 
-    dkdbstructur.appendTable(letterTemplate::getTabelDef_sections());
-    dkdbstructur.appendTable(letterTemplate::getTableDef());
+    dkdbstructur.appendTable(letterTemplate::getTableDef_letterTypes());
+    dkdbstructur.appendTable(letterTemplate::getTabelDef_sectionTypes());
+    dkdbstructur.appendTable(letterTemplate::getTableDef_letterSections());
 
     done = true;
 }
@@ -91,8 +92,9 @@ bool create_DK_TablesAndContent(QSqlDatabase db)
         if (!dkdbstructur.createDb(db)) break;
         if (!insert_views(db)) break;
         insert_DbProperties(db);
-        if (!letterTemplate::insert_sections(db)) break;
-        if (!letterTemplate::insert_letters(db)) break;
+        if (!letterTemplate::insert_letterTypes(db)) break;
+        if (!letterTemplate::insert_sectionTypes(db)) break;
+        if (!letterTemplate::insert_letterSections(db)) break;
         ret = true;
     } while (false);
     if (ret)

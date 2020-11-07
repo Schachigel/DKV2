@@ -20,7 +20,7 @@ void TableDataInserter::init(const dbtable& t)
 }
 
 bool TableDataInserter::setValue(const QString& n, const QVariant& v)
-{
+{//   LOG_CALL_W(n +qsl(", ") +v.toString());
     if( ! record.contains(n)) {
         qCritical() << "wrong field name for insertion " << n;
         return false;
@@ -38,6 +38,16 @@ bool TableDataInserter::setValue(const QString& n, const QVariant& v)
     }
     qCritical() << "type conversion failed, no data inserted " << n;
     return false;
+}
+
+bool TableDataInserter::setValueNULL(const QString &n)
+{
+    if( ! record.contains(n)) {
+        qCritical() << "wrong field name for insertion " << n;
+        return false;
+    }
+    record.setNull(n);
+    return true;
 }
 
 bool TableDataInserter::setValues(const QSqlRecord input)
@@ -69,6 +79,8 @@ QString TableDataInserter::getInsertRecordSQL() const
         FieldList += record.field(i).name();
         if( record.field(i).isAutoValue())
             ValueList += qsl("NULL");
+        else if(record.field(i).isNull())
+            ValueList += qsl("NULL");
         else {
             ValueList += dbInsertableString(record.field(i).value());
         }
@@ -91,7 +103,7 @@ QString TableDataInserter::getInsertOrReplaceRecordSQL() const
             values += qsl(", ");
         }
         fieldnames +=record.fieldName(i);
-        if( record.field(i).isAutoValue())
+        if( record.field(i).isAutoValue() || record.field(i).isNull())
             values += qsl("NULL");
         else
             values += dbInsertableString(record.field(i).value());
@@ -104,18 +116,20 @@ QString TableDataInserter::getInsertOrReplaceRecordSQL() const
 QString TableDataInserter::getInsert_noAuto_RecordSQL() const
 {   LOG_CALL;
     if( record.isEmpty()) return QString();
-    QString sql(qsl("INSERT OR REPLACE INTO ") + tablename +qsl(" (%1) VALUES (%2)"));
     QString fieldnames, values;
-
     for( int i=0; i<record.count(); i++) {
         if( i>0) {
             fieldnames += qsl(", ");
             values += qsl(", ");
         }
         fieldnames +=record.fieldName(i);
-        values += dbInsertableString(record.field(i).value());
+        if( record.field(i).isNull())
+            values += "NULL";
+        else
+            values += dbInsertableString(record.field(i).value());
     }
-    sql = sql.arg(fieldnames, values);
+    QString sql(qsl("INSERT OR REPLACE INTO %1 (%2) VALUES (%3)"));
+    sql = sql.arg(tablename, fieldnames, values);
     qDebug() << sql;
     return sql;
 }
@@ -198,4 +212,3 @@ int TableDataInserter::UpdateData() const
     qDebug() << "TDI.Update: successfull at index " << changedRecordId << Qt::endl <<  q.lastQuery() << Qt::endl;
     return changedRecordId;
 }
-

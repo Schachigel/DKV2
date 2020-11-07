@@ -275,10 +275,10 @@ void dbConfig::readDb(QSqlDatabase db)
     gefue2     =getMetaInfo(GMBH_GEFUE2,    gefue2,     db);
     gefue3     =getMetaInfo(GMBH_GEFUE3,    gefue3,     db);
     dkv        =getMetaInfo(GMBH_DKV,       dkv,        db);
-    startindex =int(getNumMetaInfo(STARTINDEX,  double(startindex), db));
-    minPayout  =int(getNumMetaInfo(MIN_PAYOUT,  double(minPayout),  db));
-    minContract=int(getNumMetaInfo(MIN_AMOUNT,  double(minContract),db));
-    maxInterest=int(getNumMetaInfo(MAX_INTEREST,double(maxInterest),db));
+    startindex =qRound(getNumMetaInfo(STARTINDEX,  double(startindex), db));
+    minPayout  =qRound(getNumMetaInfo(MIN_PAYOUT,  double(minPayout),  db));
+    minContract=qRound(getNumMetaInfo(MIN_AMOUNT,  double(minContract),db));
+    maxInterest=qRound(getNumMetaInfo(MAX_INTEREST,double(maxInterest),db));
     dbId       =getMetaInfo(DBID,           dbId,       db);
     dbVersion  =getNumMetaInfo(DB_VERSION,  dbVersion,  db);
 }

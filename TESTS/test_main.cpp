@@ -43,14 +43,14 @@ int main(int argc, char *argv[])
     tests.push_back(new test_appConfig);
     tests.push_back(new test_booking);
     tests.push_back(new test_contract);
-    tests.push_back(new test_creditor);
     tests.push_back(new test_views);
     tests.push_back(new test_db);
+    tests.push_back(new test_creditor);
     tests.push_back(new test_csv);
     tests.push_back(new test_dkdbhelper);
     tests.push_back(new test_letterTemplate);
-    tests.push_back(new test_properties);
     tests.push_back(new test_finance);
+    tests.push_back(new test_properties);
     tests.push_back(new test_sqlhelper);
     tests.push_back(new test_tableDataInserter);
 

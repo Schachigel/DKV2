@@ -8,6 +8,10 @@ inline double r2(const double d)
 {
     return (qRound(d * 100.))/100.;
 }
+inline double r3(const double d)
+{
+    return (qRound(d * 1000.))/1000.;
+}
 inline double r4(const double d)
 {
     return (qRound(d * 10000.))/10000.;
@@ -19,9 +23,7 @@ inline double r6(const double d)
 
 inline int ctFromEuro( const double d)
 {
-    if( d>=0)
-        return int( d * 100. +.5);
-    return int( d * 100. -.5);
+    return qRound( d * 100.);
 }
 inline double euroFromCt( const int i)
 {

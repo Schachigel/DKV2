@@ -4,7 +4,6 @@
 #include <QMap>
 #include <QDate>
 #include <QTextDocument>
-#include <QPrinter>
 
 #include "dbtable.h"
 #include "helper.h"
@@ -12,23 +11,22 @@
 #include "appconfig.h"
 
 template <class IndexType, class ValueType>
+// template class to make enum class types "loopable"
+// use if enum counts from 0, w/o gaps.
+// define maxId as last+1 enum value
 class EnumArray {
 public:
-    ValueType& operator[](IndexType i) {
-        return array_[static_cast<int>(i)];
-    }
-
-    const ValueType& operator[](IndexType i) const {
-        return array_[static_cast<int>(i)];
-    }
-
+    // array access
+    ValueType& operator[](IndexType i) { return array_[static_cast<int>(i)]; }
+    const ValueType& operator[](IndexType i) const { return array_[static_cast<int>(i)]; }
+    // iteration (range based for loops)
     int size() const { return size_; }
     auto begin() { return &array_[0]; }
-    auto end() { return &array_[static_cast<int>(IndexType::maxTemplateId) -1]; }
+    auto end() { return &array_[static_cast<int>(IndexType::maxId) -1]; }
 
 private:
-    ValueType array_[static_cast<int>(IndexType::maxTemplateId)];
-    int size_ = static_cast<int>(IndexType::maxTemplateId);
+    ValueType array_[static_cast<int>(IndexType::maxId)];
+    int size_ = static_cast<int>(IndexType::maxId);
 };
 
 const double mmInPt {2.83465};
@@ -36,14 +34,21 @@ const double mmInPt {2.83465};
 class letterTemplate
 {
 public: // types and data
-    enum class sections{ Adresse, Logo, Datum, Betreff, Anrede, Text1, Abrechnungstabelle, Text2, Gruss, Fuss, maxSection};
-    static QMap<sections, QString> all_sections;
-    int operator() (sections s) { Q_ASSERT(static_cast<int>(s) > 0; Q_ASSERT(static_cast<int>(s) < static_cast<int>(maxSection)); return static_cast<int>(s); }
+    enum class sectionType{ Adresse =0, Logo, Datum, Betreff, Anrede, Text1, Abrechnungstabelle, Text2, Gruss, Fuss, maxId};
+    static QMap<sectionType, QString> all_sectionTypes;
+    int operator() (sectionType s) {
+        Q_ASSERT(static_cast<int>(s) >= 0);
+        Q_ASSERT(static_cast<int>(s) < static_cast<int>(sectionType::maxId));
+        return static_cast<int>(s);
+    }
 
-    enum class templId{ Vertragsabschluss =1, Geldeingang, JA_thesa, JA_auszahlend, Kontoabschluss, Kuendigung, maxTemplateId };
-    static QVector<templId> all_templIds;
-    int operator() (templId id) { Q_ASSERT(static_cast<int>(id) > 0); Q_ASSERT(static_cast<int>(id) < static_cast<int>(templId::maxTemplateId)); return static_cast<int>(id); }
-    QString templName(templId id);
+    enum class templId{ generic =0, contractConclusion, activation, annualInterestReinvest,
+        annualInterestPayout, deposit, payout, termination, accountClosing, maxId };
+    static QMap<templId, QString> all_templates;
+    int operator() (templId id) {
+        Q_ASSERT(static_cast<int>(id) >= 0);
+        Q_ASSERT(static_cast<int>(id) < static_cast<int>(templId::maxId));
+        return static_cast<int>(id); }
 
     QMap<QString, QString> placeholders
     {   {qsl("datum"),QString()}, {qsl("abrechnungsjahr"), qsl("2020")}, {qsl("kuendigungsdatum"), QString()},
@@ -52,12 +57,14 @@ public: // types and data
         {qsl("vertraege.kennung"), QString()}, {qsl("vertraege.betrag"), QString()}, {qsl("vertraege.buchungsdatum"), QString()}, {qsl("vertraege.kfrist"), QString()}, {qsl("vertraege.laufzeitende"), QString()},
         {qsl("tbh.kennung"), qsl("Vertragskennung")}, {qsl("tbh.old"), qsl("Vorjahreswert")}, {qsl("tbh.zins"), qsl("Zinssatz")}, {qsl("tbh.new"), qsl("Neuer Wert")}
     };
-
 public: // interface
-    static dbtable getTabelDef_sections();
-    static dbtable letterTemplate::getTableDef();
-    static bool insert_sections(QSqlDatabase db);
-    static bool insert_letters(QSqlDatabase db);
+    static dbtable getTableDef_letterTypes();
+    static dbtable getTabelDef_sectionTypes();
+    static dbtable getTableDef_letterSections();
+    static bool insert_letterTypes(QSqlDatabase db);
+    static bool insert_sectionTypes(QSqlDatabase db);
+    static bool insert_letterSections(QSqlDatabase db);
+
     //explicit letterTemplate(){ initPrinter();};
     letterTemplate(templId type);
     bool saveDefaultTemplate() const;

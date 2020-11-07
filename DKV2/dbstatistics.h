@@ -17,11 +17,20 @@ inline bool icmp (QString s, int l, int r) {
 
 inline bool dcmp (QString s, double l, double r) {
     if( ! qFuzzyCompare(1. +l, 1.+ r)) {
-        qInfo() << "comparison of stat.data failed. " << s + qsl(" (%1, %2)").arg(d2s_4d(l), d2s_4d(r));;
+        qInfo() << "comparison of stat.data failed. " << s + qsl(" (%1, %2)").arg(d2s_4d(l), d2s_4d(r));
         return false;
     }
     return true;
 };
+
+inline bool dMaxDiff(QString s, double l, double r, double maxDiff) {
+    double diff = qAbs(l-r);
+    if( diff > maxDiff) {
+        qInfo() << "epsilon comparison failed: " << s +qsl(" (%1, %2)").arg(d2s_4d(l), d2s_4d(r));
+        return false;
+    }
+    return true;
+}
 
 struct dataset
 {
@@ -41,7 +50,7 @@ struct dataset
         ret &= dcmp(lhs.name + qsl(" - Value  (euro)  "), lhs.value, rhs.value);
         ret &= dcmp(lhs.name + qsl(" - annaul int. %  "), lhs.annualInterest, rhs.annualInterest);
         ret &= dcmp(lhs.name + qsl(" - avg Interest % "), lhs.value, rhs.value);
-        ret &= dcmp(lhs.name + qsl(" - wAvg Interest% "), r4(lhs.weightedAvgInterestRate), r4(rhs.weightedAvgInterestRate));
+        ret &= dMaxDiff(lhs.name + qsl(" - wAvg Interest% "), lhs.weightedAvgInterestRate, rhs.weightedAvgInterestRate, 0.0002l);
         return ret;
     }
     inline friend bool operator!=(const dataset& lhs, const dataset& rhs) {
@@ -76,7 +85,7 @@ struct dbStats
             ret &= dcmp(lhs.name + qsl(" - Value  (euro)  "), lhs.value, rhs.value);
             ret &= dcmp(lhs.name + qsl(" - annaul int. %  "), lhs.annualInterest, rhs.annualInterest);
             ret &= dcmp(lhs.name + qsl(" - avg Interest % "), lhs.value, rhs.value);
-            ret &= dcmp(lhs.name + qsl(" - wAvg Interest% "), r4(lhs.weightedAvgInterestRate), r4(rhs.weightedAvgInterestRate));
+            ret &= dMaxDiff(lhs.name + qsl(" - wAvg Interest% "), lhs.weightedAvgInterestRate, rhs.weightedAvgInterestRate, 0.0002l);
             return ret;
         }
         inline friend bool operator!=(const dataset& lhs, const dataset& rhs) {

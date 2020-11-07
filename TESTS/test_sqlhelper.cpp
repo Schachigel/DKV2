@@ -145,7 +145,7 @@ void test_sqlhelper::test_eSingleValueSqlPreservsValue()
 
     QVariant string{"Hallo Welt!"};
     QVariant date{QDate (1965, 5, 6)};
-    QVariant i {int(42)};
+    QVariant i {42};
     QVariant b (true);
     QString createSql{ QString("INSERT INTO " +tablename+  " VALUES( NULL, "
                  + dbInsertableString(date) +", "
@@ -357,7 +357,7 @@ void test_sqlhelper::test_variantTypeConservation()
 */
     // input data
     QVariant ll = QVariant(qlonglong(42));
-    QVariant i  = QVariant(int(13));
+    QVariant i  = QVariant(13);
     QVariant s  = QVariant(QString("Hallo Welt!"));
     QVariant d  = QVariant(QDate(1965, 5, 6));
     QVariant b  = QVariant(true);

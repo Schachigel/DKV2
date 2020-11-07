@@ -80,14 +80,15 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings02()
 }
 void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings03()
 {
+    QDate miniActDate =EndOfTheFuckingWorld;
     {
         dbgTimer timer("create many contracts");
         saveRandomCreditors(70);
         saveRandomContracts(100);    // contract date: 2 years back or less
-        activateRandomContracts(90);// activation date: > contract date
+        miniActDate = activateRandomContracts(90);// activation date: > contract date
     }
     {
         dbgTimer timer("calculate settlement year");
-        QCOMPARE( bookings::dateOfnextSettlement(), QDate(QDate::currentDate().addYears(-1).year(), 1, 1));
+        QCOMPARE( bookings::dateOfnextSettlement(), QDate(miniActDate.addYears(1).year(), 1, 1));
     }
 }

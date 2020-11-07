@@ -74,7 +74,7 @@ void test_db::test_SimpleTableAddData()
     TableDataInserter tdi(s["Ad"]);
     tdi.setValue("vname", QVariant("Holger"));
     tdi.setValue("nname", "Mairon");
-    QVERIFY( 0<= tdi.InsertData());
+    QVERIFY( -1 < tdi.InsertData());
     QVERIFY(tableRecordCount("Ad") == 1);
 }
 
@@ -142,18 +142,18 @@ void test_db::test_addRecords_wDep()
 
     TableDataInserter tdi(s["p"]);
     tdi.setValue("name", "Holger");
-    QVERIFY( 0<= tdi.InsertData());
+    QVERIFY( 0 <= tdi.InsertData());
     QVERIFY(tableRecordCount("p") == 1);
 
     qDebug() << "add depending data sets" << Qt::endl;
     TableDataInserter tdiChild1(s["c"]);
     tdiChild1.setValue("pid", QVariant(1)); // should work
-    QVERIFY( 0<= tdiChild1.InsertData());
+    QVERIFY( 0 <= tdiChild1.InsertData());
 
     qDebug() << "add INVALID depending data sets" << Qt::endl;
     TableDataInserter tdiChild2(s["c"]);
     tdiChild2.setValue("pid", 2); // should fail - no matching parent in table p
-    QVERIFY( 0> tdiChild2.InsertData());
+    QVERIFY( -1 == tdiChild2.InsertData());
 }
 
 void test_db::test_deleteRecord_wDep()
