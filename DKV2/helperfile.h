@@ -4,7 +4,7 @@
 
 bool backupFile(const QString& filename, const QString& subfolder=QString());
 
-void showFileInFolder(const QString &path);
+void showFileInFolder(const QString &fullPath);
 
 void printHtmlToPdf( QString html, QString fn);
 

@@ -171,9 +171,7 @@ void annualSettlement()
         csv.appendToRow(l.toString(c.value(), 'f', 2));
     }
     QString filename(QDate::currentDate().toString(Qt::ISODate) + qsl("-Jahresabrechnung.csv"));
-    filename = appConfig::Outdir() + qsl("/") + filename;
     csv.save(filename);
-    showFileInFolder(filename);
     return;
 }
 
