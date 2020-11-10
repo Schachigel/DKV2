@@ -46,8 +46,8 @@ void init_DKDBStruct()
     dkdbstructur.appendTable(meta);
 
     dkdbstructur.appendTable(letterTemplate::getTableDef_letterTypes());
-    dkdbstructur.appendTable(letterTemplate::getTabelDef_sectionTypes());
-    dkdbstructur.appendTable(letterTemplate::getTableDef_letterSections());
+    dkdbstructur.appendTable(letterTemplate::getTabelDef_elementTypes());
+    dkdbstructur.appendTable(letterTemplate::getTableDef_letterElements());
 
     done = true;
 }
@@ -93,8 +93,8 @@ bool create_DK_TablesAndContent(QSqlDatabase db)
         if (!insert_views(db)) break;
         insert_DbProperties(db);
         if (!letterTemplate::insert_letterTypes(db)) break;
-        if (!letterTemplate::insert_sectionTypes(db)) break;
-        if (!letterTemplate::insert_letterSections(db)) break;
+        if (!letterTemplate::insert_elementTypes(db)) break;
+        if (!letterTemplate::insert_letterElements(db)) break;
         ret = true;
     } while (false);
     if (ret)

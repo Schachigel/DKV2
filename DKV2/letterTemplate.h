@@ -34,11 +34,11 @@ const double mmInPt {2.83465};
 class letterTemplate
 {
 public: // types and data
-    enum class sectionType{ Adresse =0, Logo, Datum, Betreff, Anrede, Text1, Abrechnungstabelle, Text2, Gruss, Fuss, maxId};
-    static QMap<sectionType, QString> all_sectionTypes;
-    int operator() (sectionType s) {
+    enum class elementType{ Adresse =0, Logo, Datum, Betreff, Anrede, Text1, Abrechnungstabelle, Text2, Gruss, Fuss, maxId};
+    static QMap<elementType, QString> all_elementTypes;
+    int operator() (elementType s) {
         Q_ASSERT(static_cast<int>(s) >= 0);
-        Q_ASSERT(static_cast<int>(s) < static_cast<int>(sectionType::maxId));
+        Q_ASSERT(static_cast<int>(s) < static_cast<int>(elementType::maxId));
         return static_cast<int>(s);
     }
 
@@ -59,11 +59,11 @@ public: // types and data
     };
 public: // interface
     static dbtable getTableDef_letterTypes();
-    static dbtable getTabelDef_sectionTypes();
-    static dbtable getTableDef_letterSections();
+    static dbtable getTabelDef_elementTypes();
+    static dbtable getTableDef_letterElements();
     static bool insert_letterTypes(QSqlDatabase db);
-    static bool insert_sectionTypes(QSqlDatabase db);
-    static bool insert_letterSections(QSqlDatabase db);
+    static bool insert_elementTypes(QSqlDatabase db);
+    static bool insert_letterElements(QSqlDatabase db);
 
     //explicit letterTemplate(){ initPrinter();};
     letterTemplate(templId type);

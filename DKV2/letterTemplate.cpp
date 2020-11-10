@@ -11,18 +11,18 @@
 #include "tabledatainserter.h"
 #include "letterTemplate.h"
 
-QMap<letterTemplate::sectionType, QString> letterTemplate::all_sectionTypes
-{   { sectionType::Adresse,            qsl("Adresse")},
-    { sectionType::Logo,               qsl("Logo")},
-    { sectionType::Datum,              qsl("Datum")},
-    { sectionType::Betreff,            qsl("Betreff")},
-    { sectionType::Anrede,             qsl("Anrede")},
-    { sectionType::Text1,              qsl("Text1")},
-    { sectionType::Abrechnungstabelle, qsl("Abrechnungsttabelle")},
-    { sectionType::Text2,              qsl("Text2")},
-    { sectionType::Gruss,              qsl("Gruss")},
-    { sectionType::Fuss,               qsl("Fuss")},
-//    { sectionType::maxId,              qsl("")}
+QMap<letterTemplate::elementType, QString> letterTemplate::all_elementTypes
+{   { elementType::Adresse,            qsl("Adresse")},
+    { elementType::Logo,               qsl("Logo")},
+    { elementType::Datum,              qsl("Datum")},
+    { elementType::Betreff,            qsl("Betreff")},
+    { elementType::Anrede,             qsl("Anrede")},
+    { elementType::Text1,              qsl("Text1")},
+    { elementType::Abrechnungstabelle, qsl("Abrechnungsttabelle")},
+    { elementType::Text2,              qsl("Text2")},
+    { elementType::Gruss,              qsl("Gruss")},
+    { elementType::Fuss,               qsl("Fuss")},
+//    { elementType::maxId,              qsl("")}
 };
 
 QMap<letterTemplate::templId, QString> letterTemplate::all_templates
@@ -37,6 +37,131 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
     { templId::accountClosing,         qsl("Vertragsende")},
 //    { templId::maxId,                  qsl("")}
 };
+
+/* static */ dbtable letterTemplate::getTableDef_letterTypes()
+{
+    static dbtable letterTypesTable(qsl("Brieftypen"));
+    if (0 == letterTypesTable.Fields().size()) {
+        letterTypesTable.append(dbfield(qsl("id"), QVariant::Int).setNotNull().setPrimaryKey());
+        letterTypesTable.append(dbfield(qsl("Brieftyp"), QVariant::String).setNotNull().setUnique());
+    }
+    return letterTypesTable;
+}
+
+/* static */ dbtable letterTemplate::getTabelDef_elementTypes()
+{
+    static dbtable sectionsTable(qsl("BriefElementTypen"));
+    if (0 == sectionsTable.Fields().size()) {
+        sectionsTable.append(dbfield(qsl("id"), QVariant::Int).setNotNull().setPrimaryKey());
+        sectionsTable.append(dbfield(qsl("ElementName"), QVariant::String).setNotNull().setUnique());
+    }
+    return sectionsTable;
+}
+
+/* static */ dbtable letterTemplate::getTableDef_letterElements()
+{
+    static dbtable letterTable("BriefElemente");
+    if (0 == letterTable.Fields().size()) {
+        letterTable.append(dbfield(qsl("KreditorId"), QVariant::LongLong)); // NOT setNotNull !!
+        letterTable.append(dbForeignKey(letterTable[qsl("KreditorId")],
+                                        dkdbstructur[qsl("Kreditoren")][qsl("id")], qsl("ON DELETE CASCADE")));
+
+        letterTable.append(dbfield(qsl("BriefTypenId"), QVariant::Int).setNotNull());
+        letterTable.append(dbForeignKey(letterTable[qsl("BriefTypenId")],
+                                        dkdbstructur[qsl("Brieftypen")][qsl("id")]));
+
+        letterTable.append(dbfield(qsl("BriefElementTypenId"), QVariant::Int).setNotNull());
+        letterTable.append(dbForeignKey(letterTable[qsl("BriefElementTypenId")],
+                                        dkdbstructur[qsl("BriefElementTypen")][qsl("id")]));
+
+        letterTable.append(dbfield(qsl("Texte"), QVariant::String));
+
+        QVector<dbfield> unique;
+        unique.append(letterTable[qsl("KreditorId")]);
+        unique.append(letterTable[qsl("BriefTypenId")]);
+        unique.append(letterTable[qsl("BriefElementTypenId")]);
+        letterTable.setUnique(unique);
+    }
+    return letterTable;
+}
+
+/* static */ bool letterTemplate::insert_letterTypes(QSqlDatabase db)
+{
+    TableDataInserter tdi(dkdbstructur["Brieftypen"]);
+    for (auto i : all_templates.keys()) {
+        tdi.setValue(qsl("id"), QVariant(int(i)));
+        tdi.setValue(qsl("Brieftyp"), QVariant(all_templates[i]));
+        if (-1 == tdi.InsertData(db))
+            return false;
+    }
+    return true;
+}
+
+/* static */ bool letterTemplate::insert_elementTypes(QSqlDatabase db)
+{
+    TableDataInserter tdi(dkdbstructur[qsl("BriefElementTypen")]);
+    for (auto s : all_elementTypes.keys()) {
+        tdi.setValue(qsl("id"), QVariant(int(s)));
+        tdi.setValue(qsl("ElementName"), QVariant(all_elementTypes.value(s)));
+        if (-1 == tdi.InsertOrReplaceData(db))
+            return false;
+    }
+    return true;
+}
+
+/* static */ bool letterTemplate::insert_letterElements(QSqlDatabase db)
+{
+    QMap<elementType, QString> genericLetterElements {
+        {elementType::Adresse, qsl("<small>{{gmbh.address1}} {{gmbh.address2}}<br>{{gmbh.strasse}}, <b>{{gmbh.plz}}</b> {{gmbh.stadt}}</small><p>"
+                                   "{{kreditoren.vorname}} {{kreditoren.nachname}} <p> {{kreditoren.strasse}} <br><b> {{kreditoren.plz}} </b> {{kreditoren.stadt}} <br><small> {{kreditoren.email}} </small>")},
+        {elementType::Logo,    qsl("<small>{{LOGO}}{{gmbh.url}}</small>")},
+        {elementType::Datum,   qsl("{{gmbh.stadt}}, den {{datum}}")},
+        {elementType::Anrede,  qsl("Liebe(r) {{Vorname}},")},
+        {elementType::Gruss,   qsl("Mit freundlichen Grüßen<p>{{gmbh.dkKontakt}}")},
+        {elementType::Fuss,    qsl("<table width=100%><tr>"
+                                "<td width=33%><small>Geschäftsführer*innen:<br>{{gmbh.gefue1}}<br>{{gmbh.gefue2}}<br>{{gmbh.gefue3}}</small></td>"
+                                "<td width=33%></td>"
+                                "<td width=33%></td></tr></table>")}
+    };
+
+    TableDataInserter tdi(dkdbstructur[qsl("BriefElemente")]);
+    tdi.setValueNULL(qsl("KreditorId"));
+    tdi.setValue(qsl("BriefTypenId"), QVariant(int(templId::generic)));
+
+    for( auto i : genericLetterElements.keys()) {
+        tdi.setValue(qsl("BriefElementTypenId"), QVariant(int(i)));
+        tdi.setValue(qsl("Texte"), QVariant(genericLetterElements[i]));
+        if( -1 == tdi.InsertData(db)) {
+            qDebug() << "Failded to insert generic letter Element " << genericLetterElements[i];
+            return false;
+        }
+    }
+
+    tdi.setValue(qsl("BriefTypenId"), QVariant(int(templId::annualInterestReinvest)));
+    QMap<elementType, QString> interestReinvest_letterElements {
+        {elementType::Betreff, qsl("Jahreszinsbescheid {{Jahr}}")},
+        {elementType::Text1, qsl("Danke für Dein Vertrauen")},
+        {elementType::Text2, qsl("gerne wieder, gerne mehr")}
+    };
+    for( auto i: interestReinvest_letterElements.keys()) {
+        tdi.setValue(qsl("BriefElementTypenId"), QVariant(int(i)));
+        tdi.setValue(qsl("Texte"), QVariant(interestReinvest_letterElements[i]));
+        if( -1 == tdi.InsertData(db)) {
+            qDebug() << "Failded to insert interest Reinvest letter Element " << genericLetterElements[i];
+            return false;
+        }
+    }
+
+    QMap<elementType, QString> interestPayout_letterElements {
+        {elementType::Betreff, qsl("Jahreszinsauszahlung {{Jahr}}")},
+            {elementType::Text1, qsl("Danke für Dein Vertrauen")},
+            {elementType::Text2, qsl("gerne wieder, gerne mehr")}};
+    tdi.setValue(qsl("BriefTypenId"), QVariant(int(templId::annualInterestPayout)));
+    // insert letter parts which are different in different letter types
+    // -> Betreff, Text1, Abrechnungstabelle, Text2
+
+    return true;
+}
 
 void letterTemplate::init_JA_thesa()
 {   LOG_CALL;
@@ -144,100 +269,6 @@ void letterTemplate::init_defaults()
     }
 }
 
-/* static */ dbtable letterTemplate::getTableDef_letterTypes()
-{
-    static dbtable letterTypesTable(qsl("Brieftypen"));
-    if (0 == letterTypesTable.Fields().size()) {
-        letterTypesTable.append(dbfield(qsl("id"), QVariant::Int).setNotNull().setPrimaryKey());
-        letterTypesTable.append(dbfield(qsl("Brieftyp"), QVariant::String).setNotNull().setUnique());
-    }
-    return letterTypesTable;
-}
-
-/* static */ dbtable letterTemplate::getTabelDef_sectionTypes()
-{
-    static dbtable sectionsTable(qsl("BriefSektionsTypen"));
-    if (0 == sectionsTable.Fields().size()) {
-        sectionsTable.append(dbfield(qsl("id"), QVariant::Int).setNotNull().setPrimaryKey());
-        sectionsTable.append(dbfield(qsl("SektionsName"), QVariant::String).setNotNull().setUnique());
-    }
-    return sectionsTable;
-}
-
-/* static */ dbtable letterTemplate::getTableDef_letterSections()
-{
-    static dbtable letterTable("BriefSektionen");
-    if (0 == letterTable.Fields().size()) {
-        letterTable.append(dbfield(qsl("KreditorId"), QVariant::LongLong)); // NOT setNotNull !!
-        letterTable.append(dbForeignKey(letterTable[qsl("KreditorId")],
-            dkdbstructur[qsl("Kreditoren")][qsl("id")], qsl("ON DELETE CASCADE")));
-
-        letterTable.append(dbfield(qsl("BriefTypId"), QVariant::Int).setNotNull());
-        letterTable.append(dbForeignKey(letterTable[qsl("BriefTypId")],
-            dkdbstructur[qsl("Brieftypen")][qsl("id")]));
-
-        letterTable.append(dbfield(qsl("SectionTypId"), QVariant::Int).setNotNull());
-        letterTable.append(dbForeignKey(letterTable[qsl("SectionTypId")],
-            dkdbstructur[qsl("BriefSektionsTypen")][qsl("id")]));
-
-        letterTable.append(dbfield(qsl("Texte"), QVariant::String));
-
-        QVector<dbfield> unique;
-        unique.append(letterTable[qsl("KreditorId")]);
-        unique.append(letterTable[qsl("BriefTypId")]);
-        unique.append(letterTable[qsl("SectionTypId")]);
-        letterTable.setUnique(unique);
-    }
-    return letterTable;
-}
-
-/* static */ bool letterTemplate::insert_letterTypes(QSqlDatabase db)
-{
-    TableDataInserter tdi(dkdbstructur["Brieftypen"]);
-    for (auto i : all_templates.keys()) {
-        tdi.setValue(qsl("id"), QVariant(int(i)));
-        tdi.setValue(qsl("Brieftyp"), QVariant(all_templates[i]));
-        if (-1 == tdi.InsertData(db))
-            return false;
-    }
-    return true;
-}
-
-/* static */ bool letterTemplate::insert_sectionTypes(QSqlDatabase db)
-{
-    TableDataInserter tdi(dkdbstructur[qsl("BriefSektionsTypen")]);
-    for (auto s : all_sectionTypes.keys()) {
-        tdi.setValue(qsl("id"), QVariant(int(s)));
-        tdi.setValue(qsl("SektionsName"), QVariant(all_sectionTypes.value(s)));
-        if (-1 == tdi.InsertOrReplaceData(db))
-            return false;
-    }
-    return true;
-}
-
-/* static */ bool letterTemplate::insert_letterSections(QSqlDatabase db)
-{
-    // insert all letter parts, with kreditorId =NULL (not set) as the default for all creditors
-    TableDataInserter tdi(dkdbstructur[qsl("BriefSektionen")]);
-    // KreditorId -> NOT SET !! (must be NULL In the database)
-    // BriefTypId: generic, Jahreszinsanrechnung, Jahreszinsauszahlung
-    // SectionTypId / generic: Adresse, Logo, Datum, Anrede, Gruss, Fuss
-    //            not generic: Betreff, Text1, Text2,
-    // Texte
-    tdi.setValueNULL(qsl("KreditorId"));
-    tdi.setValue(qsl("BriefTypId"), QVariant(int(templId::generic)));
-    tdi.setValue(qsl("SectionTypId"), QVariant(int(sectionType::Adresse)));
-    tdi.setValue(qsl("Texte"), QVariant(qsl("{{kreditoren.vorname}} {{kreditoren.nachname}} <p> {{kreditoren.strasse}} <br><b> {{kreditoren.plz}} </b> {{kreditoren.stadt}} <br><small> {{kreditoren.email}} </small>")));
-    tdi.InsertData(db);
-    // start with generic letter parts, which are all the same in all letters (letter type -1)
-       // -> Adresse, Logo, Datum, Anrede, Gruss, Fuss
-
-       // insert letter parts which are different in different letter types
-       // -> Betreff, Text1, Abrechnungstabelle, Text2
-
-    return true;
-}
-
 letterTemplate::letterTemplate(letterTemplate::templId )
 {   LOG_CALL;
     //tid=id;
@@ -270,26 +301,14 @@ bool letterTemplate::saveDefaultTemplate() const
 {
     return letterTemplate::saveTemplate(-1);
 }
-bool letterTemplate::saveTemplate(qlonglong kreditor) const
+bool letterTemplate::saveTemplate(qlonglong /*kreditor*/) const
 {   LOG_CALL;
     if( !tableExists("Briefvorlagen"))
         return false;
-
-    EnumArray<templId, int> ids;
-    for (auto i : ids) {
-        TableDataInserter tdi(dkdbstructur[qsl("Briefvorlagen")]);
-        tdi.setValue(dkdbstructur[qsl("Briefvorlagen")][qsl("KreditorId")].name(), QVariant(kreditor));
-        tdi.setValue(dkdbstructur[qsl("Briefvorlagen")][qsl("Brieftyp")].name(), QVariant(i));
-        tdi.setValue(dkdbstructur[qsl("Briefvorlagen")][qsl("Textelement")].name(), QVariant(html[i]));
-        if( -1 == tdi.InsertOrReplaceData()) {
-            qDebug() << "failed to write template data: " << i << ": " << html[i];
-            return false;
-        }
-    }
     return true;
 }
 
-bool letterTemplate::loadTemplate(letterTemplate::templId id, qlonglong kreditor)
+bool letterTemplate::loadTemplate(letterTemplate::templId /*id*/, qlonglong /*kreditor*/)
 {   LOG_CALL;
     //if( !tableExists("Briefvorlagen"))
     //{
