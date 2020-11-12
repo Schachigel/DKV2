@@ -173,7 +173,7 @@ QString askUserNewDb()
     if( lastdb.exists())
         wiz.openInFolder=lastdb.path();
     else
-        wiz.openInFolder =QStandardPaths::writableLocation((QStandardPaths::AppDataLocation));
+        wiz.openInFolder =QStandardPaths::writableLocation((QStandardPaths::DocumentsLocation));
     wiz.title = qsl("Neue DKV2 Datenbank Datei");
     if( wiz.exec() == QDialog::Accepted)
         wiz.updateDbConfig();
@@ -456,7 +456,7 @@ void MainWindow::prepare_contracts_list_view()
             SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
 
     if( ! model->rowCount()) {
-        ui->bookingsTableView->setModel(nullptr);
+        ui->bookingsTableView->setModel(new QSqlTableModel(this));
     } else
         tv->setCurrentIndex(model->index(0, 1));
 }
@@ -680,7 +680,7 @@ void MainWindow::on_actionTEST_triggered()
         return;
     }
     currentBooking = toBePrinted.begin();
-    
+
     prepare_printPreview();
     ui->stackedWidget->setCurrentIndex(printPreviewPageIndex);
 }
