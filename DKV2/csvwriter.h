@@ -18,7 +18,7 @@ public:
     void addRow(QString row);
 
     QString out() const;
-    bool save(const QString filname) const;
+    bool saveAndShowInExplorer(const QString filname) const;
 private:
     QString appendCsvLine( QString line, QString appendix) const;
 

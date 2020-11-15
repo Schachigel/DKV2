@@ -74,7 +74,7 @@ QString csvwriter::out() const
     return out;
 }
 
-bool csvwriter::save(const QString filename) const
+bool csvwriter::saveAndShowInExplorer(const QString filename) const
 {   LOG_CALL_W(filename);
     QString path {appConfig::Outdir() + qsl("/") + filename};
     backupFile(path);
@@ -134,5 +134,5 @@ bool table2csv(const QString filename, const QVector<dbfield> fields, const QVec
         }
     }
 
-    return csv.save(filename);
+    return csv.saveAndShowInExplorer(filename);
 }
