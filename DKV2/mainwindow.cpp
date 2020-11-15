@@ -632,7 +632,7 @@ void MainWindow::on_actionAktuelle_Auswahl_triggered()
             csv.appendToRow(rec.value(j).toString());
         }
     }
-    csv.save(QDate::currentDate().toString("yyyy-MM-dd_Vertragsliste.csv"));
+    csv.saveAndShowInExplorer(QDate::currentDate().toString("yyyy-MM-dd_Vertragsliste.csv"));
 }
 // debug funktions
 void MainWindow::on_action_menu_debug_create_sample_data_triggered()

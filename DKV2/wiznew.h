@@ -5,6 +5,7 @@
 #include <QRadioButton>
 #include <QDateEdit>
 #include <QComboBox>
+#include <QCheckBox>
 #include <QWizard>
 
 #include "helper.h"
@@ -58,6 +59,8 @@ public:
     int nextId() const    override;
 public slots:
     void onConfirmCreateContract_toggled(int state);
+private:
+    QCheckBox* cbCreateContract =nullptr;
 };
 
 struct wizNewContractDataPage : public QWizardPage{

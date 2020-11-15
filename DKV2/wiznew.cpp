@@ -270,10 +270,11 @@ wizConfirmCreditorPage::wizConfirmCreditorPage(QWidget* p) : QWizardPage(p)
                                       "bestätigen um sie speichern zu können."));
     registerField(qsl("confirmCreditor"), cbConfirmCreditor);
     cbConfirmCreditor->setChecked(false);
-    QCheckBox* cbCreateContract =new QCheckBox(qsl("Im Anschluß Vertragsdaten eingeben"));
+    cbCreateContract =new QCheckBox(qsl("Im Anschluß Vertragsdaten eingeben"));
     cbCreateContract->setToolTip(qsl("Selektiere dieses Feld, um gleich einen neuen Vertrag anzulegen"));
     registerField(qsl("confirmCreateContract"), cbCreateContract);
     cbCreateContract->setChecked(true);
+
     QVBoxLayout* l =new QVBoxLayout;
     l->addWidget(cbConfirmCreditor);
     l->addWidget(cbCreateContract);
@@ -301,6 +302,11 @@ void wizConfirmCreditorPage::initializePage()
 
     setSubTitle(creditorSummary.arg(firstn, lastn, street, pcode,
                                     city, email, comment, iban, bic));
+    wizNew* wiz =qobject_cast<wizNew*> (wizard());
+    if( wiz)
+        cbCreateContract->setChecked(true);
+    else
+        cbCreateContract->setChecked(false);
 }
 bool wizConfirmCreditorPage::validatePage()
 {   LOG_CALL;
