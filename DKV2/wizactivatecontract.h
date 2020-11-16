@@ -12,12 +12,14 @@ struct wizActivateContract_IntroPage : public QWizardPage {
 
 struct wizActiateContract_DatePage : public QWizardPage {
     wizActiateContract_DatePage(QWidget* w=nullptr);
+    void cleanupPage() override  {};
     void initializePage() override;
     Q_OBJECT;
 };
 
 struct wizActiateContract_AmountPage : public QWizardPage {
     wizActiateContract_AmountPage(QWidget* w=nullptr);
+    void cleanupPage() override  {};
     bool validatePage() override;
     Q_OBJECT;
 };

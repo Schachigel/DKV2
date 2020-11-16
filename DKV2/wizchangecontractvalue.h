@@ -16,6 +16,7 @@ public:
 struct wizChangeContract_AmountPage : public QWizardPage
 {
     wizChangeContract_AmountPage(QWidget* parent =nullptr);
+    void cleanupPage() override  {};
     void initializePage() override;
     bool validatePage() override;
     Q_OBJECT;
@@ -24,6 +25,7 @@ struct wizChangeContract_AmountPage : public QWizardPage
 struct wizChangeContract_DatePage : public QWizardPage
 {
     wizChangeContract_DatePage(QWidget* parent =nullptr);
+    void cleanupPage() override  {};
     void initializePage() override;
     bool validatePage() override;
     Q_OBJECT;

@@ -194,6 +194,7 @@ wizEmailPage::wizEmailPage(QWidget* p) : QWizardPage(p)
     g->setColumnStretch(4, 2);
     setLayout(g);
 }
+
 bool wizEmailPage::validatePage()
 {   LOG_CALL;
     QString email =field(qsl("email")).toString().trimmed().toLower();

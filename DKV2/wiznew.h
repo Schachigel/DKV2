@@ -34,18 +34,21 @@ private:
 
 struct wizNewCreditorAddressPage : public QWizardPage{
     wizNewCreditorAddressPage(QWidget* p);
+    void cleanupPage() override  {};
     bool validatePage()   override;
     int nextId() const    override;
 };
 
 struct wizEmailPage : public QWizardPage {
     wizEmailPage (QWidget* p);
+    void cleanupPage() override  {};
     bool validatePage()   override;
     int nextId() const    override;
 };
 
 struct wizBankAccountPage : public QWizardPage{
     wizBankAccountPage(QWidget* p);
+    void cleanupPage() override  {};
     bool validatePage()   override;
     int nextId() const    override;
 };
@@ -66,6 +69,7 @@ private:
 struct wizNewContractDataPage : public QWizardPage{
     wizNewContractDataPage(QWidget* p);
     void initializePage() override;
+    void cleanupPage() override  {};
     bool validatePage() override;
     int nextId() const    override;
 private:
@@ -78,6 +82,7 @@ class wizContractTimingPage : public QWizardPage{
 public:
     wizContractTimingPage(QWidget*);
     void initializePage() override;
+    void cleanupPage() override  {};
     bool validatePage()   override;
     int nextId() const    override;
 public slots:

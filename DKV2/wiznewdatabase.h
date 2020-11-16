@@ -48,6 +48,7 @@ struct wizProjectAddress_Page : public QWizardPage
 {
     wizProjectAddress_Page(QWidget* p=nullptr);
     void initializePage() override;
+    void cleanupPage() override  {};
 //    void setVisible(bool v) override;
 //    bool validatePage() override;
 };
@@ -55,6 +56,7 @@ struct wizProjectAddress_Page : public QWizardPage
 struct wizProjectDetails_Page : public QWizardPage
 {
     wizProjectDetails_Page(QWidget* p= nullptr);
+    void cleanupPage() override  {};
     void initializePage() override;
     Q_OBJECT;
 };
@@ -62,6 +64,7 @@ struct wizProjectDetails_Page : public QWizardPage
 struct wizContractLableInfo_Page : public QWizardPage
 {
     wizContractLableInfo_Page(QWidget* p=nullptr);
+    void cleanupPage() override  {};
     void initializePage() override;
     bool validatePage() override;
 //    void disableStartIndex() { leStartIndex->setDisabled(true);};
@@ -73,6 +76,7 @@ private:
 struct wizContractMinValues_Page : public QWizardPage
 {
     wizContractMinValues_Page(QWidget* p=nullptr);
+    void cleanupPage() override  {};
     void initializePage() override;
 };
 /* new db summary Page */

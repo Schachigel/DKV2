@@ -13,6 +13,7 @@ struct wizCancelContract_IntroPage : public QWizardPage {
 
 struct wizCancelContract_DatePage : public QWizardPage {
     wizCancelContract_DatePage(QWidget* =nullptr);
+    void cleanupPage() override  {};
     void initializePage() override;
     bool validatePage() override;
     Q_OBJECT;
