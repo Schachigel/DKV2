@@ -119,15 +119,16 @@ void cancelContract( contract& c)
 
 void annualSettlement()
 {   LOG_CALL;
-    QDate vYear=bookings::dateOfnextSettlement();
-    if( ! vYear.isValid() || vYear.isNull()) {
+    QDate bookingDate=bookings::dateOfnextSettlement();
+    if( ! bookingDate.isValid() || bookingDate.isNull()) {
         QMessageBox::information(nullptr, qsl("Fehler"),
             qsl("Ein Jahr für die nächste Zinsberechnung konnte nicht gefunden werden."
             "Es gibt keine Verträge für die eine Abrechnung gemacht werden kann."));
         return;
     }
+    int yearOfSettlement =bookingDate.year() -1;
     wizAnnualSettlement wiz(getMainWindow());
-    wiz.setField(qsl("year"), vYear.year() -1);
+    wiz.setField(qsl("year"), yearOfSettlement);
     wiz.exec();
     if( ! wiz.field(qsl("confirm")).toBool())
         return;
@@ -139,15 +140,15 @@ void annualSettlement()
     double payedInterest =0.;
     while(q.next()) {
         contract c(q.value(qsl("id")).toLongLong());
-        if(c.annualSettlement(wiz.field(qsl("year")).toInt())) {
+        if(c.annualSettlement(yearOfSettlement)) {
             changedContracts.push_back(c);
             asBookings.push_back(c.latestBooking());
             payedInterest += c.latestBooking().amount;
         }
     }
+
     if( ! wiz.field(qsl("printCsv")).toBool())
         return;
-
     csvwriter csv(qsl(";"));
     csv.addColumns(contract::booking_csv_header());
     // Vorname; Nachname; Email; Strasse; Plz; Stadt; IBAN;
@@ -162,15 +163,21 @@ void annualSettlement()
         csv.appendToRow(cont.firstname()); csv.appendToRow(cont.lastname());
         csv.appendToRow(cont.email());     csv.appendToRow(cont.street());
         csv.appendToRow(cont.postalCode());csv.appendToRow(cont.city());
+
         csv.appendToRow(cont.iban());      csv.appendToRow(c.label());
         c.reinvesting() ? csv.appendToRow(qsl("thesaurierend")) : csv.appendToRow(qsl("ausschüttend"));
-        csv.appendToRow(QDate(wiz.field(qsl("year")).toInt(), 1, 1).toString(qsl("dd.MM.yyyy")));
+        csv.appendToRow(bookingDate.toString(qsl("dd.MM.yyyy")));
         csv.appendToRow(l.toString(c.interestRate(), 'f', 2));
-        csv.appendToRow(l.toString(c.value()-b.amount, 'f', 2));
+
+        if( c.reinvesting())
+            csv.appendToRow(l.toString(c.value()-b.amount, 'f', 2));
+        else
+            csv.appendToRow(l.toString(c.value(), 'f', 2));
         csv.appendToRow(l.toString(b.amount, 'f', 2));
         csv.appendToRow(l.toString(c.value(), 'f', 2));
     }
-    QString filename(QDate::currentDate().toString(Qt::ISODate) + qsl("-Jahresabrechnung.csv"));
+    QString filename{qsl("%1_Jahresabrechnung-%2.csv")};
+    filename =filename.arg(QDate::currentDate().toString(Qt::ISODate), QString::number(yearOfSettlement));
     csv.saveAndShowInExplorer(filename);
     return;
 }

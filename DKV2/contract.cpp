@@ -217,9 +217,12 @@ int contract::annualSettlement( int year, bool transactual)
             return 0;
         }
     }
-
     if( transactual) QSqlDatabase::database().commit();
-    return year;
+    if( bookingSuccess)
+        // there was a booking
+        return year;
+    else
+        return 0;
 }
 // booking actions
 bool contract::bookInterest(QDate nextBookingDate)

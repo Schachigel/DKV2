@@ -87,7 +87,7 @@ wizFileSelectionNewDb_IntroPage::wizFileSelectionNewDb_IntroPage(QWidget* p) : Q
     QLineEdit* le = new QLineEdit;
     registerField(qsl("selectedFile"), le);
     le->setToolTip(qsl("Hier kannst Du einen vollständigen Pfad zu einer DKV2 Datenbank eingeben."));
-    QLabel* l =new QLabel(qsl("Klicke auf 'durchsuchen' um eine Dateiauswahl Fenster zu öffnen."));
+    QLabel* l =new QLabel(qsl("Klicke auf 'durchsuchen' um ein Verzeichnis zu wählen.\nGib dann einen Dateinamen an."));
     QVBoxLayout* layout =new QVBoxLayout;
     layout->addWidget(l);
     layout->addWidget(le);
