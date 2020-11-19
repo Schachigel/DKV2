@@ -74,30 +74,40 @@ QSplashScreen* doSplash()
     return splash;
 }
 
+// QTranslator trans;
+
+void installTranslateFile(const QString& translationFile, const QString& path)
+{
+    QTranslator* pTrans = new QTranslator();
+    if( pTrans->load(translationFile, path))
+        if( QCoreApplication::installTranslator(pTrans)) {
+            qInfo() << "Successfully installed language file " << translationFile;
+            return;
+        }
+    qCritical() << "failed to load translations " << translationFile;
+}
+
 void setGermanUi()
 {   LOG_CALL;
-    QTranslator trans;
     QString translationFile = QDir::currentPath() + qsl("/translations/qt_de.qm");
-    if( trans.load(QLocale(),translationFile))
-        QCoreApplication::installTranslator(&trans);
-    else
-        qCritical() << "failed to load translations " << translationFile;
+    installTranslateFile(qsl("qt_de.qm"), QDir::currentPath() + qsl("/translations"));
 }
 
 int main(int argc, char *argv[])
 {
-    QLocale locale(QLocale::German, QLocale::LatinScript, QLocale::Germany);
-    QLocale::setDefault(locale); // do before starting the event loop
 
     QApplication a(argc, argv);
     a.setOrganizationName(qsl("4-MHS")); // used to store our settings
     a.setApplicationName(qsl("DKV2"));
 
+    QLocale locale(QLocale::German, QLocale::LatinScript, QLocale::Germany);
+    QLocale::setDefault(locale); // do before starting the event loop
+    setGermanUi();
+
     initLogging();
+
     LOG_CALL;
     qInfo() << "DKV2 started " << QDate::currentDate().toString(qsl("dd.MM.yyyy")) << qsl("-") << QTime::currentTime().toString();
-
-    setGermanUi();
 
     init_DKDBStruct();
 
