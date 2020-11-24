@@ -23,9 +23,19 @@ DEFINES *= QT_USE_QSTRINGBUILDER
 
 #CONFIG += c++11
 CONFIG += c++14
+
 win32:QMAKE_CXXFLAGS += /utf-8
 win32:QMAKE_CXXFLAGS += /FS
 
+win32:VERSION = 0.0.0.2 # major.minor.patch.build
+else:VERSION = 0.0.0.2    # major.minor.patch
+VERSION_PE_HEADER = 0.2
+VERSION = 0.0.0.2
+QMAKE_TARGET_COMPANY = HoMSoft
+QMAKE_TARGET_PRODUCT = DKV2 Direktkredit Verwaltung
+QMAKE_TARGET_DESCRIPTION = DK Verwaltung f. MHS Projekte
+RC_CODEPAGE = 850
+RC_LANG = 0x0407
 
 
 SOURCES += \
@@ -93,6 +103,10 @@ HEADERS += \
 
 FORMS += \
         mainwindow.ui
+
+TRANSLATIONS += \
+    translations.ts \
+    qtbase_de.ts
 
 DISTFILES += \
     ../DOCS/Zinsberechnungsmethode.txt \

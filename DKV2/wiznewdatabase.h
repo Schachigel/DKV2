@@ -95,7 +95,6 @@ struct wizNewDatabaseWiz : public QWizard
     wizNewDatabaseWiz(QWidget* p =nullptr);
     void updateDbConfig();
     // data
-    const bool existingFile =false;
     QString openInFolder;
     const QString fileTypeDescription =qsl("dk-DB Dateien (*.dkdb)");
     const QString bffTitle =qsl("Neue Datenbank Datei");

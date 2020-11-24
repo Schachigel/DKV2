@@ -102,22 +102,25 @@ void wizFileSelectionNewDb_IntroPage::initializePage()
 }
 
 void wizFileSelectionNewDb_IntroPage::browseButtonClicked() {
-    wizNewDatabaseWiz* wiz = qobject_cast<wizNewDatabaseWiz*>(wizard());
 
-    QString selectedFile =( wiz->existingFile) ? QFileDialog::getOpenFileName(nullptr, wiz->bffTitle, wiz->openInFolder, wiz->fileTypeDescription, nullptr)
-            : QFileDialog::getSaveFileName(nullptr, wiz->bffTitle, wiz->openInFolder, wiz->fileTypeDescription, nullptr);
+    QFileDialog filedialog;
+    filedialog.setOption(QFileDialog::DontUseNativeDialog);
+    filedialog.setOption(QFileDialog::DontConfirmOverwrite, false);
+    filedialog.setNameFilter(qsl("DKV2 Datenbanken (*.dkdb)"));
+    filedialog.setFileMode(QFileDialog::AnyFile);
+    filedialog.setAcceptMode(QFileDialog::AcceptSave);
+    filedialog.setWindowTitle(qsl("Dateiname für neue Datenbank eingeben"));
+
+    QString selectedFile;
+    if( filedialog.exec())
+        selectedFile = filedialog.selectedFiles().at(0);
     if(selectedFile.isEmpty())
         return;
     setField(qsl("selectedFile"), selectedFile);
 }
 
 bool wizFileSelectionNewDb_IntroPage::validatePage() {
-    wizNewDatabaseWiz* wiz = qobject_cast<wizNewDatabaseWiz*>(wizard());
-    if( wiz->existingFile) {
-        return QFile::exists(field(qsl("selectedFile")).toString());
-    }
-    else
-        return ! field(qsl("selectedFile")).toString().isEmpty();
+    return ! field(qsl("selectedFile")).toString().isEmpty();
 }
 
 void wizFileSelectionNewDb_IntroPage::setVisible(bool v) {

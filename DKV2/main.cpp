@@ -76,10 +76,10 @@ QSplashScreen* doSplash()
 
 // QTranslator trans;
 
-void installTranslateFile(const QString& translationFile, const QString& path)
+void installTranslateFile(const QString& translationFile)
 {
     QTranslator* pTrans = new QTranslator();
-    if( pTrans->load(translationFile, path))
+    if( pTrans->load(translationFile))
         if( QCoreApplication::installTranslator(pTrans)) {
             qInfo() << "Successfully installed language file " << translationFile;
             return;
@@ -89,8 +89,8 @@ void installTranslateFile(const QString& translationFile, const QString& path)
 
 void setGermanUi()
 {   LOG_CALL;
-    QString translationFile = QDir::currentPath() + qsl("/translations/qt_de.qm");
-    installTranslateFile(qsl("qt_de.qm"), QDir::currentPath() + qsl("/translations"));
+    QString translationFolder = QApplication::applicationDirPath() + qsl("/translations/%1");
+    installTranslateFile(translationFolder.arg(qsl("qt_de.qm")));
 }
 
 int main(int argc, char *argv[])
