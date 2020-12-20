@@ -15,13 +15,27 @@ enum class Type{
     };
 static QString displayString(Type t);
 
+qlonglong contractId =-1;
 Type type =Type::non;
 QDate date =EndOfTheFuckingWorld;
 double amount =0.;
-qlonglong contractId =-1;
     // construction
     booking(qlonglong cId, booking::Type t = Type::non, QDate d =EndOfTheFuckingWorld, double a =0.) : contractId(cId), type(t), date(d), amount(a) {};
-
+    // comparison for tests
+    inline friend bool operator==(const booking& lhs, const booking& rhs)
+    {
+        QString error;
+        if( (lhs.type != rhs.type)) error =qsl("comparing bookings: different types");
+        if( (lhs.date != rhs.date)) error += qsl(", comparing bookings: different dates");
+        if( (lhs.amount != rhs.amount)) error += qsl(", comparing bookings: different amounts");
+        if( (lhs.contractId!= rhs.contractId)) error += qsl(", comparing bookings: different contractIds");
+        if(error.isEmpty())
+            return true;
+        else {
+            qInfo() << error;
+            return false;
+        }
+    }
     // statics
     static const dbtable& getTableDef();
     static const dbtable& getTableDef_deletedBookings();

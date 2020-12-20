@@ -33,15 +33,15 @@ void test_booking::test_dateONSettlement_activatedContracts()
     creditor c(saveRandomCreditor());
     contract cont2(saveRandomContract(c.id()));
     cont2.activate(QDate( 2000,12,31), 1000.);
-    QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2001, 1, 1));
+    QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2000, 12, 31));
 
     contract cont(saveRandomContract(c.id()));
     cont.activate(QDate( 2000, 1, 1), 1000.);
-    QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2001, 1, 1));
+    QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2000, 12, 31));
 
     contract cont3(saveRandomContract(c.id()));
     cont3.activate(QDate( 1999,12,31), 1000.);
-    QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2000, 1, 1));
+    QCOMPARE( bookings::dateOfnextSettlement(), QDate( 1999, 12, 31));
 }
 void test_booking::test_dateONSettelment_contractsW_interestBookings00()
 {
@@ -50,7 +50,7 @@ void test_booking::test_dateONSettelment_contractsW_interestBookings00()
     cont.setInterestRate(1.);
     cont.activate(QDate( 2000,6,1), 1000.);
     booking::bookReInvestInterest(cred.id(), QDate(2001,1,1), 5.);
-    QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2002, 1, 1));
+    QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2001, 12, 31));
 }
 void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings01()
 {
@@ -63,7 +63,7 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings01()
     contract cont2(saveRandomContract(cred.id()));
     cont2.activate(QDate(2000, 6,1), 1000.); // EARLIER
 
-    QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2001, 1, 1));
+    QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2000, 12, 31));
 }
 void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings02()
 {
@@ -76,7 +76,7 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings02()
     contract cont2(saveRandomContract(cred.id()));
     cont2.activate(QDate(2002, 6,1), 1000.);
 
-    QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2002, 1, 1));
+    QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2001, 12, 31));
 }
 void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings03()
 {
@@ -89,6 +89,6 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings03()
     }
     {
         dbgTimer timer("calculate settlement year");
-        QCOMPARE( bookings::dateOfnextSettlement(), QDate(miniActDate.addYears(1).year(), 1, 1));
+        QCOMPARE( bookings::dateOfnextSettlement(), QDate(miniActDate.year(), 12, 31));
     }
 }

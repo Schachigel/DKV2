@@ -199,10 +199,10 @@ bool creditor::remove()
         creditortable.append(dbfield("Strasse",  QVariant::String).setNotNull());
         creditortable.append(dbfield("Plz",      QVariant::String).setNotNull());
         creditortable.append(dbfield("Stadt",    QVariant::String).setNotNull());
-        creditortable.append(dbfield("Email",    QVariant::String).setNotNull());
-        creditortable.append(dbfield("Anmerkung", QVariant::String).setNotNull());
-        creditortable.append(dbfield("IBAN",     QVariant::String).setNotNull());
-        creditortable.append(dbfield("BIC",      QVariant::String).setNotNull());
+        creditortable.append(dbfield("Email",    QVariant::String).setNotNull().setDefault(""));
+        creditortable.append(dbfield("Anmerkung", QVariant::String).setNotNull().setDefault(""));
+        creditortable.append(dbfield("IBAN",     QVariant::String).setNotNull().setDefault(""));
+        creditortable.append(dbfield("BIC",      QVariant::String).setNotNull().setDefault(""));
         QVector<dbfield> unique;
         unique.append(creditortable["Vorname"]);
         unique.append(creditortable["Nachname"]);

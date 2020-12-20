@@ -1,4 +1,5 @@
 #include <QSqlQuery>
+#include <QtMath>
 
 #include "contract.h"
 #include "booking.h"
@@ -80,10 +81,8 @@
 }
 /* static */ bool booking::bookPayout(qlonglong contractId, QDate date, double amount)
 {
-    if( amount > 0. ) amount = -1. * amount;
     // contract has to check that a payout is possible
-    return doBooking(Type::payout, contractId, date, amount);
-
+    return doBooking(Type::payout, contractId, date, -1*qFabs(amount));
 }
 /* static */ bool booking::bookReInvestInterest(qlonglong contractId, QDate date, double amount)
 {

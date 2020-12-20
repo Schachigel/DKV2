@@ -209,12 +209,13 @@ bool insert_views( QSqlDatabase db)
                                               "INNER JOIN Kreditoren ON Kreditoren.id = exVertraege.KreditorId "
                                            "Group by exVertraege.id")},
 
-        {qsl("NextAnnualS_first"),      qsl("SELECT STRFTIME('%Y-%m-%d', MIN(Datum), '1 year', 'start of year')  as nextInterestDate "
+        {qsl("NextAnnualS_first"),      qsl("SELECT STRFTIME('%Y-%m-%d', MIN(Datum), '1 year', 'start of year', '-1 day')  as nextInterestDate "
                                             "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id = buchungen.VertragsId "
                                             /* buchungen von Verträgen für die es keine Zinsbuchungen gibt */
                                             "WHERE (SELECT count(*) FROM Buchungen WHERE (Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8) AND Buchungen.VertragsId=Vertraege.id)=0 "
                                             "GROUP BY Vertraege.id ")},
-        {qsl("NextAnnualS_next"),       qsl("SELECT STRFTIME('%Y-%m-%d', MAX(Datum), '1 year', 'start of year') as nextInterestDate "
+
+        {qsl("NextAnnualS_next"),       qsl("SELECT STRFTIME('%Y-%m-%d', MAX(Datum), '1 day', '1 year', 'start of year', '-1 day') as nextInterestDate "
                                             "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id=buchungen.VertragsId "
                                             "WHERE Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8 "
                                             "GROUP BY Buchungen.VertragsId "

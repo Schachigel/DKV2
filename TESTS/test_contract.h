@@ -24,6 +24,7 @@ private slots:
     void test_createUninit_Contract();
     void test_set_get_interest();
     void test_activateContract();
+    void test_readContractFromDb();
     void test_randomContract();
     void test_randomContracts();
     void test_write_read_contract();

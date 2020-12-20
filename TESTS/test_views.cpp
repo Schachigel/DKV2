@@ -134,7 +134,7 @@ void test_views::test_stat_create_activate_multipleContract()
 void test_views::test_stat_annualSettelemnt()
 {
     dbStats expected;
-    QDate conclusionDate (2000, 1, 1),  activationDate(2000, 7, 1);
+    QDate conclusionDate (2000, 1, 1),  activationDate(2000, 6, 30);
     /* have contracts and test statistics over an annual settlement
     *  having 5 contracts:
     *  1 inactive, 2 activ & reinvesting, 2 active & not reinvesting
