@@ -582,6 +582,7 @@ void MainWindow::on_action_menu_contracts_statistics_view_triggered()
     QComboBox* combo =ui->comboUebersicht;
     if(combo->count() == 0) {
         combo->addItem(qsl("Übersicht aller Kredite"),                QVariant(OVERVIEW));
+        combo->addItem(qsl("Ausgezahlte Zinsen pro Jahr"),             QVariant(PAYED_INTEREST_BY_YEAR));
         combo->addItem(qsl("Anzahl auslaufender Verträge nach Jahr"), QVariant(BY_CONTRACT_END));
         combo->addItem(qsl("Anzahl Verträge nach Zinssatz und Jahr"), QVariant(INTEREST_DISTRIBUTION));
         combo->addItem(qsl("Anzahl Verträge nach Laufzeiten"),        QVariant(CONTRACT_TERMS));

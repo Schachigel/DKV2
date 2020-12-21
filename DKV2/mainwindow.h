@@ -136,7 +136,7 @@ private:
     void prepare_printPreview();
     QVector<booking> toBePrinted;
     QVector<booking>::const_iterator currentBooking;
-    
+
     bool useDb(const QString& dbfile);
     void showDbInStatusbar(QString filename = "");
 
@@ -150,12 +150,13 @@ private:
     };
     QVector<QString> Statistics_Filenames{
         qsl("Uebersicht"),
+        qsl("Zinsen"),
         qsl("Vertragsenden"),
         qsl("Zinsverteilungen"),
         qsl("Laufzeiten"),
         qsl("Gesamtübersicht")
     };
-    
+
 private:
     bool showDeletedContracts =false;
 };

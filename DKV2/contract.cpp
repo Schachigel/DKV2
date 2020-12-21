@@ -391,7 +391,7 @@ bool contract::cancel(const QDate& d)
     QDate actualD =avoidYearEndBookings(d);
     QString sql =qsl("UPDATE Vertraege SET LaufzeitEnde=?, Kfrist=? WHERE id=?");
     QVector<QVariant> v {actualD.toString(Qt::ISODate), -1, id()};
-    if( ! executeSql(sql, v)) {
+    if( ! executeSql_wNoRecords(sql, v)) {
         return false;
     }
     setPlannedEndDate(actualD);
@@ -473,7 +473,7 @@ QString contract::toString(QString title) const
 bool contract::storeTerminationDate(const QDate& d) const
 {   LOG_CALL;
     QVector<QVariant> v {d, id()};
-    return executeSql(qsl("UPDATE Vertraege SET LaufzeitEnde=? WHERE id=?"), v);
+    return executeSql_wNoRecords(qsl("UPDATE Vertraege SET LaufzeitEnde=? WHERE id=?"), v);
 }
 
 bool contract::archive()
@@ -483,10 +483,10 @@ bool contract::archive()
     // secured by the transaction of finalize()
 
     // move all bookings and the contract to the archive tables
-    if( executeSql(qsl("INSERT INTO exVertraege SELECT * FROM Vertraege WHERE id=?"), id()))
-     if( executeSql(qsl("INSERT INTO exBuchungen SELECT * FROM Buchungen WHERE VertragsId=?"), id()))
-      if( executeSql(qsl("DELETE FROM Buchungen WHERE VertragsId=?"), id()))
-       if( executeSql(qsl("DELETE FROM Vertraege WHERE id=?"), id()))
+    if( executeSql_wNoRecords(qsl("INSERT INTO exVertraege SELECT * FROM Vertraege WHERE id=?"), id()))
+     if( executeSql_wNoRecords(qsl("INSERT INTO exBuchungen SELECT * FROM Buchungen WHERE VertragsId=?"), id()))
+      if( executeSql_wNoRecords(qsl("DELETE FROM Buchungen WHERE VertragsId=?"), id()))
+       if( executeSql_wNoRecords(qsl("DELETE FROM Vertraege WHERE id=?"), id()))
           {
              qInfo() << "contract was moved to the contract archive";
              return true;

@@ -32,8 +32,10 @@ QString selectQueryFromFields(const QVector<dbfield>& fields,
 QVector<QVariant> executeSingleColumnSql( const dbfield field, const QString& where =QString());
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString());
 QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString());
-bool executeSql(QString sql, QVariant v =QVariant());
-bool executeSql(QString sql, QVector<QVariant> v);
+bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result);
+bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlRecord>& result);
+bool executeSql_wNoRecords(QString sql, QVariant v =QVariant());
+bool executeSql_wNoRecords(QString sql, QVector<QVariant> v);
 
 int getHighestRowId(const QString& tablename);
 

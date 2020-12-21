@@ -290,9 +290,41 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
     qInfo() << "executeSql returns " << result;
     return result;
 }
-bool executeSql(QString sql, QVariant v)
+bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result)
 {
-    QSqlQuery q;
+    QSqlQuery q; q.setForwardOnly(true);
+    q.prepare(sql);
+    if( v.isValid()) q.bindValue(0, v);
+    if( q.exec()) {
+        while(q.next()) {
+            result.push_back(q.record());
+        }
+        return true;
+    } else {
+        qDebug() << "Faild to execute Query. Error:" << q.lastError() << Qt::endl << q.lastQuery();
+        return false;
+    }
+}
+bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlRecord>& result)
+{
+    QSqlQuery q; q.setForwardOnly(true);
+    q.prepare(sql);
+    for( int i =0; i<v.size(); i++) {
+        q.bindValue(i, v[i]);
+    }
+    if( q.exec()) {
+        while(q.next()) {
+            result.push_back(q.record());
+        }
+        return true;
+    } else {
+        qDebug() << "Faild to execute Query. Error:" << q.lastError() << Qt::endl << q.lastQuery();
+        return false;
+    }
+}
+bool executeSql_wNoRecords(QString sql, QVariant v)
+{
+    QSqlQuery q; q.setForwardOnly(true);
     q.prepare(sql);
     if( v.isValid()) q.bindValue(0, v);
     if( q.exec())
@@ -303,10 +335,10 @@ bool executeSql(QString sql, QVariant v)
     qDebug() << "failed to execute query. Error: " << q.lastError() << Qt::endl << q.lastQuery();
     return false;
 }
-bool executeSql(QString sql, QVector<QVariant> v)
+bool executeSql_wNoRecords(QString sql, QVector<QVariant> v)
 {//   LOG_CALL;
-    if( v.isEmpty()) return executeSql(sql);
-    QSqlQuery q;
+    if( v.isEmpty()) return executeSql_wNoRecords(sql);
+    QSqlQuery q; q.setForwardOnly(true);
     q.prepare(sql);
     for( int i =0; i< v.count(); i++) {
         if( v[i].isValid()) {

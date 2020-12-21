@@ -40,8 +40,12 @@ QString tableRow2(QString left, QString right)
 }
 QString tableRow1(QString text, int colspan =2)
 {
-    QString opening(qsl("<tr><td style=\"background - color:rgb(215, 215, 210);\" colspan=\"%1\">"));
+    QString opening(qsl("<tr><td style=\"background - color:rgb(215, 215, 210);\" colspan=\"%1\";>"));
     return  opening.arg(colspan) + text + qsl("</td></tr>");
+}
+QString emptyRow( int cols) {
+    QString ret =tag(qsl(""), qsl("tr"), {"style=\"background - color:rgb(215, 215, 210);\" colspan=\"%1\";>"});
+    return ret.arg(QString::number(cols));
 }
 QString emptyRow( )
 {
@@ -62,7 +66,7 @@ QString td( QString v)
 }
 QString startTable()
 {
-    return qsl("<table cellpadding='8' bgcolor=#DDD>");
+    return qsl("<table cellpadding='8' bgcolor=#EEEEDD style=border-width:1px>");
 }
 QString endTable()
 {
@@ -74,7 +78,7 @@ QString startRow()
 }
 QString endRow()
 {
-    return qsl("</t>");
+    return qsl("</tr>");
 }
 QString newLine(QString line)
 {
@@ -108,7 +112,7 @@ QString htmlOverviewTable()
     ret += htmlOverviewTableBlock(qsl("Alle Aktiven Verträge"), stats.activeContracts[dbStats::t_nt]);
     ret += htmlOverviewTableBlock(qsl("Aktive Verträge ohne Zinsauszahlung"), stats.activeContracts[dbStats::thesa]);
     ret += htmlOverviewTableBlock(qsl("Aktive Verträge mit Zinsauszahlung"), stats.activeContracts[dbStats::pout]);
-    
+
     ret += htmlOverviewTableBlock(qsl("Alle noch nicht aktiven Verträge"), stats.inactiveContracts[dbStats::t_nt]);
     ret += htmlOverviewTableBlock(qsl("Inaktive Verträge ohne Zinsauszahlung"), stats.inactiveContracts[dbStats::thesa]);
     ret += htmlOverviewTableBlock(qsl("Inaktive Verträge mit Zinsauszahlung"), stats.inactiveContracts[dbStats::pout]);
@@ -118,6 +122,34 @@ QString htmlOverviewTable()
     ret += htmlOverviewTableBlock(qsl("Verträge mit Zinsauszahlung"), stats.allContracts[dbStats::pout]);
     return ret;
 }
+
+QString htmlPayedInterestByYearTable()
+{
+    QLocale locale;
+    QString ret {h1(qsl("Ausgezahlte und angerechnete Zinsen pro Jahr<br>"))};
+    QVector<PayedInterest> pi;
+    calc_payedInterestsByYear(pi);
+    if( pi.isEmpty())
+        return qsl("<br><br><i>Bisher wurden keine Zinsen gezahlt</i>");
+
+    ret += startTable();
+    ret +=tableRow3(h2(qsl("Jahr")), h2(qsl("Zinstyp")), h2(qsl("Summe")));
+    int lastyear = 0;
+    for( auto& x: qAsConst(pi)) {
+        if( x.year != lastyear) {
+            ret += emptyRow(3);
+            lastyear = x.year;
+        }
+        ret +=startRow();
+        ret +=qsl("<td style='text-align: right;' >") + QString::number(x.year) + qsl("</td>");
+        ret +=qsl("<td style='text-align: left;' >") + x.interestTypeDesc + qsl("</td>");
+        ret +=qsl("<td style='text-align: left;' >") + locale.toCurrencyString(x.value) + qsl("</td>");
+        ret +=endRow();
+    }
+    ret += endTable();
+    return ret;
+}
+
 QString htmlContractsByContractEndTable()
 {
     QLocale locale;
@@ -222,6 +254,9 @@ QString reportHtml(Uebersichten u)
     case OVERVIEW: {
         return html.arg(htmlOverviewTable());
         break;
+    }
+    case PAYED_INTEREST_BY_YEAR: {
+        return html.arg(htmlPayedInterestByYearTable());
     }
     case BY_CONTRACT_END: {
         return html.arg(htmlContractsByContractEndTable());

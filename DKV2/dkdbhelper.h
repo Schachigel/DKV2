@@ -7,7 +7,7 @@
 #include <QList>
 #include <QString>
 
-
+#include "booking.h"
 #include "dbtable.h"
 #include "dbfield.h"
 #include "dbstructure.h"
@@ -34,6 +34,15 @@ QString proposeContractLabel();
 void create_sampleData(int datensaetze =20);
 
 bool createCsvActiveContracts();
+
+struct PayedInterest
+{
+    int year =0;
+    QString interestTypeDesc;
+    double value =0;
+};
+
+void calc_payedInterestsByYear(QVector<PayedInterest>& pi);
 
 struct ContractEnd
 {
