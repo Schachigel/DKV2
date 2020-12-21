@@ -492,7 +492,7 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
         model->setTable(qsl("Buchungen"));
         model->setFilter(qsl("Buchungen.VertragsId=") + QString::number(index));
     }
-    model->setSort(0, Qt::SortOrder::AscendingOrder);
+    model->setSort(0, Qt::SortOrder::DescendingOrder);
 
     ui->bookingsTableView->setModel(model);
     model->select();
