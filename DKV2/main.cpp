@@ -107,7 +107,10 @@ int main(int argc, char *argv[])
     initLogging();
 
     LOG_CALL;
+    qInfo() << "************************************************";
     qInfo() << "DKV2 started " << QDate::currentDate().toString(qsl("dd.MM.yyyy")) << qsl("-") << QTime::currentTime().toString();
+    qInfo() << "DKV2 Version: " << QCoreApplication::applicationVersion();
+    qInfo() << "************************************************";
 
     init_DKDBStruct();
 

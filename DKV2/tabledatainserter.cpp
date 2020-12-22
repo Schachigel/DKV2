@@ -19,14 +19,17 @@ void TableDataInserter::init(const dbtable& t)
     }
 }
 
-bool TableDataInserter::setValue(const QString& n, const QVariant& v)
+bool TableDataInserter::setValue(const QString& n, const QVariant& v, treatNull allowNull)
 {//   LOG_CALL_W(n +qsl(", ") +v.toString());
     if( ! record.contains(n)) {
         qCritical() << "wrong field name for insertion " << n;
         return false;
     }
+    if( allowNull && v.toString()=="") {
+        setValueNULL(n);
+        return true;
+    }
     if( record.field(n).type() == v.type()) {
-//        qInfo() << "tableDataInserter setValue: " << n << " -> " << v ;
         record.setValue(n, v);
         return true;
     }
@@ -72,6 +75,10 @@ QString TableDataInserter::getInsertRecordSQL() const
     QString ValueList;
 
     for( int i=0; i<record.count(); i++) {
+        if (record.field(i).isNull() && !record.field(i).isAutoValue()) {
+            // skip this value so that the defaults from table def will be used
+            continue;
+        }
         if( i!=0) {
             FieldList +=qsl(", ");
             ValueList +=qsl(", ");

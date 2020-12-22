@@ -325,14 +325,18 @@ void closeDatabaseConnection(QString con)
 
     QSqlDatabase::removeDatabase(con);
     QList<QString> cl = QSqlDatabase::connectionNames();
-    if( cl.count() == 0)
-        return;
-    if( cl.count() > 0) {
-        qInfo() << "Found " << cl.count() << "connections open, after closing  \"" + con +"\"";
-        return;
+
+    for( auto s : cl) {
+        qInfo()<< "Found " << cl.count() << "connections open, after closing: '" + con +"'";
+        QSqlDatabase::removeDatabase(s);
     }
+    cl.clear();
+    cl = QSqlDatabase::connectionNames();
+    if( cl.size())
+        qInfo() << "not all connection to the database could be closed";
     qInfo() << "Database connection " << con << " removed";
 }
+
 bool open_databaseForApplication( QString newDbFile)
 {   LOG_CALL_W(newDbFile);
     Q_ASSERT(!newDbFile.isEmpty());
@@ -368,7 +372,18 @@ bool copy_TableContent(QString table, QSqlDatabase targetDB)
         QSqlRecord rec = q.record();
         qDebug() << "dePe Copy: working on Record " << rec;
         TableDataInserter tdi( dkdbstructur[table]);
-        if( (!tdi.setValues(rec)) || (tdi.InsertData_noAuto(targetDB) == -1)) {
+        // set all values
+        for( int i =0; i <rec.count(); i++) {
+            QSqlField f =rec.field(i);
+            if( f.requiredStatus() == QSqlField::Required) {
+                // it is "NOT NULL"
+                tdi.setValue(f.name(), f.value(), TableDataInserter::treatNull::notAllowNullValues);
+            } else {
+                // it could be "NULL"
+                tdi.setValue(f.name(), f.value(), TableDataInserter::treatNull::allowNullValues);
+            }
+        }
+        if(tdi.InsertData_noAuto(targetDB) == -1) {
             qCritical() << "Error inserting Data into Table copy " << table << ": " << q.record();
             success = false;
             break;
@@ -395,7 +410,7 @@ bool copy_mangledCreditors(QSqlDatabase targetDB)
         tdi.setValue("Stadt", QString("Stadt"));
 
         if( tdi.InsertData(targetDB) == -1) {
-            qDebug() << "Error inserting Data into deperso.Copy Table" << q.record();
+            qDebug() << "Error inserting Data into deperso.Copy Table" << q.lastError() << Qt::endl << q.record();
             success = false;
             break;
         }
@@ -414,6 +429,8 @@ bool create_DB_copy(QString targetfn, bool deper)
     }
 
     dbCloser closer;
+    bool result = true;
+    { // backupDb Scope - KEEP ! so that the database can be closed
     QSqlDatabase backupDB = QSqlDatabase::addDatabase("QSQLITE", "backup");
     backupDB.setDatabaseName(targetfn);
 
@@ -425,13 +442,17 @@ bool create_DB_copy(QString targetfn, bool deper)
         closer.set(&backupDB);
     create_DK_TablesAndContent(backupDB);
 
-    bool result = true;
     QVector<dbtable> tables = dkdbstructur.getTables();
     for( auto& table : qAsConst(tables)) {
-        if( deper && table.Name() == "Kreditoren")
+        if( deper && table.Name() == qsl("Kreditoren"))
             result = result && copy_mangledCreditors(backupDB);
+        else if (table.Name() == qsl("BriefElemente")) {
+            QSqlQuery deleteDefaultValues(qsl("DELETE FROM BriefElemente"), backupDB);
+            result = result && copy_TableContent(table.Name(), backupDB);
+        }
         else
             result = result && copy_TableContent(table.Name(), backupDB);
+    }
     }
     return result;
 }

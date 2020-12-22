@@ -12,7 +12,8 @@ struct TableDataInserter
     //TableDataInserter(){}
     TableDataInserter(const dbtable& t);
     void init(const dbtable& t);
-    bool setValue(const QString& field, const QVariant& v);
+    enum treatNull {allowNullValues, notAllowNullValues};
+    bool setValue(const QString& field, const QVariant& v, treatNull allowNull =treatNull::notAllowNullValues);
     bool setValueNULL(const QString& field);
     bool setValues(const QSqlRecord rec);
     QVariant getValue(const QString& f) const { return record.field(f).value();}
