@@ -12,6 +12,21 @@
 #include "booking.h"
 #include "creditor.h"
 
+enum class interestModel {
+    interestPayout =0,
+    accumulating =1,
+    constant =2,
+    maxId
+};
+inline int interestModeltoInt(interestModel m) {
+    return static_cast<int>(m);
+}
+inline interestModel InterestModelfromInt(int i) {
+    if( i < 0 || i >=interestModeltoInt(interestModel::maxId))
+        Q_ASSERT("Invalid interestModel");
+    return static_cast<interestModel>(i);
+}
+
 struct contract
 {
     // static & friends
@@ -46,8 +61,8 @@ struct contract
     }
     void setPlannedInvest(const double& d) { td.setValue(qsl("Betrag"), ctFromEuro(d));}
     double plannedInvest() const { return euroFromCt( td.getValue(qsl("Betrag")).toInt());}
-    void setReinvesting( bool b =true) { td.setValue(qsl("thesaurierend"), b);}
-    bool reinvesting() const { return (td.getValue(qsl("thesaurierend")).toInt() != 0);}
+    void setInterestModel( interestModel b =interestModel::accumulating) { td.setValue(qsl("thesaurierend"), interestModeltoInt(b));}
+    interestModel interestModel() const { return InterestModelfromInt(td.getValue(qsl("thesaurierend")).toInt());}
     void setNoticePeriod(int m) { td.setValue(qsl("Kfrist"), m); if( -1 != m) setPlannedEndDate( EndOfTheFuckingWorld);}
     int noticePeriod() const { return td.getValue(qsl("Kfrist")).toInt();}
     bool hasEndDate() const {return -1 == td.getValue(qsl("Kfrist"));}

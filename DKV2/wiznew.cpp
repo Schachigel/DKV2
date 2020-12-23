@@ -545,7 +545,7 @@ bool saveContractFromWizard(t wiz)
     c.setConclusionDate(wiz->date);
     c.setNoticePeriod(wiz->noticePeriod);
     c.setPlannedEndDate(wiz->termination);
-    c.setReinvesting(wiz->field(qsl("thesa")).toBool());
+    c.setInterestModel(InterestModelfromInt(wiz->field(qsl("thesa")).toInt()));
     if( -1 == c.saveNewContract()) {
         qCritical() << "New contract could not be saved";
         QMessageBox::critical(getMainWindow(), "Fehler", "Der Vertrag konnte nicht "

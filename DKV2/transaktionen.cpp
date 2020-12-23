@@ -168,12 +168,12 @@ void annualSettlement()
         csv.appendToRow(cont.postalCode());csv.appendToRow(cont.city());
 
         csv.appendToRow(cont.iban());      csv.appendToRow(c.label());
-        c.reinvesting() ? csv.appendToRow(qsl("thesaurierend")) : csv.appendToRow(qsl("ausschüttend"));
+        (c.interestModel() == interestModel::accumulating) ? csv.appendToRow(qsl("thesaurierend")) : csv.appendToRow(qsl("ausschüttend"));
         csv.appendToRow(startOfInterrestCalculation[i].toString(qsl("dd.MM.yyyy")));
         csv.appendToRow(bookingDate.toString(qsl("dd.MM.yyyy")));
         csv.appendToRow(l.toString(c.interestRate(), 'f', 2));
 
-        if( c.reinvesting())
+        if( c.interestModel() == interestModel::accumulating)
             csv.appendToRow(l.toString(c.value()-b.amount, 'f', 2));
         else
             csv.appendToRow(l.toString(c.value(), 'f', 2));

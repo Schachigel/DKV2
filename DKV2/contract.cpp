@@ -22,7 +22,7 @@ const dbtable& contract::getTableDef()
         contractTable.append(dbfield(qsl("Kennung"), QVariant::String, qsl("UNIQUE")));
         contractTable.append(dbfield(qsl("ZSatz"), QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
         contractTable.append(dbfield(qsl("Betrag"), QVariant::Int).setNotNull().setDefault(0)); // ct
-        contractTable.append(dbfield(qsl("thesaurierend"), QVariant::Bool).setNotNull().setDefault(1));
+        contractTable.append(dbfield(qsl("thesaurierend"), QVariant::Int).setNotNull().setDefault(1));
         contractTable.append(dbfield(qsl("Vertragsdatum"), QVariant::Date).setNotNull());
         contractTable.append(dbfield(qsl("Kfrist"), QVariant::Int).setNotNull().setDefault(6));
         contractTable.append(dbfield(qsl("LaufzeitEnde"), QVariant::Date).setNotNull().setDefault(qsl("9999-12-31")));
@@ -69,7 +69,7 @@ void contract::init()
     setCreditorId(-1);
     setNoticePeriod(6);
     //setPlannedEndDate(EndOfTheFuckingWorld); - implicit
-    setReinvesting(true);
+    setInterestModel(interestModel::accumulating);
     setConclusionDate(QDate::currentDate());
     setInterestRate(1.50);
     setPlannedInvest(1000000);
@@ -80,7 +80,7 @@ void contract::initRandom(qlonglong creditorId)
     static QRandomGenerator *rand = QRandomGenerator::system();
     setLabel(proposeContractLabel());
     setCreditorId(creditorId);
-    setReinvesting(0 != rand->bounded(100)%5);// 20% auszahlend
+    setInterestModel(InterestModelfromInt(0 != rand->bounded(100)%5));// 20% auszahlend
     setInterestRate(1 +rand->bounded(149) /100.);
     setPlannedInvest(    rand->bounded(50)*1000.
                        + rand->bounded(1,3) *500.
@@ -255,7 +255,7 @@ int contract::annualSettlement( int year, bool transactual)
                      //////////
         double zins =ZinsesZins(interestRate(), value(), latestBooking().date, nextAnnualSettlementDate);
                      //////////
-        if( reinvesting()) {
+        if( interestModel()== interestModel::accumulating) {
             if( (bookingSuccess =booking::bookAnnualInterestDeposit(id(), nextAnnualSettlementDate, zins)))
                 latestB = { id(),  booking::Type::annualInterestDeposit, nextAnnualSettlementDate, zins };
         } else {
@@ -411,7 +411,7 @@ bool contract::finalize(bool simulate, const QDate& finDate,
     qlonglong id_to_be_deleted = id();
     QSqlDatabase::database().transaction();
     // as we are terminating the contract we have to sum up all interests
-    setReinvesting(true);
+    setInterestModel(interestModel::accumulating);
     if( needsAnnualSettlement(finDate))
         if( !annualSettlement(finDate.year() -1, false)) {
             QSqlDatabase::database().rollback();
