@@ -21,11 +21,14 @@ bool create_DK_databaseFile(const QString& filename);
 bool insert_views( QSqlDatabase db =QSqlDatabase::database());
 bool create_DK_TablesAndContent(QSqlDatabase db = QSqlDatabase::database());
 
-bool check_db_version(QSqlDatabase db = QSqlDatabase::database());
-bool isValidDatabase(const QString& filename);
-bool isValidDatabase(QSqlDatabase db = QSqlDatabase::database());
+bool check_db_version(QSqlDatabase db =QSqlDatabase::database());
 
-void closeDatabaseConnection(QString connection= QSqlDatabase::defaultConnection);
+bool createView(QString name, QString Sql, QSqlDatabase db = QSqlDatabase::database());
+void updateViews(QSqlDatabase db =QSqlDatabase::database());
+bool isValidDatabase(const QString& filename);
+bool isValidDatabase(QSqlDatabase db =QSqlDatabase::database());
+
+void closeDatabaseConnection(QString connection =QSqlDatabase::defaultConnection);
 bool open_databaseForApplication( QString newDbFile="");
 
 bool create_DB_copy(QString targetfn, bool anonym);
@@ -66,5 +69,7 @@ struct rowData
 };
 
 QVector<rowData> contractRuntimeDistribution();
+
+extern const QString sqlContractView;
 
 #endif // DKDBHELPER_H

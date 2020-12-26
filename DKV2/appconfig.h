@@ -8,6 +8,7 @@
 #include <QSqlDatabase>
 
 #define DB_VERSION    qsl("Version")
+#define DKV2_VERSION  qsl("dkv2.exe.Version")
 #define CURRENT_DB_VERSION 2.5
 #define GMBH_ADDRESS1 qsl("gmbh.address1")
 #define GMBH_ADDRESS2 qsl("gmbh.address2")

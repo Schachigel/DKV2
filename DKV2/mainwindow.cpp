@@ -42,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setCentralWidget(ui->stackedWidget);
     if( appConfig::CurrentDb().isEmpty())
+        // todo: ask "new or open"
         on_action_menu_database_new_triggered();
     if( !useDb(appConfig::CurrentDb()))
         // there should be a valid DB - checked in main.cpp
@@ -371,11 +372,17 @@ void MainWindow::on_action_cmenu_go_contracts_triggered()
 // new creditor and contract Wiz
 void MainWindow::updateListViews()
 {
-    if( ui->stackedWidget->currentIndex() == creditorsListPageIndex)
-        qobject_cast<QSqlTableModel*>(ui->CreditorsTableView->model())->select();
+    QSqlTableModel* temp;
+
+    if( ui->stackedWidget->currentIndex() == creditorsListPageIndex) {
+        if( (temp =qobject_cast<QSqlTableModel*>(ui->CreditorsTableView->model())))
+            temp->select();
+    }
     if( ui->stackedWidget->currentIndex() == contractsListPageIndex) {
-        qobject_cast<QSqlTableModel*>(ui->contractsTableView->model())->select();
-        qobject_cast<QSqlTableModel*>(ui->bookingsTableView ->model())->select();
+        if( (temp =qobject_cast<QSqlTableModel*>(ui->contractsTableView->model())))
+                temp->select();
+        if( (temp =qobject_cast<QSqlTableModel*>(ui->bookingsTableView ->model())))
+                temp->select();
     }
     if( ui->stackedWidget->currentIndex() == overviewsPageIndex)
         on_action_menu_contracts_statistics_view_triggered();
@@ -410,21 +417,30 @@ QString filterFromFilterphrase(QString fph)
     return fph.isEmpty() ? QString() :
            (qsl("Kreditorin LIKE '%") + fph + qsl("%' OR Vertragskennung LIKE '%") + fph + qsl("%'"));
 }
+
 void MainWindow::prepare_contracts_list_view()
 {   LOG_CALL;
     busycursor b;
+
     enum colmn_Pos {
-        cp_id = 0,
-        cp_Kreditorin,
-        cp_Vertragskennung,
-        cp_Zinssatz,
-        cp_Wert,
-        cp_Aktivierungsdatum,
-        cp_Kuendigungsfrist,
-        cp_Vertragsende,
-        cp_thesa,
-        cp_KreditorId
+        cp_vid,
+        cp_Creditor_id,
+        cp_Creditor,
+        cp_ContractLabel,
+        cp_ContractDate,
+        cp_ContractValue,
+        cp_InterestRate,
+        cp_InterestMode,
+        cp_ActivationDate,
+        cp_InterestBearing,
+        cp_Interest,
+        cp_LastBooking,
+        cp_ContractEnd
     };
+
+    if (!createView(qsl("vVertraege_alle_4view"), sqlContractView))
+        Q_ASSERT(true);
+
     QSqlTableModel* model = new QSqlTableModel(this);
     if( showDeletedContracts)
         model->setTable(qsl("vVertraege_geloescht"));
@@ -435,20 +451,21 @@ void MainWindow::prepare_contracts_list_view()
 
     QTableView*& tv = ui->contractsTableView;
     tv->setModel(model);
-    model->select();
+    if ( !model->select()) {
+        qCritical() << "Model selection failed" << model->lastError();
+        return;
+    }
+
     tv->setEditTriggers(QTableView::NoEditTriggers);
     tv->setSelectionMode(QAbstractItemView::SingleSelection);
     tv->setSelectionBehavior(QAbstractItemView::SelectRows);
     tv->setAlternatingRowColors(true);
     tv->setSortingEnabled(true);
-    tv->setItemDelegateForColumn(cp_Zinssatz, new PercentItemFormatter(tv));
-    tv->setItemDelegateForColumn(cp_Wert, new ContractValueItemFormatter(tv));
-    tv->setItemDelegateForColumn(cp_Aktivierungsdatum, new DateItemFormatter(tv));
-    tv->setItemDelegateForColumn(cp_Kuendigungsfrist, new KFristItemFormatter(tv));
-    tv->setItemDelegateForColumn(cp_Vertragsende, new DateItemFormatter(tv));
-    tv->setItemDelegateForColumn(cp_thesa, new thesaItemFormatter(tv));
-    tv->hideColumn(cp_id);
-    tv->hideColumn(cp_KreditorId);
+    tv->setItemDelegateForColumn(cp_ContractValue, new CurrencyFormatter(tv));
+    tv->setItemDelegateForColumn(cp_InterestBearing, new CurrencyFormatter(tv));
+    tv->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(tv));
+    tv->hideColumn(cp_vid);
+    tv->hideColumn(cp_Creditor_id);
 
     tv->resizeColumnsToContents();
     auto c = connect(ui->contractsTableView->selectionModel(),
@@ -460,6 +477,7 @@ void MainWindow::prepare_contracts_list_view()
     } else
         tv->setCurrentIndex(model->index(0, 1));
 }
+
 int  MainWindow::get_current_id_from_contracts_list()
 {   LOG_CALL;
     QModelIndex mi(ui->contractsTableView->currentIndex().siblingAtColumn(0));

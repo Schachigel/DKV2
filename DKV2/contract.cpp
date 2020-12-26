@@ -80,7 +80,7 @@ void contract::initRandom(qlonglong creditorId)
     static QRandomGenerator *rand = QRandomGenerator::system();
     setLabel(proposeContractLabel());
     setCreditorId(creditorId);
-    setInterestModel(InterestModelfromInt(0 != rand->bounded(100)%5));// 20% auszahlend
+    setInterestModel(InterestModelfromInt(rand->bounded(100)%3));
     setInterestRate(1 +rand->bounded(149) /100.);
     setPlannedInvest(    rand->bounded(50)*1000.
                        + rand->bounded(1,3) *500.

@@ -33,16 +33,13 @@ void PercentItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &
     QStyledItemDelegate::paint(painter, alignedOption, index);
 }
 
-QString ContractValueItemFormatter::displayText(const QVariant& value, const QLocale& )const
+QString CurrencyFormatter::displayText(const QVariant& value, const QLocale& )const
 {
     double w =value.toDouble();
     QLocale l;
-    if( w < 0)
-        return qsl("[") + l.toCurrencyString(-1 *w) + qsl(" ")  + qsl("] offen");
-    else
-        return l.toCurrencyString(w)+ qsl(" ");
+    return l.toCurrencyString(w)+ qsl(" ");
 };
-void ContractValueItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void CurrencyFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QStyleOptionViewItem alignedOption(option);
     alignedOption.displayAlignment = Qt::AlignRight|Qt::AlignVCenter;

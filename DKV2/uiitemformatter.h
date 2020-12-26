@@ -32,11 +32,11 @@ public:
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 
-class ContractValueItemFormatter : public QStyledItemDelegate
+class CurrencyFormatter : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    ContractValueItemFormatter(QObject *parent = nullptr) : QStyledItemDelegate(parent){}
+    CurrencyFormatter(QObject *parent = nullptr) : QStyledItemDelegate(parent){}
     QString displayText(const QVariant& value, const QLocale& )const override;
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };

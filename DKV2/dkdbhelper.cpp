@@ -14,6 +14,51 @@
 #include "letterTemplate.h"
 #include "dbstructure.h"
 
+const QString sqlContractView {
+    qsl("SELECT \
+  V.id                                     AS VertragsId, \
+  K.id                                    AS KreditorId, \
+  K.Nachname || ', ' || K.Vorname          AS KreditorIn, \
+  V.Kennung                                AS Vertragskennung, \
+  strftime(\"%d.%m.%Y\",V.Vertragsdatum)     AS Vertragsdatum, \
+  ifnull(AktivierungsWert, V.Betrag / 100.) AS Nominalwert, \
+  CAST(V.Zsatz / 100. AS VARCHAR) || ' %'    AS Zinssatz, \
+  CASE WHEN V.thesaurierend = 0 THEN \"Auszahlend\" \
+  ELSE CASE WHEN V.thesaurierend = 1 THEN \"Thesaur.\" \
+       ELSE CASE WHEN V.thesaurierend = 2 THEN \"Fester Zins\" \
+            ELSE \"ERROR\" \
+            END \
+       END \
+  END                                      AS Zinsmodus, \
+  ifnull(Aktivierungsdatum, ' - ')         AS Aktivierung, \
+  ifnull(CASE WHEN V.thesaurierend = 1 THEN GesamtWert \
+  ELSE AktivierungsWert \
+  END, 0.)                                 AS VerzinslGuthaben, \
+  ifnull(ZinsSumme, 0.)                    AS Gesamtzins, \
+  ifnull(LetzteBuchung, ' - ')             AS LetzteBuchung, \
+  CASE WHEN V.Kfrist = -1 THEN strftime(\"%d.%m.%Y\", V.LaufzeitEnde) \
+  ELSE '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)' \
+  END                                      AS KdgFristVertragsende \
+FROM Vertraege AS V \
+ \
+INNER JOIN Kreditoren AS K ON V.KreditorId = K.id \
+ \
+LEFT JOIN \
+(SELECT vid_min, minDate AS Aktivierungsdatum, minValue AS AktivierungsWert, GesamtWert, round(GesamtWert - minValue,2) AS ZinsSumme \
+FROM \
+  (SELECT B.VertragsId AS vid_min, min(B.Datum) AS minDate, B.Betrag / 100. AS minValue, sum(B.Betrag) / 100. AS GesamtWert \
+   FROM Buchungen AS B GROUP BY B.VertragsId) \
+) ON V.id = vid_min \
+ \
+LEFT JOIN \
+(SELECT vid_max, maxDate AS LetzteBuchung \
+FROM \
+  (SELECT B_.VertragsId AS vid_max, max(B_.Datum) AS maxDate \
+   FROM Buchungen AS B_ GROUP BY B_.VertragsId) \
+) ON V.id = vid_max "
+       )
+};
+
 class dbCloser
 {   // for use on the stack only
 public:
@@ -110,19 +155,22 @@ struct dbViewDev{
     QString sql;
 };
 
-bool createView(QString name, QString sql, QSqlDatabase db =QSqlDatabase::database()) {
+bool createView(QString name, QString sql, QSqlDatabase db) {
     db.transaction();
     QSqlQuery q(db);
-    q.exec("DROP VIEW " + name);
+    if( q.exec("DROP VIEW " + name))
+        qInfo() << "Successfully dropped view " << name;
+    else
+        qInfo() << "Failed to drop view " << name << " Error: " << q.lastError() << Qt::endl << q.lastQuery();
     QString createViewSql = "CREATE VIEW %1 AS " + sql;
     createViewSql = createViewSql.arg(name);
     if( q.exec(createViewSql) && q.lastError().type() == QSqlError::NoError) {
         db.commit();
-        qInfo() << "successfully created view " << name;
+        qInfo() << "successfully created view " << name << Qt::endl << sql;
         return true;
     }
     db.rollback();
-    qCritical() << "faild to create view " << name << Qt::endl << q.lastQuery() << Qt::endl << q.lastError();
+    qCritical() << "faild to create view " << name << Qt::endl << q.lastQuery() << Qt::endl << q.lastError() << Qt::endl << sql;
     return false;
 }
 bool createViews( QVector<dbViewDev>& views, QSqlDatabase db)
@@ -189,11 +237,7 @@ bool insert_views( QSqlDatabase db)
                                             "  UNION  "
                                             "SELECT id, Kreditorin, Vertragskennung, Zinssatz, Wert, Abschlussdatum  AS Datum,  Kuendigungsfrist, Vertragsende, thesa, KreditorId "
                                              "FROM vVertraege_passiv")},
-        {qsl("vVertraege_alle_4view"),  qsl("SELECT id, Kreditorin, Vertragskennung, Zinssatz, Wert, Aktivierungsdatum AS Datum, Kuendigungsfrist, Vertragsende, thesa, KreditorId "
-                                             "FROM vVertraege_aktiv"
-                                            "  UNION  "
-                                            "SELECT id, Kreditorin, Vertragskennung, Zinssatz, -1*Wert, Abschlussdatum  AS Datum,  Kuendigungsfrist, Vertragsende, thesa, KreditorId "
-                                             "FROM vVertraege_passiv")},
+        {qsl("vVertraege_alle_4view"),  sqlContractView},
         {qsl("vVertraege_geloescht"),    qsl("SELECT "
                                               "exVertraege.id AS id, " // 0: id
                                               "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 1: kreditorin
@@ -271,6 +315,17 @@ bool check_db_version(QSqlDatabase db)
         return true;
     qCritical() << "db version check failed: found version " << d << " needed version " << CURRENT_DB_VERSION;
     return false;
+}
+void updateViews(QSqlDatabase db)
+{   LOG_CALL;
+    QString lastProgramVersion = getMetaInfo(DKV2_VERSION, QString());
+    QString thisProgramVersion = QCoreApplication::applicationVersion();
+    if( lastProgramVersion != thisProgramVersion) {
+        if( !insert_views(db))
+            qDebug() << "Faild to insert views for current exe version";
+        setMetaInfo(DKV2_VERSION, thisProgramVersion);
+    }
+    return;
 }
 bool has_allTablesAndFields(QSqlDatabase db)
 {   LOG_CALL;
@@ -357,6 +412,7 @@ bool open_databaseForApplication( QString newDbFile)
         closeDatabaseConnection();
         return false;
     }
+    updateViews();
     dbConfig c(dbConfig::FROM_DB);
     c.storeRuntimeData();
     return true;
@@ -609,4 +665,3 @@ void calc_anualInterestDistribution( QVector<YZV>& yzv)
     }
     return;
 }
-
