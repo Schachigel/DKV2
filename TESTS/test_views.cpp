@@ -33,7 +33,7 @@ void test_views::test_stat_activateContract_reinvesting()
     cont.setPlannedInvest(v);
     double ir =3.3;
     cont.setInterestRate(ir);
-    cont.setInterestModel(interestModel::accumulating);
+    cont.setInterestModel(interestModel::reinvest);
     cont.saveNewContract();
 
     // passive contract
@@ -56,7 +56,7 @@ void test_views::test_stat_activateContract_wpayout()
     cont.setPlannedInvest(v);
     double ir =3.3;
     cont.setInterestRate(ir);
-    cont.setInterestModel(interestModel::interestPayout);
+    cont.setInterestModel(interestModel::payout);
     cont.saveNewContract();
 
     // passive contract
@@ -82,7 +82,7 @@ void test_views::test_stat_create_activate_multipleContract()
     first.setPlannedInvest(v1);
     double ir1 =3.3;
     first.setInterestRate(ir1);
-    first.setInterestModel(interestModel::accumulating);
+    first.setInterestModel(interestModel::reinvest);
     first.saveNewContract();
 
     dbStats expected;
@@ -97,7 +97,7 @@ void test_views::test_stat_create_activate_multipleContract()
     //...todo: setup expected ...
     double ir2 =1.66;
     second.setInterestRate(ir2);
-    second.setInterestModel(interestModel::accumulating);
+    second.setInterestModel(interestModel::reinvest);
     second.saveNewContract();
 
     expected.addContract(v2, ir2, dbStats::payoutType::thesa, c.id());
@@ -112,7 +112,7 @@ void test_views::test_stat_create_activate_multipleContract()
     double ir3 =3.3;
     third.setInterestRate(ir3);
     //...todo: setup expected ...
-    third.setInterestModel(interestModel::interestPayout);
+    third.setInterestModel(interestModel::payout);
     third.saveNewContract();
 
     expected.addContract(v3, ir3, dbStats::payoutType::pout, c.id());
@@ -148,7 +148,7 @@ void test_views::test_stat_annualSettelemnt()
 
     creditor activeCred1(saveRandomCreditor());
     contract activeReInv1; activeReInv1.initRandom(activeCred1.id());
-    activeReInv1.setInterestModel(interestModel::accumulating);
+    activeReInv1.setInterestModel(interestModel::reinvest);
     double v =1000, ir =0.5; // %
     activeReInv1.setPlannedInvest(v);
     activeReInv1.setInterestRate(ir);
@@ -159,7 +159,7 @@ void test_views::test_stat_annualSettelemnt()
     expected.activateContract(v, v, ir, dbStats::payoutType::thesa,activeCred1.id());
 
     contract activeReInv2; activeReInv2.initRandom(activeCred1.id());
-    activeReInv2.setInterestModel(interestModel::accumulating);
+    activeReInv2.setInterestModel(interestModel::reinvest);
     activeReInv2.setPlannedInvest(2 *v);
     activeReInv2.setInterestRate(2 *ir);
     activeReInv2.setConclusionDate(conclusionDate);
@@ -170,7 +170,7 @@ void test_views::test_stat_annualSettelemnt()
 
     creditor activeCred2(saveRandomCreditor());
     contract activeNonReIn1;activeNonReIn1.initRandom(activeCred2.id());
-    activeNonReIn1.setInterestModel(interestModel::interestPayout);
+    activeNonReIn1.setInterestModel(interestModel::payout);
     activeNonReIn1.setPlannedInvest(3 *v);
     activeNonReIn1.setInterestRate(3 *ir);
     activeNonReIn1.setConclusionDate(conclusionDate);
@@ -180,7 +180,7 @@ void test_views::test_stat_annualSettelemnt()
     expected.activateContract(3*v, 3*v, 3*ir, dbStats::payoutType::pout, activeCred2.id());
 
     contract activeNonReIn2;activeNonReIn2.initRandom(activeCred2.id());
-    activeNonReIn2.setInterestModel(interestModel::interestPayout);
+    activeNonReIn2.setInterestModel(interestModel::payout);
     activeNonReIn2.setPlannedInvest(4 *v);
     activeNonReIn2.setInterestRate(4 *ir);
     activeNonReIn2.setConclusionDate(conclusionDate);
@@ -230,7 +230,7 @@ void test_views::test_stat_extend_contract_sameYear()
     cont.setPlannedInvest(v);
     double ir =3.3;
     cont.setInterestRate(ir);
-    cont.setInterestModel(interestModel::interestPayout);
+    cont.setInterestModel(interestModel::payout);
     cont.setConclusionDate(activationDate.addMonths(1));
     cont.saveNewContract();
 

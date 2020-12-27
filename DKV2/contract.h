@@ -13,16 +13,30 @@
 #include "creditor.h"
 
 enum class interestModel {
-    interestPayout =0,
-    accumulating =1,
-    constant =2,
+    payout   =0,
+    reinvest =1,
+    fixed    =2,
     maxId
 };
-inline int interestModeltoInt(interestModel m) {
+inline QString toString(interestModel m) {
+    switch(m) {
+    case interestModel::payout:
+        return "auszahlend";
+    case interestModel::reinvest:
+        return "thesaurierend";
+    case interestModel::fixed:
+        return "unveränderlich";
+    case interestModel::maxId:
+    default:
+        Q_ASSERT(true);
+    }
+    return QString();
+}
+inline int toInt(interestModel m) {
     return static_cast<int>(m);
 }
-inline interestModel InterestModelfromInt(int i) {
-    if( i < 0 || i >=interestModeltoInt(interestModel::maxId))
+inline interestModel fromInt(int i) {
+    if( i < 0 || i >=toInt(interestModel::maxId))
         Q_ASSERT("Invalid interestModel");
     return static_cast<interestModel>(i);
 }
@@ -61,8 +75,8 @@ struct contract
     }
     void setPlannedInvest(const double& d) { td.setValue(qsl("Betrag"), ctFromEuro(d));}
     double plannedInvest() const { return euroFromCt( td.getValue(qsl("Betrag")).toInt());}
-    void setInterestModel( interestModel b =interestModel::accumulating) { td.setValue(qsl("thesaurierend"), interestModeltoInt(b));}
-    interestModel interestModel() const { return InterestModelfromInt(td.getValue(qsl("thesaurierend")).toInt());}
+    void setInterestModel( interestModel b =interestModel::reinvest) { td.setValue(qsl("thesaurierend"), toInt(b));}
+    interestModel interestModel() const { return fromInt(td.getValue(qsl("thesaurierend")).toInt());}
     void setNoticePeriod(int m) { td.setValue(qsl("Kfrist"), m); if( -1 != m) setPlannedEndDate( EndOfTheFuckingWorld);}
     int noticePeriod() const { return td.getValue(qsl("Kfrist")).toInt();}
     bool hasEndDate() const {return -1 == td.getValue(qsl("Kfrist"));}
@@ -72,8 +86,13 @@ struct contract
     QDate conclusionDate() const { return td.getValue(qsl("Vertragsdatum")).toDate();}
 
     // interface
-    double value() const;
-    double value(const QDate& d) const;
+    // value -> sum of all bookings to a contract
+    double value(const QDate& d = EndOfTheFuckingWorld) const;
+    // depositValue sum of all deposits to a contract (w/o interest payments)
+    double depositValue(const QDate& d = EndOfTheFuckingWorld) const;
+    // interestBearingValue depends on interestMode
+    double interestBearingValue() const;
+
     const booking& latestBooking();
     void setLatestBooking( const booking& b) { latestB=b;};
     // write to db

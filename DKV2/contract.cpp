@@ -46,15 +46,7 @@ const dbtable& contract::getTableDef_deletedContracts()
 bool contract::remove(qlonglong id)
 {
     QString sql=qsl("DELETE FROM Vertraege WHERE id=") + QString::number(id);
-    QSqlQuery deleteQ;
-    if( deleteQ.exec(sql))
-        return true;
-    if( qsl("19") == deleteQ.lastError().nativeErrorCode())
-        qDebug() << qsl("Delete contract failed due to refer. integrity rules") << Qt::endl << deleteQ.lastQuery();
-    else
-        qCritical() << qsl("Delete contract failed ")<< deleteQ.lastError() << Qt::endl << deleteQ.lastQuery();
-    return false;
-
+    return executeSql_wNoRecords(sql);
 }
 QString contract::booking_csv_header()
 {
@@ -69,7 +61,7 @@ void contract::init()
     setCreditorId(-1);
     setNoticePeriod(6);
     //setPlannedEndDate(EndOfTheFuckingWorld); - implicit
-    setInterestModel(interestModel::accumulating);
+    setInterestModel(interestModel::reinvest);
     setConclusionDate(QDate::currentDate());
     setInterestRate(1.50);
     setPlannedInvest(1000000);
@@ -80,18 +72,17 @@ void contract::initRandom(qlonglong creditorId)
     static QRandomGenerator *rand = QRandomGenerator::system();
     setLabel(proposeContractLabel());
     setCreditorId(creditorId);
-    setInterestModel(InterestModelfromInt(rand->bounded(100)%3));
+    setInterestModel(fromInt(rand->bounded(100)%3));
     setInterestRate(1 +rand->bounded(149) /100.);
     setPlannedInvest(    rand->bounded(50)*1000.
                        + rand->bounded(1,3) *500.
-                       + rand->bounded(10) *100);
+                       + rand->bounded(10) *100.);
     setConclusionDate(QDate::currentDate().addYears(-2).addDays(rand->bounded(720)));
     if( rand->bounded(100)%5)
         // in 4 von 5 Fällen
         setNoticePeriod(3 + rand->bounded(21));
     else
         setPlannedEndDate(conclusionDate().addYears(rand->bounded(3)).addMonths(rand->bounded(12)));
-//    qDebug() << toString();
 }
 contract::contract(qlonglong i) : td(getTableDef())
 {
@@ -106,10 +97,6 @@ contract::contract(qlonglong i) : td(getTableDef())
     }
 }
 // interface
-double contract::value() const
-{
-    return value(EndOfTheFuckingWorld);
-}
 double contract::value(const QDate& d) const
 {
     // what is the value of the contract at a given time?
@@ -120,6 +107,36 @@ double contract::value(const QDate& d) const
         return euroFromCt(v.toInt());
     return 0.;
 }
+double contract::depositValue(const QDate& d) const
+{
+    // how many money was put into the contract by the creditor?
+    QString where{ qsl("VertragsId=%1 AND Datum <='%2' AND (Buchungsart=%3 OR Buchungsart=%4) ") };
+    where = where.arg(QString::number(id()), d.toString(Qt::ISODate),
+        QString::number(booking::bookingTypeToInt(booking::Type::deposit)),
+        QString::number(booking::bookingTypeToInt(booking::Type::payout)));
+    QVariant v = executeSingleValueSql(qsl("SUM(Betrag)"), qsl("Buchungen"), where);
+    if (v.isValid())
+        return euroFromCt(v.toInt());
+    return 0.;
+}
+
+double contract::interestBearingValue() const
+{
+    switch (interestModel())
+    {
+    case interestModel::payout:
+    case interestModel::fixed:
+        return depositValue();
+        break;
+    case interestModel::reinvest:
+        return value();
+        break;
+    default:
+        Q_ASSERT(true);
+        return 0.;
+    }
+}
+
 const booking& contract::latestBooking()
 {
     if( latestB.type != booking::Type::non)
@@ -255,7 +272,7 @@ int contract::annualSettlement( int year, bool transactual)
                      //////////
         double zins =ZinsesZins(interestRate(), value(), latestBooking().date, nextAnnualSettlementDate);
                      //////////
-        if( interestModel()== interestModel::accumulating) {
+        if( interestModel()== interestModel::reinvest) {
             if( (bookingSuccess =booking::bookAnnualInterestDeposit(id(), nextAnnualSettlementDate, zins)))
                 latestB = { id(),  booking::Type::annualInterestDeposit, nextAnnualSettlementDate, zins };
         } else {
@@ -327,8 +344,8 @@ bool contract::deposit(const QDate& d, const double& amount)
     QString error;
     if( ! isActive())
         error = qsl("could not put money on an inactive account");
-    else if ( !d.isValid() || (d.day() == 1 && d.month() == 1))
-        error = qsl("Invalid Date") + d.toString();
+    else if ( !d.isValid())
+        error = qsl("Year End is a Invalid Date") + d.toString();
     else if ( latestBooking().date >= d)
         error = qsl("bookings have to be in a consecutive order. Last booking: ")
                 + latestBooking().date.toString() + qsl(" this booking: ") + d.toString();
@@ -358,7 +375,7 @@ bool contract::payout(const QDate& d, const double& amount)
 
     QString error;
     if( actualAmount > value()) error = qsl("Payout impossible. The account has not enough coverage");
-    else if( ! d.isValid() || (d.day() == 1 && d.month() == 1)) error =qsl("Invalid Date or new year");
+    else if( ! d.isValid()) error =qsl("Invalid Date in payout");
     else if(  latestBooking().date >= d) error = qsl("Bookings have to be in a consecutive order. Last booking: ")
                 + latestBooking().date.toString() + qsl(" this booking: ") + d.toString();
     if( ! error.isEmpty()) {
@@ -411,7 +428,7 @@ bool contract::finalize(bool simulate, const QDate& finDate,
     qlonglong id_to_be_deleted = id();
     QSqlDatabase::database().transaction();
     // as we are terminating the contract we have to sum up all interests
-    setInterestModel(interestModel::accumulating);
+    setInterestModel(interestModel::reinvest);
     if( needsAnnualSettlement(finDate))
         if( !annualSettlement(finDate.year() -1, false)) {
             QSqlDatabase::database().rollback();
@@ -457,7 +474,7 @@ QString contract::toString(QString title) const
         stream << qsl("[contract was not saved or loaded from DB]") << Qt::endl;
     else
         stream << qsl("[id:") << id_aS() << qsl("]") << Qt::endl;
-    if( bookings::getBookings(id()).count() == 0) {
+    if( !isActive()) {
         stream << "Wert (gepl.):     " << plannedInvest() << Qt::endl;
         stream << "Zinssatz (gepl.): " << interestRate() << Qt::endl;
         return ret;

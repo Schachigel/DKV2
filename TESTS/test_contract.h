@@ -37,7 +37,7 @@ private slots:
     void test_annualSettlement_fullYear();
     void test_annualSettlement_twoYear();
     void test_deposit01();
-    void test_depositFailsOn_1_1();
+    void test_depositSwitches_31_12();
     void test_deposit_wSettlement_reinvesting();
     void test_deposit_wSettlement_wPayout();
     void test_payout();

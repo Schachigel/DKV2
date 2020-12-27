@@ -14,6 +14,9 @@ enum class Type{
     annualInterestDeposit = 8
     };
 static QString displayString(Type t);
+inline static int bookingTypeToInt(booking::Type t) {
+    return static_cast<int>(t);
+}
 
 qlonglong contractId =-1;
 Type type =Type::non;
