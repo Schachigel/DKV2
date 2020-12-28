@@ -57,7 +57,7 @@ void test_contract::test_activateContract()
     QCOMPARE(cont.latestBooking().amount, cont.plannedInvest());
     QCOMPARE(cont.latestBooking().type, booking::Type::deposit);
     QCOMPARE(cont.value(), amount);
-    QCOMPARE(cont.depositValue(), amount);
+    QCOMPARE(cont.investedValue(), amount);
     // activating an active contract fails:
     QVERIFY(false == cont.activate(QDate::currentDate(), cont.plannedInvest()));
 }
@@ -151,7 +151,7 @@ void test_contract::deposit_inactive_contract_fails()
     cont.activate(aDate, 1000.);
     QVERIFY(cont.deposit(aDate.addMonths(6), 1000.));
     QVERIFY(cont.payout(aDate.addMonths(6).addDays(1), 100.));
-    QCOMPARE(cont.depositValue(), 1900.);
+    QCOMPARE(cont.investedValue(), 1900.);
 }
 
 void test_contract::too_high_payout_fails()
@@ -355,9 +355,11 @@ void test_contract::test_contract_cv_wInterestPayout()
 {
     dbgTimer t("8x contract::getValue()");
     creditor c(saveRandomCreditor());
-    contract cont(saveRandomContract(c.id()));
+    contract cont;
+    cont.initRandom(c.id());
     cont.setInterestRate(1.0);
     cont.setInterestModel(interestModel::payout);
+    cont.saveNewContract();
     QDate anydate = QDate(2020, 4, 30);
 
     // booking 1
@@ -393,7 +395,7 @@ void test_contract::test_contract_cv_wInterestPayout()
     cont.annualSettlement(2022);
     QCOMPARE(cont.value(), 1911.68); // no change due to payout
     QCOMPARE(bookings::getBookings(cont.id()).count(), 11);
-    QCOMPARE(cont.latestBooking().date, QDate(2022, 12,31));
+    QCOMPARE(cont.latestBooking().date, QDate(2022, 12, 31));
     QCOMPARE(cont.latestBooking().type, booking::Type::annualInterestDeposit);
     QCOMPARE(cont.latestBooking().amount, 12.74);
 }

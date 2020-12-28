@@ -59,6 +59,29 @@ FROM \
        )
 };
 
+const QString sqlBookingsOverview {
+    "SELECT B.Datum, V.id, V.Kennung, \
+    CASE V.thesaurierend  \
+    WHEN 0 THEN 'Ausz.' \
+    WHEN 1 THEN 'Thesa.' \
+    WHEN 2 THEN 'Fix' \
+    ELSE 'ERROR' \
+    END AS Zinsmodus, \
+    B.Betrag, \
+    CASE B.BuchungsArt \
+    WHEN 1 THEN 'Einzahlung' \
+    WHEN 2 THEN 'Auszahlung' \
+    WHEN 4 THEN 'unterj.Zins' \
+    WHEN 8 THEN 'Jahreszins' \
+    ELSE 'ERROR' \
+    END AS BuchungsArt \
+     \
+    FROM Vertraege AS V \
+     \
+    LEFT JOIN Buchungen AS B ON V.id = B.VertragsId \
+    ORDER BY V.id, B.Datum"
+};
+
 class dbCloser
 {   // for use on the stack only
 public:
@@ -303,6 +326,9 @@ bool insert_views( QSqlDatabase db)
     views.append({qsl("vStat_passiverVertraege"),      sql_precalc.arg(qsl("vVertraege_passiv"), qsl(""))});
     views.append({qsl("vStat_passiverVertraege_thesa"),sql_precalc.arg(qsl("vVertraege_passiv"), qsl("WHERE thesa"))});
     views.append({qsl("vStat_passiverVertraege_ausz"), sql_precalc.arg(qsl("vVertraege_passiv"), qsl("WHERE NOT thesa"))});
+
+    // for convenience only, not used in code
+    views.append({qsl("vBuchungen"), sqlBookingsOverview});
 
     return createViews(views, db);
 }

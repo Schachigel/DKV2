@@ -84,12 +84,12 @@ void contract::initRandom(qlonglong creditorId)
     else
         setPlannedEndDate(conclusionDate().addYears(rand->bounded(3)).addMonths(rand->bounded(12)));
 }
-contract::contract(qlonglong i) : td(getTableDef())
+contract::contract(qlonglong contractId) : td(getTableDef())
 {
-    if( i <= 0) {
+    if( contractId <= 0) {
         init();
     } else {
-        QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), "id=" + QString::number(i));
+        QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), "id=" + QString::number(contractId));
         if( ! td.setValues(rec))
             qCritical() << "contract from id could not be created";
         aDate = activationDate();
@@ -107,7 +107,8 @@ double contract::value(const QDate& d) const
         return euroFromCt(v.toInt());
     return 0.;
 }
-double contract::depositValue(const QDate& d) const
+
+double contract::investedValue(const QDate& d) const
 {
     // how many money was put into the contract by the creditor?
     QString where{ qsl("VertragsId=%1 AND Datum <='%2' AND (Buchungsart=%3 OR Buchungsart=%4) ") };
@@ -125,12 +126,11 @@ double contract::interestBearingValue() const
     switch (interestModel())
     {
     case interestModel::payout:
+        return value();
     case interestModel::fixed:
-        return depositValue();
-        break;
+        return investedValue();
     case interestModel::reinvest:
         return value();
-        break;
     default:
         Q_ASSERT(true);
         return 0.;
@@ -188,7 +188,7 @@ bool contract::activate(const QDate &date, const double& amount)
     } else if( amount < 0) {
         error =qsl("Invalid amount");
     } else if ( ! booking::bookDeposit(id(), actualDate, amount)) {
-        error = "Failed to execut eactivation on contract " + id_aS() + qsl(" [") + actualDate.toString() + qsl(", ") + QString::number(amount) + qsl("]");
+        error = "Failed to execut activation on contract " + id_aS() + qsl(" [") + actualDate.toString() + qsl(", ") + QString::number(amount) + qsl("]");
     }
     if (!error.isEmpty()) {
         qCritical() << error;
@@ -269,17 +269,27 @@ int contract::annualSettlement( int year, bool transactual)
 
     bool bookingSuccess =false;
     while(nextAnnualSettlementDate <= requestedSettlementDate) {
+        double baseValue =interestBearingValue();
                      //////////
-        double zins =ZinsesZins(interestRate(), value(), latestBooking().date, nextAnnualSettlementDate);
+        double zins =ZinsesZins(interestRate(), baseValue, latestBooking().date, nextAnnualSettlementDate);
                      //////////
-        if( interestModel()== interestModel::reinvest) {
+        switch(interestModel()) {
+        case interestModel::reinvest:
+        case interestModel::fixed: {
             if( (bookingSuccess =booking::bookAnnualInterestDeposit(id(), nextAnnualSettlementDate, zins)))
                 latestB = { id(),  booking::Type::annualInterestDeposit, nextAnnualSettlementDate, zins };
-        } else {
+            break;
+        }
+        case interestModel::payout: {
             bookingSuccess = booking::bookPayout(id(), nextAnnualSettlementDate, zins);
             bookingSuccess &=booking::bookAnnualInterestDeposit(id(), nextAnnualSettlementDate, zins);
             latestB = { id(), booking::Type::annualInterestDeposit, nextAnnualSettlementDate, zins };
+            break;
         }
+        case interestModel::maxId:
+        default: {
+            Q_ASSERT(true);
+        } }
         if( bookingSuccess) {
             qInfo() << "Successfull annual settlement: contract id " << id_aS() << ": " << nextAnnualSettlementDate << " Zins: " << zins;
             // latest booking has changes, so ...

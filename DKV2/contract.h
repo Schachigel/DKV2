@@ -87,9 +87,9 @@ struct contract
 
     // interface
     // value -> sum of all bookings to a contract
-    double value(const QDate& d = EndOfTheFuckingWorld) const;
+    double value(const QDate& d =EndOfTheFuckingWorld) const;
     // depositValue sum of all deposits to a contract (w/o interest payments)
-    double depositValue(const QDate& d = EndOfTheFuckingWorld) const;
+    double investedValue(const QDate& d =EndOfTheFuckingWorld) const;
     // interestBearingValue depends on interestMode
     double interestBearingValue() const;
 
