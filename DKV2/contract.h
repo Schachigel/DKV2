@@ -106,7 +106,7 @@ struct contract
     // other booking actions
     QDate nextDateForAnnualSettlement();
     bool needsAnnualSettlement( const QDate& d);
-    int annualSettlement(const int year, const bool transactual =true);
+    int annualSettlement(const int year);
     bool deposit(const QDate& d, const double& amount);
     bool payout(const QDate& d, const double& amount);
     bool cancel(const QDate& d);

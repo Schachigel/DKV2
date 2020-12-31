@@ -59,6 +59,57 @@ FROM \
        )
 };
 
+const QString sqlExContractView {qsl(
+"SELECT \
+  V.id AS VertragsId, \
+  K.id AS KreditorId, \
+  K.Nachname || ', ' || K.Vorname AS KreditorIn, \
+  V.Kennung AS Vertragskennung, \
+  ifnull(strftime('%d.%m.%Y',Aktivierungsdatum), ' - ') AS Aktivierung, \
+  strftime('%d.%m.%Y', Vertragsende) AS Vertragsende, \
+  ifnull(AktivierungsWert, V.Betrag / 100.) AS Anfangswert, \
+  CAST(V.Zsatz / 100. AS VARCHAR) || ' %'    AS Zinssatz, \
+  CASE WHEN V.thesaurierend = 0 \
+  THEN 'Auszahlend' \
+  ELSE CASE WHEN V.thesaurierend = 1 \
+       THEN 'Thesaur.' \
+        ELSE CASE WHEN V.thesaurierend = 2 \
+             THEN 'Fester Zins'  \
+             ELSE 'ERROR'  \
+             END \
+        END \
+  END AS Zinsmodus, \
+  Gesamtwert AS Saldo, \
+  Zinsen, \
+  maxValue AS Endauszahlung \
+ \
+FROM exVertraege AS V  INNER JOIN Kreditoren AS K ON V.KreditorId = K.id \
+ \
+LEFT JOIN ( \
+     SELECT  \
+        B.VertragsId AS vid_min,  \
+    min(B.id) AS idErsteBuchung, \
+    B.Datum AS Aktivierungsdatum,  \
+    B.Betrag / 100. AS AktivierungsWert,  \
+    sum(B.Betrag) / 100. AS GesamtWert \
+     FROM exBuchungen AS B GROUP BY B.VertragsId ) ON V.id = vid_min \
+ \
+LEFT JOIN (SELECT  \
+         B.VertragsId AS vid_max,  \
+         max(B.id) as idLetzteBuchung, \
+         B.Datum AS Vertragsende, \
+             B.Betrag /100. AS maxValue \
+       FROM exBuchungen AS B  \
+       GROUP BY B.VertragsId )  \
+     ON V.id = vid_max \
+ \
+LEFT JOIN (SELECT B.VertragsId AS vidZins, \
+             SUM(B.betrag) /100. AS Zinsen \
+           FROM exBuchungen AS B WHERE B.BuchungsArt = 4 OR B.BuchungsArt = 8 \
+          GROUP BY B.VertragsId ) \
+           ON V.id = vidZins \
+")};
+
 const QString sqlBookingsOverview {
     "SELECT B.Datum, V.id, V.Kennung, \
     CASE V.thesaurierend  \
@@ -261,20 +312,7 @@ bool insert_views( QSqlDatabase db)
                                             "SELECT id, Kreditorin, Vertragskennung, Zinssatz, Wert, Abschlussdatum  AS Datum,  Kuendigungsfrist, Vertragsende, thesa, KreditorId "
                                              "FROM vVertraege_passiv")},
         {qsl("vVertraege_alle_4view"),  sqlContractView},
-        {qsl("vVertraege_geloescht"),    qsl("SELECT "
-                                              "exVertraege.id AS id, " // 0: id
-                                              "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, " // 1: kreditorin
-                                              "exVertraege.Kennung AS Vertragskennung, " // 2: contract label
-                                              "exVertraege.ZSatz/100. AS Zinssatz, " // 3: interest in %
-                                              "SUM(exBuchungen.betrag)  AS Wert, "   //4: value in Euro
-                                             "MIN(exBuchungen.Datum) AS Datum, exVertraege.Kfrist AS Kuendigungsfrist, " // 5: act. date, 6: kfrist (monate)
-                                             "exVertraege.LaufzeitEnde AS Vertragsende, " // 7: Vertragsende
-                                             "thesaurierend AS thesa, " // 8: payout?
-                                             "Kreditoren.id AS KreditorId " // 9: kredid
-                                           "FROM exVertraege "
-                                              "INNER JOIN exBuchungen ON exBuchungen.VertragsId = exVertraege.id "
-                                              "INNER JOIN Kreditoren ON Kreditoren.id = exVertraege.KreditorId "
-                                           "Group by exVertraege.id")},
+        {qsl("vVertraege_geloescht"),   sqlExContractView},
 
         {qsl("NextAnnualS_first"),      qsl("SELECT STRFTIME('%Y-%m-%d', MIN(Datum), '1 year', 'start of year', '-1 day')  as nextInterestDate "
                                             "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id = buchungen.VertragsId "

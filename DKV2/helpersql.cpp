@@ -257,7 +257,7 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
     }
     q.last();
     if(q.at() != 0) {
-        qCritical() << "SingleRecordSql returned more then one value\n" << q.lastQuery();
+        qCritical() << "SingleRecordSql returned more then one value or non\n" << q.lastQuery();
         return QSqlRecord();
     }
     // adjust the database types to the expected types

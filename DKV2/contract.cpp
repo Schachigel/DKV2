@@ -139,7 +139,7 @@ double contract::interestBearingValue() const
 
 const booking& contract::latestBooking()
 {
-    if( latestB.type != booking::Type::non)
+    if( latestB.type != booking::Type::non || ! isActive())
         return latestB;
     QSqlRecord rec = executeSingleRecordSql(dkdbstructur[qsl("Buchungen")].Fields(), qsl("VertragsId=") + id_aS(), qsl("Datum DESC LIMIT 1"));
     if( ! rec.isEmpty()) {
@@ -167,6 +167,7 @@ int  contract::saveNewContract()
 // other bookings should move to dec. 30th
 QDate avoidYearEndBookings(const QDate& d)
 {
+    if( !d.isValid()) return d;
     if( d.month() == 12 && d.day() == 31) {
         qInfo() << "no deposit possible on dec. 31st -> switching to 30th";
         return d.addDays(-1);
@@ -183,7 +184,7 @@ bool contract::activate(const QDate &date, const double& amount)
 
     if (isActive()) {
         error = qsl("Already active contract can not be activated");
-    } else if (!date.isValid()) {
+    } else if (!actualDate.isValid()) {
         error = qsl("Invalid Date");
     } else if( amount < 0) {
         error =qsl("Invalid amount");
@@ -229,41 +230,44 @@ QDate contract::nextDateForAnnualSettlement()
         Q_ASSERT(lastB.date.day() == 31);
         return QDate(lastB.date.year() +1, 12, 31);
     }
-    if(lastB.type == booking::Type::payout
-        && lastB.date.month() == 12
-        && lastB.date.day() == 31) {
+    if(lastB.type == booking::Type::payout) {
         // in early versions payouts of annual interests could be after the annualInterestDeposits
-        return QDate(lastB.date.addYears(1));
+        if((lastB.date.month() == 12 && lastB.date.day() == 31))
+            return QDate(lastB.date.addYears(1));
+        if((lastB.date.month() == 1 && lastB.date.day() == 1))
+            return QDate(lastB.date.addDays(-1).addYears(1));
     }
     Q_ASSERT(!((lastB.date.month() == 12) && (lastB.date.day() == 31)));
     // for deposits, payouts, activations we return year end of the same year
     return QDate(lastB.date.year(), 12, 31);
 }
 
-bool contract::needsAnnualSettlement(const QDate& date)
-{   LOG_CALL_W(date.toString());
+bool contract::needsAnnualSettlement(const QDate& intendedNextBooking)
+{   LOG_CALL_W(intendedNextBooking.toString());
+
     if( !isActive()) return false;
-    if( latestBooking().date >= date) {
+    if( latestBooking().date >= intendedNextBooking) {
         qInfo() << "Latest booking date too young for this settlement";
         return false;
     }
     // annualInvestments are at the last day of the year
     // we need a settlement if the latest booking was in the last year
     // or it was the settlement of the last year
-    if( latestBooking().date.addDays(1).year() == date.year())
+    if( latestBooking().date.year() == intendedNextBooking.year())
         return false;
-
+    if( latestBooking().date.addDays(1).year() == intendedNextBooking.year())
+        return false;
     return true;
 }
 
-int contract::annualSettlement( int year, bool transactual)
+int contract::annualSettlement( int year)
 {   LOG_CALL_W(QString::number(year));
     // perform annualSettlement, recursive until 'year'
     // or only once if year is 0
 
     if( ! isActive()) return 0;
 
-    if( transactual) QSqlDatabase::database().transaction();
+    QSqlQuery AS_savepoint(qsl("SAVEPOINT as_savepoint"));
     QDate requestedSettlementDate(year, 12, 31);
     QDate nextAnnualSettlementDate =nextDateForAnnualSettlement();
 
@@ -297,11 +301,11 @@ int contract::annualSettlement( int year, bool transactual)
             continue;
         } else {
             qDebug() << "Failed annual settlement: Vertrag " << id_aS() << ": " << nextAnnualSettlementDate << " Zins: " << zins;
-            if( transactual) QSqlDatabase::database().rollback();
+            QSqlQuery AS_rollback(qsl("ROLLBACK TO SAVEPOINT as_savepoint"));
             return 0;
         }
     }
-    if( transactual) QSqlDatabase::database().commit();
+    QSqlQuery AS_release(qsl("RELEASE SAVEPOINT as_savepoint"));
     if( bookingSuccess)
         // there was a booking
         return year;
@@ -323,34 +327,27 @@ bool contract::bookInBetweenInterest(const QDate& nextBookingDate)
         qCritical() << error;
         return false;
     }
-
     if( needsAnnualSettlement(nextBookingDate)) {
         qInfo() << "Perform annual settlement first - this is unusual";
-// set temporarily to 'reinvesting' otherwise the payout might be forgotton
-//        bool reinv = reinvesting();
-//        setReinvesting();
-        if(0 == annualSettlement(nextBookingDate.year() -1, false)) {
-//            setReinvesting(reinv);
+        if(0 == annualSettlement(nextBookingDate.year() -1)) {
             qCritical() << "annual settlement during interest booking failed";
             return false;
         }
-//        setReinvesting(reinv);
     }
                    //////////
-    double zins = ZinsesZins(interestRate(), value(), latestBooking().date, nextBookingDate);
+    double zins = ZinsesZins(interestRate(), interestBearingValue(), latestBooking().date, nextBookingDate);
                    //////////
     // only annualSettlements can be payed out
     if( booking::bookReInvestInterest(id(), nextBookingDate, zins)) {
         latestB = {id(), booking::Type::reInvestInterest, nextBookingDate, zins};
         return true;
     }
-
     return false;
 }
 
 bool contract::deposit(const QDate& d, const double& amount)
 {   LOG_CALL;
-    Q_ASSERT(amount > 0);
+    double actualAmount = qFabs(amount);
     QString error;
     if( ! isActive())
         error = qsl("could not put money on an inactive account");
@@ -370,12 +367,12 @@ bool contract::deposit(const QDate& d, const double& amount)
         QSqlDatabase::database().rollback();
         return false;
     }
-    if( ! booking::bookDeposit(id(), actualD, amount)) {
+    if( ! booking::bookDeposit(id(), actualD, actualAmount)) {
         QSqlDatabase::database().rollback();
         return false;
     }
     QSqlDatabase::database().commit();
-    latestB = { id(),  booking::Type::deposit, actualD, amount };
+    latestB = { id(),  booking::Type::deposit, actualD, actualAmount };
     return true;
 }
 
@@ -399,14 +396,15 @@ bool contract::payout(const QDate& d, const double& amount)
         QSqlDatabase::database().rollback();
         return false;
     }
-    if( booking::bookPayout(id(), actualD, actualAmount)) {
-        QSqlDatabase::database().commit();
-        latestB ={id(), booking::Type::payout, actualD, actualAmount};
-        return true;
+    if( !booking::bookPayout(id(), actualD, actualAmount)) {
+        QSqlDatabase::database().rollback();
+        qCritical() << "booking of payout failed";
+        return false;
     }
-    QSqlDatabase::database().rollback();
-    qCritical() << "booking of payout failed";
-    return false;
+    QSqlDatabase::database().commit();
+    latestB ={id(), booking::Type::payout, actualD, actualAmount};
+    return true;
+
 }
 
 bool contract::cancel(const QDate& d)
@@ -424,6 +422,7 @@ bool contract::cancel(const QDate& d)
     setPlannedEndDate(actualD);
     return true;
 }
+
 bool contract::finalize(bool simulate, const QDate& finDate,
                         double& finInterest, double& finPayout)
 {   LOG_CALL;
@@ -431,24 +430,26 @@ bool contract::finalize(bool simulate, const QDate& finDate,
         qDebug() << "invalid date to finalize contract:" << finDate;
         return false;
     }
-    if( ! isActive()){
+    if( ! isActive()) {
         qDebug() << "could not finalize inactive contract";
         return false;
     }
     qlonglong id_to_be_deleted = id();
-    QSqlDatabase::database().transaction();
+    qInfo() << "Finalization startet at value " << value();
+    QSqlQuery fin_savepoint(qsl("SAVEPOINT fin"));
     // as we are terminating the contract we have to sum up all interests
     setInterestModel(interestModel::reinvest);
     if( needsAnnualSettlement(finDate))
-        if( !annualSettlement(finDate.year() -1, false)) {
-            QSqlDatabase::database().rollback();
+        if( !annualSettlement(finDate.year() -1)) {
+            QSqlQuery fin_rollback(qsl("ROLLBACK TO SAVEPOINT fin"));
             return false;
         }
-    double cv = value(finDate);
-    finInterest = ZinsesZins(interestRate(), cv, latestBooking().date, finDate);
-    finPayout = cv +finInterest;
+    double preFinValue = value(finDate);
+    qInfo() << "Fin. Value after annual settlement:" << preFinValue;
+    finInterest = ZinsesZins(interestRate(), preFinValue, latestBooking().date, finDate);
+    finPayout = preFinValue +finInterest;
     if( simulate) {
-        QSqlDatabase::database().rollback();
+        QSqlQuery fin_rollback(qsl("ROLLBACK TO SAVEPOINT fin"));
         return  true;
     }
     bool allGood =false;
@@ -464,13 +465,13 @@ bool contract::finalize(bool simulate, const QDate& finDate,
     } while(false);
 
     if( allGood) {
-        QSqlDatabase::database().commit();
+        QSqlQuery fin_commit(qsl("RELEASE SAVEPOINT fin"));
         reset();
         qInfo() << "successfully finalized and archived contract " << id_to_be_deleted;
         return true;
     } else {
         qCritical() << "contract finalizing failed";
-        QSqlDatabase::database().rollback();
+        QSqlQuery fin_rollback(qsl("ROLLBACK TO SAVEPOINT fin"));
         return false;
     }
 }

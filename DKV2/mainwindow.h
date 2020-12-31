@@ -130,6 +130,8 @@ private slots:
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();
+    void prepare_deleted_contracts_list_view();
+    void prepare_valid_contraccts_list_view();
     void prepare_contracts_list_view();
     void prepare_startPage();
 

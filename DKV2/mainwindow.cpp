@@ -418,10 +418,60 @@ QString filterFromFilterphrase(QString fph)
            (qsl("Kreditorin LIKE '%") + fph + qsl("%' OR Vertragskennung LIKE '%") + fph + qsl("%'"));
 }
 
-void MainWindow::prepare_contracts_list_view()
-{   LOG_CALL;
-    busycursor b;
+void MainWindow::prepare_deleted_contracts_list_view()
+{ LOG_CALL;
+    enum column_pos_del {
+        cp_vid,
+        cp_Creditor_id,
+        cp_Creditor,
+        cp_ContractLabel,
+//        cp_ContractDate,
+        cp_ContractActivation,
+        cp_ContractTermination,
+        cp_InitialValue,
+        cp_InterestRate,
+        cp_InterestMode,
+        cp_Saldo,
+        cp_Interest,
+        cp_Payout
+    };
 
+    QSqlTableModel* model = new QSqlTableModel(this);
+    model->setTable(qsl("vVertraege_geloescht"));
+    model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
+    qDebug() << "contract list model filter: " << model->filter();
+
+    QTableView*& tv = ui->contractsTableView;
+    tv->setModel(model);
+    if ( !model->select()) {
+        qCritical() << "Model selection failed" << model->lastError();
+        return;
+    }
+    tv->setEditTriggers(QTableView::NoEditTriggers);
+    tv->setSelectionMode(QAbstractItemView::SingleSelection);
+    tv->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tv->setAlternatingRowColors(true);
+    tv->setSortingEnabled(true);
+    tv->setItemDelegateForColumn(cp_InitialValue, new CurrencyFormatter(tv));
+    tv->setItemDelegateForColumn(cp_Saldo, new CurrencyFormatter(tv));
+    tv->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(tv));
+    tv->setItemDelegateForColumn(cp_Payout, new CurrencyFormatter(tv));
+    tv->hideColumn(cp_vid);
+    tv->hideColumn(cp_Creditor_id);
+
+    tv->resizeColumnsToContents();
+    auto c = connect(ui->contractsTableView->selectionModel(),
+            SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
+            SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
+
+    if( ! model->rowCount()) {
+        ui->bookingsTableView->setModel(new QSqlTableModel(this));
+    } else
+        tv->setCurrentIndex(model->index(0, 1));
+}
+
+void MainWindow::prepare_valid_contraccts_list_view()
+{ LOG_CALL;
     enum colmn_Pos {
         cp_vid,
         cp_Creditor_id,
@@ -438,14 +488,8 @@ void MainWindow::prepare_contracts_list_view()
         cp_ContractEnd
     };
 
-    if (!createView(qsl("vVertraege_alle_4view"), sqlContractView))
-        Q_ASSERT(true);
-
     QSqlTableModel* model = new QSqlTableModel(this);
-    if( showDeletedContracts)
-        model->setTable(qsl("vVertraege_geloescht"));
-    else
-        model->setTable(qsl("vVertraege_alle_4view"));
+    model->setTable(qsl("vVertraege_alle_4view"));
     model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
     qDebug() << "contract list model filter: " << model->filter();
 
@@ -476,6 +520,16 @@ void MainWindow::prepare_contracts_list_view()
         ui->bookingsTableView->setModel(new QSqlTableModel(this));
     } else
         tv->setCurrentIndex(model->index(0, 1));
+}
+
+void MainWindow::prepare_contracts_list_view()
+{   LOG_CALL;
+    busycursor b;
+
+    if( showDeletedContracts)
+        prepare_deleted_contracts_list_view();
+    else
+        prepare_valid_contraccts_list_view();
 }
 
 int  MainWindow::get_current_id_from_contracts_list()
