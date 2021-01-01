@@ -425,15 +425,14 @@ void MainWindow::prepare_deleted_contracts_list_view()
         cp_Creditor_id,
         cp_Creditor,
         cp_ContractLabel,
-//        cp_ContractDate,
         cp_ContractActivation,
         cp_ContractTermination,
         cp_InitialValue,
         cp_InterestRate,
         cp_InterestMode,
-        cp_Saldo,
         cp_Interest,
-        cp_Payout
+        cp_TotalDeposit,
+        cp_FinalPayout
     };
 
     QSqlTableModel* model = new QSqlTableModel(this);
@@ -448,9 +447,9 @@ void MainWindow::prepare_deleted_contracts_list_view()
     model->setHeaderData(cp_InitialValue, Qt::Horizontal, qsl("Höhe der Ersteinlage"), Qt::ToolTipRole);
     model->setHeaderData(cp_InterestRate, Qt::Horizontal, qsl("Zinsfuss"), Qt::ToolTipRole);
     model->setHeaderData(cp_InterestMode, Qt::Horizontal, qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein"), Qt::ToolTipRole);
-    model->setHeaderData(cp_Saldo, Qt::Horizontal, qsl(""), Qt::ToolTipRole);
     model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Angefallene, nicht bereits zur Laufzeit ausgezahlte Zinsen"), Qt::ToolTipRole);
-    model->setHeaderData(cp_Payout, Qt::Horizontal, qsl("Ausgezahltes finales Guthaben"), Qt::ToolTipRole);
+    model->setHeaderData(cp_TotalDeposit, Qt::Horizontal, qsl("Summe aller Einzahlungen"), Qt::ToolTipRole);
+    model->setHeaderData(cp_FinalPayout, Qt::Horizontal, qsl("Ausgezahltes finales Guthaben"), Qt::ToolTipRole);
 
     QTableView*& tv = ui->contractsTableView;
     tv->setModel(model);
@@ -464,9 +463,9 @@ void MainWindow::prepare_deleted_contracts_list_view()
     tv->setAlternatingRowColors(true);
     tv->setSortingEnabled(true);
     tv->setItemDelegateForColumn(cp_InitialValue, new CurrencyFormatter(tv));
-    tv->setItemDelegateForColumn(cp_Saldo, new CurrencyFormatter(tv));
     tv->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(tv));
-    tv->setItemDelegateForColumn(cp_Payout, new CurrencyFormatter(tv));
+    tv->setItemDelegateForColumn(cp_TotalDeposit, new CurrencyFormatter(tv));
+    tv->setItemDelegateForColumn(cp_FinalPayout, new CurrencyFormatter(tv));
     tv->hideColumn(cp_vid);
     tv->hideColumn(cp_Creditor_id);
 

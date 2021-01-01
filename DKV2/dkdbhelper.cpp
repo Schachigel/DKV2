@@ -65,7 +65,7 @@ const QString sqlExContractView {qsl(
   K.id AS KreditorId, \
   K.Nachname || ', ' || K.Vorname AS KreditorIn, \
   V.Kennung AS Vertragskennung, \
-  ifnull(strftime('%d.%m.%Y',Aktivierungsdatum), ' - ') AS Aktivierung, \
+  strftime('%d.%m.%Y',Aktivierungsdatum) AS Aktivierung, \
   strftime('%d.%m.%Y', Vertragsende) AS Vertragsende, \
   ifnull(AktivierungsWert, V.Betrag / 100.) AS Anfangswert, \
   CAST(V.Zsatz / 100. AS VARCHAR) || ' %'    AS Zinssatz, \
@@ -79,8 +79,15 @@ const QString sqlExContractView {qsl(
              END \
         END \
   END AS Zinsmodus, \
-  Gesamtwert AS Saldo, \
-  Zinsen, \
+ \
+  CASE WHEN V.thesaurierend  = 0 THEN Zinsen_ausz \
+  ELSE Zinsen_thesa  \
+  END AS Zinsen, \
+  CASE WHEN V.thesaurierend  > 0 \
+  THEN -1* letzte_Auszahlung + sum_o_Zinsen \
+  ELSE -1* letzte_Auszahlung + sum_mit_Zinsen \
+  END AS Einlagen, \
+ \
   maxValue AS Endauszahlung \
  \
 FROM exVertraege AS V  INNER JOIN Kreditoren AS K ON V.KreditorId = K.id \
@@ -92,22 +99,49 @@ LEFT JOIN ( \
     B.Datum AS Aktivierungsdatum,  \
     B.Betrag / 100. AS AktivierungsWert,  \
     sum(B.Betrag) / 100. AS GesamtWert \
-     FROM exBuchungen AS B GROUP BY B.VertragsId ) ON V.id = vid_min \
+     FROM exBuchungen AS B GROUP BY B.VertragsId ) \
+ON V.id = vid_min \
  \
 LEFT JOIN (SELECT  \
          B.VertragsId AS vid_max,  \
          max(B.id) as idLetzteBuchung, \
          B.Datum AS Vertragsende, \
-             B.Betrag /100. AS maxValue \
-       FROM exBuchungen AS B  \
-       GROUP BY B.VertragsId )  \
-     ON V.id = vid_max \
+         B.Betrag /100. AS maxValue \
+       FROM exBuchungen AS B GROUP BY B.VertragsId )  \
+ON V.id = vid_max \
  \
-LEFT JOIN (SELECT B.VertragsId AS vidZins, \
-             SUM(B.betrag) /100. AS Zinsen \
-           FROM exBuchungen AS B WHERE B.BuchungsArt = 4 OR B.BuchungsArt = 8 \
+LEFT JOIN (SELECT \
+            B.VertragsId AS vidZinsThesa, \
+            SUM(B.betrag) /100. AS Zinsen_thesa \
+          FROM exBuchungen AS B \
+          WHERE B.BuchungsArt = 4 OR B.BuchungsArt = 8 \
           GROUP BY B.VertragsId ) \
-           ON V.id = vidZins \
+ON V.id = vidZinsThesa \
+ \
+LEFT JOIN ( SELECT \
+              B.VertragsId AS vidZinsAus, \
+              SUM(B.betrag) /-100. AS Zinsen_ausz \
+            FROM exBuchungen AS B \
+            WHERE B.BuchungsArt = 1 OR B.BuchungsArt = 2 OR B.BuchungsArt = 8 GROUP BY B.VertragsId ) \
+ON V.id = vidZinsAus \
+ \
+LEFT JOIN ( SELECT  \
+                B.VertragsId as vid_o_Zinsen, \
+                sum(B.Betrag) /100. AS sum_o_Zinsen \
+            FROM exBuchungen AS B  \
+            WHERE B.BuchungsArt = 1 OR B.BuchungsArt = 2 \
+            GROUP BY B.VertragsId  ) \
+ON V.id = vid_o_Zinsen \
+ \
+LEFT JOIN ( SELECT  \
+              B.VertragsId as vid_mit_Zinsen, \
+              sum(B.Betrag) /100. AS sum_mit_Zinsen, \
+              max(B.Datum) AS letzte_buchung, \
+              B.Betrag /100. AS letzte_Auszahlung \
+            FROM exBuchungen AS B  \
+            WHERE B.BuchungsArt = 1 OR B.BuchungsArt = 2 OR B.BuchungsArt = 8 \
+            GROUP BY B.VertragsId  ) \
+ON V.id = vid_mit_Zinsen \
 ")};
 
 const QString sqlBookingsOverview {
