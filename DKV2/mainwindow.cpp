@@ -441,6 +441,17 @@ void MainWindow::prepare_deleted_contracts_list_view()
     model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
     qDebug() << "contract list model filter: " << model->filter();
 
+    model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters"), Qt::ToolTipRole);
+    model->setHeaderData(cp_ContractLabel, Qt::Horizontal, qsl("Eindeutige Identifizierung des Vertrags"), Qt::ToolTipRole);
+    model->setHeaderData(cp_ContractActivation, Qt::Horizontal, qsl("Datum der Vertragsaktivierung / Beginn der Zinsberechnung"), Qt::ToolTipRole);
+    model->setHeaderData(cp_ContractTermination, Qt::Horizontal, qsl("Datum des Vertragsende"), Qt::ToolTipRole);
+    model->setHeaderData(cp_InitialValue, Qt::Horizontal, qsl("Höhe der Ersteinlage"), Qt::ToolTipRole);
+    model->setHeaderData(cp_InterestRate, Qt::Horizontal, qsl("Zinsfuss"), Qt::ToolTipRole);
+    model->setHeaderData(cp_InterestMode, Qt::Horizontal, qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein"), Qt::ToolTipRole);
+    model->setHeaderData(cp_Saldo, Qt::Horizontal, qsl(""), Qt::ToolTipRole);
+    model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Angefallene, nicht bereits zur Laufzeit ausgezahlte Zinsen"), Qt::ToolTipRole);
+    model->setHeaderData(cp_Payout, Qt::Horizontal, qsl("Ausgezahltes finales Guthaben"), Qt::ToolTipRole);
+
     QTableView*& tv = ui->contractsTableView;
     tv->setModel(model);
     if ( !model->select()) {
@@ -491,6 +502,22 @@ void MainWindow::prepare_valid_contraccts_list_view()
     QSqlTableModel* model = new QSqlTableModel(this);
     model->setTable(qsl("vVertraege_alle_4view"));
     model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
+    model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("KreditorIn"));
+    model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters"), Qt::ToolTipRole);
+    model->setHeaderData(cp_ContractLabel, Qt::Horizontal, qsl("Vertragskennung"));
+    model->setHeaderData(cp_ContractLabel, Qt::Horizontal, qsl("Die Vertragskennung identifiziert den Vertrag eindeutig"), Qt::ToolTipRole);
+    model->setHeaderData(cp_ContractDate, Qt::Horizontal, qsl(""), Qt::ToolTipRole);
+    model->setHeaderData(cp_ContractValue, Qt::Horizontal, qsl("Bei aktiven Verträgen: Höhe der Ersteinlage, sonst der im Vertrag vereinbarte Kreditbetrag"), Qt::ToolTipRole);
+    model->setHeaderData(cp_InterestRate, Qt::Horizontal, qsl(""), Qt::ToolTipRole);
+    model->setHeaderData(cp_InterestMode, Qt::Horizontal, qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein"), Qt::ToolTipRole);
+    model->setHeaderData(cp_ActivationDate, Qt::Horizontal, qsl("Datum des ersten Geldeingangs und Beginn der Zinsberechnung"), Qt::ToolTipRole);
+    model->setHeaderData(cp_InterestBearing, Qt::Horizontal, qsl("Verzinsliches\nGuthaben"));
+    model->setHeaderData(cp_InterestBearing, Qt::Horizontal, qsl("Bei thesaurierenden Verträgen: Einlage und angesparte Zinsen"), Qt::ToolTipRole);
+    model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Angesparter\nZins"));
+    model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Nicht ausgezahlte Zinsen bei Verträgen mit fester Verzinsung und thesaurierenden Verträgen"), Qt::ToolTipRole);
+    model->setHeaderData(cp_LastBooking, Qt::Horizontal, qsl("Letztes\nBuchungsdatum"));
+    model->setHeaderData(cp_ContractEnd, Qt::Horizontal, qsl("Kündigungsfrist/ \nVertragsende"));
+
     qDebug() << "contract list model filter: " << model->filter();
 
     QTableView*& tv = ui->contractsTableView;
@@ -510,6 +537,7 @@ void MainWindow::prepare_valid_contraccts_list_view()
     tv->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(tv));
     tv->hideColumn(cp_vid);
     tv->hideColumn(cp_Creditor_id);
+
 
     tv->resizeColumnsToContents();
     auto c = connect(ui->contractsTableView->selectionModel(),

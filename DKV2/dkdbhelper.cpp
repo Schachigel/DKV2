@@ -20,7 +20,7 @@ const QString sqlContractView {
   K.id                                    AS KreditorId, \
   K.Nachname || ', ' || K.Vorname          AS KreditorIn, \
   V.Kennung                                AS Vertragskennung, \
-  strftime(\"%d.%m.%Y\",V.Vertragsdatum)     AS Vertragsdatum, \
+  strftime('%d.%m.%Y',V.Vertragsdatum)     AS Vertragsdatum, \
   ifnull(AktivierungsWert, V.Betrag / 100.) AS Nominalwert, \
   CAST(V.Zsatz / 100. AS VARCHAR) || ' %'    AS Zinssatz, \
   CASE WHEN V.thesaurierend = 0 THEN \"Auszahlend\" \
@@ -34,7 +34,7 @@ const QString sqlContractView {
   ifnull(CASE WHEN V.thesaurierend = 1 THEN GesamtWert \
   ELSE AktivierungsWert \
   END, 0.)                                 AS VerzinslGuthaben, \
-  ifnull(ZinsSumme, 0.)                    AS Gesamtzins, \
+  ifnull(ZinsSumme, 0.)                    AS angespZins, \
   ifnull(LetzteBuchung, ' - ')             AS LetzteBuchung, \
   CASE WHEN V.Kfrist = -1 THEN strftime(\"%d.%m.%Y\", V.LaufzeitEnde) \
   ELSE '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)' \
