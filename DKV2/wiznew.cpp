@@ -391,10 +391,14 @@ wizNewContractDataPage::wizNewContractDataPage(QWidget* p) : QWizardPage(p)
     for( int i =0; i <= maxIndex; i++)
         cbInterest->addItem(QString::number(double(i)/100., 'f', 2), QVariant(i));
     cbInterest->setCurrentIndex(std::min(100, cbInterest->count()));
-    QCheckBox* cbThesa =new QCheckBox(qsl("Thesaurierend"));
+    QLabel* l4 =new QLabel(qsl("Thesaurierend"));
+    QComboBox* cbThesa =new QComboBox;
+    cbThesa->addItem("Zinsen werden ausgezahlt");
+    cbThesa->addItem("Zinsen werden angespart und verzinst");
+    cbThesa->addItem("Zinsen werden angespart aber nicht verzinst");
     cbThesa->setToolTip("Bei thesaurierenden Verträgen erfolgt keine jährliche Auszahlung der Zinsen."
                         " Die Zinsen werden dem Kreditbetrag hinzugerechnet und in Folgejahren mit verzinst.");
-    cbThesa->setCheckState(Qt::CheckState::Checked);
+    cbThesa->setCurrentIndex(1);
     registerField(qsl("thesa"), cbThesa);
     QGridLayout* g =new QGridLayout;
     g->addWidget(l1, 0, 0);
@@ -403,7 +407,8 @@ wizNewContractDataPage::wizNewContractDataPage(QWidget* p) : QWizardPage(p)
     g->addWidget(leAmount, 1, 1);
     g->addWidget(l3, 2, 0);
     g->addWidget(cbInterest, 2, 1);
-    g->addWidget(cbThesa, 3, 0, 1, 5);
+    g->addWidget(l4, 3, 0);
+    g->addWidget(cbThesa, 3, 1);
     g->setColumnStretch(0, 1);
     g->setColumnStretch(1, 4);
 
@@ -581,16 +586,21 @@ void wizContractConfirmationPage::initializePage()
     QLocale l;
     {
         wizNew* wiz =qobject_cast<wizNew*> (wizard());
-        if( wiz)
+        if( wiz) {
+            int iMode{field(qsl("thesa")).toInt()};
+            QString interestMode{"Auszahlend"};
+            if( iMode == 1) interestMode = "Thesaurierend";
+            if( iMode == 2) interestMode = "Fester Zins ohne Zinsauszahlung";
             setSubTitle(summary.arg(field(qsl("firstname")).toString(), field(qsl("lastname")).toString(),
-                 field(qsl("label")).toString(),
-                 l.toCurrencyString(field(qsl("amount")).toDouble()),
-                 QString::number(wiz->interest, 'f', 2),
-                 field(qsl("thesa")).toBool() ? qsl("thesaurierend") : qsl("auszahlend"),
-                 wiz->date.toString("dd.MM.yyyy"),
-                 (wiz->noticePeriod == -1) ?
-                   wiz->termination.toString(qsl("dd.MM.yyyy")) :
-                   QString::number(wiz->noticePeriod) +qsl(" Monate nach Kündigung")));
+                                    field(qsl("label")).toString(),
+                                    l.toCurrencyString(field(qsl("amount")).toDouble()),
+                                    QString::number(wiz->interest, 'f', 2),
+                                     interestMode,
+                                    wiz->date.toString("dd.MM.yyyy"),
+                                    (wiz->noticePeriod == -1) ?
+                                        wiz->termination.toString(qsl("dd.MM.yyyy")) :
+                                        QString::number(wiz->noticePeriod) +qsl(" Monate nach Kündigung")));
+        }
     }
     {
         wizEditCreditor* wizE =qobject_cast<wizEditCreditor*> (wizard());

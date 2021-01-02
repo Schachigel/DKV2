@@ -97,7 +97,7 @@
 
 /* static */ QDate bookings::dateOfnextSettlement()
 {   LOG_CALL;
-    return  executeSingleValueSql(qsl("date"), qsl("NextAnnualSettlement")).toDate();
+    return  executeSingleValueSql(qsl("date"), qsl("vNextAnnualSettlement")).toDate();
 }
 /*static */ QVector<booking> bookings::bookingsFromSql(QString where, QString order)
 {

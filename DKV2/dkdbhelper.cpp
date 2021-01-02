@@ -23,10 +23,10 @@ const QString sqlContractView {
   strftime('%d.%m.%Y',V.Vertragsdatum)     AS Vertragsdatum, \
   ifnull(AktivierungsWert, V.Betrag / 100.) AS Nominalwert, \
   CAST(V.Zsatz / 100. AS VARCHAR) || ' %'    AS Zinssatz, \
-  CASE WHEN V.thesaurierend = 0 THEN \"Auszahlend\" \
-  ELSE CASE WHEN V.thesaurierend = 1 THEN \"Thesaur.\" \
-       ELSE CASE WHEN V.thesaurierend = 2 THEN \"Fester Zins\" \
-            ELSE \"ERROR\" \
+  CASE WHEN V.thesaurierend = 0 THEN 'Auszahlend' \
+  ELSE CASE WHEN V.thesaurierend = 1 THEN 'Thesaur.' \
+       ELSE CASE WHEN V.thesaurierend = 2 THEN 'Fester Zins' \
+            ELSE 'ERROR' \
             END \
        END \
   END                                      AS Zinsmodus, \
@@ -36,7 +36,7 @@ const QString sqlContractView {
   END, 0.)                                 AS VerzinslGuthaben, \
   ifnull(ZinsSumme, 0.)                    AS angespZins, \
   ifnull(LetzteBuchung, ' - ')             AS LetzteBuchung, \
-  CASE WHEN V.Kfrist = -1 THEN strftime(\"%d.%m.%Y\", V.LaufzeitEnde) \
+  CASE WHEN V.Kfrist = -1 THEN strftime('%d.%m.%Y', V.LaufzeitEnde) \
   ELSE '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)' \
   END                                      AS KdgFristVertragsende \
 FROM Vertraege AS V \
@@ -214,7 +214,7 @@ bool create_DK_databaseFile(const QString& filename) /*in the default connection
         backupFile(filename, "db-bak");
         QFile(filename).remove();
         if( QFile(filename).exists()) {
-            qCritical() << "file to be replaced can not be deleted";
+            qCritical() << "File to be replaced can not be deleted";
             return false;
         }
     }
@@ -274,11 +274,11 @@ bool createView(QString name, QString sql, QSqlDatabase db) {
     createViewSql = createViewSql.arg(name);
     if( q.exec(createViewSql) && q.lastError().type() == QSqlError::NoError) {
         db.commit();
-        qInfo() << "successfully created view " << name << Qt::endl << sql;
+        qInfo() << "Successfully created view " << name << Qt::endl << sql;
         return true;
     }
     db.rollback();
-    qCritical() << "faild to create view " << name << Qt::endl << q.lastQuery() << Qt::endl << q.lastError() << Qt::endl << sql;
+    qCritical() << "Faild to create view " << name << Qt::endl << q.lastQuery() << Qt::endl << q.lastError() << Qt::endl << sql;
     return false;
 }
 bool createViews( QVector<dbViewDev>& views, QSqlDatabase db)
@@ -297,23 +297,23 @@ bool insert_views( QSqlDatabase db)
                                                           "Vertraege.id          AS id, "
                                                           "Vertraege.Kennung     AS Vertragskennung, "
                                                           "Vertraege.ZSatz /100. AS Zinssatz, "
-                                                          "SUM(Buchungen.Betrag) /100. as Wert, "
+                                                          "SUM(Buchungen.Betrag) /100. AS Wert, "
                                                           "MIN(Buchungen.Datum)  AS Aktivierungsdatum, "
-                                                          "Vertraege.Kfrist AS Kuendigungsfrist, "
-                                                          "Vertraege.LaufzeitEnde AS Vertragsende, "
+                                                          "Vertraege.Kfrist      AS Kuendigungsfrist, "
+                                                          "Vertraege.LaufzeitEnde  AS Vertragsende, "
                                                           "Vertraege.thesaurierend AS thesa, "
                                                           "Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin, "
-                                                          "Kreditoren.id AS KreditorId, "
-                                                          "Kreditoren.Nachname AS Nachname, "
-                                                          "Kreditoren.Vorname AS Vorname, "
-                                                          "Kreditoren.Strasse AS Strasse, "
-                                                          "Kreditoren.Plz AS Plz, "
-                                                          "Kreditoren.Stadt AS Stadt, "
-                                                          "Kreditoren.Email AS Email, "
-                                                          "Kreditoren.IBAN AS Iban, "
-                                                          "Kreditoren.BIC AS Bic "
+                                                          "Kreditoren.id         AS KreditorId, "
+                                                          "Kreditoren.Nachname   AS Nachname, "
+                                                          "Kreditoren.Vorname    AS Vorname, "
+                                                          "Kreditoren.Strasse    AS Strasse, "
+                                                          "Kreditoren.Plz        AS Plz, "
+                                                          "Kreditoren.Stadt      AS Stadt, "
+                                                          "Kreditoren.Email      AS Email, "
+                                                          "Kreditoren.IBAN       AS Iban, "
+                                                          "Kreditoren.BIC        AS Bic "
                                                         "FROM Vertraege "
-                                                            "INNER JOIN Buchungen ON Buchungen.VertragsId = Vertraege.id "
+                                                            "INNER JOIN Buchungen  ON Buchungen.VertragsId = Vertraege.id "
                                                             "INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId "
                                                         "GROUP BY Vertraege.id")},
         {qsl("vVertraege_aktiv"),      qsl("SELECT id, " // 0
@@ -348,21 +348,21 @@ bool insert_views( QSqlDatabase db)
         {qsl("vVertraege_alle_4view"),  sqlContractView},
         {qsl("vVertraege_geloescht"),   sqlExContractView},
 
-        {qsl("NextAnnualS_first"),      qsl("SELECT STRFTIME('%Y-%m-%d', MIN(Datum), '1 year', 'start of year', '-1 day')  as nextInterestDate "
+        {qsl("vNextAnnualS_first"),      qsl("SELECT STRFTIME('%Y-%m-%d', MIN(Datum), '1 year', 'start of year', '-1 day')  as nextInterestDate "
                                             "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id = buchungen.VertragsId "
                                             /* buchungen von Verträgen für die es keine Zinsbuchungen gibt */
                                             "WHERE (SELECT count(*) FROM Buchungen WHERE (Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8) AND Buchungen.VertragsId=Vertraege.id)=0 "
                                             "GROUP BY Vertraege.id ")},
 
-        {qsl("NextAnnualS_next"),       qsl("SELECT STRFTIME('%Y-%m-%d', MAX(Datum), '1 day', '1 year', 'start of year', '-1 day') as nextInterestDate "
+        {qsl("vNextAnnualS_next"),       qsl("SELECT STRFTIME('%Y-%m-%d', MAX(Datum), '1 day', '1 year', 'start of year', '-1 day') as nextInterestDate "
                                             "FROM Buchungen INNER JOIN Vertraege ON Vertraege.id=buchungen.VertragsId "
                                             "WHERE Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8 "
                                             "GROUP BY Buchungen.VertragsId "
                                             "ORDER BY Datum ASC LIMIT 1")},
-        {qsl("NextAnnualSettlement"),    qsl("SELECT MIN(nextInterestDate) AS date FROM "
-                                         "(SELECT nextInterestDate FROM NextAnnualS_first "
-                                         "UNION SELECT nextInterestDate from NextAnnualS_next)")},
-        {qsl("ContractsByYearByInterest"),qsl("SELECT SUBSTR(Vertraege.Vertragsdatum, 0, 5) as Year, "
+        {qsl("vNextAnnualSettlement"),    qsl("SELECT MIN(nextInterestDate) AS date FROM "
+                                         "(SELECT nextInterestDate FROM vNextAnnualS_first "
+                                         "UNION SELECT nextInterestDate FROM vNextAnnualS_next)")},
+        {qsl("vContractsByYearByInterest"),qsl("SELECT SUBSTR(Vertraege.Vertragsdatum, 0, 5) as Year, "
                                                "Vertraege.ZSatz /100. AS Zinssatz, count(*) AS Anzahl, sum(Vertraege.Betrag) /100. AS Summe "
                                                "FROM Vertraege "
                                                "GROUP BY Year, Zinssatz ")},
@@ -753,7 +753,7 @@ void calc_contractEnd( QVector<ContractEnd>& ces)
 }
 void calc_anualInterestDistribution( QVector<YZV>& yzv)
 {   LOG_CALL;
-    QString sql ="SELECT * FROM ContractsByYearByInterest ORDER BY Year";
+    QString sql ="SELECT * FROM vContractsByYearByInterest ORDER BY Year";
     QSqlQuery query;
     query.exec(sql);
     while( query.next()) {
