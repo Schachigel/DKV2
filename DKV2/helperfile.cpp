@@ -53,7 +53,7 @@ void showFileInFolder(const QString &fullPath)
         qDebug() << "failed to start explorer. Arg was: " << explorerW_selectedFile;
 
 #elif defined(__APPLE__)    //Code for Mac
-    QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to reveal POSIX file \"" + path + "\""});
+    QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to reveal POSIX file \"" + fullPath + "\""});
     QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to activate"});
 #endif
 }
