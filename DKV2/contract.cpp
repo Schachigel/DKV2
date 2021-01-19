@@ -301,7 +301,7 @@ int contract::annualSettlement( int year)
             continue;
         } else {
             qDebug() << "Failed annual settlement: Vertrag " << id_aS() << ": " << nextAnnualSettlementDate << " Zins: " << zins;
-            QSqlQuery AS_rollback(qsl("ROLLBACK TO SAVEPOINT as_savepoint"));
+            QSqlQuery AS_rollback(qsl("ROLLBACK"));
             return 0;
         }
     }
@@ -436,12 +436,12 @@ bool contract::finalize(bool simulate, const QDate& finDate,
     }
     qlonglong id_to_be_deleted = id();
     qInfo() << "Finalization startet at value " << value();
-    QSqlQuery fin_savepoint(qsl("SAVEPOINT fin"));
+    executeSql_wNoRecords(qsl("SAVEPOINT fin"));
     // as we are terminating the contract we have to sum up all interests
     setInterestModel(interestModel::reinvest);
     if( needsAnnualSettlement(finDate))
         if( !annualSettlement(finDate.year() -1)) {
-            QSqlQuery fin_rollback(qsl("ROLLBACK TO SAVEPOINT fin"));
+            executeSql_wNoRecords(qsl("ROLLBACK"));
             return false;
         }
     double preFinValue = value(finDate);
@@ -449,7 +449,7 @@ bool contract::finalize(bool simulate, const QDate& finDate,
     finInterest = ZinsesZins(interestRate(), preFinValue, latestBooking().date, finDate);
     finPayout = preFinValue +finInterest;
     if( simulate) {
-        QSqlQuery fin_rollback(qsl("ROLLBACK TO SAVEPOINT fin"));
+        executeSql_wNoRecords(qsl("ROLLBACK"));
         return  true;
     }
     bool allGood =false;
@@ -465,13 +465,13 @@ bool contract::finalize(bool simulate, const QDate& finDate,
     } while(false);
 
     if( allGood) {
-        QSqlQuery fin_commit(qsl("RELEASE SAVEPOINT fin"));
+        executeSql_wNoRecords(qsl("RELEASE fin"));
         reset();
         qInfo() << "successfully finalized and archived contract " << id_to_be_deleted;
         return true;
     } else {
         qCritical() << "contract finalizing failed";
-        QSqlQuery fin_rollback(qsl("ROLLBACK TO SAVEPOINT fin"));
+        executeSql_wNoRecords(qsl("ROLLBACK"));
         return false;
     }
 }

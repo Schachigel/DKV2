@@ -80,6 +80,7 @@ void deleteInactiveContract(qlonglong cid)
 // if creditor has no other contracts: delete creditor
     contract::remove(cid);
 }
+
 void terminateContract(qlonglong cid)
 {   LOG_CALL;
     contract c(cid);
@@ -88,8 +89,8 @@ void terminateContract(qlonglong cid)
     } else {
         cancelContract(c);
     }
-}
-void terminateContract_Final( contract& c)
+ }
+ void terminateContract_Final( contract& c)
 {   LOG_CALL;
     wizTerminateContract wiz(getMainWindow(), c);
     QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
