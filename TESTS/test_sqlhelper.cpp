@@ -148,10 +148,10 @@ void test_sqlhelper::test_eSingleValueSqlPreservsValue()
     QVariant i {42};
     QVariant b (true);
     QString createSql{ QString("INSERT INTO " +tablename+  " VALUES( NULL, "
-                 + dbInsertableString(date) +", "
-                 + dbInsertableString(i) +", "
-                 + dbInsertableString(string) + ", "
-                 + dbInsertableString(b) + ")")};
+                 + DbInsertableString(date) +", "
+                 + DbInsertableString(i) +", "
+                 + DbInsertableString(string) + ", "
+                 + DbInsertableString(b) + ")")};
 
     QVERIFY(QSqlQuery().exec(createSql));
     // note: types could be enforced, they are known to
@@ -363,11 +363,11 @@ void test_sqlhelper::test_variantTypeConservation()
     QVariant b  = QVariant(true);
 
     QString sql= "INSERT INTO " + tablename + " VALUES (NULL, ";
-    sql += dbInsertableString(ll) +", ";
-    sql += dbInsertableString(i) + ", ";
-    sql += dbInsertableString(s) +", ";
-    sql += dbInsertableString(d) +", ";
-    sql += dbInsertableString(b) +")";
+    sql += DbInsertableString(ll) +", ";
+    sql += DbInsertableString(i) + ", ";
+    sql += DbInsertableString(s) +", ";
+    sql += DbInsertableString(d) +", ";
+    sql += DbInsertableString(b) +")";
 
     QSqlQuery q;
     if( ! q.exec(sql)) {

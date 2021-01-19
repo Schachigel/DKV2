@@ -1,11 +1,7 @@
 #include "helper.h"
 #include "helpersql.h"
 
-bool vTypesShareDbType( QVariant::Type t1, QVariant::Type t2)
-{
-    return dbAffinityType(t1) == dbAffinityType(t2);
-}
-QString dbInsertableString(QVariant v)
+QString DbInsertableString(QVariant v)
 {
     if( v.isNull() || !v.isValid())
         return qsl("''");
@@ -31,10 +27,10 @@ QString dbInsertableString(QVariant v)
         break;
     case QVariant::String:
     case QVariant::Char:
-        s = v.toString();
+        s = v.toString().replace("'", "''");;
         break;
     default:
-        qDebug() << "vTypeToDbType defaulted " << v;
+        qDebug() << "switch(v.type()) DEFAULTED " << v;
         s = v.toString();
     }
     return "'" + s +"'";
@@ -103,6 +99,12 @@ bool tableExists(const QString& tablename, QSqlDatabase db)
 {
     return db.tables().contains(tablename);
 }
+
+bool VarTypes_share_DbType( QVariant::Type t1, QVariant::Type t2)
+{
+    return dbAffinityType(t1) == dbAffinityType(t2);
+}
+
 bool verifyTable( const dbtable& tableDef, QSqlDatabase db)
 {
     QSqlRecord recordFromDb = db.record(tableDef.Name());
@@ -116,7 +118,7 @@ bool verifyTable( const dbtable& tableDef, QSqlDatabase db)
             qDebug() << "verifyTable() failed: table exists but field is missing" << field.name();
             return false;
         }
-        if( ! vTypesShareDbType(field.type(), recordFromDb.field(field.name()).type()))
+        if( ! VarTypes_share_DbType(field.type(), recordFromDb.field(field.name()).type()))
         {
             qDebug() << "ensureTable() failed: field " << field.name() <<
                         " type mismatch. expected / actual: " << field.type() << " / " << recordFromDb.field(field.name()).type();

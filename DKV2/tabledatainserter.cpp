@@ -79,7 +79,7 @@ QString TableDataInserter::getInsertRecordSQL() const
             // skip this value so that the defaults from table def will be used
             continue;
         }
-        if( i!=0) {
+        if( ! FieldList.isEmpty()) {
             FieldList +=qsl(", ");
             ValueList +=qsl(", ");
         }
@@ -89,12 +89,12 @@ QString TableDataInserter::getInsertRecordSQL() const
         else if(record.field(i).isNull())
             ValueList += qsl("NULL");
         else {
-            ValueList += dbInsertableString(record.field(i).value());
+            ValueList += DbInsertableString(record.field(i).value());
         }
     }
     QString sql =qsl("INSERT INTO %1 (%2) VALUES (%3) ");
     sql = sql.arg(tablename, FieldList, ValueList);
-    qDebug() << "insertRecordSql: " << sql;
+    qDebug() << "getInsertRecordSQL: " << sql;
     return sql;
 }
 
@@ -105,7 +105,7 @@ QString TableDataInserter::getInsertOrReplaceRecordSQL() const
     QString fieldnames, values;
 
     for( int i=0; i<record.count(); i++) {
-        if( i>0) {
+        if( ! fieldnames.isEmpty()) {
             fieldnames += qsl(", ");
             values += qsl(", ");
         }
@@ -113,7 +113,7 @@ QString TableDataInserter::getInsertOrReplaceRecordSQL() const
         if( record.field(i).isAutoValue() || record.field(i).isNull())
             values += qsl("NULL");
         else
-            values += dbInsertableString(record.field(i).value());
+            values += DbInsertableString(record.field(i).value());
     }
     sql = sql.arg(fieldnames, values);
     qDebug() << sql;
@@ -125,7 +125,7 @@ QString TableDataInserter::getInsert_noAuto_RecordSQL() const
     if( record.isEmpty()) return QString();
     QString fieldnames, values;
     for( int i=0; i<record.count(); i++) {
-        if( i>0) {
+        if( ! fieldnames.isEmpty()) {
             fieldnames += qsl(", ");
             values += qsl(", ");
         }
@@ -133,7 +133,7 @@ QString TableDataInserter::getInsert_noAuto_RecordSQL() const
         if( record.field(i).isNull())
             values += "NULL";
         else
-            values += dbInsertableString(record.field(i).value());
+            values += DbInsertableString(record.field(i).value());
     }
     QString sql(qsl("INSERT OR REPLACE INTO %1 (%2) VALUES (%3)"));
     sql = sql.arg(tablename, fieldnames, values);
@@ -155,7 +155,7 @@ QString TableDataInserter::getUpdateRecordSQL(qlonglong& autovalue) const
             where += record.field(i).name() + qsl("=") + record.field(i).value().toString();
             autovalue =record.field(i).value().toLongLong();
         } else {
-            sql += record.field(i).name() + qsl("=") + dbInsertableString(record.field(i).value());
+            sql += record.field(i).name() + qsl("=") + DbInsertableString(record.field(i).value());
             firstField = false;
         }
     }
@@ -174,7 +174,7 @@ int TableDataInserter::InsertData(QSqlDatabase db) const
         qCritical() << "Insert record failed: " << q.lastError() << Qt::endl << q.lastQuery() << Qt::endl;
         return -1;
     }
-    qInfo() << "Successfully inserted Data into " << tablename << " at index " << q.lastInsertId().toLongLong() << Qt::endl <<  q.lastQuery() << Qt::endl;
+    qInfo() << "Successfully inserted Data into " << tablename << " at index " << q.lastInsertId().toLongLong()<< qsl(" (InsertData)")  << Qt::endl <<  q.lastQuery() << Qt::endl;
     return lastRecord;
 }
 
@@ -188,7 +188,7 @@ int TableDataInserter::InsertData_noAuto(QSqlDatabase db) const
         qCritical() << "Insert/replace record failed: " << q.lastError() << Qt::endl << q.lastQuery() << Qt::endl;
         return -1;
     }
-    qDebug() << "successfully inserted Data at index " << q.lastInsertId().toLongLong() << Qt::endl <<  q.lastQuery() << Qt::endl;
+    qDebug() << "successfully inserted Data at index " << q.lastInsertId().toLongLong() << qsl(" (InsertData_noAuto)")  << Qt::endl <<  q.lastQuery() <<  Qt::endl;
     return lastRecord;
 }
 

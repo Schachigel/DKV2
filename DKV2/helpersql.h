@@ -10,8 +10,8 @@
 #include "dbfield.h"
 #include "dbstructure.h"
 
-bool vTypesShareDbType( QVariant::Type t1, QVariant::Type t2);
-QString dbInsertableString(QVariant v);
+// bool vTypesShareDbType( QVariant::Type t1, QVariant::Type t2);
+QString DbInsertableString(QVariant v);
 QString dbCreateTable_type(QVariant::Type t);
 QString dbAffinityType(QVariant::Type t);
 
