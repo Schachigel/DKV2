@@ -6,7 +6,8 @@
 #endif
 
 #include <QStandardPaths>
-#include <QFileDialog>
+#include <QFileInfo>
+#include <QDir>
 #include <QMessageBox>
 #include <QSqlTableModel>
 #include <QSortFilterProxyModel>
@@ -19,6 +20,7 @@
 
 #include "appconfig.h"
 #include "wiznewdatabase.h"
+#include "wizopenornewdatabase.h"
 #include "appconfig.h"
 #include "csvwriter.h"
 #include "uiitemformatter.h"
@@ -41,9 +43,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->statusBar->addPermanentWidget(ui->statusLabel);
 
     setCentralWidget(ui->stackedWidget);
-    if( appConfig::CurrentDb().isEmpty())
-        // todo: ask "new or open"
+    if( appConfig::CurrentDb().isEmpty()){
         on_action_menu_database_new_triggered();
+        if( appConfig::CurrentDb().isEmpty()){
+            QMessageBox::critical(this, "Ganz schlecht", "Ohne Datenbank kann Dkv2 nicht laufen");
+            close();
+        }
+    }
     if( !useDb(appConfig::CurrentDb()))
         // there should be a valid DB - checked in main.cpp
         Q_ASSERT(!"useDb failed in construcor of mainwindow");
@@ -146,9 +152,9 @@ void MainWindow::on_action_menu_database_start_triggered()
 
 // Database Menu
 QString askUserDbFilename(QString title, bool onlyExistingFiles=false)
-{   // this function is used with openDb, creaetDbCopy, createAnony.DbCopy but NOT newDb
+{   // this function is used with creaetDbCopy, createAnony.DbCopy but NOT newDb
     LOG_CALL;
-    wizFileSelectionWiz wiz(getMainWindow());
+    wpFileSelectionWiz wiz(getMainWindow());
     wiz.title =title;
     wiz.subtitle =qsl("Mit dieser Dialogfolge wählst Du eine DKV2 Datenbank aus");
     wiz.fileTypeDescription =qsl("dk-DB Dateien (*.dkdb)");
@@ -161,66 +167,65 @@ QString askUserDbFilename(QString title, bool onlyExistingFiles=false)
     if( lastdb.exists())
         wiz.openInFolder=lastdb.path();
     else
-        wiz.openInFolder =QStandardPaths::writableLocation((QStandardPaths::AppDataLocation));
+        wiz.openInFolder =QStandardPaths::writableLocation((QStandardPaths::DocumentsLocation));
 
     wiz.exec();
     return wiz.field(qsl("selectedFile")).toString();
 }
-QString askUserNewDb()
+QPair<QString, createNew> MainWindow::askUserNextDb()
 {   LOG_CALL;
-    wizNewDatabaseWiz wiz(getMainWindow());
-    QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
-    QFileInfo lastdb (appConfig::CurrentDb());
-    if( lastdb.exists())
-        wiz.openInFolder=lastdb.path();
-    else
-        wiz.openInFolder =QStandardPaths::writableLocation((QStandardPaths::DocumentsLocation));
-    wiz.title = qsl("Neue DKV2 Datenbank Datei");
-    if( wiz.exec() == QDialog::Accepted)
-        wiz.updateDbConfig();
-
-    return wiz.field(qsl("selectedFile")).toString();
+    QString currentDb {absoluteCanonicalPath(appConfig::CurrentDb())};
+    wizOpenOrNewDb wizOpenOrNew (getMainWindow());
+    QFont f = wizOpenOrNew.font(); f.setPointSize(10); wizOpenOrNew.setFont(f);
+    if( QDialog::Accepted != wizOpenOrNew.exec()) {
+        qInfo() << "wizard OpenOrNew was canceled by the user";
+        return {currentDb, false};
+    }
+    QString dbPath =absoluteCanonicalPath(wizOpenOrNew.selectedFile);
+    {
+        busycursor b;
+        if( ! wizOpenOrNew.field(qsl("createNewDb")).toBool()) {
+            // an existing db was selected
+            if( currentDb == dbPath) {
+                qInfo() << "already open DB was selected";
+                return {dbPath, false};
+            }
+            qInfo() << "existing db " << dbPath << "was selected";
+            if( ! useDb( dbPath)) {
+                return {qsl(""), false};
+            }
+            return {dbPath, false};
+        }
+        // a new db should be created -> ask project details
+        closeAllDatabaseConnections();
+        bool ret = true;
+        ret &= create_DK_databaseFile(dbPath);
+        ret &= useDb(dbPath);
+        if( ! ret)
+            return {qsl(""), true};
+        appConfig::setLastDb(dbPath);
+    }
+    on_actionProjektkonfiguration_ndern_triggered();
+    return {dbPath, true};
 }
 void MainWindow::on_action_menu_database_new_triggered()
 {   LOG_CALL;
-    QString dbfile = askUserNewDb();
-    if( dbfile == qsl("")) {
-        qDebug() << "user canceled file selection";
-        return;
-    }
-    busycursor b;
-    closeDatabaseConnection();
-    if( create_DK_databaseFile(dbfile) && useDb(dbfile)) {
-        appConfig::setLastDb(dbfile);
-    }
-    else {
-        QMessageBox::information(this, qsl("Fehler"), qsl("Die neue Datenbankdatei konnte nicht angelegt und geöffnet werden."));
-        return;
-    }
-    prepare_startPage();
-    ui->stackedWidget->setCurrentIndex(startPageIndex);
-}
-void MainWindow::on_action_menu_database_open_triggered()
-{   LOG_CALL;
-    QString dbfile = askUserDbFilename(qsl("DKV2 Datenbank zum Öffnen auswählen."), true);
-    if( dbfile.isEmpty()) {
-        qDebug() << "keine Datei wurde vom Anwender ausgewählt";
-        QMessageBox::information(this, qsl("Abbruch"), qsl("Es wurde keine Datenbankdatei ausgewählt"));
-        return;
-    }
-    busycursor b;
-    if( useDb(dbfile))
-        appConfig::setLastDb(dbfile);
-    else {
-        QMessageBox::information(this, qsl("Fehler"), qsl("Die Datenbank konnte nicht geöffnet werden"));
-        if( !useDb(appConfig::CurrentDb())) {
-            qFatal("alte und neue DB können nicht geöffnet werden -> abbruch");
-            exit( 1);
+    QPair<QString, createNew> dbRet = askUserNextDb();
+    if( dbRet.first == qsl("")) {
+        if( dbRet.second) {
+            QMessageBox::critical(this, "Fehler", "Die neue Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen");
+            close();
+        } else {
+            QMessageBox::critical(this, "Fehler", "Die ausgewählte Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen");
+            close();
         }
+        qInfo() << "user canceled file selection";
+        return;
     }
     prepare_startPage();
     ui->stackedWidget->setCurrentIndex(startPageIndex);
 }
+
 void MainWindow::on_action_menu_database_copy_triggered()
 {   LOG_CALL;
     QString dbfile = askUserDbFilename(qsl("Dateiname der Kopie Datenbank angeben."));

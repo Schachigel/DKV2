@@ -8,9 +8,9 @@
 #include "helper.h"
 
 /* file selection Page  */
-struct wizFileSelection_IntroPage : public QWizardPage
+struct wpFileSelection_IntroPage : public QWizardPage
 {
-    wizFileSelection_IntroPage(QWidget* p =nullptr);
+    wpFileSelection_IntroPage(QWidget* p =nullptr);
     void initializePage() override;
     void setVisible(bool v) override;
     bool validatePage() override;
@@ -19,9 +19,9 @@ private slots:
     void browseButtonClicked();
 };
 /* database -> open WIZ */
-struct wizFileSelectionWiz : public QWizard
+struct wpFileSelectionWiz : public QWizard
 {
-    wizFileSelectionWiz(QWidget* p =nullptr);
+    wpFileSelectionWiz(QWidget* p =nullptr);
     bool existingFile;
     QString openInFolder;
     QString fileTypeDescription;
@@ -33,9 +33,9 @@ struct wizFileSelectionWiz : public QWizard
 };
 /* database -> new */
 /* file selection Page */
-struct wizFileSelectionNewDb_IntroPage : public QWizardPage
+struct wpFileSelectionNewDb_IntroPage : public QWizardPage
 {
-    wizFileSelectionNewDb_IntroPage(QWidget* p =nullptr);
+    wpFileSelectionNewDb_IntroPage(QWidget* p =nullptr);
     void initializePage() override;
     void setVisible(bool v) override;
     bool validatePage() override;
@@ -44,26 +44,26 @@ private slots:
     void browseButtonClicked();
 };
 /* project address Page */
-struct wizProjectAddress_Page : public QWizardPage
+struct wpProjectAddress_Page : public QWizardPage
 {
-    wizProjectAddress_Page(QWidget* p=nullptr);
+    wpProjectAddress_Page(QWidget* p=nullptr);
     void initializePage() override;
     void cleanupPage() override  {};
 //    void setVisible(bool v) override;
 //    bool validatePage() override;
 };
 /* project Details Page */
-struct wizProjectDetails_Page : public QWizardPage
+struct wpProjectDetails_Page : public QWizardPage
 {
-    wizProjectDetails_Page(QWidget* p= nullptr);
+    wpProjectDetails_Page(QWidget* p= nullptr);
     void cleanupPage() override  {};
     void initializePage() override;
     Q_OBJECT;
 };
 /* contract label Page */
-struct wizContractLableInfo_Page : public QWizardPage
+struct wpContractLableInfo_Page : public QWizardPage
 {
-    wizContractLableInfo_Page(QWidget* p=nullptr);
+    wpContractLableInfo_Page(QWidget* p=nullptr);
     void cleanupPage() override  {};
     void initializePage() override;
     bool validatePage() override;
@@ -73,17 +73,17 @@ private:
     Q_OBJECT;
 };
 /* min values Page */
-struct wizContractMinValues_Page : public QWizardPage
+struct wpContractMinValues_Page : public QWizardPage
 {
-    wizContractMinValues_Page(QWidget* p=nullptr);
+    wpContractMinValues_Page(QWidget* p=nullptr);
     void cleanupPage() override  {};
     void initializePage() override;
 };
 /* new db summary Page */
-class wizNewDatabase_SummaryPage : public QWizardPage{
+class wpNewDatabase_SummaryPage : public QWizardPage{
     Q_OBJECT;
 public:
-    wizNewDatabase_SummaryPage (QWidget* p=nullptr);
+    wpNewDatabase_SummaryPage (QWidget* p=nullptr);
     void initializePage() override;
     bool isComplete() const override;
 public slots:
@@ -104,9 +104,9 @@ struct wizNewDatabaseWiz : public QWizard
     Q_OBJECT;
 };
 /* configure project intro PAGE*/
-struct wizConfigure_IntroPage : public QWizardPage
+struct wpConfigure_IntroPage : public QWizardPage
 {
-    wizConfigure_IntroPage(QWidget* p =nullptr);
+    wpConfigure_IntroPage(QWidget* p =nullptr);
     // void initializePage() override;
     Q_OBJECT;
 };

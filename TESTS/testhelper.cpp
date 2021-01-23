@@ -26,7 +26,7 @@ void initTestDb()
 
 void cleanupTestDb()
 {   LOG_CALL;
-    closeDatabaseConnection();
+    closeAllDatabaseConnections();
     if (QFile::exists(testDbFilename))
         QFile::remove(testDbFilename);
     QDir().rmdir("..\\data");

@@ -329,12 +329,11 @@ bool executeSql_wNoRecords(QString sql, QVariant v)
     QSqlQuery q; q.setForwardOnly(true);
     q.prepare(sql);
     if( v.isValid()) q.bindValue(0, v);
-    if( q.exec())
-    {
-        qInfo() << "Successfully executed query \n" << q.lastQuery();
+    if( q.exec()) {
+        qInfo() << "Successfully executed query  w/o Records\n" << q.lastQuery();
         return true;
     }
-    qDebug() << "failed to execute query. Error: " << q.lastError() << Qt::endl << q.lastQuery();
+    qCritical() << "failed to execute query w/o Records. Error: " << q.lastError() << Qt::endl << q.lastQuery();
     return false;
 }
 bool executeSql_wNoRecords(QString sql, QVector<QVariant> v)

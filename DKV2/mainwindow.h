@@ -24,6 +24,7 @@ struct busycursor
         QGuiApplication::restoreOverrideCursor();
     }
 };
+typedef bool createNew;
 
 namespace Ui {
 class MainWindow;
@@ -48,7 +49,6 @@ private slots:
     void currentChange_ctv(const QModelIndex & , const QModelIndex & );
     void on_action_menu_database_new_triggered();
     void on_action_menu_database_program_exit_triggered();
-    void on_action_menu_database_open_triggered();
 
     void on_action_menu_creditors_listview_triggered();
     void on_action_menu_debug_create_sample_data_triggered();
@@ -139,6 +139,7 @@ private:
     QVector<booking> toBePrinted;
     QVector<booking>::const_iterator currentBooking;
 
+    QPair<QString, createNew> askUserNextDb();
     bool useDb(const QString& dbfile);
     void showDbInStatusbar(QString filename = "");
 

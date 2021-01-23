@@ -5,7 +5,6 @@
 #include <QDir>
 #include <QApplication>
 #include <QTranslator>
-#include <QFileDialog>
 #include <QStandardPaths>
 #include <QMessageBox>
 #include <QSplashScreen>

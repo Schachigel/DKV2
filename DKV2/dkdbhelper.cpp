@@ -168,13 +168,15 @@ const QString sqlBookingsOverview {
 };
 
 class dbCloser
-{   // for use on the stack only
+{   // RAII class for db connections
 public:
-    dbCloser() : Db (nullptr){} // create 'closer' before the database
-    ~dbCloser(){if( !Db) return; Db->close(); closeDatabaseConnection(Db->connectionName());}
-    void set(QSqlDatabase* p){ Db=p;}
+    dbCloser(QString c) : conName (c){}
+    ~dbCloser(){
+        if( ! QSqlDatabase::database(conName).isValid()) return;
+        QSqlDatabase::database(conName).close();
+        QSqlDatabase::database(conName).removeDatabase(conName);}
 private:
-    QSqlDatabase* Db;
+    QString conName;
 };
 
 dbstructure dkdbstructur;
@@ -434,28 +436,28 @@ bool has_allTablesAndFields(QSqlDatabase db)
     qInfo() << db.databaseName() << " has all tables expected";
     return true;
 }
+
 bool isValidDatabase(const QString& filename)
 {   LOG_CALL_W(filename);
-    QString msg;
-    if( filename == "") msg = "empty filename";
-    else if( !QFile::exists(filename)) msg = "file not found";
-    else {
-            {
-            dbCloser closer;
-            QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "validate");
-            db.setDatabaseName(filename);
-            if( !db.open()) msg = "open db failed";
-            else {
-                closer.set(&db);
-                if( !isValidDatabase(db))
-                    msg = "database was found to be NOT valid";
-            }
-        }
-    }
-    if( msg.isEmpty())
-        return true;
-    qCritical() << msg;
-    return false;
+QString msg;
+if( filename == "") msg = "no filename";
+else if( !QFile::exists(filename)) msg = "file not found";
+else {
+QString con(qsl("validate"));
+dbCloser closer(con);
+QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", con);
+db.setDatabaseName(filename);
+if( !db.open()) msg = "open db failed";
+else {
+if( !isValidDatabase(db))
+msg = "database was found to be NOT valid";
+}
+
+}
+if( msg.isEmpty())
+return true;
+qCritical() << msg;
+return false;
 }
 bool isValidDatabase(QSqlDatabase db)
 {   LOG_CALL;
@@ -473,28 +475,28 @@ bool isValidDatabase(QSqlDatabase db)
 }
 
 // manage the app wide used database
-void closeDatabaseConnection(QString con)
-{   LOG_CALL_W(con);
-
-    QSqlDatabase::removeDatabase(con);
+void closeAllDatabaseConnections()
+{   LOG_CALL;
     QList<QString> cl = QSqlDatabase::connectionNames();
+    if( cl.count())
+        qInfo()<< "Found " << cl.count() << "connections open";
 
     for( auto s : cl) {
-        qInfo()<< "Found " << cl.count() << "connections open, after closing: '" + con +"'";
+        QSqlDatabase::database(s).close();
         QSqlDatabase::removeDatabase(s);
     }
     cl.clear();
     cl = QSqlDatabase::connectionNames();
     if( cl.size())
         qInfo() << "not all connection to the database could be closed";
-    qInfo() << "Database connection " << con << " removed";
+    qInfo() << "All Database connections were removed";
 }
 
 bool open_databaseForApplication( QString newDbFile)
 {   LOG_CALL_W(newDbFile);
     Q_ASSERT(!newDbFile.isEmpty());
 
-    closeDatabaseConnection();
+    closeAllDatabaseConnections();
     backupFile(newDbFile, "db-bak");
 
     // setting the default database for the application
@@ -507,7 +509,7 @@ bool open_databaseForApplication( QString newDbFile)
 
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     if( !check_db_version(db)) {
-        closeDatabaseConnection();
+        closeAllDatabaseConnections();
         return false;
     }
     updateViews();
@@ -582,18 +584,15 @@ bool create_DB_copy(QString targetfn, bool deper)
         }
     }
 
-    dbCloser closer;
+    QString conName(qsl("backup"));
+    dbCloser closer(conName);
     bool result = true;
-    { // backupDb Scope - KEEP ! so that the database can be closed
-    QSqlDatabase backupDB = QSqlDatabase::addDatabase("QSQLITE", "backup");
+    QSqlDatabase backupDB = QSqlDatabase::addDatabase("QSQLITE", conName);
     backupDB.setDatabaseName(targetfn);
-
     if( !backupDB.open()) {
         qDebug() << "faild to open backup database";
         return false;
     }
-    else
-        closer.set(&backupDB);
     create_DK_TablesAndContent(backupDB);
 
     QVector<dbtable> tables = dkdbstructur.getTables();
@@ -606,7 +605,6 @@ bool create_DB_copy(QString targetfn, bool deper)
         }
         else
             result = result && copy_TableContent(table.Name(), backupDB);
-    }
     }
     return result;
 }

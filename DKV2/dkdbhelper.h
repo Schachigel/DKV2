@@ -28,7 +28,7 @@ void updateViews(QSqlDatabase db =QSqlDatabase::database());
 bool isValidDatabase(const QString& filename);
 bool isValidDatabase(QSqlDatabase db =QSqlDatabase::database());
 
-void closeDatabaseConnection(QString connection =QSqlDatabase::defaultConnection);
+void closeAllDatabaseConnections();
 bool open_databaseForApplication( QString newDbFile="");
 
 bool create_DB_copy(QString targetfn, bool anonym);

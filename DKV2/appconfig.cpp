@@ -122,7 +122,8 @@ void appConfig::setLastDb(const QString& filename)
 /* static */
 QString appConfig::LastDb()
 {
-    QString ldb = getUserData(keyLastDb);
+    static QString defaultDb = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/Dkv2.dkdb");
+    QString ldb = getUserData(keyLastDb, defaultDb);
     qDebug() << "lastDb read as " << ldb;
     return ldb;
 }
@@ -136,7 +137,8 @@ void appConfig::delLastDb()
 void appConfig::setCurrentDb(const QString& path)
 {   LOG_CALL_W(path);
     QFileInfo fi(path);
-    setRuntimeData( keyCurrentDb, fi.absoluteFilePath());
+    QFileInfo cfi(fi.canonicalFilePath());
+    setRuntimeData( keyCurrentDb, cfi.absoluteFilePath());
 }
 /* static */
 QString appConfig::CurrentDb()

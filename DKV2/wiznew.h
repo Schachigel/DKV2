@@ -7,7 +7,6 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <QWizard>
-
 #include "helper.h"
 
 enum { page_new_or_existing, page_address, page_email, page_bankaccount,

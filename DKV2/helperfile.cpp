@@ -58,7 +58,7 @@ void showFileInFolder(const QString &fullPath)
 #endif
 }
 
-void printHtmlToPdf( QString html, QString fn)
+void printHtmlToPdf( const QString html, const QString fn)
 {   LOG_CALL;
     QTextDocument td;
     td.setHtml(html);
@@ -82,4 +82,10 @@ void printHtmlToPdf( QString html, QString fn)
     td.adjustSize();
     qDebug() << td.size();
     td.drawContents(&painter);
+}
+
+QString absoluteCanonicalPath(const QString path)
+{
+    QString newpath = QFileInfo(path).canonicalFilePath();
+    return newpath.isEmpty() ? path : newpath;
 }

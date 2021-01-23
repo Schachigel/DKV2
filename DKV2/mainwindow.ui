@@ -405,7 +405,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>1128</width>
-     <height>29</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_database">
@@ -415,7 +415,6 @@ p, li { white-space: pre-wrap; }
     <addaction name="action_menu_database_start"/>
     <addaction name="separator"/>
     <addaction name="action_menu_database_new"/>
-    <addaction name="action_menu_database_open"/>
     <addaction name="action_menu_database_exit"/>
     <addaction name="separator"/>
     <addaction name="action_menu_database_copy"/>
@@ -476,24 +475,10 @@ p, li { white-space: pre-wrap; }
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_menu_database_new">
    <property name="text">
-    <string>&amp;Neue anlegen</string>
+    <string>&amp;Datenbank wechseln</string>
    </property>
    <property name="toolTip">
     <string>Legen Sie hiermit eine leere DK Datenbank an</string>
-   </property>
-  </action>
-  <action name="action_menu_database_open">
-   <property name="text">
-    <string>&amp;Öffnen</string>
-   </property>
-   <property name="toolTip">
-    <string>Öffnen Sie hiermit eine existierende Datenbank</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+O</string>
-   </property>
-   <property name="visible">
-    <bool>true</bool>
    </property>
   </action>
   <action name="action_menu_database_exit">
