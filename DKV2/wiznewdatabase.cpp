@@ -30,19 +30,15 @@ wpFileSelection_IntroPage::wpFileSelection_IntroPage(QWidget* p) : QWizardPage(p
 
 void wpFileSelection_IntroPage::initializePage()
 {
-    wpFileSelectionWiz* wiz = qobject_cast<wpFileSelectionWiz*>(wizard());
+    wizFileSelectionWiz* wiz = qobject_cast<wizFileSelectionWiz*>(wizard());
     if( wiz) {
         setTitle(wiz->title);
         setSubTitle(wiz->subtitle);
-    } else {
-        wizNewDatabaseWiz* nDbWiz = qobject_cast<wizNewDatabaseWiz*>(wizard());
-        setTitle(nDbWiz->title);
-        setSubTitle(nDbWiz->subtitle);
     }
 }
 
 void wpFileSelection_IntroPage::browseButtonClicked() {
-    wpFileSelectionWiz* wiz = qobject_cast<wpFileSelectionWiz*>(wizard());
+    wizFileSelectionWiz* wiz = qobject_cast<wizFileSelectionWiz*>(wizard());
 
     QString selectedFile =( wiz->existingFile) ? QFileDialog::getOpenFileName(nullptr, wiz->bffTitle, wiz->openInFolder, wiz->fileTypeDescription, nullptr)
             : QFileDialog::getSaveFileName(nullptr, wiz->bffTitle, wiz->openInFolder, wiz->fileTypeDescription, nullptr);
@@ -52,7 +48,7 @@ void wpFileSelection_IntroPage::browseButtonClicked() {
 }
 
 bool wpFileSelection_IntroPage::validatePage() {
-    wpFileSelectionWiz* wiz = qobject_cast<wpFileSelectionWiz*>(wizard());
+    wizFileSelectionWiz* wiz = qobject_cast<wizFileSelectionWiz*>(wizard());
     if( wiz->existingFile)
         return QFile::exists(field(qsl("selectedFile")).toString());
     else
@@ -76,7 +72,7 @@ void wpFileSelection_IntroPage::setVisible(bool v) {
  * minimal wizard to select a file
  * for copyDb or openDb
 */
-wpFileSelectionWiz::wpFileSelectionWiz(QWidget* p) : QWizard(p) {
+wizFileSelectionWiz::wizFileSelectionWiz(QWidget* p) : QWizard(p) {
     addPage(new wpFileSelection_IntroPage);
 }
 
@@ -84,56 +80,13 @@ wpFileSelectionWiz::wpFileSelectionWiz(QWidget* p) : QWizard(p) {
  * page to select a file name used for newDB
 */
 wpFileSelectionNewDb_IntroPage::wpFileSelectionNewDb_IntroPage(QWidget* p) : QWizardPage(p) {
-    QLineEdit* le = new QLineEdit;
-    registerField(qsl("selectedFile"), le);
-    le->setToolTip(qsl("Hier kannst Du einen vollständigen Pfad zu einer DKV2 Datenbank eingeben."));
-    QLabel* l =new QLabel(qsl("Klicke auf 'durchsuchen' um ein Verzeichnis zu wählen.\nGib dann einen Dateinamen an."));
-    QVBoxLayout* layout =new QVBoxLayout;
-    layout->addWidget(l);
-    layout->addWidget(le);
-    setLayout(layout);
 }
 
 void wpFileSelectionNewDb_IntroPage::initializePage()
 {
-    wizNewDatabaseWiz* wiz = qobject_cast<wizNewDatabaseWiz*>(wizard());
-    setTitle(wiz->title);
-    setSubTitle(wiz->subtitle);
-}
-
-void wpFileSelectionNewDb_IntroPage::browseButtonClicked() {
-
-    QFileDialog filedialog;
-    filedialog.setOption(QFileDialog::DontUseNativeDialog);
-    filedialog.setOption(QFileDialog::DontConfirmOverwrite, false);
-    filedialog.setNameFilter(qsl("DKV2 Datenbanken (*.dkdb)"));
-    filedialog.setFileMode(QFileDialog::AnyFile);
-    filedialog.setAcceptMode(QFileDialog::AcceptSave);
-    filedialog.setWindowTitle(qsl("Dateiname für neue Datenbank eingeben"));
-
-    QString selectedFile;
-    if( filedialog.exec())
-        selectedFile = filedialog.selectedFiles().at(0);
-    if(selectedFile.isEmpty())
-        return;
-    setField(qsl("selectedFile"), selectedFile);
-}
-
-bool wpFileSelectionNewDb_IntroPage::validatePage() {
-    return ! field(qsl("selectedFile")).toString().isEmpty();
-}
-
-void wpFileSelectionNewDb_IntroPage::setVisible(bool v) {
-    QWizardPage::setVisible(v);
-    wizard()->setOption(QWizard::HaveCustomButton1, v);
-    if( v) {
-        wizard()->setButtonText(QWizard::CustomButton1, qsl("durch&suchen"));
-        connect(wizard(), &QWizard::customButtonClicked,
-                this, &wpFileSelectionNewDb_IntroPage::browseButtonClicked);
-    } else {
-        disconnect(wizard(), &QWizard::customButtonClicked,
-                this, &wpFileSelectionNewDb_IntroPage::browseButtonClicked);
-    }
+    setTitle(qsl("DB Konfiguration"));
+    setSubTitle(qsl("Mit den folgenden Dialogen kannst Du die Datenbank "
+    "für Euer Projekt konfigurieren"));
 }
 
 /*
@@ -246,7 +199,7 @@ wpContractLableInfo_Page::wpContractLableInfo_Page(QWidget* p) : QWizardPage(p)
     QLabel* lProject= new QLabel(qsl("Projekt Kürzel (2-5 Zeichen):"));
     QLineEdit* leProject = new QLineEdit;
     lProject->setBuddy(leProject);
-    registerField(GMBH_PI, leProject);
+    registerField(GMBH_INITIALS, leProject);
     leProject->setToolTip(qsl("Das Kürzel wird bei der Erstellung von Vertragskennzeichen verwendet"));
 
     QLabel* lIndex = new QLabel(qsl("Start Index:"));
@@ -267,7 +220,7 @@ void wpContractLableInfo_Page::initializePage()
 {
     QRandomGenerator rand = *QRandomGenerator::system();
     dbConfig c(dbConfig::FROM_RTD);
-    setField(GMBH_PI, c.pi);
+    setField(GMBH_INITIALS, c.pi);
     int startindex = rand.bounded(1000, 9999);
     setField(STARTINDEX, QString::number(startindex));
 }
@@ -276,9 +229,9 @@ bool wpContractLableInfo_Page::validatePage()
 {
     int startindex = field(STARTINDEX).toInt();
     setField(STARTINDEX, QString::number(startindex));
-    QString project = field(GMBH_PI).toString();
+    QString project = field(GMBH_INITIALS).toString();
     if(project.length()> 5)
-        setField(GMBH_PI, project.left(5));
+        setField(GMBH_INITIALS, project.left(5));
     return true;
 }
 
@@ -353,7 +306,7 @@ void wpNewDatabase_SummaryPage::initializePage()
             "<tr><td>Kürzel:    </td><td>%3</td></tr>"
             "<tr><td>Start Index:&nbsp;&nbsp;</td><td>%4</td></tr></table>");
     subt = subt.arg(field(GMBH_EMAIL).toString(), field(GMBH_URL).toString());
-    subt = subt.arg(field(GMBH_PI).toString());
+    subt = subt.arg(field(GMBH_INITIALS).toString());
     subt = subt.arg(field(STARTINDEX).toString());
     setSubTitle(subt);
 }
@@ -369,7 +322,7 @@ bool wpNewDatabase_SummaryPage::isComplete() const
 /*
  * newDb wizard: filename, GmbH data, db data
 */
-wizNewDatabaseWiz::wizNewDatabaseWiz(QWidget* p) : QWizard(p) {
+wizConfigureNewDatabaseWiz::wizConfigureNewDatabaseWiz(QWidget* p) : QWizard(p) {
     addPage(new wpFileSelectionNewDb_IntroPage);
     addPage(new wpProjectAddress_Page);
     addPage(new wpProjectDetails_Page);
@@ -377,7 +330,7 @@ wizNewDatabaseWiz::wizNewDatabaseWiz(QWidget* p) : QWizard(p) {
     addPage(new wpContractLableInfo_Page);
     addPage(new wpNewDatabase_SummaryPage);
 }
-void wizNewDatabaseWiz::updateDbConfig()
+void wizConfigureNewDatabaseWiz::updateDbConfig(QSqlDatabase db)
 {   LOG_CALL;
     dbConfig c;
     c.address1 =field(GMBH_ADDRESS1).toString();
@@ -387,7 +340,7 @@ void wizNewDatabaseWiz::updateDbConfig()
     c.city     =field(GMBH_CITY).toString();
     c.email    =field(GMBH_EMAIL).toString();
     c.url      =field(GMBH_URL).toString();
-    c.pi       =field(GMBH_PI).toString();
+    c.pi       =field(GMBH_INITIALS).toString();
     c.startindex=field(STARTINDEX).toDouble();
     c.dbId     =c.pi +QString::number(c.startindex);
     c.hre      =field(GMBH_HRE).toString();
@@ -395,7 +348,11 @@ void wizNewDatabaseWiz::updateDbConfig()
     c.gefue2   =field(GMBH_GEFUE2).toString();
     c.gefue3   =field(GMBH_GEFUE3).toString();
     c.dkv      =field(GMBH_DKV).toString();
-    c.storeRuntimeData();
+    c.minPayout=field(MIN_PAYOUT).toInt();
+    c.minContract=field(MIN_AMOUNT).toInt();
+    c.maxInterest=field(MAX_INTEREST).toInt();
+
+    c.writeDb(db);
 }
 
 wpConfigure_IntroPage::wpConfigure_IntroPage(QWidget* p) : QWizardPage(p)

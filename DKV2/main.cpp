@@ -35,36 +35,6 @@ void initLogging()
     qInstallMessageHandler(logger);
 }
 
-QString getInitialDbFile()
-{   LOG_CALL;
-    // command line argument 1 has precedence
-    QStringList args =QApplication::instance()->arguments();
-    QString dbfileFromCmdline = args.size() > 1 ? args.at(1) : QString();
-
-    if( !dbfileFromCmdline.isEmpty()) {
-        // if there is a cmd line arg we will not try other
-        // and not store in appConfig
-        if( isValidDatabase( dbfileFromCmdline)) {
-            qInfo() << "valid dbfile from command line " << dbfileFromCmdline;
-            return dbfileFromCmdline;
-        } else {
-            qCritical() << "invalid dbfile from comman line" << dbfileFromCmdline;
-            return QString();
-        }
-    }
-
-    QString dbfile =appConfig::LastDb();
-    if( isValidDatabase(dbfile)) {
-        // all good then
-        qInfo() << "DbFile from configuration exists and is valid: " << dbfile;
-        appConfig::setLastDb(dbfile);
-        return dbfile;
-    } else {
-        qInfo() << "invalid DB file from configuration: " << dbfile;
-        return QString();
-    }
-}
-
 QSplashScreen* doSplash()
 {   LOG_CALL;
     QPixmap pixmap(qsl(":/res/splash.png"));
@@ -113,9 +83,6 @@ int main(int argc, char *argv[])
 
     init_DKDBStruct();
 
-    // let propose a db to mainwindow
-    appConfig::setCurrentDb(getInitialDbFile());
-
 #ifndef QT_DEBUG
     QSplashScreen* splash = doSplash(); // do only AFTER having an app. object
     splash->show();
@@ -123,6 +90,8 @@ int main(int argc, char *argv[])
 #endif
 
     MainWindow w;
+    if( !w.dbLoadedSuccessfully) return -1;
+
     w.show();
     int ret = a.exec();
 

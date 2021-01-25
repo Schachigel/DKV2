@@ -1,6 +1,7 @@
 #ifndef FILESELECTIONWIZ_H
 #define FILESELECTIONWIZ_H
 
+#include <QSqlDatabase>
 #include <QStringLiteral>
 #include <QLineEdit>
 #include <QWizard>
@@ -19,9 +20,9 @@ private slots:
     void browseButtonClicked();
 };
 /* database -> open WIZ */
-struct wpFileSelectionWiz : public QWizard
+struct wizFileSelectionWiz : public QWizard
 {
-    wpFileSelectionWiz(QWidget* p =nullptr);
+    wizFileSelectionWiz(QWidget* p =nullptr);
     bool existingFile;
     QString openInFolder;
     QString fileTypeDescription;
@@ -37,11 +38,7 @@ struct wpFileSelectionNewDb_IntroPage : public QWizardPage
 {
     wpFileSelectionNewDb_IntroPage(QWidget* p =nullptr);
     void initializePage() override;
-    void setVisible(bool v) override;
-    bool validatePage() override;
     Q_OBJECT
-private slots:
-    void browseButtonClicked();
 };
 /* project address Page */
 struct wpProjectAddress_Page : public QWizardPage
@@ -90,17 +87,10 @@ public slots:
     void onConfirmData_toggled(int);
 };
 /* project address WIZ */
-struct wizNewDatabaseWiz : public QWizard
+struct wizConfigureNewDatabaseWiz : public QWizard
 {
-    wizNewDatabaseWiz(QWidget* p =nullptr);
-    void updateDbConfig();
-    // data
-    QString openInFolder;
-    const QString fileTypeDescription =qsl("dk-DB Dateien (*.dkdb)");
-    const QString bffTitle =qsl("Neue Datenbank Datei");
-
-    QString title;
-    QString subtitle;
+    wizConfigureNewDatabaseWiz(QWidget* p =nullptr);
+    void updateDbConfig(QSqlDatabase db=QSqlDatabase::database());
     Q_OBJECT;
 };
 /* configure project intro PAGE*/

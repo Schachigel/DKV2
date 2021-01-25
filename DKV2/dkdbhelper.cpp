@@ -167,18 +167,6 @@ const QString sqlBookingsOverview {
     ORDER BY V.id, B.Datum"
 };
 
-class dbCloser
-{   // RAII class for db connections
-public:
-    dbCloser(QString c) : conName (c){}
-    ~dbCloser(){
-        if( ! QSqlDatabase::database(conName).isValid()) return;
-        QSqlDatabase::database(conName).close();
-        QSqlDatabase::database(conName).removeDatabase(conName);}
-private:
-    QString conName;
-};
-
 dbstructure dkdbstructur;
 void init_DKDBStruct()
 {   LOG_CALL_W("Setting up internal database structures");
@@ -209,9 +197,9 @@ void init_DKDBStruct()
 
 // database creation
 bool create_DK_databaseFile(const QString& filename) /*in the default connection*/
-{   //LOG_CALL_W("filename: " + filename);
+{   LOG_CALL_W(qsl("filename: ") + filename);
     Q_ASSERT(!filename.isEmpty());
-    dbgTimer timer( QString(__func__) + QString(" (") + filename + QString(")"));
+//    dbgTimer timer( QString(__func__) + QString(" (") + filename + QString(")"));
     if( QFile(filename).exists()) {
         backupFile(filename, "db-bak");
         QFile(filename).remove();
@@ -221,7 +209,8 @@ bool create_DK_databaseFile(const QString& filename) /*in the default connection
         }
     }
 
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    dbCloser closer{qsl("conCreateDb")};
+    QSqlDatabase db = QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
     db.setDatabaseName(filename);
 
     if( !db.open()) {
@@ -230,6 +219,69 @@ bool create_DK_databaseFile(const QString& filename) /*in the default connection
     }
     return create_DK_TablesAndContent(db);
 }
+// database validation
+bool has_allTablesAndFields(QSqlDatabase db)
+{   LOG_CALL;
+    for( auto& table : dkdbstructur.getTables()) {
+        if( !verifyTable(table, db))
+            return false;
+    }
+    qInfo() << db.databaseName() << " has all tables expected";
+    return true;
+}
+
+bool check_db_version(QSqlDatabase db =QSqlDatabase::database())
+{   LOG_CALL;
+    double d = getNumMetaInfo(DB_VERSION, -1., db);
+    if( d >= CURRENT_DB_VERSION)
+        return true;
+    qCritical() << "db version check failed: found version " << d << " needed version " << CURRENT_DB_VERSION;
+    return false;
+}
+
+bool isValidDatabase(QSqlDatabase db =QSqlDatabase::database())
+{
+    LOG_CALL;
+    {QSqlQuery enableRefInt(db);
+    enableRefInt.exec("PRAGMA foreign_keys = ON");}
+    if( !has_allTablesAndFields(db))
+        return false;
+    if( !check_db_version(db)) {
+        qCritical() << "database version check failed";
+        return false;
+    }
+    qInfo() << db.databaseName() << " is a valid dk database";
+    return true;
+}
+
+bool isValidDatabase(const QString& filename)
+{
+    LOG_CALL_W(filename);
+    QString msg;
+    QString con(qsl("validate"));
+    dbCloser closer(con);
+    if( filename == "") msg = "no filename";
+    else if( !QFile::exists(filename)) msg = "file not found";
+    else {
+        {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", con);
+        db.setDatabaseName(filename);
+        if( !db.open())
+            msg = "open db failed";
+        else {
+            if( !isValidDatabase(db)) {
+                msg = "database was found to be NOT valid";
+            }
+        } // End of db scope
+        }
+    }
+    if( msg.isEmpty())
+        return true;
+    qCritical() << msg;
+    return false;
+}
+
+
 // initial database tables and content
 void insert_DbProperties(QSqlDatabase db = QSqlDatabase::database())
 {
@@ -265,7 +317,7 @@ struct dbViewDev{
     QString sql;
 };
 
-bool createView(QString name, QString sql, QSqlDatabase db) {
+bool createView(QString name, QString sql, QSqlDatabase db = QSqlDatabase::database()) {
     db.transaction();
     QSqlQuery q(db);
     if( q.exec("DROP VIEW " + name))
@@ -407,73 +459,22 @@ bool insert_views( QSqlDatabase db)
     return createViews(views, db);
 }
 
-// database validation
-bool check_db_version(QSqlDatabase db)
-{   LOG_CALL;
-    double d = getNumMetaInfo(DB_VERSION, -1., db);
-    if( d >= CURRENT_DB_VERSION)
-        return true;
-    qCritical() << "db version check failed: found version " << d << " needed version " << CURRENT_DB_VERSION;
-    return false;
-}
-void updateViews(QSqlDatabase db)
+bool updateViews(QSqlDatabase db =QSqlDatabase::database())
 {   LOG_CALL;
     QString lastProgramVersion = getMetaInfo(DKV2_VERSION, QString());
     QString thisProgramVersion = QCoreApplication::applicationVersion();
     if( lastProgramVersion != thisProgramVersion) {
-        if( !insert_views(db))
+        if( !insert_views(db)) {
             qDebug() << "Faild to insert views for current exe version";
-        setMetaInfo(DKV2_VERSION, thisProgramVersion);
-    }
-    return;
-}
-bool has_allTablesAndFields(QSqlDatabase db)
-{   LOG_CALL;
-    for( auto& table : dkdbstructur.getTables()) {
-        if( !verifyTable(table, db))
             return false;
+        }
+        else {
+            setMetaInfo(DKV2_VERSION, thisProgramVersion);
+            return true;
+        }
     }
-    qInfo() << db.databaseName() << " has all tables expected";
     return true;
 }
-
-bool isValidDatabase(const QString& filename)
-{   LOG_CALL_W(filename);
-QString msg;
-if( filename == "") msg = "no filename";
-else if( !QFile::exists(filename)) msg = "file not found";
-else {
-QString con(qsl("validate"));
-dbCloser closer(con);
-QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", con);
-db.setDatabaseName(filename);
-if( !db.open()) msg = "open db failed";
-else {
-if( !isValidDatabase(db))
-msg = "database was found to be NOT valid";
-}
-
-}
-if( msg.isEmpty())
-return true;
-qCritical() << msg;
-return false;
-}
-bool isValidDatabase(QSqlDatabase db)
-{   LOG_CALL;
-    QSqlQuery enableRefInt(db);
-    enableRefInt.exec("PRAGMA foreign_keys = ON");
-    if( !has_allTablesAndFields(db))
-        return false;
-    if( !check_db_version(db)) {
-        qCritical() << "database version check failed";
-        return false;
-    }
-    // todo : check views
-    qInfo() << db.databaseName() << " is a valid dk database";
-    return true;
-}
-
 // manage the app wide used database
 void closeAllDatabaseConnections()
 {   LOG_CALL;
@@ -508,11 +509,8 @@ bool open_databaseForApplication( QString newDbFile)
     }
 
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
-    if( !check_db_version(db)) {
-        closeAllDatabaseConnections();
+    if( ! updateViews())
         return false;
-    }
-    updateViews();
     dbConfig c(dbConfig::FROM_DB);
     c.storeRuntimeData();
     return true;
@@ -617,7 +615,7 @@ QString proposeContractLabel()
     QString kennung;
     do {
         QString maxid = QString::number(iMaxid).rightJustified(6, '0');
-        QString PI = "DK-" + getMetaInfo(GMBH_PI);
+        QString PI = "DK-" + getMetaInfo(GMBH_INITIALS);
         kennung = PI + "-" + QString::number(QDate::currentDate().year()) + "-" + maxid;
         QVariant v = executeSingleValueSql(dkdbstructur["Vertraege"]["id"], "Kennung='" + kennung + "'");
         if( v.isValid())

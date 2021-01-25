@@ -171,6 +171,9 @@ bool wpExistingDb::validatePage()
         qobject_cast<wizOpenOrNewDb*>( wizard())->selectedFile = db;
         return true;
     }
+    QMessageBox::information(this, qsl("Ungültige Eingabedaten"),
+                             qsl("Die Datei kann nicht geöffnet werden. Bitte stelle sicher, dass "
+                             "eine existierende Datenbankdatei ausgewählt wird."));
     return false;
 }
 
@@ -207,4 +210,5 @@ wizOpenOrNewDb::wizOpenOrNewDb(QWidget* p) : QWizard(p)
     setPage(NewOrOpen, new wpOpenOrNew(this));
     setPage(selectNewFile, new wpNewDb(this));
     setPage(selectExistingFile, new wpExistingDb(this));
+    QFont f = font(); f.setPointSize(10); setFont(f);
 }

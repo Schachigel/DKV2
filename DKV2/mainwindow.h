@@ -24,7 +24,6 @@ struct busycursor
         QGuiApplication::restoreOverrideCursor();
     }
 };
-typedef bool createNew;
 
 namespace Ui {
 class MainWindow;
@@ -38,6 +37,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     void setSplash(QSplashScreen* s);
+    bool dbLoadedSuccessfully =false;
 
     int id_SelectedCreditor();
     int get_current_id_from_contracts_list();
@@ -139,7 +139,8 @@ private:
     QVector<booking> toBePrinted;
     QVector<booking>::const_iterator currentBooking;
 
-    QPair<QString, createNew> askUserNextDb();
+    QString askUserNextDb();
+    QString findValidDatabaseToUse();
     bool useDb(const QString& dbfile);
     void showDbInStatusbar(QString filename = "");
 

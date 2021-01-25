@@ -29,6 +29,94 @@
 #include "letters.h"
 #include "transaktionen.h"
 
+// generell functions (used for contruction)
+
+QString MainWindow::findValidDatabaseToUse()
+{
+    // a db from the command line would be stored as currentDb...
+    QString dbPath{ getDbFileFromCommandline()};
+    if( dbPath.isEmpty()) {
+        // NO db given on the commandline - use LastDb if available
+        dbPath =appConfig::LastDb();
+        if( isValidDatabase(dbPath)){
+            qInfo() << "last db will be reopened " << dbPath;
+            return dbPath;
+        }
+        // last used db is not valid -> ask for another one
+        qInfo() << dbPath << " aus der Konfiguration ist keine valide Datenbank";
+        dbPath =askUserNextDb();
+        // // //
+        if( isValidDatabase(dbPath)){
+            // a valid database was given -> all good
+            return dbPath;
+        } else {
+            // there should be a valid DB
+            QMessageBox::critical(this, "Ganz schlecht", "Ohne valide Datenbank kann Dkv2 nicht laufen");
+            return QString();
+        }
+    }
+    // db was given on the commandline
+    QFileInfo fi{dbPath};
+    dbPath = fi.canonicalFilePath();
+    if( isValidDatabase(dbPath)) {
+        return dbPath;
+    } else {
+        QMessageBox::critical(nullptr, qsl("FEHLER"), qsl("Die angegebene Datenbank existiert nicht oder ist keine valide Datenbank. DKV2 wird beendet"));
+        // do not continue if a db was given on the cmd line but is not valid
+        return QString();
+    }
+}
+
+QString MainWindow::askUserNextDb()
+{   LOG_CALL;
+    wizOpenOrNewDb wizOpenOrNew (getMainWindow());
+    if( QDialog::Accepted != wizOpenOrNew.exec()) {
+        qInfo() << "wizard OpenOrNew was canceled by the user";
+        return QString();
+    }
+    QString selectedDbPath {absoluteCanonicalPath(wizOpenOrNew.selectedFile)};
+    bool useExistingFile { ! wizOpenOrNew.field(qsl("createNewDb")).toBool()};
+    { // busycursor livetime
+    busycursor b;
+    if( useExistingFile) {
+        if( selectedDbPath.isEmpty()){
+            QMessageBox::critical(this, "Fehler", "Die ausgewählte Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen");
+            return QString();
+        } else {
+            qInfo() << "existing db " << selectedDbPath << "was selected";
+            return selectedDbPath;
+        }
+    }
+    // a new db should be created -> ask project details
+    // closeAllDatabaseConnections();
+    if( ! create_DK_databaseFile(selectedDbPath)) {
+        QMessageBox::critical(this, "Fehler", "Die neue Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen");
+        return QString();
+    }
+    }// busycursor livetime
+    dbCloser closer{qsl("conWriteConfig")};
+    wizConfigureNewDatabaseWiz wizProjectData(this);
+    if( wizProjectData.Accepted == wizProjectData.exec()) {
+        QSqlDatabase db =QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
+        db.setDatabaseName(selectedDbPath);
+        db.open();
+        wizProjectData.updateDbConfig(db);
+        db.close();
+    }
+    return selectedDbPath;
+}
+
+bool MainWindow::useDb(const QString& dbfile)
+{   LOG_CALL;
+    if( open_databaseForApplication(dbfile)) {
+        appConfig::setCurrentDb(dbfile);
+        appConfig::setLastDb(dbfile);
+        showDbInStatusbar(dbfile);
+        return true;
+    }
+    qCritical() << "the databse could not be used for this application";
+    return false;
+}
 
 // construction, destruction
 MainWindow::MainWindow(QWidget *parent) :
@@ -41,19 +129,19 @@ MainWindow::MainWindow(QWidget *parent) :
 #endif
 
     ui->statusBar->addPermanentWidget(ui->statusLabel);
-
     setCentralWidget(ui->stackedWidget);
-    if( appConfig::CurrentDb().isEmpty()){
-        on_action_menu_database_new_triggered();
-        if( appConfig::CurrentDb().isEmpty()){
-            QMessageBox::critical(this, "Ganz schlecht", "Ohne Datenbank kann Dkv2 nicht laufen");
-            close();
-        }
-    }
-    if( !useDb(appConfig::CurrentDb()))
-        // there should be a valid DB - checked in main.cpp
-        Q_ASSERT(!"useDb failed in construcor of mainwindow");
 
+    QString dbPath =findValidDatabaseToUse();
+    if( dbPath.isEmpty()) {
+        return;
+    }
+
+    // if we come here, dbPath contains a valid Databse, lets use it
+    if( !useDb(dbPath)) {
+        QMessageBox::critical(nullptr, qsl("FEHLER"), qsl("Die angegebene Datenbank kann nicht verwendet werden. DKV2 wird beendet"));
+        return;
+    }
+    dbLoadedSuccessfully =true;
     ui->CreditorsTableView->setStyleSheet(qsl("QTableView::item { padding-right: 10px; padding-left: 10px; }"));
     ui->contractsTableView->setStyleSheet(qsl("QTableView::item { padding-right: 10px; padding-left: 10px; }"));
 
@@ -68,22 +156,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->stackedWidget->setCurrentIndex(startPageIndex);
 }
+
 MainWindow::~MainWindow()
 {   LOG_CALL;
     delete ui;
 }
 
-// generell functions
-bool MainWindow::useDb(const QString& dbfile)
-{   LOG_CALL;
-    if( open_databaseForApplication(dbfile)) {
-        appConfig::setCurrentDb(dbfile);
-        showDbInStatusbar(dbfile);
-        return true;
-    }
-    qCritical() << "the databse could not be used for this application";
-    return false;
-}
 void MainWindow::showDbInStatusbar( QString filename)
 {   LOG_CALL_W (filename);
     if( filename.isEmpty()) {
@@ -154,7 +232,7 @@ void MainWindow::on_action_menu_database_start_triggered()
 QString askUserDbFilename(QString title, bool onlyExistingFiles=false)
 {   // this function is used with creaetDbCopy, createAnony.DbCopy but NOT newDb
     LOG_CALL;
-    wpFileSelectionWiz wiz(getMainWindow());
+    wizFileSelectionWiz wiz(getMainWindow());
     wiz.title =title;
     wiz.subtitle =qsl("Mit dieser Dialogfolge wählst Du eine DKV2 Datenbank aus");
     wiz.fileTypeDescription =qsl("dk-DB Dateien (*.dkdb)");
@@ -172,58 +250,33 @@ QString askUserDbFilename(QString title, bool onlyExistingFiles=false)
     wiz.exec();
     return wiz.field(qsl("selectedFile")).toString();
 }
-QPair<QString, createNew> MainWindow::askUserNextDb()
-{   LOG_CALL;
-    QString currentDb {absoluteCanonicalPath(appConfig::CurrentDb())};
-    wizOpenOrNewDb wizOpenOrNew (getMainWindow());
-    QFont f = wizOpenOrNew.font(); f.setPointSize(10); wizOpenOrNew.setFont(f);
-    if( QDialog::Accepted != wizOpenOrNew.exec()) {
-        qInfo() << "wizard OpenOrNew was canceled by the user";
-        return {currentDb, false};
-    }
-    QString dbPath =absoluteCanonicalPath(wizOpenOrNew.selectedFile);
-    {
-        busycursor b;
-        if( ! wizOpenOrNew.field(qsl("createNewDb")).toBool()) {
-            // an existing db was selected
-            if( currentDb == dbPath) {
-                qInfo() << "already open DB was selected";
-                return {dbPath, false};
-            }
-            qInfo() << "existing db " << dbPath << "was selected";
-            if( ! useDb( dbPath)) {
-                return {qsl(""), false};
-            }
-            return {dbPath, false};
-        }
-        // a new db should be created -> ask project details
-        closeAllDatabaseConnections();
-        bool ret = true;
-        ret &= create_DK_databaseFile(dbPath);
-        ret &= useDb(dbPath);
-        if( ! ret)
-            return {qsl(""), true};
-        appConfig::setLastDb(dbPath);
-    }
-    on_actionProjektkonfiguration_ndern_triggered();
-    return {dbPath, true};
-}
+
 void MainWindow::on_action_menu_database_new_triggered()
 {   LOG_CALL;
-    QPair<QString, createNew> dbRet = askUserNextDb();
-    if( dbRet.first == qsl("")) {
-        if( dbRet.second) {
-            QMessageBox::critical(this, "Fehler", "Die neue Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen");
-            close();
-        } else {
-            QMessageBox::critical(this, "Fehler", "Die ausgewählte Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen");
-            close();
-        }
-        qInfo() << "user canceled file selection";
+    QString dbFile =askUserNextDb();
+    if( dbFile.isEmpty()) {
+        // askUserNextDb was not successful - maybe canceled.
+        // do nothing
+        QMessageBox::information( this, qsl("Abbruch"), qsl("Die Dateiauswahl wurde abgebrochen."));
         return;
     }
-    prepare_startPage();
-    ui->stackedWidget->setCurrentIndex(startPageIndex);
+    if( !isValidDatabase(dbFile)) {
+        // selected file is not valid.
+        // do nothing
+        QMessageBox::information( this, qsl("Abbruch"), qsl("Die ausgewählte Datei ist keine gültige Datenbank."));
+        return;
+    }
+    if( useDb(dbFile)){
+        prepare_startPage();
+        ui->stackedWidget->setCurrentIndex(startPageIndex);
+        return;
+    } else {
+        appConfig::delLastDb();
+        QMessageBox::critical(this, qsl("Großes Problem"), qsl("Die gewählte Datenbank konnte nicht verwendet werden. "
+                                       "Suche in der dkv2.log Datei im %temp% Verzeichnis nach der Ursache!"));
+        // useDb has closed the openDb -> without old and new db we could not run
+        close();
+    }
 }
 
 void MainWindow::on_action_menu_database_copy_triggered()

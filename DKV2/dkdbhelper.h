@@ -13,6 +13,8 @@
 #include "dbstructure.h"
 #include "helpersql.h"
 
+
+
 extern dbstructure dkdbstructur;
 // THE structure of our database the single source of truth
 void init_DKDBStruct();
@@ -21,12 +23,11 @@ bool create_DK_databaseFile(const QString& filename);
 bool insert_views( QSqlDatabase db =QSqlDatabase::database());
 bool create_DK_TablesAndContent(QSqlDatabase db = QSqlDatabase::database());
 
-bool check_db_version(QSqlDatabase db =QSqlDatabase::database());
-
-bool createView(QString name, QString Sql, QSqlDatabase db = QSqlDatabase::database());
-void updateViews(QSqlDatabase db =QSqlDatabase::database());
+// bool check_db_version(QSqlDatabase db =QSqlDatabase::database());
+// bool createView(QString name, QString Sql, QSqlDatabase db = QSqlDatabase::database());
+// void updateViews(QSqlDatabase db =QSqlDatabase::database());
 bool isValidDatabase(const QString& filename);
-bool isValidDatabase(QSqlDatabase db =QSqlDatabase::database());
+// bool isValidDatabase(QSqlDatabase db =QSqlDatabase::database());
 
 void closeAllDatabaseConnections();
 bool open_databaseForApplication( QString newDbFile="");

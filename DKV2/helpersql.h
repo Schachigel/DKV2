@@ -10,6 +10,22 @@
 #include "dbfield.h"
 #include "dbstructure.h"
 
+class dbCloser
+{   // RAII class for db connections
+public:
+    dbCloser(QString c) : conName (c){}
+    ~dbCloser(){
+        if( QSqlDatabase::database(conName).isValid()){
+            QList<QString> cl = QSqlDatabase::connectionNames();
+            for( auto con : cl) {
+                if( con == conName) QSqlDatabase::database(con).close();
+            }
+            QSqlDatabase::database(conName).removeDatabase(conName);
+        }
+    }
+    QString conName;
+};
+
 // bool vTypesShareDbType( QVariant::Type t1, QVariant::Type t2);
 QString DbInsertableString(QVariant v);
 QString dbCreateTable_type(QVariant::Type t);

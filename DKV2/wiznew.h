@@ -12,12 +12,12 @@
 enum { page_new_or_existing, page_address, page_email, page_bankaccount,
      page_confirm_creditor, page_contract_data, page_contract_term, page_confirm_contract};
 
-class wizNewOrExistingPage : public QWizardPage
+class wpNewOrExisting : public QWizardPage
 {
     Q_OBJECT
 public:
-    wizNewOrExistingPage(QWidget* );
-    ~wizNewOrExistingPage(){}
+    wpNewOrExisting(QWidget* );
+    ~wpNewOrExisting(){}
     void initializePage() override;
     bool validatePage() override;
     int nextId() const override;
@@ -31,31 +31,31 @@ private:
     QComboBox*    cbCreditors;
 };
 
-struct wizNewCreditorAddressPage : public QWizardPage{
-    wizNewCreditorAddressPage(QWidget* p);
+struct wpNewCreditorAddress : public QWizardPage{
+    wpNewCreditorAddress(QWidget* p);
     void cleanupPage() override  {};
     bool validatePage()   override;
     int nextId() const    override;
 };
 
-struct wizEmailPage : public QWizardPage {
-    wizEmailPage (QWidget* p);
+struct wpEmail : public QWizardPage {
+    wpEmail (QWidget* p);
     void cleanupPage() override  {};
     bool validatePage()   override;
     int nextId() const    override;
 };
 
-struct wizBankAccountPage : public QWizardPage{
-    wizBankAccountPage(QWidget* p);
+struct wpBankAccount : public QWizardPage{
+    wpBankAccount(QWidget* p);
     void cleanupPage() override  {};
     bool validatePage()   override;
     int nextId() const    override;
 };
 
-class wizConfirmCreditorPage : public QWizardPage{
+class wpConfirmCreditor : public QWizardPage{
     Q_OBJECT
 public:
-    wizConfirmCreditorPage(QWidget* p);
+    wpConfirmCreditor(QWidget* p);
     void initializePage() override;
     bool validatePage()   override;
     int nextId() const    override;
@@ -65,8 +65,8 @@ private:
     QCheckBox* cbCreateContract =nullptr;
 };
 
-struct wizNewContractDataPage : public QWizardPage{
-    wizNewContractDataPage(QWidget* p);
+struct wpNewContractData : public QWizardPage{
+    wpNewContractData(QWidget* p);
     void initializePage() override;
     void cleanupPage() override  {};
     bool validatePage() override;
@@ -76,10 +76,10 @@ private:
     QComboBox* cbInterest =nullptr;
 };
 
-class wizContractTimingPage : public QWizardPage{
+class wpContractTiming : public QWizardPage{
     Q_OBJECT
 public:
-    wizContractTimingPage(QWidget*);
+    wpContractTiming(QWidget*);
     void initializePage() override;
     void cleanupPage() override  {};
     bool validatePage()   override;
@@ -94,11 +94,11 @@ private:
     QDateEdit* deCDate;
 };
 
-class wizContractConfirmationPage : public QWizardPage
+class wpContractConfirmation : public QWizardPage
 {
     Q_OBJECT;
 public:
-    wizContractConfirmationPage(QWidget*);
+    wpContractConfirmation(QWidget*);
     void initializePage() override;
     bool validatePage()   override;
     bool isComplete() const override;

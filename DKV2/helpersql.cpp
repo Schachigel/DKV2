@@ -124,7 +124,6 @@ bool verifyTable( const dbtable& tableDef, QSqlDatabase db)
                         " type mismatch. expected / actual: " << field.type() << " / " << recordFromDb.field(field.name()).type();
             return false;
         }
-
     }
     return true;
 }

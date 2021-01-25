@@ -17,7 +17,7 @@
 #define GMBH_CITY     qsl("gmbh.stadt")
 #define GMBH_EMAIL    qsl("gmbh.email")
 #define GMBH_URL      qsl("gmbh.url")
-#define GMBH_PI       qsl("gmbh.Projektinitialen")
+#define GMBH_INITIALS qsl("gmbh.Projektinitialen")
 #define STARTINDEX    qsl("startindex")
 #define MIN_PAYOUT    qsl("minAuszahlung")
 #define MIN_AMOUNT    qsl("minVertragswert")
@@ -101,7 +101,7 @@ struct dbConfig
     QString email       ="info@esperanza-mannheim.de";
     QString url         ="www.esperanza-mannheim.de";
     QString pi          ="ESP"; // project initials
-    QString hre         ="Amtsgericht Mannheim HRB HRB 7-----3";
+    QString hre         ="Amtsgericht Mannheim HRB HRB 7.....3";
     QString gefue1      ="...";
     QString gefue2      ="...";
     QString gefue3      ="...";

@@ -60,5 +60,6 @@ QString logFilePath();
 
 QMainWindow* getMainWindow();
 
+QString getDbFileFromCommandline();
 
 #endif // HELPER_H

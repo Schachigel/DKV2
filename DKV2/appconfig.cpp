@@ -51,7 +51,6 @@ double getNumMetaInfo(const QString& name, const double def, QSqlDatabase db)
         qInfo() << "no database ready (yet), defaulting";
         return def;
     }
-
     QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='") +name +qsl("'"), db);
     if( ! value.isValid()) {
         qInfo() << "getNumProperty read empty property " << name << " -> using default";
@@ -99,7 +98,6 @@ void appConfig::setOutDirInteractive(QWidget* parent)
 QString appConfig::Outdir()
 {
     QString od;
-
     do {
         od = getUserData(keyOutdir, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
         if( od.isEmpty())
@@ -110,6 +108,7 @@ QString appConfig::Outdir()
 /* static */ /* for testing puropose */
 void appConfig::delOutDir()
 {
+    qInfo() << "deleting outdir";
     QSettings set;
     set.remove(keyOutdir);
 }
@@ -129,16 +128,14 @@ QString appConfig::LastDb()
 }
 /* static */ /* for testing puropose */
 void appConfig::delLastDb()
-{
+{   LOG_CALL;
     deleteUserData(keyLastDb);
 }
 
 /* static */
 void appConfig::setCurrentDb(const QString& path)
 {   LOG_CALL_W(path);
-    QFileInfo fi(path);
-    QFileInfo cfi(fi.canonicalFilePath());
-    setRuntimeData( keyCurrentDb, cfi.absoluteFilePath());
+    setRuntimeData( keyCurrentDb, path);
 }
 /* static */
 QString appConfig::CurrentDb()
@@ -148,7 +145,7 @@ QString appConfig::CurrentDb()
 }
 /* static */ /* for testing puropose */
 void appConfig::delCurrentDb()
-{
+{   LOG_CALL;
     deleteRuntimeData(keyCurrentDb);
 }
 
@@ -157,17 +154,19 @@ void appConfig::delCurrentDb()
 void appConfig::setUserData(const QString& name, const QString& value)
 {
     QSettings config;
+    qInfo() << "setUserDatea " << name << " : " << value;
     config.setValue(name, value);
 }
 /* static */
 QString appConfig::getUserData( const QString& name, const QString& defaultvalue)
 {
     QSettings config;
+    qInfo() << "getUserData " << name << "; def.Value: " << defaultvalue;
     return config.value(name, defaultvalue).toString();
 }
 /* static */
 void appConfig::deleteUserData(const QString& name)
-{
+{   LOG_CALL_W(name);
     QSettings config;
     config.remove(name);
 }
@@ -176,21 +175,23 @@ void appConfig::deleteUserData(const QString& name)
 /* static */
 void appConfig::setRuntimeData( const QString& name, const QString& value)
 {
+    qInfo() << "setRuntimeData " << name << " : " << value;
     runtimedata.insert(name,value);
 }
 /* static */
 QString appConfig::getRuntimeData( const QString& name, const QString& defaultvalue)
 {
+    qInfo() << "getRuntimeData " << name << "; def.value: " << defaultvalue;
     return runtimedata.value(name, defaultvalue);
 }
 /* static */
 void appConfig::deleteRuntimeData(const QString& name)
-{
+{   LOG_CALL_W(name);
     runtimedata.remove(name);
 }
 
 void dbConfig::loadRuntimeData()
-{
+{   LOG_CALL;
     if( appConfig::getRuntimeData(DBID) == qsl("")) {
         // runtime data is uninitialized
         return;
@@ -202,7 +203,7 @@ void dbConfig::loadRuntimeData()
     city       =appConfig::getRuntimeData(GMBH_CITY);
     email      =appConfig::getRuntimeData(GMBH_EMAIL);
     url        =appConfig::getRuntimeData(GMBH_URL);
-    pi         =appConfig::getRuntimeData(GMBH_PI);
+    pi         =appConfig::getRuntimeData(GMBH_INITIALS);
     hre        =appConfig::getRuntimeData(GMBH_HRE);
     gefue1     =appConfig::getRuntimeData(GMBH_GEFUE1);
     gefue2     =appConfig::getRuntimeData(GMBH_GEFUE2);
@@ -217,7 +218,7 @@ void dbConfig::loadRuntimeData()
 }
 
 void dbConfig::storeRuntimeData()
-{
+{   LOG_CALL;
     appConfig::setRuntimeData(GMBH_ADDRESS1, address1);
     appConfig::setRuntimeData(GMBH_ADDRESS2, address2);
     appConfig::setRuntimeData(GMBH_STREET,   street);
@@ -225,7 +226,7 @@ void dbConfig::storeRuntimeData()
     appConfig::setRuntimeData(GMBH_CITY,     city);
     appConfig::setRuntimeData(GMBH_EMAIL,    email);
     appConfig::setRuntimeData(GMBH_URL,      url);
-    appConfig::setRuntimeData(GMBH_PI,       pi);
+    appConfig::setRuntimeData(GMBH_INITIALS,       pi);
     appConfig::setRuntimeData(GMBH_HRE,      hre);
     appConfig::setRuntimeData(GMBH_GEFUE1,   gefue1);
     appConfig::setRuntimeData(GMBH_GEFUE2,   gefue2);
@@ -240,7 +241,7 @@ void dbConfig::storeRuntimeData()
 }
 
 void dbConfig::writeDb(QSqlDatabase db)
-{
+{   LOG_CALL;
     setMetaInfo(GMBH_ADDRESS1, address1,    db);
     setMetaInfo(GMBH_ADDRESS2, address2,    db);
     setMetaInfo(GMBH_STREET,   street,      db);
@@ -248,7 +249,7 @@ void dbConfig::writeDb(QSqlDatabase db)
     setMetaInfo(GMBH_CITY,     city,        db);
     setMetaInfo(GMBH_EMAIL,    email,       db);
     setMetaInfo(GMBH_URL,      url,         db);
-    setMetaInfo(GMBH_PI,       pi,          db);
+    setMetaInfo(GMBH_INITIALS, pi,          db);
     setMetaInfo(GMBH_HRE,      hre,         db);
     setMetaInfo(GMBH_GEFUE1,   gefue1,      db);
     setMetaInfo(GMBH_GEFUE2,   gefue2,      db);
@@ -263,7 +264,7 @@ void dbConfig::writeDb(QSqlDatabase db)
 }
 
 void dbConfig::readDb(QSqlDatabase db)
-{
+{   LOG_CALL;
     address1   =getMetaInfo(GMBH_ADDRESS1,  address1,   db);
     address2   =getMetaInfo(GMBH_ADDRESS2,  address2,   db);
     street     =getMetaInfo(GMBH_STREET,    street,     db);
@@ -271,7 +272,7 @@ void dbConfig::readDb(QSqlDatabase db)
     city       =getMetaInfo(GMBH_CITY,      city,       db);
     email      =getMetaInfo(GMBH_EMAIL,     email,      db);
     url        =getMetaInfo(GMBH_URL,       url,        db);
-    pi         =getMetaInfo(GMBH_PI,        pi,         db);
+    pi         =getMetaInfo(GMBH_INITIALS,        pi,         db);
     hre        =getMetaInfo(GMBH_HRE,       hre,        db);
     gefue1     =getMetaInfo(GMBH_GEFUE1,    gefue1,     db);
     gefue2     =getMetaInfo(GMBH_GEFUE2,    gefue2,     db);

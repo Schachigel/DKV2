@@ -16,7 +16,7 @@
  * wizNewOrExistingPage - ask user if a new user should be created or an existing
  * one should be used
 */
-wizNewOrExistingPage::wizNewOrExistingPage(QWidget* p) : QWizardPage(p)
+wpNewOrExisting::wpNewOrExisting(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Vertrag anlegen"));
     setSubTitle(qsl("Mit dieser Dialogfolge kannst Du einen Kredigeber*in und Vertrag anlegen."));
@@ -37,7 +37,7 @@ wizNewOrExistingPage::wizNewOrExistingPage(QWidget* p) : QWizardPage(p)
     setLayout(l);
     connect(rbExisting, SIGNAL(toggled(bool)), this, SLOT(onExistingCreditor_toggled(bool)));
 }
-void wizNewOrExistingPage::initializePage()
+void wpNewOrExisting::initializePage()
 {   LOG_CALL;
     if( init) {
         setField(qsl("create_new"), true);
@@ -59,11 +59,11 @@ void wizNewOrExistingPage::initializePage()
     }
     init =false; // do not repeat after "back"
 }
-void wizNewOrExistingPage::onExistingCreditor_toggled(bool b)
+void wpNewOrExisting::onExistingCreditor_toggled(bool b)
 {   LOG_CALL;
     cbCreditors->setEnabled(b);
 }
-bool wizNewOrExistingPage::validatePage()
+bool wpNewOrExisting::validatePage()
 {   LOG_CALL;
 
     if( field(qsl("create_new")).toBool())
@@ -85,7 +85,7 @@ bool wizNewOrExistingPage::validatePage()
     }
     return true;
 }
-int wizNewOrExistingPage::nextId() const
+int wpNewOrExisting::nextId() const
 {   LOG_CALL;
     if( field(qsl("create_new")).toBool())
         return page_address;
@@ -96,7 +96,7 @@ int wizNewOrExistingPage::nextId() const
 /*
  * wizNewCreditorAddressPage - ask address data for the new creditor
 */
-wizNewCreditorAddressPage::wizNewCreditorAddressPage(QWidget* p) : QWizardPage(p)
+wpNewCreditorAddress::wpNewCreditorAddress(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Adresse"));
     setSubTitle(qsl("Gib hier Namen und die Adressdaten ein."));
@@ -140,7 +140,7 @@ wizNewCreditorAddressPage::wizNewCreditorAddressPage(QWidget* p) : QWizardPage(p
 
     setLayout(grid);
 }
-bool wizNewCreditorAddressPage::validatePage()
+bool wpNewCreditorAddress::validatePage()
 {   LOG_CALL;
     setField(qsl("firstname"), field(qsl("firstname")).toString().trimmed());
     setField(qsl("lastname"),  field(qsl("lastname")) .toString().trimmed());
@@ -159,7 +159,7 @@ bool wizNewCreditorAddressPage::validatePage()
     else
         return true;
 }
-int wizNewCreditorAddressPage::nextId() const
+int wpNewCreditorAddress::nextId() const
 {   LOG_CALL;
     return page_email;
 }
@@ -167,7 +167,7 @@ int wizNewCreditorAddressPage::nextId() const
 /*
  * wizEmailPage - ask e-mail and comment for the new creditor
 */
-wizEmailPage::wizEmailPage(QWidget* p) : QWizardPage(p)
+wpEmail::wpEmail(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("E-mail"));
     setSubTitle(qsl("Gib hier die E-Mail Adresse und eine Anmerkung an."));
@@ -195,7 +195,7 @@ wizEmailPage::wizEmailPage(QWidget* p) : QWizardPage(p)
     setLayout(g);
 }
 
-bool wizEmailPage::validatePage()
+bool wpEmail::validatePage()
 {   LOG_CALL;
     QString email =field(qsl("email")).toString().trimmed().toLower();
     setField(qsl("email"), email);
@@ -211,7 +211,7 @@ bool wizEmailPage::validatePage()
     setField(qsl("comment"), field(qsl("comment")).toString().trimmed());
     return true;
 }
-int wizEmailPage::nextId() const
+int wpEmail::nextId() const
 {   LOG_CALL;
     return page_bankaccount;
 }
@@ -219,7 +219,7 @@ int wizEmailPage::nextId() const
 /*
  * wizEmailPage - ask bank account data
 */
-wizBankAccountPage::wizBankAccountPage(QWidget* p) : QWizardPage(p)
+wpBankAccount::wpBankAccount(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Bankdaten"));
     setSubTitle(qsl("Gib die Bankdaten der neuen Kreditor*in ein."));
@@ -241,7 +241,7 @@ wizBankAccountPage::wizBankAccountPage(QWidget* p) : QWizardPage(p)
     g->addWidget(leBic);
     setLayout(g);
 }
-bool wizBankAccountPage::validatePage()
+bool wpBankAccount::validatePage()
 {   LOG_CALL;
     QString iban =field(qsl("iban")).toString().trimmed();
     setField(qsl("iban"), iban);
@@ -255,7 +255,7 @@ bool wizBankAccountPage::validatePage()
     setField(qsl("bic"), field(qsl("bic")).toString().trimmed());
     return true;
 }
-int wizBankAccountPage::nextId() const
+int wpBankAccount::nextId() const
 {   LOG_CALL;
     return page_confirm_creditor;
 }
@@ -263,7 +263,7 @@ int wizBankAccountPage::nextId() const
 /*
  * wizConfirmCreditorData : ask if creditor data is OK and if a contract should be created
 */
-wizConfirmCreditorPage::wizConfirmCreditorPage(QWidget* p) : QWizardPage(p)
+wpConfirmCreditor::wpConfirmCreditor(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Daten bestätigen"));
     QCheckBox* cbConfirmCreditor =new QCheckBox(qsl("Die Angaben sind richtig!"));
@@ -283,7 +283,7 @@ wizConfirmCreditorPage::wizConfirmCreditorPage(QWidget* p) : QWizardPage(p)
     connect(cbCreateContract, SIGNAL(stateChanged(int)), this, SLOT(onConfirmCreateContract_toggled(int)));
     setCommitPage(true);
 }
-void wizConfirmCreditorPage::initializePage()
+void wpConfirmCreditor::initializePage()
 {   LOG_CALL;
     QString creditorSummary {qsl("<table><tr><td>Name:</td><td><b>%1 %2</b><br></td></tr>"
                                  "<tr><td>Straße:</td><td>%3</td></tr>"
@@ -309,7 +309,7 @@ void wizConfirmCreditorPage::initializePage()
     else
         cbCreateContract->setChecked(false);
 }
-bool wizConfirmCreditorPage::validatePage()
+bool wpConfirmCreditor::validatePage()
 {   LOG_CALL;
     creditor c;
     if( field(qsl("confirmCreditor")).toBool()) {
@@ -351,14 +351,14 @@ bool wizConfirmCreditorPage::validatePage()
     Q_ASSERT("one should never come here");
     return false;
 }
-int wizConfirmCreditorPage::nextId() const
+int wpConfirmCreditor::nextId() const
 {   LOG_CALL;
     if( field(qsl("confirmCreateContract")).toBool())
         return page_contract_data;
     else
         return -1;
 }
-void wizConfirmCreditorPage::onConfirmCreateContract_toggled(int state)
+void wpConfirmCreditor::onConfirmCreateContract_toggled(int state)
 {   LOG_CALL;
     qInfo() << "onConfirmCreateContract..." << state;
     setFinalPage( ! state);
@@ -367,7 +367,7 @@ void wizConfirmCreditorPage::onConfirmCreateContract_toggled(int state)
 /*
  * wizNewContractData - ask basic contract data
 */
-wizNewContractDataPage::wizNewContractDataPage(QWidget* p) : QWizardPage(p)
+wpNewContractData::wpNewContractData(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Vertragsdaten"));
 
@@ -414,7 +414,7 @@ wizNewContractDataPage::wizNewContractDataPage(QWidget* p) : QWizardPage(p)
 
     setLayout(g);
 }
-void wizNewContractDataPage::initializePage()
+void wpNewContractData::initializePage()
 {   LOG_CALL;
     if( init) {
         QString creditorInfo { qsl("%1, %2<p><small>%3 %4 %5</small>")};
@@ -425,11 +425,12 @@ void wizNewContractDataPage::initializePage()
     }
     init =false;
 }
-bool wizNewContractDataPage::validatePage()
+bool wpNewContractData::validatePage()
 {   LOG_CALL;
     QString msg;
     if( field(qsl("label")).toString().isEmpty()) msg =qsl("Die Vertragskennung darf nicht leer sein");
-    if( field(qsl("amount")).toInt() <=appConfig::getRuntimeData(MIN_AMOUNT))
+    int minContractValue = appConfig::getRuntimeData(MIN_AMOUNT).toInt();
+    if( field(qsl("amount")).toInt() < minContractValue)
         msg =qsl("Der Wert des Vertrags muss größer sein als der konfigurierte Minimalwert "
                  "eines Vertrages von ") +appConfig::getRuntimeData(MIN_AMOUNT) +qsl(" Euro");
     if( ! msg.isEmpty()) {
@@ -442,7 +443,7 @@ bool wizNewContractDataPage::validatePage()
     if( wizE) wizE->interest = double(cbInterest->currentIndex())/100.;
     return true;
 }
-int wizNewContractDataPage::nextId() const
+int wpNewContractData::nextId() const
 {   LOG_CALL;
     return page_contract_term;
 }
@@ -450,7 +451,7 @@ int wizNewContractDataPage::nextId() const
 /*
  * wizContractTiming - contract date, notice period, termination date
 */
-wizContractTimingPage::wizContractTimingPage(QWidget* p) : QWizardPage(p)
+wpContractTiming::wpContractTiming(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Vertragsbeginn und -Ende"));
     setSubTitle(qsl("Für das Vertragsende kann eine Kündigungsfrist <b>oder</b> ein festes Vertragsende vereinbart werden."));
@@ -492,7 +493,7 @@ wizContractTimingPage::wizContractTimingPage(QWidget* p) : QWizardPage(p)
     g->setColumnStretch(1, 4);
     setLayout(g);
 }
-void wizContractTimingPage::initializePage()
+void wpContractTiming::initializePage()
 {   LOG_CALL;
     if( init) {
         cbNoticePeriod->setCurrentIndex(4);
@@ -501,7 +502,7 @@ void wizContractTimingPage::initializePage()
     }
     init =false;
 }
-void wizContractTimingPage::onNoticePeriod_currentIndexChanged(int i)
+void wpContractTiming::onNoticePeriod_currentIndexChanged(int i)
 {   LOG_CALL;
     if( i == 0) {
         deTerminationDate->setDate(QDate::currentDate().addYears(5));
@@ -511,7 +512,7 @@ void wizContractTimingPage::onNoticePeriod_currentIndexChanged(int i)
         deTerminationDate->setEnabled(false);
     }
 }
-bool wizContractTimingPage::validatePage()
+bool wpContractTiming::validatePage()
 {   LOG_CALL;
 
     wizNew* wiz =qobject_cast<wizNew*> (wizard());
@@ -531,7 +532,7 @@ bool wizContractTimingPage::validatePage()
     Q_ASSERT(true);
     return true;
 }
-int wizContractTimingPage::nextId() const
+int wpContractTiming::nextId() const
 {   LOG_CALL;
     return page_confirm_contract;
 }
@@ -561,7 +562,7 @@ bool saveContractFromWizard(t wiz)
         return true;
     }
 }
-wizContractConfirmationPage::wizContractConfirmationPage(QWidget* p) : QWizardPage(p)
+wpContractConfirmation::wpContractConfirmation(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Bestätige die Vertragsdaten"));
     QCheckBox* cbConfirm =new QCheckBox(qsl("Die Angaben sind korrekt!"));
@@ -572,7 +573,7 @@ wizContractConfirmationPage::wizContractConfirmationPage(QWidget* p) : QWizardPa
     setLayout(bl);
     connect(cbConfirm, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
 }
-void wizContractConfirmationPage::initializePage()
+void wpContractConfirmation::initializePage()
 {   LOG_CALL;
 
     QString summary {qsl("Vertrag <b>%3</b> von <b>%1 %2</b> <p><table>"
@@ -617,7 +618,7 @@ void wizContractConfirmationPage::initializePage()
     }
     return;
 }
-bool wizContractConfirmationPage::validatePage()
+bool wpContractConfirmation::validatePage()
 {   LOG_CALL;
     // we only get here, if finish was enabled -> we do not have to check
     // the checkbox. user can only cancel if checkbox not checked
@@ -634,11 +635,11 @@ bool wizContractConfirmationPage::validatePage()
     Q_ASSERT(true);
     return false;
 }
-void wizContractConfirmationPage::onConfirmData_toggled(int )
+void wpContractConfirmation::onConfirmData_toggled(int )
 { LOG_CALL;
     completeChanged();
 }
-bool wizContractConfirmationPage::isComplete() const
+bool wpContractConfirmation::isComplete() const
 {
     return field("confirmContract").toBool();
 }
@@ -649,23 +650,23 @@ bool wizContractConfirmationPage::isComplete() const
 */
 wizNew::wizNew(QWidget *p) : QWizard(p)
 {   LOG_CALL;
-    setPage(page_new_or_existing, new wizNewOrExistingPage(this));
-    setPage(page_address, new wizNewCreditorAddressPage(this));
-    setPage(page_email,   new wizEmailPage(this));
-    setPage(page_bankaccount, new wizBankAccountPage(this));
-    setPage(page_confirm_creditor, new wizConfirmCreditorPage(this));
-    setPage(page_contract_data, new wizNewContractDataPage(this));
-    setPage(page_contract_term, new wizContractTimingPage(this));
-    setPage(page_confirm_contract, new wizContractConfirmationPage(this));
+    setPage(page_new_or_existing, new wpNewOrExisting(this));
+    setPage(page_address, new wpNewCreditorAddress(this));
+    setPage(page_email,   new wpEmail(this));
+    setPage(page_bankaccount, new wpBankAccount(this));
+    setPage(page_confirm_creditor, new wpConfirmCreditor(this));
+    setPage(page_contract_data, new wpNewContractData(this));
+    setPage(page_contract_term, new wpContractTiming(this));
+    setPage(page_confirm_contract, new wpContractConfirmation(this));
 }
 
 wizEditCreditor::wizEditCreditor(QWidget *p) : QWizard(p)
 {   LOG_CALL;
-    setPage(page_address, new wizNewCreditorAddressPage(this));
-    setPage(page_email,   new wizEmailPage(this));
-    setPage(page_bankaccount, new wizBankAccountPage(this));
-    setPage(page_confirm_creditor, new wizConfirmCreditorPage(this));
-    setPage(page_contract_data, new wizNewContractDataPage(this));
-    setPage(page_contract_term, new wizContractTimingPage(this));
-    setPage(page_confirm_contract, new wizContractConfirmationPage(this));
+    setPage(page_address, new wpNewCreditorAddress(this));
+    setPage(page_email,   new wpEmail(this));
+    setPage(page_bankaccount, new wpBankAccount(this));
+    setPage(page_confirm_creditor, new wpConfirmCreditor(this));
+    setPage(page_contract_data, new wpNewContractData(this));
+    setPage(page_contract_term, new wpContractTiming(this));
+    setPage(page_confirm_contract, new wpContractConfirmation(this));
 }
