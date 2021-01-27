@@ -9,11 +9,11 @@
 #include "testhelper.h"
 
 
-const QString testDbFilename = "..\\data\\testdb.sqlite";
+const QString testDbFilename = "../data/testdb.sqlite";
 
 void initTestDb()
 {   LOG_CALL;
-    QDir().mkdir(QString("..\\data"));
+    QDir().mkdir(QString("../data"));
     if (QFile::exists(testDbFilename))
         QFile::remove(testDbFilename);
     if (QFile::exists(testDbFilename))
@@ -29,7 +29,7 @@ void cleanupTestDb()
     closeAllDatabaseConnections();
     if (QFile::exists(testDbFilename))
         QFile::remove(testDbFilename);
-    QDir().rmdir("..\\data");
+    QDir().rmdir("../data");
     QVERIFY2( (QFile::exists(testDbFilename) == false), "destroy database failed." );
 }
 

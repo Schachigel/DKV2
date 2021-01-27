@@ -6,19 +6,19 @@
 
 #include "contract.h"
 
-struct wizTerminateContract_DatePage : public QWizardPage
+struct wpTerminateContract_DatePage : public QWizardPage
 {
-    wizTerminateContract_DatePage(QWidget* p=nullptr);
+    wpTerminateContract_DatePage(QWidget* p=nullptr);
     void initializePage() override;
     bool validatePage() override;
     Q_OBJECT;
 };
 
-class wizTerminateContract_ConfirmationPage : public QWizardPage
+class wpTerminateContract_ConfirmationPage : public QWizardPage
 {
     Q_OBJECT;
 public:
-    wizTerminateContract_ConfirmationPage(QWidget* p=nullptr);
+    wpTerminateContract_ConfirmationPage(QWidget* p=nullptr);
     void initializePage() override;
     bool isComplete() const override;
 public slots:

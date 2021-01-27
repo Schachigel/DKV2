@@ -109,7 +109,6 @@ QString MainWindow::askUserNextDb()
 bool MainWindow::useDb(const QString& dbfile)
 {   LOG_CALL;
     if( open_databaseForApplication(dbfile)) {
-        appConfig::setCurrentDb(dbfile);
         appConfig::setLastDb(dbfile);
         showDbInStatusbar(dbfile);
         return true;
@@ -164,9 +163,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::showDbInStatusbar( QString filename)
 {   LOG_CALL_W (filename);
-    if( filename.isEmpty()) {
-        filename = appConfig::CurrentDb();
-    }
+    Q_ASSERT( ! filename.isEmpty());
     ui->statusLabel->setText( filename);
 }
 
@@ -241,7 +238,7 @@ QString askUserDbFilename(QString title, bool onlyExistingFiles=false)
     else
         wiz.bffTitle =qsl("Wähle eine dkdb Datei aus oder gib einen neuen Dateinamen ein");
 
-    QFileInfo lastdb (appConfig::CurrentDb());
+    QFileInfo lastdb (appConfig::LastDb());
     if( lastdb.exists())
         wiz.openInFolder=lastdb.path();
     else

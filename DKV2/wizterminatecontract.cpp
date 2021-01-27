@@ -7,7 +7,7 @@
 
 #include "wizterminatecontract.h"
 
-wizTerminateContract_DatePage::wizTerminateContract_DatePage(QWidget* p) : QWizardPage(p)
+wpTerminateContract_DatePage::wpTerminateContract_DatePage(QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("Vertrag beenden"));
     setSubTitle(qsl("Mit dieser Dialogfolge kannst Du einen Vertrag beenden.<p>"
@@ -22,13 +22,13 @@ wizTerminateContract_DatePage::wizTerminateContract_DatePage(QWidget* p) : QWiza
     setLayout(layout);
 }
 
-void wizTerminateContract_DatePage::initializePage()
+void wpTerminateContract_DatePage::initializePage()
 {
     wizTerminateContract* wiz = qobject_cast<wizTerminateContract*>(wizard());
     setField(qsl("date"), wiz->c.plannedEndDate());
 }
 
-bool wizTerminateContract_DatePage::validatePage()
+bool wpTerminateContract_DatePage::validatePage()
 {
     wizTerminateContract* wiz = qobject_cast<wizTerminateContract*>(wizard());
     if( field(qsl("date")).toDate() >= wiz->c.latestBooking().date)
@@ -39,7 +39,7 @@ bool wizTerminateContract_DatePage::validatePage()
     return false;
 }
 
-wizTerminateContract_ConfirmationPage::wizTerminateContract_ConfirmationPage(QWidget* p) : QWizardPage(p)
+wpTerminateContract_ConfirmationPage::wpTerminateContract_ConfirmationPage(QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("Vertrag beenden"));
     QCheckBox* cbPrint = new QCheckBox(qsl("Beleg als CSV Datei speichern"));
@@ -55,7 +55,7 @@ wizTerminateContract_ConfirmationPage::wizTerminateContract_ConfirmationPage(QWi
     connect(cbConfirm, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
 }
 
-void wizTerminateContract_ConfirmationPage::initializePage()
+void wpTerminateContract_ConfirmationPage::initializePage()
 {
     wizTerminateContract* wiz = qobject_cast<wizTerminateContract*>(wizard());
     double interest =0., finalValue =0.;
@@ -70,17 +70,18 @@ void wizTerminateContract_ConfirmationPage::initializePage()
     subtitle = subtitle.arg(locale.toCurrencyString(wiz->c.value()), locale.toCurrencyString(interest), locale.toCurrencyString(finalValue));
     setSubTitle(subtitle);
 }
-void wizTerminateContract_ConfirmationPage::onConfirmData_toggled(int)
+void wpTerminateContract_ConfirmationPage::onConfirmData_toggled(int)
 {
     completeChanged();
 }
-bool wizTerminateContract_ConfirmationPage::isComplete() const
+bool wpTerminateContract_ConfirmationPage::isComplete() const
 {
     return field("confirm").toBool();
 }
 
 wizTerminateContract::wizTerminateContract(QWidget* p, contract c) : QWizard(p), c(c)
 {
-    addPage(new wizTerminateContract_DatePage);
-    addPage(new wizTerminateContract_ConfirmationPage);
+    addPage(new wpTerminateContract_DatePage);
+    addPage(new wpTerminateContract_ConfirmationPage);
+    QFont f = font(); f.setPointSize(10); setFont(f);
 }

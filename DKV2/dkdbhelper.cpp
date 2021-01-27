@@ -232,7 +232,8 @@ bool has_allTablesAndFields(QSqlDatabase db)
 
 bool check_db_version(QSqlDatabase db =QSqlDatabase::database())
 {   LOG_CALL;
-    double d = getNumMetaInfo(DB_VERSION, -1., db);
+    //double d = getNumMetaInfo(DB_VERSION, -1., db);
+    double d =dbConfig::readValue(DB_VERSION, db).toDouble();
     if( d >= CURRENT_DB_VERSION)
         return true;
     qCritical() << "db version check failed: found version " << d << " needed version " << CURRENT_DB_VERSION;
@@ -286,8 +287,8 @@ bool isValidDatabase(const QString& filename)
 void insert_DbProperties(QSqlDatabase db = QSqlDatabase::database())
 {
     LOG_CALL;
-    dbConfig c(dbConfig::FROM_RTD); // get configuration defaults
-    c.writeDb(db);
+    dbConfig c; // get configuration defaults
+    c.write(db);
 }
 bool create_DK_TablesAndContent(QSqlDatabase db)
 {
@@ -461,7 +462,7 @@ bool insert_views( QSqlDatabase db)
 
 bool updateViews(QSqlDatabase db =QSqlDatabase::database())
 {   LOG_CALL;
-    QString lastProgramVersion = getMetaInfo(DKV2_VERSION, QString());
+    QString lastProgramVersion = dbConfig::getValue(DKV2_VERSION).toString();
     QString thisProgramVersion = QCoreApplication::applicationVersion();
     if( lastProgramVersion != thisProgramVersion) {
         if( !insert_views(db)) {
@@ -469,7 +470,7 @@ bool updateViews(QSqlDatabase db =QSqlDatabase::database())
             return false;
         }
         else {
-            setMetaInfo(DKV2_VERSION, thisProgramVersion);
+            dbConfig::setValue(DKV2_VERSION, thisProgramVersion);
             return true;
         }
     }
@@ -511,8 +512,7 @@ bool open_databaseForApplication( QString newDbFile)
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     if( ! updateViews())
         return false;
-    dbConfig c(dbConfig::FROM_DB);
-    c.storeRuntimeData();
+    dbConfig c(QSqlDatabase::database());
     return true;
 }
 
@@ -610,12 +610,11 @@ bool create_DB_copy(QString targetfn, bool deper)
 // general stuff
 QString proposeContractLabel()
 {   LOG_CALL;
-    static int idOffset = getMetaInfo(STARTINDEX).toInt();
-    static int iMaxid = idOffset + getHighestRowId("Vertraege");
+    static int iMaxid = dbConfig::getValue(STARTINDEX).toInt() + getHighestRowId("Vertraege");
     QString kennung;
     do {
         QString maxid = QString::number(iMaxid).rightJustified(6, '0');
-        QString PI = "DK-" + getMetaInfo(GMBH_INITIALS);
+        QString PI = "DK-" + dbConfig::getValue(GMBH_INITIALS).toString();
         kennung = PI + "-" + QString::number(QDate::currentDate().year()) + "-" + maxid;
         QVariant v = executeSingleValueSql(dkdbstructur["Vertraege"]["id"], "Kennung='" + kennung + "'");
         if( v.isValid())

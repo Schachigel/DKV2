@@ -379,7 +379,7 @@ wpNewContractData::wpNewContractData(QWidget* p) : QWizardPage(p)
 
     QLabel* l2 =new QLabel(qsl("Betrag"));
     QLineEdit* leAmount =new QLineEdit;
-    leAmount->setToolTip(qsl("Der Kreditbetrag muss größer als ") + appConfig::getRuntimeData(MIN_AMOUNT) + qsl("Euro sein"));
+    leAmount->setToolTip(qsl("Der Kreditbetrag muss größer als ") + dbConfig::getValue(MIN_AMOUNT).toString() + qsl("Euro sein"));
     registerField(qsl("amount"), leAmount);
     leAmount->setValidator(new QIntValidator(this));
     l2->setBuddy(leAmount);
@@ -387,7 +387,7 @@ wpNewContractData::wpNewContractData(QWidget* p) : QWizardPage(p)
     QLabel* l3 =new QLabel(qsl("Zinssatz"));
     cbInterest =new QComboBox;
     l3->setBuddy(cbInterest);
-    int maxIndex =appConfig::getRuntimeData(MAX_INTEREST).toInt();
+    int maxIndex =dbConfig::getValue(MAX_INTEREST).toInt();
     for( int i =0; i <= maxIndex; i++)
         cbInterest->addItem(QString::number(double(i)/100., 'f', 2), QVariant(i));
     cbInterest->setCurrentIndex(std::min(100, cbInterest->count()));
@@ -429,10 +429,10 @@ bool wpNewContractData::validatePage()
 {   LOG_CALL;
     QString msg;
     if( field(qsl("label")).toString().isEmpty()) msg =qsl("Die Vertragskennung darf nicht leer sein");
-    int minContractValue = appConfig::getRuntimeData(MIN_AMOUNT).toInt();
+    int minContractValue = dbConfig::getValue(MIN_AMOUNT).toInt();
     if( field(qsl("amount")).toInt() < minContractValue)
         msg =qsl("Der Wert des Vertrags muss größer sein als der konfigurierte Minimalwert "
-                 "eines Vertrages von ") +appConfig::getRuntimeData(MIN_AMOUNT) +qsl(" Euro");
+                 "eines Vertrages von ") +dbConfig::getValue(MIN_AMOUNT).toString() +qsl(" Euro");
     if( ! msg.isEmpty()) {
         QMessageBox::critical(this, qsl("Fehler"), msg);
         return false;
@@ -658,6 +658,7 @@ wizNew::wizNew(QWidget *p) : QWizard(p)
     setPage(page_contract_data, new wpNewContractData(this));
     setPage(page_contract_term, new wpContractTiming(this));
     setPage(page_confirm_contract, new wpContractConfirmation(this));
+    QFont f = font(); f.setPointSize(10); setFont(f);
 }
 
 wizEditCreditor::wizEditCreditor(QWidget *p) : QWizard(p)
@@ -669,4 +670,5 @@ wizEditCreditor::wizEditCreditor(QWidget *p) : QWizard(p)
     setPage(page_contract_data, new wpNewContractData(this));
     setPage(page_contract_term, new wpContractTiming(this));
     setPage(page_confirm_contract, new wpContractConfirmation(this));
+    QFont f = font(); f.setPointSize(10); setFont(f);
 }

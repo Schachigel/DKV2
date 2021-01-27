@@ -11,12 +11,12 @@
 #ifndef QT_DEBUG
 QString appConfig::keyOutdir = qsl("outdir");
 QString appConfig::keyLastDb = qsl("db/last");
-QString appConfig::keyCurrentDb = qsl("db/current");
 #else
 QString appConfig::keyOutdir = qsl("dbg-outdir");
 QString appConfig::keyLastDb = qsl("dbg-db/last");
-QString appConfig::keyCurrentDb = qsl("dbg-db/current");
 #endif
+
+QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::knownParams;
 
 // db config info in 'meta' table
 void initMetaInfo( const QString& name, const QString& initialValue, QSqlDatabase db)
@@ -37,7 +37,7 @@ QString getMetaInfo(const QString& name, const QString& def, QSqlDatabase db)
         qInfo() << "no database ready (yet), defaulting";
         return def;
     }
-    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='") + name +qsl("'"));
+    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='") + name +qsl("'"), db);
     if( ! value.isValid()) {
         qInfo() << "read uninitialized property " << name << " -> using default " << def;
         return def;
@@ -77,7 +77,6 @@ void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db)
 }
 
 /* statics */
-QMap<QString, QString> appConfig::runtimedata;
 bool appConfig::testmode = false;
 
 /* static methods */
@@ -132,23 +131,6 @@ void appConfig::delLastDb()
     deleteUserData(keyLastDb);
 }
 
-/* static */
-void appConfig::setCurrentDb(const QString& path)
-{   LOG_CALL_W(path);
-    setRuntimeData( keyCurrentDb, path);
-}
-/* static */
-QString appConfig::CurrentDb()
-{
-    QString cdb = getRuntimeData(keyCurrentDb);
-    return cdb;
-}
-/* static */ /* for testing puropose */
-void appConfig::delCurrentDb()
-{   LOG_CALL;
-    deleteRuntimeData(keyCurrentDb);
-}
-
 /* private */
 /* static */
 void appConfig::setUserData(const QString& name, const QString& value)
@@ -172,116 +154,113 @@ void appConfig::deleteUserData(const QString& name)
 }
 // QString getNumUserData(QString name);
 
-/* static */
-void appConfig::setRuntimeData( const QString& name, const QString& value)
+dbConfig::dbConfig()
 {
-    qInfo() << "setRuntimeData " << name << " : " << value;
-    runtimedata.insert(name,value);
-}
-/* static */
-QString appConfig::getRuntimeData( const QString& name, const QString& defaultvalue)
-{
-    qInfo() << "getRuntimeData " << name << "; def.value: " << defaultvalue;
-    return runtimedata.value(name, defaultvalue);
-}
-/* static */
-void appConfig::deleteRuntimeData(const QString& name)
-{   LOG_CALL_W(name);
-    runtimedata.remove(name);
+    static bool firstRun =true;
+    if( firstRun) {
+        knownParams[DB_VERSION]         ={qsl("Version"),          QVariant(CURRENT_DB_VERSION)};
+        knownParams[DKV2_VERSION]       ={qsl("dkv2.exe.Version"), QVariant(0)};
+        knownParams[GMBH_ADDRESS1]      ={qsl("gmbh.address1"),    QVariant("Esperanza Franklin GmbH")};
+        knownParams[GMBH_ADDRESS2]      ={qsl("gmbh.address2"),    QVariant("")};
+        knownParams[GMBH_STREET]        ={qsl("gmbh.strasse"),     QVariant("Turley-Platz 9")};
+        knownParams[GMBH_PLZ]           ={qsl("gmbh.plz"),         QVariant("68167")};
+        knownParams[GMBH_CITY]          ={qsl("gmbh.stadt"),       QVariant("Mannheim")};
+        knownParams[GMBH_EMAIL]         ={qsl("gmbh.email"),       QVariant("info@esperanza-mannheim.de")};
+        knownParams[GMBH_URL]           ={qsl("gmbh.url"),         QVariant("www.esperanza-mannheim.de")};
+        knownParams[GMBH_INITIALS]      ={qsl("gmbh.Projektinitialen"), QVariant("ESP")};
+        knownParams[STARTINDEX]         ={qsl("startindex"),       QVariant(111)};
+        knownParams[MIN_PAYOUT]         ={qsl("minAuszahlung"),    QVariant(100)};
+        knownParams[MIN_AMOUNT]         ={qsl("minVertragswert"),  QVariant(599)};
+        knownParams[MAX_INTEREST]       ={qsl("maxZins"),          QVariant(200)};
+        knownParams[DBID]               ={qsl("dbId"),             QVariant("ESP1234")};
+        knownParams[GMBH_HRE]           ={qsl("gmbh.Handelsregister"), QVariant("Amtsgericht Mannheim HRB HRB 7.....3")};
+        knownParams[GMBH_GEFUE1]        ={qsl("gmbh.gefue1"),      QVariant("Gefü 1")};
+        knownParams[GMBH_GEFUE2]        ={qsl("gmbh.gefue2"),      QVariant("Gefü 2")};
+        knownParams[GMBH_GEFUE3]        ={qsl("gmbh.gefue3"),      QVariant("Gefü 3")};
+        knownParams[GMBH_DKV]           ={qsl("gmbh.dkv"),         QVariant("DK Verwalter")};
+        knownParams[MAX_PC_INDEX]          ={qsl("n/a"),              QVariant()};
+        firstRun =false;
+    }
 }
 
-void dbConfig::loadRuntimeData()
+dbConfig::dbConfig(QSqlDatabase db)
+{
+    fromDb(db);
+}
+
+void dbConfig::fromDb(QSqlDatabase db)
+{
+    for( int i =0; i < projectConfiguration::MAX_PC_INDEX; i++) {
+        projectConfiguration pc =(projectConfiguration)i;
+        knownParams[pc].second = getMetaInfo(knownParams[pc].first, knownParams[pc].second.toString(), db);
+    }
+}
+
+void dbConfig::write(QSqlDatabase db)
+{
+    for( int i =0; i < projectConfiguration::MAX_PC_INDEX; i++) {
+        projectConfiguration pc =(projectConfiguration)i;
+        writeValue(pc, knownParams[pc].second, db);
+    }
+}
+
+void dbConfig::writeValue(projectConfiguration pc, QVariant value, QSqlDatabase db)
 {   LOG_CALL;
-    if( appConfig::getRuntimeData(DBID) == qsl("")) {
-        // runtime data is uninitialized
+    if( ! isValidIndex(pc)) {
+        qCritical() << "invalid paramter to be set";
         return;
     }
-    address1   =appConfig::getRuntimeData(GMBH_ADDRESS1);
-    address2   =appConfig::getRuntimeData(GMBH_ADDRESS2);
-    street     =appConfig::getRuntimeData(GMBH_STREET);
-    plz        =appConfig::getRuntimeData(GMBH_PLZ);
-    city       =appConfig::getRuntimeData(GMBH_CITY);
-    email      =appConfig::getRuntimeData(GMBH_EMAIL);
-    url        =appConfig::getRuntimeData(GMBH_URL);
-    pi         =appConfig::getRuntimeData(GMBH_INITIALS);
-    hre        =appConfig::getRuntimeData(GMBH_HRE);
-    gefue1     =appConfig::getRuntimeData(GMBH_GEFUE1);
-    gefue2     =appConfig::getRuntimeData(GMBH_GEFUE2);
-    gefue3     =appConfig::getRuntimeData(GMBH_GEFUE3);
-    dkv        =appConfig::getRuntimeData(GMBH_DKV);
-    startindex =appConfig::getRuntimeData(STARTINDEX).toInt();
-    minPayout  =appConfig::getRuntimeData(MIN_PAYOUT).toInt();
-    minContract=appConfig::getRuntimeData(MIN_AMOUNT).toInt();
-    maxInterest=appConfig::getRuntimeData(MAX_INTEREST).toInt();
-    dbId       =appConfig::getRuntimeData(DBID);
-    dbVersion  =appConfig::getRuntimeData(DB_VERSION).toDouble();
+    switch (value.type()) {
+    case QVariant::Int:
+    case QVariant::UInt:
+    case QVariant::LongLong:
+    case QVariant::ULongLong:
+    case QVariant::Double:
+        setNumMetaInfo(knownParams[pc].first, value.toDouble(), db);
+        break;
+    default:
+        setMetaInfo(knownParams[pc].first, value.toString(), db);
+    }
 }
 
-void dbConfig::storeRuntimeData()
+void dbConfig::setValue(projectConfiguration pc, QVariant value)
 {   LOG_CALL;
-    appConfig::setRuntimeData(GMBH_ADDRESS1, address1);
-    appConfig::setRuntimeData(GMBH_ADDRESS2, address2);
-    appConfig::setRuntimeData(GMBH_STREET,   street);
-    appConfig::setRuntimeData(GMBH_PLZ,      plz);
-    appConfig::setRuntimeData(GMBH_CITY,     city);
-    appConfig::setRuntimeData(GMBH_EMAIL,    email);
-    appConfig::setRuntimeData(GMBH_URL,      url);
-    appConfig::setRuntimeData(GMBH_INITIALS,       pi);
-    appConfig::setRuntimeData(GMBH_HRE,      hre);
-    appConfig::setRuntimeData(GMBH_GEFUE1,   gefue1);
-    appConfig::setRuntimeData(GMBH_GEFUE2,   gefue2);
-    appConfig::setRuntimeData(GMBH_GEFUE3,   gefue3);
-    appConfig::setRuntimeData(GMBH_DKV,      dkv);
-    appConfig::setRuntimeData(STARTINDEX,    QString::number(startindex));
-    appConfig::setRuntimeData(MIN_PAYOUT,    QString::number(minPayout));
-    appConfig::setRuntimeData(MIN_AMOUNT,    QString::number(minContract));
-    appConfig::setRuntimeData(MAX_INTEREST,  QString::number(maxInterest));
-    appConfig::setRuntimeData(DBID,          dbId);
-    appConfig::setRuntimeData(DB_VERSION,    QString::number(dbVersion));
+    if( ! isValidIndex(pc)) {
+        qCritical() << "invalid paramter to be set";
+        return;
+    }
+    switch (value.type()) {
+    case QVariant::Int:
+    case QVariant::UInt:
+    case QVariant::LongLong:
+    case QVariant::ULongLong:
+    case QVariant::Double:
+        setNumMetaInfo(knownParams[pc].first, value.toDouble());
+        break;
+    default:
+        setMetaInfo(knownParams[pc].first, value.toString());
+    }
+    // values written to the default db are also reflected in the static Map
+    knownParams[pc].second =value;
 }
 
-void dbConfig::writeDb(QSqlDatabase db)
+QVariant dbConfig::getValue(projectConfiguration pc)
 {   LOG_CALL;
-    setMetaInfo(GMBH_ADDRESS1, address1,    db);
-    setMetaInfo(GMBH_ADDRESS2, address2,    db);
-    setMetaInfo(GMBH_STREET,   street,      db);
-    setMetaInfo(GMBH_PLZ,      plz,         db);
-    setMetaInfo(GMBH_CITY,     city,        db);
-    setMetaInfo(GMBH_EMAIL,    email,       db);
-    setMetaInfo(GMBH_URL,      url,         db);
-    setMetaInfo(GMBH_INITIALS, pi,          db);
-    setMetaInfo(GMBH_HRE,      hre,         db);
-    setMetaInfo(GMBH_GEFUE1,   gefue1,      db);
-    setMetaInfo(GMBH_GEFUE2,   gefue2,      db);
-    setMetaInfo(GMBH_GEFUE3,   gefue3,      db);
-    setMetaInfo(GMBH_DKV,      dkv,         db);
-    setNumMetaInfo(STARTINDEX, startindex,  db);
-    setNumMetaInfo(MIN_PAYOUT, double(minPayout),   db);
-    setNumMetaInfo(MIN_AMOUNT, double(minContract), db);
-    setNumMetaInfo(MAX_INTEREST,double(maxInterest),db);
-    setMetaInfo(DBID,          dbId,        db);
-    setNumMetaInfo(DB_VERSION, dbVersion,   db);
+    if( isValidIndex(pc))
+        return knownParams[pc].second;
+    else {
+        qCritical() << "invalid parameter requested";
+        return QVariant();
+    }
 }
 
-void dbConfig::readDb(QSqlDatabase db)
+QVariant dbConfig::readValue(projectConfiguration pc, QSqlDatabase db)
 {   LOG_CALL;
-    address1   =getMetaInfo(GMBH_ADDRESS1,  address1,   db);
-    address2   =getMetaInfo(GMBH_ADDRESS2,  address2,   db);
-    street     =getMetaInfo(GMBH_STREET,    street,     db);
-    plz        =getMetaInfo(GMBH_PLZ,       plz,        db);
-    city       =getMetaInfo(GMBH_CITY,      city,       db);
-    email      =getMetaInfo(GMBH_EMAIL,     email,      db);
-    url        =getMetaInfo(GMBH_URL,       url,        db);
-    pi         =getMetaInfo(GMBH_INITIALS,        pi,         db);
-    hre        =getMetaInfo(GMBH_HRE,       hre,        db);
-    gefue1     =getMetaInfo(GMBH_GEFUE1,    gefue1,     db);
-    gefue2     =getMetaInfo(GMBH_GEFUE2,    gefue2,     db);
-    gefue3     =getMetaInfo(GMBH_GEFUE3,    gefue3,     db);
-    dkv        =getMetaInfo(GMBH_DKV,       dkv,        db);
-    startindex =qRound(getNumMetaInfo(STARTINDEX,  double(startindex), db));
-    minPayout  =qRound(getNumMetaInfo(MIN_PAYOUT,  double(minPayout),  db));
-    minContract=qRound(getNumMetaInfo(MIN_AMOUNT,  double(minContract),db));
-    maxInterest=qRound(getNumMetaInfo(MAX_INTEREST,double(maxInterest),db));
-    dbId       =getMetaInfo(DBID,           dbId,       db);
-    dbVersion  =getNumMetaInfo(DB_VERSION,  dbVersion,  db);
+    if( isValidIndex(pc))
+        return getMetaInfo(knownParams[pc].first, QString(), db);
+    else {
+        qCritical() << "invalid parameter requested";
+        return QVariant();
+    }
 }
+

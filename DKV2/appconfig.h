@@ -3,31 +3,38 @@
 
 #include <QString>
 #include <QStringLiteral>
+#include <QVariant>
 #include <QMap>
 #include <QWidget>
 #include <QSqlDatabase>
 
-#define DB_VERSION    qsl("Version")
-#define DKV2_VERSION  qsl("dkv2.exe.Version")
+#include "helper.h"
+
 #define CURRENT_DB_VERSION 2.5
-#define GMBH_ADDRESS1 qsl("gmbh.address1")
-#define GMBH_ADDRESS2 qsl("gmbh.address2")
-#define GMBH_STREET   qsl("gmbh.strasse")
-#define GMBH_PLZ      qsl("gmbh.plz")
-#define GMBH_CITY     qsl("gmbh.stadt")
-#define GMBH_EMAIL    qsl("gmbh.email")
-#define GMBH_URL      qsl("gmbh.url")
-#define GMBH_INITIALS qsl("gmbh.Projektinitialen")
-#define STARTINDEX    qsl("startindex")
-#define MIN_PAYOUT    qsl("minAuszahlung")
-#define MIN_AMOUNT    qsl("minVertragswert")
-#define MAX_INTEREST  qsl("maxZins")
-#define DBID          qsl("dbId")
-#define GMBH_HRE      qsl("gmbh.Handelsregister")
-#define GMBH_GEFUE1   qsl("gmbh.gefue1")
-#define GMBH_GEFUE2   qsl("gmbh.gefue2")
-#define GMBH_GEFUE3   qsl("gmbh.gefue3")
-#define GMBH_DKV      qsl("gmbh.dkv")
+
+enum projectConfiguration {
+   DB_VERSION =0,
+   DKV2_VERSION,
+   GMBH_ADDRESS1,
+   GMBH_ADDRESS2,
+   GMBH_STREET,
+   GMBH_PLZ,
+   GMBH_CITY,
+   GMBH_EMAIL,
+   GMBH_URL,
+   GMBH_INITIALS,
+   STARTINDEX,
+   MIN_PAYOUT,
+   MIN_AMOUNT,
+   MAX_INTEREST,
+   DBID,
+   GMBH_HRE,
+   GMBH_GEFUE1,
+   GMBH_GEFUE2,
+   GMBH_GEFUE3,
+   GMBH_DKV,
+   MAX_PC_INDEX
+};
 
 // db config info in 'meta' table
 // init = write only if not set
@@ -52,10 +59,6 @@ struct appConfig
     static QString LastDb();
     static void delLastDb();
 
-    static void setCurrentDb(const QString&);
-    static QString CurrentDb();
-    static void delCurrentDb();
-
     // dynamic config data stored in memory
     static void setRuntimeData( const QString& name, const QString& value);
     static QString getRuntimeData( const QString& name, const QString& defaultvalue ="");
@@ -71,75 +74,42 @@ private:
     static void setUserData(const QString& name, const QString& value);
     static QString getUserData( const QString& name, const QString& defaultvalue ="");
     // QString getNumUserData(QString name);
-
-    static QMap<QString, QString> runtimedata;
 };
 
 struct dbConfig
 {
-    enum src {
-        FROM_DB =1,
-        FROM_RTD=2
-    };
-    dbConfig() =default;
-    dbConfig(src s) {
-        if( s==FROM_DB) readDb();
-        else loadRuntimeData();
-    }
-    // static dbConfig fromRuntimeData();
-    void loadRuntimeData();
-    void storeRuntimeData();
-    // static dbConfig fromDb(QSqlDatabase db =QSqlDatabase::database());
-    void readDb(QSqlDatabase db =QSqlDatabase::database());
-    void writeDb(QSqlDatabase db =QSqlDatabase::database());
-    // all config defaults come from here
-    QString address1    ="Esperanza Franklin GmbH";
-    QString address2    ="";
-    QString street      ="Turley-Platz 9";
-    QString plz         ="68167";
-    QString city        ="Mannheim";
-    QString email       ="info@esperanza-mannheim.de";
-    QString url         ="www.esperanza-mannheim.de";
-    QString pi          ="ESP"; // project initials
-    QString hre         ="Amtsgericht Mannheim HRB HRB 7.....3";
-    QString gefue1      ="...";
-    QString gefue2      ="...";
-    QString gefue3      ="...";
-    QString dkv         ="...";
-    int     startindex  =1234;
-    int     minPayout   =100;
-    int     minContract =500;
-    int     maxInterest =200;
-    QString dbId        ="ESP1234";
-    double  dbVersion=CURRENT_DB_VERSION;
+    dbConfig();
+    dbConfig(QSqlDatabase db);
+    void fromDb(QSqlDatabase db);
+    static void write (QSqlDatabase db);
+    static QVariant getValue(projectConfiguration pc);
+    static QVariant readValue(projectConfiguration pc, QSqlDatabase db);
 
+    static void writeValue(projectConfiguration pc, QVariant value, QSqlDatabase db);
+    static void setValue(projectConfiguration pc, QVariant value);
+    static QString paramName(projectConfiguration pc) {
+        return knownParams[pc].first;
+    }
     inline friend bool operator!=(const dbConfig& lhs, const dbConfig& rhs) {
         return !(lhs==rhs);
     }
+    inline friend bool operator==(const dbConfig &lhs, const dbConfig &rhs) {
+        for( int i =0; i < projectConfiguration::MAX_PC_INDEX; i++) {
+            projectConfiguration pc =(projectConfiguration)i;
+            if(lhs.getValue(pc) != rhs.getValue(pc)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-    inline friend bool operator==(const dbConfig &lhs, const dbConfig &rhs)
-    {
-        if (lhs.address1 == rhs.address1)
-         if (lhs.address2 == rhs.address2)
-          if (lhs.street == rhs.street)
-           if (lhs.plz == rhs.plz)
-            if (lhs.city == rhs.city)
-             if (lhs.email == rhs.email)
-              if (lhs.url == rhs.url)
-               if (lhs.pi == rhs.pi)
-                if (lhs.hre == rhs.hre)
-                 if (lhs.gefue1 == rhs.gefue1)
-                  if (lhs.gefue2 == rhs.gefue2)
-                   if (lhs.gefue3 == rhs.gefue3)
-                    if (lhs.dkv == rhs.dkv)
-                     if (lhs.startindex == rhs.startindex)
-                      if (lhs.dbId == rhs.dbId)
-                       if (lhs.minPayout == rhs.minPayout)
-                        if (lhs.minContract == rhs.minContract)
-                         if (lhs.maxInterest == rhs.maxInterest)
-                          if (lhs.dbVersion == rhs.dbVersion)
-                              return true;
-        return false;
+public:
+    void fromDb();
+
+private:
+    static QMap<projectConfiguration,QPair<QString, QVariant>> knownParams;
+    static bool isValidIndex(projectConfiguration pc) {
+        return (pc >= 0) && (pc < projectConfiguration::MAX_PC_INDEX);
     }
 };
 

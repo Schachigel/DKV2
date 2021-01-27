@@ -5,11 +5,11 @@
 #include <QStringLiteral>
 #include <QWizard>
 
-class wizAnnualSettlement_IntroPage : public QWizardPage
+class wpAnnualSettlement_IntroPage : public QWizardPage
 {
     Q_OBJECT;
 public:
-    wizAnnualSettlement_IntroPage(QWidget* p =nullptr);
+    wpAnnualSettlement_IntroPage(QWidget* p =nullptr);
     void initializePage() override;
     bool isComplete() const override;
 public slots:

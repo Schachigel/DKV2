@@ -4,30 +4,30 @@
 #include <QDate>
 #include <QWizard>
 
-struct wizActivateContract_IntroPage : public QWizardPage {
-    wizActivateContract_IntroPage(QWidget* w =nullptr);
+struct wpActivateContract_IntroPage : public QWizardPage {
+    wpActivateContract_IntroPage(QWidget* w =nullptr);
     void initializePage() override;
     Q_OBJECT;
 };
 
-struct wizActiateContract_DatePage : public QWizardPage {
-    wizActiateContract_DatePage(QWidget* w=nullptr);
+struct wpActiateContract_DatePage : public QWizardPage {
+    wpActiateContract_DatePage(QWidget* w=nullptr);
     void cleanupPage() override  {};
     void initializePage() override;
     Q_OBJECT;
 };
 
-struct wizActiateContract_AmountPage : public QWizardPage {
-    wizActiateContract_AmountPage(QWidget* w=nullptr);
+struct wpActiateContract_AmountPage : public QWizardPage {
+    wpActiateContract_AmountPage(QWidget* w=nullptr);
     void cleanupPage() override  {};
     bool validatePage() override;
     Q_OBJECT;
 };
 
-class wizActivateContract_SummaryPage : public QWizardPage {
+class wpActivateContract_SummaryPage : public QWizardPage {
     Q_OBJECT;
 public:
-    wizActivateContract_SummaryPage(QWidget* w=nullptr);
+    wpActivateContract_SummaryPage(QWidget* w=nullptr);
     void initializePage() override;
     bool validatePage() override;
     bool isComplete() const override;
@@ -36,9 +36,9 @@ public slots:
 };
 
 
-struct activateContractWiz : public QWizard
+struct wpActivateContract : public QWizard
 {
-    activateContractWiz(QWidget* p =nullptr);
+    wpActivateContract(QWidget* p =nullptr);
     QString label;
     QString creditorName;
     double expectedAmount;

@@ -10,21 +10,21 @@
 #include "helperfin.h"
 #include "wizactivatecontract.h"
 
-wizActivateContract_IntroPage::wizActivateContract_IntroPage(QWidget* p) : QWizardPage(p)
+wpActivateContract_IntroPage::wpActivateContract_IntroPage(QWidget* p) : QWizardPage(p)
 {
     setTitle("Aktivierung eines Vertrags");
 }
 
-void wizActivateContract_IntroPage::initializePage()
+void wpActivateContract_IntroPage::initializePage()
 {
-    activateContractWiz* wiz = qobject_cast<activateContractWiz*>(wizard());
+    wpActivateContract* wiz = qobject_cast<wpActivateContract*>(wizard());
     QString subtitle = qsl("Mit dieser Dialogfolge kannst Du den Vertrag <p><b>%1</b> von <b>%2</b> <p>aktivieren, "
                        "so dass die Zinsberechnung beginnt.<br>"
                        "Die Aktivierung muss nach dem Geldeingang durchgeführt werden.<br>");
     setSubTitle(subtitle.arg(wiz->label, wiz->creditorName));
 }
 
-wizActiateContract_DatePage::wizActiateContract_DatePage(QWidget* p) : QWizardPage(p)
+wpActiateContract_DatePage::wpActiateContract_DatePage(QWidget* p) : QWizardPage(p)
 {
     QDateEdit* de = new QDateEdit;
     de->setDisplayFormat(qsl("dd.MM.yyyy"));
@@ -34,13 +34,13 @@ wizActiateContract_DatePage::wizActiateContract_DatePage(QWidget* p) : QWizardPa
     setLayout(layout);
 }
 
-void wizActiateContract_DatePage::initializePage()
+void wpActiateContract_DatePage::initializePage()
 {
     setTitle(qsl("Aktivierungsdatum"));
     setSubTitle(qsl("Das Aktivierungsdatum entspricht dem Datum, zu dem das Geld auf unserem Konto eingegangen ist"));
 }
 
-wizActiateContract_AmountPage::wizActiateContract_AmountPage(QWidget* p) : QWizardPage(p)
+wpActiateContract_AmountPage::wpActiateContract_AmountPage(QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("Eingegangener Kreditbetrag"));
     setSubTitle(qsl("Gib die Summe ein, die von dem/der DK-Geber*in überwiesen wurde.<br> "
@@ -56,11 +56,11 @@ wizActiateContract_AmountPage::wizActiateContract_AmountPage(QWidget* p) : QWiza
     setLayout(layout);
 }
 
-bool wizActiateContract_AmountPage::validatePage()
+bool wpActiateContract_AmountPage::validatePage()
 {
-    activateContractWiz* wiz = qobject_cast<activateContractWiz*>(wizard());
+    wpActivateContract* wiz = qobject_cast<wpActivateContract*>(wizard());
     double amount = field(qsl("amount")).toDouble();
-    if( amount < getNumMetaInfo(MIN_AMOUNT))
+    if( amount < dbConfig::getValue(MIN_AMOUNT).toDouble())
         return false;
     setField(qsl("amount"), r2(amount));
     if( wiz->expectedAmount != amount) {
@@ -69,7 +69,7 @@ bool wizActiateContract_AmountPage::validatePage()
     return true;
 }
 
-wizActivateContract_SummaryPage::wizActivateContract_SummaryPage( QWidget* p) : QWizardPage(p)
+wpActivateContract_SummaryPage::wpActivateContract_SummaryPage( QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("Zusammenfassung"));
     QCheckBox* cb = new QCheckBox(qsl("Die Eingaben sind korrekt!"));
@@ -80,11 +80,11 @@ wizActivateContract_SummaryPage::wizActivateContract_SummaryPage( QWidget* p) : 
     connect(cb, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
 }
 
-void wizActivateContract_SummaryPage::initializePage()
+void wpActivateContract_SummaryPage::initializePage()
 {
     QString subt =qsl("Der Vertrag <p><b>%1</b> von <b>%2</b><p> soll mit einem Betrag von <p>"
                   "<b>%3 Euro</b><p> zum %4 aktiviert werden. <br>");
-    activateContractWiz* wiz = qobject_cast<activateContractWiz*>(wizard());
+    wpActivateContract* wiz = qobject_cast<wpActivateContract*>(wizard());
     double amount = field(qsl("amount")).toDouble();
     subt = subt.arg(wiz->label, wiz->creditorName);
     QLocale locale;
@@ -96,25 +96,26 @@ void wizActivateContract_SummaryPage::initializePage()
     setSubTitle(subt);
 }
 
-bool wizActivateContract_SummaryPage::validatePage()
+bool wpActivateContract_SummaryPage::validatePage()
 {
     if( field(qsl("confirmed")).toBool())
         return true;
     return false;
 }
-void wizActivateContract_SummaryPage::onConfirmData_toggled(int )
+void wpActivateContract_SummaryPage::onConfirmData_toggled(int )
 {
     completeChanged();
 }
-bool wizActivateContract_SummaryPage::isComplete() const
+bool wpActivateContract_SummaryPage::isComplete() const
 {
     return field("confirmed").toBool();
 }
 
-activateContractWiz::activateContractWiz(QWidget* p) : QWizard (p)
+wpActivateContract::wpActivateContract(QWidget* p) : QWizard (p)
 {
-    addPage(new wizActivateContract_IntroPage);
-    addPage(new wizActiateContract_DatePage);
-    addPage(new wizActiateContract_AmountPage);
-    addPage(new wizActivateContract_SummaryPage);
+    QFont f = font(); f.setPointSize(10); setFont(f);
+    addPage(new wpActivateContract_IntroPage);
+    addPage(new wpActiateContract_DatePage);
+    addPage(new wpActiateContract_AmountPage);
+    addPage(new wpActivateContract_SummaryPage);
 }

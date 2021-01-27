@@ -7,7 +7,7 @@
 #include "helper.h"
 #include "wizannualsettlement.h"
 
-wizAnnualSettlement_IntroPage::wizAnnualSettlement_IntroPage(QWidget* p)  : QWizardPage(p)
+wpAnnualSettlement_IntroPage::wpAnnualSettlement_IntroPage(QWidget* p)  : QWizardPage(p)
 {
     setTitle(qsl("Jahresabrechnung"));
     setSubTitle(qsl("Die Abrechnung für das Folgende Jahr kann gemacht werden:"));
@@ -25,21 +25,23 @@ wizAnnualSettlement_IntroPage::wizAnnualSettlement_IntroPage(QWidget* p)  : QWiz
     connect(confirm, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
 }
 
-void wizAnnualSettlement_IntroPage::initializePage()
+void wpAnnualSettlement_IntroPage::initializePage()
 {
     setField(qsl("printCsv"), true);
     setField(qsl("confirm"), false);
 }
-bool wizAnnualSettlement_IntroPage::isComplete() const
+bool wpAnnualSettlement_IntroPage::isComplete() const
 {
     return field("confirm").toBool();
 }
-void wizAnnualSettlement_IntroPage::onConfirmData_toggled(int)
+void wpAnnualSettlement_IntroPage::onConfirmData_toggled(int)
 {
     completeChanged();
 }
 
 wizAnnualSettlement::wizAnnualSettlement(QWidget* p) : QWizard(p)
 {
-    addPage(new wizAnnualSettlement_IntroPage);
+    addPage(new wpAnnualSettlement_IntroPage);
+    QFont f = font(); f.setPointSize(10); setFont(f);
+
 }

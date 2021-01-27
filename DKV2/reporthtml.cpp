@@ -106,7 +106,7 @@ QString htmlOverviewTable()
     QString ret;
 
     ret += h1(qsl("Übersicht DKs und DK Geber"));
-    ret += appConfig::getRuntimeData(GMBH_ADDRESS1);
+    ret += dbConfig::getValue(GMBH_ADDRESS1).toString();
     ret += qsl(" - Stand: ") + QDate::currentDate().toString(qsl("dd.MM.yyyy<br>"));
     dbStats stats(dbStats::calculate);
     ret += htmlOverviewTableBlock(qsl("Alle Aktiven Verträge"), stats.activeContracts[dbStats::t_nt]);

@@ -22,8 +22,7 @@ void activateContract(qlonglong cid)
     contract v(cid);
     creditor cred(v.creditorId());
 
-    activateContractWiz wiz(getMainWindow());
-    QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
+    wpActivateContract wiz(getMainWindow());
     wiz.label = v.label();
     wiz.creditorName = cred.firstname() + qsl(" ") + cred.lastname();
     wiz.expectedAmount = v.plannedInvest();
@@ -52,7 +51,6 @@ void changeContractValue(qlonglong cid)
 
     creditor cre(con.creditorId());
     wizChangeContract wiz(getMainWindow());
-    QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     wiz.creditorName = cre.firstname() + qsl(" ") + cre.lastname();
     wiz.contractLabel= con.label();
     wiz.currentAmount= con.value();
@@ -93,7 +91,6 @@ void terminateContract(qlonglong cid)
  void terminateContract_Final( contract& c)
 {   LOG_CALL;
     wizTerminateContract wiz(getMainWindow(), c);
-    QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     wiz.exec();
     if( ! wiz.field(qsl("confirm")).toBool())
         return;
@@ -106,7 +103,6 @@ void terminateContract(qlonglong cid)
 void cancelContract( contract& c)
 {   LOG_CALL;
     wizCancelContract wiz(getMainWindow());
-    QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     wiz.c = c;
     wiz.creditorName = executeSingleValueSql(qsl("Vorname || ' ' || Nachname"), qsl("Kreditoren"), qsl("id=") + QString::number(c.creditorId())).toString();
     wiz.contractualEnd =QDate::currentDate().addMonths(c.noticePeriod());
@@ -190,7 +186,6 @@ void annualSettlement()
 void editCreditor(qlonglong creditorId)
 {   LOG_CALL;
     wizEditCreditor wiz(getMainWindow());
-    QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     creditor cred(creditorId);
     wiz.setField(qsl("firstname"), cred.firstname());
     wiz.setField(qsl("lastname"), cred.lastname());
@@ -210,7 +205,6 @@ void editCreditor(qlonglong creditorId)
 void newCreditorAndContract()
 {   LOG_CALL;
     wizNew wiz(getMainWindow());
-    QFont f = wiz.font(); f.setPointSize(10); wiz.setFont(f);
     wiz.setField(qsl("create_new"), true);
     wiz.setField(qsl("confirmContract"), false);
     wiz.exec();

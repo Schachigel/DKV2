@@ -86,7 +86,7 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
 }
 
 /* static */ bool letterTemplate::insert_letterTypes(QSqlDatabase db)
-{
+{ LOG_CALL;
     TableDataInserter tdi(dkdbstructur["Brieftypen"]);
     for (auto i : all_templates.keys()) {
         tdi.setValue(qsl("id"), QVariant(int(i)));
@@ -98,7 +98,7 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
 }
 
 /* static */ bool letterTemplate::insert_elementTypes(QSqlDatabase db)
-{
+{ LOG_CALL;
     TableDataInserter tdi(dkdbstructur[qsl("BriefElementTypen")]);
     for (auto s : all_elementTypes.keys()) {
         tdi.setValue(qsl("id"), QVariant(int(s)));
@@ -109,8 +109,27 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
     return true;
 }
 
+bool insertLetterElementFromMap(qlonglong kreditor, letterTemplate::templId briefTyp, QMap<letterTemplate::elementType, QString> map, QSqlDatabase db)
+{ LOG_CALL;
+    TableDataInserter tdi(dkdbstructur[qsl("BriefElemente")]);
+    kreditor<=0 ? tdi.setValueNULL(qsl("KreditorId")) : tdi.setValue(qsl("KreditorId"), kreditor);
+    tdi.setValue(qsl("BriefTypenId"), QVariant(int(briefTyp)));
+    bool res =true;
+    for( auto i : map.keys()) {
+        tdi.setValue(qsl("BriefElementTypenId"), QVariant(int(i)));
+        tdi.setValue(qsl("Texte"), QVariant(map[i]));
+        if( -1 == tdi.InsertData(db)) {
+            qDebug() << "Failded to insert generic letter Element " << map[i];
+            res = false;
+        }
+    }
+    return res;
+
+}
+
 /* static */ bool letterTemplate::insert_letterElements(QSqlDatabase db)
 {
+    bool ret =true;
     QMap<elementType, QString> genericLetterElements {
         {elementType::Adresse, qsl("<small>{{gmbh.address1}} {{gmbh.address2}}<br>{{gmbh.strasse}}, <b>{{gmbh.plz}}</b> {{gmbh.stadt}}</small><p>"
                                    "{{kreditoren.vorname}} {{kreditoren.nachname}} <p> {{kreditoren.strasse}} <br><b> {{kreditoren.plz}} </b> {{kreditoren.stadt}} <br><small> {{kreditoren.email}} </small>")},
@@ -123,40 +142,25 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
                                 "<td width=33%></td>"
                                 "<td width=33%></td></tr></table>")}
     };
+    ret = insertLetterElementFromMap(0, templId::generic, genericLetterElements, db);
 
-    TableDataInserter tdi(dkdbstructur[qsl("BriefElemente")]);
-    tdi.setValueNULL(qsl("KreditorId"));
-    tdi.setValue(qsl("BriefTypenId"), QVariant(int(templId::generic)));
-
-    for( auto i : genericLetterElements.keys()) {
-        tdi.setValue(qsl("BriefElementTypenId"), QVariant(int(i)));
-        tdi.setValue(qsl("Texte"), QVariant(genericLetterElements[i]));
-        if( -1 == tdi.InsertData(db)) {
-            qDebug() << "Failded to insert generic letter Element " << genericLetterElements[i];
-            return false;
-        }
-    }
-
-    tdi.setValue(qsl("BriefTypenId"), QVariant(int(templId::annualInterestReinvest)));
     QMap<elementType, QString> interestReinvest_letterElements {
         {elementType::Betreff, qsl("Jahreszinsbescheid {{Jahr}}")},
         {elementType::Text1, qsl("Danke für Dein Vertrauen")},
         {elementType::Text2, qsl("gerne wieder, gerne mehr")}
     };
-    for( auto i: interestReinvest_letterElements.keys()) {
-        tdi.setValue(qsl("BriefElementTypenId"), QVariant(int(i)));
-        tdi.setValue(qsl("Texte"), QVariant(interestReinvest_letterElements[i]));
-        if( -1 == tdi.InsertData(db)) {
-            qDebug() << "Failded to insert interest Reinvest letter Element " << genericLetterElements[i];
-            return false;
-        }
-    }
+    ret &= insertLetterElementFromMap(0, templId::annualInterestReinvest, interestReinvest_letterElements, db);
+
+
+
 
     QMap<elementType, QString> interestPayout_letterElements {
         {elementType::Betreff, qsl("Jahreszinsauszahlung {{Jahr}}")},
-            {elementType::Text1, qsl("Danke für Dein Vertrauen")},
-            {elementType::Text2, qsl("gerne wieder, gerne mehr")}};
-    tdi.setValue(qsl("BriefTypenId"), QVariant(int(templId::annualInterestPayout)));
+        {elementType::Text1, qsl("Danke für Dein Vertrauen")},
+        {elementType::Text2, qsl("gerne wieder, gerne mehr")}};
+    ret &= insertLetterElementFromMap(0, templId::annualInterestPayout, interestPayout_letterElements, db);
+
+
     // insert letter parts which are different in different letter types
     // -> Betreff, Text1, Abrechnungstabelle, Text2
 
@@ -269,7 +273,7 @@ void letterTemplate::init_defaults()
     }
 }
 
-letterTemplate::letterTemplate(letterTemplate::templId )
+letterTemplate::letterTemplate( /*const qlonglong kreditor, */const letterTemplate::templId )
 {   LOG_CALL;
     //tid=id;
     //if( !loadTemplate(id))
@@ -343,7 +347,7 @@ bool letterTemplate::loadTemplate(letterTemplate::templId /*id*/, qlonglong /*kr
     return true;
 }
 
-bool letterTemplate::operator ==(const letterTemplate &b) const
+bool letterTemplate::operator ==(const letterTemplate &) const
 {   LOG_CALL;
     //if(tid != b.tid) return false;
     //if( length.count() != b.length.count()) return false;
@@ -395,7 +399,7 @@ bool letterTemplate::applyPlaceholders()
     return ret;
 }
 
-bool letterTemplate::createDocument(QTextDocument& doc)
+bool letterTemplate::createDocument(QTextDocument& )
 {   LOG_CALL;
 //    QImage img1(":/res/weiss.png");
 //    QImage img2(":/res/logo.png");

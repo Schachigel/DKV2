@@ -6,12 +6,12 @@
 
 #include "wizcancelcontract.h"
 
-wizCancelContract_IntroPage::wizCancelContract_IntroPage(QWidget* p) : QWizardPage(p)
+wpCancelContract_IntroPage::wpCancelContract_IntroPage(QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("Vertragskündigung"));
 }
 
-void wizCancelContract_IntroPage::initializePage()
+void wpCancelContract_IntroPage::initializePage()
 {
     wizCancelContract* wiz = qobject_cast<wizCancelContract*>(wizard());
     QString subTitle(qsl("Mit dieser Dialogfolge kannst Du den Vertrag <p><b>%1</b>"
@@ -21,7 +21,7 @@ void wizCancelContract_IntroPage::initializePage()
     setSubTitle(subTitle);
 }
 
-wizCancelContract_DatePage::wizCancelContract_DatePage(QWidget* p) : QWizardPage(p)
+wpCancelContract_DatePage::wpCancelContract_DatePage(QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("Kündigungsdatum"));
 
@@ -33,7 +33,7 @@ wizCancelContract_DatePage::wizCancelContract_DatePage(QWidget* p) : QWizardPage
     setLayout(layout);
 }
 
-void wizCancelContract_DatePage::initializePage()
+void wpCancelContract_DatePage::initializePage()
 {
     wizCancelContract* wiz = qobject_cast<wizCancelContract*>(wizard());
     QString subTitle(qsl("Das durch die Kündigungsfrist vertraglich vereinbarte Vertragsende ist am <b>%1</b>.<br>"
@@ -45,7 +45,7 @@ void wizCancelContract_DatePage::initializePage()
     setField(qsl("date"), std::max(wiz->contractualEnd, latestB).addDays(1));
 }
 
-bool wizCancelContract_DatePage::validatePage()
+bool wpCancelContract_DatePage::validatePage()
 {
     wizCancelContract* wiz = qobject_cast<wizCancelContract*>(wizard());
     QDate lastB =wiz->c.latestBooking().date;
@@ -60,7 +60,7 @@ bool wizCancelContract_DatePage::validatePage()
     return true;
 }
 
-wizCancelContract_SummaryPage::wizCancelContract_SummaryPage(QWidget* p) : QWizardPage(p)
+wpCancelContract_SummaryPage::wpCancelContract_SummaryPage(QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("Zusammenfassung"));
     QCheckBox* cb = new QCheckBox(qsl("Die Eingaben sind korrekt!"));
@@ -70,7 +70,7 @@ wizCancelContract_SummaryPage::wizCancelContract_SummaryPage(QWidget* p) : QWiza
     setLayout(layout);
     connect(cb, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
 }
-void wizCancelContract_SummaryPage::initializePage()
+void wpCancelContract_SummaryPage::initializePage()
 {
     wizCancelContract* wiz = qobject_cast<wizCancelContract*>(wizard());
     QString subt =qsl("Der Vertrag <b>%1</b> <p>von <b>%2</b><p>soll zum <b>%3</b> beendet werden.");
@@ -78,18 +78,19 @@ void wizCancelContract_SummaryPage::initializePage()
     subt = subt.arg(field(qsl("date")).toDate().toString(qsl("dd.MM.yyyy")));
     setSubTitle(subt);
 }
-void wizCancelContract_SummaryPage::onConfirmData_toggled(int)
+void wpCancelContract_SummaryPage::onConfirmData_toggled(int)
 {
     completeChanged();
 }
-bool wizCancelContract_SummaryPage::isComplete() const
+bool wpCancelContract_SummaryPage::isComplete() const
 {
     return field("confirmed").toBool();
 }
 
 wizCancelContract::wizCancelContract(QWidget* p) : QWizard(p)
 {
-    addPage(new wizCancelContract_IntroPage);
-    addPage(new wizCancelContract_DatePage);
-    addPage(new wizCancelContract_SummaryPage);
+    addPage(new wpCancelContract_IntroPage);
+    addPage(new wpCancelContract_DatePage);
+    addPage(new wpCancelContract_SummaryPage);
+    QFont f = font(); f.setPointSize(10); setFont(f);
 }

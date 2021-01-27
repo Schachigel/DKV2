@@ -4,37 +4,37 @@
 #include <QDate>
 #include <QWizard>
 
-class wizChangeContract_IntroPage : public QWizardPage
+class wpChangeContract_IntroPage : public QWizardPage
 {
 public:
-    wizChangeContract_IntroPage(QWidget* parent =nullptr);
+    wpChangeContract_IntroPage(QWidget* parent =nullptr);
     void initializePage() override;
     bool validatePage() override;
     Q_OBJECT;
 };
 
-struct wizChangeContract_AmountPage : public QWizardPage
+struct wpChangeContract_AmountPage : public QWizardPage
 {
-    wizChangeContract_AmountPage(QWidget* parent =nullptr);
+    wpChangeContract_AmountPage(QWidget* parent =nullptr);
     void cleanupPage() override  {};
     void initializePage() override;
     bool validatePage() override;
     Q_OBJECT;
 };
 
-struct wizChangeContract_DatePage : public QWizardPage
+struct wpChangeContract_DatePage : public QWizardPage
 {
-    wizChangeContract_DatePage(QWidget* parent =nullptr);
+    wpChangeContract_DatePage(QWidget* parent =nullptr);
     void cleanupPage() override  {};
     void initializePage() override;
     bool validatePage() override;
     Q_OBJECT;
 };
 
-class wizChangeContract_Summary : public QWizardPage{
+class wpChangeContract_Summary : public QWizardPage{
     Q_OBJECT;
 public:
-    wizChangeContract_Summary(QWidget* p =nullptr);
+    wpChangeContract_Summary(QWidget* p =nullptr);
     void initializePage() override;
     bool isComplete() const override;
 public slots:
