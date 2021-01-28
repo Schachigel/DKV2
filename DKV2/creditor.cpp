@@ -195,7 +195,7 @@ bool creditor::remove()
     {
         creditortable.append(dbfield("id",       QVariant::LongLong).setPrimaryKey().setAutoInc());
         creditortable.append(dbfield("Vorname",  QVariant::String).setNotNull());
-        creditortable.append(dbfield("Nachname", QVariant::String).setNotNull());
+        creditortable.append(dbfield("Nachname", QVariant::String).setNotNull().setDefault(""));
         creditortable.append(dbfield("Strasse",  QVariant::String).setNotNull());
         creditortable.append(dbfield("Plz",      QVariant::String).setNotNull());
         creditortable.append(dbfield("Stadt",    QVariant::String).setNotNull());
