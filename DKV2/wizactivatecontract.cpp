@@ -60,7 +60,7 @@ bool wpActiateContract_AmountPage::validatePage()
 {
     wpActivateContract* wiz = qobject_cast<wpActivateContract*>(wizard());
     double amount = field(qsl("amount")).toDouble();
-    if( amount < dbConfig::getValue(MIN_AMOUNT).toDouble())
+    if( amount < dbConfig::readValue(MIN_AMOUNT).toDouble())
         return false;
     setField(qsl("amount"), r2(amount));
     if( wiz->expectedAmount != amount) {

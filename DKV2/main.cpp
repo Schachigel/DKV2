@@ -82,7 +82,6 @@ int main(int argc, char *argv[])
     qInfo() << "************************************************";
 
     init_DKDBStruct();
-    dbConfig initConfig;
 
 #ifndef QT_DEBUG
     QSplashScreen* splash = doSplash(); // do only AFTER having an app. object

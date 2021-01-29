@@ -16,8 +16,6 @@ QString appConfig::keyOutdir = qsl("dbg-outdir");
 QString appConfig::keyLastDb = qsl("dbg-db/last");
 #endif
 
-QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::knownParams;
-
 // db config info in 'meta' table
 void initMetaInfo( const QString& name, const QString& initialValue, QSqlDatabase db)
 {   LOG_CALL;
@@ -154,57 +152,50 @@ void appConfig::deleteUserData(const QString& name)
 }
 // QString getNumUserData(QString name);
 
-dbConfig::dbConfig()
+QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
+    {DB_VERSION,     {qsl("Version"),              QVariant(CURRENT_DB_VERSION)}},
+    {DKV2_VERSION,   {qsl("dkv2.exe.Version"),     QVariant(0)}},
+    {GMBH_ADDRESS1,  {qsl("gmbh.address1"),        QVariant("Esperanza Franklin GmbH")}},
+    {GMBH_ADDRESS2,  {qsl("gmbh.address2"),        QVariant("")}},
+    {GMBH_STREET,    {qsl("gmbh.strasse"),     QVariant("Turley-Platz 9")}},
+    {GMBH_PLZ,       {qsl("gmbh.plz"),         QVariant("68167")}},
+    {GMBH_CITY,      {qsl("gmbh.stadt"),       QVariant("Mannheim")}},
+    {GMBH_EMAIL,     {qsl("gmbh.email"),       QVariant("info@esperanza-mannheim.de")}},
+    {GMBH_URL,       {qsl("gmbh.url"),         QVariant("www.esperanza-mannheim.de")}},
+    {GMBH_INITIALS,  {qsl("gmbh.Projektinitialen"), QVariant("ESP")}},
+    {STARTINDEX,     {qsl("startindex"),       QVariant(111)}},
+    {MIN_PAYOUT,     {qsl("minAuszahlung"),    QVariant(100)}},
+    {MIN_AMOUNT,     {qsl("minVertragswert"),  QVariant(599)}},
+    {MAX_INTEREST,   {qsl("maxZins"),          QVariant(200)}},
+    {DBID,           {qsl("dbId"),             QVariant("ESP1234")}},
+    {GMBH_HRE,       {qsl("gmbh.Handelsregister"), QVariant("Amtsgericht Mannheim HRB HRB 7.....3")}},
+    {GMBH_GEFUE1,    {qsl("gmbh.gefue1"),      QVariant("Gefü 1")}},
+    {GMBH_GEFUE2,    {qsl("gmbh.gefue2"),      QVariant("Gefü 2")}},
+    {GMBH_GEFUE3,    {qsl("gmbh.gefue3"),      QVariant("Gefü 3")}},
+    {GMBH_DKV,       {qsl("gmbh.dkv"),         QVariant("DK Verwalter")}},
+    {MAX_PC_INDEX,   {qsl("n/a"),              QVariant()}}
+};
+
+/*static*/ void dbConfig::writeDefaults(QSqlDatabase db /*=QSqlDatabase::database()*/)
 {
-    static bool firstRun =true;
-    if( firstRun) {
-        knownParams[DB_VERSION]         ={qsl("Version"),          QVariant(CURRENT_DB_VERSION)};
-        knownParams[DKV2_VERSION]       ={qsl("dkv2.exe.Version"), QVariant(0)};
-        knownParams[GMBH_ADDRESS1]      ={qsl("gmbh.address1"),    QVariant("Esperanza Franklin GmbH")};
-        knownParams[GMBH_ADDRESS2]      ={qsl("gmbh.address2"),    QVariant("")};
-        knownParams[GMBH_STREET]        ={qsl("gmbh.strasse"),     QVariant("Turley-Platz 9")};
-        knownParams[GMBH_PLZ]           ={qsl("gmbh.plz"),         QVariant("68167")};
-        knownParams[GMBH_CITY]          ={qsl("gmbh.stadt"),       QVariant("Mannheim")};
-        knownParams[GMBH_EMAIL]         ={qsl("gmbh.email"),       QVariant("info@esperanza-mannheim.de")};
-        knownParams[GMBH_URL]           ={qsl("gmbh.url"),         QVariant("www.esperanza-mannheim.de")};
-        knownParams[GMBH_INITIALS]      ={qsl("gmbh.Projektinitialen"), QVariant("ESP")};
-        knownParams[STARTINDEX]         ={qsl("startindex"),       QVariant(111)};
-        knownParams[MIN_PAYOUT]         ={qsl("minAuszahlung"),    QVariant(100)};
-        knownParams[MIN_AMOUNT]         ={qsl("minVertragswert"),  QVariant(599)};
-        knownParams[MAX_INTEREST]       ={qsl("maxZins"),          QVariant(200)};
-        knownParams[DBID]               ={qsl("dbId"),             QVariant("ESP1234")};
-        knownParams[GMBH_HRE]           ={qsl("gmbh.Handelsregister"), QVariant("Amtsgericht Mannheim HRB HRB 7.....3")};
-        knownParams[GMBH_GEFUE1]        ={qsl("gmbh.gefue1"),      QVariant("Gefü 1")};
-        knownParams[GMBH_GEFUE2]        ={qsl("gmbh.gefue2"),      QVariant("Gefü 2")};
-        knownParams[GMBH_GEFUE3]        ={qsl("gmbh.gefue3"),      QVariant("Gefü 3")};
-        knownParams[GMBH_DKV]           ={qsl("gmbh.dkv"),         QVariant("DK Verwalter")};
-        knownParams[MAX_PC_INDEX]          ={qsl("n/a"),              QVariant()};
-        firstRun =false;
+    for( int i =0; i< MAX_PC_INDEX; i++) {
+        projectConfiguration pc {(projectConfiguration)i};
+        writeValue(pc, defaultParams.value(pc).second, db);
     }
 }
 
-dbConfig::dbConfig(QSqlDatabase db)
-{
-    fromDb(db);
-}
 
-void dbConfig::fromDb(QSqlDatabase db)
-{
-    for( int i =0; i < projectConfiguration::MAX_PC_INDEX; i++) {
-        projectConfiguration pc =(projectConfiguration)i;
-        knownParams[pc].second = getMetaInfo(knownParams[pc].first, knownParams[pc].second.toString(), db);
+/*static*/ QVariant dbConfig::readValue(projectConfiguration pc, QSqlDatabase db)
+{   LOG_CALL;
+    if( isValidIndex(pc))
+        return getMetaInfo(defaultParams.value(pc).first, defaultParams.value(pc).second.toString(), db);
+    else {
+        qCritical() << "invalid parameter requested";
+        return QVariant();
     }
 }
 
-void dbConfig::write(QSqlDatabase db)
-{
-    for( int i =0; i < projectConfiguration::MAX_PC_INDEX; i++) {
-        projectConfiguration pc =(projectConfiguration)i;
-        writeValue(pc, knownParams[pc].second, db);
-    }
-}
-
-void dbConfig::writeValue(projectConfiguration pc, QVariant value, QSqlDatabase db)
+/*static*/ void dbConfig::writeValue(projectConfiguration pc, QVariant value, QSqlDatabase db)
 {   LOG_CALL;
     if( ! isValidIndex(pc)) {
         qCritical() << "invalid paramter to be set";
@@ -216,51 +207,12 @@ void dbConfig::writeValue(projectConfiguration pc, QVariant value, QSqlDatabase 
     case QVariant::LongLong:
     case QVariant::ULongLong:
     case QVariant::Double:
-        setNumMetaInfo(knownParams[pc].first, value.toDouble(), db);
+        setNumMetaInfo(defaultParams.value(pc).first, value.toDouble(), db);
         break;
     default:
-        setMetaInfo(knownParams[pc].first, value.toString(), db);
+        setMetaInfo(defaultParams.value(pc).first, value.toString(), db);
     }
 }
 
-void dbConfig::setValue(projectConfiguration pc, QVariant value)
-{   LOG_CALL;
-    if( ! isValidIndex(pc)) {
-        qCritical() << "invalid paramter to be set";
-        return;
-    }
-    switch (value.type()) {
-    case QVariant::Int:
-    case QVariant::UInt:
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
-    case QVariant::Double:
-        setNumMetaInfo(knownParams[pc].first, value.toDouble());
-        break;
-    default:
-        setMetaInfo(knownParams[pc].first, value.toString());
-    }
-    // values written to the default db are also reflected in the static Map
-    knownParams[pc].second =value;
-}
 
-QVariant dbConfig::getValue(projectConfiguration pc)
-{   LOG_CALL;
-    if( isValidIndex(pc))
-        return knownParams[pc].second;
-    else {
-        qCritical() << "invalid parameter requested";
-        return QVariant();
-    }
-}
-
-QVariant dbConfig::readValue(projectConfiguration pc, QSqlDatabase db)
-{   LOG_CALL;
-    if( isValidIndex(pc))
-        return getMetaInfo(knownParams[pc].first, QString(), db);
-    else {
-        qCritical() << "invalid parameter requested";
-        return QVariant();
-    }
-}
 

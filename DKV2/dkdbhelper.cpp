@@ -232,7 +232,6 @@ bool has_allTablesAndFields(QSqlDatabase db)
 
 bool check_db_version(QSqlDatabase db =QSqlDatabase::database())
 {   LOG_CALL;
-    //double d = getNumMetaInfo(DB_VERSION, -1., db);
     double d =dbConfig::readValue(DB_VERSION, db).toDouble();
     if( d >= CURRENT_DB_VERSION)
         return true;
@@ -267,14 +266,12 @@ bool isValidDatabase(const QString& filename)
         {
         QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", con);
         db.setDatabaseName(filename);
-        if( !db.open())
-            msg = "open db failed";
-        else {
-            if( !isValidDatabase(db)) {
+        if( db.open()) {
+            if( !isValidDatabase(db))
                 msg = "database was found to be NOT valid";
-            }
+        } else
+            msg = "open db failed";
         } // End of db scope
-        }
     }
     if( msg.isEmpty())
         return true;
@@ -287,8 +284,7 @@ bool isValidDatabase(const QString& filename)
 void insert_DbProperties(QSqlDatabase db = QSqlDatabase::database())
 {
     LOG_CALL;
-    dbConfig c; // get configuration defaults
-    c.write(db);
+    dbConfig::writeDefaults(db);
 }
 bool create_DK_TablesAndContent(QSqlDatabase db)
 {
@@ -462,7 +458,7 @@ bool insert_views( QSqlDatabase db)
 
 bool updateViews(QSqlDatabase db =QSqlDatabase::database())
 {   LOG_CALL;
-    QString lastProgramVersion = dbConfig::getValue(DKV2_VERSION).toString();
+    QString lastProgramVersion = dbConfig::readValue(DKV2_VERSION).toString();
     QString thisProgramVersion = QCoreApplication::applicationVersion();
     if( lastProgramVersion != thisProgramVersion) {
         if( !insert_views(db)) {
@@ -470,7 +466,7 @@ bool updateViews(QSqlDatabase db =QSqlDatabase::database())
             return false;
         }
         else {
-            dbConfig::setValue(DKV2_VERSION, thisProgramVersion);
+            dbConfig::writeValue(DKV2_VERSION, thisProgramVersion);
             return true;
         }
     }
@@ -512,7 +508,6 @@ bool open_databaseForApplication( QString newDbFile)
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     if( ! updateViews())
         return false;
-    dbConfig c(QSqlDatabase::database());
     return true;
 }
 
@@ -610,11 +605,11 @@ bool create_DB_copy(QString targetfn, bool deper)
 // general stuff
 QString proposeContractLabel()
 {   LOG_CALL;
-    static int iMaxid = dbConfig::getValue(STARTINDEX).toInt() + getHighestRowId("Vertraege");
+    static int iMaxid = dbConfig::readValue(STARTINDEX).toInt() + getHighestRowId("Vertraege");
     QString kennung;
     do {
         QString maxid = QString::number(iMaxid).rightJustified(6, '0');
-        QString PI = "DK-" + dbConfig::getValue(GMBH_INITIALS).toString();
+        QString PI = "DK-" + dbConfig::readValue(GMBH_INITIALS).toString();
         kennung = PI + "-" + QString::number(QDate::currentDate().year()) + "-" + maxid;
         QVariant v = executeSingleValueSql(dkdbstructur["Vertraege"]["id"], "Kennung='" + kennung + "'");
         if( v.isValid())

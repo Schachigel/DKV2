@@ -12,30 +12,6 @@
 
 #define CURRENT_DB_VERSION 2.5
 
-enum projectConfiguration {
-   DB_VERSION =0,
-   DKV2_VERSION,
-   GMBH_ADDRESS1,
-   GMBH_ADDRESS2,
-   GMBH_STREET,
-   GMBH_PLZ,
-   GMBH_CITY,
-   GMBH_EMAIL,
-   GMBH_URL,
-   GMBH_INITIALS,
-   STARTINDEX,
-   MIN_PAYOUT,
-   MIN_AMOUNT,
-   MAX_INTEREST,
-   DBID,
-   GMBH_HRE,
-   GMBH_GEFUE1,
-   GMBH_GEFUE2,
-   GMBH_GEFUE3,
-   GMBH_DKV,
-   MAX_PC_INDEX
-};
-
 // db config info in 'meta' table
 // init = write only if not set
 void initMetaInfo( const QString& name, const QString& wert, QSqlDatabase db=QSqlDatabase::database());
@@ -75,39 +51,30 @@ private:
     static QString getUserData( const QString& name, const QString& defaultvalue ="");
     // QString getNumUserData(QString name);
 };
+enum projectConfiguration {
+   DB_VERSION =0,DKV2_VERSION,
+    GMBH_ADDRESS1, GMBH_ADDRESS2, GMBH_STREET, GMBH_PLZ, GMBH_CITY,
+   GMBH_EMAIL, GMBH_URL, GMBH_INITIALS,
+   STARTINDEX, MIN_PAYOUT, MIN_AMOUNT, MAX_INTEREST,
+   DBID,
+   GMBH_HRE, GMBH_GEFUE1, GMBH_GEFUE2, GMBH_GEFUE3, GMBH_DKV,
+   MAX_PC_INDEX
+};
+
 
 struct dbConfig
 {
-    dbConfig();
-    dbConfig(QSqlDatabase db);
-    void fromDb(QSqlDatabase db);
-    static void write (QSqlDatabase db);
-    static QVariant getValue(projectConfiguration pc);
-    static QVariant readValue(projectConfiguration pc, QSqlDatabase db);
+    dbConfig() =delete;
+    static QVariant readValue(projectConfiguration pc, QSqlDatabase db =QSqlDatabase::database());
+    static void     writeValue(projectConfiguration pc, QVariant value, QSqlDatabase db =QSqlDatabase::database());
 
-    static void writeValue(projectConfiguration pc, QVariant value, QSqlDatabase db);
-    static void setValue(projectConfiguration pc, QVariant value);
     static QString paramName(projectConfiguration pc) {
-        return knownParams[pc].first;
+        return defaultParams.value(pc).first;
     }
-    inline friend bool operator!=(const dbConfig& lhs, const dbConfig& rhs) {
-        return !(lhs==rhs);
-    }
-    inline friend bool operator==(const dbConfig &lhs, const dbConfig &rhs) {
-        for( int i =0; i < projectConfiguration::MAX_PC_INDEX; i++) {
-            projectConfiguration pc =(projectConfiguration)i;
-            if(lhs.getValue(pc) != rhs.getValue(pc)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-public:
-    void fromDb();
+    static void writeDefaults(QSqlDatabase db =QSqlDatabase::database());
 
 private:
-    static QMap<projectConfiguration,QPair<QString, QVariant>> knownParams;
+    static QMap<projectConfiguration,QPair<QString, QVariant>> defaultParams;
     static bool isValidIndex(projectConfiguration pc) {
         return (pc >= 0) && (pc < projectConfiguration::MAX_PC_INDEX);
     }

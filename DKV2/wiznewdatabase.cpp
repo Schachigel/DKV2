@@ -135,13 +135,13 @@ wpProjectAddress_Page::wpProjectAddress_Page(QWidget* p) : QWizardPage(p)
 
 void wpProjectAddress_Page::initializePage()
 {
-    setField(dbConfig::paramName(GMBH_ADDRESS1),  dbConfig::getValue(GMBH_ADDRESS1));
-    setField(dbConfig::paramName(GMBH_ADDRESS2),  dbConfig::getValue(GMBH_ADDRESS2));
-    setField(dbConfig::paramName(GMBH_STREET),    dbConfig::getValue(GMBH_STREET));
-    setField(dbConfig::paramName(GMBH_PLZ),       dbConfig::getValue(GMBH_PLZ));
-    setField(dbConfig::paramName(GMBH_CITY),      dbConfig::getValue(GMBH_CITY));
-    setField(dbConfig::paramName(GMBH_EMAIL),     dbConfig::getValue(GMBH_EMAIL));
-    setField(dbConfig::paramName(GMBH_URL),       dbConfig::getValue(GMBH_URL));
+    setField(dbConfig::paramName(GMBH_ADDRESS1),  dbConfig::readValue(GMBH_ADDRESS1));
+    setField(dbConfig::paramName(GMBH_ADDRESS2),  dbConfig::readValue(GMBH_ADDRESS2));
+    setField(dbConfig::paramName(GMBH_STREET),    dbConfig::readValue(GMBH_STREET));
+    setField(dbConfig::paramName(GMBH_PLZ),       dbConfig::readValue(GMBH_PLZ));
+    setField(dbConfig::paramName(GMBH_CITY),      dbConfig::readValue(GMBH_CITY));
+    setField(dbConfig::paramName(GMBH_EMAIL),     dbConfig::readValue(GMBH_EMAIL));
+    setField(dbConfig::paramName(GMBH_URL),       dbConfig::readValue(GMBH_URL));
 }
 
 wpProjectDetails_Page::wpProjectDetails_Page(QWidget* p) : QWizardPage(p)
@@ -183,11 +183,11 @@ wpProjectDetails_Page::wpProjectDetails_Page(QWidget* p) : QWizardPage(p)
 
 void wpProjectDetails_Page::initializePage()
 {
-    setField(dbConfig::paramName(GMBH_HRE),    dbConfig::getValue(GMBH_HRE));
-    setField(dbConfig::paramName(GMBH_GEFUE1), dbConfig::getValue(GMBH_GEFUE1));
-    setField(dbConfig::paramName(GMBH_GEFUE2), dbConfig::getValue(GMBH_GEFUE2));
-    setField(dbConfig::paramName(GMBH_GEFUE3), dbConfig::getValue(GMBH_GEFUE3));
-    setField(dbConfig::paramName(GMBH_DKV),    dbConfig::getValue(GMBH_DKV));
+    setField(dbConfig::paramName(GMBH_HRE),    dbConfig::readValue(GMBH_HRE));
+    setField(dbConfig::paramName(GMBH_GEFUE1), dbConfig::readValue(GMBH_GEFUE1));
+    setField(dbConfig::paramName(GMBH_GEFUE2), dbConfig::readValue(GMBH_GEFUE2));
+    setField(dbConfig::paramName(GMBH_GEFUE3), dbConfig::readValue(GMBH_GEFUE3));
+    setField(dbConfig::paramName(GMBH_DKV),    dbConfig::readValue(GMBH_DKV));
 }
 
 wpContractLableInfo_Page::wpContractLableInfo_Page(QWidget* p) : QWizardPage(p)
@@ -218,7 +218,7 @@ wpContractLableInfo_Page::wpContractLableInfo_Page(QWidget* p) : QWizardPage(p)
 void wpContractLableInfo_Page::initializePage()
 {
     QRandomGenerator rand = *QRandomGenerator::system();
-    setField(dbConfig::paramName(GMBH_INITIALS), dbConfig::getValue(GMBH_INITIALS));
+    setField(dbConfig::paramName(GMBH_INITIALS), dbConfig::readValue(GMBH_INITIALS));
     int startindex = rand.bounded(1000, 9999);
     setField(dbConfig::paramName(STARTINDEX), QString::number(startindex));
 }
@@ -269,9 +269,9 @@ wpContractMinValues_Page:: wpContractMinValues_Page(QWidget* p) : QWizardPage(p)
 
 void wpContractMinValues_Page::initializePage()
 {
-    setField(dbConfig::paramName(MIN_PAYOUT), dbConfig::getValue(MIN_PAYOUT));
-    setField(dbConfig::paramName(MIN_AMOUNT), dbConfig::getValue(MIN_AMOUNT));
-    setField(dbConfig::paramName(MAX_INTEREST), dbConfig::getValue(MAX_INTEREST));
+    setField(dbConfig::paramName(MIN_PAYOUT), dbConfig::readValue(MIN_PAYOUT));
+    setField(dbConfig::paramName(MIN_AMOUNT), dbConfig::readValue(MIN_AMOUNT));
+    setField(dbConfig::paramName(MAX_INTEREST), dbConfig::readValue(MAX_INTEREST));
 }
 
 wpNewDatabase_SummaryPage::wpNewDatabase_SummaryPage(QWidget* p) : QWizardPage(p)
@@ -339,7 +339,7 @@ void wizConfigureNewDatabaseWiz::updateDbConfig(QSqlDatabase db)
     dbConfig::writeValue(GMBH_URL ,      field(dbConfig::paramName(GMBH_URL)), db);
     dbConfig::writeValue(GMBH_INITIALS , field(dbConfig::paramName(GMBH_INITIALS)), db);
     dbConfig::writeValue(STARTINDEX ,    field(dbConfig::paramName(STARTINDEX)), db);
-    dbConfig::writeValue(DBID,  QVariant(dbConfig::getValue(GMBH_INITIALS).toString() +dbConfig::getValue(STARTINDEX).toString()), db);
+    dbConfig::writeValue(DBID,  QVariant(dbConfig::readValue(GMBH_INITIALS).toString() +dbConfig::readValue(STARTINDEX).toString()), db);
     dbConfig::writeValue(GMBH_HRE,     field(dbConfig::paramName(GMBH_HRE)), db);
     dbConfig::writeValue(GMBH_GEFUE1,  field(dbConfig::paramName(GMBH_GEFUE1)), db);
     dbConfig::writeValue(GMBH_GEFUE2,  field(dbConfig::paramName(GMBH_GEFUE2)), db);
@@ -369,21 +369,21 @@ wizConfigureProjectWiz::wizConfigureProjectWiz(QWidget* p) : QWizard(p) {
 }
 void wizConfigureProjectWiz::updateDbConfig()
 {   LOG_CALL;
-    dbConfig::setValue(GMBH_ADDRESS1,  field(dbConfig::paramName(GMBH_ADDRESS1)));
-    dbConfig::setValue(GMBH_ADDRESS2,  field(dbConfig::paramName(GMBH_ADDRESS2)));
-    dbConfig::setValue(GMBH_STREET,    field(dbConfig::paramName(GMBH_STREET  )));
-    dbConfig::setValue(GMBH_PLZ ,      field(dbConfig::paramName(GMBH_PLZ)));
-    dbConfig::setValue(GMBH_CITY ,     field(dbConfig::paramName(GMBH_CITY)));
-    dbConfig::setValue(GMBH_EMAIL ,    field(dbConfig::paramName(GMBH_EMAIL)));
-    dbConfig::setValue(GMBH_URL ,      field(dbConfig::paramName(GMBH_URL)));
+    dbConfig::writeValue(GMBH_ADDRESS1,  field(dbConfig::paramName(GMBH_ADDRESS1)));
+    dbConfig::writeValue(GMBH_ADDRESS2,  field(dbConfig::paramName(GMBH_ADDRESS2)));
+    dbConfig::writeValue(GMBH_STREET,    field(dbConfig::paramName(GMBH_STREET  )));
+    dbConfig::writeValue(GMBH_PLZ ,      field(dbConfig::paramName(GMBH_PLZ)));
+    dbConfig::writeValue(GMBH_CITY ,     field(dbConfig::paramName(GMBH_CITY)));
+    dbConfig::writeValue(GMBH_EMAIL ,    field(dbConfig::paramName(GMBH_EMAIL)));
+    dbConfig::writeValue(GMBH_URL ,      field(dbConfig::paramName(GMBH_URL)));
 
-    dbConfig::setValue(GMBH_HRE,     field(dbConfig::paramName(GMBH_HRE)));
-    dbConfig::setValue(GMBH_GEFUE1,  field(dbConfig::paramName(GMBH_GEFUE1)));
-    dbConfig::setValue(GMBH_GEFUE2,  field(dbConfig::paramName(GMBH_GEFUE2)));
-    dbConfig::setValue(GMBH_GEFUE3,  field(dbConfig::paramName(GMBH_GEFUE3)));
-    dbConfig::setValue(GMBH_DKV,     field(dbConfig::paramName(GMBH_DKV)));
-    dbConfig::setValue(MIN_PAYOUT,   field(dbConfig::paramName(MIN_PAYOUT)));
-    dbConfig::setValue(MIN_AMOUNT,   field(dbConfig::paramName(MIN_AMOUNT)));
-    dbConfig::setValue(MAX_INTEREST, field(dbConfig::paramName(MAX_INTEREST)));
+    dbConfig::writeValue(GMBH_HRE,     field(dbConfig::paramName(GMBH_HRE)));
+    dbConfig::writeValue(GMBH_GEFUE1,  field(dbConfig::paramName(GMBH_GEFUE1)));
+    dbConfig::writeValue(GMBH_GEFUE2,  field(dbConfig::paramName(GMBH_GEFUE2)));
+    dbConfig::writeValue(GMBH_GEFUE3,  field(dbConfig::paramName(GMBH_GEFUE3)));
+    dbConfig::writeValue(GMBH_DKV,     field(dbConfig::paramName(GMBH_DKV)));
+    dbConfig::writeValue(MIN_PAYOUT,   field(dbConfig::paramName(MIN_PAYOUT)));
+    dbConfig::writeValue(MIN_AMOUNT,   field(dbConfig::paramName(MIN_AMOUNT)));
+    dbConfig::writeValue(MAX_INTEREST, field(dbConfig::paramName(MAX_INTEREST)));
 }
 

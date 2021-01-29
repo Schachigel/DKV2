@@ -5,6 +5,7 @@
 #include <qdebug.h>
 #include <QTest>
 
+#include "../DKV2/appconfig.h"
 #include "../DKV2/dkdbhelper.h"
 #include "testhelper.h"
 

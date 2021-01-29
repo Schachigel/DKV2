@@ -38,8 +38,8 @@ bool wpChangeContract_IntroPage::validatePage()
 {
     wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
 
-    double minContract =dbConfig::getValue(MIN_AMOUNT).toDouble();
-    double minPayout   =dbConfig::getValue(MIN_PAYOUT).toDouble();
+    double minContract =dbConfig::readValue(MIN_AMOUNT).toDouble();
+    double minPayout   =dbConfig::readValue(MIN_PAYOUT).toDouble();
     double minAmountToMakeA_Payout = minContract + minPayout +1;
     QLocale l;
     if( ! field(qsl("deposit_notPayment")).toBool() && wiz->currentAmount < minAmountToMakeA_Payout) {
@@ -66,8 +66,8 @@ wpChangeContract_AmountPage::wpChangeContract_AmountPage(QWidget* parent) : QWiz
 void wpChangeContract_AmountPage::initializePage()
 {
     bool deposit = field(qsl("deposit_notPayment")).toBool();
-    double minPayout =dbConfig::getValue(MIN_PAYOUT).toDouble();
-    double minAmount =dbConfig::getValue(MIN_AMOUNT).toDouble();
+    double minPayout =dbConfig::readValue(MIN_PAYOUT).toDouble();
+    double minAmount =dbConfig::readValue(MIN_AMOUNT).toDouble();
     QLocale l;
     if( deposit) {
         setTitle(qsl("Einzahlungsbetrag"));
