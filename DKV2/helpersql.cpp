@@ -325,19 +325,13 @@ bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlReco
 }
 bool executeSql_wNoRecords(QString sql, QVariant v)
 {
-    QSqlQuery q; q.setForwardOnly(true);
-    q.prepare(sql);
-    if( v.isValid()) q.bindValue(0, v);
-    if( q.exec()) {
-        qInfo() << "Successfully executed query  w/o Records\n" << q.lastQuery();
-        return true;
-    }
-    qCritical() << "failed to execute query w/o Records. Error: " << q.lastError() << Qt::endl << q.lastQuery();
-    return false;
+    if( v.isValid())
+        return executeSql_wNoRecords(sql, QVector<QVariant>{v});
+    else
+        return executeSql_wNoRecords(sql, QVector<QVariant>());
 }
 bool executeSql_wNoRecords(QString sql, QVector<QVariant> v)
-{//   LOG_CALL;
-    if( v.isEmpty()) return executeSql_wNoRecords(sql);
+{   LOG_CALL;
     QSqlQuery q; q.setForwardOnly(true);
     q.prepare(sql);
     for( int i =0; i< v.count(); i++) {
@@ -351,9 +345,12 @@ bool executeSql_wNoRecords(QString sql, QVector<QVariant> v)
     }
     if( q.exec()) {
         qInfo() << "executeSql w V Successfully executed query \n" << q.lastQuery();
+        qInfo() << "Number of Rows affected: " << q.numRowsAffected();
+        qInfo() << Qt::endl;
         return true;
     }
-    qDebug() << "executeSql w V failed to execute query. Error: " << q.lastError() << Qt::endl << q.lastQuery();
+    qDebug() << "executeSql w V failed to execute query. Error: " << q.lastQuery() << Qt::endl << q.lastError() ;
+    qInfo() << Qt::endl;
     return false;
 }
 

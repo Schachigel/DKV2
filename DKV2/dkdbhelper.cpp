@@ -512,62 +512,8 @@ bool open_databaseForApplication( QString newDbFile)
 }
 
 // db copy (w & w/o de-personalisation)
-bool copy_TableContent(QString table, QSqlDatabase targetDB)
-{   LOG_CALL_W(table);
-    bool success = true;
-    QSqlQuery q(QSqlDatabase::database()); // default database connection -> active database, the data base to be copied
-    q.exec("SELECT * FROM " + table);
-    while( q.next()) {
-        QSqlRecord rec = q.record();
-        qDebug() << "dePe Copy: working on Record " << rec;
-        TableDataInserter tdi( dkdbstructur[table]);
-        // set all values
-        for( int i =0; i <rec.count(); i++) {
-            QSqlField f =rec.field(i);
-            if( f.requiredStatus() == QSqlField::Required) {
-                // it is "NOT NULL"
-                tdi.setValue(f.name(), f.value(), TableDataInserter::treatNull::notAllowNullValues);
-            } else {
-                // it could be "NULL"
-                tdi.setValue(f.name(), f.value(), TableDataInserter::treatNull::allowNullValues);
-            }
-        }
-        if(tdi.InsertData_noAuto(targetDB) == -1) {
-            qCritical() << "Error inserting Data into Table copy " << table << ": " << q.record();
-            success = false;
-            break;
-        }
-    }
-    return success;
-}
-bool copy_mangledCreditors(QSqlDatabase targetDB)
+bool createCompatibleDatabaseFile(QString targetfn)
 {
-    bool success = true;
-    int recCount = 0;
-    QSqlQuery q(QSqlDatabase::database()); // default database connection -> active database
-    q.exec("SELECT * FROM Kreditoren");
-    while( q.next()) {
-        recCount++;
-        QSqlRecord rec = q.record();
-        qDebug() << "dePe Copy: working on Record " << rec;
-        TableDataInserter tdi(dkdbstructur["Kreditoren"]);
-        QString vn {qsl("Vorname")}, nn {qsl("Nachname")};
-        tdi.setValue(qsl("Vorname"),  QVariant(vn + QString::number(recCount)));
-        tdi.setValue(qsl("Nachname"), QVariant(nn + QString::number(recCount)));
-        tdi.setValue("Strasse", QString("Strasse"));
-        tdi.setValue("Plz", QString("D-xxxxx"));
-        tdi.setValue("Stadt", QString("Stadt"));
-
-        if( tdi.InsertData(targetDB) == -1) {
-            qDebug() << "Error inserting Data into deperso.Copy Table" << q.lastError() << Qt::endl << q.record();
-            success = false;
-            break;
-        }
-    }
-    return success;
-}
-bool create_DB_copy(QString targetfn, bool deper)
-{   LOG_CALL_W(targetfn);
     if( QFile::exists(targetfn)) {
         backupFile(targetfn);
         QFile::remove(targetfn);
@@ -576,30 +522,89 @@ bool create_DB_copy(QString targetfn, bool deper)
             return false;
         }
     }
-
     QString conName(qsl("backup"));
     dbCloser closer(conName);
-    bool result = true;
     QSqlDatabase backupDB = QSqlDatabase::addDatabase("QSQLITE", conName);
     backupDB.setDatabaseName(targetfn);
     if( !backupDB.open()) {
         qDebug() << "faild to open backup database";
         return false;
     }
-    create_DK_TablesAndContent(backupDB);
+    return dkdbstructur.createDb(backupDB);
+}
+
+bool copy_TableContent(QString table)
+{   LOG_CALL_W(table);
+    QString sql(qsl("INSERT OR REPLACE INTO targetDb.%1 SELECT * FROM %1"));
+    return executeSql_wNoRecords(sql.arg(table));
+}
+
+bool replace_TableContent(QString table) {
+    QSqlQuery deleteDefaultValues(qsl("DELETE FROM targetDb.") + table);
+    return copy_TableContent(table);
+}
+
+bool copy_mangledCreditors()
+{
+    bool success = true;
+    int recCount = 0;
+    QSqlQuery q; // default database connection -> active database
+    if( ! q.exec("SELECT * FROM Kreditoren")) {
+        qInfo() << "no data returned from creditor table";
+        return false;
+    }
+    TableDataInserter tdi(dkdbstructur["Kreditoren"]);
+    tdi.overrideTablename(qsl("targetDb.Kreditoren"));
+    while( q.next()) {
+        recCount++;
+        QSqlRecord rec = q.record();
+        qDebug() << "de-Pers. Copy: working on Record #" << rec;
+        QString vn {qsl("Vorname")}, nn {qsl("Nachname")};
+        tdi.setValue(qsl("Vorname"),  QVariant(vn + QString::number(recCount)));
+        tdi.setValue(qsl("Nachname"), QVariant(nn + QString::number(recCount)));
+        tdi.setValue("Strasse", QString("Strasse"));
+        tdi.setValue("Plz", QString("D-xxxxx"));
+        tdi.setValue("Stadt", QString("Stadt"));
+
+        if( tdi.InsertData() == -1) {
+            qDebug() << "Error inserting Data into deperso.Copy Table" << q.lastError() << Qt::endl << q.record();
+            success = false;
+            break;
+        }
+    }
+    return success;
+}
+
+bool create_DB_copy(QString targetfn, bool deper)
+{   LOG_CALL_W(targetfn);
+    stdDbTransaction trans;
+    if( ! createCompatibleDatabaseFile(targetfn))
+        return false;
+    // Attach the new file to the current connection
+    if( !executeSql_wNoRecords(qsl("ATTACH DATABASE '") + targetfn + qsl("' AS 'targetDb'")))
+        return false;
 
     QVector<dbtable> tables = dkdbstructur.getTables();
     for( auto& table : qAsConst(tables)) {
-        if( deper && table.Name() == qsl("Kreditoren"))
-            result = result && copy_mangledCreditors(backupDB);
+        if( deper && table.Name() == qsl("Kreditoren")) {
+            if( ! copy_mangledCreditors())
+                return false;
+        }
         else if (table.Name() == qsl("BriefElemente")) {
-            QSqlQuery deleteDefaultValues(qsl("DELETE FROM BriefElemente"), backupDB);
-            result = result && copy_TableContent(table.Name(), backupDB);
+            if( ! replace_TableContent(table.Name()))
+                return false;
         }
         else
-            result = result && copy_TableContent(table.Name(), backupDB);
+            if( ! copy_TableContent(table.Name()))
+                return false;
     }
-    return result;
+    // copy the values from sqlite_sequence, so that autoinc works the same in both databases
+    if( ! replace_TableContent(qsl("sqlite_sequence")))
+        return false;
+    // force views creation on next startup
+    executeSql_wNoRecords(qsl("DELETE FROM targetDb.meta WHERE Name='dkv2.exe.Version'"));
+    trans.commit();
+    return true;
 }
 
 // general stuff

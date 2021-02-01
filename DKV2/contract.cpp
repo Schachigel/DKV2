@@ -511,10 +511,11 @@ bool contract::archive()
     // secured by the transaction of finalize()
 
     // move all bookings and the contract to the archive tables
-    if( executeSql_wNoRecords(qsl("INSERT INTO exVertraege SELECT * FROM Vertraege WHERE id=?"), id()))
-     if( executeSql_wNoRecords(qsl("INSERT INTO exBuchungen SELECT * FROM Buchungen WHERE VertragsId=?"), id()))
-      if( executeSql_wNoRecords(qsl("DELETE FROM Buchungen WHERE VertragsId=?"), id()))
-       if( executeSql_wNoRecords(qsl("DELETE FROM Vertraege WHERE id=?"), id()))
+    qlonglong ContractToDelete =id();
+    if( executeSql_wNoRecords(qsl("INSERT INTO exVertraege SELECT * FROM Vertraege WHERE id=?"), ContractToDelete))
+     if( executeSql_wNoRecords(qsl("INSERT INTO exBuchungen SELECT * FROM Buchungen WHERE VertragsId=?"), ContractToDelete))
+      if( executeSql_wNoRecords(qsl("DELETE FROM Buchungen WHERE VertragsId=?"), ContractToDelete))
+       if( executeSql_wNoRecords(qsl("DELETE FROM Vertraege WHERE id=?"), ContractToDelete))
           {
              qInfo() << "contract was moved to the contract archive";
              return true;

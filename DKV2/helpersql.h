@@ -10,9 +10,8 @@
 #include "dbfield.h"
 #include "dbstructure.h"
 
-class dbCloser
+struct dbCloser
 {   // RAII class for db connections
-public:
     dbCloser(QString c) : conName (c){}
     ~dbCloser(){
         if( QSqlDatabase::database(conName).isValid()){
@@ -24,6 +23,23 @@ public:
         }
     }
     QString conName;
+};
+
+struct stdDbTransaction
+{   // RAII class for db connections
+    stdDbTransaction() {
+        QSqlDatabase::database().transaction();
+    };
+    void commit() {
+        QSqlDatabase::database().commit();
+        comitted =true;
+    }
+    ~stdDbTransaction() {
+        if( !comitted)
+            QSqlDatabase::database().rollback();
+    }
+private:
+    bool comitted =false;
 };
 
 // bool vTypesShareDbType( QVariant::Type t1, QVariant::Type t2);
