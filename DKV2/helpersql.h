@@ -25,22 +25,31 @@ struct dbCloser
     QString conName;
 };
 
-struct stdDbTransaction
+struct autoRollbackTransaction
 {   // RAII class for db connections
-    stdDbTransaction() {
+    autoRollbackTransaction() {
         QSqlDatabase::database().transaction();
     };
     void commit() {
         QSqlDatabase::database().commit();
         comitted =true;
     }
-    ~stdDbTransaction() {
-        if( !comitted)
+    ~autoRollbackTransaction() {
+        if( ! comitted)
             QSqlDatabase::database().rollback();
     }
 private:
     bool comitted =false;
 };
+
+struct autoDetachDb
+{   // RAII class for db file attachment
+    bool attachDb(QString fn, QString a);
+    ~autoDetachDb();
+private:
+    QString alias;
+};
+
 
 // bool vTypesShareDbType( QVariant::Type t1, QVariant::Type t2);
 QString DbInsertableString(QVariant v);

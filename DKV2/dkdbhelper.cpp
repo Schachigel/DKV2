@@ -560,13 +560,14 @@ bool copy_mangledCreditors()
         QSqlRecord rec = q.record();
         qDebug() << "de-Pers. Copy: working on Record #" << rec;
         QString vn {qsl("Vorname")}, nn {qsl("Nachname")};
+        tdi.setValue(qsl("id"), rec.value(qsl("id")));
         tdi.setValue(qsl("Vorname"),  QVariant(vn + QString::number(recCount)));
         tdi.setValue(qsl("Nachname"), QVariant(nn + QString::number(recCount)));
         tdi.setValue("Strasse", QString("Strasse"));
         tdi.setValue("Plz", QString("D-xxxxx"));
         tdi.setValue("Stadt", QString("Stadt"));
 
-        if( tdi.InsertData() == -1) {
+        if( tdi.InsertData_noAuto() == -1) {
             qDebug() << "Error inserting Data into deperso.Copy Table" << q.lastError() << Qt::endl << q.record();
             success = false;
             break;
@@ -577,11 +578,13 @@ bool copy_mangledCreditors()
 
 bool create_DB_copy(QString targetfn, bool deper)
 {   LOG_CALL_W(targetfn);
-    stdDbTransaction trans;
+    autoRollbackTransaction trans;
+    autoDetachDb ad;
     if( ! createCompatibleDatabaseFile(targetfn))
         return false;
     // Attach the new file to the current connection
-    if( !executeSql_wNoRecords(qsl("ATTACH DATABASE '") + targetfn + qsl("' AS 'targetDb'")))
+    QString alias{qsl("targetDb")};
+    if( ! ad.attachDb(targetfn, alias))
         return false;
 
     QVector<dbtable> tables = dkdbstructur.getTables();

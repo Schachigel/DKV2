@@ -1,6 +1,17 @@
 #include "helper.h"
 #include "helpersql.h"
 
+bool autoDetachDb::attachDb(QString fn, QString a) {
+    alias =a;
+    QString sql {qsl("ATTACH DATABASE '%1' AS '%2'")};
+    return executeSql_wNoRecords(sql.arg(fn).arg(alias));
+}
+autoDetachDb::~autoDetachDb() {
+    QString sql {qsl("DETACH DATABASE '%1'")};
+    executeSql_wNoRecords(sql.arg(alias));
+}
+
+
 QString DbInsertableString(QVariant v)
 {
     if( v.isNull() || !v.isValid())

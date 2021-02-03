@@ -24,6 +24,7 @@ struct TableDataInserter
     int InsertData_noAuto(QSqlDatabase db = QSqlDatabase::database()) const;
     int UpdateData() const;
     void reset() {tablename =QString(); record =QSqlRecord();}
+    void overrideTablename(QString tn) {tablename =tn;};
 private:
     // data
     QString tablename;
