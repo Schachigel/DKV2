@@ -14,7 +14,7 @@ void test_creditor::initTestCase()
 void test_creditor::init()
 {   LOG_CALL_W("test");
     initTestDb();
-    create_DK_TablesAndContent();
+    fill_dbDefaultContent();
 }
 void test_creditor::cleanup()
 {   LOG_CALL;

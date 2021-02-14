@@ -5,6 +5,7 @@
 
 #include <vector>
 #include "../DKV2/helper.h"
+#include "test_dkdbcopy.h"
 #include "test_properties.h"
 #include "test_lettertemplate.h"
 #include "test_csv.h"
@@ -40,6 +41,7 @@ int main(int argc, char *argv[])
     };
 
     std::vector<QObject*> tests;
+    tests.push_back(new test_dkdbcopy);
     tests.push_back(new test_appConfig);
     tests.push_back(new test_booking);
     tests.push_back(new test_contract);

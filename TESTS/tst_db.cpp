@@ -198,6 +198,6 @@ void test_db::test_deleteRecord_wDep()
 void test_db::newDbIsValid()
 {
     dbgTimer t;
-    QVERIFY(create_DK_TablesAndContent());
+    QVERIFY(fill_dbDefaultContent());
 }
 

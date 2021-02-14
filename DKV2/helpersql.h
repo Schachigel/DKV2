@@ -17,7 +17,12 @@ struct dbCloser
         if( QSqlDatabase::database(conName).isValid()){
             QList<QString> cl = QSqlDatabase::connectionNames();
             for( auto con : cl) {
-                if( con == conName) QSqlDatabase::database(con).close();
+                if( con == conName) {
+                    QSqlDatabase::database(con).close();
+                    QSqlDatabase::removeDatabase(con);
+                    qInfo() << "closed db connection " << con;
+                }
+                else qInfo() << "unclosed db connection: " << con;
             }
             QSqlDatabase::database(conName).removeDatabase(conName);
         }
@@ -27,27 +32,34 @@ struct dbCloser
 
 struct autoRollbackTransaction
 {   // RAII class for db connections
-    autoRollbackTransaction() {
-        QSqlDatabase::database().transaction();
+    autoRollbackTransaction(QString con =QString()) : connection((con)) {
+        QSqlDatabase::database(con).transaction();
     };
     void commit() {
-        QSqlDatabase::database().commit();
+        QSqlDatabase::database(connection).commit();
         comitted =true;
     }
     ~autoRollbackTransaction() {
         if( ! comitted)
-            QSqlDatabase::database().rollback();
+            QSqlDatabase::database(connection).rollback();
     }
 private:
+    QString connection;
     bool comitted =false;
 };
 
 struct autoDetachDb
 {   // RAII class for db file attachment
-    bool attachDb(QString fn, QString a);
+    autoDetachDb(QString a, QString conName)
+        : alias(a), conname(conName)
+    {
+
+    }
+    bool attachDb(QString filename);
     ~autoDetachDb();
-private:
+
     QString alias;
+    QString conname;
 };
 
 
@@ -56,7 +68,7 @@ QString DbInsertableString(QVariant v);
 QString dbCreateTable_type(QVariant::Type t);
 QString dbAffinityType(QVariant::Type t);
 
-int rowCount(const QString& table);
+int rowCount(const QString& table, QSqlDatabase db =QSqlDatabase::database());
 
 bool tableExists(const QString& tablename, QSqlDatabase db = QSqlDatabase::database());
 bool verifyTable( const dbtable& table, QSqlDatabase db);
@@ -75,8 +87,8 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
 QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString());
 bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result);
 bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlRecord>& result);
-bool executeSql_wNoRecords(QString sql, QVariant v =QVariant());
-bool executeSql_wNoRecords(QString sql, QVector<QVariant> v);
+bool executeSql_wNoRecords(QString sql, QVariant v, QSqlDatabase db = QSqlDatabase::database());
+bool executeSql_wNoRecords(QString sql, QVector<QVariant> v =QVector<QVariant>(), QSqlDatabase db = QSqlDatabase::database());
 
 int getHighestRowId(const QString& tablename);
 

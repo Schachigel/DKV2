@@ -1,4 +1,5 @@
 #include <QRandomGenerator>
+//#include <QTemporaryFile>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -12,6 +13,7 @@
 #include "contract.h"
 #include "booking.h"
 #include "letterTemplate.h"
+#include "dkdbcopy.h"
 #include "dbstructure.h"
 
 const QString sqlContractView {
@@ -184,7 +186,7 @@ void init_DKDBStruct()
     dkdbstructur.appendTable(booking::getTableDef_deletedBookings());
 
     dbtable meta("Meta");
-    meta.append(dbfield("Name", QVariant::String).setNotNull().setUnique());
+    meta.append(dbfield("Name", QVariant::String).setPrimaryKey());
     meta.append(dbfield("Wert", QVariant::String).setNotNull());
     dkdbstructur.appendTable(meta);
 
@@ -193,119 +195,6 @@ void init_DKDBStruct()
     dkdbstructur.appendTable(letterTemplate::getTableDef_letterElements());
 
     done = true;
-}
-
-// database creation
-bool create_DK_databaseFile(const QString& filename) /*in the default connection*/
-{   LOG_CALL_W(qsl("filename: ") + filename);
-    Q_ASSERT(!filename.isEmpty());
-//    dbgTimer timer( QString(__func__) + QString(" (") + filename + QString(")"));
-    if( QFile(filename).exists()) {
-        backupFile(filename, "db-bak");
-        QFile(filename).remove();
-        if( QFile(filename).exists()) {
-            qCritical() << "File to be replaced can not be deleted";
-            return false;
-        }
-    }
-
-    dbCloser closer{qsl("conCreateDb")};
-    QSqlDatabase db = QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
-    db.setDatabaseName(filename);
-
-    if( !db.open()) {
-        qCritical() << "DkDatenbankAnlegen failed in db.open";
-        return false;
-    }
-    return create_DK_TablesAndContent(db);
-}
-// database validation
-bool has_allTablesAndFields(QSqlDatabase db)
-{   LOG_CALL;
-    for( auto& table : dkdbstructur.getTables()) {
-        if( !verifyTable(table, db))
-            return false;
-    }
-    qInfo() << db.databaseName() << " has all tables expected";
-    return true;
-}
-
-bool check_db_version(QSqlDatabase db =QSqlDatabase::database())
-{   LOG_CALL;
-    double d =dbConfig::readValue(DB_VERSION, db).toDouble();
-    if( d >= CURRENT_DB_VERSION)
-        return true;
-    qCritical() << "db version check failed: found version " << d << " needed version " << CURRENT_DB_VERSION;
-    return false;
-}
-
-bool isValidDatabase(QSqlDatabase db =QSqlDatabase::database())
-{
-    LOG_CALL;
-    {QSqlQuery enableRefInt(db);
-    enableRefInt.exec("PRAGMA foreign_keys = ON");}
-    if( !has_allTablesAndFields(db))
-        return false;
-    if( !check_db_version(db)) {
-        qCritical() << "database version check failed";
-        return false;
-    }
-    qInfo() << db.databaseName() << " is a valid dk database";
-    return true;
-}
-
-bool isValidDatabase(const QString& filename)
-{
-    LOG_CALL_W(filename);
-    QString msg;
-    QString con(qsl("validate"));
-    dbCloser closer(con);
-    if( filename == "") msg = "no filename";
-    else if( !QFile::exists(filename)) msg = "file not found";
-    else {
-        {
-        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", con);
-        db.setDatabaseName(filename);
-        if( db.open()) {
-            if( !isValidDatabase(db))
-                msg = "database was found to be NOT valid";
-        } else
-            msg = "open db failed";
-        } // End of db scope
-    }
-    if( msg.isEmpty())
-        return true;
-    qCritical() << msg;
-    return false;
-}
-
-
-// initial database tables and content
-void insert_DbProperties(QSqlDatabase db = QSqlDatabase::database())
-{
-    LOG_CALL;
-    dbConfig::writeDefaults(db);
-}
-bool create_DK_TablesAndContent(QSqlDatabase db)
-{
-    LOG_CALL;
-    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
-    bool ret = false;
-    db.transaction();
-    do {
-        if (!dkdbstructur.createDb(db)) break;
-        if (!insert_views(db)) break;
-        insert_DbProperties(db);
-        if (!letterTemplate::insert_letterTypes(db)) break;
-        if (!letterTemplate::insert_elementTypes(db)) break;
-        if (!letterTemplate::insert_letterElements(db)) break;
-        ret = true;
-    } while (false);
-    if (ret)
-        db.commit();
-    else
-        db.rollback();
-    return ret ? isValidDatabase(db) : false;
 }
 
 // create db views
@@ -332,6 +221,7 @@ bool createView(QString name, QString sql, QSqlDatabase db = QSqlDatabase::datab
     qCritical() << "Faild to create view " << name << Qt::endl << q.lastQuery() << Qt::endl << q.lastError() << Qt::endl << sql;
     return false;
 }
+
 bool createViews( QVector<dbViewDev>& views, QSqlDatabase db)
 {
     for( auto view: views) {
@@ -454,6 +344,165 @@ bool insert_views( QSqlDatabase db)
     views.append({qsl("vBuchungen"), sqlBookingsOverview});
 
     return createViews(views, db);
+}// initial database tables and content
+
+void insert_DbProperties(QSqlDatabase db = QSqlDatabase::database())
+{
+    LOG_CALL;
+    dbConfig::writeDefaults(db);
+}
+
+bool fill_dbDefaultContent(QSqlDatabase db)
+{
+    LOG_CALL;
+    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
+    bool ret = false;
+    db.transaction();
+    do {
+        if (!insert_views(db)) break;
+        insert_DbProperties(db);
+        if (!letterTemplate::insert_letterTypes(db)) break;
+        if (!letterTemplate::insert_elementTypes(db)) break;
+        if (!letterTemplate::insert_letterElements(db)) break;
+        ret = true;
+    } while (false);
+    if (ret)
+        db.commit();
+    else
+        db.rollback();
+    return ret;
+}
+// db creation for newDb and copy (w & w/o de-personalisation)
+bool createFileWithDkDatabaseStructure (QString targetfn)
+{   LOG_CALL_W(targetfn);
+    if( ! moveToBackup(targetfn)) {
+        return false;
+    }
+    dbCloser closer(qsl("createDbFile"));
+
+    QSqlDatabase newDb = QSqlDatabase::addDatabase("QSQLITE", closer.conName);
+    newDb.setDatabaseName(targetfn);
+    if( !newDb.open()) {
+        qDebug() << "faild to open new database";
+        return false;
+    }
+    bool ret =dkdbstructur.createDb(newDb);
+    return ret;
+}
+
+// database creation
+bool createNewEmpty_DKDatabaseFile(const QString& filename) /*in the default connection*/
+{   LOG_CALL_W(qsl("filename: ") + filename);
+    Q_ASSERT(!filename.isEmpty());
+    dbgTimer timer( qsl("Db Creation Time"));
+
+    // create file an schema
+    if( ! createFileWithDkDatabaseStructure (filename)) {
+        return false;
+    }
+    // create content
+    dbCloser closer{qsl("conCreateDb")};
+    QSqlDatabase db = QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
+    db.setDatabaseName(filename);
+
+    if( !db.open()) {
+        qCritical() << "DkDatenbankAnlegen failed in db.open";
+        return false;
+    }
+    return fill_dbDefaultContent(db);
+}
+// database validation
+bool has_allTablesAndFields(QSqlDatabase db)
+{   LOG_CALL;
+    for( auto& table : dkdbstructur.getTables()) {
+        if( !verifyTable(table, db))
+            return false;
+    }
+    qInfo() << db.databaseName() << " has all tables expected";
+    return true;
+}
+
+bool validDbSchema(QSqlDatabase db =QSqlDatabase::database())
+{
+    LOG_CALL;
+    {QSqlQuery enableRefInt(db);
+    enableRefInt.exec("PRAGMA foreign_keys = ON");}
+    if( !has_allTablesAndFields(db))
+        return false;
+    qInfo() << db.databaseName() << " is a valid dk database";
+    return true;
+}
+
+bool convertToNewSchemaIfNeeded(QString origDbFile)
+{   LOG_CALL;
+
+    switch(check_db_version(origDbFile)){
+    case lowVersion:
+    {
+        qInfo() << "lower version -> converting";
+        QString tempFileName =createPreConversionCopy(origDbFile);
+        return create_DB_copy(origDbFile, false, tempFileName);
+        break;
+    }
+    case sameVersion:
+        return validDbSchema(origDbFile);
+        break;
+    case noVersion:
+    case higherVersion:
+    default:
+        return false;
+        break;
+    }
+//    return false;
+}
+
+version_check_result check_db_version(QString file)
+{
+    LOG_CALL_W(file);
+    dbCloser closer(qsl("db_version_check"));
+    QSqlDatabase db =QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
+    db.setDatabaseName(file);
+    if( ! db.open()) {
+        qCritical() << "could not open db " << file << " for version check ";
+        return noVersion;
+    } else {
+        return check_db_version(db);
+    }
+}
+
+version_check_result check_db_version(QSqlDatabase db)
+{   LOG_CALL;
+    QVariant vversion =dbConfig::readVersion(db);
+    if( ! (vversion.isValid() && vversion.canConvert(QMetaType::Double)))
+        return noVersion; // big problem: no db
+    double d =vversion.toDouble();
+    if( d  < CURRENT_DB_VERSION)
+        return lowVersion; // the database is old -> conversion?
+    if( d == CURRENT_DB_VERSION)
+        return sameVersion; // all good
+    if( d >  CURRENT_DB_VERSION)
+        return higherVersion; // the database is too young -> don't touch!
+    Q_ASSERT(!"one should never come here");
+    return noVersion;
+}
+
+bool validDbSchema(const QString& filename)
+{
+    LOG_CALL_W(filename);
+    QString msg;
+    if( filename == "") msg = "no filename";
+    else if( !QFile::exists(filename)) msg = "file not found";
+    else {
+        if( convertToNewSchemaIfNeeded(filename)) {
+
+        } else {
+            qCritical() << "conversion failed";
+        }
+    }
+    if( msg.isEmpty())
+        return true;
+    qCritical() << msg;
+    return false;
 }
 
 bool updateViews(QSqlDatabase db =QSqlDatabase::database())
@@ -511,44 +560,25 @@ bool open_databaseForApplication( QString newDbFile)
     return true;
 }
 
-// db copy (w & w/o de-personalisation)
-bool createCompatibleDatabaseFile(QString targetfn)
-{
-    if( QFile::exists(targetfn)) {
-        backupFile(targetfn);
-        QFile::remove(targetfn);
-        if( QFile::exists(targetfn)) {
-            qCritical() << "db_copy: could not remove target file";
-            return false;
-        }
-    }
-    QString conName(qsl("backup"));
-    dbCloser closer(conName);
-    QSqlDatabase backupDB = QSqlDatabase::addDatabase("QSQLITE", conName);
-    backupDB.setDatabaseName(targetfn);
-    if( !backupDB.open()) {
-        qDebug() << "faild to open backup database";
-        return false;
-    }
-    return dkdbstructur.createDb(backupDB);
-}
 
-bool copy_TableContent(QString table)
+bool copy_TableContent(QString table, QSqlDatabase db =QSqlDatabase::database())
 {   LOG_CALL_W(table);
+//    QSqlRecord record = db.record(table);
     QString sql(qsl("INSERT OR REPLACE INTO targetDb.%1 SELECT * FROM %1"));
-    return executeSql_wNoRecords(sql.arg(table));
+    return executeSql_wNoRecords(sql.arg(table), QVector<QVariant>(), db);
 }
 
-bool replace_TableContent(QString table) {
+bool replace_TableContent(QString table, QSqlDatabase db =QSqlDatabase::database())
+{   LOG_CALL_W(table);
     QSqlQuery deleteDefaultValues(qsl("DELETE FROM targetDb.") + table);
-    return copy_TableContent(table);
+    return copy_TableContent(table, db);
 }
 
-bool copy_mangledCreditors()
-{
+bool copy_mangledCreditors(QSqlDatabase db =QSqlDatabase::database())
+{   LOG_CALL;
     bool success = true;
     int recCount = 0;
-    QSqlQuery q; // default database connection -> active database
+    QSqlQuery q(db); // default database connection -> active database
     if( ! q.exec("SELECT * FROM Kreditoren")) {
         qInfo() << "no data returned from creditor table";
         return false;
@@ -576,36 +606,51 @@ bool copy_mangledCreditors()
     return success;
 }
 
-bool create_DB_copy(QString targetfn, bool deper)
+bool create_DB_copy(QString targetfn, bool deper, QString source)
+{
+//    QString con {};
+    dbCloser closer(qsl("copy_db"));
+    QSqlDatabase db =QSqlDatabase::addDatabase("QSQLITE", closer.conName);
+    db.setDatabaseName(source);
+    if( ! db.open()) {
+        qCritical() << "create_DB_copy could not open " << source;
+        return false;
+    } else {
+        qInfo() << "opened " << source << " as db to copy";
+    }
+    return create_DB_copy(targetfn, deper, db);
+}
+
+bool create_DB_copy(QString targetfn, bool deper, QSqlDatabase dbToBeCopied)
 {   LOG_CALL_W(targetfn);
-    autoRollbackTransaction trans;
-    autoDetachDb ad;
-    if( ! createCompatibleDatabaseFile(targetfn))
+    QString alias{qsl("targetDb")};
+    autoRollbackTransaction trans( dbToBeCopied.connectionName());
+    autoDetachDb ad( alias, dbToBeCopied.connectionName());
+    if( ! createFileWithDkDatabaseStructure (targetfn))
         return false;
     // Attach the new file to the current connection
-    QString alias{qsl("targetDb")};
-    if( ! ad.attachDb(targetfn, alias))
+    if( ! ad.attachDb(targetfn))
         return false;
 
     QVector<dbtable> tables = dkdbstructur.getTables();
     for( auto& table : qAsConst(tables)) {
         if( deper && table.Name() == qsl("Kreditoren")) {
-            if( ! copy_mangledCreditors())
+            if( ! copy_mangledCreditors( dbToBeCopied))
                 return false;
         }
         else if (table.Name() == qsl("BriefElemente")) {
-            if( ! replace_TableContent(table.Name()))
+            if( ! replace_TableContent(table.Name(), dbToBeCopied))
                 return false;
         }
         else
-            if( ! copy_TableContent(table.Name()))
+            if( ! copy_TableContent(table.Name(), dbToBeCopied))
                 return false;
     }
     // copy the values from sqlite_sequence, so that autoinc works the same in both databases
     if( ! replace_TableContent(qsl("sqlite_sequence")))
         return false;
     // force views creation on next startup
-    executeSql_wNoRecords(qsl("DELETE FROM targetDb.meta WHERE Name='dkv2.exe.Version'"));
+    executeSql_wNoRecords(qsl("DELETE FROM targetDb.meta WHERE Name='dkv2.exe.Version'"), QVector<QVariant>(), dbToBeCopied);
     trans.commit();
     return true;
 }

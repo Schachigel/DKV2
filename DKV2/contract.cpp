@@ -20,6 +20,7 @@ const dbtable& contract::getTableDef()
         // deleting a creditor will delete inactive contracts but not
         // contracts with existing bookings (=active or terminated contracts)
         contractTable.append(dbfield(qsl("Kennung"), QVariant::String, qsl("UNIQUE")));
+        contractTable.append(dbfield(qsl("Anmerkung"), QVariant::String).setDefault(""));
         contractTable.append(dbfield(qsl("ZSatz"), QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
         contractTable.append(dbfield(qsl("Betrag"), QVariant::Int).setNotNull().setDefault(0)); // ct
         contractTable.append(dbfield(qsl("thesaurierend"), QVariant::Int).setNotNull().setDefault(1));

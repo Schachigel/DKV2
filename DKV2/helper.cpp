@@ -72,13 +72,14 @@ QMainWindow* getMainWindow()
 }
 
 QString getDbFileFromCommandline()
-{   LOG_CALL;
+{//   LOG_CALL;
     // command line argument 1 has precedence
     QStringList args =QApplication::instance()->arguments();
     QString dbfileFromCmdline = args.size() > 1 ? args.at(1) : QString();
 
     if( dbfileFromCmdline.isEmpty())
         return QString();
+
 
     qInfo() << "dbfile taken from command line " << dbfileFromCmdline;
     return dbfileFromCmdline;

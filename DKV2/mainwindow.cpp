@@ -31,38 +31,50 @@
 
 // generell functions (used for contruction)
 
-QString MainWindow::findValidDatabaseToUse()
+
+bool dbGivenOnCommandline( QString& path)
 {
-    // a db from the command line would be stored as currentDb...
-    QString dbPath{ getDbFileFromCommandline()};
-    if( dbPath.isEmpty()) {
-        // NO db given on the commandline - use LastDb if available
-        dbPath =appConfig::LastDb();
-        if( isValidDatabase(dbPath)){
-            qInfo() << "last db will be reopened " << dbPath;
-            return dbPath;
-        }
-        // last used db is not valid -> ask for another one
-        qInfo() << dbPath << " aus der Konfiguration ist keine valide Datenbank";
-        dbPath =askUserNextDb();
-        // // //
-        if( isValidDatabase(dbPath)){
-            // a valid database was given -> all good
-            return dbPath;
-        } else {
-            // there should be a valid DB
-            QMessageBox::critical(this, "Ganz schlecht", "Ohne valide Datenbank kann Dkv2 nicht laufen");
-            return QString();
-        }
+    QString dbPath =getDbFileFromCommandline();
+    if( dbPath.isEmpty()){
+        qInfo() << "no file given on the commandline";
+        return false;
     }
-    // db was given on the commandline
+    qInfo() << "Path from CmdLine " << dbPath;
     QFileInfo fi{dbPath};
     dbPath = fi.canonicalFilePath();
-    if( isValidDatabase(dbPath)) {
-        return dbPath;
+    if( validDbSchema(dbPath)) {
+        path =dbPath;
     } else {
         QMessageBox::critical(nullptr, qsl("FEHLER"), qsl("Die angegebene Datenbank existiert nicht oder ist keine valide Datenbank. DKV2 wird beendet"));
         // do not continue if a db was given on the cmd line but is not valid
+        path =QString();
+    }
+    // db was given on the commandline -> no alternate file search
+    return true;
+}
+
+QString MainWindow::findValidDatabaseToUse()
+{   LOG_CALL;
+    // a db from the command line would be stored as currentDb...
+    QString dbPath;
+    if( dbGivenOnCommandline( dbPath))
+        return dbPath;
+    // NO db given on the commandline - use LastDb if available
+    dbPath =appConfig::LastDb();
+    if( validDbSchema(dbPath)){
+        qInfo() << "last db will be reopened " << dbPath;
+        return dbPath;
+    }
+    // last used db is not valid -> ask for another one
+    qInfo() << dbPath << " aus der Konfiguration ist keine valide Datenbank";
+    dbPath =askUserNextDb();
+    // // //
+    if( validDbSchema(dbPath)){
+        // a valid database was given -> all good
+        return dbPath;
+    } else {
+        // there should be a valid DB
+        QMessageBox::critical(this, "Ganz schlecht", "Ohne valide Datenbank kann Dkv2 nicht laufen");
         return QString();
     }
 }
@@ -79,17 +91,13 @@ QString MainWindow::askUserNextDb()
     { // busycursor livetime
     busycursor b;
     if( useExistingFile) {
-        if( selectedDbPath.isEmpty()){
-            QMessageBox::critical(this, "Fehler", "Die ausgewählte Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen");
-            return QString();
-        } else {
-            qInfo() << "existing db " << selectedDbPath << "was selected";
-            return selectedDbPath;
-        }
+        // the UI does not allow an empty string here
+        qInfo() << "existing db " << selectedDbPath << "was selected";
+        return selectedDbPath;
     }
     // a new db should be created -> ask project details
     // closeAllDatabaseConnections();
-    if( ! create_DK_databaseFile(selectedDbPath)) {
+    if( ! createNewEmpty_DKDatabaseFile(selectedDbPath)) {
         QMessageBox::critical(this, "Fehler", "Die neue Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen");
         return QString();
     }
@@ -257,8 +265,8 @@ void MainWindow::on_action_menu_database_new_triggered()
         QMessageBox::information( this, qsl("Abbruch"), qsl("Die Dateiauswahl wurde abgebrochen."));
         return;
     }
-    if( !isValidDatabase(dbFile)) {
-        // selected file is not valid.
+    if( !validDbSchema(dbFile)) {
+        // selected file is not valid or can not be converted
         // do nothing
         QMessageBox::information( this, qsl("Abbruch"), qsl("Die ausgewählte Datei ist keine gültige Datenbank."));
         return;

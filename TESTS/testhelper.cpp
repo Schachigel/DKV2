@@ -22,6 +22,7 @@ void initTestDb()
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(testDbFilename);
     QVERIFY(db.open());
+    QVERIFY(dkdbstructur.createDb(db));
     QVERIFY2( QFile::exists(testDbFilename), "create database failed." );
 }
 
@@ -34,7 +35,7 @@ void cleanupTestDb()
     QVERIFY2( (QFile::exists(testDbFilename) == false), "destroy database failed." );
 }
 
-int tableRecordCount( QString tname)
+int tableRecordCount( const QString tname, const QSqlDatabase db /*=QSqlDatabase::database()*/)
 {   // LOG_CALL_W(tname);
     QSqlQuery q;
     if (q.exec("SELECT COUNT(*) FROM " + tname)) {
@@ -46,16 +47,94 @@ int tableRecordCount( QString tname)
         return -1;
     }
 }
-
-bool dbHasTable(const QString tname)
+bool dbHasTable(const QString tname, const QSqlDatabase db /*=QSqlDatabase::database()*/)
 {   LOG_CALL_W(tname);
-    return QSqlDatabase::database().tables().contains(tname);
+    return db.tables().contains(tname);
 }
 
-bool dbTableHasField(const QString tname, const QString fname)
+bool dbTableHasField(const QString tname, const QString fname, const QSqlDatabase db /*=QSqlDatabase::database()*/)
 {   LOG_CALL_W(tname +": " +fname);
-    QSqlRecord r = QSqlDatabase::database().record(tname);
+    QSqlRecord r = db.record(tname);
     if( r.field(fname).isValid())
         return true;
     return false;
+}
+
+bool dbsHaveSameTables(const QString fn1, const QString fn2)
+{
+    dbCloser closer1(qsl("con1"));
+    dbCloser closer2(qsl("con2"));
+
+    QSqlDatabase db1 = QSqlDatabase::addDatabase(qsl("QSQLITE"), closer1.conName);
+    db1.setDatabaseName(fn1);
+    Q_ASSERT(db1.open());
+    QSqlDatabase db2 = QSqlDatabase::addDatabase(qsl("QSQLITE"), closer2.conName);
+    db2.setDatabaseName(fn2);
+    Q_ASSERT(db2.open());
+    return dbsHaveSameTables(db1, db2);
+}
+
+bool dbsHaveSameTables(const QSqlDatabase db1, const QSqlDatabase db2)
+{   LOG_CALL;
+    bool ret =true;
+    QStringList tl1 =db1.tables();
+    QStringList tl2 =db2.tables();
+    if( tl1.count() != tl2.count()) {
+         qInfo() << "db comparison: table list count missmatch";
+         ret =false;
+    }
+    for (auto table: tl1) {
+        if( tl2.contains(table)){
+            qInfo() << "common table: " << table;
+            int rc1 =rowCount(table, db1);
+            int rc2 =rowCount(table, db2);
+            if( rc1 != rc2) {
+                qCritical() << "Tables " << table << " differ in rowCount: " << rc1 << " / " << rc2;
+                ret =false;
+            }
+            continue;
+        }
+        qInfo() << "db comparison: table '" << table << "' is missing in second database";
+        ret =false;
+    }
+    for (auto table: tl2) {
+        if( tl1.contains(table))
+            continue;
+        qInfo() << "db comparison: table '" << table << "' is missing in first database";
+        ret =false;
+    }
+    return ret;
+}
+
+bool dbTablesHaveSameFields(const QString table1, const QString table2, const QSqlDatabase db)
+{   LOG_CALL;
+    qInfo() << table1 << ", " << table2;
+    bool ret =true;
+    QSqlRecord rec1 =db.record(table1);
+    QSqlRecord rec2 =db.record(table2);
+    if( rec1.isEmpty()){
+        qInfo() << "table 1 has no fields";
+        ret =false;
+    }
+    if( rec2.isEmpty()){
+        qInfo() << "table 2 has no fields";
+        ret =false;
+    }
+    if( rec1.count() != rec2.count()) {
+        qInfo() << "field count of tables to be compared are not equal: " << rec1 << rec2;
+        ret =false;
+    }
+    for ( int i =0; i < rec1.count(); i++) {
+        if( rec2.contains(rec1.field(i).name()))
+                continue;
+        ret =false;
+        qInfo() << "rec1 contains field, which is not in rec2: " << rec1.field(i).name();
+    }
+    for ( int i =0; i < rec2.count(); i++) {
+        if( rec1.contains(rec2.field(i).name()))
+                continue;
+        ret =false;
+        qInfo() << "rec2 contains field, which is not in rec1: " << rec2.field(i).name();
+    }
+    return ret;
 }

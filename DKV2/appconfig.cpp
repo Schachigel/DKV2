@@ -7,6 +7,8 @@
 #include "appconfig.h"
 #include "dkdbhelper.h"
 
+
+const double CURRENT_DB_VERSION {2.5};
 /* static data */
 #ifndef QT_DEBUG
 QString appConfig::keyOutdir = qsl("outdir");
@@ -175,6 +177,16 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
     {GMBH_DKV,       {qsl("gmbh.dkv"),         QVariant("DK Verwalter")}},
     {MAX_PC_INDEX,   {qsl("n/a"),              QVariant()}}
 };
+
+/*static*/ QVariant dbConfig::readVersion(QSqlDatabase db)
+{
+    QString invalid(qsl("invalid"));
+    QString ret =getMetaInfo(defaultParams.value(DB_VERSION).first, invalid, db);
+    if( ret == invalid)
+        return QVariant();
+    else
+        return ret;
+}
 
 /*static*/ void dbConfig::writeDefaults(QSqlDatabase db /*=QSqlDatabase::database()*/)
 {

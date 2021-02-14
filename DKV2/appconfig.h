@@ -10,7 +10,7 @@
 
 #include "helper.h"
 
-#define CURRENT_DB_VERSION 2.5
+extern const double CURRENT_DB_VERSION;
 
 // db config info in 'meta' table
 // init = write only if not set
@@ -65,6 +65,7 @@ enum projectConfiguration {
 struct dbConfig
 {
     dbConfig() =delete;
+    static QVariant readVersion(QSqlDatabase db =QSqlDatabase::database());
     static QVariant readValue(projectConfiguration pc, QSqlDatabase db =QSqlDatabase::database());
     static void     writeValue(projectConfiguration pc, QVariant value, QSqlDatabase db =QSqlDatabase::database());
 

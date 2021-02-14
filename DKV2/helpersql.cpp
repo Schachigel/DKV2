@@ -1,14 +1,14 @@
 #include "helper.h"
 #include "helpersql.h"
 
-bool autoDetachDb::attachDb(QString fn, QString a) {
-    alias =a;
+bool autoDetachDb::attachDb(QString filename)
+{
     QString sql {qsl("ATTACH DATABASE '%1' AS '%2'")};
-    return executeSql_wNoRecords(sql.arg(fn).arg(alias));
+    return executeSql_wNoRecords(sql.arg(filename).arg(alias), QVariant(), QSqlDatabase::database(conname));
 }
 autoDetachDb::~autoDetachDb() {
     QString sql {qsl("DETACH DATABASE '%1'")};
-    executeSql_wNoRecords(sql.arg(alias));
+    executeSql_wNoRecords(sql.arg(alias), QVariant(), QSqlDatabase::database(conname));
 }
 
 
@@ -95,9 +95,9 @@ QString dbAffinityType(QVariant::Type t)
     }
 }
 
-int rowCount(const QString& table)
+int rowCount(const QString& table, QSqlDatabase db /* =QSqlDatabase::database() */)
 {
-    QSqlQuery q(qsl("SELECT count(*) FROM ") + table);
+    QSqlQuery q(qsl("SELECT count(*) FROM ") + table, db);
     if( q.first())
         return q.value(0).toInt();
     else {
@@ -140,8 +140,7 @@ bool verifyTable( const dbtable& tableDef, QSqlDatabase db)
 }
 bool ensureTable( const dbtable& table, QSqlDatabase db)
 {   LOG_CALL_W(table.Name());
-    if( tableExists(table.Name(), db))
-    {
+    if( tableExists(table.Name(), db)) {
         return verifyTable(table, db);
     }
     // create table
@@ -334,34 +333,34 @@ bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlReco
         return false;
     }
 }
-bool executeSql_wNoRecords(QString sql, QVariant v)
+bool executeSql_wNoRecords(QString sql, QVariant v, QSqlDatabase db)
 {
     if( v.isValid())
-        return executeSql_wNoRecords(sql, QVector<QVariant>{v});
+        return executeSql_wNoRecords(sql, QVector<QVariant>{v}, db);
     else
-        return executeSql_wNoRecords(sql, QVector<QVariant>());
+        return executeSql_wNoRecords(sql, QVector<QVariant>(), db);
 }
-bool executeSql_wNoRecords(QString sql, QVector<QVariant> v)
+bool executeSql_wNoRecords(QString sql, QVector<QVariant> v, QSqlDatabase db)
 {   LOG_CALL;
-    QSqlQuery q; q.setForwardOnly(true);
+    QSqlQuery q(db); q.setForwardOnly(true);
     q.prepare(sql);
     for( int i =0; i< v.count(); i++) {
         if( v[i].isValid()) {
             q.addBindValue(v[i]);
             qInfo() << "bound value " << v[i];
         } else {
-            qCritical() << "executeSql w V: invalid sql parameter at index " << i;
+            qCritical() << "Invalid sql parameter at index " << i;
             return false;
         }
     }
     if( q.exec()) {
-        qInfo() << "executeSql w V Successfully executed query \n" << q.lastQuery();
+        qInfo() << "Successfully executed query \n" << q.lastQuery();
         qInfo() << "Number of Rows affected: " << q.numRowsAffected();
         qInfo() << Qt::endl;
         return true;
     }
-    qDebug() << "executeSql w V failed to execute query. Error: " << q.lastQuery() << Qt::endl << q.lastError() ;
-    qInfo() << Qt::endl;
+    qDebug() << "Failed to execute query. Error: " << q.lastQuery() << Qt::endl << q.lastError() ;
+//    qInfo() << Qt::endl;
     return false;
 }
 

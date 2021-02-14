@@ -12,8 +12,10 @@ extern const QString testDbFilename;
 void initTestDb();
 void cleanupTestDb();
 
-int tableRecordCount(QString table);
-bool dbHasTable(QString tname);
-bool dbTableHasField(const QString tname, const QString fname);
-
+int tableRecordCount(const QString table, const QSqlDatabase db =QSqlDatabase::database());
+bool dbHasTable(const QString tname, const QSqlDatabase db =QSqlDatabase::database());
+bool dbTableHasField(const QString tname, const QString fname, QSqlDatabase db =QSqlDatabase::database());
+bool dbsHaveSameTables(const QString fn1, const QString fn2);
+bool dbsHaveSameTables(const QSqlDatabase db1, const QSqlDatabase db2);
+bool dbTablesHaveSameFields(const QString table1, const QString table2, const QSqlDatabase db =QSqlDatabase::database());
 #endif // TESTHELPER_H

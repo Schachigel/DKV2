@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QDir>
 #include <QFileInfo>
+#include <QTemporaryFile>
 #include <QProcess>
 #include <QTextDocument>
 // 4 html pdf generation
@@ -12,13 +13,37 @@
 #include "helper.h"
 #include "helperfile.h"
 
+QString getUniqueTempFilename(QString templateFileName)
+{
+    QTemporaryFile temp {templateFileName +qsl(".preconversion")};
+    temp.open();
+    return temp.fileName();
+}
+
+
+bool moveToBackup(QString fn)
+{
+    if( ! QFile(fn).exists())
+        // no file, no backup
+        return true;
+
+    backupFile(fn, "db-bak");
+    QFile(fn).remove();
+    if( ! QFile(fn).exists())
+        return true;
+    else {
+        qCritical() << "File to be replaced can not be deleted";
+        return false;
+    }
+}
+
 bool backupFile(const QString&  fn, const QString& subfolder)
 {   LOG_CALL_W(fn);
     QString backupname{fn};
     QFileInfo fi{fn};
     QString suffix = fi.completeSuffix();
     QString path = fi.path();
-    if( subfolder.length()!= 0)
+    if( ! subfolder.isEmpty())
     {
         QDir d(path); d.mkdir(subfolder);
         backupname =d.path() + qsl("/") + subfolder + qsl("/") + fi.fileName();
@@ -33,7 +58,7 @@ bool backupFile(const QString&  fn, const QString& subfolder)
     }
     QString names(fi.baseName() + qsl("_????????_??????.") + suffix);
     QDir backups(fi.absolutePath(), names, QDir::Name | QDir::Reversed, QDir::Files);
-    for (uint i = 15; i < backups.count(); i++) {
+    for (uint i = 30; i < backups.count(); i++) {
         QFile().remove(backups[i]);
     }
     return true;

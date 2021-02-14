@@ -193,21 +193,22 @@ bool creditor::remove()
     static dbtable creditortable(qsl("Kreditoren"));
     if( 0 == creditortable.Fields().size())
     {
-        creditortable.append(dbfield("id",       QVariant::LongLong).setPrimaryKey().setAutoInc());
-        creditortable.append(dbfield("Vorname",  QVariant::String).setNotNull());
-        creditortable.append(dbfield("Nachname", QVariant::String).setNotNull().setDefault(""));
-        creditortable.append(dbfield("Strasse",  QVariant::String).setNotNull());
-        creditortable.append(dbfield("Plz",      QVariant::String).setNotNull());
-        creditortable.append(dbfield("Stadt",    QVariant::String).setNotNull());
-        creditortable.append(dbfield("Email",    QVariant::String).setNotNull().setDefault(""));
-        creditortable.append(dbfield("Anmerkung", QVariant::String).setNotNull().setDefault(""));
-        creditortable.append(dbfield("IBAN",     QVariant::String).setNotNull().setDefault(""));
-        creditortable.append(dbfield("BIC",      QVariant::String).setNotNull().setDefault(""));
+        creditortable.append(dbfield(qsl("id"),       QVariant::LongLong).setPrimaryKey().setAutoInc());
+        creditortable.append(dbfield(qsl("Vorname"),  QVariant::String).setDefault(""));
+        creditortable.append(dbfield(qsl("Nachname"), QVariant::String).setDefault(""));
+        creditortable.append(dbfield(qsl("Strasse"),  QVariant::String).setDefault(""));
+        creditortable.append(dbfield(qsl("Plz"),      QVariant::String).setDefault(""));
+        creditortable.append(dbfield(qsl("Stadt"),    QVariant::String).setDefault(""));
+        creditortable.append(dbfield(qsl("Land"),     QVariant::String).setDefault(""));
+        creditortable.append(dbfield(qsl("Email"),    QVariant::String).setDefault(""));
+        creditortable.append(dbfield(qsl("Anmerkung"),QVariant::String).setDefault(""));
+        creditortable.append(dbfield(qsl("IBAN"),     QVariant::String).setDefault(""));
+        creditortable.append(dbfield(qsl("BIC"),      QVariant::String).setDefault(""));
         QVector<dbfield> unique;
-        unique.append(creditortable["Vorname"]);
-        unique.append(creditortable["Nachname"]);
-        unique.append(creditortable["Strasse"]);
-        unique.append(creditortable["Stadt"]);
+        unique.append(creditortable[qsl("Vorname")]);
+        unique.append(creditortable[qsl("Nachname")]);
+        unique.append(creditortable[qsl("Strasse")]);
+        unique.append(creditortable[qsl("Stadt")]);
         creditortable.setUnique(unique);
     }
     return creditortable;

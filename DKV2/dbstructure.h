@@ -15,6 +15,7 @@ public:
     QVector<dbtable> getTables() const { return Tables;}
     // interface
     dbstructure appendTable(dbtable t);
+    bool createDb(QString dbFileName) const;
     bool createDb(QSqlDatabase db= QSqlDatabase::database()) const;
 
 private:

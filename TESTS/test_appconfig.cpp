@@ -13,7 +13,7 @@ void test_appConfig::initTestCase()
     QVERIFY( ! appConfig::Outdir().isEmpty());
     initTestDb();
     init_DKDBStruct();
-    create_DK_TablesAndContent();
+    fill_dbDefaultContent();
 
 }
 void test_appConfig::cleanupTestCase()
@@ -68,7 +68,8 @@ void test_appConfig::test_dbConfig_Db()
         QSqlDatabase newDb =QSqlDatabase::addDatabase(qsl("QSQLITE"), qsl("newdb"));
         newDb.setDatabaseName(newDbFilename);
         QVERIFY(newDb.open());
-        create_DK_TablesAndContent(newDb);
+        QVERIFY(dkdbstructur.createDb(newDb));
+        fill_dbDefaultContent(newDb);
 
         QString newValue{qsl("Value of new DB")};
         dbConfig::writeValue(GMBH_ADDRESS1, newValue, newDb);

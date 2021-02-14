@@ -9,11 +9,11 @@
     static dbtable bookingsTable(qsl("Buchungen"));
     if( 0 == bookingsTable.Fields().size()) {
         bookingsTable.append(dbfield(qsl("id"),          QVariant::LongLong).setPrimaryKey().setAutoInc());
-        bookingsTable.append(dbfield(qsl("VertragsId"),  QVariant::LongLong).setDefault(0).setNotNull());
+        bookingsTable.append(dbfield(qsl("VertragsId"),  QVariant::LongLong).setNotNull());
         bookingsTable.append(dbForeignKey(bookingsTable[qsl("VertragsId")], dkdbstructur[qsl("Vertraege")][qsl("id")], qsl("ON DELETE RESTRICT")));
         bookingsTable.append(dbfield(qsl("Datum"),       QVariant::Date).setDefault(qsl("9999-12-31")).setNotNull());
-        bookingsTable.append(dbfield(qsl("BuchungsArt"), QVariant::Int).setDefault(0).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
-        bookingsTable.append(dbfield(qsl("Betrag"),      QVariant::Int).setDefault(0).setNotNull()); // in cent
+        bookingsTable.append(dbfield(qsl("BuchungsArt"), QVariant::Int).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
+        bookingsTable.append(dbfield(qsl("Betrag"),      QVariant::Int).setNotNull()); // in cent
     }
     return bookingsTable;
 }

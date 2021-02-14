@@ -6,7 +6,7 @@
 
 dbstructure dbstructure::appendTable(dbtable t)
 {   // LOG_CALL;
-    qDebug() << "adding table to db structure " << t.name;
+//    qInfo() << "adding table to db structure " << t.name;
     for (auto& table: qAsConst(Tables)) {
         if( table.Name() == t.Name()) {
             qCritical() << "Versuch eine Tabelle wiederholt zur Datenbank hinzuzufügen";
@@ -28,6 +28,20 @@ dbtable dbstructure::operator[](const QString& name) const
     qCritical() << "trying to access unknown table " << name;
     Q_ASSERT(!bool("access to unknown database table"));
     return dbtable();
+}
+
+bool dbstructure::createDb(QString dbFileName) const
+{   LOG_CALL_W(dbFileName);
+//    QString connection{qsl("createDb")};
+    dbCloser closer(qsl("createDb"));
+
+    QSqlDatabase db =QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
+    db.setDatabaseName(dbFileName);
+    if( ! db.open()){
+        qCritical() << "db creation failed " << dbFileName;
+        return false;
+    }
+    return createDb( db);
 }
 
 bool dbstructure::createDb(QSqlDatabase db) const
