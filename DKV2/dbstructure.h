@@ -2,10 +2,13 @@
 #define DBSTRUCTURE_H
 
 #include <QSqlDatabase>
+#include <QSqlQuery>
 #include <QString>
 #include <QVector>
 
 #include "dbtable.h"
+
+extern dbstructure dkdbstructur;
 
 class dbstructure
 {
@@ -21,5 +24,20 @@ public:
 private:
     QVector<dbtable> Tables;
 };
+
+// THE structure of our database the single source of truth
+void init_DKDBStruct();
+//
+bool createFileWithDkDatabaseStructure (QString targetfn);
+//
+bool createNew_DKDatabaseFile(const QString& filename);
+// compare current structure to an actual database
+bool hasAllTablesAndFields(QSqlDatabase db);
+// check schema
+bool validDbSchema(QSqlDatabase db =QSqlDatabase::database());
+bool validDbSchema(const QString& filename);
+
+
+
 
 #endif // DBSTRUCTURE_H

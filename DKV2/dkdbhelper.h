@@ -14,15 +14,8 @@
 #include "helpersql.h"
 
 
-
-extern dbstructure dkdbstructur;
-// THE structure of our database the single source of truth
-void init_DKDBStruct();
-
-bool createNewEmpty_DKDatabaseFile(const QString& filename);
 bool insert_views( QSqlDatabase db =QSqlDatabase::database());
 bool fill_dbDefaultContent(QSqlDatabase db = QSqlDatabase::database());
-
 
 enum version_check_result {
     noVersion =-1,
@@ -34,7 +27,6 @@ version_check_result check_db_version(QSqlDatabase db =QSqlDatabase::database())
 version_check_result check_db_version(QString filename);
 // bool createView(QString name, QString Sql, QSqlDatabase db = QSqlDatabase::database());
 // void updateViews(QSqlDatabase db =QSqlDatabase::database());
-bool validDbSchema(const QString& filename);
 // bool isValidDatabase(QSqlDatabase db =QSqlDatabase::database());
 
 void closeAllDatabaseConnections();

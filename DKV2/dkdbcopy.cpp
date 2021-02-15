@@ -95,7 +95,7 @@ bool convert_database_inplace( const QString& targetFilename, const QString& tem
     }
     QString& sourceFileName =backupFileName;
     // create a new db file with the current database structure
-    if( ! createNewEmpty_DKDatabaseFile(targetFilename)) {
+    if( ! createNew_DKDatabaseFile(targetFilename)) {
         qCritical() << "db creation faild for database conversion -> abort";
         return false;
     }

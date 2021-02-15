@@ -27,8 +27,8 @@ CONFIG *= c++14
 win32:QMAKE_CXXFLAGS += /utf-8
 win32:QMAKE_CXXFLAGS += /FS
 
-VERSION = 0.0.0.6
-VERSION_PE_HEADER = 0.6
+VERSION = 0.0.0.7
+VERSION_PE_HEADER = 0.7
 
 QMAKE_TARGET_COMPANY = HoMSoft
 QMAKE_TARGET_PRODUCT = DKV2 Direktkredit Verwaltung
@@ -48,6 +48,7 @@ SOURCES += \
         dbstatistics.cpp \
         dbstructure.cpp \
         dbtable.cpp \
+        dkdbcopy.cpp \
         dkdbhelper.cpp \
         helper.cpp \
         helperfile.cpp \
@@ -81,6 +82,7 @@ HEADERS += \
         dbstatistics.h \
         dbstructure.h \
         dbtable.h \
+        dkdbcopy.h \
         dkdbhelper.h \
         helper.h \
         helperfile.h \

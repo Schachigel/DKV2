@@ -97,7 +97,7 @@ QString MainWindow::askUserNextDb()
     }
     // a new db should be created -> ask project details
     // closeAllDatabaseConnections();
-    if( ! createNewEmpty_DKDatabaseFile(selectedDbPath)) {
+    if( ! createNew_DKDatabaseFile(selectedDbPath)) {
         QMessageBox::critical(this, "Fehler", "Die neue Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen");
         return QString();
     }
