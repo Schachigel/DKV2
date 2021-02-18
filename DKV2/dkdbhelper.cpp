@@ -324,7 +324,7 @@ void insert_DbProperties(QSqlDatabase db = QSqlDatabase::database())
     dbConfig::writeDefaults(db);
 }
 
-bool fill_dbDefaultContent(QSqlDatabase db)
+bool fill_DkDbDefaultContent(QSqlDatabase db)
 {
     LOG_CALL;
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
@@ -345,19 +345,28 @@ bool fill_dbDefaultContent(QSqlDatabase db)
     return ret;
 }
 
-bool convertToNewSchemaIfNeeded(QString origDbFile)
+bool checkSchema_ConvertIfneeded(QString origDbFile)
 {   LOG_CALL;
 
     switch(check_db_version(origDbFile)){
     case lowVersion:
     {
         qInfo() << "lower version -> converting";
-        QString tempFileName =createPreConversionCopy(origDbFile);
-        return create_DB_copy(origDbFile, false, tempFileName);
+        if (convert_database_inplace(origDbFile))
+            return true;
+        else {
+            qCritical() << "db converstion of older DB failed";
+            return false;
+        }
         break;
     }
     case sameVersion:
-        return validDbSchema(origDbFile);
+        if (validateDbSchema(origDbFile, dkdbstructur))
+            return true;
+        else {
+            qCritical() << "db schema is not valid";
+            return false;
+        }
         break;
     case noVersion:
     case higherVersion:
@@ -450,101 +459,6 @@ bool open_databaseForApplication( QString newDbFile)
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
     if( ! updateViews())
         return false;
-    return true;
-}
-
-
-bool copy_TableContent(QString table, QSqlDatabase db =QSqlDatabase::database())
-{   LOG_CALL_W(table);
-//    QSqlRecord record = db.record(table);
-    QString sql(qsl("INSERT OR REPLACE INTO targetDb.%1 SELECT * FROM %1"));
-    return executeSql_wNoRecords(sql.arg(table), QVector<QVariant>(), db);
-}
-
-bool replace_TableContent(QString table, QSqlDatabase db =QSqlDatabase::database())
-{   LOG_CALL_W(table);
-    QSqlQuery deleteDefaultValues(qsl("DELETE FROM targetDb.") + table);
-    return copy_TableContent(table, db);
-}
-
-bool copy_mangledCreditors(QSqlDatabase db =QSqlDatabase::database())
-{   LOG_CALL;
-    bool success = true;
-    int recCount = 0;
-    QSqlQuery q(db); // default database connection -> active database
-    if( ! q.exec("SELECT * FROM Kreditoren")) {
-        qInfo() << "no data returned from creditor table";
-        return false;
-    }
-    TableDataInserter tdi(dkdbstructur["Kreditoren"]);
-    tdi.overrideTablename(qsl("targetDb.Kreditoren"));
-    while( q.next()) {
-        recCount++;
-        QSqlRecord rec = q.record();
-        qDebug() << "de-Pers. Copy: working on Record #" << rec;
-        QString vn {qsl("Vorname")}, nn {qsl("Nachname")};
-        tdi.setValue(qsl("id"), rec.value(qsl("id")));
-        tdi.setValue(qsl("Vorname"),  QVariant(vn + QString::number(recCount)));
-        tdi.setValue(qsl("Nachname"), QVariant(nn + QString::number(recCount)));
-        tdi.setValue("Strasse", QString("Strasse"));
-        tdi.setValue("Plz", QString("D-xxxxx"));
-        tdi.setValue("Stadt", QString("Stadt"));
-
-        if( tdi.InsertData_noAuto() == -1) {
-            qDebug() << "Error inserting Data into deperso.Copy Table" << q.lastError() << Qt::endl << q.record();
-            success = false;
-            break;
-        }
-    }
-    return success;
-}
-
-bool create_DB_copy(QString targetfn, bool deper, QString source)
-{
-//    QString con {};
-    dbCloser closer(qsl("copy_db"));
-    QSqlDatabase db =QSqlDatabase::addDatabase("QSQLITE", closer.conName);
-    db.setDatabaseName(source);
-    if( ! db.open()) {
-        qCritical() << "create_DB_copy could not open " << source;
-        return false;
-    } else {
-        qInfo() << "opened " << source << " as db to copy";
-    }
-    return create_DB_copy(targetfn, deper, db);
-}
-
-bool create_DB_copy(QString targetfn, bool deper, QSqlDatabase dbToBeCopied)
-{   LOG_CALL_W(targetfn);
-    QString alias{qsl("targetDb")};
-    autoRollbackTransaction trans( dbToBeCopied.connectionName());
-    autoDetachDb ad( alias, dbToBeCopied.connectionName());
-    if( ! createFileWithDkDatabaseStructure (targetfn))
-        return false;
-    // Attach the new file to the current connection
-    if( ! ad.attachDb(targetfn))
-        return false;
-
-    QVector<dbtable> tables = dkdbstructur.getTables();
-    for( auto& table : qAsConst(tables)) {
-        if( deper && table.Name() == qsl("Kreditoren")) {
-            if( ! copy_mangledCreditors( dbToBeCopied))
-                return false;
-        }
-        else if (table.Name() == qsl("BriefElemente")) {
-            if( ! replace_TableContent(table.Name(), dbToBeCopied))
-                return false;
-        }
-        else
-            if( ! copy_TableContent(table.Name(), dbToBeCopied))
-                return false;
-    }
-    // copy the values from sqlite_sequence, so that autoinc works the same in both databases
-    if( ! replace_TableContent(qsl("sqlite_sequence")))
-        return false;
-    // force views creation on next startup
-    executeSql_wNoRecords(qsl("DELETE FROM targetDb.meta WHERE Name='dkv2.exe.Version'"), QVector<QVariant>(), dbToBeCopied);
-    trans.commit();
     return true;
 }
 

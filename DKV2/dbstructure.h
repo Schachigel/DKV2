@@ -28,16 +28,12 @@ private:
 // THE structure of our database the single source of truth
 void init_DKDBStruct();
 //
-bool createFileWithDkDatabaseStructure (QString targetfn);
+bool createFileWithDatabaseStructure (QString targetfn, const dbstructure& dbs =dkdbstructur);
 //
-bool createNew_DKDatabaseFile(const QString& filename);
+bool createNewDatabaseFile(const QString& filename, const dbstructure& dbs =dkdbstructur);
 // compare current structure to an actual database
-bool hasAllTablesAndFields(QSqlDatabase db);
+bool hasAllTablesAndFields(QSqlDatabase db, const dbstructure& dbs =dkdbstructur);
 // check schema
-bool validDbSchema(QSqlDatabase db =QSqlDatabase::database());
-bool validDbSchema(const QString& filename);
-
-
-
+bool validateDbSchema(const QString& filename, const dbstructure& dbs =dkdbstructur);
 
 #endif // DBSTRUCTURE_H

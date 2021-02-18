@@ -36,7 +36,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
-    void setSplash(QSplashScreen* s);
+
     bool dbLoadedSuccessfully =false;
 
     int id_SelectedCreditor();
@@ -139,7 +139,7 @@ private:
     QVector<booking> toBePrinted;
     QVector<booking>::const_iterator currentBooking;
 
-    QString askUserNextDb();
+    QString askUserForNextDb();
     QString findValidDatabaseToUse();
     bool useDb(const QString& dbfile);
     void showDbInStatusbar(QString filename = "");

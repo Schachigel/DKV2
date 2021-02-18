@@ -3,10 +3,13 @@
 
 bool autoDetachDb::attachDb(QString filename)
 {
+    LOG_CALL;
     QString sql {qsl("ATTACH DATABASE '%1' AS '%2'")};
     return executeSql_wNoRecords(sql.arg(filename).arg(alias), QVariant(), QSqlDatabase::database(conname));
 }
-autoDetachDb::~autoDetachDb() {
+autoDetachDb::~autoDetachDb() 
+{
+    LOG_CALL;
     QString sql {qsl("DETACH DATABASE '%1'")};
     executeSql_wNoRecords(sql.arg(alias), QVariant(), QSqlDatabase::database(conname));
 }

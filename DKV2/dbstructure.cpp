@@ -40,15 +40,7 @@ dbtable dbstructure::operator[](const QString& name) const
 
 bool dbstructure::createDb(QString dbFileName) const
 {   LOG_CALL_W(dbFileName);
-//    QString connection{qsl("createDb")};
-    dbCloser closer(qsl("createDb"));
-
-    QSqlDatabase db =QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
-    db.setDatabaseName(dbFileName);
-    if( ! db.open()){
-        qCritical() << "db creation failed " << dbFileName;
-        return false;
-    }
+    autoDb db(dbFileName, qsl("createDb"));
     return createDb( db);
 }
 
@@ -92,7 +84,7 @@ void init_DKDBStruct()
 }
 
 // db creation for newDb and copy (w & w/o de-personalisation)
-bool createFileWithDkDatabaseStructure (QString targetfn)
+bool createFileWithDatabaseStructure (QString targetfn, const dbstructure& dbs)
 {   LOG_CALL_W(targetfn);
     if( ! moveToBackup(targetfn)) {
         return false;
@@ -105,18 +97,18 @@ bool createFileWithDkDatabaseStructure (QString targetfn)
         qDebug() << "faild to open new database";
         return false;
     }
-    bool ret =dkdbstructur.createDb(newDb);
+    bool ret =dbs.createDb(newDb);
     return ret;
 }
 
 // database creation
-bool createNew_DKDatabaseFile(const QString& filename) /*in the default connection*/
+bool createNewDatabaseFile(const QString& filename, const dbstructure& dbs/* =dkdbstructu*/)
 {   LOG_CALL_W(qsl("filename: ") + filename);
     Q_ASSERT(!filename.isEmpty());
     dbgTimer timer( qsl("Db Creation Time"));
 
     // create file an schema
-    if( ! createFileWithDkDatabaseStructure (filename)) {
+    if( ! createFileWithDatabaseStructure (filename, dbs)) {
         return false;
     }
     // create content
@@ -128,13 +120,16 @@ bool createNew_DKDatabaseFile(const QString& filename) /*in the default connecti
         qCritical() << "DkDatenbankAnlegen failed in db.open";
         return false;
     }
-    return fill_dbDefaultContent(db);
+    if( &dbs == &dkdbstructur)
+        return fill_DkDbDefaultContent(db);
+    else
+        return true;
 }
 
 // database validation
-bool hasAllTablesAndFields(QSqlDatabase db)
+bool hasAllTablesAndFields(QSqlDatabase db, const dbstructure& dbs /*=dkdbstructur*/)
 {   LOG_CALL;
-    for( auto& table : dkdbstructur.getTables()) {
+    for( auto& table : dbs.getTables()) {
         if( !verifyTable(table, db))
             return false;
     }
@@ -142,28 +137,21 @@ bool hasAllTablesAndFields(QSqlDatabase db)
     return true;
 }
 
-bool validDbSchema(QSqlDatabase db)
-{
-    LOG_CALL;
-    {QSqlQuery enableRefInt(db);
-    enableRefInt.exec("PRAGMA foreign_keys = ON");}
-    if( ! hasAllTablesAndFields(db))
-        return false;
-    qInfo() << db.databaseName() << " is a valid dk database";
-    return true;
-}
-
-bool validDbSchema(const QString& filename)
+bool validateDbSchema(const QString& filename, const dbstructure& dbs /*=dkdbstructur*/)
 {
     LOG_CALL_W(filename);
     QString msg;
-    if( filename == "") msg = "no filename";
-    else if( !QFile::exists(filename)) msg = "file not found";
+    if( filename == "")
+        msg = "no filename";
+    else if( !QFile::exists(filename))
+        msg = "file not found";
     else {
-        if( convertToNewSchemaIfNeeded(filename)) {
-
-        } else {
-            qCritical() << "conversion failed";
+        dbCloser closer{ qsl("validateDbSchema") };
+        QSqlDatabase db = QSqlDatabase::addDatabase(closer.conName);
+        db.setDatabaseName(filename);
+        db.open();
+        if (hasAllTablesAndFields(db, dbs)) {
+            qInfo() << filename << " is a valid Database";
         }
     }
     if( msg.isEmpty())

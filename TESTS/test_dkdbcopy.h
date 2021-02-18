@@ -14,9 +14,9 @@ public:
     test_dkdbcopy(){}
     ~test_dkdbcopy(){}
 private:
-    const QString dbfn1{qsl("../data/testdb1.sql")};
-    const QString dbfn2{qsl("../data/testdb2.sql")};
-    const QString tempFileName{testDbFilename +qsl(".preconversion")};
+    const QString dbfn1{qsl("../data/testdb1.sqlite")};
+    const QString dbfn2{qsl("../data/testdb2.sqlite")};
+    const QString tempFileName{testDbFilename +qsl(".preconversion.sqlite")};
 signals:
 private slots:
     void init();
@@ -28,7 +28,9 @@ private slots:
     void test_dbsHaveSameTables_more_fields();
     void test_dbsHaveSameTables_fails_more_tables();
     void test_dbsHaveSameTables_fails_diffRowCount();
+    void test_copyDatabase();
     void test_convertDatabaseInplace();
+    void test_convertDatabaseInplace_wNewColumn();
 };
 
 #endif // TEST_DKDBCOPY_H

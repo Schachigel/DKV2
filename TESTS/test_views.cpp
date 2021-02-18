@@ -17,7 +17,7 @@ void test_views::cleanupTestCase()
 void test_views::init()
 {
     initTestDb();
-    QVERIFY(fill_dbDefaultContent());
+    QVERIFY(fill_DkDbDefaultContent());
 }
 void test_views::cleanup()
 {

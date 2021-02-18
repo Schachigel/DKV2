@@ -15,7 +15,7 @@ void test_booking::initTestCase()
 void test_booking::init()
 {   LOG_CALL;
     initTestDb();
-    fill_dbDefaultContent();
+    fill_DkDbDefaultContent();
 }
 void test_booking::cleanup()
 {   LOG_CALL;

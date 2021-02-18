@@ -10,6 +10,7 @@
 #include "dbfield.h"
 #include "dbstructure.h"
 
+
 struct dbCloser
 {   // RAII class for db connections
     dbCloser(QString c) : conName (c){}
@@ -29,6 +30,23 @@ struct dbCloser
     }
     QString conName;
 };
+
+struct autoDb{
+    autoDb(QString file, QString connect) : closer(connect){
+        db =QSqlDatabase::addDatabase("QSQLITE", closer.conName);
+        db.setDatabaseName(file);
+        if( ! db.open()) {
+            qCritical() << "could not open db conncection " << closer.conName;
+            qCritical() << db.lastError();
+        }
+    }
+    operator QSqlDatabase() const {return db;};
+    QString conName() { return closer.conName;};
+    dbCloser closer;
+    QSqlDatabase db;
+};
+
+
 
 struct autoRollbackTransaction
 {   // RAII class for db connections

@@ -2,9 +2,7 @@
 #include <QtSql>
 #include <QtTest>
 
-#include "../DKV2/creditor.h"
-#include "../DKV2/contract.h"
-#include "../DKV2/booking.h"
+#include "../DKV2/tabledatainserter.h"
 #include "../DKV2/dkdbhelper.h"
 #include "../DKV2/dbstructure.h"
 #include "../DKV2/dkdbcopy.h"
@@ -28,9 +26,7 @@ void test_dkdbcopy::cleanup() {
 
 void test_dkdbcopy::test_moveToPreconversionBackup()
 {
-    QFile file(testDbFilename);
-    file.open(QIODevice::WriteOnly);
-    file.close();
+    createEmptyFile(testDbFilename);
     QString result =createPreConversionCopy(testDbFilename, tempFileName);
     QVERIFY( ! result.isEmpty());
     QVERIFY( ! QFile::exists(testDbFilename));
@@ -39,9 +35,7 @@ void test_dkdbcopy::test_moveToPreconversionBackup()
 
 void test_dkdbcopy::test_moveToPreconversionBackup_tmpfn()
 {
-    QFile file(testDbFilename);
-    file.open(QIODevice::WriteOnly);
-    file.close();
+    createEmptyFile(testDbFilename);
     QString result =createPreConversionCopy(testDbFilename);
     QVERIFY( ! result.isEmpty());
     QVERIFY( ! QFile::exists(testDbFilename));
@@ -109,11 +103,14 @@ void test_dkdbcopy::test_dbsHaveSameTables_more_fields()
     dbs2.createDb(dbfn2);
 
     QVERIFY( dbsHaveSameTables(dbfn1, dbfn2));
-    dbCloser closer (qsl("con"));
-    QSqlDatabase db =QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
-    db.setDatabaseName(dbfn1);
-    db.open();
-    autoDetachDb ad(qsl("db2"), closer.conName);
+//    dbCloser closer (qsl("con"));
+//    QSqlDatabase db =QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
+//    db.setDatabaseName(dbfn1);
+//    db.open();
+
+    autoDb db(dbfn1, "con");
+
+    autoDetachDb ad(qsl("db2"), db.conName());
     ad.attachDb(dbfn2);
     QVERIFY( ! dbTablesHaveSameFields(t1.Name(), qsl("db2.") +t1.Name(), db));
 }
@@ -152,19 +149,73 @@ void test_dkdbcopy::test_dbsHaveSameTables_fails_diffRowCount()
     QVERIFY( ! dbsHaveSameTables(dbfn1, dbfn2));
 }
 
+void test_dkdbcopy::test_copyDatabase()
+{
+    // setup
+    initTestDb_withData();
+    // code under test
+    copy_database(tempFileName);
+    // verification
+    QVERIFY(dbsHaveSameTables(testDbFilename, tempFileName));
+    // cleanup
+    QSqlDatabase::database().close();
+    QSqlDatabase::removeDatabase(QSqlDatabase::database().connectionName());
+}
+
 void test_dkdbcopy::test_convertDatabaseInplace() {
 
     // setup
-    init_DKDBStruct();
-    initTestDb();
-    fill_dbDefaultContent();
-    saveRandomCreditors(10);
-    saveRandomContracts(8);
-    activateRandomContracts(100 /* % */);
-    QSqlDatabase::database().close();
-    QSqlDatabase::removeDatabase(QSqlDatabase::database().connectionName());
+    initTestDb_withData();
+    closeDbConnection();
     // code under test
     convert_database_inplace(testDbFilename, tempFileName);
     // verification
     QVERIFY(dbsHaveSameTables(testDbFilename, tempFileName));
+}
+
+void test_dkdbcopy::test_convertDatabaseInplace_wNewColumn()
+{
+    // SETUP
+    // define original datastructure before the change: 2 tables
+    dbstructure oldDbStructure;
+    dbtable t1(qsl("t1"));
+    t1.append(dbfield(qsl("id"), QVariant::LongLong).setPrimaryKey().setAutoInc());
+    t1.append(dbfield(qsl("f1")));
+    oldDbStructure.appendTable(t1);
+    dbtable t2(qsl("t2"));
+    t2.append(dbfield(qsl("id"), QVariant::LongLong).setPrimaryKey().setAutoInc());
+    t2.append(dbfield(qsl("t1id"), QVariant::LongLong).setNotNull());
+    t2.append(dbForeignKey(t2[qsl("t1id")], oldDbStructure[qsl("t1")][qsl("id")], qsl("ON DELETE CASCADE")));
+    t2.append(dbfield(qsl("t2f1")));
+    oldDbStructure.appendTable(t2);
+    // create source db with old db structure
+    oldDbStructure.createDb(dbfn1);
+    // fill the "old" database file with some data
+    {
+        dbCloser closer {qsl("closer")};
+        QSqlDatabase db =QSqlDatabase::addDatabase("QSQLITE", closer.conName);
+        db.setDatabaseName(dbfn1); db.open();
+        TableDataInserter tdi1{t1};
+        tdi1.setValue("fi", "v1");    tdi1.InsertData(db);
+        tdi1.setValue("fi", "v2");    tdi1.InsertData(db);
+        TableDataInserter tdi2{t2};
+        tdi2.setValue("t1id", 1); tdi2.setValue("t2f1", "v1"); tdi2.InsertData(db);
+        tdi2.setValue("t1id", 2); tdi2.setValue("t2f1", "v2"); tdi2.InsertData(db);
+    }
+    // define new, extended data structure
+    dbstructure newDbStructure;
+    t2.append(dbfield(qsl("newField")));
+    newDbStructure.appendTable(t1);
+    newDbStructure.appendTable(t2);
+    // Code under TEST:
+    // convert the old file into a file with the new datastructure
+    QVERIFY(convert_database_inplace(dbfn1, dbfn2, newDbStructure));
+    // VERIFICATION
+    dbCloser closer {qsl("closeVerifiy")};
+    QSqlDatabase verifyDb =QSqlDatabase::addDatabase("QSQLITE", closer.conName);
+    verifyDb.setDatabaseName(dbfn1); verifyDb.open();
+    QVERIFY(QFile::exists(dbfn1));
+    QVERIFY(hasAllTablesAndFields(verifyDb, newDbStructure));
+    QCOMPARE(rowCount("t1", verifyDb), 2);
+    QCOMPARE(rowCount("t2", verifyDb), 2);
 }

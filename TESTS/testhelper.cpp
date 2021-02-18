@@ -7,6 +7,10 @@
 
 #include "../DKV2/appconfig.h"
 #include "../DKV2/dkdbhelper.h"
+#include "../DKV2/creditor.h"
+#include "../DKV2/contract.h"
+#include "../DKV2/booking.h"
+
 #include "testhelper.h"
 
 
@@ -22,8 +26,28 @@ void initTestDb()
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(testDbFilename);
     QVERIFY(db.open());
+    init_DKDBStruct();
     QVERIFY(dkdbstructur.createDb(db));
     QVERIFY2( QFile::exists(testDbFilename), "create database failed." );
+}
+
+void initTestDb_withData()
+{   LOG_CALL;
+    QDir().mkdir(QString("../data"));
+    if (QFile::exists(testDbFilename))
+        QFile::remove(testDbFilename);
+    if (QFile::exists(testDbFilename))
+        QFAIL("test db still in use");
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(testDbFilename);
+    QVERIFY(db.open());
+    init_DKDBStruct();
+    QVERIFY(dkdbstructur.createDb(db));
+    QVERIFY2( QFile::exists(testDbFilename), "create database failed." );
+    fill_DkDbDefaultContent();
+    saveRandomCreditors(10);
+    saveRandomContracts(8);
+    activateRandomContracts(100 /* % */);
 }
 
 void cleanupTestDb()
@@ -35,9 +59,25 @@ void cleanupTestDb()
     QVERIFY2( (QFile::exists(testDbFilename) == false), "destroy database failed." );
 }
 
+void closeDbConnection( QSqlDatabase db /*=QSqlDatabase::database()*/)
+{
+    QSqlDatabase::database(db.connectionName()).close();
+    QSqlDatabase::removeDatabase(db.connectionName());
+}
+
+void createEmptyFile(QString path)
+{
+    QFileInfo fi(path);
+    QDir d(fi.absolutePath());
+    d.mkpath(".");
+    QFile f(fi.absoluteFilePath());
+    f.open(QIODevice::WriteOnly);
+    f.close();
+}
+
 int tableRecordCount( const QString tname, const QSqlDatabase db /*=QSqlDatabase::database()*/)
 {   // LOG_CALL_W(tname);
-    QSqlQuery q;
+    QSqlQuery q(db);
     if (q.exec("SELECT COUNT(*) FROM " + tname)) {
         q.first();
         qDebug() << "#Datensätze: " << q.record().value(0).toInt();
@@ -47,6 +87,7 @@ int tableRecordCount( const QString tname, const QSqlDatabase db /*=QSqlDatabase
         return -1;
     }
 }
+
 bool dbHasTable(const QString tname, const QSqlDatabase db /*=QSqlDatabase::database()*/)
 {   LOG_CALL_W(tname);
     return db.tables().contains(tname);

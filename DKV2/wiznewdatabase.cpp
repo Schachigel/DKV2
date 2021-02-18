@@ -328,6 +328,17 @@ wizConfigureNewDatabaseWiz::wizConfigureNewDatabaseWiz(QWidget* p) : QWizard(p) 
     addPage(new wpNewDatabase_SummaryPage);
     QFont f = font(); f.setPointSize(10); setFont(f);
 }
+
+void wizConfigureNewDatabaseWiz::updateDbConfig(QString dbFile)
+{
+    LOG_CALL;
+    dbCloser closer{ qsl("updateDbConfig") };
+    QSqlDatabase db = QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
+    db.setDatabaseName(dbFile);
+    db.open();
+    return updateDbConfig(db);
+}
+
 void wizConfigureNewDatabaseWiz::updateDbConfig(QSqlDatabase db)
 {   LOG_CALL;
     dbConfig::writeValue(GMBH_ADDRESS1,  field(dbConfig::paramName(GMBH_ADDRESS1)), db);

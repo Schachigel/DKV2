@@ -25,6 +25,7 @@
 #include "csvwriter.h"
 #include "uiitemformatter.h"
 #include "dkdbhelper.h"
+#include "dkdbcopy.h"
 #include "dbstatistics.h"
 #include "letters.h"
 #include "transaktionen.h"
@@ -32,7 +33,7 @@
 // generell functions (used for contruction)
 
 
-bool dbGivenOnCommandline( QString& path)
+bool getValidDatabaseFromCommandline(QString& path)
 {
     QString dbPath =getDbFileFromCommandline();
     if( dbPath.isEmpty()){
@@ -42,7 +43,7 @@ bool dbGivenOnCommandline( QString& path)
     qInfo() << "Path from CmdLine " << dbPath;
     QFileInfo fi{dbPath};
     dbPath = fi.canonicalFilePath();
-    if( validDbSchema(dbPath)) {
+    if(checkSchema_ConvertIfneeded(dbPath)) {
         path =dbPath;
     } else {
         QMessageBox::critical(nullptr, qsl("FEHLER"), qsl("Die angegebene Datenbank existiert nicht oder ist keine valide Datenbank. DKV2 wird beendet"));
@@ -57,19 +58,19 @@ QString MainWindow::findValidDatabaseToUse()
 {   LOG_CALL;
     // a db from the command line would be stored as currentDb...
     QString dbPath;
-    if( dbGivenOnCommandline( dbPath))
+    if( getValidDatabaseFromCommandline( dbPath))
         return dbPath;
     // NO db given on the commandline - use LastDb if available
     dbPath =appConfig::LastDb();
-    if( validDbSchema(dbPath)){
+    if(checkSchema_ConvertIfneeded(dbPath)){
         qInfo() << "last db will be reopened " << dbPath;
         return dbPath;
     }
     // last used db is not valid -> ask for another one
     qInfo() << dbPath << " aus der Konfiguration ist keine valide Datenbank";
-    dbPath =askUserNextDb();
+    dbPath =askUserForNextDb();
     // // //
-    if( validDbSchema(dbPath)){
+    if(checkSchema_ConvertIfneeded(dbPath)){
         // a valid database was given -> all good
         return dbPath;
     } else {
@@ -79,7 +80,7 @@ QString MainWindow::findValidDatabaseToUse()
     }
 }
 
-QString MainWindow::askUserNextDb()
+QString MainWindow::askUserForNextDb()
 {   LOG_CALL;
     wizOpenOrNewDb wizOpenOrNew (getMainWindow());
     if( QDialog::Accepted != wizOpenOrNew.exec()) {
@@ -88,7 +89,7 @@ QString MainWindow::askUserNextDb()
     }
     QString selectedDbPath {absoluteCanonicalPath(wizOpenOrNew.selectedFile)};
     bool useExistingFile { ! wizOpenOrNew.field(qsl("createNewDb")).toBool()};
-    { // busycursor livetime
+    { // busycursor scope
     busycursor b;
     if( useExistingFile) {
         // the UI does not allow an empty string here
@@ -97,7 +98,7 @@ QString MainWindow::askUserNextDb()
     }
     // a new db should be created -> ask project details
     // closeAllDatabaseConnections();
-    if( ! createNew_DKDatabaseFile(selectedDbPath)) {
+    if( ! createNewDatabaseFile(selectedDbPath)) {
         QMessageBox::critical(this, "Fehler", "Die neue Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen");
         return QString();
     }
@@ -105,11 +106,7 @@ QString MainWindow::askUserNextDb()
     dbCloser closer{qsl("conWriteConfig")};
     wizConfigureNewDatabaseWiz wizProjectData(this);
     if( wizProjectData.Accepted == wizProjectData.exec()) {
-        QSqlDatabase db =QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
-        db.setDatabaseName(selectedDbPath);
-        db.open();
-        wizProjectData.updateDbConfig(db);
-        db.close();
+        wizProjectData.updateDbConfig(selectedDbPath);
     }
     return selectedDbPath;
 }
@@ -148,7 +145,10 @@ MainWindow::MainWindow(QWidget *parent) :
         QMessageBox::critical(nullptr, qsl("FEHLER"), qsl("Die angegebene Datenbank kann nicht verwendet werden. DKV2 wird beendet"));
         return;
     }
+    // WE ARE READY TO GO
     dbLoadedSuccessfully =true;
+    // //////////////////
+
     ui->CreditorsTableView->setStyleSheet(qsl("QTableView::item { padding-right: 10px; padding-left: 10px; }"));
     ui->contractsTableView->setStyleSheet(qsl("QTableView::item { padding-right: 10px; padding-left: 10px; }"));
 
@@ -234,7 +234,7 @@ void MainWindow::on_action_menu_database_start_triggered()
 }
 
 // Database Menu
-QString askUserDbFilename(QString title, bool onlyExistingFiles=false)
+QString askUserFilenameForCopy(QString title, bool onlyExistingFiles=false)
 {   // this function is used with creaetDbCopy, createAnony.DbCopy but NOT newDb
     LOG_CALL;
     wizFileSelectionWiz wiz(getMainWindow());
@@ -258,20 +258,20 @@ QString askUserDbFilename(QString title, bool onlyExistingFiles=false)
 
 void MainWindow::on_action_menu_database_new_triggered()
 {   LOG_CALL;
-    QString dbFile =askUserNextDb();
+    QString dbFile =askUserForNextDb();
     if( dbFile.isEmpty()) {
         // askUserNextDb was not successful - maybe canceled.
         // do nothing
         QMessageBox::information( this, qsl("Abbruch"), qsl("Die Dateiauswahl wurde abgebrochen."));
         return;
     }
-    if( !validDbSchema(dbFile)) {
+    if( !checkSchema_ConvertIfneeded(dbFile)) {
         // selected file is not valid or can not be converted
         // do nothing
         QMessageBox::information( this, qsl("Abbruch"), qsl("Die ausgewählte Datei ist keine gültige Datenbank."));
         return;
     }
-    if( useDb(dbFile)){
+    if( useDb(dbFile)) {
         prepare_startPage();
         ui->stackedWidget->setCurrentIndex(startPageIndex);
         return;
@@ -286,12 +286,12 @@ void MainWindow::on_action_menu_database_new_triggered()
 
 void MainWindow::on_action_menu_database_copy_triggered()
 {   LOG_CALL;
-    QString dbfile = askUserDbFilename(qsl("Dateiname der Kopie Datenbank angeben."));
+    QString dbfile = askUserFilenameForCopy(qsl("Dateiname der Kopie Datenbank angeben."));
     if( dbfile == qsl(""))
         return;
 
     busycursor b;
-    if( !create_DB_copy(dbfile, false)) {
+    if( ! copy_database(dbfile)) {
         QMessageBox::information(this, qsl("Fehler beim Kopieren"), qsl("Die Datenbankkopie konnte nicht angelegt werden. "
                                                                "Weitere Info befindet sich in der LOG Datei"));
         qCritical() << "creating copy failed";
@@ -300,11 +300,11 @@ void MainWindow::on_action_menu_database_copy_triggered()
 }
 void MainWindow::on_action_menu_database_anonymous_copy_triggered()
 {   LOG_CALL;
-    QString dbfile = askUserDbFilename(qsl("Dateiname der Anonymisierten Kopie angeben."));
+    QString dbfile = askUserFilenameForCopy(qsl("Dateiname der Anonymisierten Kopie angeben."));
     if( dbfile == qsl(""))
         return;
     busycursor b;
-    if( !create_DB_copy(dbfile, true)) {
+    if( !copy_database_mangled(dbfile)) {
         QMessageBox::information(this, qsl("Fehler beim Kopieren"),
                                  qsl("Die anonymisierte Datenbankkopie konnte nicht angelegt werden. "
                                      "Weitere Info befindet sich in der LOG Datei"));

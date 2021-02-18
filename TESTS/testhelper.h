@@ -10,8 +10,10 @@
 extern const QString testDbFilename;
 
 void initTestDb();
+void initTestDb_withData();
 void cleanupTestDb();
-
+void closeDbConnection( QSqlDatabase db =QSqlDatabase::database());
+void createEmptyFile(QString fn);
 int tableRecordCount(const QString table, const QSqlDatabase db =QSqlDatabase::database());
 bool dbHasTable(const QString tname, const QSqlDatabase db =QSqlDatabase::database());
 bool dbTableHasField(const QString tname, const QString fname, QSqlDatabase db =QSqlDatabase::database());

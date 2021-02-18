@@ -23,7 +23,7 @@ void test_letterTemplate::initTestCase()
 void test_letterTemplate::init()
 {   LOG_CALL;
     initTestDb();
-    fill_dbDefaultContent();
+    fill_DkDbDefaultContent();
 }
 
 void test_letterTemplate::cleanup()

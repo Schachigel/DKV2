@@ -15,7 +15,7 @@
 
 
 bool insert_views( QSqlDatabase db =QSqlDatabase::database());
-bool fill_dbDefaultContent(QSqlDatabase db = QSqlDatabase::database());
+bool fill_DkDbDefaultContent(QSqlDatabase db = QSqlDatabase::database());
 
 enum version_check_result {
     noVersion =-1,
@@ -23,17 +23,17 @@ enum version_check_result {
     sameVersion =1,
     higherVersion =2
 };
+
 version_check_result check_db_version(QSqlDatabase db =QSqlDatabase::database());
 version_check_result check_db_version(QString filename);
+bool checkSchema_ConvertIfneeded(QString origDbFile);
+
 // bool createView(QString name, QString Sql, QSqlDatabase db = QSqlDatabase::database());
 // void updateViews(QSqlDatabase db =QSqlDatabase::database());
 // bool isValidDatabase(QSqlDatabase db =QSqlDatabase::database());
 
 void closeAllDatabaseConnections();
 bool open_databaseForApplication( QString newDbFile="");
-
-bool create_DB_copy(QString targetfn, bool deper, QString file);
-bool create_DB_copy(QString targetfn, bool anonym, QSqlDatabase db =QSqlDatabase::database());
 
 QString proposeContractLabel();
 void create_sampleData(int datensaetze =20);

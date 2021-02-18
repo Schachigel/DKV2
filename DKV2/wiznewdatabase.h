@@ -90,6 +90,7 @@ public slots:
 struct wizConfigureNewDatabaseWiz : public QWizard
 {
     wizConfigureNewDatabaseWiz(QWidget* p =nullptr);
+    void updateDbConfig(QString dbFile);
     void updateDbConfig(QSqlDatabase db=QSqlDatabase::database());
     Q_OBJECT;
 };
