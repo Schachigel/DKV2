@@ -65,14 +65,14 @@ enum projectConfiguration {
 struct dbConfig
 {
     dbConfig() =delete;
-    static QVariant readVersion(QSqlDatabase db =QSqlDatabase::database());
-    static QVariant readValue(projectConfiguration pc, QSqlDatabase db =QSqlDatabase::database());
-    static void     writeValue(projectConfiguration pc, QVariant value, QSqlDatabase db =QSqlDatabase::database());
+    static QVariant readVersion(const QSqlDatabase& db =QSqlDatabase::database());
+    static QVariant readValue(const projectConfiguration& pc, const QSqlDatabase& db =QSqlDatabase::database());
+    static void     writeValue(const projectConfiguration& pc, const QVariant& value, const QSqlDatabase& db =QSqlDatabase::database());
 
-    static QString paramName(projectConfiguration pc) {
+    static QString paramName(const projectConfiguration& pc) {
         return defaultParams.value(pc).first;
     }
-    static void writeDefaults(QSqlDatabase db =QSqlDatabase::database());
+    static void writeDefaults(const QSqlDatabase& db =QSqlDatabase::database());
 
 private:
     static QMap<projectConfiguration,QPair<QString, QVariant>> defaultParams;

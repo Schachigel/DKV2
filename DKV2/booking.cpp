@@ -30,7 +30,7 @@
     }
     return deletedBookings;
 }
-/* static */ QString booking::displayString(Type t)
+/* static */ QString booking::displayString(const Type& t)
 {
     switch(t)
     {
@@ -48,7 +48,7 @@
         return error;
     }
 }
-/* static */ QString booking::typeName(Type t)
+/* static */ QString booking::typeName(const Type& t)
 {
     switch(t) {
     case booking::Type::non: return qsl("invalid booking");
@@ -60,7 +60,7 @@
     }
 }
 
-/* static */ bool booking::doBooking( const booking::Type t, const qlonglong contractId, const QDate date, const double amount)
+/* static */ bool booking::doBooking( const booking::Type& t, const qlonglong contractId, const QDate& date, const double amount)
 {   LOG_CALL_W(typeName(t));
     TableDataInserter tdi(booking::getTableDef());
     tdi.setValue(qsl("VertragsId"), contractId);
@@ -74,22 +74,22 @@
     qCritical() << "booking failed for contract#: " << contractId << " Amount: " << ctFromEuro(amount) << " date: " << date;;
     return false;
 }
-/* static */ bool booking::bookDeposit(const qlonglong contractId, const QDate date, const double amount)
+/* static */ bool booking::bookDeposit(const qlonglong contractId, const QDate& date, const double amount)
 {
     Q_ASSERT( amount > 0.);
     return doBooking( Type::deposit, contractId, date, amount);
 }
-/* static */ bool booking::bookPayout(qlonglong contractId, QDate date, double amount)
+/* static */ bool booking::bookPayout(const qlonglong contractId, const QDate& date, const double amount)
 {
     // contract has to check that a payout is possible
     return doBooking(Type::payout, contractId, date, -1*qFabs(amount));
 }
-/* static */ bool booking::bookReInvestInterest(qlonglong contractId, QDate date, double amount)
+/* static */ bool booking::bookReInvestInterest(const qlonglong contractId, const QDate& date, const double amount)
 {
     Q_ASSERT( amount >= 0.);
     return doBooking(Type::reInvestInterest, contractId, date, amount);
 }
-/* static */ bool booking::bookAnnualInterestDeposit(qlonglong contractId, QDate date, double amount)
+/* static */ bool booking::bookAnnualInterestDeposit(const qlonglong contractId, const QDate& date, const double amount)
 {
     Q_ASSERT( amount >= 0.);
     return doBooking(Type::annualInterestDeposit, contractId, date, amount);
@@ -99,7 +99,7 @@
 {   LOG_CALL;
     return  executeSingleValueSql(qsl("date"), qsl("vNextAnnualSettlement")).toDate();
 }
-/*static */ QVector<booking> bookings::bookingsFromSql(QString where, QString order)
+/*static */ QVector<booking> bookings::bookingsFromSql(const QString& where, const QString& order)
 {
     QVector<QSqlRecord> records = executeSql(booking::getTableDef().Fields(), where, order);
     QVector<booking> vRet;
@@ -114,7 +114,7 @@
     return vRet;
 }
 
-/* static */ QVector<booking> bookings::getBookings(qlonglong cid, QDate from, QDate to)
+/* static */ QVector<booking> bookings::getBookings(const qlonglong cid, const QDate& from, const QDate& to)
 {   LOG_CALL;
     // used in tests
     QString where = qsl("Buchungen.VertragsId=%1 "
@@ -133,7 +133,7 @@
     //}
     //return vRet;
 }
-/* static */ QVector<booking> bookings::getAnnualSettelments(int year)
+/* static */ QVector<booking> bookings::getAnnualSettelments(const int year)
 {   LOG_CALL;
     QString where = qsl("Buchungen.BuchungsArt = %1 AND Buchungen.Datum = '%2'");
     where = where.arg(QString::number(static_cast<int>(booking::Type::annualInterestDeposit)), QDate(year + 1, 1, 1).toString(Qt::ISODate));

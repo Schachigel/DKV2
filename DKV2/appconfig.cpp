@@ -178,7 +178,7 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
     {MAX_PC_INDEX,   {qsl("n/a"),              QVariant()}}
 };
 
-/*static*/ QVariant dbConfig::readVersion(QSqlDatabase db)
+/*static*/ QVariant dbConfig::readVersion(const QSqlDatabase& db)
 {
     QString invalid(qsl("invalid"));
     QString ret =getMetaInfo(defaultParams.value(DB_VERSION).first, invalid, db);
@@ -188,7 +188,7 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
         return ret;
 }
 
-/*static*/ void dbConfig::writeDefaults(QSqlDatabase db /*=QSqlDatabase::database()*/)
+/*static*/ void dbConfig::writeDefaults(const QSqlDatabase &db /*=QSqlDatabase::database()*/)
 {
     for( int i =0; i< MAX_PC_INDEX; i++) {
         projectConfiguration pc {(projectConfiguration)i};
@@ -197,7 +197,7 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
 }
 
 
-/*static*/ QVariant dbConfig::readValue(projectConfiguration pc, QSqlDatabase db)
+/*static*/ QVariant dbConfig::readValue(const projectConfiguration& pc, const QSqlDatabase& db)
 {   LOG_CALL;
     if( isValidIndex(pc))
         return getMetaInfo(defaultParams.value(pc).first, defaultParams.value(pc).second.toString(), db);
@@ -207,7 +207,7 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
     }
 }
 
-/*static*/ void dbConfig::writeValue(projectConfiguration pc, QVariant value, QSqlDatabase db)
+/*static*/ void dbConfig::writeValue(const projectConfiguration& pc, const QVariant& value, const QSqlDatabase& db)
 {   LOG_CALL;
     if( ! isValidIndex(pc)) {
         qCritical() << "invalid paramter to be set";
