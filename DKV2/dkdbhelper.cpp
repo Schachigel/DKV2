@@ -16,157 +16,183 @@
 #include "dkdbcopy.h"
 #include "dbstructure.h"
 
-const QString sqlContractView {
-    qsl("SELECT \
-  V.id                                     AS VertragsId, \
-  K.id                                    AS KreditorId, \
-  K.Nachname || ', ' || K.Vorname          AS KreditorIn, \
-  V.Kennung                                AS Vertragskennung, \
-  strftime('%d.%m.%Y',V.Vertragsdatum)     AS Vertragsdatum, \
-  ifnull(AktivierungsWert, V.Betrag / 100.) AS Nominalwert, \
-  CAST(V.Zsatz / 100. AS VARCHAR) || ' %'    AS Zinssatz, \
-  CASE WHEN V.thesaurierend = 0 THEN 'Auszahlend' \
-  ELSE CASE WHEN V.thesaurierend = 1 THEN 'Thesaur.' \
-       ELSE CASE WHEN V.thesaurierend = 2 THEN 'Fester Zins' \
-            ELSE 'ERROR' \
-            END \
-       END \
-  END                                      AS Zinsmodus, \
-  ifnull(Aktivierungsdatum, ' - ')         AS Aktivierung, \
-  ifnull(CASE WHEN V.thesaurierend = 1 THEN GesamtWert \
-  ELSE AktivierungsWert \
-  END, 0.)                                 AS VerzinslGuthaben, \
-  ifnull(ZinsSumme, 0.)                    AS angespZins, \
-  ifnull(LetzteBuchung, ' - ')             AS LetzteBuchung, \
-  CASE WHEN V.Kfrist = -1 THEN strftime('%d.%m.%Y', V.LaufzeitEnde) \
-  ELSE '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)' \
-  END                                      AS KdgFristVertragsende \
-FROM Vertraege AS V \
- \
-INNER JOIN Kreditoren AS K ON V.KreditorId = K.id \
- \
-LEFT JOIN \
-(SELECT vid_min, minDate AS Aktivierungsdatum, minValue AS AktivierungsWert, GesamtWert, round(GesamtWert - minValue,2) AS ZinsSumme \
-FROM \
-  (SELECT B.VertragsId AS vid_min, min(B.Datum) AS minDate, B.Betrag / 100. AS minValue, sum(B.Betrag) / 100. AS GesamtWert \
-   FROM Buchungen AS B GROUP BY B.VertragsId) \
-) ON V.id = vid_min \
- \
-LEFT JOIN \
-(SELECT vid_max, maxDate AS LetzteBuchung \
-FROM \
-  (SELECT B_.VertragsId AS vid_max, max(B_.Datum) AS maxDate \
-   FROM Buchungen AS B_ GROUP BY B_.VertragsId) \
-) ON V.id = vid_max "
-       )
-};
-
 const QString sqlExContractView {qsl(
-"SELECT \
-  V.id AS VertragsId, \
-  K.id AS KreditorId, \
-  K.Nachname || ', ' || K.Vorname AS KreditorIn, \
-  V.Kennung AS Vertragskennung, \
-  strftime('%d.%m.%Y',Aktivierungsdatum) AS Aktivierung, \
-  strftime('%d.%m.%Y', Vertragsende) AS Vertragsende, \
-  ifnull(AktivierungsWert, V.Betrag / 100.) AS Anfangswert, \
-  CAST(V.Zsatz / 100. AS VARCHAR) || ' %'    AS Zinssatz, \
-  CASE WHEN V.thesaurierend = 0 \
-  THEN 'Auszahlend' \
-  ELSE CASE WHEN V.thesaurierend = 1 \
-       THEN 'Thesaur.' \
-        ELSE CASE WHEN V.thesaurierend = 2 \
-             THEN 'Fester Zins'  \
-             ELSE 'ERROR'  \
-             END \
-        END \
-  END AS Zinsmodus, \
- \
-  CASE WHEN V.thesaurierend  = 0 THEN Zinsen_ausz \
-  ELSE Zinsen_thesa  \
-  END AS Zinsen, \
-  CASE WHEN V.thesaurierend  > 0 \
-  THEN -1* letzte_Auszahlung + sum_o_Zinsen \
-  ELSE -1* letzte_Auszahlung + sum_mit_Zinsen \
-  END AS Einlagen, \
- \
-  maxValue AS Endauszahlung \
- \
-FROM exVertraege AS V  INNER JOIN Kreditoren AS K ON V.KreditorId = K.id \
- \
-LEFT JOIN ( \
-     SELECT  \
-        B.VertragsId AS vid_min,  \
-    min(B.id) AS idErsteBuchung, \
-    B.Datum AS Aktivierungsdatum,  \
-    B.Betrag / 100. AS AktivierungsWert,  \
-    sum(B.Betrag) / 100. AS GesamtWert \
-     FROM exBuchungen AS B GROUP BY B.VertragsId ) \
-ON V.id = vid_min \
- \
-LEFT JOIN (SELECT  \
-         B.VertragsId AS vid_max,  \
-         max(B.id) as idLetzteBuchung, \
-         B.Datum AS Vertragsende, \
-         B.Betrag /100. AS maxValue \
-       FROM exBuchungen AS B GROUP BY B.VertragsId )  \
-ON V.id = vid_max \
- \
-LEFT JOIN (SELECT \
-            B.VertragsId AS vidZinsThesa, \
-            SUM(B.betrag) /100. AS Zinsen_thesa \
-          FROM exBuchungen AS B \
-          WHERE B.BuchungsArt = 4 OR B.BuchungsArt = 8 \
-          GROUP BY B.VertragsId ) \
-ON V.id = vidZinsThesa \
- \
-LEFT JOIN ( SELECT \
-              B.VertragsId AS vidZinsAus, \
-              SUM(B.betrag) /-100. AS Zinsen_ausz \
-            FROM exBuchungen AS B \
-            WHERE B.BuchungsArt = 1 OR B.BuchungsArt = 2 OR B.BuchungsArt = 8 GROUP BY B.VertragsId ) \
-ON V.id = vidZinsAus \
- \
-LEFT JOIN ( SELECT  \
-                B.VertragsId as vid_o_Zinsen, \
-                sum(B.Betrag) /100. AS sum_o_Zinsen \
-            FROM exBuchungen AS B  \
-            WHERE B.BuchungsArt = 1 OR B.BuchungsArt = 2 \
-            GROUP BY B.VertragsId  ) \
-ON V.id = vid_o_Zinsen \
- \
-LEFT JOIN ( SELECT  \
-              B.VertragsId as vid_mit_Zinsen, \
-              sum(B.Betrag) /100. AS sum_mit_Zinsen, \
-              max(B.Datum) AS letzte_buchung, \
-              B.Betrag /100. AS letzte_Auszahlung \
-            FROM exBuchungen AS B  \
-            WHERE B.BuchungsArt = 1 OR B.BuchungsArt = 2 OR B.BuchungsArt = 8 \
-            GROUP BY B.VertragsId  ) \
-ON V.id = vid_mit_Zinsen \
-")};
+                "SELECT \
+                  V.id AS VertragsId, \
+                  K.id AS KreditorId, \
+                  K.Nachname || ', ' || K.Vorname AS KreditorIn, \
+                  V.Kennung AS Vertragskennung, \
+                  strftime('%d.%m.%Y',Aktivierungsdatum) AS Aktivierung, \
+                  strftime('%d.%m.%Y', Vertragsende) AS Vertragsende, \
+                  ifnull(AktivierungsWert, V.Betrag / 100.) AS Anfangswert, \
+                  CAST(V.Zsatz / 100. AS VARCHAR) || ' %'    AS Zinssatz, \
+                  CASE WHEN V.thesaurierend = 0 \
+                  THEN 'Auszahlend' \
+                  ELSE CASE WHEN V.thesaurierend = 1 \
+                       THEN 'Thesaur.' \
+                        ELSE CASE WHEN V.thesaurierend = 2 \
+                             THEN 'Fester Zins'  \
+                             ELSE 'ERROR'  \
+                             END \
+                        END \
+                  END AS Zinsmodus, \
+                 \
+                  CASE WHEN V.thesaurierend  = 0 THEN Zinsen_ausz \
+                  ELSE Zinsen_thesa  \
+                  END AS Zinsen, \
+                  CASE WHEN V.thesaurierend  > 0 \
+                  THEN -1* letzte_Auszahlung + sum_o_Zinsen \
+                  ELSE -1* letzte_Auszahlung + sum_mit_Zinsen \
+                  END AS Einlagen, \
+                 \
+                  maxValue AS Endauszahlung \
+                 \
+                FROM exVertraege AS V  INNER JOIN Kreditoren AS K ON V.KreditorId = K.id \
+                 \
+                LEFT JOIN ( \
+                     SELECT  \
+                        B.VertragsId AS vid_min,  \
+                    min(B.id) AS idErsteBuchung, \
+                    B.Datum AS Aktivierungsdatum,  \
+                    B.Betrag / 100. AS AktivierungsWert,  \
+                    sum(B.Betrag) / 100. AS GesamtWert \
+                     FROM exBuchungen AS B GROUP BY B.VertragsId ) \
+                ON V.id = vid_min \
+                 \
+                LEFT JOIN (SELECT  \
+                         B.VertragsId AS vid_max,  \
+                         max(B.id) as idLetzteBuchung, \
+                         B.Datum AS Vertragsende, \
+                         B.Betrag /100. AS maxValue \
+                       FROM exBuchungen AS B GROUP BY B.VertragsId )  \
+                ON V.id = vid_max \
+                 \
+                LEFT JOIN (SELECT \
+                            B.VertragsId AS vidZinsThesa, \
+                            SUM(B.betrag) /100. AS Zinsen_thesa \
+                          FROM exBuchungen AS B \
+                          WHERE B.BuchungsArt = 4 OR B.BuchungsArt = 8 \
+                          GROUP BY B.VertragsId ) \
+                ON V.id = vidZinsThesa \
+                 \
+                LEFT JOIN ( SELECT \
+                              B.VertragsId AS vidZinsAus, \
+                              SUM(B.betrag) /-100. AS Zinsen_ausz \
+                            FROM exBuchungen AS B \
+                            WHERE B.BuchungsArt = 1 OR B.BuchungsArt = 2 OR B.BuchungsArt = 8 GROUP BY B.VertragsId ) \
+                ON V.id = vidZinsAus \
+                 \
+                LEFT JOIN ( SELECT  \
+                                B.VertragsId as vid_o_Zinsen, \
+                                sum(B.Betrag) /100. AS sum_o_Zinsen \
+                            FROM exBuchungen AS B  \
+                            WHERE B.BuchungsArt = 1 OR B.BuchungsArt = 2 \
+                            GROUP BY B.VertragsId  ) \
+                ON V.id = vid_o_Zinsen \
+                 \
+                LEFT JOIN ( SELECT  \
+                              B.VertragsId as vid_mit_Zinsen, \
+                              sum(B.Betrag) /100. AS sum_mit_Zinsen, \
+                              max(B.Datum) AS letzte_buchung, \
+                              B.Betrag /100. AS letzte_Auszahlung \
+                            FROM exBuchungen AS B  \
+                            WHERE B.BuchungsArt = 1 OR B.BuchungsArt = 2 OR B.BuchungsArt = 8 \
+                            GROUP BY B.VertragsId  ) \
+                ON V.id = vid_mit_Zinsen \
+                ")};
+const QString sqlContractView {qsl(
+R"str(
+SELECT
+  V.id AS VertragsId
+  ,K.id AS KreditorId
+  ,K.Nachname || ', ' || K.Vorname          AS KreditorIn
+  ,V.Kennung AS Vertragskennung
+  ,strftime('%d.%m.%Y',V.Vertragsdatum)     AS Vertragsdatum
+
+  ,ifnull(strftime('%d.%m.%Y',Aktivierungsdatum), '(ohne Zahlungseingang)') AS Aktivierungsdatum
+  ,CASE WHEN AktivierungsWert IS NULL THEN V.Betrag /100.
+      ELSE AktivierungsWert
+      END AS Nominalwert
+
+  ,CAST(V.Zsatz / 100. AS VARCHAR) || ' %'    AS Zinssatz
+
+-- Zinsmodus
+  ,CASE WHEN V.thesaurierend = 0 THEN 'Auszahlend'
+       ELSE CASE WHEN V.thesaurierend = 1 THEN 'Thesaur.'
+       ELSE CASE WHEN V.thesaurierend = 2 THEN 'Fester Zins'
+       ELSE 'ERROR' END END END       AS Zinsmodus
+
+-- VerzinslGuthaben
+  ,CASE WHEN V.thesaurierend = 0 THEN ifnull(summeAllerBuchungen, '-')
+       ELSE CASE WHEN V.thesaurierend = 1 THEN ifnull(summeAllerBuchungen, '-')
+       ELSE CASE WHEN V.thesaurierend = 2 THEN ifnull(summeEinUndAuszahlungen, '-')
+       ELSE 'ERROR' END END END    AS VerzinslGuthaben
+
+-- angesparter Zins
+  ,CASE WHEN V.thesaurierend = 0 THEN ifnull(summeAllerZinsZwBuchungen, '-')
+       ELSE CASE WHEN V.thesaurierend = 1 THEN ifnull(summeAllerZinsBuchungen, '-')
+       ELSE CASE WHEN V.thesaurierend = 2 THEN ifnull(summeAllerZinsBuchungen, '-')
+       ELSE 'ERROR' END END END    AS angespZins
+
+-- letzte Buchungen
+  ,ifnull(LetzteBuchung, ' - ') AS LetzteBuchung
+
+-- kdFrist/VEnd
+  ,CASE WHEN V.Kfrist = -1 THEN strftime('%d.%m.%Y', V.LaufzeitEnde)
+     ELSE '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)' END AS KdgFristVertragsende
+
+FROM Vertraege AS V  INNER JOIN Kreditoren AS K ON V.KreditorId = K.id
+
+-- aktivierungsdatum und Betrag
+LEFT JOIN
+    (SELECT vid_min, minB_Datum AS Aktivierungsdatum, Erstbuchungswert AS AktivierungsWert
+         FROM   (SELECT B.VertragsId AS vid_min, min(B.Datum) AS minB_Datum, B.Betrag / 100. AS Erstbuchungswert, sum(B.Betrag) / 100. AS GesamtWert
+            FROM Buchungen AS B GROUP BY B.VertragsId) ) ON V.id = vid_min
+
+-- letzte Buchungen
+LEFT JOIN
+     (SELECT VertragsId AS B3VertragsId, MAX(Datum) AS LetzteBuchung FROM Buchungen AS B3 GROUP BY VertragsId) on v.id = B3VertragsId
+
+-- VerzinslGuthaben f auszahlende
+LEFT JOIN
+     (SELECT VertragsId, SUM(Betrag)/100. AS summeAllerBuchungen FROM Buchungen AS B1 GROUP BY VertragsId) ON V.id = VertragsId
+
+-- angespZins f auszahlende: nur zwischenzinsen
+LEFT JOIN
+     (SELECT VertragsId AS B2VertragsId, SUM(Betrag)/100. AS summeAllerZinsZwBuchungen FROM Buchungen AS B2 WHERE B2.BuchungsArt = 4 /*ReInvInterest*/  GROUP BY B2.VertragsId) ON V.id = B2VertragsId
+
+-- angespZins f thesaurierende: zwischenzinsen + Jahreszins
+LEFT JOIN
+     (SELECT VertragsId AS B4VertragsId, SUM(Betrag)/100. AS summeAllerZinsBuchungen FROM Buchungen AS B4 WHERE B4.BuchungsArt = 8 /*annual*/ OR B4.BuchungsArt = 4 /*ReInvInterest*/  GROUP BY B4.VertragsId) ON V.id = B4VertragsId
+
+-- VerzinslGuthaben FestZins: Summe aller ein und auszahlungen
+LEFT JOIN
+    (SELECT VertragsId AS B5VertragsId, SUM(Betrag) /100. AS summeEinUndAuszahlungen FROM Buchungen AS B5 WHERE B5.BuchungsArt = 1 /*deposit*/ OR B5.BuchungsArt = 2 /*payout*/ GROUP BY B5.VertragsId) ON V.id = B5VertragsId
+
+)str"
+)};
 
 const QString sqlBookingsOverview {
-    "SELECT B.Datum, V.id, V.Kennung, \
-    CASE V.thesaurierend  \
-    WHEN 0 THEN 'Ausz.' \
-    WHEN 1 THEN 'Thesa.' \
-    WHEN 2 THEN 'Fix' \
-    ELSE 'ERROR' \
-    END AS Zinsmodus, \
-    B.Betrag, \
-    CASE B.BuchungsArt \
-    WHEN 1 THEN 'Einzahlung' \
-    WHEN 2 THEN 'Auszahlung' \
-    WHEN 4 THEN 'unterj.Zins' \
-    WHEN 8 THEN 'Jahreszins' \
-    ELSE 'ERROR' \
-    END AS BuchungsArt \
-     \
-    FROM Vertraege AS V \
-     \
-    LEFT JOIN Buchungen AS B ON V.id = B.VertragsId \
-    ORDER BY V.id, B.Datum"
+R"str("SELECT B.Datum, V.id, V.Kennung,
+    CASE V.thesaurierend
+    WHEN 0 THEN 'Ausz.'
+    WHEN 1 THEN 'Thesa.'
+    WHEN 2 THEN 'Fix'
+    ELSE 'ERROR'
+    END AS Zinsmodus,
+    B.Betrag,
+    CASE B.BuchungsArt
+    WHEN 1 THEN 'Einzahlung'
+    WHEN 2 THEN 'Auszahlung'
+    WHEN 4 THEN 'unterj.Zins'
+    WHEN 8 THEN 'Jahreszins'
+    ELSE 'ERROR'
+    END AS BuchungsArt
+
+    FROM Vertraege AS V
+
+    LEFT JOIN Buchungen AS B ON V.id = B.VertragsId
+    ORDER BY V.id, B.Datum)str"
 };
 
 // create db views
