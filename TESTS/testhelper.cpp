@@ -26,7 +26,7 @@ void initTestDb()
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(testDbFilename);
     QVERIFY(db.open());
-    init_DKDBStruct();
+//    init_DKDBStruct();
     QVERIFY(dkdbstructur.createDb(db));
     QVERIFY2( QFile::exists(testDbFilename), "create database failed." );
 }
@@ -59,6 +59,12 @@ void cleanupTestDb()
     QVERIFY2( (QFile::exists(testDbFilename) == false), "destroy database failed." );
 }
 
+void openDbConnection(QString file)
+{
+    QSqlDatabase::addDatabase("QSQLITE");
+    QSqlDatabase::database().setDatabaseName(file);
+    QSqlDatabase::database().open();
+}
 void closeDbConnection( QSqlDatabase db /*=QSqlDatabase::database()*/)
 {
     QSqlDatabase::database(db.connectionName()).close();

@@ -10,12 +10,31 @@
 void test_booking::initTestCase()
 {   LOG_CALL;
     init_DKDBStruct();
+    initTestDb();
+    fill_DkDbDefaultContent();
+    if( QFile::copy(testDbFilename, tempFile))
+        qInfo() << "speed up test with db copy " << tempFile;
+}
+void test_booking::cleanupTestCase()
+{
+    if( QFile::exists(tempFile))
+        QFile::remove(tempFile);
 }
 
 void test_booking::init()
 {   LOG_CALL;
-    initTestDb();
-    fill_DkDbDefaultContent();
+    bool usingTempFile =false;
+    if( QFile::exists(tempFile)) {
+        closeDbConnection();
+        QFile::remove(testDbFilename);
+        usingTempFile =QFile::copy(tempFile, testDbFilename);
+        openDbConnection(testDbFilename);
+    }
+    if( !usingTempFile) {
+        qWarning() << "temp file not found";
+        initTestDb();
+        fill_DkDbDefaultContent();
+    }
 }
 void test_booking::cleanup()
 {   LOG_CALL;

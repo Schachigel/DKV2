@@ -12,6 +12,7 @@ extern const QString testDbFilename;
 void initTestDb();
 void initTestDb_withData();
 void cleanupTestDb();
+void openDbConnection(QString file);
 void closeDbConnection( QSqlDatabase db =QSqlDatabase::database());
 void createEmptyFile(QString fn);
 int tableRecordCount(const QString table, const QSqlDatabase db =QSqlDatabase::database());
