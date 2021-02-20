@@ -83,16 +83,13 @@ wpActivateContract_SummaryPage::wpActivateContract_SummaryPage( QWidget* p) : QW
 void wpActivateContract_SummaryPage::initializePage()
 {
     QString subt =qsl("Der Vertrag <p><b>%1</b> von <b>%2</b><p> soll mit einem Betrag von <p>"
-                  "<b>%3 Euro</b><p> zum %4 aktiviert werden. <br>");
+                  "<b>%3 </b><p> zum %4 aktiviert werden. <br>");
     wpActivateContract* wiz = qobject_cast<wpActivateContract*>(wizard());
     double amount = field(qsl("amount")).toDouble();
-    subt = subt.arg(wiz->label, wiz->creditorName);
     QLocale locale;
-    subt = subt.arg(locale.toCurrencyString(amount), field(qsl("date")).toDate().toString(qsl("dd.MM.yyyy")));
+    subt = subt.arg(wiz->label, wiz->creditorName, locale.toCurrencyString(amount), field(qsl("date")).toDate().toString(qsl("dd.MM.yyyy")));
     if( amount != wiz->expectedAmount)
-        subt = subt.arg(qsl("<b>Der Überweisungsbetrag stimmt nicht mit dem Kreditbetrag überein.</b>"));
-    else
-        subt = subt.arg(QString());
+        subt += qsl(" <b><small>Der Überweisungsbetrag stimmt nicht mit dem Kreditbetrag überein.</small></b>");
     setSubTitle(subt);
 }
 

@@ -10,7 +10,7 @@ SELECT
   ,V.Kennung AS Vertragskennung
   ,strftime('%d.%m.%Y',V.Vertragsdatum)     AS Vertragsdatum
 
-  ,ifnull(strftime('%d.%m.%Y',Aktivierungsdatum), '(ohne Zahlungseingang)') AS Aktivierungsdatum
+  ,ifnull(strftime('%d.%m.%Y',Aktivierungsdatum), '(offen)') AS Aktivierungsdatum
   ,CASE WHEN AktivierungsWert IS NULL THEN V.Betrag /100.
       ELSE AktivierungsWert
       END AS Nominalwert

@@ -298,8 +298,8 @@ void wpConfirmCreditor::initializePage()
                                  "<tr><td>Straße:</td><td>%3</td></tr>"
                                  "<tr><td>Plz/Ort:</td><td>%4</td></tr>"
                                  "<tr><td>E-Mail:</td><td>%5<br></td></tr>"
-                                 "<tr><td>Kommentar:</td><td><small>%5<small></td></tr>"
-                                 "<tr><td>Bankdaten:</td><td><table><tr><td>IBAN:</td><td>%5</td></tr><tr><td>BIC:</td><td>%5<td></tr></table></td></tr></table>")};
+                                 "<tr><td>Kommentar:</td><td><small>%6<small></td></tr>"
+                                 "<tr><td>Bankdaten:</td><td><table><tr><td>IBAN:</td><td>%7</td></tr><tr><td>BIC:</td><td>%8<td></tr></table></td></tr></table>")};
     QString firstn =field(qsl("firstname")).toString().isEmpty() ? qsl("(kein Vorname)")  : field(qsl("firstname")).toString();
     QString lastn  =field(qsl("lastname")).toString().isEmpty()  ? qsl("(kein Nachname)") : field(qsl("lastname")).toString();
     QString street =field(qsl("street")).toString().isEmpty()    ? qsl("(keine Strasse)") : field(qsl("street")).toString();

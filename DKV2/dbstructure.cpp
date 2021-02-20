@@ -147,7 +147,7 @@ bool validateDbSchema(const QString& filename, const dbstructure& dbs /*=dkdbstr
         msg = "file not found";
     else {
         dbCloser closer{ qsl("validateDbSchema") };
-        QSqlDatabase db = QSqlDatabase::addDatabase(closer.conName);
+        QSqlDatabase db = QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
         db.setDatabaseName(filename);
         db.open();
         if (hasAllTablesAndFields(db, dbs)) {
