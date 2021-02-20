@@ -29,9 +29,11 @@ struct creditor
     void setPostalCode(QString p){ ti.setValue(qsl("Plz"),     p); }
     QString city() const        { return getValue(qsl("Stadt")).toString();}
     void setCity(QString s)     { ti.setValue(qsl("Stadt"),  s); }
+    QString country() const     { return getValue(qsl("Land")).toString();}
+    void setCountry(QString s)  { ti.setValue(qsl("Land"), s); }
     QString email() const       { return getValue(qsl("Email")).toString();}
     void setEmail(QString e)    { ti.setValue(qsl("Email"), e); }
-    QString comment() const     { return getValue(qsl("Vorname")).toString();}
+    QString comment() const     { return getValue(qsl("Anmerkung")).toString();}
     void setComment(QString a)  { ti.setValue(qsl("Anmerkung"), a);}
     QString iban() const        {return getValue(qsl("IBAN")).toString();}
     void setIban(QString i)     { ti.setValue(qsl("IBAN"), i);}

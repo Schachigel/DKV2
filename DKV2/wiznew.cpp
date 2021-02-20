@@ -77,6 +77,7 @@ bool wpNewOrExisting::validatePage()
         setField(qsl("street"), c.street());
         setField(qsl("pcode"), c.postalCode());
         setField(qsl("city"), c.city());
+        setField(qsl("country"), c.country());
         setField(qsl("email"), c.email());
         setField(qsl("comment"), c.comment());
         setField(qsl("iban"), c.iban());
@@ -115,10 +116,14 @@ wpNewCreditorAddress::wpNewCreditorAddress(QWidget* p) : QWizardPage(p)
     QLineEdit* leCity =new QLineEdit;
     leCity->setToolTip(qsl("Die Felder Straße, Postleitzahl und Stadt dürfen nicht leer sein"));
     registerField(qsl("city"), leCity);
+    QLineEdit* leCountry =new QLineEdit;
+    leCountry->setToolTip(qsl("Trage hier ein Land ein, falls die Kreditor*in nicht in Deutschland wohnt"));
+    registerField(qsl("country"), leCountry);
 
     QLabel* l1 =new QLabel(qsl("Name"));
     QLabel* l2 =new QLabel(qsl("Straße"));
     QLabel* l3 =new QLabel(qsl("Plz/Ort"));
+    QLabel* l4 =new QLabel(qsl("Land"));
 
     QGridLayout* grid =new QGridLayout;
     grid->addWidget(l1,          0, 0, 1, 1);
@@ -131,6 +136,9 @@ wpNewCreditorAddress::wpNewCreditorAddress(QWidget* p) : QWizardPage(p)
     grid->addWidget(l3,          2, 0, 1, 1);
     grid->addWidget(lePlz,       2, 1, 1, 1);
     grid->addWidget(leCity,      2, 2, 1, 3);
+
+    grid->addWidget(l4,          3, 0, 1, 1);
+    grid->addWidget(leCountry,   3, 1, 2, 1);
 
     grid->setColumnStretch(0, 1);
     grid->setColumnStretch(1, 2);
@@ -147,6 +155,7 @@ bool wpNewCreditorAddress::validatePage()
     setField(qsl("street"),    field(qsl("street"))   .toString().trimmed());
     setField(qsl("pcode"),     field(qsl("pcode"))    .toString().trimmed());
     setField(qsl("city"),      field(qsl("city"))     .toString().trimmed());
+    setField(qsl("country"),   field(qsl("country"))  .toString().trimmed());
 
     if( field(qsl("firstname")).toString().isEmpty()
             &&
@@ -287,22 +296,27 @@ void wpConfirmCreditor::initializePage()
 {   LOG_CALL;
     QString creditorSummary {qsl("<table><tr><td>Name:</td><td><b>%1 %2</b><br></td></tr>"
                                  "<tr><td>Straße:</td><td>%3</td></tr>"
-                                 "<tr><td>Plz/Ort:</td><td>%4 %5</td></tr>"
-                                 "<tr><td>E-Mail:</td><td>%6<br></td></tr>"
-                                 "<tr><td>Kommentar:</td><td><small>%7<small></td></tr>"
-                                 "<tr><td>Bankdaten:</td><td><table><tr><td>IBAN:</td><td>%8</td></tr><tr><td>BIC:</td><td>%9<td></tr></table></td></tr></table>")};
+                                 "<tr><td>Plz/Ort:</td><td>%4</td></tr>"
+                                 "<tr><td>E-Mail:</td><td>%5<br></td></tr>"
+                                 "<tr><td>Kommentar:</td><td><small>%5<small></td></tr>"
+                                 "<tr><td>Bankdaten:</td><td><table><tr><td>IBAN:</td><td>%5</td></tr><tr><td>BIC:</td><td>%5<td></tr></table></td></tr></table>")};
     QString firstn =field(qsl("firstname")).toString().isEmpty() ? qsl("(kein Vorname)")  : field(qsl("firstname")).toString();
     QString lastn  =field(qsl("lastname")).toString().isEmpty()  ? qsl("(kein Nachname)") : field(qsl("lastname")).toString();
     QString street =field(qsl("street")).toString().isEmpty()    ? qsl("(keine Strasse)") : field(qsl("street")).toString();
+
     QString pcode  =field(qsl("pcode")).toString().isEmpty()     ? qsl("(keine PLZ)")     : field(qsl("pcode")).toString();
     QString city   =field(qsl("city")).toString().isEmpty()      ? qsl("(keine Stadt)")   : field(qsl("city")).toString();
+    QString country =field(qsl("country")).toString();
+    QString xxx = pcode +qsl(" ") +city;
+    if(!country.isEmpty())
+        xxx += qsl(" (") +country +qsl(")");
     QString email  =field(qsl("email")).toString().isEmpty()     ? qsl("(keine E-Mail Adresse)") :field(qsl("email")).toString();
     QString comment=field(qsl("comment")).toString().isEmpty()   ? qsl("(keine Anmerkung)"): field(qsl("comment")).toString();
     QString iban   =field(qsl("iban")).toString().isEmpty()      ? qsl("(keine IBAN)")     : field(qsl("iban")).toString();
     QString bic    =field(qsl("bic")).toString().isEmpty()       ? qsl("(keine BIC)")      : field(qsl("bic")).toString();
 
-    setSubTitle(creditorSummary.arg(firstn, lastn, street, pcode,
-                                    city, email, comment, iban, bic));
+    setSubTitle(creditorSummary.arg(firstn, lastn, street, xxx,
+                                    email, comment, iban, bic));
     wizNew* wiz =qobject_cast<wizNew*> (wizard());
     if( wiz)
         cbCreateContract->setChecked(true);
@@ -318,6 +332,7 @@ bool wpConfirmCreditor::validatePage()
         c.setStreet(    field(qsl("street")).toString());
         c.setPostalCode(field(qsl("pcode")).toString());
         c.setCity(      field(qsl("city")).toString());
+        c.setCountry(   field(qsl("country")).toString());
         c.setEmail(     field(qsl("email")).toString());
         c.setComment(   field(qsl("comment")).toString());
         c.setIban(      field(qsl("iban")).toString());
