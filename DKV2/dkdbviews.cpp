@@ -161,7 +161,7 @@ ON V.id = vid_mit_Zinsen
 )};
 
 const QString sqlBookingsOverview {qsl(
-R"str("
+R"str(
 SELECT
   B.Datum,
   V.id,
@@ -232,16 +232,16 @@ FROM vVertraege_aktiv_detail
 
 const QString sqlContractsInactiveView {qsl(
 R"str(
-SELECT Vertraege.id AS id,     // 0: id
-  Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin,  // 1: kreditor name
-  Vertraege.Kennung AS Vertragskennung,  // 2: contract label
-  Vertraege.ZSatz /100. AS Zinssatz,      // 3: interest in %
-  Vertraege.Betrag /100. AS Wert,          // 4: value in Euro
-  Vertraege.Vertragsdatum AS Abschlussdatum,  // 5: Abschlussdatum / akt. Datum
-  Vertraege.Kfrist AS Kuendigungsfrist,       // 6: kfrist (monate)
-  Vertraege.LaufzeitEnde AS Vertragsende,    // 7: LZende
-  Vertraege.thesaurierend AS thesa,           // 8: payout?
-  Kreditoren.id AS KreditorId  // 9: kredid
+SELECT Vertraege.id AS id,
+  Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin,
+  Vertraege.Kennung AS Vertragskennung,
+  Vertraege.ZSatz /100. AS Zinssatz,
+  Vertraege.Betrag /100. AS Wert,
+  Vertraege.Vertragsdatum AS Abschlussdatum,
+  Vertraege.Kfrist AS Kuendigungsfrist,
+  Vertraege.LaufzeitEnde AS Vertragsende,
+  Vertraege.thesaurierend AS thesa,
+  Kreditoren.id AS KreditorId
 FROM Vertraege
   INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId
 WHERE (SELECT count(*) FROM Buchungen WHERE Buchungen.VertragsId=Vertraege.id) = 0

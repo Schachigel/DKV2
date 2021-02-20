@@ -88,9 +88,9 @@ bool copy_database( const QString& targetFileName, const QSqlDatabase& db/*=QSql
     }
     if (!replace_TableContent(qsl("sqlite_sequence"), ad.alias +qsl(".sqlite_sequence"), db))
         return false;
-    // force views creation on next startup
-    QString sql{qsl("DELETE FROM %1.meta WHERE Name='dkv2.exe.Version'")};
-    executeSql_wNoRecords(sql.arg(ad.alias), QVector<QVariant>(), db);
+//    // force views creation on next startup
+//    QString sql{qsl("DELETE FROM %1.meta WHERE Name='dkv2.exe.Version'")};
+//    executeSql_wNoRecords(sql.arg(ad.alias), QVector<QVariant>(), db);
     /////////// all done
     transaction.commit();
     /////////////////////

@@ -50,6 +50,7 @@ SOURCES += \
         dbtable.cpp \
         dkdbcopy.cpp \
         dkdbhelper.cpp \
+        dkdbviews.cpp \
         helper.cpp \
         helperfile.cpp \
         helperfin.cpp \
@@ -84,6 +85,7 @@ HEADERS += \
         dbtable.h \
         dkdbcopy.h \
         dkdbhelper.h \
+        dkdbviews.h \
         helper.h \
         helperfile.h \
         helperfin.h \

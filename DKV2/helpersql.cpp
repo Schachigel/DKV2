@@ -7,7 +7,7 @@ bool autoDetachDb::attachDb(QString filename)
     QString sql {qsl("ATTACH DATABASE '%1' AS '%2'")};
     return executeSql_wNoRecords(sql.arg(filename).arg(alias), QVariant(), QSqlDatabase::database(conname));
 }
-autoDetachDb::~autoDetachDb() 
+autoDetachDb::~autoDetachDb()
 {
     LOG_CALL;
     QString sql {qsl("DETACH DATABASE '%1'")};
@@ -363,7 +363,6 @@ bool executeSql_wNoRecords(QString sql, QVector<QVariant> v, QSqlDatabase db)
         return true;
     }
     qDebug() << "Failed to execute query. Error: " << q.lastQuery() << Qt::endl << q.lastError() ;
-//    qInfo() << Qt::endl;
     return false;
 }
 
