@@ -252,15 +252,16 @@ wpBankAccount::wpBankAccount(QWidget* p) : QWizardPage(p)
 }
 bool wpBankAccount::validatePage()
 {   LOG_CALL;
-    QString iban =field(qsl("iban")).toString().trimmed();
-    setField(qsl("iban"), iban);
+    QString formatedIban =field(qsl("iban")).toString().trimmed();
+    QString iban =formatedIban.remove(' ');
     if( ! iban.isEmpty()) {
         IbanValidator iv; int pos =0;
         if( iv.validate(iban, pos) != IbanValidator::State::Acceptable) {
-            QMessageBox::information(this, "Fehler", "Die Iban ist ungültig");
+            QMessageBox::information(this, "Fehler", "Die eingegebene Zeichenfolge ist keine gültige IBAN");
             return false;
         }
     }
+    setField(qsl("iban"), iban);
     setField(qsl("bic"), field(qsl("bic")).toString().trimmed());
     return true;
 }
