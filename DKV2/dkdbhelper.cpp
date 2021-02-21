@@ -217,10 +217,21 @@ bool open_databaseForApplication( QString newDbFile)
 }
 
 // general stuff
-bool isExistingContractLabel( QString newLabel)
+bool isExistingContractLabel( const QString& newLabel)
 {
     QVariant existingLabel =executeSingleValueSql(qsl("Kennung"), qsl("Vertraege"), qsl("Kennung = '") +newLabel +qsl("'"));
     return existingLabel.isValid();
+}
+
+bool isExistingExContractLabel( const QString& newLabel)
+{
+    QVariant existingLabel =executeSingleValueSql(qsl("Kennung"), qsl("exVertraege"), qsl("Kennung = '") +newLabel +qsl("'"));
+    return existingLabel.isValid();
+}
+
+bool isValidNewContractLabel(const QString& label)
+{
+    return (! isExistingContractLabel(label)) && (! isExistingExContractLabel(label));
 }
 
 QString proposeContractLabel()
@@ -231,11 +242,10 @@ QString proposeContractLabel()
         QString maxid = QString::number(iMaxid).rightJustified(6, '0');
         QString PI = "DK-" + dbConfig::readValue(GMBH_INITIALS).toString();
         kennung = PI + "-" + QString::number(QDate::currentDate().year()) + "-" + maxid;
-        QVariant v = executeSingleValueSql(dkdbstructur["Vertraege"]["id"], "Kennung='" + kennung + "'");
-        if( v.isValid())
-            iMaxid++;
-        else
+        if( isValidNewContractLabel(kennung))
             break;
+        else
+            iMaxid++;
     } while(1);
     iMaxid++; // prepare for next contract
     return kennung;

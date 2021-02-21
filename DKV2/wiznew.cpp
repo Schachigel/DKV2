@@ -445,10 +445,13 @@ bool wpNewContractData::validatePage()
 {   LOG_CALL;
     QString msg;
     setField(qsl("label"), field(qsl("label").trimmed()));
-    if( field(qsl("label")).toString().isEmpty()) msg =qsl("Die Vertragskennung darf nicht leer sein");
-    if( isExistingContractLabel(field(qsl("label")).toString())) msg =qsl("Die Vertragskennung darf noch nicht verwendet worden sein");
     int minContractValue = dbConfig::readValue(MIN_AMOUNT).toInt();
-    if( field(qsl("amount")).toInt() < minContractValue)
+    const QString label =field(qsl("label")).toString();
+    if( label.isEmpty())
+        msg =qsl("Die Vertragskennung darf nicht leer sein");
+    else if( ! isValidNewContractLabel(label))
+        msg =qsl("Die Vertragskennung existiert bereits für einen laufenden oder beendeten Vertrag und darf nicht erneut vergeben werden");
+    else if( field(qsl("amount")).toInt() < minContractValue)
         msg =qsl("Der Wert des Vertrags muss größer sein als der konfigurierte Minimalwert "
                  "eines Vertrages von ") +dbConfig::readValue(MIN_AMOUNT).toString() +qsl(" Euro");
     if( ! msg.isEmpty()) {
