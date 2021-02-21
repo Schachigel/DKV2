@@ -217,6 +217,12 @@ bool open_databaseForApplication( QString newDbFile)
 }
 
 // general stuff
+bool isExistingContractLabel( QString newLabel)
+{
+    QVariant existingLabel =executeSingleValueSql(qsl("Kennung"), qsl("Vertraege"), qsl("Kennung = '") +newLabel +qsl("'"));
+    return existingLabel.isValid();
+}
+
 QString proposeContractLabel()
 {   LOG_CALL;
     static int iMaxid = dbConfig::readValue(STARTINDEX).toInt() + getHighestRowId("Vertraege");

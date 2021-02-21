@@ -34,7 +34,7 @@ bool checkSchema_ConvertIfneeded(QString origDbFile);
 
 void closeAllDatabaseConnections();
 bool open_databaseForApplication( QString newDbFile="");
-
+bool isExistingContractLabel( QString newLabel);
 QString proposeContractLabel();
 void create_sampleData(int datensaetze =20);
 

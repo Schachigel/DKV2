@@ -444,7 +444,9 @@ void wpNewContractData::initializePage()
 bool wpNewContractData::validatePage()
 {   LOG_CALL;
     QString msg;
+    setField(qsl("label"), field(qsl("label").trimmed()));
     if( field(qsl("label")).toString().isEmpty()) msg =qsl("Die Vertragskennung darf nicht leer sein");
+    if( isExistingContractLabel(field(qsl("label")).toString())) msg =qsl("Die Vertragskennung darf noch nicht verwendet worden sein");
     int minContractValue = dbConfig::readValue(MIN_AMOUNT).toInt();
     if( field(qsl("amount")).toInt() < minContractValue)
         msg =qsl("Der Wert des Vertrags muss größer sein als der konfigurierte Minimalwert "
