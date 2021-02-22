@@ -326,38 +326,6 @@ QVector<rowData> contractRuntimeDistribution()
     ret.push_back({"Unbegrenzte Verträge ", QString::number(AnzahlUnbegrenzet), locale.toCurrencyString(SummeUnbegrenzet) });
     return ret;
 }
-void calc_payedInterestsByYear(QVector<PayedInterest>& pi)
-{   LOG_CALL;
-    QString sql {qsl("SELECT  STRFTIME('%Y', Datum) as Year, SUM(Buchungen.Betrag) as Summe, BuchungsArt, Vertraege.thesaurierend as Thesa "
-                    "FROM Buchungen INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id "
-                    "WHERE Buchungen.BuchungsArt = 8 OR Buchungen.BuchungsArt =4 "
-                    "GROUP BY Year, Buchungen.BuchungsArt, thesaurierend "
-                    "ORDER BY Year DESC, Buchungen.BuchungsArt DESC, thesaurierend")};
-
-    QVector<QSqlRecord> records;
-    if( !executeSql(sql, QVariant(), records)) return;
-    for( int i =0; i< records.size(); i++) {
-        PayedInterest p;
-        p.year = records[i].value("Year").toInt();
-        p.value = euroFromCt(records[i].value("Summe").toDouble());
-        booking::Type t = static_cast<booking::Type>(records[i].value("BuchungsArt").toInt());
-        int thesa =records[i].value("Thesa").toInt();
-        if( t == booking::Type::annualInterestDeposit) {
-            if(thesa == 1)
-                p.interestTypeDesc =qsl("Angerechnete Jahresendzinsen");
-            else if( thesa == 0)
-                p.interestTypeDesc =qsl("Ausgezahlte Jahresendzinsen");
-        }
-        else if( t == booking::Type::reInvestInterest)
-            p.interestTypeDesc = qsl("Unterjährig angerechnete Zinsen");
-        else {
-            qCritical() << "Wrong booking type in statistic function";
-            p.interestTypeDesc =qsl("-error-");
-        }
-        pi.push_back(p);
-    }
-    return;
-}
 
 void calc_contractEnd( QVector<ContractEnd>& ces)
 {   LOG_CALL;
@@ -379,7 +347,7 @@ void calc_anualInterestDistribution( QVector<YZV>& yzv)
     while( query.next()) {
         QSqlRecord r =query.record();
         yzv.push_back({r.value("Year").toInt(), r.value("Zinssatz").toReal(),
-                       r.value("Anzahl").toInt(), r.value("Summe").toReal() /100. });
+                       r.value("Anzahl").toInt(), r.value("Summe").toReal()});
     }
     return;
 }

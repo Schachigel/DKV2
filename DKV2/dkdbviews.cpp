@@ -186,6 +186,47 @@ ORDER BY V.id, B.Datum
 )str"
 )};
 
+const QString sqlInterestByYearOverview {qsl(
+R"str(
+SELECT
+  STRFTIME('%Y', Datum) as Year,
+  SUM(Buchungen.Betrag) /100. as Summe,
+  'Jahreszins' as BA,
+  CASE WHEN Vertraege.thesaurierend = 0 THEN 'ausbezahlt'
+   WHEN Vertraege.thesaurierend = 1 THEN 'angerechnet'
+   WHEN Vertraege.thesaurierend = 2 THEN 'einbehalten'
+  END  as Thesa
+FROM Buchungen INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id
+WHERE Buchungen.BuchungsArt = 8
+GROUP BY Year, Buchungen.BuchungsArt, thesaurierend
+
+UNION
+
+SELECT
+  STRFTIME('%Y', Datum) as Year,
+  SUM(Buchungen.Betrag) /100. as Summe,
+  'Jahreszins' as BA,
+  '(gesamt)' AS Thesa
+FROM Buchungen INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id
+WHERE Buchungen.BuchungsArt = 8
+GROUP BY Year, Buchungen.BuchungsArt
+
+UNION
+
+SELECT
+  STRFTIME('%Y', Datum) as Year,
+  SUM(Buchungen.Betrag) /100. as Summe,
+  'unterjähriger Zins' as BA,
+  '(gesamt)' as Thesa
+FROM Buchungen INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id
+WHERE Buchungen.BuchungsArt = 4
+GROUP BY Year
+
+ORDER BY YEAR DESC, Thesa DESC
+)str"
+)};
+
+
 const QString sqlContractsActiveDetailsView{ qsl(
 R"str(
 SELECT
@@ -407,5 +448,6 @@ QVector<dbViewDev> views = {
     {qsl("vAnzahl_passiverKreditoren"),       sqlInactiveCreditors},
     {qsl("vAnzahl_passiverKreditoren_thesa"), sqlInactiveCreditors_thesa},
     {qsl("vAnzahl_passiverKreditoren_ausz"),  sqlInactiveCreditors_payout},
+    {qsl("vStat_InterestByYear"),             sqlInterestByYearOverview}
 };
 

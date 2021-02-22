@@ -44,12 +44,14 @@ QString tableRow1(QString text, int colspan =2)
     return  opening.arg(colspan) + text + qsl("</td></tr>");
 }
 QString emptyRow( int cols) {
-    QString ret =tag(qsl(""), qsl("tr"), {"style=\"background - color:rgb(215, 215, 210);\" colspan=\"%1\";>"});
-    return ret.arg(QString::number(cols));
+//    QString ret =tag(qsl(""), qsl("tr"), {"style=\"background - color:rgb(215, 215, 210);\" colspan=\"%1\"; height: 50%;>"});
+    QString ret = qsl("<tr style=\"background - color:rgb(225, 225, 220); height:50%;\"><td colspan=%1><div style=\"font-size:2px; height:2px\";></div></td></tr>");
+    ret =ret.arg(QString::number(cols));
+    return ret;
 }
 QString emptyRow( )
 {
-    return qsl("<tr><td style='padding: 1px; font-size: small;'></td><td style='padding: 1px; font-size: small';></td></tr>");
+    return qsl("<tr><td style='padding: 1px; height: 50%;'><small></small></td><td style='padding: 1px;></td></tr>");
 }
 QString b(QString b) {
     return tag(b, qsl("b"));
@@ -101,6 +103,21 @@ QString htmlOverviewTableBlock(QString headline, dbStats::dataset ds)
     return ret;
 }
 
+QString htmlShortInfoTable()
+{
+    QString ret;
+
+    ret += h1(qsl("Übersicht DKs und DK Geber"));
+    ret += dbConfig::readValue(GMBH_ADDRESS1).toString();
+    ret += qsl(" - Stand: ") + QDate::currentDate().toString(qsl("dd.MM.yyyy<br>"));
+    dbStats stats(dbStats::calculate);
+    ret += htmlOverviewTableBlock(qsl("Alle Aktiven Verträge"), stats.activeContracts[dbStats::t_nt]);
+    ret += htmlOverviewTableBlock(qsl("Alle noch nicht aktiven Verträge"), stats.inactiveContracts[dbStats::t_nt]);
+    ret += htmlOverviewTableBlock(qsl("Alle Verträge"), stats.allContracts[dbStats::t_nt]);
+    return ret;
+}
+
+
 QString htmlOverviewTable()
 {
     QString ret;
@@ -127,24 +144,27 @@ QString htmlPayedInterestByYearTable()
 {
     QLocale locale;
     QString ret {h1(qsl("Ausgezahlte und angerechnete Zinsen pro Jahr<br>"))};
-    QVector<PayedInterest> pi;
-    calc_payedInterestsByYear(pi);
-    if( pi.isEmpty())
-        return qsl("<br><br><i>Bisher wurden keine Zinsen gezahlt</i>");
-
+    ret += dbConfig::readValue(GMBH_ADDRESS1).toString();
+    ret += qsl(" - Stand: ") + QDate::currentDate().toString(qsl("dd.MM.yyyy<br>"));
     ret += startTable();
-    ret +=tableRow3(h2(qsl("Jahr")), h2(qsl("Zinstyp")), h2(qsl("Summe")));
-    int lastyear = 0;
-    for( auto& x: qAsConst(pi)) {
-        if( x.year != lastyear) {
-            ret += emptyRow(3);
-            lastyear = x.year;
+    ret +=tableRow4(h2(qsl("Jahr")), h2(qsl("Zinstyp")), h2(qsl("Zinsmodus")), h2(qsl("Summe")));
+    QVector<QSqlRecord> records;
+    QLocale local;
+    if( ! executeSql(qsl("SELECT * FROM vStat_InterestByYear"), QVariant(), records)){
+        ret += tableRow4(qsl("fehler bei der Datenabfrage"), QString(), QString(), QString());
+        ret += endTable();
+        return ret;
+    }
+    int lastYear =-1;
+    for( auto rec : records) {
+        if( lastYear != rec.value(0).toInt()) {
+            ret += emptyRow(4);
         }
-        ret +=startRow();
-        ret +=qsl("<td style='text-align: right;' >") + QString::number(x.year) + qsl("</td>");
-        ret +=qsl("<td style='text-align: left;' >") + x.interestTypeDesc + qsl("</td>");
-        ret +=qsl("<td style='text-align: left;' >") + locale.toCurrencyString(x.value) + qsl("</td>");
-        ret +=endRow();
+        ret += tableRow4(rec.value(0).toString(),
+                         rec.value(2).toString(),
+                         rec.value(3).toString(),
+                         locale.toCurrencyString(rec.value(1).toDouble()));
+        lastYear =rec.value(0).toUInt();
     }
     ret += endTable();
     return ret;
@@ -174,16 +194,20 @@ QString htmlContractsByYearByInterestTable()
     QString ret;
     QVector<YZV> yzv;
     calc_anualInterestDistribution( yzv);
-    if( !yzv.isEmpty()) {
-        ret += h1(qsl("Verteilung der Zinssätze pro Jahr")) + qsl("<br> Stand:")  + QDate::currentDate().toString(qsl("dd.MM.yyyy<br>"));
-        ret += startTable() +  startRow();
-        ret += td(h2(qsl("Jahr"))) + td( h2(qsl("Zinssatz"))) +td(h2(qsl("Anzahl"))) + td( h2( qsl("Summe")));
-        ret += endRow();
-        for( auto& x: qAsConst(yzv)) {
-            ret += tableRow4( QString::number(x.year), QString(qsl("%1%")).arg(x.intrest, 2, 'g'), QString::number(x.count), locale.toCurrencyString(x.sum));
-        }
-        ret += endTable();
+    if( yzv.isEmpty())
+        return ret;
+    ret += h1(qsl("Verteilung der Zinssätze pro Jahr")) + qsl("<br> Stand:")  + QDate::currentDate().toString(qsl("dd.MM.yyyy<br>"));
+    ret += startTable() +  startRow();
+    ret += td(h2(qsl("Jahr"))) + td( h2(qsl("Zinssatz"))) +td(h2(qsl("Anzahl"))) + td( h2( qsl("Summe")));
+    ret += endRow();
+    int year =-1;
+    for( auto& x: qAsConst(yzv)) {
+        if( year != x.year)
+            ret += emptyRow(4);
+        ret += tableRow4( QString::number(x.year), QString(qsl("%1%")).arg(x.intrest, 2, 'g'), QString::number(x.count), locale.toCurrencyString(x.sum));
+        year =x.year;
     }
+    ret += endTable();
     return ret;
 }
 QString htmlContractsByRuntimeTable()
@@ -251,6 +275,9 @@ QString reportHtml(Uebersichten u)
                     "%1"
                   "</body></html>");
     switch( u ) {
+    case SHORTINFO: {
+        return html.arg(htmlShortInfoTable());
+    }
     case OVERVIEW: {
         return html.arg(htmlOverviewTable());
         break;

@@ -5,7 +5,8 @@
 
 enum Uebersichten
 {
-    OVERVIEW = 0,
+    SHORTINFO =0,
+    OVERVIEW,
     PAYED_INTEREST_BY_YEAR,
     BY_CONTRACT_END,
     INTEREST_DISTRIBUTION,
