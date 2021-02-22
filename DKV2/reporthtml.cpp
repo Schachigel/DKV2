@@ -45,13 +45,13 @@ QString tableRow1(QString text, int colspan =2)
 }
 QString emptyRow( int cols) {
 //    QString ret =tag(qsl(""), qsl("tr"), {"style=\"background - color:rgb(215, 215, 210);\" colspan=\"%1\"; height: 50%;>"});
-    QString ret = qsl("<tr style=\"background - color:rgb(225, 225, 220); height:50%;\"><td colspan=%1><div style=\"font-size:2px; height:2px\";></div></td></tr>");
+    QString ret = qsl("<tr><td colspan=%1 style='padding: 1px; font-size: small;'></td></tr>");
     ret =ret.arg(QString::number(cols));
     return ret;
 }
 QString emptyRow( )
 {
-    return qsl("<tr><td style='padding: 1px; height: 50%;'><small></small></td><td style='padding: 1px;></td></tr>");
+    return qsl("<tr><td style='padding: 1px; font-size: small;'></td><td style='padding: 1px; font-size: small';></td></tr>");
 }
 QString b(QString b) {
     return tag(b, qsl("b"));
