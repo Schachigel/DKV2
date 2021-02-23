@@ -74,7 +74,7 @@ bool copy_database( const QString& targetFileName, const QSqlDatabase& db/*=QSql
     autoRollbackTransaction transaction(db.connectionName());
     autoDetachDb ad(qsl("targetDb"), db.connectionName());
 
-    if (!createFileWithDatabaseStructure(targetFileName, dbs))
+    if (!createNewDatabaseFile(targetFileName, dbs))
         return false;
     if (!ad.attachDb(targetFileName))
         return false;
