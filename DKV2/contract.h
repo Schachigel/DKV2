@@ -76,7 +76,7 @@ struct contract
     void setPlannedInvest(const double& d) { td.setValue(qsl("Betrag"), ctFromEuro(d));}
     double plannedInvest() const { return euroFromCt( td.getValue(qsl("Betrag")).toInt());}
     void setInterestModel( interestModel b =interestModel::reinvest) { td.setValue(qsl("thesaurierend"), toInt(b));}
-    interestModel interestModel() const { return fromInt(td.getValue(qsl("thesaurierend")).toInt());}
+    interestModel iModel() const { return fromInt(td.getValue(qsl("thesaurierend")).toInt());}
     void setNoticePeriod(int m) { td.setValue(qsl("Kfrist"), m); if( -1 != m) setPlannedEndDate( EndOfTheFuckingWorld);}
     int noticePeriod() const { return td.getValue(qsl("Kfrist")).toInt();}
     bool hasEndDate() const {return -1 == td.getValue(qsl("Kfrist"));}

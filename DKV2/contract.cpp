@@ -124,7 +124,7 @@ double contract::investedValue(const QDate& d) const
 
 double contract::interestBearingValue() const
 {
-    switch (interestModel())
+    switch (iModel())
     {
     case interestModel::payout:
         return value();
@@ -278,7 +278,7 @@ int contract::annualSettlement( int year)
                      //////////
         double zins =ZinsesZins(interestRate(), baseValue, latestBooking().date, nextAnnualSettlementDate);
                      //////////
-        switch(interestModel()) {
+        switch(iModel()) {
         case interestModel::reinvest:
         case interestModel::fixed: {
             if( (bookingSuccess =booking::bookAnnualInterestDeposit(id(), nextAnnualSettlementDate, zins)))

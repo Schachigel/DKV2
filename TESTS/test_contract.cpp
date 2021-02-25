@@ -121,7 +121,7 @@ void test_contract::test_write_read_contract()
         contract cont_read(cont_write.id());
         QCOMPARE(cont_write, cont_read);
         // test comparison
-        cont_read.setInterestModel( nextInterestModel(cont_read.interestModel()));
+        cont_read.setInterestModel( nextInterestModel(cont_read.iModel()));
         QVERIFY(cont_write != cont_read);
     }
 }

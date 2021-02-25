@@ -24,8 +24,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 #CONFIG += c++11
 CONFIG += c++14
-win32:QMAKE_CXXFLAGS += /utf-8
-win32:QMAKE_CXXFLAGS += /FS
+#win32:QMAKE_CXXFLAGS += /utf-8
+#win32:QMAKE_CXXFLAGS += /FS
+CONFIG += utf8_source
 
 SOURCES +=  tst_db.cpp \
     ../DKV2/appconfig.cpp \
