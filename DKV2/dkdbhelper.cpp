@@ -146,11 +146,12 @@ version_check_result check_db_version(QString file)
 }
 
 version_check_result check_db_version(QSqlDatabase db)
-{   LOG_CALL;
+{   /*LOG_CALL;*/
     QVariant vversion =dbConfig::readVersion(db);
     if( ! (vversion.isValid() && vversion.canConvert(QMetaType::Double)))
         return noVersion; // big problem: no db
     double d =vversion.toDouble();
+    qInfo() << "DB Version Comparison: expected / found: " << CURRENT_DB_VERSION << " / " << d;
     if( d  < CURRENT_DB_VERSION)
         return lowVersion; // the database is old -> conversion?
     if( d == CURRENT_DB_VERSION)

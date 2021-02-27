@@ -24,7 +24,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -172,6 +172,31 @@ p, li { white-space: pre-wrap; }
            <bool>true</bool>
           </property>
          </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="InvestmentsPage">
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <layout class="QHBoxLayout" name="horicontalLayout">
+          <item>
+           <widget class="QPushButton" name="btnCreateFromContracts">
+            <property name="text">
+             <string>Aus &amp;Verträgen erstellen</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnNewInvestment">
+            <property name="text">
+             <string>Ne&amp;u </string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTreeView" name="InvestmentsTableView"/>
         </item>
        </layout>
       </widget>
@@ -451,6 +476,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="separator"/>
     <addaction name="action_menu_contracts_anual_interest_settlement"/>
     <addaction name="separator"/>
+    <addaction name="actionAnlagen_verwalten"/>
     <addaction name="action_menu_contracts_statistics_view"/>
     <addaction name="menu_contracts_subm_print_lists"/>
    </widget>
@@ -570,7 +596,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="action_menu_contracts_statistics_view">
    <property name="text">
-    <string>Übersicht</string>
+    <string>Übersichten</string>
    </property>
    <property name="toolTip">
     <string>Übersicht über Vertragsdaten anzeigen</string>
@@ -677,6 +703,11 @@ p, li { white-space: pre-wrap; }
   <action name="actionTEST">
    <property name="text">
     <string>TEST</string>
+   </property>
+  </action>
+  <action name="actionAnlagen_verwalten">
+   <property name="text">
+    <string>Anlagen verwalten</string>
    </property>
   </action>
  </widget>

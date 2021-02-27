@@ -8,7 +8,7 @@
 #include "booking.h"
 
 // statics & friends
-const dbtable& contract::getTableDef()
+/*static*/ const dbtable& contract::getTableDef()
 {
     static dbtable contractTable(qsl("Vertraege"));
     if (0 == contractTable.Fields().size())
@@ -30,7 +30,7 @@ const dbtable& contract::getTableDef()
     }
     return contractTable;
 }
-const dbtable& contract::getTableDef_deletedContracts()
+/*static*/const dbtable& contract::getTableDef_deletedContracts()
 {
     static dbtable exContractTable(qsl("exVertraege"));
     if( 0 != exContractTable.Fields().size())
@@ -44,12 +44,12 @@ const dbtable& contract::getTableDef_deletedContracts()
                          dkdbstructur[qsl("Kreditoren")][qsl("id")], qsl("ON DELETE CASCADE")));
     return exContractTable;
 }
-bool contract::remove(qlonglong id)
+/*static*/ bool contract::remove(qlonglong id)
 {
     QString sql=qsl("DELETE FROM Vertraege WHERE id=") + QString::number(id);
     return executeSql_wNoRecords(sql);
 }
-QString contract::booking_csv_header()
+/*static*/QString contract::booking_csv_header()
 {
     return qsl("Vorname; Nachname; Email; Strasse; Plz; Stadt; IBAN; Kennung; Auszahlend;"
            "Beginn; Buchungsdatum; Zinssatz; Kreditbetrag; Zins; Endbetrag");

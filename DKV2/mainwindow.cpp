@@ -204,6 +204,10 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
     case printPreviewPageIndex:
         ui->action_menu_creditors_delete->setEnabled(false);
         ui->menu_contracts_subm_print_lists->setEnabled(false);
+    case investmentsPageIndex:
+        prepare_investmentsListView();
+        ui->action_menu_creditors_delete->setEnabled(false);
+        ui->menu_contracts_subm_print_lists->setEnabled(false);
     default:
         qWarning() << "stackedWidget current change not implemented for this index";
     }// e.o. switch
@@ -738,6 +742,30 @@ void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
         ui->contractsTableView->selectRow(0);
     ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
 }
+// List of investments
+void MainWindow::prepare_investmentsListView()
+{
+    QSqlTableModel* model = new QSqlTableModel(this);
+    model->setTable(qsl("Geldanlagen"));
+}
+
+void MainWindow::on_actionAnlagen_verwalten_triggered()
+{
+    prepare_investmentsListView();
+    ui->stackedWidget->setCurrentIndex(investmentsPageIndex);
+}
+
+void MainWindow::on_btnCreateFromContracts_clicked()
+{
+
+}
+
+void MainWindow::on_btnNewInvestment_clicked()
+{
+
+}
+
+
 // statistics
 void MainWindow::on_action_menu_contracts_statistics_view_triggered()
 {   LOG_CALL;
@@ -770,7 +798,7 @@ void MainWindow::on_pbPrint_clicked()
     ui->txtOverview->print(&write);
     showFileInFolder(filename);
 }
-// anual settlement
+// annual settlement
 void MainWindow::on_action_menu_contracts_anual_interest_settlement_triggered()
 {   LOG_CALL;
     annualSettlement();
@@ -913,3 +941,5 @@ void MainWindow::doPaint(QPrinter* pri)
     // Fußzeile
     // text(e)
 }
+
+

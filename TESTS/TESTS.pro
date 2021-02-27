@@ -38,6 +38,7 @@ SOURCES +=  tst_db.cpp \
     ../DKV2/dkdbhelper.cpp \
     ../DKV2/dkdbviews.cpp \
     ../DKV2/helperfin.cpp \
+    ../DKV2/investment.cpp \
     ../DKV2/letterTemplate.cpp \
     ../DKV2/helpersql.cpp \
     ../DKV2/csvwriter.cpp \

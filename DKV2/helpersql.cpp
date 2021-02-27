@@ -153,20 +153,17 @@ bool ensureTable( const dbtable& table, QSqlDatabase db)
 QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db)
 {
     QSqlQuery q(db);
-    if( !q.exec(sql))
-    {
+    if( !q.exec(sql)) {
         qCritical() << "SingleValueSql failed to execute: " << q.lastError() << Qt::endl << q.lastQuery() << Qt::endl;;
         return QVariant();
     }
     q.last();
-    if(q.at() > 0)
-    {
+    if(q.at() > 0) {
         qDebug() << "SingleValueSql returned more than one value\n" << q.lastQuery() << Qt::endl;;
         return QVariant();
     }
-    if(q.at() < 0)
-    {
-        qDebug() << "SingleValueSql returned no value\n" << q.lastQuery() << Qt::endl;;
+    if(q.at() < 0) {
+        // qDebug() << "SingleValueSql returned no value\n" << q.lastQuery() << Qt::endl;;
         return QVariant();
     }
     qInfo() << "sql " << sql << " returned " << q.value(0);

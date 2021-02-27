@@ -3,6 +3,7 @@
 #include "creditor.h"
 #include "contract.h"
 #include "booking.h"
+#include "investment.h"
 #include "letterTemplate.h"
 
 
@@ -70,6 +71,8 @@ void init_DKDBStruct()
 
     dkdbstructur.appendTable(booking::getTableDef());
     dkdbstructur.appendTable(booking::getTableDef_deletedBookings());
+
+    dkdbstructur.appendTable(investment::getTableDef());
 
     dbtable meta("Meta");
     meta.append(dbfield("Name", QVariant::String).setPrimaryKey());

@@ -127,12 +127,19 @@ private slots:
     void on_btnUpdatePreview_clicked();
     void doPaint(QPrinter*);
 
+    void on_btnCreateFromContracts_clicked();
+
+    void on_btnNewInvestment_clicked();
+
+    void on_actionAnlagen_verwalten_triggered();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();
     void prepare_deleted_contracts_list_view();
     void prepare_valid_contraccts_list_view();
     void prepare_contracts_list_view();
+    void prepare_investmentsListView();
     void prepare_startPage();
 
     void prepare_printPreview();
@@ -146,11 +153,12 @@ private:
 
     enum stackedWidgedsPageIndex
     {
-        startPageIndex =0,
-        creditorsListPageIndex =1,
-        contractsListPageIndex =2,
-        overviewsPageIndex=3,
-        printPreviewPageIndex=4
+        startPageIndex
+        ,creditorsListPageIndex
+        ,contractsListPageIndex
+        ,overviewsPageIndex
+        ,investmentsPageIndex
+        ,printPreviewPageIndex
     };
     QVector<QString> Statistics_Filenames{
         qsl("Uebersicht"),

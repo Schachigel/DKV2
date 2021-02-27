@@ -3,6 +3,7 @@
 
 #include "tabledatainserter.h"
 #include "helperfile.h"
+#include "appconfig.h"
 #include "dkdbhelper.h"
 #include "dkdbcopy.h"
 
@@ -244,6 +245,7 @@ bool convert_database_inplace( const QString& targetFilename, const QString& tem
             qCritical() << "could not update sqlite_sequence table";
             return false;
     }
+    dbConfig::writeVersion(db, autodetatch.alias);
     transact.commit();
     return true;
 }

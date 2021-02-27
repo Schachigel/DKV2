@@ -57,6 +57,7 @@ SOURCES += \
         helperfile.cpp \
         helperfin.cpp \
         helpersql.cpp \
+        investment.cpp \
         letterTemplate.cpp \
         letters.cpp \
         main.cpp \
@@ -92,6 +93,7 @@ HEADERS += \
         helperfile.h \
         helperfin.h \
         helpersql.h \
+        investment.h \
         letterTemplate.h \
         letters.h \
         mainwindow.h \
