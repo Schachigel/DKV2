@@ -40,6 +40,8 @@ bool isValidNewContractLabel( const QString& label);
 QString proposeContractLabel();
 void create_sampleData(int datensaetze =20);
 
+int createNewInvestmentsFromContracts();
+
 bool createCsvActiveContracts();
 
 struct ContractEnd

@@ -204,12 +204,14 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
     case printPreviewPageIndex:
         ui->action_menu_creditors_delete->setEnabled(false);
         ui->menu_contracts_subm_print_lists->setEnabled(false);
+        break;
     case investmentsPageIndex:
         prepare_investmentsListView();
         ui->action_menu_creditors_delete->setEnabled(false);
         ui->menu_contracts_subm_print_lists->setEnabled(false);
+        break;
     default:
-        qWarning() << "stackedWidget current change not implemented for this index";
+        qWarning() << "stackedWidget current change not implemented for this index " << arg1;
     }// e.o. switch
     return;
 }
@@ -747,6 +749,9 @@ void MainWindow::prepare_investmentsListView()
 {
     QSqlTableModel* model = new QSqlTableModel(this);
     model->setTable(qsl("Geldanlagen"));
+    model->setSort(0, Qt::SortOrder::DescendingOrder);
+    ui->InvestmentsTableView->setModel(model);
+    model->select();
 }
 
 void MainWindow::on_actionAnlagen_verwalten_triggered()
@@ -757,7 +762,8 @@ void MainWindow::on_actionAnlagen_verwalten_triggered()
 
 void MainWindow::on_btnCreateFromContracts_clicked()
 {
-
+    /*int newInvestments =*/createNewInvestmentsFromContracts();
+    qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model())->select();
 }
 
 void MainWindow::on_btnNewInvestment_clicked()
@@ -942,11 +948,13 @@ void MainWindow::doPaint(QPrinter* pri)
     // text(e)
 }
 
+#ifndef QT_DEBUG
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    QMessageBox::StandardButton mr = QMessageBox::question(this, qsl("Beenden?"), qsl("DKV2 beenden?"));
+    QMessageBox::StandardButton mr = QMessageBox::question(this, qsl("Beenden?"), qsl("Möchtest Du DKV2 beenden?"));
     if (mr == QMessageBox::Yes)
         event->accept();
     else
         event->ignore();
 }
+#endif

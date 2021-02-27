@@ -10,4 +10,6 @@ public:
     static const dbtable& getTableDef();
 };
 
+bool createInvestmentIfApplicable(const int ZSatz, const QDate& vDate);
+
 #endif // INVESTMENT_H

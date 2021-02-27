@@ -43,10 +43,10 @@ public:
     int get_current_id_from_contracts_list();
 
     void updateListViews();
-
+#ifndef QT_DEBUG
 protected:
     void closeEvent(QCloseEvent *event) override;
-
+#endif
 private slots:
 
     void currentChange_ctv(const QModelIndex & , const QModelIndex & );
@@ -156,11 +156,11 @@ private:
 
     enum stackedWidgedsPageIndex
     {
-        startPageIndex
+        startPageIndex =0
         ,creditorsListPageIndex
         ,contractsListPageIndex
         ,overviewsPageIndex
-        ,investmentsPageIndex
+        ,investmentsPageIndex =4
         ,printPreviewPageIndex
     };
     QVector<QString> Statistics_Filenames{

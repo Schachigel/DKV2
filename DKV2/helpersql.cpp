@@ -100,9 +100,18 @@ QString dbAffinityType(QVariant::Type t)
 
 int rowCount(const QString& table, QSqlDatabase db /* =QSqlDatabase::database() */)
 {
-    QSqlQuery q(qsl("SELECT count(*) FROM ") + table, db);
-    if( q.first())
-        return q.value(0).toInt();
+    QString sql;
+    if( table.startsWith(qsl("SELECT"), Qt::CaseInsensitive))
+        sql =qsl("SELECT count(*) FROM (%1)").arg(table);
+    else
+        sql =qsl("SELECT count(*) FROM ") +table;
+
+    QSqlQuery q(sql, db);
+    if( q.first()){
+       int ret =q.value(0).toInt();
+       qDebug() << sql << " returned " << ret;
+       return ret;
+    }
     else {
         qCritical() << "row counting query failed" << q.lastError() << Qt::endl << q.lastQuery();
         return -1;

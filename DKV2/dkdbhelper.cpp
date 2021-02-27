@@ -12,6 +12,7 @@
 #include "creditor.h"
 #include "contract.h"
 #include "booking.h"
+#include "investment.h"
 #include "letterTemplate.h"
 #include "dkdbviews.h"
 #include "dkdbcopy.h"
@@ -251,6 +252,21 @@ QString proposeContractLabel()
     iMaxid++; // prepare for next contract
     return kennung;
 }
+
+int createNewInvestmentsFromContracts()
+{
+    QString sql{qsl("SELECT ZSatz, Vertragsdatum FROM Vertraege ORDER BY Vertragsdatum ASC")};
+    QSqlQuery q(sql);
+    int ret =0;
+    while(q.next()) {
+        int ZSatz =q.record().value(qsl("ZSatz")).toInt();
+        QDate vDate =q.record().value(qsl("Vertragsdatum")).toDate();
+        if( createInvestmentIfApplicable(ZSatz, vDate))
+            ret++;
+    }
+    return ret;
+}
+
 void create_sampleData(int datensaetze)
 {
     saveRandomCreditors(datensaetze);
