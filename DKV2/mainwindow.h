@@ -44,6 +44,9 @@ public:
 
     void updateListViews();
 
+protected:
+    void closeEvent(QCloseEvent *event) override;
+
 private slots:
 
     void currentChange_ctv(const QModelIndex & , const QModelIndex & );
