@@ -38,8 +38,9 @@ QMAKE_TARGET_DESCRIPTION = DK Verwaltung f. MHS Projekte
 RC_CODEPAGE = 850
 RC_LANG = 0x0407
 
-LIBS += \
+win32:LIBS += \
         -lVersion
+
 SOURCES += \
         appconfig.cpp \
         booking.cpp \

@@ -942,4 +942,11 @@ void MainWindow::doPaint(QPrinter* pri)
     // text(e)
 }
 
-
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    QMessageBox::StandardButton mr = QMessageBox::question(this, qsl("Beenden?"), qsl("DKV2 beenden?"));
+    if (mr == QMessageBox::Yes)
+        event->accept();
+    else
+        event->ignore();
+}
