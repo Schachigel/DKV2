@@ -76,7 +76,7 @@ QString MainWindow::findValidDatabaseToUse()
         return dbPath;
     } else {
         // there should be a valid DB
-        QMessageBox::critical(this, "Ganz schlecht", "Ohne valide Datenbank kann Dkv2 nicht laufen");
+        QMessageBox::critical(this, qsl("Ganz schlecht"), qsl("Ohne valide Datenbank kann Dkv2 nicht laufen"));
         return QString();
     }
 }

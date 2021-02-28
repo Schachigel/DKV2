@@ -155,8 +155,6 @@ private:
     bool useDb(const QString& dbfile);
     void showDbInStatusbar(QString filename = "");
 
-    QSignalMapper* smDeleteInvestment;
-
     enum stackedWidgedsPageIndex
     {
         startPageIndex
