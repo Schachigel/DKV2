@@ -59,7 +59,7 @@ struct YZV
     int count;
     double sum;
 };
-void calc_anualInterestDistribution( QVector<YZV>& yzv);
+void calc_annualInterestDistribution( QVector<YZV>& yzv);
 struct rowData
 {
     QString text; QString number; QString value;

@@ -223,7 +223,6 @@ void MainWindow::prepare_startPage()
     QString messageHtml {qsl("<table width='100%'><tr><td><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></td></tr>")};
 
     dbStats stats(dbStats::calculate);
-    ;
     double allContractsValue = stats.allContracts[dbStats::t_nt].value;
     if( allContractsValue > 0) {
         QLocale l;
@@ -748,9 +747,15 @@ void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
 void MainWindow::prepare_investmentsListView()
 {
     QSqlTableModel* model = new QSqlTableModel(this);
-    model->setTable(qsl("Geldanlagen"));
+    model->setTable(qsl("vInvestmenstsView"));
     model->setSort(0, Qt::SortOrder::DescendingOrder);
-    ui->InvestmentsTableView->setModel(model);
+    QTreeView* tv =ui->InvestmentsTableView;
+    tv->setModel(model);
+    tv->setItemDelegateForColumn(0, new PercentFrom100sItemFormatter);
+    tv->setItemDelegateForColumn(1, new DateItemFormatter);
+    tv->setItemDelegateForColumn(2, new DateItemFormatter);
+    tv->setItemDelegateForColumn(4, new CurrencyFormatter);
+
     model->select();
 }
 
@@ -761,16 +766,20 @@ void MainWindow::on_actionAnlagen_verwalten_triggered()
 }
 
 void MainWindow::on_btnCreateFromContracts_clicked()
-{
-    /*int newInvestments =*/createNewInvestmentsFromContracts();
-    qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model())->select();
+{   LOG_CALL;
+    int newInvestments =createNewInvestmentsFromContracts();
+    if( newInvestments) {
+        QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden ") +QString::number(newInvestments) +qsl("angelegt."));
+        qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model())->select();
+    }
+    else
+        QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden keine neuen Anlageformen angelegt."));
 }
 
 void MainWindow::on_btnNewInvestment_clicked()
-{
+{   LOG_CALL;
 
 }
-
 
 // statistics
 void MainWindow::on_action_menu_contracts_statistics_view_triggered()
@@ -805,7 +814,7 @@ void MainWindow::on_pbPrint_clicked()
     showFileInFolder(filename);
 }
 // annual settlement
-void MainWindow::on_action_menu_contracts_anual_interest_settlement_triggered()
+void MainWindow::on_action_menu_contracts_annual_interest_settlement_triggered()
 {   LOG_CALL;
     annualSettlement();
     updateListViews();

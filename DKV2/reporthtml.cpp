@@ -193,7 +193,7 @@ QString htmlContractsByYearByInterestTable()
     QLocale locale;
     QString ret;
     QVector<YZV> yzv;
-    calc_anualInterestDistribution( yzv);
+    calc_annualInterestDistribution( yzv);
     if( yzv.isEmpty())
         return ret;
     ret += h1(qsl("Verteilung der Zinssätze pro Jahr")) + qsl("<br> Stand:")  + QDate::currentDate().toString(qsl("dd.MM.yyyy<br>"));

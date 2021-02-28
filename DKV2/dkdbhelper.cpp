@@ -256,7 +256,8 @@ QString proposeContractLabel()
 int createNewInvestmentsFromContracts()
 {
     QString sql{qsl("SELECT ZSatz, Vertragsdatum FROM Vertraege ORDER BY Vertragsdatum ASC")};
-    QSqlQuery q(sql);
+    QSqlQuery q; q.setForwardOnly(true);
+    q.exec(sql);
     int ret =0;
     while(q.next()) {
         int ZSatz =q.record().value(qsl("ZSatz")).toInt();
@@ -356,7 +357,7 @@ void calc_contractEnd( QVector<ContractEnd>& ces)
     }
     return;
 }
-void calc_anualInterestDistribution( QVector<YZV>& yzv)
+void calc_annualInterestDistribution( QVector<YZV>& yzv)
 {   LOG_CALL;
     QString sql ="SELECT * FROM vContractsByYearByInterest ORDER BY Year";
     QSqlQuery query;

@@ -186,6 +186,19 @@ ORDER BY V.id, B.Datum
 )str"
 )};
 
+const QString sqlInvestmentsView {qsl(
+R"str(
+SELECT ga.ZSatz
+  , ga.Anfang
+  , ga.Ende
+  , ga.Typ
+  , (SELECT SUM(Betrag) /100. FROM Vertraege WHERE Vertragsdatum >= ga.Anfang AND Vertragsdatum < ga.Ende AND ZSatz = ga.ZSatz) AS Summe
+  , (SELECT count(Betrag) FROM Vertraege WHERE Vertragsdatum >= ga.Anfang AND Vertragsdatum < ga.Ende AND ZSatz = ga.ZSatz) AS Anzahl
+FROM Geldanlagen AS ga
+ORDER BY ga.ZSatz DESC
+)str"
+)};
+
 const QString sqlInterestByYearOverview {qsl(
 R"str(
 SELECT
@@ -435,6 +448,7 @@ QVector<dbViewDev> views = {
     {qsl("vVertraege_alle"),                  sqlContractsAllView},
     {qsl("vVertraege_alle_4view"),            sqlContractView},
     {qsl("vVertraege_geloescht"),             sqlExContractView},
+    {qsl("vInvestmenstsView"),                 sqlInvestmentsView},
     {qsl("vNextAnnualS_first"),               sqlNextAnnualSettlement_firstAS},
     {qsl("vNextAnnualS_next"),                sqlNextAnnualSettlement_nextAS},
     {qsl("vNextAnnualSettlement"),            sqlNextAnnualSettlement},

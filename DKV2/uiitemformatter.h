@@ -23,6 +23,15 @@ public:
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 
+class PercentFrom100sItemFormatter : public QStyledItemDelegate
+{
+    Q_OBJECT
+public:
+    PercentFrom100sItemFormatter(QObject *parent = nullptr) : QStyledItemDelegate(parent){}
+    QString displayText(const QVariant& value, const QLocale& )const override;
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+};
+
 class BookingAmountItemFormatter : public QStyledItemDelegate
 {
     Q_OBJECT

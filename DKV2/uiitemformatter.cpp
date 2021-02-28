@@ -24,9 +24,22 @@ QString PercentItemFormatter::displayText(const QVariant& value, const QLocale& 
 {
     double percent = value.toDouble();
     // data is stored as 100th percent but the query compensatates that
-    return qsl("%1%").arg(percent, 2, 'g');
+    return qsl("%1%").arg(percent, 2, 'f', 2);
 };
 void PercentItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    QStyleOptionViewItem alignedOption(option);
+    alignedOption.displayAlignment = Qt::AlignCenter;
+    QStyledItemDelegate::paint(painter, alignedOption, index);
+}
+
+QString PercentFrom100sItemFormatter::displayText(const QVariant& value, const QLocale& )const
+{
+    double percent = value.toInt() /100.;
+    // data is stored as 100th percent but the query compensatates that
+    return qsl("%1%").arg(percent, 2, 'f', 2);
+};
+void PercentFrom100sItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QStyleOptionViewItem alignedOption(option);
     alignedOption.displayAlignment = Qt::AlignCenter;

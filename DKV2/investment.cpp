@@ -46,9 +46,7 @@ bool createInvestmentIfApplicable(const int ZSatz, const QDate& vDate)
     tdi.setValue(qsl("ZSatz"), ZSatz);
     tdi.setValue(qsl("Anfang"), vDate);
     tdi.setValue(qsl("Ende"), endDate);
-    QString type { QString::number(ZSatz/100.) +qsl(" % von ")
-                +vDate.toString(qsl("yyyy.MM.dd")) +qsl(" bis ")
-                +endDate.toString(qsl("yyyy.MM.dd") +qsl(" 100.000 Euro pa"))};
+    QString type { QString::number(ZSatz/100.) +qsl(" % - 100.000 Euro pa")};
     tdi.setValue(qsl("Typ"), type);
     tdi.setValue(qsl("Offen"), true);
     return tdi.InsertData();
