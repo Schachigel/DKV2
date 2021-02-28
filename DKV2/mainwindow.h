@@ -41,7 +41,6 @@ public:
 
     int id_SelectedCreditor();
     int get_current_id_from_contracts_list();
-
     void updateListViews();
 #ifndef QT_DEBUG
 protected:
@@ -60,8 +59,6 @@ private slots:
     void on_action_cmenu_edit_creditor_triggered();
 
     void on_stackedWidget_currentChanged(int arg1);
-
-    // Buttons on the "Vertrag anlegen" page
 
     void on_action_menu_contracts_listview_triggered();
 
@@ -136,6 +133,10 @@ private slots:
 
     void on_actionAnlagen_verwalten_triggered();
 
+    void on_InvestmentsTableView_customContextMenuRequested(const QPoint &pos);
+
+    void on_actionInvestmentLoeschen_triggered();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();
@@ -154,16 +155,19 @@ private:
     bool useDb(const QString& dbfile);
     void showDbInStatusbar(QString filename = "");
 
+    QSignalMapper* smDeleteInvestment;
+
     enum stackedWidgedsPageIndex
     {
-        startPageIndex =0
+        startPageIndex
         ,creditorsListPageIndex
         ,contractsListPageIndex
         ,overviewsPageIndex
-        ,investmentsPageIndex =4
+        ,investmentsPageIndex
         ,printPreviewPageIndex
     };
     QVector<QString> Statistics_Filenames{
+        qsl("Kurzinfo"),
         qsl("Uebersicht"),
         qsl("Zinsen"),
         qsl("Vertragsenden"),

@@ -6,7 +6,7 @@ R"str(
 SELECT
   V.id AS VertragsId
   ,K.id AS KreditorId
-  ,K.Nachname || ', ' || K.Vorname          AS KreditorIn
+  ,(SELECT K.Nachname || ', ' || K.Vorname FROM Kreditoren AS K WHERE K.id = V.KreditorId) AS KreditorIn
   ,V.Kennung AS Vertragskennung
   ,strftime('%d.%m.%Y',V.Vertragsdatum)     AS Vertragsdatum
 
@@ -42,7 +42,7 @@ SELECT
   ,CASE WHEN V.Kfrist = -1 THEN strftime('%d.%m.%Y', V.LaufzeitEnde)
      ELSE '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)' END AS KdgFristVertragsende
 
-FROM Vertraege AS V  INNER JOIN Kreditoren AS K ON V.KreditorId = K.id
+FROM Vertraege AS V
 
 -- aktivierungsdatum und Betrag
 LEFT JOIN

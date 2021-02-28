@@ -20,6 +20,12 @@ investment::investment()
         investmentTable.append(dbfield(qsl("Ende"), QVariant::Date).setNotNull());
         investmentTable.append(dbfield(qsl("Typ"), QVariant::String).setNotNull());
         investmentTable.append(dbfield(qsl("Offen"), QVariant::Bool).setNotNull());
+        QVector<dbfield> unique;
+        unique.append(investmentTable[qsl("ZSatz")]);
+        unique.append(investmentTable[qsl("Anfang")]);
+        unique.append(investmentTable[qsl("Ende")]);
+        unique.append(investmentTable[qsl("Typ")]);
+        investmentTable.setUnique(unique);
     }
     return investmentTable;
 }
@@ -50,4 +56,14 @@ bool createInvestmentIfApplicable(const int ZSatz, const QDate& vDate)
     tdi.setValue(qsl("Typ"), type);
     tdi.setValue(qsl("Offen"), true);
     return tdi.InsertData();
+}
+bool deleteInvestment(const int ZSatz, const QString& v, const QString& b, const QString& t)
+{
+    QString sql{qsl("DELETE FROM Geldanlagen WHERE ZSatz=%1 AND Anfang='%2' AND Ende='%3' AND Typ='%4'")};
+    sql =sql.arg(QString::number(ZSatz),v, b, t);
+    return executeSql_wNoRecords(sql);
+}
+bool deleteInvestment(const int ZSatz, const QDate& v, const QDate& b, const QString t)
+{
+    return deleteInvestment(ZSatz, v.toString(Qt::ISODate), b.toString(Qt::ISODate), t);
 }

@@ -11,5 +11,8 @@ public:
 };
 
 bool createInvestmentIfApplicable(const int ZSatz, const QDate& vDate);
+bool deleteInvestment(const int ZSatz, const QDate& v, const QDate& b, const QString t);
+//bool deleteInvestment(const int ZSatz, const QString& v, const QString& b, const QString& t);
+
 
 #endif // INVESTMENT_H

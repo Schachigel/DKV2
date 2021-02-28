@@ -24,7 +24,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -196,7 +196,7 @@ p, li { white-space: pre-wrap; }
          </layout>
         </item>
         <item>
-         <widget class="QTreeView" name="InvestmentsTableView"/>
+         <widget class="QTableView" name="InvestmentsTableView"/>
         </item>
        </layout>
       </widget>
@@ -708,6 +708,14 @@ p, li { white-space: pre-wrap; }
   <action name="actionAnlagen_verwalten">
    <property name="text">
     <string>Anlagen verwalten</string>
+   </property>
+  </action>
+  <action name="actionInvestmentLoeschen">
+   <property name="text">
+    <string>Löschen</string>
+   </property>
+   <property name="toolTip">
+    <string>Das Investment wird aus der Datenbank gelsöcht. </string>
    </property>
   </action>
  </widget>

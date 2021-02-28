@@ -20,6 +20,7 @@
 
 #include "appconfig.h"
 #include "wiznewdatabase.h"
+#include "investment.h"
 #include "wizopenornewdatabase.h"
 #include "appconfig.h"
 #include "csvwriter.h"
@@ -153,6 +154,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->contractsTableView->setStyleSheet(qsl("QTableView::item { padding-right: 10px; padding-left: 10px; }"));
 
     ui->bookingsTableView->setItemDelegateForColumn(2, new bookingTypeFormatter);
+
+    ui->InvestmentsTableView->setStyleSheet(qsl("QTableView::item { padding-right: 10px; padding-left: 10px; }"));
+    ui->InvestmentsTableView->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
 
     ui->fontComboBox->setEditable(false);
     ui->fontComboBox->setWritingSystem(QFontDatabase::Latin);
@@ -749,14 +753,18 @@ void MainWindow::prepare_investmentsListView()
     QSqlTableModel* model = new QSqlTableModel(this);
     model->setTable(qsl("vInvestmenstsView"));
     model->setSort(0, Qt::SortOrder::DescendingOrder);
-    QTreeView* tv =ui->InvestmentsTableView;
+
+    QTableView* tv =ui->InvestmentsTableView;
     tv->setModel(model);
     tv->setItemDelegateForColumn(0, new PercentFrom100sItemFormatter);
     tv->setItemDelegateForColumn(1, new DateItemFormatter);
     tv->setItemDelegateForColumn(2, new DateItemFormatter);
     tv->setItemDelegateForColumn(4, new CurrencyFormatter);
 
+    model->setEditStrategy(QSqlTableModel::OnFieldChange);
     model->select();
+    tv->resizeColumnsToContents();
+    tv->setAlternatingRowColors(true);
 }
 
 void MainWindow::on_actionAnlagen_verwalten_triggered()
@@ -769,7 +777,7 @@ void MainWindow::on_btnCreateFromContracts_clicked()
 {   LOG_CALL;
     int newInvestments =createNewInvestmentsFromContracts();
     if( newInvestments) {
-        QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden ") +QString::number(newInvestments) +qsl("angelegt."));
+        QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden ") +QString::number(newInvestments) +qsl(" Anlage(n) angelegt."));
         qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model())->select();
     }
     else
@@ -779,6 +787,42 @@ void MainWindow::on_btnCreateFromContracts_clicked()
 void MainWindow::on_btnNewInvestment_clicked()
 {   LOG_CALL;
 
+}
+void MainWindow::on_actionInvestmentLoeschen_triggered()
+{
+    QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
+    QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
+    QSqlRecord rec =tm->record(index.row());
+    QDate dAnfang =rec.value(qsl("Anfang")).toDate();
+    QString anfang =dAnfang.toString(qsl("yyyy.MM.dd"));
+    QDate dEnde =rec.value(qsl("Ende")).toDate();
+    QString ende =dEnde.toString(qsl("yyyy.MM.dd"));
+    int zinssatz =rec.value(qsl("ZSatz")).toInt();
+    QString typ =rec.value(qsl("Typ")).toString();
+    QString msg{qsl("Soll die Anlage mit <b>%1%</b>, vom %2 zum %3 mit dem Typ <br>  > %4 <  <br> gelöscht werden?")};
+    msg =msg.arg(QString::number(zinssatz/100., 'f', 2), anfang, ende, typ);
+
+    if( QMessageBox::Yes == QMessageBox::question(this, qsl("Löschen"), msg)) {
+        // delete the entry, update the view
+        if( deleteInvestment(zinssatz, dAnfang, dEnde, typ)) {
+            qInfo() << "removed investment row " << index.row();
+            //tm->submitAll();
+            tm->select();
+        } else {
+            qWarning() << tm->lastError();
+        }
+    }
+}
+
+void MainWindow::on_InvestmentsTableView_customContextMenuRequested(const QPoint &pos)
+{   LOG_CALL;
+    QTableView* tv =ui->InvestmentsTableView;
+    QModelIndex index =tv->indexAt(pos);
+
+    QMenu cmenu( qsl("investmentsContextMenu"), this);
+    ui->actionInvestmentLoeschen->setData(index);
+    cmenu.addAction(ui->actionInvestmentLoeschen);
+    cmenu.exec(ui->InvestmentsTableView->mapToGlobal(pos));
 }
 
 // statistics
