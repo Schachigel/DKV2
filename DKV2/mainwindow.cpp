@@ -786,7 +786,9 @@ void MainWindow::on_btnCreateFromContracts_clicked()
 
 void MainWindow::on_btnNewInvestment_clicked()
 {   LOG_CALL;
-
+    createInvestment();
+    QSqlTableModel* m =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
+    m->select();
 }
 void MainWindow::on_actionInvestmentLoeschen_triggered()
 {

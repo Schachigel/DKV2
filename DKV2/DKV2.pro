@@ -74,6 +74,7 @@ SOURCES += \
         wizchangecontractvalue.cpp \
         wiznew.cpp \
         wiznewdatabase.cpp \
+        wiznewinvestment.cpp \
         wizopenornewdatabase.cpp \
         wizterminatecontract.cpp
 
@@ -109,6 +110,7 @@ HEADERS += \
         wizchangecontractvalue.h \
         wiznew.h \
         wiznewdatabase.h \
+        wiznewinvestment.h \
         wizopenornewdatabase.h \
         wizterminatecontract.h
 

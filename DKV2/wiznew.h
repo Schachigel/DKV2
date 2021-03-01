@@ -67,6 +67,7 @@ private:
 
 struct wpNewContractData : public QWizardPage{
     wpNewContractData(QWidget* p);
+    ~wpNewContractData() { if( cbInterest) delete cbInterest;}
     void initializePage() override;
     void cleanupPage() override  {};
     bool validatePage() override;

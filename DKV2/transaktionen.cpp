@@ -13,9 +13,10 @@
 #include "wizterminatecontract.h"
 #include "wizcancelcontract.h"
 #include "wizannualsettlement.h"
+#include "wiznewinvestment.h"
 #include "wiznew.h"
 #include "transaktionen.h"
-
+#include "investment.h"
 
 void activateContract(qlonglong cid)
 {   LOG_CALL;
@@ -209,4 +210,21 @@ void newCreditorAndContract()
     wiz.setField(qsl("confirmContract"), false);
     wiz.exec();
     return;
+}
+
+void createInvestment()
+{
+    wizNewInvestment wiz;
+    wiz.exec();
+    if( ! wiz.field(pnKorrekt).toBool()) {
+        qInfo() << "investment wiz was canceled";
+        return;
+    }
+    if( !saveNewInvestment( wiz.field(pnZSatz).toInt(),
+                          wiz.field(pnVon).toDate(),
+                          wiz.field(pnBis).toDate(),
+                          wiz.field(pnTyp).toString())) {
+        qCritical() << "Investment could not be saved";
+        QMessageBox::warning(nullptr, qsl("Fehler"), qsl("Die Geldanlage konnte nicht gespeichert werden"));
+    }
 }

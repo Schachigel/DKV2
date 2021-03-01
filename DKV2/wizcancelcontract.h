@@ -19,14 +19,14 @@ struct wpCancelContract_DatePage : public QWizardPage {
     Q_OBJECT;
 };
 
-class wpCancelContract_SummaryPage : public QWizardPage {
-    Q_OBJECT;
-public:
+struct wpCancelContract_SummaryPage : public QWizardPage {
     wpCancelContract_SummaryPage(QWidget* p =nullptr);
     void initializePage() override;
     bool isComplete() const override;
 public slots:
     void onConfirmData_toggled(int);
+private:
+    Q_OBJECT;
 };
 
 struct wizCancelContract : public QWizard

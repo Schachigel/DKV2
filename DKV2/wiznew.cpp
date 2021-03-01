@@ -403,8 +403,7 @@ wpNewContractData::wpNewContractData(QWidget* p) : QWizardPage(p)
     QLabel* l3 =new QLabel(qsl("Zinssatz"));
     cbInterest =new QComboBox;
     l3->setBuddy(cbInterest);
-    int maxIndex =dbConfig::readValue(MAX_INTEREST).toInt();
-    for( int i =0; i <= maxIndex; i++)
+    for( int i =0; i <= dbConfig::readValue(MAX_INTEREST).toInt(); i++)
         cbInterest->addItem(QString::number(double(i)/100., 'f', 2), QVariant(i));
     cbInterest->setCurrentIndex(std::min(100, cbInterest->count()));
     QLabel* l4 =new QLabel(qsl("Thesaurierend"));
@@ -500,7 +499,7 @@ wpContractTiming::wpContractTiming(QWidget* p) : QWizardPage(p)
 
     deTerminationDate =new QDateEdit;
     deTerminationDate->setDisplayFormat("dd.MM.yyyy");
-    QLabel* l3=new QLabel(qsl("Vertragsende"));
+    QLabel* l3 =new QLabel(qsl("Vertragsende"));
     l3->setBuddy(deTerminationDate);
 
     QGridLayout* g =new QGridLayout;

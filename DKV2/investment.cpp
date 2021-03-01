@@ -31,14 +31,13 @@ investment::investment()
 }
 
 bool saveNewInvestment(int ZSatz, QDate start, QDate end, QString type) {
-    QVector<QVariant> values;
-    values.push_back(QVariant(ZSatz));
-    values.push_back(QVariant(start));
-    values.push_back(QVariant(end));
-    values.push_back(QVariant(type));
-    values.push_back(QVariant(true));
-
-    return executeSql_wNoRecords(qsl("INSERT INTO Geldanlagen VALUE (?, ?, ?, ?, ?) "), values);
+    TableDataInserter tdi(investment::getTableDef());
+    tdi.setValue(qsl("ZSatz"), ZSatz);
+    tdi.setValue(qsl("Anfang"), start);
+    tdi.setValue(qsl("Ende"), end);
+    tdi.setValue(qsl("Typ"), type);
+    tdi.setValue(qsl("Offen"), 1);
+    return tdi.InsertData();
 }
 
 bool createInvestmentIfApplicable(const int ZSatz, const QDate& vDate)

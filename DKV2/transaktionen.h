@@ -16,4 +16,6 @@ void annualSettlement();
 void editCreditor(qlonglong creditorId);
 void newCreditorAndContract();
 
+void createInvestment();
+
 #endif // TRANSAKTIONEN_H
