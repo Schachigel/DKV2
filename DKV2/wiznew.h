@@ -10,7 +10,7 @@
 #include "helper.h"
 
 enum { page_new_or_existing, page_address, page_email, page_bankaccount,
-     page_confirm_creditor, page_contract_data, page_contract_term, page_confirm_contract};
+     page_confirm_creditor, page_contract_data, page_interest_data, page_contract_term, page_confirm_contract};
 
 class wpNewOrExisting : public QWizardPage
 {
@@ -67,20 +67,36 @@ private:
 
 struct wpNewContractData : public QWizardPage{
     wpNewContractData(QWidget* p);
-    ~wpNewContractData() { if( cbInterest) delete cbInterest;}
     void initializePage() override;
     void cleanupPage() override  {};
     bool validatePage() override;
     int nextId() const    override;
 private:
     bool init =true;
-    QComboBox* cbInterest =nullptr;
 };
 
-class wpContractTiming : public QWizardPage{
+struct wpNewContractInterest : public QWizardPage {
+    wpNewContractInterest(QWidget* p);
+    ~wpNewContractInterest(){
+        if( cbInterest) delete cbInterest;
+        if( cbInvestments) delete cbInvestments;
+    }
+    void cleanupPage() override  {};
+    bool validatePage() override;
+    int nextId() const    override;
+
+private:
+    QRadioButton* rbInvestment =nullptr;
+    QRadioButton* rbInterest   =nullptr;
+    QComboBox* cbInterest      =nullptr;
+    QComboBox* cbInvestments   =nullptr;
+
+};
+
+class wpContractTermination : public QWizardPage{
     Q_OBJECT
 public:
-    wpContractTiming(QWidget*);
+    wpContractTermination(QWidget*);
     void initializePage() override;
     void cleanupPage() override  {};
     bool validatePage()   override;

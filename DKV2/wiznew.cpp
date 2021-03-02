@@ -400,30 +400,11 @@ wpNewContractData::wpNewContractData(QWidget* p) : QWizardPage(p)
     leAmount->setValidator(new QIntValidator(this));
     l2->setBuddy(leAmount);
 
-    QLabel* l3 =new QLabel(qsl("Zinssatz"));
-    cbInterest =new QComboBox;
-    l3->setBuddy(cbInterest);
-    for( int i =0; i <= dbConfig::readValue(MAX_INTEREST).toInt(); i++)
-        cbInterest->addItem(QString::number(double(i)/100., 'f', 2), QVariant(i));
-    cbInterest->setCurrentIndex(std::min(100, cbInterest->count()));
-    QLabel* l4 =new QLabel(qsl("Thesaurierend"));
-    QComboBox* cbThesa =new QComboBox;
-    cbThesa->addItem("Zinsen werden ausgezahlt");
-    cbThesa->addItem("Zinsen werden angespart und verzinst");
-    cbThesa->addItem("Zinsen werden angespart aber nicht verzinst");
-    cbThesa->setToolTip("Bei thesaurierenden Verträgen erfolgt keine jährliche Auszahlung der Zinsen."
-                        " Die Zinsen werden dem Kreditbetrag hinzugerechnet und in Folgejahren mit verzinst.");
-    cbThesa->setCurrentIndex(1);
-    registerField(qsl("thesa"), cbThesa);
     QGridLayout* g =new QGridLayout;
     g->addWidget(l1, 0, 0);
     g->addWidget(leKennung, 0, 1);
     g->addWidget(l2, 1, 0);
     g->addWidget(leAmount, 1, 1);
-    g->addWidget(l3, 2, 0);
-    g->addWidget(cbInterest, 2, 1);
-    g->addWidget(l4, 3, 0);
-    g->addWidget(cbThesa, 3, 1);
     g->setColumnStretch(0, 1);
     g->setColumnStretch(1, 4);
 
@@ -457,21 +438,32 @@ bool wpNewContractData::validatePage()
         QMessageBox::critical(this, qsl("Fehler"), msg);
         return false;
     }
-    wizNew* wiz =qobject_cast<wizNew*>( wizard());
-    if( wiz) wiz->interest = double(cbInterest->currentIndex())/100.;
-    wizEditCreditor* wizE =qobject_cast<wizEditCreditor*>( wizard());
-    if( wizE) wizE->interest = double(cbInterest->currentIndex())/100.;
     return true;
 }
 int wpNewContractData::nextId() const
 {   LOG_CALL;
-    return page_contract_term;
+    return page_interest_data;
 }
 
 /*
- * wizContractTiming - contract date, notice period, termination date
+ * wpNewContractInterest - interest value from Investment or comboBox, interest mode
 */
-wpContractTiming::wpContractTiming(QWidget* p) : QWizardPage(p)
+wpNewContractInterest::wpNewContractInterest(QWidget* w) : QWizardPage(w)
+{
+    setTitle(qsl("Zinssatz und -Modus auswählen"));
+    rbInvestment =new QRadioButton(qsl("Investment auswählen"));
+    rbInvestment->setToolTip(qsl("Wähle den Zinssatz über ein bestehendes Investment aus"));
+    rbInterest   =new QRadioButton(qsl("Zinssatz frei wählen"));
+    rbInterest->setToolTip(qsl("Wähle den Zinssatz frei aus"));
+    cbInterest =new QComboBox();
+    cbInvestments =new QComboBox();
+}
+
+
+/*
+ * wizContractTermination - contract date, notice period, termination date
+*/
+wpContractTermination::wpContractTermination(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Vertragsbeginn und -Ende"));
     setSubTitle(qsl("Für das Vertragsende kann eine Kündigungsfrist <b>oder</b> ein festes Vertragsende vereinbart werden."));
@@ -513,7 +505,7 @@ wpContractTiming::wpContractTiming(QWidget* p) : QWizardPage(p)
     g->setColumnStretch(1, 4);
     setLayout(g);
 }
-void wpContractTiming::initializePage()
+void wpContractTermination::initializePage()
 {   LOG_CALL;
     if( init) {
         cbNoticePeriod->setCurrentIndex(4);
@@ -522,7 +514,7 @@ void wpContractTiming::initializePage()
     }
     init =false;
 }
-void wpContractTiming::onNoticePeriod_currentIndexChanged(int i)
+void wpContractTermination::onNoticePeriod_currentIndexChanged(int i)
 {   LOG_CALL;
     if( i == 0) {
         deTerminationDate->setDate(QDate::currentDate().addYears(5));
@@ -532,7 +524,7 @@ void wpContractTiming::onNoticePeriod_currentIndexChanged(int i)
         deTerminationDate->setEnabled(false);
     }
 }
-bool wpContractTiming::validatePage()
+bool wpContractTermination::validatePage()
 {   LOG_CALL;
 
     wizNew* wiz =qobject_cast<wizNew*> (wizard());
@@ -552,7 +544,7 @@ bool wpContractTiming::validatePage()
     Q_ASSERT(true);
     return true;
 }
-int wpContractTiming::nextId() const
+int wpContractTermination::nextId() const
 {   LOG_CALL;
     return page_confirm_contract;
 }
@@ -676,7 +668,8 @@ wizNew::wizNew(QWidget *p) : QWizard(p)
     setPage(page_bankaccount, new wpBankAccount(this));
     setPage(page_confirm_creditor, new wpConfirmCreditor(this));
     setPage(page_contract_data, new wpNewContractData(this));
-    setPage(page_contract_term, new wpContractTiming(this));
+    setPage(page_interest_data, new wpNewContractInterest(this));
+    setPage(page_contract_term, new wpContractTermination(this));
     setPage(page_confirm_contract, new wpContractConfirmation(this));
     QFont f = font(); f.setPointSize(10); setFont(f);
 }
@@ -688,7 +681,8 @@ wizEditCreditor::wizEditCreditor(QWidget *p) : QWizard(p)
     setPage(page_bankaccount, new wpBankAccount(this));
     setPage(page_confirm_creditor, new wpConfirmCreditor(this));
     setPage(page_contract_data, new wpNewContractData(this));
-    setPage(page_contract_term, new wpContractTiming(this));
+    setPage(page_interest_data, new wpNewContractInterest(this));
+    setPage(page_contract_term, new wpContractTermination(this));
     setPage(page_confirm_contract, new wpContractConfirmation(this));
     QFont f = font(); f.setPointSize(10); setFont(f);
 }
