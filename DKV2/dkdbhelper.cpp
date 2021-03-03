@@ -262,7 +262,7 @@ int createNewInvestmentsFromContracts()
     while(q.next()) {
         int ZSatz =q.record().value(qsl("ZSatz")).toInt();
         QDate vDate =q.record().value(qsl("Vertragsdatum")).toDate();
-        if( createInvestmentIfApplicable(ZSatz, vDate))
+        if( createInvestmentFromContractIfNeeded(ZSatz, vDate))
             ret++;
     }
     return ret;

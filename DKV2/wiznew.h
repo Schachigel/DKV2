@@ -7,17 +7,29 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <QWizard>
+#include "contract.h"
 #include "helper.h"
 
-enum { page_new_or_existing, page_address, page_email, page_bankaccount,
-     page_confirm_creditor, page_contract_data, page_interest_data, page_contract_term, page_confirm_contract};
+enum { page_new_or_existing, page_address, page_email, page_bankaccount, page_confirm_creditor,
+       // contract related pages:
+       page_label_and_amount,
+       page_contract_timeframe,
+       page_interest_selection_Mode,
+       page_interest_from_investment,
+       page_interest_value_selection,
+       page_interest_payment_mode,
+       page_confirm_contract};
 
+extern const QString pnNew;
+extern const QString pnCreditor;
+/*
+ * wpNewOrExisting - ask new or use existing
+ */
 class wpNewOrExisting : public QWizardPage
 {
     Q_OBJECT
 public:
     wpNewOrExisting(QWidget* );
-    ~wpNewOrExisting(){}
     void initializePage() override;
     bool validatePage() override;
     int nextId() const override;
@@ -31,26 +43,46 @@ private:
     QComboBox*    cbCreditors;
 };
 
+/*
+ * wpNewCreditorAddress -
+ */
+extern const QString pnFName;
+extern const QString pnLName;
+extern const QString pnStreet;
+extern const QString pnCity;
+extern const QString pnPcode;
+extern const QString pnCountry;
+
 struct wpNewCreditorAddress : public QWizardPage{
     wpNewCreditorAddress(QWidget* p);
-    void cleanupPage() override  {};
+    void initializePage() override;
+    void cleanupPage() override {};
     bool validatePage()   override;
     int nextId() const    override;
 };
+
+extern const QString pnEMail;
+extern const QString pnComment;
 
 struct wpEmail : public QWizardPage {
     wpEmail (QWidget* p);
+    void initializePage() override;
     void cleanupPage() override  {};
     bool validatePage()   override;
     int nextId() const    override;
 };
 
+extern const QString pnIban;
+extern const QString pnBic;
+
 struct wpBankAccount : public QWizardPage{
     wpBankAccount(QWidget* p);
-    void cleanupPage() override  {};
+    void cleanupPage() override{};
     bool validatePage()   override;
     int nextId() const    override;
 };
+
+extern const QString pnConfirm;
 
 class wpConfirmCreditor : public QWizardPage{
     Q_OBJECT
@@ -65,55 +97,100 @@ private:
     QCheckBox* cbCreateContract =nullptr;
 };
 
-struct wpNewContractData : public QWizardPage{
-    wpNewContractData(QWidget* p);
+/********************************
+CONTRACT creation wiz starts here
+*********************************
+*/
+
+/*
+ * wpLableAndAmount - ask basic contract data
+*/
+extern const QString pnLabel;
+extern const QString pnAmount;
+
+struct wpLableAndAmount : public QWizardPage{
+    wpLableAndAmount(QWidget* p);
     void initializePage() override;
-    void cleanupPage() override  {};
-    bool validatePage() override;
+    void cleanupPage() override;
+    bool validatePage()   override;
     int nextId() const    override;
-private:
-    bool init =true;
 };
 
-struct wpNewContractInterest : public QWizardPage {
-    wpNewContractInterest(QWidget* p);
-    ~wpNewContractInterest(){
-        if( cbInterest) delete cbInterest;
-        if( cbInvestments) delete cbInvestments;
-    }
-    void cleanupPage() override  {};
-    bool validatePage() override;
-    int nextId() const    override;
+/*
+ * wpContractTimeFrame - we have to ask contract date first,
+ * so that we can list proper investments later
+ */
+extern const QString pnCDate;
+extern const QString pnEDate;
+extern const QString pnPeriod;
 
-private:
-    QRadioButton* rbInvestment =nullptr;
-    QRadioButton* rbInterest   =nullptr;
-    QComboBox* cbInterest      =nullptr;
-    QComboBox* cbInvestments   =nullptr;
-
-};
-
-class wpContractTermination : public QWizardPage{
+class wpContractTimeframe : public QWizardPage{
     Q_OBJECT
 public:
-    wpContractTermination(QWidget*);
+    wpContractTimeframe(QWidget*);
     void initializePage() override;
-    void cleanupPage() override  {};
     bool validatePage()   override;
     int nextId() const    override;
 public slots:
     void onNoticePeriod_currentIndexChanged(int i);
 
 private:
-    bool init=true;
-    QComboBox* cbNoticePeriod;
-    QDateEdit* deTerminationDate;
-    QDateEdit* deCDate;
+    bool init =true;
+    QDateEdit* deTerminationDate; // to enable / disable we need the pointer to the cBox
+    QComboBox* cbNoticePeriod;    // to access the itemData
+//    QDateEdit* deCDate;
 };
 
+/*
+ * wpInterestSelectionMode - ask: investment or interest?
+*/
+struct wpInterestSelectionMode : public QWizardPage {
+    // select between "choose from investment" and select %
+    wpInterestSelectionMode(QWidget* p);
+    int nextId() const override;
+};
+
+/*
+ * wpInterestFromInvestment - deduce the interest from an investment
+*/
+struct wpInterestFromInvestment : public QWizardPage {
+    wpInterestFromInvestment(QWidget* w);
+//    ~wpInterestFromInvestment() { if( cbInvestments) delete cbInvestments;}
+    void initializePage() override;
+    bool validatePage() override;
+    int nextId() const override;
+private:
+    QComboBox* cbInvestments =nullptr; // to read itemData on validation
+    qlonglong rowid_investment =-1;
+};
+
+/*
+ * wpInterestSelection select interest from
+ */
+struct wpInterestSelection : public QWizardPage {
+    wpInterestSelection(QWidget* p);
+//    bool validatePage() override;
+    int nextId() const    override;
+};
+
+/*
+ * wpInterestPayoutMode select payout mode for the interest
+ */
+struct wpInterestPayoutMode : public QWizardPage {
+    wpInterestPayoutMode(QWidget* p);
+    bool validatePage() override;
+    int nextId() const override;
+private:
+    QComboBox* cbImode =nullptr;
+};
+
+/*
+ * wpContractConfirmation get users confirmation
+ */
 class wpContractConfirmation : public QWizardPage
 {
     Q_OBJECT;
+    bool saveContract();
 public:
     wpContractConfirmation(QWidget*);
     void initializePage() override;
@@ -127,22 +204,25 @@ struct wizNew : public QWizard
 {
     wizNew(QWidget* p =nullptr);
     qlonglong creditorId =-1;
-    double interest =0.;
-    QDate date =QDate::currentDate();
+    int interest =-1;
     int noticePeriod =-1;
-    QDate termination =EndOfTheFuckingWorld;
+    interestModel iPaymentMode =interestModel::maxId;
+    void setUpdateCreditor(bool b=true){ updateMode =b;}
+    bool inUpdateMode() {return updateMode;}
+private:
     Q_OBJECT;
+    bool updateMode =false;
 };
 
-struct wizEditCreditor : public QWizard
-{
-    wizEditCreditor(QWidget* p =nullptr);
-    qlonglong creditorId =-1;
-    double interest =0.;
-    QDate date =QDate::currentDate();
-    int noticePeriod =-1;
-    QDate termination =EndOfTheFuckingWorld;
-    Q_OBJECT;
-};
+//struct wizEditCreditor : public QWizard
+//{
+//    wizEditCreditor(QWidget* p =nullptr);
+//    qlonglong creditorId =-1;
+//    double interest =0.;
+//    QDate date =QDate::currentDate();
+//    int noticePeriod =-1;
+//    QDate termination =EndOfTheFuckingWorld;
+//    Q_OBJECT;
+//};
 
 #endif // WIZNEW_H

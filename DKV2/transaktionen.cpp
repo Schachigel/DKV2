@@ -89,7 +89,7 @@ void terminateContract(qlonglong cid)
         cancelContract(c);
     }
  }
- void terminateContract_Final( contract& c)
+void terminateContract_Final( contract& c)
 {   LOG_CALL;
     wizTerminateContract wiz(getMainWindow(), c);
     wiz.exec();
@@ -186,7 +186,9 @@ void annualSettlement()
 
 void editCreditor(qlonglong creditorId)
 {   LOG_CALL;
-    wizEditCreditor wiz(getMainWindow());
+    wizNew wiz(getMainWindow());
+    wiz.setUpdateCreditor(true);
+    wiz.setStartId(page_address);
     creditor cred(creditorId);
     wiz.setField(qsl("firstname"), cred.firstname());
     wiz.setField(qsl("lastname"), cred.lastname());

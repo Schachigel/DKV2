@@ -1,6 +1,6 @@
 #ifndef INVESTMENT_H
 #define INVESTMENT_H
-
+#include <QDate>
 #include "dbtable.h"
 
 class investment
@@ -10,10 +10,12 @@ public:
     static const dbtable& getTableDef();
 };
 
-bool createInvestmentIfApplicable(const int ZSatz, const QDate& vDate);
+bool createInvestmentFromContractIfNeeded(const int ZSatz, const QDate& vDate);
 bool deleteInvestment(const int ZSatz, const QDate& v, const QDate& b, const QString t);
 bool saveNewInvestment(int ZSatz, QDate start, QDate end, QString type);
-
+int nbrActiveInvestments(const QDate& contractDate=EndOfTheFuckingWorld);
+QMap<qlonglong, QString> activeInvestments(const QDate& contractDate=EndOfTheFuckingWorld);
+int interestOfInvestmentByRowId(qlonglong rid);
 //bool deleteInvestment(const int ZSatz, const QString& v, const QString& b, const QString& t);
 
 
