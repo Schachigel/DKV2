@@ -76,16 +76,16 @@ bool wpNewOrExisting::validatePage()
         wizNew* wiz =qobject_cast<wizNew*> (wizard());
         wiz->creditorId = cbCreditors->itemData(field(pnCreditor).toInt()).toLongLong();
         creditor c(wiz->creditorId);
-        setField(qsl("firstname"), c.firstname());
-        setField(qsl("lastname"), c.lastname());
-        setField(qsl("street"), c.street());
-        setField(qsl("pcode"), c.postalCode());
-        setField(qsl("city"), c.city());
-        setField(qsl("country"), c.country());
-        setField(qsl("email"), c.email());
-        setField(qsl("comment"), c.comment());
-        setField(qsl("iban"), c.iban());
-        setField(qsl("bic"), c.bic());
+        setField(pnFName, c.firstname());
+        setField(pnLName, c.lastname());
+        setField(pnStreet, c.street());
+        setField(pnPcode, c.postalCode());
+        setField(pnCity, c.city());
+        setField(pnCountry, c.country());
+        setField(pnEMail, c.email());
+        setField(pnComment, c.comment());
+        setField(pnIban, c.iban());
+        setField(pnBic, c.bic());
         qInfo() << "User selected user Id " << wiz->creditorId;
     }
     return true;
@@ -160,15 +160,15 @@ wpNewCreditorAddress::wpNewCreditorAddress(QWidget* p) : QWizardPage(p)
 }
 void wpNewCreditorAddress::initializePage()
 {
-//    wizNew* wiz =qobject_cast<wizNew*> (wizard());
-//    if( ! wiz->inUpdateMode()) {
-//        setField(pnFName, QString());
-//        setField(pnLName, QString());
-//        setField(pnStreet, QString());
-//        setField(pnPcode, QString());
-//        setField(pnCity, QString());
-//        setField(pnCountry, QString());
-//    }
+    //    wizNew* wiz =qobject_cast<wizNew*> (wizard());
+    //    if( ! wiz->inUpdateMode()) {
+    //        setField(pnFName, QString());
+    //        setField(pnLName, QString());
+    //        setField(pnStreet, QString());
+    //        setField(pnPcode, QString());
+    //        setField(pnCity, QString());
+    //        setField(pnCountry, QString());
+    //    }
 }
 bool wpNewCreditorAddress::validatePage()
 {   LOG_CALL;
@@ -181,7 +181,7 @@ bool wpNewCreditorAddress::validatePage()
 
     if( field(pnFName).toString().isEmpty()
             &&
-        field(pnLName).toString().isEmpty())
+            field(pnLName).toString().isEmpty())
         return false;
     if( field(pnStreet).toString().isEmpty() ||
             field(pnPcode).toString().isEmpty() ||
@@ -303,18 +303,20 @@ int wpBankAccount::nextId() const
 /*
  * wizConfirmCreditorData : ask if creditor data is OK and if a contract should be created
 */
-const QString pnConfirm {qsl("confirmCreateContract")};
+const QString pnConfirmCreditor {qsl("confirmCreateContract")};
+const QString pnCreateContract {qsl("createContract")};
+
 wpConfirmCreditor::wpConfirmCreditor(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Daten bestätigen"));
     QCheckBox* cbConfirmCreditor =new QCheckBox(qsl("Die Angaben sind richtig!"));
     cbConfirmCreditor->setToolTip(qsl("Du musst die Daten prüfen und ihre Richtigkeit "
                                       "bestätigen um sie speichern zu können."));
-    registerField(qsl("confirmCreditor"), cbConfirmCreditor);
+    registerField(pnConfirmCreditor+qsl("*"), cbConfirmCreditor);
     cbConfirmCreditor->setChecked(false);
     cbCreateContract =new QCheckBox(qsl("Im Anschluß Vertragsdaten eingeben"));
     cbCreateContract->setToolTip(qsl("Selektiere dieses Feld, um gleich einen neuen Vertrag anzulegen"));
-    registerField(pnConfirm, cbCreateContract);
+    registerField(pnCreateContract, cbCreateContract);
     cbCreateContract->setChecked(true);
 
     QVBoxLayout* l =new QVBoxLayout;
@@ -350,7 +352,7 @@ void wpConfirmCreditor::initializePage()
     setSubTitle(creditorSummary.arg(firstn, lastn, street, xxx,
                                     email, comment, iban, bic));
     wizNew* wiz =qobject_cast<wizNew*> (wizard());
-    if( wiz)
+    if( wiz->selectCreateContract)
         cbCreateContract->setChecked(true);
     else
         cbCreateContract->setChecked(false);
@@ -358,17 +360,17 @@ void wpConfirmCreditor::initializePage()
 bool wpConfirmCreditor::validatePage()
 {   LOG_CALL;
     creditor c;
-    if( field(qsl("confirmCreditor")).toBool()) {
-        c.setFirstname( field(qsl("firstname")).toString());
-        c.setLastname(  field(qsl("lastname")).toString());
-        c.setStreet(    field(qsl("street")).toString());
-        c.setPostalCode(field(qsl("pcode")).toString());
-        c.setCity(      field(qsl("city")).toString());
-        c.setCountry(   field(qsl("country")).toString());
-        c.setEmail(     field(qsl("email")).toString());
-        c.setComment(   field(qsl("comment")).toString());
-        c.setIban(      field(qsl("iban")).toString());
-        c.setBic(       field(qsl("bic")).toString());
+    if( field(pnConfirmCreditor).toBool()) {
+        c.setFirstname( field(pnFName).toString());
+        c.setLastname(  field(pnLName).toString());
+        c.setStreet(    field(pnStreet).toString());
+        c.setPostalCode(field(pnPcode).toString());
+        c.setCity(      field(pnCity).toString());
+        c.setCountry(   field(pnCountry).toString());
+        c.setEmail(     field(pnEMail).toString());
+        c.setComment(   field(pnComment).toString());
+        c.setIban(      field(pnIban).toString());
+        c.setBic(       field(pnBic).toString());
     } else {
         QMessageBox::information(this, qsl("Bestätigung fehlt"), qsl("Du kannst die Richtigkeit der Daten bestätigen oder die Dialogfolge abbrechen."));
         return false;
@@ -396,7 +398,7 @@ bool wpConfirmCreditor::validatePage()
 }
 int wpConfirmCreditor::nextId() const
 {   LOG_CALL;
-    if( field(qsl("confirmCreateContract")).toBool())
+    if( field(pnCreateContract).toBool())
         return page_label_and_amount;
     else
         return -1;
@@ -571,8 +573,8 @@ bool wpContractTimeframe::validatePage()
     wizNew* wiz =qobject_cast<wizNew*> (wizard());
     if( wiz) {
         wiz->noticePeriod =cbNoticePeriod->itemData(field(pnPeriod).toInt()).toInt();
-//        wiz->date =start;
-//        wiz->termination =end;
+        //        wiz->date =start;
+        //        wiz->termination =end;
         return true;
     }
     Q_ASSERT(true);
@@ -606,6 +608,10 @@ wpInterestSelectionMode::wpInterestSelectionMode(QWidget* w) : QWizardPage(w)
     vl->addWidget(rbInterest);
     setLayout(vl);
 }
+void wpInterestSelectionMode::initializePage()
+{
+    setField(pnISelMode, true);
+}
 int wpInterestSelectionMode::nextId() const
 {
     if(field(pnISelMode).toBool())
@@ -626,12 +632,12 @@ wpInterestFromInvestment::wpInterestFromInvestment(QWidget* w) : QWizardPage(w)
     QVBoxLayout* l =new QVBoxLayout();
     l->addWidget(cbInvestments);
     setLayout(l);
-// todo: on cbInvestments_change: show details in lable / table
+    // todo: on cbInvestments_change: show details in lable / table
     // interest/startd/endd
     // sum(active), count(active) / sum(inactive), count(inactive)
     // after booking:
     // sum(active), count(active) / sum(inactive), count(inactive)
-// RED if any number goes too high
+    // RED if any number goes too high
 }
 void wpInterestFromInvestment::initializePage()
 {
@@ -730,11 +736,16 @@ int wpInterestPayoutMode::nextId() const
 /*
 * wizConfirmContract  -confirm the contract data before contract creation
 */
-bool wpContractConfirmation::saveContract()
+const QString pnConfirmContract {qsl("confirmContract")};
+
+bool wpConfirmContract::saveContract()
 {
     wizNew* wiz =qobject_cast<wizNew*>(wizard());
     if( ! wiz) Q_ASSERT(true);
-
+    if( ! wiz->field(pnConfirmContract).toBool()) {
+        qCritical() << "user did not confirm contract data";
+        Q_ASSERT(true);
+    };
     contract c;
     c.setCreditorId(wiz->creditorId);
     c.setPlannedInvest(field(pnAmount).toDouble());
@@ -754,18 +765,19 @@ bool wpContractConfirmation::saveContract()
         return true;
     }
 }
-wpContractConfirmation::wpContractConfirmation(QWidget* p) : QWizardPage(p)
+wpConfirmContract::wpConfirmContract(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Bestätige die Vertragsdaten"));
     QCheckBox* cbConfirm =new QCheckBox(qsl("Die Angaben sind korrekt!"));
     cbConfirm->setCheckState(Qt::CheckState::Unchecked);
-    registerField(qsl("confirmContract"), cbConfirm);
+    registerField(pnConfirmContract +qsl("*"), cbConfirm);
     QVBoxLayout* bl =new QVBoxLayout;
     bl->addWidget(cbConfirm);
     setLayout(bl);
-    connect(cbConfirm, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
+//    connect(cbConfirm, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
+    setCommitPage(true);
 }
-void wpContractConfirmation::initializePage()
+void wpConfirmContract::initializePage()
 {   LOG_CALL;
 
     QString summary {qsl("Vertrag <b>%3</b> von <b>%1 %2</b> <p><table>"
@@ -782,41 +794,35 @@ void wpContractConfirmation::initializePage()
     wizNew* wiz =qobject_cast<wizNew*> (wizard());
     if( wiz)
     {
-            interestModel iMode{wiz->iPaymentMode};
-            QString interestMode{"Auszahlend"};
-            if( iMode == interestModel::reinvest) interestMode = "Thesaurierend";
-            if( iMode == interestModel::fixed) interestMode = "Fester Zins ohne Zinsauszahlung";
-            setSubTitle(summary.arg(field(pnFName).toString(), field(pnLName).toString(),
-                                    field(pnLabel).toString(),
-                                    l.toCurrencyString(field(qsl("amount")).toDouble()),
-                                    QString::number(wiz->interest/100., 'f', 2),
-                                    interestMode,
-                                    field(pnCDate).toDate().toString("dd.MM.yyyy"),
-                                    (wiz->noticePeriod == -1) ?
-                                        wiz->field(pnEDate).toDate().toString(qsl("dd.MM.yyyy")) :
-                                        QString::number(wiz->noticePeriod) +qsl(" Monate nach Kündigung")));
-        }
-
-
-
-    return;
+        interestModel iMode{wiz->iPaymentMode};
+        QString interestMode{"Auszahlend"};
+        if( iMode == interestModel::reinvest) interestMode = "Thesaurierend";
+        if( iMode == interestModel::fixed) interestMode = "Fester Zins ohne Zinsauszahlung";
+        setSubTitle(summary.arg(field(pnFName).toString(), field(pnLName).toString(),
+                                field(pnLabel).toString(),
+                                l.toCurrencyString(field(pnAmount).toDouble()),
+                                QString::number(wiz->interest/100., 'f', 2),
+                                interestMode,
+                                field(pnCDate).toDate().toString("dd.MM.yyyy"),
+                                (wiz->noticePeriod == -1) ?
+                                    wiz->field(pnEDate).toDate().toString(qsl("dd.MM.yyyy")) :
+                                    QString::number(wiz->noticePeriod) +qsl(" Monate nach Kündigung")));
+    } else Q_ASSERT(true);
 }
-bool wpContractConfirmation::validatePage()
+bool wpConfirmContract::validatePage()
 {   LOG_CALL;
     // we only get here, if finish was enabled -> we do not have to check
     // the checkbox. user can only cancel if checkbox not checked
     return saveContract();
-    Q_ASSERT(true);
-    return false;
 }
-void wpContractConfirmation::onConfirmData_toggled(int )
-{ LOG_CALL;
-    completeChanged();
-}
-bool wpContractConfirmation::isComplete() const
-{
-    return field("confirmContract").toBool();
-}
+//void wpConfirmContract::onConfirmData_toggled(int i)
+//{ LOG_CALL;
+//    completeChanged();
+//}
+//bool wpConfirmContract::isComplete() const
+//{
+//    return field(pnConfirmCreditor).toBool();
+//}
 
 
 /*
@@ -836,20 +842,6 @@ wizNew::wizNew(QWidget *p) : QWizard(p)
     setPage(page_interest_value_selection, new wpInterestSelection(this));
     setPage(page_interest_payment_mode, new wpInterestPayoutMode(this));
     setPage(page_contract_timeframe, new wpContractTimeframe(this));
-    setPage(page_confirm_contract, new wpContractConfirmation(this));
+    setPage(page_confirm_contract, new wpConfirmContract(this));
     QFont f = font(); f.setPointSize(10); setFont(f);
 }
-
-//wizEditCreditor::wizEditCreditor(QWidget *p) : QWizard(p)
-//{   LOG_CALL;
-//    setOption(QWizard::IndependentPages);
-//    setPage(page_address, new wpNewCreditorAddress(this));
-//    setPage(page_email,   new wpEmail(this));
-//    setPage(page_bankaccount, new wpBankAccount(this));
-//    setPage(page_confirm_creditor, new wpConfirmCreditor(this));
-//    setPage(page_basic_contract_data, new wpNewContractData(this));
-//    setPage(page_interest_data, new wpInterestSelection(this));
-//    setPage(page_contract_timeframe, new wpContractTimeframe(this));
-//    setPage(page_confirm_contract, new wpContractConfirmation(this));
-//    QFont f = font(); f.setPointSize(10); setFont(f);
-//}

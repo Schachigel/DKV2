@@ -187,20 +187,22 @@ void annualSettlement()
 void editCreditor(qlonglong creditorId)
 {   LOG_CALL;
     wizNew wiz(getMainWindow());
-    wiz.setUpdateCreditor(true);
-    wiz.setStartId(page_address);
     creditor cred(creditorId);
-    wiz.setField(qsl("firstname"), cred.firstname());
-    wiz.setField(qsl("lastname"), cred.lastname());
-    wiz.setField(qsl("street"), cred.street());
-    wiz.setField(qsl("pcode"), cred.postalCode());
-    wiz.setField(qsl("city"), cred.city());
-    wiz.setField(qsl("email"), cred.email());
-    wiz.setField(qsl("comment"), cred.comment());
-    wiz.setField(qsl("iban"), cred.iban());
-    wiz.setField(qsl("bic"), cred.bic());
-    wiz.setField(qsl("confirmContract"), false);
+    wiz.setField(pnFName, cred.firstname());
+    wiz.setField(pnLName, cred.lastname());
+    wiz.setField(pnStreet, cred.street());
+    wiz.setField(pnPcode, cred.postalCode());
+    wiz.setField(pnCity, cred.city());
+    wiz.setField(pnEMail, cred.email());
+    wiz.setField(pnComment, cred.comment());
+    wiz.setField(pnIban, cred.iban());
+    wiz.setField(pnBic, cred.bic());
+    wiz.selectCreateContract =false;
+    //wiz.setField(pnConfirmContract, false);
     wiz.creditorId = creditorId;
+    wiz.setUpdateMode(true);
+    wiz.setStartId(page_address);
+
     if( QDialog::Accepted == wiz.exec()) {
         qInfo() << "successfully updated creditor";
     }
@@ -208,8 +210,8 @@ void editCreditor(qlonglong creditorId)
 void newCreditorAndContract()
 {   LOG_CALL;
     wizNew wiz(getMainWindow());
-    wiz.setField(qsl("create_new"), true);
-    wiz.setField(qsl("confirmContract"), false);
+    wiz.setField(pnNew, true);
+    wiz.setField(pnConfirmContract, false);
     wiz.exec();
     return;
 }

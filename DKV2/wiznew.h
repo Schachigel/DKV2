@@ -82,7 +82,7 @@ struct wpBankAccount : public QWizardPage{
     int nextId() const    override;
 };
 
-extern const QString pnConfirm;
+extern const QString pnConfirmCreditor;
 
 class wpConfirmCreditor : public QWizardPage{
     Q_OBJECT
@@ -147,6 +147,7 @@ private:
 struct wpInterestSelectionMode : public QWizardPage {
     // select between "choose from investment" and select %
     wpInterestSelectionMode(QWidget* p);
+    void initializePage() override;
     int nextId() const override;
 };
 
@@ -187,18 +188,26 @@ private:
 /*
  * wpContractConfirmation get users confirmation
  */
-class wpContractConfirmation : public QWizardPage
+extern const QString pnConfirmContract;
+
+class wpConfirmContract : public QWizardPage
 {
     Q_OBJECT;
     bool saveContract();
 public:
-    wpContractConfirmation(QWidget*);
+    wpConfirmContract(QWidget*);
     void initializePage() override;
     bool validatePage()   override;
-    bool isComplete() const override;
+//    bool isComplete() const override;
 public slots:
-    void onConfirmData_toggled(int );
+//    void onConfirmData_toggled(int );
 };
+
+/*
+ * *********************************
+ *        the WIZARD
+ * *********************************
+ */
 
 struct wizNew : public QWizard
 {
@@ -207,8 +216,9 @@ struct wizNew : public QWizard
     int interest =-1;
     int noticePeriod =-1;
     interestModel iPaymentMode =interestModel::maxId;
-    void setUpdateCreditor(bool b=true){ updateMode =b;}
+    void setUpdateMode(bool b=true){ updateMode =b;}
     bool inUpdateMode() {return updateMode;}
+    bool selectCreateContract =true; // for edit creditor this should be false
 private:
     Q_OBJECT;
     bool updateMode =false;
