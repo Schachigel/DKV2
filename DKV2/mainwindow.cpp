@@ -751,15 +751,25 @@ void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
 void MainWindow::prepare_investmentsListView()
 {
     QSqlTableModel* model = new QSqlTableModel(this);
-    model->setTable(qsl("vInvestmenstsView"));
+    model->setTable(qsl("vInvestmentsOverview"));
     model->setSort(0, Qt::SortOrder::DescendingOrder);
 
     QTableView* tv =ui->InvestmentsTableView;
     tv->setModel(model);
     tv->setItemDelegateForColumn(0, new PercentFrom100sItemFormatter);
+    model->setHeaderData(0, Qt::Horizontal, qsl("Zinssatz"), Qt::DisplayRole);
     tv->setItemDelegateForColumn(1, new DateItemFormatter);
+    model->setHeaderData(1, Qt::Horizontal, qsl("Begin"), Qt::DisplayRole);
     tv->setItemDelegateForColumn(2, new DateItemFormatter);
-    tv->setItemDelegateForColumn(4, new CurrencyFormatter);
+    model->setHeaderData(2, Qt::Horizontal, qsl("Ende"), Qt::DisplayRole);
+    model->setHeaderData(4, Qt::Horizontal, qsl("Anzahl\n(alle)"), Qt::DisplayRole);
+    tv->setItemDelegateForColumn(5, new CurrencyFormatter);
+    model->setHeaderData(5, Qt::Horizontal, qsl("Summe\n(alle)"), Qt::DisplayRole);
+    model->setHeaderData(6, Qt::Horizontal, qsl("Anzahl\n(aktive)"), Qt::DisplayRole);
+    tv->setItemDelegateForColumn(7, new CurrencyFormatter);
+    model->setHeaderData(7, Qt::Horizontal, qsl("Summe\n(aktive)"), Qt::DisplayRole);
+    tv->hideColumn(8);
+    tv->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     model->setEditStrategy(QSqlTableModel::OnFieldChange);
     model->select();

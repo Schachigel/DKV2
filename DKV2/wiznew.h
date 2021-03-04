@@ -6,6 +6,7 @@
 #include <QDateEdit>
 #include <QComboBox>
 #include <QCheckBox>
+#include <QLabel>
 #include <QWizard>
 #include "contract.h"
 #include "helper.h"
@@ -59,6 +60,8 @@ struct wpNewCreditorAddress : public QWizardPage{
     void cleanupPage() override {};
     bool validatePage()   override;
     int nextId() const    override;
+private:
+    Q_OBJECT;
 };
 
 extern const QString pnEMail;
@@ -66,10 +69,11 @@ extern const QString pnComment;
 
 struct wpEmail : public QWizardPage {
     wpEmail (QWidget* p);
-    void initializePage() override;
-    void cleanupPage() override  {};
+    void cleanupPage() override  {}; // do not change data on back
     bool validatePage()   override;
     int nextId() const    override;
+private:
+    Q_OBJECT;
 };
 
 extern const QString pnIban;
@@ -77,9 +81,11 @@ extern const QString pnBic;
 
 struct wpBankAccount : public QWizardPage{
     wpBankAccount(QWidget* p);
-    void cleanupPage() override{};
+    void cleanupPage() override{}; // do not change data on back
     bool validatePage()   override;
     int nextId() const    override;
+private:
+    Q_OBJECT;
 };
 
 extern const QString pnConfirmCreditor;
@@ -114,6 +120,8 @@ struct wpLableAndAmount : public QWizardPage{
     void cleanupPage() override;
     bool validatePage()   override;
     int nextId() const    override;
+private:
+    Q_OBJECT;
 };
 
 /*
@@ -138,7 +146,6 @@ private:
     bool init =true;
     QDateEdit* deTerminationDate; // to enable / disable we need the pointer to the cBox
     QComboBox* cbNoticePeriod;    // to access the itemData
-//    QDateEdit* deCDate;
 };
 
 /*
@@ -149,6 +156,8 @@ struct wpInterestSelectionMode : public QWizardPage {
     wpInterestSelectionMode(QWidget* p);
     void initializePage() override;
     int nextId() const override;
+private:
+    Q_OBJECT;
 };
 
 /*
@@ -160,8 +169,12 @@ struct wpInterestFromInvestment : public QWizardPage {
     void initializePage() override;
     bool validatePage() override;
     int nextId() const override;
+public slots:
+    void onInvestments_currentIndexChanged(int);
 private:
+    Q_OBJECT
     QComboBox* cbInvestments =nullptr; // to read itemData on validation
+    QLabel* lblInvestmentInfo =nullptr;
     qlonglong rowid_investment =-1;
 };
 
@@ -170,8 +183,9 @@ private:
  */
 struct wpInterestSelection : public QWizardPage {
     wpInterestSelection(QWidget* p);
-//    bool validatePage() override;
     int nextId() const    override;
+private:
+    Q_OBJECT;
 };
 
 /*
@@ -182,6 +196,7 @@ struct wpInterestPayoutMode : public QWizardPage {
     bool validatePage() override;
     int nextId() const override;
 private:
+    Q_OBJECT;
     QComboBox* cbImode =nullptr;
 };
 
@@ -198,9 +213,7 @@ public:
     wpConfirmContract(QWidget*);
     void initializePage() override;
     bool validatePage()   override;
-//    bool isComplete() const override;
 public slots:
-//    void onConfirmData_toggled(int );
 };
 
 /*
@@ -223,16 +236,5 @@ private:
     Q_OBJECT;
     bool updateMode =false;
 };
-
-//struct wizEditCreditor : public QWizard
-//{
-//    wizEditCreditor(QWidget* p =nullptr);
-//    qlonglong creditorId =-1;
-//    double interest =0.;
-//    QDate date =QDate::currentDate();
-//    int noticePeriod =-1;
-//    QDate termination =EndOfTheFuckingWorld;
-//    Q_OBJECT;
-//};
 
 #endif // WIZNEW_H

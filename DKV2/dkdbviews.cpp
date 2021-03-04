@@ -192,8 +192,37 @@ SELECT ga.ZSatz
   , ga.Anfang
   , ga.Ende
   , ga.Typ
-  , (SELECT SUM(Betrag) /100. FROM Vertraege WHERE Vertragsdatum >= ga.Anfang AND Vertragsdatum < ga.Ende AND ZSatz = ga.ZSatz) AS Summe
-  , (SELECT count(Betrag) FROM Vertraege WHERE Vertragsdatum >= ga.Anfang AND Vertragsdatum < ga.Ende AND ZSatz = ga.ZSatz) AS Anzahl
+  , (SELECT count(*)
+     FROM Vertraege
+     WHERE Vertragsdatum >= ga.Anfang
+       AND Vertragsdatum < ga.Ende
+       AND ZSatz = ga.ZSatz
+  ) AS Anzahl
+  , (SELECT SUM(Betrag) /100.
+     FROM Vertraege
+     WHERE Vertragsdatum >= ga.Anfang
+       AND Vertragsdatum < ga.Ende
+       AND ZSatz = ga.ZSatz
+  ) AS Summe
+  , (SELECT count(*)
+     FROM Vertraege AS v
+     WHERE Vertragsdatum >= ga.Anfang
+       AND Vertragsdatum < ga.Ende
+       AND ZSatz = ga.ZSatz
+       AND (SELECT count(*)
+            FROM Buchungen AS B
+            WHERE B.VertragsId=v.id)>0
+  ) AS AnzahlAktive
+  , (SELECT SUM(Betrag) /100.
+     FROM Vertraege AS v
+     WHERE Vertragsdatum >= ga.Anfang
+       AND Vertragsdatum < ga.Ende
+       AND ZSatz = ga.ZSatz
+       AND (SELECT count(*)
+            FROM Buchungen AS B
+            WHERE B.VertragsId=v.id)>0
+  ) AS SummeAktive
+  , ga.rowid
 FROM Geldanlagen AS ga
 ORDER BY ga.ZSatz DESC
 )str"
@@ -448,7 +477,7 @@ QVector<dbViewDev> views = {
     {qsl("vVertraege_alle"),                  sqlContractsAllView},
     {qsl("vVertraege_alle_4view"),            sqlContractView},
     {qsl("vVertraege_geloescht"),             sqlExContractView},
-    {qsl("vInvestmenstsView"),                 sqlInvestmentsView},
+    {qsl("vInvestmentsOverview"),            sqlInvestmentsView},
     {qsl("vNextAnnualS_first"),               sqlNextAnnualSettlement_firstAS},
     {qsl("vNextAnnualS_next"),                sqlNextAnnualSettlement_nextAS},
     {qsl("vNextAnnualSettlement"),            sqlNextAnnualSettlement},

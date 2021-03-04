@@ -3,6 +3,7 @@
 
 #include "helper.h"
 #include "helpersql.h"
+#include "helperfin.h"
 #include "tabledatainserter.h"
 #include "investment.h"
 
@@ -115,4 +116,36 @@ int interestOfInvestmentByRowId(qlonglong rid)
     const dbfield& dbf =investment::getTableDef()[fnInvestmentInterest];
     QString where =qsl("rowid=")+QString::number(rid);
     return executeSingleValueSql(dbf,  where).toInt();
+}
+QString investmentInfoForContract(qlonglong rowId, double amount, QDate cDate)
+{   LOG_CALL;
+    QLocale locale;
+    QString s_amount =locale.toCurrencyString(amount);
+    QString s_cDate  =cDate.toString("dd.MM.yyyy");
+
+    QString sql {qsl("SELECT * FROM vInvestmentsOverview WHERE rowid=") +QString::number(rowId)};
+    QSqlQuery q (sql); if( ! q.next()) Q_ASSERT(true);
+    QSqlRecord r =q.record();
+    qDebug() << q.lastQuery();
+    double zSatz =r.value(qsl("ga.ZSatz")).toInt() /100. ;
+    QString s_zSatz  = QString::number(zSatz, 'g', 2);
+    QString from =r.value(qsl("ga.Anfang")).toDate().toString(qsl("dd.MM.yyyy"));
+    QString bis  =r.value(qsl("ga.Ende")).toDate().toString(qsl("dd.MM.yyyy"));
+    QString anzahl =QString::number(r.value(qsl("Anzahl")).toInt());
+    QString summe =locale.toCurrencyString(euroFromCt(r.value(qsl("Summe")).toInt()));
+    QString anzahlActive =QString::number(r.value(qsl("AnzahlAktive")).toInt());
+    QString summeActive =locale.toCurrencyString(euroFromCt(r.value(qsl("SummeAktive")).toInt()));
+    QString html1 =qsl("<tr><td>Zinssatz</td><td colspan=2>%1</td></tr>"
+                   "<tr><td>Von - Bis<td><td>%2</td><td>%3</td></tr>"
+                   "<tr><td>Aktive Vertr. </td><td>%4</td><td>%5</td></tr>"
+                   "<tr><td>Alle Vertr.</td><td>%6</td><td>%7</td></tr>").arg(s_zSatz, from, bis, anzahl, summe, anzahlActive, summeActive);
+
+
+
+    QString html2 ={qsl("<tr><td colspan=3>Nach der Buchung</td></tr>"
+                    "<tr><td>Aktive Vertr. </td><td>%1</td><td>%2</td></tr>"
+                    "<tr><td>Alle Vertr.</td><td>%3</td><td>%4</td></tr>")};
+    QString ret =qsl("<table>%1 %2</table>").arg(html1, html2);
+    qInfo() << ret;
+    return ret;
 }

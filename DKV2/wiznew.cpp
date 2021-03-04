@@ -228,10 +228,6 @@ wpEmail::wpEmail(QWidget* p) : QWizardPage(p)
     g->setColumnStretch(4, 2);
     setLayout(g);
 }
-void wpEmail::initializePage()
-{
-
-}
 bool wpEmail::validatePage()
 {   LOG_CALL;
     QString email =field(pnEMail).toString().trimmed().toLower();
@@ -467,7 +463,6 @@ void wpLableAndAmount::cleanupPage()
     setField(pnIban, QString());
     setField(pnBic, QString());
 }
-
 bool wpLableAndAmount::validatePage()
 {   LOG_CALL;
     QString msg;
@@ -591,7 +586,7 @@ int wpContractTimeframe::nextId() const
 /*
  * wpInterestSelectionMode - ask: investment or interest?
 */
-const QString pnISelMode {qsl("iSelMode")};
+const auto pnISelMode {qsl("iSelMode")};
 
 wpInterestSelectionMode::wpInterestSelectionMode(QWidget* w) : QWizardPage(w)
 {
@@ -629,8 +624,10 @@ wpInterestFromInvestment::wpInterestFromInvestment(QWidget* w) : QWizardPage(w)
 {
     setTitle(qsl("Wähle die gewünschte Geldanlage aus der Liste aus"));
     cbInvestments =new QComboBox();
+    lblInvestmentInfo =new QLabel();
     QVBoxLayout* l =new QVBoxLayout();
     l->addWidget(cbInvestments);
+    l->addWidget(lblInvestmentInfo);
     setLayout(l);
     // todo: on cbInvestments_change: show details in lable / table
     // interest/startd/endd
@@ -638,6 +635,7 @@ wpInterestFromInvestment::wpInterestFromInvestment(QWidget* w) : QWizardPage(w)
     // after booking:
     // sum(active), count(active) / sum(inactive), count(inactive)
     // RED if any number goes too high
+    connect(cbInvestments, SIGNAL(currentIndexChanged(int)), this, SLOT(onInvestments_currentIndexChanged(int)));
 }
 void wpInterestFromInvestment::initializePage()
 {
@@ -647,6 +645,13 @@ void wpInterestFromInvestment::initializePage()
         cbInvestments->addItem(i.value(), i.key());
     }
     registerField(pnI_CheckBoxIndex, cbInvestments);
+}
+void wpInterestFromInvestment::onInvestments_currentIndexChanged(int ) {
+    qlonglong rowId =cbInvestments->currentData().toLongLong();
+    double amount =field(pnAmount).toDouble();
+    QDate cDate   =field(pnCDate).toDate();
+    QString html =investmentInfoForContract(rowId, amount, cDate);
+    lblInvestmentInfo->setText(html);
 }
 bool wpInterestFromInvestment::validatePage()
 {
