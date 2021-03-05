@@ -181,6 +181,9 @@ p, li { white-space: pre-wrap; }
          <layout class="QHBoxLayout" name="horicontalLayout">
           <item>
            <widget class="QPushButton" name="btnCreateFromContracts">
+            <property name="toolTip">
+             <string>Mit dieser Funktion wird zu jedem Vertrag, der zu keiner Geldanlage gehört, eine Geldanlage angelegt.</string>
+            </property>
             <property name="text">
              <string>Aus &amp;Verträgen erstellen</string>
             </property>
@@ -188,6 +191,9 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QPushButton" name="btnNewInvestment">
+            <property name="toolTip">
+             <string>Mit dieser Funktion wird eine neue Geldanlage angelegt</string>
+            </property>
             <property name="text">
              <string>Ne&amp;u </string>
             </property>

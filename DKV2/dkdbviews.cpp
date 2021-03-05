@@ -6,7 +6,7 @@ R"str(
 SELECT
   V.id AS VertragsId
   ,K.id AS KreditorId
-  ,(SELECT K.Nachname || ', ' || K.Vorname FROM Kreditoren AS K WHERE K.id = V.KreditorId) AS KreditorIn
+  ,K.Nachname || ', ' || K.Vorname          AS KreditorIn
   ,V.Kennung AS Vertragskennung
   ,strftime('%d.%m.%Y',V.Vertragsdatum)     AS Vertragsdatum
 
@@ -42,7 +42,7 @@ SELECT
   ,CASE WHEN V.Kfrist = -1 THEN strftime('%d.%m.%Y', V.LaufzeitEnde)
      ELSE '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)' END AS KdgFristVertragsende
 
-FROM Vertraege AS V
+FROM Vertraege AS V  INNER JOIN Kreditoren AS K ON V.KreditorId = K.id
 
 -- aktivierungsdatum und Betrag
 LEFT JOIN
@@ -268,7 +268,6 @@ ORDER BY YEAR DESC, Thesa DESC
 )str"
 )};
 
-
 const QString sqlContractsActiveDetailsView{ qsl(
 R"str(
 SELECT
@@ -477,7 +476,7 @@ QVector<dbViewDev> views = {
     {qsl("vVertraege_alle"),                  sqlContractsAllView},
     {qsl("vVertraege_alle_4view"),            sqlContractView},
     {qsl("vVertraege_geloescht"),             sqlExContractView},
-    {qsl("vInvestmentsOverview"),            sqlInvestmentsView},
+    {qsl("vInvestmentsOverview"),             sqlInvestmentsView},
     {qsl("vNextAnnualS_first"),               sqlNextAnnualSettlement_firstAS},
     {qsl("vNextAnnualS_next"),                sqlNextAnnualSettlement_nextAS},
     {qsl("vNextAnnualSettlement"),            sqlNextAnnualSettlement},

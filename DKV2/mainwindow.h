@@ -5,6 +5,7 @@
 #include <QGuiApplication>
 #include <QItemSelection>
 #include <QSplashScreen>
+#include <QSqlTableModel>
 #include <QSqlQueryModel>
 #include <QMainWindow>
 #include <QPrinter>
@@ -23,6 +24,14 @@ struct busycursor
     {
         QGuiApplication::restoreOverrideCursor();
     }
+};
+
+class InvestmentsTableModel : public QSqlTableModel
+{
+public:
+    InvestmentsTableModel(QWidget* w) : QSqlTableModel(w){};
+private:
+    QVariant data(const QModelIndex& i, int role) const;
 };
 
 namespace Ui {

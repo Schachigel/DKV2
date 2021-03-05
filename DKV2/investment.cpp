@@ -2,6 +2,7 @@
 #include <QSqlQuery>
 
 #include "helper.h"
+#include "appconfig.h"
 #include "helpersql.h"
 #include "helperfin.h"
 #include "tabledatainserter.h"
@@ -88,9 +89,9 @@ int nbrActiveInvestments(const QDate& cDate/*=EndOfTheFuckingWorld*/)
     return executeSingleValueSql(field, tname, where).toInt();
 }
 
-QMap<qlonglong, QString> activeInvestments(const QDate& cDate)
+QVector<QPair<qlonglong, QString>> activeInvestments(const QDate& cDate)
 {   LOG_CALL;
-    QMap<qlonglong, QString> investments;
+    QVector<QPair<qlonglong, QString>> investments;
     QString where;
     if(cDate == EndOfTheFuckingWorld)
         where ="Offen";
@@ -98,15 +99,15 @@ QMap<qlonglong, QString> activeInvestments(const QDate& cDate)
         where =qsl("Offen AND Anfang <= date('%1') AND Ende > date('%1')").arg(cDate.toString(Qt::ISODate));
     }
     QSqlQuery q;
-    q.prepare(qsl("SELECT rowid, Typ FROM Geldanlagen WHERE %1").arg(where));
+    q.prepare(qsl("SELECT rowid, Typ FROM Geldanlagen WHERE %1 ORDER BY %2").arg(where, fnInvestmentInterest));
 
     if( ! q.exec()) {
         qCritical() << "sql exec failed: " << q.lastError() << Qt::endl << q.lastQuery();
-        return QMap<qlonglong, QString>();
+        return QVector<QPair<qlonglong, QString>>();
     }
     while( q.next()) {
         QSqlRecord rec =q.record();
-        investments[rec.value(qsl("rowid")).toLongLong()] =rec.value(fnInvestmentTyp).toString();
+        investments.push_back({rec.value(qsl("rowid")).toLongLong(), rec.value(fnInvestmentTyp).toString()});
     }
     return investments;
 }
@@ -117,35 +118,51 @@ int interestOfInvestmentByRowId(qlonglong rid)
     QString where =qsl("rowid=")+QString::number(rid);
     return executeSingleValueSql(dbf,  where).toInt();
 }
-QString investmentInfoForContract(qlonglong rowId, double amount, QDate cDate)
+
+QString redOrBlack(int i, int max)
+{
+    if( i >= max) return qsl("<div style=\"color:red\">") +QString::number(i) +qsl("</div>");
+    else return QString::number(i);
+}
+QString redOrBlack(double d, double max)
+{
+    QLocale l;
+    if( d >= max) return qsl("<div style=\"color:red\">") +l.toCurrencyString(d) +qsl("</div>");
+    else return l.toCurrencyString(d);
+}
+QString investmentInfoForContract(qlonglong rowId, double amount)
 {   LOG_CALL;
-    QLocale locale;
-    QString s_amount =locale.toCurrencyString(amount);
-    QString s_cDate  =cDate.toString("dd.MM.yyyy");
+    int maxNbr =dbConfig::readValue(MAX_INVESTMENT_NBR).toInt();
+    double maxSum =dbConfig::readValue(MAX_INVESTMENT_SUM).toDouble();
 
     QString sql {qsl("SELECT * FROM vInvestmentsOverview WHERE rowid=") +QString::number(rowId)};
     QSqlQuery q (sql); if( ! q.next()) Q_ASSERT(true);
     QSqlRecord r =q.record();
-    qDebug() << q.lastQuery();
-    double zSatz =r.value(qsl("ga.ZSatz")).toInt() /100. ;
-    QString s_zSatz  = QString::number(zSatz, 'g', 2);
-    QString from =r.value(qsl("ga.Anfang")).toDate().toString(qsl("dd.MM.yyyy"));
-    QString bis  =r.value(qsl("ga.Ende")).toDate().toString(qsl("dd.MM.yyyy"));
-    QString anzahl =QString::number(r.value(qsl("Anzahl")).toInt());
-    QString summe =locale.toCurrencyString(euroFromCt(r.value(qsl("Summe")).toInt()));
-    QString anzahlActive =QString::number(r.value(qsl("AnzahlAktive")).toInt());
-    QString summeActive =locale.toCurrencyString(euroFromCt(r.value(qsl("SummeAktive")).toInt()));
-    QString html1 =qsl("<tr><td>Zinssatz</td><td colspan=2>%1</td></tr>"
-                   "<tr><td>Von - Bis<td><td>%2</td><td>%3</td></tr>"
-                   "<tr><td>Aktive Vertr. </td><td>%4</td><td>%5</td></tr>"
-                   "<tr><td>Alle Vertr.</td><td>%6</td><td>%7</td></tr>").arg(s_zSatz, from, bis, anzahl, summe, anzahlActive, summeActive);
+    qDebug() << q.lastQuery() << Qt::endl << r;
+    QString s_zSatz  = QString::number(r.value(qsl("ZSatz")).toInt()/100., 'g', 2) +qsl(" %");
+    QString from =r.value(qsl("Anfang")).toDate().toString(qsl("dd.MM.yyyy"));
+    QString bis  =r.value(qsl("Ende")).toDate().toString(qsl("dd.MM.yyyy"));
+
+    QString anzahl =redOrBlack(r.value(qsl("Anzahl")).toInt(), maxNbr);
+    QString summe =redOrBlack(euroFromCt(r.value(qsl("Summe")).toInt()), maxSum);
+    QString anzahlActive =redOrBlack(r.value(qsl("AnzahlAktive")).toInt(), maxNbr);
+    QString summeActive =redOrBlack(euroFromCt(r.value(qsl("SummeAktive")).toInt()), maxSum);
+
+    QString html1 =qsl("<tr><td colspan=3 align=left><b>Anlagedaten</b></td></tr>"
+                   "<tr><td align=left>Zinssatz</td><td align=left colspan=2>%1</td></tr>"
+                   "<tr><td align=left>Laufzeit </td><td align=left colspan=2> von %2 bis %3 </td></tr>"
+                   "<tr><td colspan=3></td></tr>"
+                   "<tr><td align=left><b>Bisherige Verträge</b></td><td align=right>Anzahl</td><td align=right>Summe</td></tr>"
+                   "<tr><td align=left>Aktive Verträge </td><td  align=right>%4</td><td align=right>%5</td></tr>"
+                   "<tr><td align=left>Alle Verträge</td><td align=right>%6</td><td align=right>%7</td></tr>").arg(s_zSatz, from, bis, anzahl, summe, anzahlActive, summeActive);
 
 
+    QString anzahlNew =redOrBlack(r.value(qsl("Anzahl")).toInt() +1, maxNbr);
+    QString summeNew =redOrBlack(euroFromCt(r.value(qsl("Summe")).toInt()) +amount, maxSum);
 
-    QString html2 ={qsl("<tr><td colspan=3>Nach der Buchung</td></tr>"
-                    "<tr><td>Aktive Vertr. </td><td>%1</td><td>%2</td></tr>"
-                    "<tr><td>Alle Vertr.</td><td>%3</td><td>%4</td></tr>")};
-    QString ret =qsl("<table>%1 %2</table>").arg(html1, html2);
-    qInfo() << ret;
+    QString html2 ={qsl("<tr><td colspan=3><b>Nach der Buchung<b></td></tr>"
+                    "<tr><td align=left>Alle Verträge   </td><td align=right> %1</td><td align=right> %2</td></tr>").arg(anzahlNew, summeNew)};
+    QString ret =qsl("<table width=100% style=\"border-width:0px\">%1 %2</table>").arg(html1, html2);
+    qDebug() << ret;
     return ret;
 }

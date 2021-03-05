@@ -639,18 +639,16 @@ wpInterestFromInvestment::wpInterestFromInvestment(QWidget* w) : QWizardPage(w)
 }
 void wpInterestFromInvestment::initializePage()
 {
-    QMap<qlonglong, QString> investments =activeInvestments(field(pnCDate).toDate());
-    QMap<qlonglong, QString>::iterator i;
-    for( i =investments.begin(); i != investments.end(); i++) {
-        cbInvestments->addItem(i.value(), i.key());
+    QVector<QPair<qlonglong, QString>> investments =activeInvestments(field(pnCDate).toDate());
+    for( auto invest : qAsConst(investments)) {
+        cbInvestments->addItem(invest.second, invest.first);
     }
     registerField(pnI_CheckBoxIndex, cbInvestments);
 }
 void wpInterestFromInvestment::onInvestments_currentIndexChanged(int ) {
     qlonglong rowId =cbInvestments->currentData().toLongLong();
     double amount =field(pnAmount).toDouble();
-    QDate cDate   =field(pnCDate).toDate();
-    QString html =investmentInfoForContract(rowId, amount, cDate);
+    QString html =investmentInfoForContract(rowId, amount);
     lblInvestmentInfo->setText(html);
 }
 bool wpInterestFromInvestment::validatePage()

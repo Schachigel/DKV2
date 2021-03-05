@@ -9,7 +9,6 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QMessageBox>
-#include <QSqlTableModel>
 #include <QSortFilterProxyModel>
 #include <QSqlRelationalTableModel>
 #include <QPdfWriter>
@@ -55,6 +54,48 @@ bool getValidDatabaseFromCommandline(QString& path)
     return true;
 }
 
+QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
+{
+    // change font color for number of contracts (3,5) and sum of contract (4,6) columns
+    if (role == Qt::ForegroundRole) {
+        int col =i.column();
+        if( col == 4 || col == 6) {
+            int iMax =dbConfig::readValue(MAX_INVESTMENT_NBR).toInt();
+            int nbr =i.data().toInt();
+            if(nbr >= iMax){
+                qInfo() << "nbr: " << nbr << " row: " << col;
+                return QColor(Qt::red);
+            }
+        } else if (col == 5 || col == 7) {
+            double dMax =dbConfig::readValue(MAX_INVESTMENT_SUM).toDouble();
+            double sum =i.data().toDouble();
+            if( sum >= dMax){
+                qInfo() << "sum: " << sum << " row: " << col;
+                return QColor(Qt::red);
+            }
+        }
+    }
+    if( role == Qt::TextAlignmentRole) {
+        switch(i.column()){
+        case 0:
+        case 1:
+        case 2:
+        case 4:
+        case 6:
+            return Qt::AlignCenter;
+        case 5:
+        case 7:
+            return QVariant(Qt::AlignRight|Qt::AlignVCenter);
+        case 3:
+            return QVariant(Qt::AlignLeft|Qt::AlignVCenter);
+        default:
+            Q_ASSERT(true);
+        }
+
+    }
+    return QSqlTableModel::data(i, role); // forward everthing else to the base class
+}
+
 QString MainWindow::findValidDatabaseToUse()
 {   LOG_CALL;
     // a db from the command line would be stored as currentDb...
@@ -91,18 +132,18 @@ QString MainWindow::askUserForNextDb()
     QString selectedDbPath {absoluteCanonicalPath(wizOpenOrNew.selectedFile)};
     bool useExistingFile { ! wizOpenOrNew.field(qsl("createNewDb")).toBool()};
     { // busycursor scope
-    busycursor b;
-    if( useExistingFile) {
-        // the UI does not allow an empty string here
-        qInfo() << "existing db " << selectedDbPath << "was selected";
-        return selectedDbPath;
-    }
-    // a new db should be created -> ask project details
-    // closeAllDatabaseConnections();
-    if( ! createNewDatabaseFile(selectedDbPath)) {
-        QMessageBox::critical(this, "Fehler", "Die neue Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen");
-        return QString();
-    }
+        busycursor b;
+        if( useExistingFile) {
+            // the UI does not allow an empty string here
+            qInfo() << "existing db " << selectedDbPath << "was selected";
+            return selectedDbPath;
+        }
+        // a new db should be created -> ask project details
+        // closeAllDatabaseConnections();
+        if( ! createNewDatabaseFile(selectedDbPath)) {
+            QMessageBox::critical(this, "Fehler", "Die neue Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen");
+            return QString();
+        }
     }// busycursor livetime
     dbCloser closer{qsl("conWriteConfig")};
     wizConfigureNewDatabaseWiz wizProjectData(this);
@@ -452,9 +493,9 @@ void MainWindow::updateListViews()
     }
     if( ui->stackedWidget->currentIndex() == contractsListPageIndex) {
         if( (temp =qobject_cast<QSqlTableModel*>(ui->contractsTableView->model())))
-                temp->select();
+            temp->select();
         if( (temp =qobject_cast<QSqlTableModel*>(ui->bookingsTableView ->model())))
-                temp->select();
+            temp->select();
     }
     if( ui->stackedWidget->currentIndex() == overviewsPageIndex)
         on_action_menu_contracts_statistics_view_triggered();
@@ -487,7 +528,7 @@ QString filterFromFilterphrase(QString fph)
             return qsl("KreditorId=") + QString::number(contractId);
     }
     return fph.isEmpty() ? QString() :
-           (qsl("Kreditorin LIKE '%") + fph + qsl("%' OR Vertragskennung LIKE '%") + fph + qsl("%'"));
+                           (qsl("Kreditorin LIKE '%") + fph + qsl("%' OR Vertragskennung LIKE '%") + fph + qsl("%'"));
 }
 
 void MainWindow::prepare_deleted_contracts_list_view()
@@ -543,8 +584,8 @@ void MainWindow::prepare_deleted_contracts_list_view()
 
     tv->resizeColumnsToContents();
     auto c = connect(ui->contractsTableView->selectionModel(),
-            SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
-            SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
+                     SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
+                     SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
 
     if( ! model->rowCount()) {
         ui->bookingsTableView->setModel(new QSqlTableModel(this));
@@ -612,8 +653,8 @@ void MainWindow::prepare_valid_contraccts_list_view()
 
     tv->resizeColumnsToContents();
     auto c = connect(ui->contractsTableView->selectionModel(),
-            SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
-            SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
+                     SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
+                     SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
 
     if( ! model->rowCount()) {
         ui->bookingsTableView->setModel(new QSqlTableModel(this));
@@ -750,7 +791,7 @@ void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
 // List of investments
 void MainWindow::prepare_investmentsListView()
 {
-    QSqlTableModel* model = new QSqlTableModel(this);
+    InvestmentsTableModel* model = new InvestmentsTableModel(this);
     model->setTable(qsl("vInvestmentsOverview"));
     model->setSort(0, Qt::SortOrder::DescendingOrder);
 
@@ -907,12 +948,12 @@ void MainWindow::on_action_menu_debug_create_sample_data_triggered()
 }
 void MainWindow::on_action_menu_debug_show_log_triggered()
 {   LOG_CALL;
-    #if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     ::ShellExecuteA(nullptr, "open", logFilePath().toUtf8(), "", QDir::currentPath().toUtf8(), 1);
-    #else
+#else
     QString cmd = QStringLiteral("open ") + logFilePath();
     system(cmd.toUtf8().constData());
-    #endif
+#endif
 }
 void MainWindow::on_actionDatenbank_Views_schreiben_triggered()
 {

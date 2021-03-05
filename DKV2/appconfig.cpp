@@ -177,6 +177,8 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
     {GMBH_GEFUE2,    {qsl("gmbh.gefue2"),      QVariant("Gefü 2")}},
     {GMBH_GEFUE3,    {qsl("gmbh.gefue3"),      QVariant("Gefü 3")}},
     {GMBH_DKV,       {qsl("gmbh.dkv"),         QVariant("DK Verwalter")}},
+    {MAX_INVESTMENT_NBR, {qsl("maxInvestNbr"), QVariant(20)}},
+    {MAX_INVESTMENT_SUM, {qsl("maxInvestSum"), QVariant(100000.)}},
     {MAX_PC_INDEX,   {qsl("n/a"),              QVariant()}}
 };
 
