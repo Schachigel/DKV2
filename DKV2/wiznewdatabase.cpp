@@ -257,6 +257,18 @@ wpContractMinValues_Page:: wpContractMinValues_Page(QWidget* p) : QWizardPage(p)
     QLabel* lmi     =new QLabel(qsl("Größter auswählbarer Zins in 100tel (100 entspricht 1%)"));
     lmi->setBuddy(leMi);
 
+    QLineEdit* leMaxINbr =new QLineEdit;
+    registerField(dbConfig::paramName(MAX_INVESTMENT_NBR), leMaxINbr);
+    leMaxINbr->setValidator(new QIntValidator(this));
+    QLabel* lmaxINbr =new QLabel(qsl("Ansahl von Verträgen in einem Investment ab der sie rot gekennzeichnet wird"));
+    lmaxINbr->setBuddy(leMaxINbr);
+
+    QLineEdit* leMaxISum =new QLineEdit;
+    registerField(dbConfig::paramName(MAX_INVESTMENT_SUM), leMaxISum);
+    leMaxISum->setValidator(new QIntValidator(this));
+    QLabel* lmaxISum =new QLabel(qsl("Summe aller Verträge in einem Investment ab der sie rot gekennzeichnet wird"));
+    lmaxISum->setBuddy(leMaxISum);
+
     QGridLayout* grid =new QGridLayout;
     grid->addWidget(lma,  0, 0);
     grid->addWidget(leMa, 0, 1);
@@ -264,6 +276,10 @@ wpContractMinValues_Page:: wpContractMinValues_Page(QWidget* p) : QWizardPage(p)
     grid->addWidget(leMc, 1, 1);
     grid->addWidget(lmi,  2, 0);
     grid->addWidget(leMi, 2, 1);
+    grid->addWidget(lmaxINbr, 3, 0);
+    grid->addWidget(leMaxINbr, 3, 1);
+    grid->addWidget(lmaxISum, 4, 0);
+    grid->addWidget(leMaxISum, 4, 1);
     setLayout(grid);
 }
 
@@ -272,6 +288,8 @@ void wpContractMinValues_Page::initializePage()
     setField(dbConfig::paramName(MIN_PAYOUT), dbConfig::readValue(MIN_PAYOUT));
     setField(dbConfig::paramName(MIN_AMOUNT), dbConfig::readValue(MIN_AMOUNT));
     setField(dbConfig::paramName(MAX_INTEREST), dbConfig::readValue(MAX_INTEREST));
+    setField(dbConfig::paramName(MAX_INVESTMENT_NBR), dbConfig::readValue(MAX_INVESTMENT_NBR));
+    setField(dbConfig::paramName(MAX_INVESTMENT_SUM), dbConfig::readValue(MAX_INVESTMENT_SUM));
 }
 
 wpNewDatabase_SummaryPage::wpNewDatabase_SummaryPage(QWidget* p) : QWizardPage(p)
@@ -359,6 +377,8 @@ void wizConfigureNewDatabaseWiz::updateDbConfig(QSqlDatabase db)
     dbConfig::writeValue(MIN_PAYOUT,   field(dbConfig::paramName(MIN_PAYOUT)), db);
     dbConfig::writeValue(MIN_AMOUNT,   field(dbConfig::paramName(MIN_AMOUNT)), db);
     dbConfig::writeValue(MAX_INTEREST, field(dbConfig::paramName(MAX_INTEREST)), db);
+    dbConfig::writeValue(MAX_INVESTMENT_NBR,field(dbConfig::paramName(MAX_INVESTMENT_NBR)), db);
+    dbConfig::writeValue(MAX_INVESTMENT_SUM,field(dbConfig::paramName(MAX_INVESTMENT_SUM)), db);
 }
 
 wpConfigure_IntroPage::wpConfigure_IntroPage(QWidget* p) : QWizardPage(p)
@@ -396,5 +416,8 @@ void wizConfigureProjectWiz::updateDbConfig()
     dbConfig::writeValue(MIN_PAYOUT,   field(dbConfig::paramName(MIN_PAYOUT)));
     dbConfig::writeValue(MIN_AMOUNT,   field(dbConfig::paramName(MIN_AMOUNT)));
     dbConfig::writeValue(MAX_INTEREST, field(dbConfig::paramName(MAX_INTEREST)));
+    dbConfig::writeValue(MAX_INVESTMENT_NBR,field(dbConfig::paramName(MAX_INVESTMENT_NBR)));
+    dbConfig::writeValue(MAX_INVESTMENT_SUM,field(dbConfig::paramName(MAX_INVESTMENT_SUM)));
+
 }
 
