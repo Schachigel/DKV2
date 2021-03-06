@@ -144,9 +144,9 @@ QString investmentInfoForContract(qlonglong rowId, double amount)
     QString bis  =r.value(qsl("Ende")).toDate().toString(qsl("dd.MM.yyyy"));
 
     QString anzahl =redOrBlack(r.value(qsl("Anzahl")).toInt(), maxNbr);
-    QString summe =redOrBlack(euroFromCt(r.value(qsl("Summe")).toInt()), maxSum);
+    QString summe =redOrBlack(r.value(qsl("Summe")).toDouble(), maxSum);
     QString anzahlActive =redOrBlack(r.value(qsl("AnzahlAktive")).toInt(), maxNbr);
-    QString summeActive =redOrBlack(euroFromCt(r.value(qsl("SummeAktive")).toInt()), maxSum);
+    QString summeActive =redOrBlack(r.value(qsl("SummeAktive")).toDouble(), maxSum);
 
     QString html1 =qsl("<tr><td colspan=3 align=left><b>Anlagedaten</b></td></tr>"
                    "<tr><td align=left>Zinssatz</td><td align=left colspan=2>%1</td></tr>"
@@ -158,7 +158,7 @@ QString investmentInfoForContract(qlonglong rowId, double amount)
 
 
     QString anzahlNew =redOrBlack(r.value(qsl("Anzahl")).toInt() +1, maxNbr);
-    QString summeNew =redOrBlack(euroFromCt(r.value(qsl("Summe")).toInt()) +amount, maxSum);
+    QString summeNew =redOrBlack(r.value(qsl("Summe")).toDouble() +amount, maxSum);
 
     QString html2 ={qsl("<tr><td colspan=3><b>Nach der Buchung<b></td></tr>"
                     "<tr><td align=left>Alle Verträge   </td><td align=right> %1</td><td align=right> %2</td></tr>").arg(anzahlNew, summeNew)};

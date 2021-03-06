@@ -493,7 +493,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="actionBeendete_Vertr_ge_anzeigen"/>
     <addaction name="action_Neu"/>
     <addaction name="separator"/>
-    <addaction name="action_menu_contracts_anual_interest_settlement"/>
+    <addaction name="action_menu_contracts_annual_interest_settlement"/>
     <addaction name="separator"/>
     <addaction name="actionAnlagen_verwalten"/>
     <addaction name="action_menu_contracts_statistics_view"/>
@@ -637,7 +637,7 @@ p, li { white-space: pre-wrap; }
     <string>Adressdaten und Bankdaten bearbeiten</string>
    </property>
   </action>
-  <action name="action_menu_contracts_anual_interest_settlement">
+  <action name="action_menu_contracts_annual_interest_settlement">
    <property name="text">
     <string>Jahreszinsabrechnung</string>
    </property>
