@@ -132,7 +132,7 @@ bool verifyTable( const dbtable& tableDef, QSqlDatabase db)
 {
     QSqlRecord recordFromDb = db.record(tableDef.Name());
     if( recordFromDb.count() != tableDef.Fields().count()) {
-        qDebug() << "verifyTable() failed: number of fields mismatch. expected / actual: " << tableDef.Fields().count() << " / " << recordFromDb.count();
+        qDebug() << "verifyTable(" << tableDef.Name() <<  ") failed: number of fields mismatch. expected / actual: " << tableDef.Fields().count() << " / " << recordFromDb.count();
         return false;
     }
     for( auto& field: tableDef.Fields()) {

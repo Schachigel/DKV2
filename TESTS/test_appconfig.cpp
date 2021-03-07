@@ -11,8 +11,8 @@ void test_appConfig::initTestCase()
     QVERIFY( ! appConfig::LastDb().isEmpty());
     appConfig::setOutDir("C:/temp/output");
     QVERIFY( ! appConfig::Outdir().isEmpty());
-    initTestDb();
     init_DKDBStruct();
+    initTestDb();
     fill_DkDbDefaultContent();
 
 }
@@ -48,7 +48,7 @@ void test_appConfig::test_dbConfig_RuntimeData()
     dbConfig::writeValue(STARTINDEX, vInt);
     QCOMPARE(dbConfig::readValue(STARTINDEX), vInt);
 
-    QVariant vDouble{42.24};
+//    QVariant vDouble{42.24};
     dbConfig::writeValue(MIN_AMOUNT, vInt);
     QCOMPARE(dbConfig::readValue(MIN_AMOUNT), vInt);
 }

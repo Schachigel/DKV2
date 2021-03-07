@@ -37,7 +37,6 @@ bool createView(QString name, QString sql, QSqlDatabase db = QSqlDatabase::datab
     qCritical() << "Faild to create view " << name << Qt::endl << q.lastQuery() << Qt::endl << q.lastError() << Qt::endl << sql;
     return false;
 }
-
 bool createViews( QVector<dbViewDev>& views, QSqlDatabase db)
 {
     for( auto view: views) {
@@ -46,7 +45,6 @@ bool createViews( QVector<dbViewDev>& views, QSqlDatabase db)
     }
     return true;
 }
-
 bool insert_views( QSqlDatabase db)
 {   LOG_CALL;
     QString sql_precalc {
@@ -168,6 +166,8 @@ bool updateViews(QSqlDatabase db =QSqlDatabase::database())
     QString lastProgramVersion = dbConfig::readValue(DKV2_VERSION).toString();
     QString thisProgramVersion = QCoreApplication::applicationVersion();
     if( lastProgramVersion != thisProgramVersion) {
+        qInfo() << "Program versions used differ -> views will be updated";
+        qInfo() << qsl("last exe: ") << lastProgramVersion << qsl(" / this exe: ") << thisProgramVersion;
         if( !insert_views(db)) {
             qDebug() << "Faild to insert views for current exe version";
             return false;
