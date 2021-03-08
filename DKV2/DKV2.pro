@@ -24,10 +24,15 @@ DEFINES *= QT_USE_QSTRINGBUILDER
 #CONFIG += c++11
 CONFIG *= c++14
 
-#win32:QMAKE_CXXFLAGS += /utf-8
-#win32:QMAKE_CXXFLAGS += /FS
-CONFIG += utf-8_source
 
+# many ways to set utf8 source!!
+# this works !! both compilers
+CONFIG += utf8_source
+#MSVC only SETTINGS
+#win32:msvc:QMAKE_CXXFLAGS += /utf-8
+#win32:msvc:QMAKE_CXXFLAGS += /FS
+# unknown to MSVC:
+#QMAKE_CXXFLAGS+=-finput-charset=UTF-8
 
 VERSION = 0.0.0.10
 VERSION_PE_HEADER = 0.10
