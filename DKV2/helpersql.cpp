@@ -1,17 +1,19 @@
 #include "helper.h"
 #include "helpersql.h"
 
+const QString dbTypeName {qsl("QSQLITE")};
+
 bool autoDetachDb::attachDb(QString filename)
 {
     LOG_CALL;
     QString sql {qsl("ATTACH DATABASE '%1' AS '%2'")};
-    return executeSql_wNoRecords(sql.arg(filename).arg(alias), QVariant(), QSqlDatabase::database(conname));
+    return executeSql_wNoRecords(sql.arg(filename).arg(alias()), QSqlDatabase::database(conname()));
 }
 autoDetachDb::~autoDetachDb()
 {
     LOG_CALL;
     QString sql {qsl("DETACH DATABASE '%1'")};
-    executeSql_wNoRecords(sql.arg(alias), QVariant(), QSqlDatabase::database(conname));
+    executeSql_wNoRecords(sql.arg(alias()), QSqlDatabase::database(conname()));
 }
 
 
@@ -117,17 +119,14 @@ int rowCount(const QString& table, QSqlDatabase db /* =QSqlDatabase::database() 
         return -1;
     }
 }
-
 bool tableExists(const QString& tablename, QSqlDatabase db)
 {
     return db.tables().contains(tablename);
 }
-
 bool VarTypes_share_DbType( QVariant::Type t1, QVariant::Type t2)
 {
     return dbAffinityType(t1) == dbAffinityType(t2);
 }
-
 bool verifyTable( const dbtable& tableDef, QSqlDatabase db)
 {
     QSqlRecord recordFromDb = db.record(tableDef.Name());
@@ -158,6 +157,22 @@ bool ensureTable( const dbtable& table, QSqlDatabase db)
     // create table
     return table.create(db);
 }
+
+bool switchForeignKeyHandling(const QSqlDatabase& db, const QString& alias, bool OnOff)
+{
+    Q_ASSERT( ! alias.isEmpty());
+    QString sql {qsl("PRAGMA %1.FOREIGN_KEYS = %2")};
+    sql =sql.arg(alias, OnOff?qsl("ON"):qsl("OFF"));
+    return executeSql_wNoRecords(sql, db);
+}
+bool switchForeignKeyHandling(const QSqlDatabase& db, bool OnOff)
+{
+    if( OnOff)
+        return executeSql_wNoRecords(qsl("PRAGMA FOREIGN_KEYS = ON"), db);
+    else
+        return executeSql_wNoRecords(qsl("PRAGMA FOREIGN_KEYS = OFF"), db);
+}
+
 
 QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db)
 {
@@ -342,16 +357,21 @@ bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlReco
         return false;
     }
 }
-bool executeSql_wNoRecords(QString sql, QVariant v, QSqlDatabase db)
+
+bool executeSql_wNoRecords(const QString& sql, const QSqlDatabase& db)
+{
+    return executeSql_wNoRecords(sql, QVector<QVariant>(), db);
+}
+bool executeSql_wNoRecords(const QString& sql, const QVariant& v, const QSqlDatabase& db)
 {
     if( v.isValid())
         return executeSql_wNoRecords(sql, QVector<QVariant>{v}, db);
     else
         return executeSql_wNoRecords(sql, QVector<QVariant>(), db);
 }
-bool executeSql_wNoRecords(QString sql, QVector<QVariant> v, QSqlDatabase db)
+bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& v, const QSqlDatabase& db)
 {   LOG_CALL;
-    QSqlQuery q(db); q.setForwardOnly(true);
+    QSqlQuery q(db); // q.setForwardOnly(true);
     q.prepare(sql);
     for( int i =0; i< v.count(); i++) {
         if( v[i].isValid()) {
@@ -363,8 +383,8 @@ bool executeSql_wNoRecords(QString sql, QVector<QVariant> v, QSqlDatabase db)
         }
     }
     if( q.exec()) {
-        qInfo() << "Successfully executed query \n" << q.lastQuery();
-        qInfo() << "Number of Rows affected: " << q.numRowsAffected();
+        qInfo() << "Successfully executed query " << q.lastQuery() << " with "
+        << (q.numRowsAffected() ? QString::number(q.numRowsAffected()) : QString("no")) << " affected Rows";
         qInfo() << Qt::endl;
         return true;
     }

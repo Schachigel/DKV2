@@ -351,7 +351,7 @@ void wizConfigureNewDatabaseWiz::updateDbConfig(QString dbFile)
 {
     LOG_CALL;
     dbCloser closer{ qsl("updateDbConfig") };
-    QSqlDatabase db = QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
+    QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     db.setDatabaseName(dbFile);
     db.open();
     return updateDbConfig(db);

@@ -23,7 +23,7 @@ void initTestDb()
         QFile::remove(testDbFilename);
     if (QFile::exists(testDbFilename))
         QFAIL("test db still in use");
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName);
     db.setDatabaseName(testDbFilename);
     QVERIFY(db.open());
 //    init_DKDBStruct();
@@ -38,7 +38,8 @@ void initTestDb_withData()
         QFile::remove(testDbFilename);
     if (QFile::exists(testDbFilename))
         QFAIL("test db still in use");
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+//    dbCloser closer(qsl("qt_sql_default_connection"));
+    QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName);
     db.setDatabaseName(testDbFilename);
     QVERIFY(db.open());
     init_DKDBStruct();
@@ -61,7 +62,7 @@ void cleanupTestDb()
 
 void openDbConnection(QString file)
 {
-    QSqlDatabase::addDatabase("QSQLITE");
+    QSqlDatabase::addDatabase(dbTypeName);
     QSqlDatabase::database().setDatabaseName(file);
     QSqlDatabase::database().open();
 }
@@ -112,10 +113,10 @@ bool dbsHaveSameTables(const QString fn1, const QString fn2)
     dbCloser closer1(qsl("con1"));
     dbCloser closer2(qsl("con2"));
 
-    QSqlDatabase db1 = QSqlDatabase::addDatabase(qsl("QSQLITE"), closer1.conName);
+    QSqlDatabase db1 = QSqlDatabase::addDatabase(dbTypeName, closer1.conName);
     db1.setDatabaseName(fn1);
     Q_ASSERT(db1.open());
-    QSqlDatabase db2 = QSqlDatabase::addDatabase(qsl("QSQLITE"), closer2.conName);
+    QSqlDatabase db2 = QSqlDatabase::addDatabase(dbTypeName, closer2.conName);
     db2.setDatabaseName(fn2);
     Q_ASSERT(db2.open());
     return dbsHaveSameTables(db1, db2);

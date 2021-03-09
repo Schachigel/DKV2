@@ -10,6 +10,7 @@
 #include "dbfield.h"
 #include "dbstructure.h"
 
+extern const QString dbTypeName;
 
 struct dbCloser
 {   // RAII class for db connections
@@ -32,9 +33,11 @@ struct dbCloser
 };
 
 struct autoDb{
-    autoDb(QString file, QString connect) : closer(connect){
-        db =QSqlDatabase::addDatabase("QSQLITE", closer.conName);
+    enum accessType { read_only =0, read_write};
+    autoDb(QString file, QString connect, accessType at=read_write) : closer(connect){
+        db =QSqlDatabase::addDatabase(dbTypeName, closer.conName);
         db.setDatabaseName(file);
+        if(at == read_only) db.setConnectOptions(qsl("QSQLITE_OPEN_READONLY"));
         if( ! db.open()) {
             qCritical() << "could not open db conncection " << closer.conName;
             qCritical() << db.lastError();
@@ -46,15 +49,13 @@ struct autoDb{
     QSqlDatabase db;
 };
 
-
-
 struct autoRollbackTransaction
 {   // RAII class for db connections
     autoRollbackTransaction(QString con =QString()) : connection((con)) {
         QSqlDatabase::database(con).transaction();
     };
-    void commit() {
-        QSqlDatabase::database(connection).commit();
+    void commit() { LOG_CALL;
+        if( !comitted) QSqlDatabase::database(connection).commit();
         comitted =true;
     }
     ~autoRollbackTransaction() {
@@ -69,15 +70,17 @@ private:
 struct autoDetachDb
 {   // RAII class for db file attachment
     autoDetachDb(QString a, QString conName)
-        : alias(a), conname(conName)
+        : _alias(a), _conname(conName)
     {
 
     }
     bool attachDb(QString filename);
     ~autoDetachDb();
-
-    QString alias;
-    QString conname;
+    const QString alias(){return _alias;}
+    const QString conname(){return _conname;}
+private:
+    QString _alias;
+    QString _conname;
 };
 
 
@@ -87,10 +90,12 @@ QString dbCreateTable_type(QVariant::Type t);
 QString dbAffinityType(QVariant::Type t);
 
 int rowCount(const QString& table, QSqlDatabase db =QSqlDatabase::database());
-
 bool tableExists(const QString& tablename, QSqlDatabase db = QSqlDatabase::database());
 bool verifyTable( const dbtable& table, QSqlDatabase db);
 bool ensureTable(const dbtable& table, QSqlDatabase db = QSqlDatabase::database());
+
+bool switchForeignKeyHandling(const QSqlDatabase& db, const QString& alias, bool OnOff);
+bool switchForeignKeyHandling(const QSqlDatabase& db, bool OnOff);
 
 QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db = QSqlDatabase::database());
 QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where =QString(), QSqlDatabase db = QSqlDatabase::database());
@@ -105,8 +110,9 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
 QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString());
 bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result);
 bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlRecord>& result);
-bool executeSql_wNoRecords(QString sql, QVariant v, QSqlDatabase db = QSqlDatabase::database());
-bool executeSql_wNoRecords(QString sql, QVector<QVariant> v =QVector<QVariant>(), QSqlDatabase db = QSqlDatabase::database());
+bool executeSql_wNoRecords(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database());
+bool executeSql_wNoRecords(const QString& sql, const QVariant& v, const QSqlDatabase& db = QSqlDatabase::database());
+bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& v, const QSqlDatabase& db = QSqlDatabase::database());
 
 int getHighestRowId(const QString& tablename);
 

@@ -7,6 +7,7 @@
 #include <QVector>
 
 #include "helper.h"
+#include "helpersql.h"
 #include "appconfig.h"
 #include "csvwriter.h"
 #include "creditor.h"
@@ -80,9 +81,9 @@ void insert_DbProperties(QSqlDatabase db = QSqlDatabase::database())
 bool fill_DkDbDefaultContent(QSqlDatabase db)
 {
     LOG_CALL;
-    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
+    switchForeignKeyHandling(db, true);
     bool ret = false;
-    db.transaction();
+    autoRollbackTransaction art(db.connectionName());
     do {
         if (!insert_views(db)) break;
         insert_DbProperties(db);
@@ -92,9 +93,7 @@ bool fill_DkDbDefaultContent(QSqlDatabase db)
         ret = true;
     } while (false);
     if (ret)
-        db.commit();
-    else
-        db.rollback();
+        art.commit();
     return ret;
 }
 
@@ -134,7 +133,7 @@ version_check_result check_db_version(QString file)
 {
     LOG_CALL_W(file);
     dbCloser closer(qsl("db_version_check"));
-    QSqlDatabase db =QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
+    QSqlDatabase db =QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     db.setDatabaseName(file);
     if( ! db.open()) {
         qCritical() << "could not open db " << file << " for version check ";
@@ -205,7 +204,7 @@ bool open_databaseForApplication( QString newDbFile)
     backupFile(newDbFile, "db-bak");
 
     // setting the default database for the application
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName);
     db.setDatabaseName(newDbFile);
     if( !db.open()) {
         qCritical() << "open database file " << newDbFile << " failed";

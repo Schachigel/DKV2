@@ -30,7 +30,7 @@ void init_DKDBStruct();
 //
 bool createFileWithDatabaseStructure (QString targetfn, const dbstructure& dbs =dkdbstructur);
 //
-bool createNewDatabaseFile(const QString& filename, const dbstructure& dbs =dkdbstructur);
+bool createNewDatabaseFileWDefaultContent(const QString& filename, const dbstructure& dbs =dkdbstructur);
 // compare current structure to an actual database
 bool hasAllTablesAndFields(QSqlDatabase db, const dbstructure& dbs =dkdbstructur);
 // check schema

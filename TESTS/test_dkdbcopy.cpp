@@ -104,7 +104,7 @@ void test_dkdbcopy::test_dbsHaveSameTables_more_fields()
 
     QVERIFY( dbsHaveSameTables(dbfn1, dbfn2));
 //    dbCloser closer (qsl("con"));
-//    QSqlDatabase db =QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
+//    QSqlDatabase db =QSqlDatabase::addDatabase(dbTypeName, closer.conName);
 //    db.setDatabaseName(dbfn1);
 //    db.open();
 
@@ -121,7 +121,7 @@ bool insertData(const QString& dbfn, const QString& table, const QString& field)
     static int i =0;
     i++;
     dbCloser closer{qsl("con")};
-    QSqlDatabase db =QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
+    QSqlDatabase db =QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     db.setDatabaseName(dbfn);
     if( ! db.open())
         return false;
@@ -153,8 +153,11 @@ void test_dkdbcopy::test_copyDatabase()
 {
     // setup
     initTestDb_withData();
+//    QSqlDatabase::database().close();
+//    QSqlDatabase::database().removeDatabase(QSqlDatabase::database().connectionName());
+
     // code under test
-    copy_database(tempFileName);
+    copy_database(testDbFilename, tempFileName);
     // verification
     QVERIFY(dbsHaveSameTables(testDbFilename, tempFileName));
     // cleanup
@@ -193,7 +196,7 @@ void test_dkdbcopy::test_convertDatabaseInplace_wNewColumn()
     // fill the "old" database file with some data
     {
         dbCloser closer {qsl("closer")};
-        QSqlDatabase db =QSqlDatabase::addDatabase("QSQLITE", closer.conName);
+        QSqlDatabase db =QSqlDatabase::addDatabase(dbTypeName, closer.conName);
         db.setDatabaseName(dbfn1); db.open();
         TableDataInserter tdi1{t1};
         tdi1.setValue("fi", "v1");    tdi1.InsertData(db);
@@ -212,7 +215,7 @@ void test_dkdbcopy::test_convertDatabaseInplace_wNewColumn()
     QVERIFY(convert_database_inplace(dbfn1, dbfn2, newDbStructure));
     // VERIFICATION
     dbCloser closer {qsl("closeVerifiy")};
-    QSqlDatabase verifyDb =QSqlDatabase::addDatabase("QSQLITE", closer.conName);
+    QSqlDatabase verifyDb =QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     verifyDb.setDatabaseName(dbfn1); verifyDb.open();
     QVERIFY(QFile::exists(dbfn1));
     QVERIFY(hasAllTablesAndFields(verifyDb, newDbStructure));

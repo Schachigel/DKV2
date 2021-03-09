@@ -65,7 +65,7 @@ void test_appConfig::test_dbConfig_Db()
     if( QFile::exists(newDbFilename)) QFile::remove(newDbFilename);
     QVERIFY( ! QFile::exists(newDbFilename));
     {
-        QSqlDatabase newDb =QSqlDatabase::addDatabase(qsl("QSQLITE"), qsl("newdb"));
+        QSqlDatabase newDb =QSqlDatabase::addDatabase(dbTypeName, qsl("newdb"));
         newDb.setDatabaseName(newDbFilename);
         QVERIFY(newDb.open());
         QVERIFY(dkdbstructur.createDb(newDb));

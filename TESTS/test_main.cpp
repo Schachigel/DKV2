@@ -44,8 +44,8 @@ int main(int argc, char *argv[])
     };
 
     std::vector<QObject*> tests;
-    tests.push_back(new test_dkdbcopy);
     tests.push_back(new test_appConfig);
+    tests.push_back(new test_dkdbcopy);
     tests.push_back(new test_booking);
     tests.push_back(new test_contract);
     tests.push_back(new test_views);

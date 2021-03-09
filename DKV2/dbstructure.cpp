@@ -87,14 +87,14 @@ void init_DKDBStruct()
 }
 
 // db creation for newDb and copy (w & w/o de-personalisation)
-bool createFileWithDatabaseStructure (QString targetfn, const dbstructure& dbs)
+bool createFileWithDatabaseStructure (QString targetfn, const dbstructure& dbs/* =dkdbstructu*/)
 {   LOG_CALL_W(targetfn);
     if( ! moveToBackup(targetfn)) {
         return false;
     }
     dbCloser closer(qsl("createDbFile"));
 
-    QSqlDatabase newDb = QSqlDatabase::addDatabase("QSQLITE", closer.conName);
+    QSqlDatabase newDb = QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     newDb.setDatabaseName(targetfn);
     if( !newDb.open()) {
         qDebug() << "faild to open new database";
@@ -105,7 +105,7 @@ bool createFileWithDatabaseStructure (QString targetfn, const dbstructure& dbs)
 }
 
 // database creation
-bool createNewDatabaseFile(const QString& filename, const dbstructure& dbs/* =dkdbstructu*/)
+bool createNewDatabaseFileWDefaultContent(const QString& filename, const dbstructure& dbs/* =dkdbstructu*/)
 {   LOG_CALL_W(qsl("filename: ") + filename);
     Q_ASSERT(!filename.isEmpty());
     dbgTimer timer( qsl("Db Creation Time"));
@@ -116,7 +116,7 @@ bool createNewDatabaseFile(const QString& filename, const dbstructure& dbs/* =dk
     }
     // create content
     dbCloser closer{qsl("conCreateDb")};
-    QSqlDatabase db = QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
+    QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     db.setDatabaseName(filename);
 
     if( !db.open()) {
@@ -150,7 +150,7 @@ bool validateDbSchema(const QString& filename, const dbstructure& dbs /*=dkdbstr
         msg = "file not found";
     else {
         dbCloser closer{ qsl("validateDbSchema") };
-        QSqlDatabase db = QSqlDatabase::addDatabase(qsl("QSQLITE"), closer.conName);
+        QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName, closer.conName);
         db.setDatabaseName(filename);
         db.open();
         if (hasAllTablesAndFields(db, dbs)) {

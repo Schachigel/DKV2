@@ -140,7 +140,7 @@ QString MainWindow::askUserForNextDb()
         }
         // a new db should be created -> ask project details
         // closeAllDatabaseConnections();
-        if( ! createNewDatabaseFile(selectedDbPath)) {
+        if( ! createNewDatabaseFileWDefaultContent(selectedDbPath)) {
             QMessageBox::critical(this, "Fehler", "Die neue Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen");
             return QString();
         }
@@ -341,7 +341,7 @@ void MainWindow::on_action_menu_database_copy_triggered()
         return;
 
     busycursor b;
-    if( ! copy_database(dbfile)) {
+    if( ! copy_database(dbfile, QSqlDatabase::database().databaseName())) {
         QMessageBox::information(this, qsl("Fehler beim Kopieren"), qsl("Die Datenbankkopie konnte nicht angelegt werden. "
                                                                "Weitere Info befindet sich in der LOG Datei"));
         qCritical() << "creating copy failed";
