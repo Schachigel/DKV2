@@ -341,11 +341,13 @@ void MainWindow::on_action_menu_database_copy_triggered()
         return;
 
     busycursor b;
-    if( ! copy_database(dbfile, QSqlDatabase::database().databaseName())) {
+    if( ! copy_database(QSqlDatabase::database().databaseName(), dbfile)) {
         QMessageBox::information(this, qsl("Fehler beim Kopieren"), qsl("Die Datenbankkopie konnte nicht angelegt werden. "
                                                                "Weitere Info befindet sich in der LOG Datei"));
         qCritical() << "creating copy failed";
-    }
+    } else
+        QMessageBox::information(this, qsl("Kopie angelegt"), qsl("Die Kopie ") +dbfile +qsl(" wurde erfolgreich angelegt"));
+
     return;
 }
 void MainWindow::on_action_menu_database_anonymous_copy_triggered()
@@ -359,7 +361,9 @@ void MainWindow::on_action_menu_database_anonymous_copy_triggered()
                                  qsl("Die anonymisierte Datenbankkopie konnte nicht angelegt werden. "
                                      "Weitere Info befindet sich in der LOG Datei"));
         qCritical() << "creating depersonaliced copy failed";
-    }
+    } else
+        QMessageBox::information(this, qsl("Kopie angelegt"), qsl("Die Kopie ohne personenbezogene Daten ") +dbfile +qsl(" wurde erfolgreich angelegt"));
+
     return;
 }
 void MainWindow::on_actionProjektkonfiguration_ndern_triggered()

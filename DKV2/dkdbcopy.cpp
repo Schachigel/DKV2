@@ -29,46 +29,46 @@ QString createPreConversionCopy( const QString& file, const QString& fixedTempFi
     }
 }
 
-bool copy_TableContent( const QString src, const QString dest, const QSqlDatabase db=QSqlDatabase::database())
-{   LOG_CALL_W( src +qsl(", ") +dest);
+bool copy_TableContent( const QString srcTbl, const QString dstTbl, const QSqlDatabase db=QSqlDatabase::database())
+{
+    LOG_CALL_W( srcTbl +qsl(", ") +dstTbl);
+    // usually used from "table" to "targetScheema.table"
     QString sql(qsl("INSERT OR REPLACE INTO %1 SELECT * FROM %2"));
-    return executeSql_wNoRecords(sql.arg(dest).arg(src), db);
+    return executeSql_wNoRecords(sql.arg(dstTbl).arg(srcTbl), db);
 }
 
 bool replace_TableContent(const QString srcTbl, const QString destTbl, const QSqlDatabase& db =QSqlDatabase::database())
-{   LOG_CALL_W( srcTbl +qsl(", ") +destTbl);
+{
+    LOG_CALL_W( srcTbl +qsl(", ") +destTbl);
     executeSql_wNoRecords( qsl("DELETE FROM ") + destTbl, db);
     return copy_TableContent(srcTbl, destTbl, db);
 }
 
-bool copy_TableContent_byRecord( const QString& src, const QString& dest, const QSqlDatabase& db=QSqlDatabase::database())
-{   LOG_CALL_W( src +qsl(", ") +dest);
+bool copy_TableContent_byRecord( const QString& srcTbl, const QString& dstTbl, const QSqlDatabase& db=QSqlDatabase::database())
+{   LOG_CALL_W( srcTbl +qsl(", ") +dstTbl);
+    // by copying "field by field" we can copy into tables that have extra fields
     QString copyableFields;
-    QSqlRecord rec =db.record(src);
+    QSqlRecord rec =db.record(srcTbl);
     for( int i =0; i < rec.count(); i++) {
         if( ! copyableFields.isEmpty()) copyableFields +=qsl(", ");
         copyableFields += rec.field(i).name();
     }
     QSqlQuery q (db);
-    q.prepare(qsl("SELECT * FROM ") + src);
+    q.prepare(qsl("SELECT * FROM ") + srcTbl);
     if( ! q.exec()) {
         qCritical() << "Could not enumerate source table";
         return false;
     }
-    QString sql(qsl("INSERT OR REPLACE INTO %1 (%2) VALUES (%3)"));
     while(q.next()) {
-        TableDataInserter tdi(dest, q.record());
+        TableDataInserter tdi(dstTbl, q.record());
         if( tdi.InsertOrReplaceData(db) == -1) {
-            qCritical() << "could not insert Date to converted db";
+            qCritical() << "could not insert Date to converted db" << tdi.getRecord();
             return false;
         }
     }
     return true;
 }
 
-/*
-*  copy_database will create a 1 : 1 copy of the currently opened database to a new file
-*/
 bool copycreate_views(const QSqlDatabase& db, const QString& alias)
 {   LOG_CALL;
      QSqlQuery q(db);
@@ -86,11 +86,13 @@ bool copycreate_views(const QSqlDatabase& db, const QString& alias)
      return true;
 }
 
+/*
+*  copy_database will create a 1 : 1 copy of the currently opened database to a new file
+*/
 bool copy_database( const QString& sourceFName,
                     const QString& targetFName,
                     const dbstructure& targetDbStructure/*=dkdbstructur*/)
 {
-    closeAllDatabaseConnections();
     qInfo() << "copy_database(" << sourceFName << ", " << targetFName << ")";
 
     if( ! createFileWithDatabaseStructure(targetFName))
@@ -114,21 +116,22 @@ bool copy_database( const QString& sourceFName,
         return false;
     if( !copycreate_views(autoTarget.db, ad.alias()))
         return false;
+    // if we had indices which do not come from table creation, they should also be copied
     /////////// all done
     transaction.commit();
     /////////////////////
     return true;
 }
 
-bool copy_dkdb_database( const QString& sourceFName,
-                         const QString& targetFName)
-{
-    copy_database(sourceFName, targetFName);
-    // force views creation on next startup
-    QString sql{qsl("DELETE FROM meta WHERE Name='dkv2.exe.Version'")};
-    autoDb target(targetFName, qsl("copy_dkdb"));
-    return executeSql_wNoRecords(qsl("INSERT INTO sqlite_master FROM "), target.db);
-}
+//bool copy_dkdb_database( const QString& sourceFName,
+//                         const QString& targetFName)
+//{
+//    copy_database(sourceFName, targetFName);
+//    // force views creation on next startup
+//    QString sql{qsl("DELETE FROM meta WHERE Name='dkv2.exe.Version'")};
+//    autoDb target(targetFName, qsl("copy_dkdb"));
+//    return executeSql_wNoRecords(qsl("INSERT INTO sqlite_master FROM "), target.db);
+//}
 
 
 /*
@@ -211,7 +214,7 @@ bool copy_database_mangled(QString targetfn, QSqlDatabase dbToBeCopied)
     if( ! replace_TableContent(qsl("sqlite_sequence"), alias +qsl(".sqlite_sequence")))
         return false;
     // force views creation on next startup
-    executeSql_wNoRecords(qsl("DELETE FROM targetDb.meta WHERE Name='dkv2.exe.Version'"), QVector<QVariant>(), dbToBeCopied);
+    executeSql_wNoRecords(qsl("DELETE FROM %1.meta WHERE Name='dkv2.exe.Version'").arg(alias), dbToBeCopied);
     trans.commit();
     return true;
 }

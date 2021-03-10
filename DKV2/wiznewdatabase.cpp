@@ -49,8 +49,15 @@ void wpFileSelection_IntroPage::browseButtonClicked() {
 
 bool wpFileSelection_IntroPage::validatePage() {
     wizFileSelectionWiz* wiz = qobject_cast<wizFileSelectionWiz*>(wizard());
-    if( wiz->existingFile)
-        return QFile::exists(field(qsl("selectedFile")).toString());
+    QString file =field(qsl("selectedFile")).toString();
+    QFileInfo fi(file);
+    if( fi.suffix() == "") file +=qsl(".dkdb");
+    if( fi.path() == ".") file =wiz->openInFolder + "/" +file;
+    setField(qsl("selectedFile"), file);
+    if( wiz->existingFile) {
+
+        return QFile::exists(file);
+    }
     else
         return ! field(qsl("selectedFile")).toString().isEmpty();
 }
