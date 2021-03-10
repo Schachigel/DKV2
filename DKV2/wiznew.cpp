@@ -656,6 +656,11 @@ bool wpInterestFromInvestment::validatePage()
     rowid_investment = cbInvestments->currentData().toLongLong();
     wizNew* wiz =qobject_cast<wizNew*>(wizard());
     wiz->interest =interestOfInvestmentByRowId(rowid_investment);
+    if( wiz->interest == 0){
+        // without interest -> interest payout mode "payout"
+        wiz->iPaymentMode =fromInt(0);
+    }
+
     return true;
 }
 int wpInterestFromInvestment::nextId() const
@@ -689,6 +694,13 @@ wpInterestSelection::wpInterestSelection(QWidget* w) : QWizardPage(w)
     hbl->addWidget(lZ);
     hbl->addWidget(cbInterest);
     setLayout(hbl);
+}
+bool wpInterestSelection::validatePage()
+{
+    // without interest -> interest payout mode "payout"
+    wizNew* wiz =qobject_cast<wizNew*>(wizard());
+    wiz->iPaymentMode =fromInt(0);
+    return true;
 }
 int wpInterestSelection::nextId() const
 {
