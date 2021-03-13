@@ -2,7 +2,6 @@
 #include <QDate>
 #include <QString>
 #include <QMessageBox>
-#include <QDate>
 
 #include "csvwriter.h"
 #include "appconfig.h"
