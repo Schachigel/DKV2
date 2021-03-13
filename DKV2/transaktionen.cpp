@@ -166,7 +166,7 @@ void annualSettlement()
         csv.appendToRow(cont.postalCode());csv.appendToRow(cont.city());
 
         csv.appendToRow(cont.iban());      csv.appendToRow(c.label());
-        (c.iModel() == interestModel::reinvest) ? csv.appendToRow(qsl("thesaurierend")) : csv.appendToRow(qsl("ausschüttend"));
+        csv.appendToRow(toString(c.iModel()));
         csv.appendToRow(startOfInterrestCalculation[i].toString(qsl("dd.MM.yyyy")));
         csv.appendToRow(bookingDate.toString(qsl("dd.MM.yyyy")));
         csv.appendToRow(l.toString(c.interestRate(), 'f', 2));

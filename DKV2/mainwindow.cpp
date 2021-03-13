@@ -931,9 +931,11 @@ void MainWindow::on_actionAktuelle_Auswahl_triggered()
     csvwriter csv;
     QSqlTableModel* model = qobject_cast<QSqlTableModel*>(ui->contractsTableView->model());
     QSqlRecord rec =model->record();
+    // header
     for( int i=0; i<rec.count(); i++) {
         csv.addColumn(rec.fieldName(i));
     }
+    // data
     for( int i=0; i<model->rowCount(); i++) {
         QSqlRecord rec =model->record(i);
         for( int j=0; j<rec.count(); j++) {
