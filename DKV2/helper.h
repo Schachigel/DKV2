@@ -46,9 +46,9 @@ public:
 // create a log entry for entry and exit of function call
 
 //#define LOG_ENTRY_EXIT_FOR(x) // ;functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
-#define LOG_ENTRY_EXIT_FOR(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
-#define LOG_CALL              LOG_ENTRY_EXIT_FOR(__func__)
-#define LOG_CALL_W(x)         LOG_ENTRY_EXIT_FOR(__func__ + QString(qsl("(\"")) + x + QString(qsl("\")")))
+//#define LOG_ENTRY_EXIT_FOR(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
+#define LOG_CALL functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(__func__)
+#define LOG_CALL_W(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger( __func__ + QString(qsl("(\"")) + x + QString(qsl("\")")))
 
 extern const QDate EndOfTheFuckingWorld;
 extern const QDate BeginingOfTime;

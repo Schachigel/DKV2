@@ -34,14 +34,18 @@ CONFIG += utf8_source
 # unknown to MSVC:
 #QMAKE_CXXFLAGS+=-finput-charset=UTF-8
 
+DEFINES += GIT_COMMIT='\\"$$system(git log --format="%h" -n 1)\\"'
+
 VERSION = 0.0.0.10
 VERSION_PE_HEADER = 0.10
 
 QMAKE_TARGET_COMPANY = HoMSoft
 QMAKE_TARGET_PRODUCT = DKV2 Direktkredit Verwaltung
 QMAKE_TARGET_DESCRIPTION = DK Verwaltung f. MHS Projekte
+
 RC_CODEPAGE = 850
 RC_LANG = 0x0407
+
 
 win32:LIBS += \
         -lVersion
@@ -83,7 +87,10 @@ SOURCES += \
         wizopenornewdatabase.cpp \
         wizterminatecontract.cpp
 
-HEADERS += \
+#use precompiled header
+PRECOMPILED_HEADER  = pch.h
+
+HEADERS += pch.h\
         appconfig.h \
         booking.h \
         contract.h \
@@ -104,6 +111,7 @@ HEADERS += \
         letterTemplate.h \
         letters.h \
         mainwindow.h \
+        pch.h \
         reporthtml.h \
         tabledatainserter.h \
         transaktionen.h \
