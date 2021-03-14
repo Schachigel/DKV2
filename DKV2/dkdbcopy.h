@@ -28,7 +28,7 @@ bool copy_database_mangled(QString targetfn, QSqlDatabase db =QSqlDatabase::data
 *  convert_database will create a copy of a given database file to a new file using
 *  the current schema inserting the data given, leaving any new fields empty / to their default value
 */
-bool convert_database_inplace( const QString& targetFilename, const QString& tempFileName =QString(), const dbstructure& dbs =dkdbstructur);
+QString convert_database_inplace( const QString& targetFilename, const QString& tempFileName =QString(), const dbstructure& dbs =dkdbstructur);
 
 
 #endif // DKDBCOPY_H

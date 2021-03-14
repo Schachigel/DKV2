@@ -97,38 +97,6 @@ bool fill_DkDbDefaultContent(QSqlDatabase db)
     return ret;
 }
 
-bool checkSchema_ConvertIfneeded(QString origDbFile)
-{   LOG_CALL;
-
-    switch(check_db_version(origDbFile)){
-    case lowVersion:
-    {
-        qInfo() << "lower version -> converting";
-        if (convert_database_inplace(origDbFile))
-            return true;
-        else {
-            qCritical() << "db converstion of older DB failed";
-            return false;
-        }
-        break;
-    }
-    case sameVersion:
-        if (validateDbSchema(origDbFile, dkdbstructur))
-            return true;
-        else {
-            qCritical() << "db schema is not valid";
-            return false;
-        }
-        break;
-    case noVersion:
-    case higherVersion:
-    default:
-        return false;
-        break;
-    }
-//    return false;
-}
-
 version_check_result check_db_version(QString file)
 {
     LOG_CALL_W(file);

@@ -212,7 +212,7 @@ void test_dkdbcopy::test_convertDatabaseInplace_wNewColumn()
     newDbStructure.appendTable(t2);
     // Code under TEST:
     // convert the old file into a file with the new datastructure
-    QVERIFY(convert_database_inplace(dbfn1, dbfn2, newDbStructure));
+    QVERIFY(! convert_database_inplace(dbfn1, dbfn2, newDbStructure).isEmpty());
     // VERIFICATION
     dbCloser closer {qsl("closeVerifiy")};
     QSqlDatabase verifyDb =QSqlDatabase::addDatabase(dbTypeName, closer.conName);

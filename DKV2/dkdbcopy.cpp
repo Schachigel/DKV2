@@ -223,18 +223,18 @@ bool copy_database_mangled(QString targetfn, QSqlDatabase dbToBeCopied)
 *  convert_database will create a copy of a given database file to a new file using
 *  the current schema inserting the data given, leaving any new fields empty / to their default value
 */
-bool convert_database_inplace( const QString& targetFilename, const QString& tempFileName, const dbstructure& dbs)
+QString convert_database_inplace( const QString& targetFilename, const QString& tempFileName, const dbstructure& dbs)
 {   LOG_CALL_W(targetFilename);
     QString backupFileName =createPreConversionCopy(targetFilename, tempFileName);
     if( backupFileName.isEmpty()) {
         qCritical() << "Could not create backup copy - abort " << backupFileName << " of " << targetFilename;
-        return false;
+        return QString();
     }
     QString& sourceFileName =backupFileName;
     // create a new db file with the current database structure
     if( ! createNewDatabaseFileWDefaultContent(targetFilename, dbs)) {
         qCritical() << "db creation faild for database conversion -> abort";
-        return false;
+        return QString();
     }
     // copy the data  - but if fields are missing: use only the available fields, leave the new fields to their default
     autoDb db(sourceFileName, qsl("convert"));
@@ -262,25 +262,25 @@ bool convert_database_inplace( const QString& targetFilename, const QString& tem
         const int srcFields  = QSqlDatabase(db).record(table.Name()).count();
         if( destFields < srcFields) {
             qCritical() << "destianation Table misses fields " << table.Name();
-            return false;
+            return QString();
         } else if( destFields == srcFields) {
             if( ! copy_TableContent(table.Name(), autodetatch.alias() +"."+table.Name(), db)) {
                 qCritical() << "could not copy table while converting " << table.Name();
-                return false;
+                return QString();
             }
         } else if( destFields > srcFields) {
             if( ! copy_TableContent_byRecord(table.Name(), autodetatch.alias() +"."+table.Name(), db)) {
                 qCritical() << "could not copy table by record while converting " << table.Name();
-                return false;
+                return QString();
             }
         }
     }
     // now we need to update sqlite_sequence, so that autoincrement index fields will be initialized correctly
     if( ! replace_TableContent(qsl("sqlite_sequence"), autodetatch.alias() +qsl(".sqlite_sequence"), db)) {
             qCritical() << "could not update sqlite_sequence table";
-            return false;
+            return QString();
     }
     dbConfig::writeVersion(db, autodetatch.alias());
     transact.commit();
-    return true;
+    return backupFileName;
 }

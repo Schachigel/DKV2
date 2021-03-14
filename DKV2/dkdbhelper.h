@@ -26,7 +26,6 @@ enum version_check_result {
 
 version_check_result check_db_version(QSqlDatabase db =QSqlDatabase::database());
 version_check_result check_db_version(QString filename);
-bool checkSchema_ConvertIfneeded(QString origDbFile);
 
 // bool createView(QString name, QString Sql, QSqlDatabase db = QSqlDatabase::database());
 // void updateViews(QSqlDatabase db =QSqlDatabase::database());

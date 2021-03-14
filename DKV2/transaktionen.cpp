@@ -7,6 +7,10 @@
 #include "appconfig.h"
 #include "helper.h"
 #include "booking.h"
+#include "investment.h"
+// #include "dkdbhelper.h"
+#include "dkdbcopy.h"
+
 #include "wizchangecontractvalue.h"
 #include "wizactivatecontract.h"
 #include "wizterminatecontract.h"
@@ -15,7 +19,45 @@
 #include "wiznewinvestment.h"
 #include "wiznew.h"
 #include "transaktionen.h"
-#include "investment.h"
+
+bool checkSchema_ConvertIfneeded(QString origDbFile)
+{   LOG_CALL;
+
+    switch(check_db_version(origDbFile)){
+    case lowVersion:
+    {
+        qInfo() << "lower version -> converting";
+        if( QMessageBox::Ok != QMessageBox::information(nullptr, qsl("Achtung"), qsl("Das Format der Datenbank ist veraltet. Soll die Datenbank konvertiert werden?"))) {
+                qInfo() << "conversion rejected by user";
+                return false;
+        }
+        QString backup =convert_database_inplace(origDbFile);
+        if ( ! backup.isEmpty()) {
+            QMessageBox::information(nullptr, qsl("Erfolgsmeldung"), qsl("Die Konvertierung ware erfolgreich. Eine Kopie der ursprünglichen Datei liegt unter \n") +backup);
+            return true;
+        }
+        else {
+            qCritical() << "db converstion of older DB failed";
+            return false;
+        }
+        break;
+    }
+    case sameVersion:
+        if (validateDbSchema(origDbFile, dkdbstructur))
+            return true;
+        else {
+            qCritical() << "db schema is not valid";
+            return false;
+        }
+        break;
+    case noVersion:
+    case higherVersion:
+    default:
+        return false;
+        break;
+    }
+//    return false;
+}
 
 void activateContract(qlonglong cid)
 {   LOG_CALL;
