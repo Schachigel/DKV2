@@ -27,7 +27,7 @@ bool checkSchema_ConvertIfneeded(QString origDbFile)
     case lowVersion:
     {
         qInfo() << "lower version -> converting";
-        if( QMessageBox::Ok != QMessageBox::information(nullptr, qsl("Achtung"), qsl("Das Format der Datenbank ist veraltet. Soll die Datenbank konvertiert werden?"))) {
+        if( QMessageBox::Yes != QMessageBox::question(nullptr, qsl("Achtung"), qsl("Das Format der Datenbank ist veraltet. Soll die Datenbank konvertiert werden?"))) {
                 qInfo() << "conversion rejected by user";
                 return false;
         }
