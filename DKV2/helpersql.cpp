@@ -68,7 +68,7 @@ QString dbCreateTable_type(const QVariant::Type t)
     case QVariant::Date:
         return qsl("TEXTDATE"); // affinity: TEXT
     case QVariant::DateTime:
-        return qsl("TEXTDATETIME"); // affinity: TEXT
+        return qsl("DATETIME"); // affinity: TEXT
     case QVariant::Int:
     case QVariant::LongLong:
     case QVariant::UInt:

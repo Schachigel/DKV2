@@ -27,6 +27,7 @@
         contractTable.append(dbfield(qsl("Vertragsdatum"), QVariant::Date).setNotNull());
         contractTable.append(dbfield(qsl("Kfrist"), QVariant::Int).setNotNull().setDefault(6));
         contractTable.append(dbfield(qsl("LaufzeitEnde"), QVariant::Date).setNotNull().setDefault(qsl("9999-12-31")));
+        contractTable.append(dbfield(qsl("Zeitstempel"), QVariant::DateTime).setDefaultNow());
     }
     return contractTable;
 }

@@ -14,7 +14,7 @@
         bookingsTable.append(dbfield(qsl("Datum"),       QVariant::Date).setDefault(qsl("9999-12-31")).setNotNull());
         bookingsTable.append(dbfield(qsl("BuchungsArt"), QVariant::Int).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
         bookingsTable.append(dbfield(qsl("Betrag"),      QVariant::Int).setNotNull()); // in cent
-        bookingsTable.append(dbfield(qsl("Ausführung"),  QVariant::DateTime));
+        bookingsTable.append(dbfield(qsl("Zeitstempel"),  QVariant::DateTime).setDefaultNow());
     }
     return bookingsTable;
 }

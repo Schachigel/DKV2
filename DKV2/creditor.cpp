@@ -206,6 +206,7 @@ bool creditor::remove()
         creditortable.append(dbfield(qsl("Anmerkung"),QVariant::String).setDefault(""));
         creditortable.append(dbfield(qsl("IBAN"),     QVariant::String).setDefault(""));
         creditortable.append(dbfield(qsl("BIC"),      QVariant::String).setDefault(""));
+        creditortable.append(dbfield(qsl("Zeitstempel"), QVariant::DateTime).setDefaultNow());
         QVector<dbfield> unique;
         unique.append(creditortable[qsl("Vorname")]);
         unique.append(creditortable[qsl("Nachname")]);

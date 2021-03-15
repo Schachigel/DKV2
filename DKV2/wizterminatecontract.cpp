@@ -10,9 +10,6 @@
 wpTerminateContract_DatePage::wpTerminateContract_DatePage(QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("Vertrag beenden"));
-    setSubTitle(qsl("Mit dieser Dialogfolge kannst Du einen Vertrag beenden.<p>"
-                "Gib das Datum an, zu dem der Vertrag ausgezahlt wird. "
-                "Bis zu diesem Datum werden die Zinsen berechnet. "));
     QDateEdit* de = new QDateEdit;
     de->setDisplayFormat(qsl("dd.MM.yyyy"));
     registerField(qsl("date"), de);
@@ -25,16 +22,22 @@ wpTerminateContract_DatePage::wpTerminateContract_DatePage(QWidget* p) : QWizard
 void wpTerminateContract_DatePage::initializePage()
 {
     wizTerminateContract* wiz = qobject_cast<wizTerminateContract*>(wizard());
-    setField(qsl("date"), wiz->c.plannedEndDate());
+    QString creditorName =executeSingleValueSql(qsl("Vorname || ' ' || Nachname"), qsl("Kreditoren"), qsl("id=") + QString::number(wiz->cont.creditorId())).toString();
+    QString Kennung =wiz->cont.label();
+    QString subt {qsl("Mit dieser Dialogfolge kannst Du den Vertrag <p><b>%1</b> von <b>%2</b><p> beenden.<p>"
+                "Gib das Datum an, zu dem der Vertrag ausgezahlt wird. "
+                "Bis zu diesem Datum werden die Zinsen berechnet. ")};
+    setSubTitle(subt.arg(Kennung, creditorName));
+    setField(qsl("date"), wiz->cont.plannedEndDate());
 }
 
 bool wpTerminateContract_DatePage::validatePage()
 {
     wizTerminateContract* wiz = qobject_cast<wizTerminateContract*>(wizard());
-    if( field(qsl("date")).toDate() >= wiz->c.latestBooking().date)
+    if( field(qsl("date")).toDate() >= wiz->cont.latestBooking().date)
         return true;
     QString msg (qsl("Das Vertragsende muss nach der letzten Buchung des Vertrags am %1 sein"));
-    msg = msg.arg(wiz->c.latestBooking().date.toString(qsl("dd.MM.yyyy")));
+    msg = msg.arg(wiz->cont.latestBooking().date.toString(qsl("dd.MM.yyyy")));
     QMessageBox::information(this, qsl("Ungültiges Datum"), msg);
     return false;
 }
@@ -59,7 +62,7 @@ void wpTerminateContract_ConfirmationPage::initializePage()
 {
     wizTerminateContract* wiz = qobject_cast<wizTerminateContract*>(wizard());
     double interest =0., finalValue =0.;
-    wiz->c.finalize(true, field(qsl("date")).toDate(), interest, finalValue);
+    wiz->cont.finalize(true, field(qsl("date")).toDate(), interest, finalValue);
 
     QString subtitle = qsl("<table width=100%>"
                        "<tr><td>Bewertung des Vertrags zum Laufzeitende</td><td align=right><b>%1</b> </td></tr>"
@@ -67,7 +70,7 @@ void wpTerminateContract_ConfirmationPage::initializePage()
                        "<tr><td>Auszahlungsbetrag </td>                      <td align=right><b>%3</b> </td></tr>"
                        "</table>");
     QLocale locale;
-    subtitle = subtitle.arg(locale.toCurrencyString(wiz->c.value()), locale.toCurrencyString(interest), locale.toCurrencyString(finalValue));
+    subtitle = subtitle.arg(locale.toCurrencyString(wiz->cont.value()), locale.toCurrencyString(interest), locale.toCurrencyString(finalValue));
     setSubTitle(subtitle);
 }
 void wpTerminateContract_ConfirmationPage::onConfirmData_toggled(int)
@@ -79,7 +82,7 @@ bool wpTerminateContract_ConfirmationPage::isComplete() const
     return field("confirm").toBool();
 }
 
-wizTerminateContract::wizTerminateContract(QWidget* p, const contract& c) : QWizard(p), c(c)
+wizTerminateContract::wizTerminateContract(QWidget* p, contract& c) : QWizard(p), cont(c)
 {
     addPage(new wpTerminateContract_DatePage);
     addPage(new wpTerminateContract_ConfirmationPage);

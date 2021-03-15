@@ -32,7 +32,8 @@ QString dbfield::get_CreateSqlSnippet() const
             + (isAutoValue()? qsl(" AUTOINCREMENT") : qsl(""))
             + ((requiredStatus()==Required)? qsl(" NOT NULL") : qsl(""))
             + ((unique ? qsl(" UNIQUE") : qsl("") ))
-            + (defaultValue().isValid() ? qsl(" DEFAULT ")+ DbInsertableString(defaultValue()) : qsl(""));
+            + (defaultValue().isValid() ? qsl(" DEFAULT ")+ DbInsertableString(defaultValue()) : qsl(""))
+            + (timeStamp ? qsl( " DEFAULT CURRENT_TIMESTAMP") : qsl(""));
 }
 
 //////////////////////

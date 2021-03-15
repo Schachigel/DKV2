@@ -23,7 +23,6 @@ public: // types
         Q_ASSERT( ! name.contains(qsl("-")));
         outputType = type;
         setType(type);
-
         SqlTypeDetails = SqlTypeDetails.toUpper();
         setAutoValue(SqlTypeDetails.contains(qsl("AUTOINCREMENT")));
         SqlTypeDetails = SqlTypeDetails.replace(qsl("AUTOINCREMENT"), qsl("")).trimmed();
@@ -43,12 +42,14 @@ public: // types
     dbfield setNotNull(const bool nn=true){ setRequired(nn); return *this;}
     dbfield setDefault(const QVariant d){ setDefaultValue(d); return *this;}
     dbfield setAutoInc(const bool a=true){ setAutoValue(a); return *this;}
+    dbfield setDefaultNow() {timeStamp =true; return *this;}
     // somewhat a helper
     static bool isSupportedType(const QVariant::Type t);
     private:
     // data
     bool unique = false;
     bool primaryKey=false;
+    bool timeStamp =false;
     QString SqlTypeDetails;
     QVariant::Type outputType;
 };
