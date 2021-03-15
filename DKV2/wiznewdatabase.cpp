@@ -360,8 +360,8 @@ void wizConfigureNewDatabaseWiz::updateDbConfig(QString dbFile)
     dbCloser closer{ qsl("updateDbConfig") };
     QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     db.setDatabaseName(dbFile);
-    if( db.open()) {
-        qCritical() << "failed to open db";
+    if( ! db.open()) {
+        qCritical() << "failed to open db" << db.lastError();
         return;
     }
     updateDbConfig(db);
@@ -429,6 +429,5 @@ void wizConfigureProjectWiz::updateDbConfig()
     dbConfig::writeValue(MAX_INTEREST, field(dbConfig::paramName(MAX_INTEREST)));
     dbConfig::writeValue(MAX_INVESTMENT_NBR,field(dbConfig::paramName(MAX_INVESTMENT_NBR)));
     dbConfig::writeValue(MAX_INVESTMENT_SUM,field(dbConfig::paramName(MAX_INVESTMENT_SUM)));
-
 }
 
