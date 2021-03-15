@@ -8,7 +8,6 @@
 #include "helper.h"
 #include "booking.h"
 #include "investment.h"
-// #include "dkdbhelper.h"
 #include "dkdbcopy.h"
 
 #include "wizchangecontractvalue.h"
@@ -81,7 +80,6 @@ void activateContract(qlonglong cid)
     }
     return;
 }
-
 void changeContractValue(qlonglong cid)
 {   LOG_CALL;
     contract con(cid);
@@ -112,7 +110,6 @@ void changeContractValue(qlonglong cid)
     } else
         qInfo() << "contract change was cancled by the user";
 }
-
 void deleteInactiveContract(qlonglong cid)
 {   LOG_CALL;
 // contracts w/o bookings can be deleted

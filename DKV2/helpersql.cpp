@@ -28,6 +28,10 @@ QString DbInsertableString(QVariant v)
         s = v.toDate().toString(Qt::ISODate);
         break;
     }
+    case QVariant::DateTime: {
+        s =v.toDateTime().toString(qsl("yyyy.MM.dd - hh:mm"));
+        break;
+    }
     case QVariant::Double: {
         s = QString::number(v.toDouble(), 'f', 2);
         break;
@@ -63,6 +67,8 @@ QString dbCreateTable_type(QVariant::Type t)
         return qsl("TEXT"); // affinity: TEXT
     case QVariant::Date:
         return qsl("TEXTDATE"); // affinity: TEXT
+    case QVariant::DateTime:
+        return qsl("TEXTDATETIME"); // affinity: TEXT
     case QVariant::Int:
     case QVariant::LongLong:
     case QVariant::UInt:
@@ -85,6 +91,7 @@ QString dbAffinityType(QVariant::Type t)
     case QVariant::String:
     case QVariant::Char:
     case QVariant::Date:
+    case QVariant::DateTime:
         return qsl("TEXT");
     case QVariant::Int:
     case QVariant::LongLong:

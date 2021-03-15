@@ -9,6 +9,7 @@
     if( t == QVariant::LongLong) return true; // index col
     if( t == QVariant::Int)      return true; // money in ct
     if( t == QVariant::Date)     return true;
+    if( t == QVariant::DateTime) return true; // booking date & time
     if( t == QVariant::String)   return true;
     if( t == QVariant::Bool)     return true;
     if( t == QVariant::Double)   return true;

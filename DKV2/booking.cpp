@@ -14,6 +14,7 @@
         bookingsTable.append(dbfield(qsl("Datum"),       QVariant::Date).setDefault(qsl("9999-12-31")).setNotNull());
         bookingsTable.append(dbfield(qsl("BuchungsArt"), QVariant::Int).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
         bookingsTable.append(dbfield(qsl("Betrag"),      QVariant::Int).setNotNull()); // in cent
+        bookingsTable.append(dbfield(qsl("Ausführung"),  QVariant::DateTime));
     }
     return bookingsTable;
 }
@@ -67,6 +68,7 @@
     tdi.setValue(qsl("BuchungsArt"), static_cast<int>(t));
     tdi.setValue(qsl("Betrag"), ctFromEuro(amount));
     tdi.setValue(qsl("Datum"), date);
+    tdi.setValue(qsl("Ausführung"), QDateTime(QDate::currentDate(), QTime::currentTime()));
     if( -1 != tdi.InsertData()) {
         qInfo() << "successful booking: " << typeName(t) << " contract#: " << contractId << " Amount: " << ctFromEuro(amount) << " date: " << date;
         return true;
