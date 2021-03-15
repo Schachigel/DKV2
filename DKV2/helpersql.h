@@ -74,7 +74,7 @@ struct autoDetachDb
     {
 
     }
-    bool attachDb(QString filename);
+    bool attachDb(const QString &filename);
     ~autoDetachDb();
     const QString alias(){return _alias;}
     const QString conname(){return _conname;}
@@ -85,14 +85,14 @@ private:
 
 
 // bool vTypesShareDbType( QVariant::Type t1, QVariant::Type t2);
-QString DbInsertableString(QVariant v);
-QString dbCreateTable_type(QVariant::Type t);
-QString dbAffinityType(QVariant::Type t);
+QString DbInsertableString(const QVariant &v);
+QString dbCreateTable_type(const QVariant::Type t);
+QString dbAffinityType(const QVariant::Type t);
 
-int rowCount(const QString& table, QSqlDatabase db =QSqlDatabase::database());
-bool tableExists(const QString& tablename, QSqlDatabase db = QSqlDatabase::database());
-bool verifyTable( const dbtable& table, QSqlDatabase db);
-bool ensureTable(const dbtable& table, QSqlDatabase db = QSqlDatabase::database());
+int rowCount(const QString& table, const QSqlDatabase& db =QSqlDatabase::database());
+bool tableExists(const QString& tablename, const QSqlDatabase& db = QSqlDatabase::database());
+bool verifyTable( const dbtable& table, const QSqlDatabase& db);
+bool ensureTable(const dbtable& table, const QSqlDatabase& db = QSqlDatabase::database());
 
 bool switchForeignKeyHandling(const QSqlDatabase& db, const QString& alias, bool OnOff);
 bool switchForeignKeyHandling(const QSqlDatabase& db, bool OnOff);
@@ -102,10 +102,10 @@ QVariant executeSingleValueSql(const QString& fieldName, const QString& tableNam
 QVariant executeSingleValueSql(const dbfield&, const QString& where, QSqlDatabase db=QSqlDatabase::database());
 
 QString selectQueryFromFields(const QVector<dbfield>& fields,
-                              const QVector<dbForeignKey> keys =QVector<dbForeignKey>(),
+                              const QVector<dbForeignKey>& keys =QVector<dbForeignKey>(),
                               const QString& where =QString(), const QString& order =QString());
 // QVector<QVariant> executeSingleColumnSql( const QString field, const QString table, const QString& where);
-QVector<QVariant> executeSingleColumnSql( const dbfield field, const QString& where =QString());
+QVector<QVariant> executeSingleColumnSql( const dbfield& field, const QString& where =QString());
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString());
 QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString());
 bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result);

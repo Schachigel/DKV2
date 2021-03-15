@@ -99,7 +99,7 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings02()
 }
 void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings03()
 {
-    QDate miniActDate =EndOfTheFuckingWorld;
+    QDate miniActDate/* =EndOfTheFuckingWorld*/;
     {
         dbgTimer timer("create many contracts");
         saveRandomCreditors(70);

@@ -17,8 +17,8 @@ struct wpOpenOrNew : public QWizardPage
 private:
     Q_OBJECT
     bool init =true;
-    QRadioButton* rbNew;
-    QRadioButton* rbExisting;
+    QRadioButton* rbNew =nullptr;
+    QRadioButton* rbExisting =nullptr;
 };
 
 struct wpNewDb : public QWizardPage

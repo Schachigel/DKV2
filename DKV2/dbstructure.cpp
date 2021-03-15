@@ -13,7 +13,7 @@
 
 dbstructure dkdbstructur;
 
-dbstructure dbstructure::appendTable(dbtable t)
+dbstructure dbstructure::appendTable(const dbtable& t)
 {   // LOG_CALL;
 //    qInfo() << "adding table to db structure " << t.name;
     for (auto& table: qAsConst(Tables)) {
@@ -29,8 +29,7 @@ dbstructure dbstructure::appendTable(dbtable t)
 dbtable dbstructure::operator[](const QString& name) const
 {   // LOG_CALL;
     // qDebug() << "accessing db table " << name;
-    for( dbtable table : Tables)
-    {
+    for( dbtable table : Tables) {
         if( table.Name() == name)
             return table;
     }
@@ -39,13 +38,13 @@ dbtable dbstructure::operator[](const QString& name) const
     return dbtable();
 }
 
-bool dbstructure::createDb(QString dbFileName) const
+bool dbstructure::createDb(const QString& dbFileName) const
 {   LOG_CALL_W(dbFileName);
     autoDb db(dbFileName, qsl("createDb"));
     return createDb( db);
 }
 
-bool dbstructure::createDb(QSqlDatabase db) const
+bool dbstructure::createDb(const QSqlDatabase& db) const
 {   LOG_CALL;
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
     for(dbtable& table :getTables()) {
@@ -87,7 +86,7 @@ void init_DKDBStruct()
 }
 
 // db creation for newDb and copy (w & w/o de-personalisation)
-bool createFileWithDatabaseStructure (QString targetfn, const dbstructure& dbs/* =dkdbstructu*/)
+bool createFileWithDatabaseStructure (const QString& targetfn, const dbstructure& dbs/* =dkdbstructu*/)
 {   LOG_CALL_W(targetfn);
     if( ! moveToBackup(targetfn)) {
         return false;
@@ -130,7 +129,7 @@ bool createNewDatabaseFileWDefaultContent(const QString& filename, const dbstruc
 }
 
 // database validation
-bool hasAllTablesAndFields(QSqlDatabase db, const dbstructure& dbs /*=dkdbstructur*/)
+bool hasAllTablesAndFields(const QSqlDatabase& db, const dbstructure& dbs /*=dkdbstructur*/)
 {   LOG_CALL;
     for( auto& table : dbs.getTables()) {
         if( !verifyTable(table, db))
@@ -145,20 +144,26 @@ bool validateDbSchema(const QString& filename, const dbstructure& dbs /*=dkdbstr
     LOG_CALL_W(filename);
     QString msg;
     if( filename == "")
-        msg = "no filename";
+        msg = qsl("no filename");
     else if( !QFile::exists(filename))
-        msg = "file not found";
+        msg = qsl("file not found");
     else {
         dbCloser closer{ qsl("validateDbSchema") };
         QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName, closer.conName);
         db.setDatabaseName(filename);
-        db.open();
-        if (hasAllTablesAndFields(db, dbs)) {
-            qInfo() << filename << " is a valid Database";
+        if( db.open()) {
+            if (hasAllTablesAndFields(db, dbs)) {
+                qInfo() << filename << " is a valid Database";
+                return true;
+            } else {
+                msg =qsl("db does not have all tables or fields");
+            }
+        } else {
+            msg =qsl("db open failed");
         }
     }
     if( msg.isEmpty())
-        return true;
+        Q_ASSERT("one should not reach this code");
     qCritical() << msg;
     return false;
 }

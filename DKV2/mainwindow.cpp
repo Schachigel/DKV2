@@ -130,10 +130,9 @@ QString MainWindow::askUserForNextDb()
         return QString();
     }
     QString selectedDbPath {absoluteCanonicalPath(wizOpenOrNew.selectedFile)};
-    bool useExistingFile { ! wizOpenOrNew.field(qsl("createNewDb")).toBool()};
     { // busycursor scope
         busycursor b;
-        if( useExistingFile) {
+        if( ! wizOpenOrNew.field(qsl("createNewDb")).toBool()) {
             // the UI does not allow an empty string here
             qInfo() << "existing db " << selectedDbPath << "was selected";
             return selectedDbPath;
@@ -284,7 +283,7 @@ void MainWindow::on_action_menu_database_start_triggered()
 }
 
 // Database Menu
-QString askUserFilenameForCopy(QString title, bool onlyExistingFiles=false)
+QString askUserFilenameForCopy(const QString& title, bool onlyExistingFiles=false)
 {   // this function is used with creaetDbCopy, createAnony.DbCopy but NOT newDb
     LOG_CALL;
     wizFileSelectionWiz wiz(getMainWindow());
@@ -587,7 +586,7 @@ void MainWindow::prepare_deleted_contracts_list_view()
     tv->hideColumn(cp_Creditor_id);
 
     tv->resizeColumnsToContents();
-    auto c = connect(ui->contractsTableView->selectionModel(),
+    connect(ui->contractsTableView->selectionModel(),
                      SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
                      SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
 
@@ -656,7 +655,7 @@ void MainWindow::prepare_valid_contraccts_list_view()
 
 
     tv->resizeColumnsToContents();
-    auto c = connect(ui->contractsTableView->selectionModel(),
+    connect(ui->contractsTableView->selectionModel(),
                      SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
                      SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
 
@@ -937,9 +936,9 @@ void MainWindow::on_actionAktuelle_Auswahl_triggered()
     }
     // data
     for( int i=0; i<model->rowCount(); i++) {
-        QSqlRecord rec =model->record(i);
-        for( int j=0; j<rec.count(); j++) {
-            csv.appendToRow(rec.value(j).toString());
+        QSqlRecord recRows =model->record(i);
+        for( int j=0; j<recRows.count(); j++) {
+            csv.appendToRow(recRows.value(j).toString());
         }
     }
     csv.saveAndShowInExplorer(QDate::currentDate().toString("yyyy-MM-dd_Vertragsliste.csv"));

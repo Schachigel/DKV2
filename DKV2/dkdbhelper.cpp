@@ -20,7 +20,7 @@
 #include "dbstructure.h"
 
 
-bool createView(QString name, QString sql, QSqlDatabase db = QSqlDatabase::database()) {
+bool createView(const QString& name, const QString& sql, QSqlDatabase db = QSqlDatabase::database()) {
     db.transaction();
     QSqlQuery q(db);
     if( q.exec("DROP VIEW " + name))
@@ -38,7 +38,7 @@ bool createView(QString name, QString sql, QSqlDatabase db = QSqlDatabase::datab
     qCritical() << "Faild to create view " << name << Qt::endl << q.lastQuery() << Qt::endl << q.lastError() << Qt::endl << sql;
     return false;
 }
-bool createViews( QVector<dbViewDev>& views, QSqlDatabase db)
+bool createViews( const QVector<dbViewDev>& views, QSqlDatabase db)
 {
     for( auto view: views) {
         if( ! createView(view.name, view.sql, db))
@@ -224,7 +224,10 @@ int createNewInvestmentsFromContracts()
 {
     QString sql{qsl("SELECT ZSatz, Vertragsdatum FROM Vertraege ORDER BY Vertragsdatum ASC")};
     QSqlQuery q; q.setForwardOnly(true);
-    q.exec(sql);
+    if( ! q.exec(sql)) {
+        qCritical() << "query execute faild in " << __func__;
+        return 0;
+    }
     int ret =0;
     while(q.next()) {
         int ZSatz =q.record().value(qsl("ZSatz")).toInt();
@@ -314,21 +317,26 @@ QVector<rowData> contractRuntimeDistribution()
 
 void calc_contractEnd( QVector<ContractEnd>& ces)
 {   LOG_CALL;
-    QSqlQuery sql;
-    sql.setForwardOnly(true);
-    sql.exec("SELECT count(*) AS Anzahl, sum(Wert) AS Wert, strftime('%Y',Vertragsende) AS Jahr "
+    QString sql {qsl("SELECT count(*) AS Anzahl, sum(Wert) AS Wert, strftime('%Y',Vertragsende) AS Jahr "
              "FROM vVertraege_aktiv "
-             "WHERE Vertragsende < 9999-01-01 GROUP BY strftime('%Y',Vertragsende) ORDER BY Jahr");
-    while( sql.next()) {
-        ces.push_back({sql.value("Jahr").toInt(), sql.value("Anzahl").toInt(), sql.value("Wert").toDouble()});
-    }
+             "WHERE Vertragsende < 9999-01-01 GROUP BY strftime('%Y',Vertragsende) ORDER BY Jahr")};
+    QSqlQuery q; q.setForwardOnly(true);
+    if( q.exec(sql)) {
+        while( q.next()) {
+            ces.push_back({q.value("Jahr").toInt(), q.value("Anzahl").toInt(), q.value("Wert").toDouble()});
+        }
+    } else
+        qCritical() << "sql exec failed";
     return;
 }
 void calc_annualInterestDistribution( QVector<YZV>& yzv)
 {   LOG_CALL;
     QString sql ="SELECT * FROM vContractsByYearByInterest ORDER BY Year";
     QSqlQuery query;
-    query.exec(sql);
+    if( !query.exec(sql)) {
+        qCritical() << "execute query failed";
+        return;
+    }
     while( query.next()) {
         QSqlRecord r =query.record();
         yzv.push_back({r.value("Year").toInt(), r.value("Zinssatz").toReal(),

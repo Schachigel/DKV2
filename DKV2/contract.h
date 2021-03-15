@@ -18,7 +18,7 @@ enum class interestModel {
     fixed    =2,
     maxId
 };
-inline QString toString(interestModel m) {
+inline QString toString(const interestModel m) {
     switch(m) {
     case interestModel::payout:
         return "auszahlend";
@@ -32,10 +32,10 @@ inline QString toString(interestModel m) {
     }
     return QString();
 }
-inline int toInt(interestModel m) {
+inline int toInt(const interestModel m) {
     return static_cast<int>(m);
 }
-inline interestModel fromInt(int i) {
+inline interestModel fromInt(const int i) {
     if( i < 0 || i >=toInt(interestModel::maxId))
         Q_ASSERT("Invalid interestModel");
     return static_cast<interestModel>(i);
@@ -46,7 +46,7 @@ struct contract
     // static & friends
     static const dbtable& getTableDef();
     static const dbtable& getTableDef_deletedContracts();
-    static bool remove(qlonglong id);
+    static bool remove(const qlonglong id);
     static QString booking_csv_header();
     inline friend bool operator==(const contract& lhs, const contract& rhs)
     {   // friend functions - even in the class definition - are not member
@@ -57,9 +57,9 @@ struct contract
         return !(lhs==rhs);
     }
     // construction
-    contract(qlonglong id =-1);
+    contract(const qlonglong id =-1);
     void init();
-    void initRandom(qlonglong creditorId =-1);
+    void initRandom(const qlonglong creditorId =-1);
     // getter & setter
     void setId(qlonglong id) { td.setValue(qsl("id"), id);}
     qlonglong id() const { return td.getValue(qsl("id")).toLongLong();}
@@ -75,9 +75,9 @@ struct contract
     }
     void setPlannedInvest(const double& d) { td.setValue(qsl("Betrag"), ctFromEuro(d));}
     double plannedInvest() const { return euroFromCt( td.getValue(qsl("Betrag")).toInt());}
-    void setInterestModel( interestModel b =interestModel::reinvest) { td.setValue(qsl("thesaurierend"), toInt(b));}
+    void setInterestModel( const interestModel b =interestModel::reinvest) { td.setValue(qsl("thesaurierend"), toInt(b));}
     interestModel iModel() const { return fromInt(td.getValue(qsl("thesaurierend")).toInt());}
-    void setNoticePeriod(int m) { td.setValue(qsl("Kfrist"), m); if( -1 != m) setPlannedEndDate( EndOfTheFuckingWorld);}
+    void setNoticePeriod(const int m) { td.setValue(qsl("Kfrist"), m); if( -1 != m) setPlannedEndDate( EndOfTheFuckingWorld);}
     int noticePeriod() const { return td.getValue(qsl("Kfrist")).toInt();}
     bool hasEndDate() const {return -1 == td.getValue(qsl("Kfrist"));}
     void setPlannedEndDate( const QDate& d) { td.setValue(qsl("LaufzeitEnde"), d); if( d != EndOfTheFuckingWorld) setNoticePeriod(-1);}
@@ -129,8 +129,8 @@ private:
 };
 
 // test helper
-contract saveRandomContract(qlonglong creditorId);
-void saveRandomContracts(int count);
-QDate activateRandomContracts(int percent);
+contract saveRandomContract(const qlonglong creditorId);
+void saveRandomContracts(const int count);
+QDate activateRandomContracts(const int percent);
 
 #endif // VERTRAG_H

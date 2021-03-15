@@ -101,9 +101,8 @@ bool wpChangeContract_AmountPage::validatePage()
     if( ! deposit) {
         wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
         double currentAmount = wiz->currentAmount;
-        double amount = field("amount").toDouble();
         // double minPayout = 100., minRemains = 500.
-        if( amount <100 || (currentAmount-amount) <500)
+        if( field("amount").toDouble() <100 || (currentAmount-amount) <500)
             return false;
     }
     return true;

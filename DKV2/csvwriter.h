@@ -10,17 +10,17 @@
 class csvwriter
 {
 public:
-    csvwriter(QString sep =qsl(";")) : separator(sep){ Q_ASSERT(sep.length()==1);}
-    void addColumn(QString header);
-    int  addColumns(QString headers);
-    void appendToRow(QString value);
-    void addRow(QList<QString> cols);
-    void addRow(QString row);
+    csvwriter(const QString& sep =qsl(";")) : separator(sep){ Q_ASSERT(sep.length()==1);}
+    void addColumn(const QString& header);
+    int  addColumns(const QString& headers);
+    void appendToRow(const QString& value);
+    void addRow(const QList<QString>& cols);
+    void addRow(const QString& row);
 
     QString out() const;
-    bool saveAndShowInExplorer(const QString filname) const;
+    bool saveAndShowInExplorer(const QString& filname) const;
 private:
-    QString appendCsvLine( QString line, QString appendix) const;
+    QString appendCsvLine( const QString& line, const QString& appendix) const;
 
     QString separator;
     QList<QString> headers;
@@ -28,6 +28,6 @@ private:
     QList<QString> currentRow;
 };
 
-bool table2csv(const QString filename, const QVector<dbfield> fields, const QVector<QVariant::Type> types =QVector<QVariant::Type>(), const QString where =QString());
+bool table2csv(const QString& filename, const QVector<dbfield>& fields, const QVector<QVariant::Type>& types =QVector<QVariant::Type>(), const QString& where =QString());
 
 #endif // CSVWRITER_H

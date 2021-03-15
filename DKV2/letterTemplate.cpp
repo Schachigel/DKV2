@@ -164,7 +164,7 @@ bool insertLetterElementFromMap(qlonglong kreditor, letterTemplate::templId brie
     // insert letter parts which are different in different letter types
     // -> Betreff, Text1, Abrechnungstabelle, Text2
 
-    return true;
+    return ret;
 }
 
 void letterTemplate::init_JA_thesa()

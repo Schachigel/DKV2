@@ -41,7 +41,7 @@ struct wpActivateContract : public QWizard
     wpActivateContract(QWidget* p =nullptr);
     QString label;
     QString creditorName;
-    double expectedAmount;
+    double expectedAmount =0.;
     Q_OBJECT;
 };
 

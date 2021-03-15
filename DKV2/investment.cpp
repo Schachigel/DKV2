@@ -71,7 +71,7 @@ bool deleteInvestment(const int ZSatz, const QString& v, const QString& b, const
     sql =sql.arg(QString::number(ZSatz),v, b, t);
     return executeSql_wNoRecords(sql);
 }
-bool deleteInvestment(const int ZSatz, const QDate& v, const QDate& b, const QString t)
+bool deleteInvestment(const int ZSatz, const QDate& v, const QDate& b, const QString& t)
 {
     return deleteInvestment(ZSatz, v.toString(Qt::ISODate), b.toString(Qt::ISODate), t);
 }
@@ -99,7 +99,10 @@ QVector<QPair<qlonglong, QString>> activeInvestments(const QDate& cDate)
         where =qsl("Offen AND Anfang <= date('%1') AND Ende > date('%1')").arg(cDate.toString(Qt::ISODate));
     }
     QSqlQuery q;
-    q.prepare(qsl("SELECT rowid, Typ FROM Geldanlagen WHERE %1 ORDER BY %2").arg(where, fnInvestmentInterest));
+    if( ! q.prepare(qsl("SELECT rowid, Typ FROM Geldanlagen WHERE %1 ORDER BY %2").arg(where, fnInvestmentInterest))) {
+        qCritical() << "sql prep failed: " << q.lastError() << Qt::endl << q.lastQuery();
+        return QVector<QPair<qlonglong, QString>>();
+    }
 
     if( ! q.exec()) {
         qCritical() << "sql exec failed: " << q.lastError() << Qt::endl << q.lastQuery();

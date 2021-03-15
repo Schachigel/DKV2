@@ -14,9 +14,9 @@ class dbfield : public QSqlField
 public: // types
     // constr. destr. & access fu
     explicit dbfield() : QSqlField(){}
-    dbfield(QString name,
-            QVariant::Type type=QVariant::String,
-            QString td=qsl(""))
+    dbfield(const QString& name,
+            const QVariant::Type& type=QVariant::String,
+            const QString& td=qsl(""))
      :  QSqlField(name), SqlTypeDetails(td)
     {
         Q_ASSERT(isSupportedType(type));
@@ -38,13 +38,13 @@ public: // types
     QString typeDetails()     const {return SqlTypeDetails;}
     // interface
     QString get_CreateSqlSnippet() const;
-    dbfield setUnique(bool u=true){unique = u; return *this;}
-    dbfield setPrimaryKey(bool p=true){ primaryKey = p; return *this;}
-    dbfield setNotNull(bool nn=true){ setRequired(nn); return *this;}
-    dbfield setDefault(QVariant d){ setDefaultValue(d); return *this;}
-    dbfield setAutoInc(bool a=true){ setAutoValue(a); return *this;}
+    dbfield setUnique(const bool u=true){unique = u; return *this;}
+    dbfield setPrimaryKey(const bool p=true){ primaryKey = p; return *this;}
+    dbfield setNotNull(const bool nn=true){ setRequired(nn); return *this;}
+    dbfield setDefault(const QVariant d){ setDefaultValue(d); return *this;}
+    dbfield setAutoInc(const bool a=true){ setAutoValue(a); return *this;}
     // somewhat a helper
-    static bool isSupportedType(QVariant::Type t);
+    static bool isSupportedType(const QVariant::Type t);
     private:
     // data
     bool unique = false;
@@ -56,7 +56,7 @@ public: // types
 struct dbForeignKey
 {
     // const. destr. & access fu
-    dbForeignKey(dbfield local, dbfield parent, QString onDelete =QString(), QString onUpdate=QString())
+    dbForeignKey(const dbfield& local, const dbfield& parent, const QString& onDelete =QString(), const QString& onUpdate=QString())
         : onDelete(onDelete), onUpdate( onUpdate)
     {
         table = local.tableName();

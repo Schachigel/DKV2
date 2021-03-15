@@ -14,11 +14,9 @@ QString createPreConversionCopy( const QString& file, const QString& fixedTempFi
 {
     QFileInfo fi(file);
     QString fullFile =fi.canonicalFilePath();
-    QString newFile =fullFile +qsl(".preconversion");
-    if( fixedTempFileName.isEmpty())
-        newFile =getUniqueTempFilename(fullFile +qsl(".preconversion"));
-    else
-        newFile =fixedTempFileName;
+    QString newFile = fixedTempFileName.isEmpty() ?
+        getUniqueTempFilename(fullFile +qsl(".preconversion")) :
+        fixedTempFileName;
     QFile f(fullFile);
     if( f.rename( newFile))
         return newFile;
@@ -29,7 +27,7 @@ QString createPreConversionCopy( const QString& file, const QString& fixedTempFi
     }
 }
 
-bool copy_TableContent( const QString srcTbl, const QString dstTbl, const QSqlDatabase db=QSqlDatabase::database())
+bool copy_TableContent( const QString& srcTbl, const QString& dstTbl, const QSqlDatabase& db=QSqlDatabase::database())
 {
     LOG_CALL_W( srcTbl +qsl(", ") +dstTbl);
     // usually used from "table" to "targetScheema.table"
@@ -37,7 +35,7 @@ bool copy_TableContent( const QString srcTbl, const QString dstTbl, const QSqlDa
     return executeSql_wNoRecords(sql.arg(dstTbl).arg(srcTbl), db);
 }
 
-bool replace_TableContent(const QString srcTbl, const QString destTbl, const QSqlDatabase& db =QSqlDatabase::database())
+bool replace_TableContent(const QString& srcTbl, const QString& destTbl, const QSqlDatabase& db =QSqlDatabase::database())
 {
     LOG_CALL_W( srcTbl +qsl(", ") +destTbl);
     executeSql_wNoRecords( qsl("DELETE FROM ") + destTbl, db);
@@ -54,7 +52,10 @@ bool copy_TableContent_byRecord( const QString& srcTbl, const QString& dstTbl, c
         copyableFields += rec.field(i).name();
     }
     QSqlQuery q (db);
-    q.prepare(qsl("SELECT * FROM ") + srcTbl);
+    if( ! q.prepare(qsl("SELECT * FROM ") + srcTbl)) {
+        qCritical() << "Could not prepare query to enumerate table";
+        return false;
+    }
     if( ! q.exec()) {
         qCritical() << "Could not enumerate source table";
         return false;
@@ -73,13 +74,16 @@ bool copycreate_views(const QSqlDatabase& db, const QString& alias)
 {   LOG_CALL;
      QSqlQuery q(db);
      QString sql {qsl("SELECT name, sql FROM %1.sqlite_master WHERE type='view'").arg(alias)};
-     q.exec(sql);
+     if( ! q.exec(sql)) {
+         qCritical() << "query execute failed";
+         return false;
+     }
      while( q.next()) {
          QString name = q.record().value(qsl("name")).toString();
-         QString sql  = q.record().value(qsl("sql")).toString(); //.replace(qsl("\n"), qsl(" "));
+         QString viewSql  = q.record().value(qsl("sql")).toString(); //.replace(qsl("\n"), qsl(" "));
 
          //sql =sql.replace(name , alias + qsl(".") +name);
-         if( ! executeSql_wNoRecords(sql, db)) {
+         if( ! executeSql_wNoRecords(viewSql, db)) {
              return false;
          }
      }
@@ -138,7 +142,7 @@ bool copy_database( const QString& sourceFName,
 *  copy_database_mangled will create a 1 : 1 copy of the currently opened database to a new file
 *  with all personal data replaced by random data
 */
-bool copy_mangledCreditors(QSqlDatabase db =QSqlDatabase::database())
+bool copy_mangledCreditors(const QSqlDatabase& db =QSqlDatabase::database())
 {   LOG_CALL;
     bool success = true;
     int recCount = 0;
@@ -170,7 +174,7 @@ bool copy_mangledCreditors(QSqlDatabase db =QSqlDatabase::database())
     return success;
 }
 
-bool copy_database_mangled(QString targetfn, QString source)
+bool copy_database_mangled(const QString& targetfn, const QString& source)
 {
 //    QString con {};
     dbCloser closer(qsl("copy_db"));
@@ -185,7 +189,7 @@ bool copy_database_mangled(QString targetfn, QString source)
     return copy_database_mangled(targetfn, db);
 }
 
-bool copy_database_mangled(QString targetfn, QSqlDatabase dbToBeCopied)
+bool copy_database_mangled(const QString& targetfn, const QSqlDatabase& dbToBeCopied)
 {   LOG_CALL_W(targetfn);
     QString alias{qsl("targetDb")};
     autoRollbackTransaction trans( dbToBeCopied.connectionName());
@@ -230,7 +234,7 @@ QString convert_database_inplace( const QString& targetFilename, const QString& 
         qCritical() << "Could not create backup copy - abort " << backupFileName << " of " << targetFilename;
         return QString();
     }
-    QString& sourceFileName =backupFileName;
+    const QString& sourceFileName =backupFileName;
     // create a new db file with the current database structure
     if( ! createNewDatabaseFileWDefaultContent(targetFilename, dbs)) {
         qCritical() << "db creation faild for database conversion -> abort";

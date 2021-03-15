@@ -89,7 +89,7 @@ void test_creditor::test_hasActiveContracts_noContracts()
 void test_creditor::test_hasActiveContracts_hasInactContract()
 {
     creditor c = saveRandomCreditor();
-    contract co = saveRandomContract(c.id());
+    /*contract co = */saveRandomContract(c.id());
     QCOMPARE(c.hasActiveContracts(), false);
 }
 
@@ -109,7 +109,7 @@ void test_creditor::test_deleteCreditor_woContract()
 void test_creditor::test_deleteCreditor_wInactiveContract()
 {
     creditor c = saveRandomCreditor();
-    contract co = saveRandomContract(c.id());
+    /*contract co = */saveRandomContract(c.id());
     QVERIFY(c.remove());
 }
 

@@ -20,38 +20,38 @@ struct creditor
     bool operator==(const creditor& c) const;
     // setter
     QString firstname() const   { return getValue(qsl("Vorname")).toString();}
-    void setFirstname(QString v){ ti.setValue(qsl("Vorname"),  v); }
+    void setFirstname(const QString& v){ ti.setValue(qsl("Vorname"),  v); }
     QString lastname() const    { return getValue(qsl("Nachname")).toString();}
-    void setLastname(QString n) { ti.setValue(qsl("Nachname"), n); }
+    void setLastname(const QString& n) { ti.setValue(qsl("Nachname"), n); }
     QString street() const      { return getValue(qsl("Strasse")).toString();}
-    void setStreet(QString s)   { ti.setValue(qsl("Strasse"),  s); }
+    void setStreet(const QString& s)   { ti.setValue(qsl("Strasse"),  s); }
     QString postalCode() const  { return getValue(qsl("Plz")).toString();}
-    void setPostalCode(QString p){ ti.setValue(qsl("Plz"),     p); }
+    void setPostalCode(const QString& p){ ti.setValue(qsl("Plz"),     p); }
     QString city() const        { return getValue(qsl("Stadt")).toString();}
-    void setCity(QString s)     { ti.setValue(qsl("Stadt"),  s); }
+    void setCity(const QString& s)     { ti.setValue(qsl("Stadt"),  s); }
     QString country() const     { return getValue(qsl("Land")).toString();}
-    void setCountry(QString s)  { ti.setValue(qsl("Land"), s); }
+    void setCountry(const QString& s)  { ti.setValue(qsl("Land"), s); }
     QString email() const       { return getValue(qsl("Email")).toString();}
-    void setEmail(QString e)    { ti.setValue(qsl("Email"), e); }
+    void setEmail(const QString& e)    { ti.setValue(qsl("Email"), e); }
     QString comment() const     { return getValue(qsl("Anmerkung")).toString();}
-    void setComment(QString a)  { ti.setValue(qsl("Anmerkung"), a);}
+    void setComment(const QString& a)  { ti.setValue(qsl("Anmerkung"), a);}
     QString iban() const        {return getValue(qsl("IBAN")).toString();}
-    void setIban(QString i)     { ti.setValue(qsl("IBAN"), i);}
+    void setIban(const QString& i)     { ti.setValue(qsl("IBAN"), i);}
     QString bic() const        {return getValue(qsl("BIC")).toString();}
-    void setBic(QString b)      { ti.setValue(qsl("BIC"), b);}
+    void setBic(const QString& b)      { ti.setValue(qsl("BIC"), b);}
     qlonglong id() const        {return getValue(qsl("id")).toLongLong();}
-    void setId(qlonglong i)     { ti.setValue(qsl("id"), i);}
+    void setId(const qlonglong& i)     { ti.setValue(qsl("id"), i);}
     // interface
-    bool fromDb(int id);
+    bool fromDb(const int id);
     QVariant getValue(const QString& f) const { return ti.getValue(f);}
     bool isValid( QString& errortext) const;
     bool isValid() const;
     int save();
     int update() const;
     bool hasActiveContracts(){return hasActiveContracts(id());};
-    static bool hasActiveContracts(qlonglong i);
+    static bool hasActiveContracts(const qlonglong i);
     bool remove();
-    static bool remove(int index);
+    static bool remove(const int index);
 private:
     // data
     TableDataInserter ti;
@@ -70,6 +70,6 @@ extern QList<QString> ibans;//  {"BG80BNBG96611020345678", "DE385317423658525025
 extern QList <QPair<QString, QString>> Cities;// {{"68305", "Mannheim"}, {"69123", ...
 // for testing
 creditor saveRandomCreditor();
-void saveRandomCreditors( int i);
+void saveRandomCreditors( const int i);
 
 #endif // KREDITOR_H

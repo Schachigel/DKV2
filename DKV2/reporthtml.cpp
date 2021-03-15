@@ -8,7 +8,7 @@
 #include "reporthtml.h"
 
 // statistics pages - Helper Fu
-QString tag(QString string, QString tag, QStringList attribs =QStringList())
+QString tag(const QString& string, const QString& tag, const QStringList& attribs =QStringList())
 {
     QString ret(qsl("<")+tag);
     for(auto& s : qAsConst(attribs)) {
@@ -17,28 +17,28 @@ QString tag(QString string, QString tag, QStringList attribs =QStringList())
     return ret + qsl(">") + string + qsl("</") + tag + qsl(">");
 }
 
-QString tableRow4( QString left, QString center, QString center2, QString right)
+QString tableRow4(const QString& left, const QString& center, const QString& center2, const QString& right)
 {
-    left   =tag(left,    qsl("td"), {qsl("style='text-align: right;'")});
-    center =tag(center,  qsl("td"), {qsl("style='text-align: center;'")});
-    center2=tag(center2, qsl("td"), {qsl("style='text-align: center;'")});
-    right  =tag(right,   qsl("td"), {qsl("style='text-align: left;'")});
-    return tag( left + center + center2 + right, "tr");
+    QString iLeft   =tag(left,    qsl("td"), {qsl("style='text-align: right;'")});
+    QString iCenter =tag(center,  qsl("td"), {qsl("style='text-align: center;'")});
+    QString iCenter2=tag(center2, qsl("td"), {qsl("style='text-align: center;'")});
+    QString iRight  =tag(right,   qsl("td"), {qsl("style='text-align: left;'")});
+    return tag( iLeft + iCenter + iCenter2 + iRight, "tr");
 }
-QString tableRow3( QString left, QString center, QString right)
+QString tableRow3( const QString& left, const QString& center, const QString& right)
 {
-    left   = qsl("<td style='text-align: right;' >") + left   + qsl("</td>");
-    center = qsl("<td style='text-align: center;'>") + center + qsl("</td>");
-    right  = qsl("<td style='text-align: left;'  >") + right  + qsl("</td>");
-    return "<tr>" + left + center + right  + "</tr>";
+    QString l = qsl("<td style='text-align: right;' >") + left   + qsl("</td>");
+    QString c = qsl("<td style='text-align: center;'>") + center + qsl("</td>");
+    QString r = qsl("<td style='text-align: left;'  >") + right  + qsl("</td>");
+    return "<tr>" + l + c + r + "</tr>";
 }
-QString tableRow2(QString left, QString right)
+QString tableRow2(const QString& left, const QString& right)
 {
-    left = qsl("<td style='text-align: right;'>") + left  + qsl("</td>");
-    right= qsl("<td style='text-align: left;' >") + right + qsl("</td>");
-    return qsl("<tr>") + left + right  + qsl("</tr>");
+    QString l = qsl("<td style='text-align: right;'>") + left  + qsl("</td>");
+    QString r= qsl("<td style='text-align: left;' >") + right + qsl("</td>");
+    return qsl("<tr>") + l + r + qsl("</tr>");
 }
-QString tableRow1(QString text, int colspan =2)
+QString tableRow1(const QString& text, int colspan =2)
 {
     QString opening(qsl("<tr><td style=\"background - color:rgb(215, 215, 210);\" colspan=\"%1\";>"));
     return  opening.arg(colspan) + text + qsl("</td></tr>");
@@ -53,16 +53,16 @@ QString emptyRow( )
 {
     return qsl("<tr><td style='padding: 1px; font-size: small;'></td><td style='padding: 1px; font-size: small';></td></tr>");
 }
-QString b(QString b) {
+QString b(const QString& b) {
     return tag(b, qsl("b"));
 }
-QString h2(QString v) {
+QString h2(const QString& v) {
     return tag(v, qsl("h2"));
 }
-QString h1(QString v) {
+QString h1(const QString& v) {
     return tag(v, qsl("h1"));
 }
-QString td( QString v)
+QString td(const QString& v)
 {
     return qsl("<td>") + v + qsl("</td>");
 }
@@ -82,12 +82,12 @@ QString endRow()
 {
     return qsl("</tr>");
 }
-QString newLine(QString line)
+QString newLine(const QString& line)
 {
     return qsl("<br>") + line;
 }
 
-QString htmlOverviewTableBlock(QString headline, dbStats::dataset ds)
+QString htmlOverviewTableBlock(const QString& headline, dbStats::dataset ds)
 {
     QString ret;
     ret += tableRow1(qsl("<b>") +headline +qsl("</b>"));
@@ -280,26 +280,21 @@ QString reportHtml(Uebersichten u)
     }
     case OVERVIEW: {
         return html.arg(htmlOverviewTable());
-        break;
     }
     case PAYED_INTEREST_BY_YEAR: {
         return html.arg(htmlPayedInterestByYearTable());
     }
     case BY_CONTRACT_END: {
         return html.arg(htmlContractsByContractEndTable());
-        break;
     }
     case INTEREST_DISTRIBUTION: {
         return html.arg(htmlContractsByYearByInterestTable());
-        break;
     }
     case CONTRACT_TERMS: {
         return html.arg(htmlContractsByRuntimeTable());
-        break;
     }
     case ALL_CONTRACT_INFO: {
         return html.arg(htmlAllContractInfo());
-        break;
     }
     default:
     {Q_ASSERT(false);}

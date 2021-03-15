@@ -14,11 +14,11 @@ struct dbtable
     friend class dbstructure;
     // constr. destr. & access fu
     dbtable(QString n=qsl("")) : name(n) {}
-    void setName(QString n) { name = n;}
+    void setName(const QString& n) { name = n;}
     QString Name() const {return name;}
     QVector<dbfield> Fields() const { return fields;}
     QVector<dbForeignKey> ForeignKeys() const {return foreignKeys;}
-    dbfield operator[](QString s) const;
+    dbfield operator[](const QString& s) const;
     // interface
     dbtable append(const dbfield&);
     dbtable append(const dbForeignKey&);

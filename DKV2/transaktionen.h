@@ -3,7 +3,7 @@
 
 #include "contract.h"
 
-bool checkSchema_ConvertIfneeded(QString origDbFile);
+bool checkSchema_ConvertIfneeded(const QString& origDbFile);
 
 void activateContract(qlonglong vid);
 void changeContractValue(qlonglong vid);

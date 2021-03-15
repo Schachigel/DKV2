@@ -72,7 +72,7 @@ void closeDbConnection( QSqlDatabase db /*=QSqlDatabase::database()*/)
     QSqlDatabase::removeDatabase(db.connectionName());
 }
 
-void createEmptyFile(QString path)
+void createEmptyFile(const QString& path)
 {
     QFileInfo fi(path);
     QDir d(fi.absolutePath());
@@ -82,7 +82,7 @@ void createEmptyFile(QString path)
     f.close();
 }
 
-int tableRecordCount( const QString tname, const QSqlDatabase db /*=QSqlDatabase::database()*/)
+int tableRecordCount( const QString& tname, const QSqlDatabase& db /*=QSqlDatabase::database()*/)
 {   // LOG_CALL_W(tname);
     QSqlQuery q(db);
     if (q.exec("SELECT COUNT(*) FROM " + tname)) {
@@ -95,12 +95,12 @@ int tableRecordCount( const QString tname, const QSqlDatabase db /*=QSqlDatabase
     }
 }
 
-bool dbHasTable(const QString tname, const QSqlDatabase db /*=QSqlDatabase::database()*/)
+bool dbHasTable(const QString& tname, const QSqlDatabase& db /*=QSqlDatabase::database()*/)
 {   LOG_CALL_W(tname);
     return db.tables().contains(tname);
 }
 
-bool dbTableHasField(const QString tname, const QString fname, const QSqlDatabase db /*=QSqlDatabase::database()*/)
+bool dbTableHasField(const QString& tname, const QString& fname, const QSqlDatabase& db /*=QSqlDatabase::database()*/)
 {   LOG_CALL_W(tname +": " +fname);
     QSqlRecord r = db.record(tname);
     if( r.field(fname).isValid())
@@ -108,7 +108,7 @@ bool dbTableHasField(const QString tname, const QString fname, const QSqlDatabas
     return false;
 }
 
-bool dbsHaveSameTables(const QString fn1, const QString fn2)
+bool dbsHaveSameTables(const QString& fn1, const QString& fn2)
 {
     dbCloser closer1(qsl("con1"));
     dbCloser closer2(qsl("con2"));
@@ -122,7 +122,7 @@ bool dbsHaveSameTables(const QString fn1, const QString fn2)
     return dbsHaveSameTables(db1, db2);
 }
 
-bool dbsHaveSameTables(const QSqlDatabase db1, const QSqlDatabase db2)
+bool dbsHaveSameTables(const QSqlDatabase &db1, const QSqlDatabase &db2)
 {   LOG_CALL;
     bool ret =true;
     QStringList tl1 =db1.tables();
@@ -154,7 +154,7 @@ bool dbsHaveSameTables(const QSqlDatabase db1, const QSqlDatabase db2)
     return ret;
 }
 
-bool dbTablesHaveSameFields(const QString table1, const QString table2, const QSqlDatabase db)
+bool dbTablesHaveSameFields(const QString& table1, const QString& table2, const QSqlDatabase &db)
 {   LOG_CALL;
     qInfo() << table1 << ", " << table2;
     bool ret =true;

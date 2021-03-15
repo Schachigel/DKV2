@@ -23,7 +23,7 @@ QString dbStats::dataset::toString() const
     return all;
 }
 
-bool datasetFromViews(dbStats::dataset& ds, QString statsView, QString creditorNbrView)
+bool datasetFromViews(dbStats::dataset& ds, QString statsView, const QString& creditorNbrView)
 {   LOG_CALL_W(statsView);
     QVector<dbfield> v;
     dbfield contractCount(qsl("Anzahl"), QVariant::Type::Int);

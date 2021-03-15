@@ -756,29 +756,31 @@ const QString pnConfirmContract {qsl("confirmContract")};
 bool wpConfirmContract::saveContract()
 {
     wizNew* wiz =qobject_cast<wizNew*>(wizard());
-    if( ! wiz) Q_ASSERT(true);
-    if( ! wiz->field(pnConfirmContract).toBool()) {
+    if( ! wiz)  return false;
+    if( wiz->field(pnConfirmContract).toBool()) {
+        contract c;
+        c.setCreditorId(wiz->creditorId);
+        c.setPlannedInvest(field(pnAmount).toDouble());
+        c.setInterestRate(wiz->interest/100.);
+        c.setLabel(field(pnLabel).toString());
+        c.setConclusionDate(field(pnCDate).toDate());
+        c.setNoticePeriod(wiz->noticePeriod);
+        c.setPlannedEndDate(field(pnEDate).toDate());
+        c.setInterestModel(wiz->iPaymentMode);
+        if( -1 == c.saveNewContract()) {
+            qCritical() << "New contract could not be saved";
+            QMessageBox::critical(getMainWindow(), "Fehler", "Der Vertrag konnte nicht "
+                            "gespeichert werden. Details findest Du in der Log Datei");
+            return false;
+        } else {
+            qInfo() << "New contract successfully saved";
+            return true;
+        }
+    } else {
         qCritical() << "user did not confirm contract data";
         Q_ASSERT(true);
-    };
-    contract c;
-    c.setCreditorId(wiz->creditorId);
-    c.setPlannedInvest(field(pnAmount).toDouble());
-    c.setInterestRate(wiz->interest/100.);
-    c.setLabel(field(pnLabel).toString());
-    c.setConclusionDate(field(pnCDate).toDate());
-    c.setNoticePeriod(wiz->noticePeriod);
-    c.setPlannedEndDate(field(pnEDate).toDate());
-    c.setInterestModel(wiz->iPaymentMode);
-    if( -1 == c.saveNewContract()) {
-        qCritical() << "New contract could not be saved";
-        QMessageBox::critical(getMainWindow(), "Fehler", "Der Vertrag konnte nicht "
-                        "gespeichert werden. Details findest Du in der Log Datei");
         return false;
-    } else {
-        qInfo() << "New contract successfully saved";
-        return true;
-    }
+    };
 }
 wpConfirmContract::wpConfirmContract(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;

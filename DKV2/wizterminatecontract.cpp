@@ -79,7 +79,7 @@ bool wpTerminateContract_ConfirmationPage::isComplete() const
     return field("confirm").toBool();
 }
 
-wizTerminateContract::wizTerminateContract(QWidget* p, contract c) : QWizard(p), c(c)
+wizTerminateContract::wizTerminateContract(QWidget* p, const contract& c) : QWizard(p), c(c)
 {
     addPage(new wpTerminateContract_DatePage);
     addPage(new wpTerminateContract_ConfirmationPage);

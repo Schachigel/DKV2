@@ -23,7 +23,7 @@ private slots:
 struct wizFileSelectionWiz : public QWizard
 {
     wizFileSelectionWiz(QWidget* p =nullptr);
-    bool existingFile;
+    bool existingFile =true;
     QString openInFolder;
     QString fileTypeDescription;
     QString bffTitle;

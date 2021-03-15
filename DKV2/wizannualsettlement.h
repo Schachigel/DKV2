@@ -19,7 +19,7 @@ public slots:
 struct wizAnnualSettlement : public QWizard
 {
     wizAnnualSettlement(QWidget* p =nullptr);
-    int year;
+    int year =0;
     Q_OBJECT;
 };
 

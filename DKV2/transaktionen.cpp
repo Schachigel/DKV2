@@ -19,7 +19,7 @@
 #include "wiznew.h"
 #include "transaktionen.h"
 
-bool checkSchema_ConvertIfneeded(QString origDbFile)
+bool checkSchema_ConvertIfneeded(const QString& origDbFile)
 {   LOG_CALL;
 
     switch(check_db_version(origDbFile)){
@@ -42,12 +42,7 @@ bool checkSchema_ConvertIfneeded(QString origDbFile)
         break;
     }
     case sameVersion:
-        if (validateDbSchema(origDbFile, dkdbstructur))
-            return true;
-        else {
-            qCritical() << "db schema is not valid";
-            return false;
-        }
+        return validateDbSchema(origDbFile, dkdbstructur);
         break;
     case noVersion:
     case higherVersion:
@@ -170,11 +165,13 @@ void annualSettlement()
         return;
     QSqlQuery q;
     q.setForwardOnly(true);
-    q.exec(qsl("SELECT id FROM Vertraege"));
+    if( ! q.exec(qsl("SELECT id FROM Vertraege"))) {
+        qCritical() << "failed to execute query " << q.lastError() << Qt::endl << q.lastQuery();
+        return;
+    }
     QVector<contract> changedContracts;
     QVector<QDate> startOfInterrestCalculation;
     QVector<booking>  asBookings;
-    double payedInterest =0.;
     while(q.next()) {
         contract c(q.value(qsl("id")).toLongLong());
         QDate startDate = c.latestBooking().date;
@@ -182,7 +179,6 @@ void annualSettlement()
             changedContracts.push_back(c);
             asBookings.push_back(c.latestBooking());
             startOfInterrestCalculation.push_back(startDate);
-            payedInterest += c.latestBooking().amount;
         }
     }
 

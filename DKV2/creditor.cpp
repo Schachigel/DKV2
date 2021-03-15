@@ -77,10 +77,10 @@ bool creditor::operator==(const creditor& c) const
     return ret;
 }
 
-bool creditor::fromDb( int i)
+bool creditor::fromDb( const int id)
 {   LOG_CALL;
 
-    QSqlRecord rec = executeSingleRecordSql(dkdbstructur[qsl("Kreditoren")].Fields(), qsl("id=")+QString::number(i));
+    QSqlRecord rec = executeSingleRecordSql(dkdbstructur[qsl("Kreditoren")].Fields(), qsl("id=")+QString::number(id));
     if( rec.isEmpty()) return false;
 
     for(int i=0; i<rec.count(); i++)
@@ -125,11 +125,13 @@ bool creditor::isValid( QString& errortext) const
             errortext = "Das Format der e-mail Adresse ist ungültig: " + email;
     }
 
-    IbanValidator iv; int pos = 0;
+    IbanValidator iv;
     QString iban = ti.getValue(qsl("IBAN")).toString();
-    if( !iban.isEmpty())
+    if( !iban.isEmpty()){
+        int pos =0;
         if( iv.validate(iban, pos) != IbanValidator::State::Acceptable)
             errortext = qsl("Das Format der IBAN ist nicht korrekt: ") + iban;
+    }
 
     if( errortext.isEmpty())
         return true;
@@ -159,7 +161,7 @@ bool creditor::remove()
     return ret;
 }
 
-/* static */ bool creditor::remove(int index)
+/* static */ bool creditor::remove(const int index)
 {   LOG_CALL;
     // referential integrity will delete [inactive] contracts (this is w/o bookings)
     // [ creditor <-> contract ] On Delete Cascade
@@ -176,7 +178,7 @@ bool creditor::remove()
     return false;
 }
 
-/* static */ bool creditor::hasActiveContracts(qlonglong i)
+/* static */ bool creditor::hasActiveContracts(const qlonglong i)
 {
     // SELECT sum(Buchungen.Betrag) FROM Buchungen
     // WHERE Buchungen.VertragsId IN (SELECT Vertraege.id FROM Vertraege WHERE Vertraege.KreditorId = 14)
@@ -214,7 +216,7 @@ bool creditor::remove()
     return creditortable;
 }
 
-void KreditorenListeMitId(QList<QPair<int,QString>> &entries)
+void KreditorenListeMitId(QList<QPair<int,QString>>& entries)
 {   LOG_CALL;
     QSqlQuery query;
     query.setForwardOnly(true);
@@ -258,7 +260,7 @@ creditor saveRandomCreditor()
     return c;
 }
 
-void saveRandomCreditors(int count)
+void saveRandomCreditors(const int count)
 {
     Q_ASSERT(count>0);
     for( int i = 0; i< count; i++)

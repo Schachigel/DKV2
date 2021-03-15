@@ -133,7 +133,7 @@ void test_contract::test_get_set_interest()
         contract cont(saveRandomContract(c.id()));
 
         const double expected =cont.interestRate();
-        for (int i=0; i<10; i++) {
+        for (int j=0; j<10; j++) {
             cont.setInterestRate(cont.interestRate());
             QCOMPARE(cont.interestRate(), expected);
         }

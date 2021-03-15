@@ -418,6 +418,7 @@ bool contract::cancel(const QDate& d)
     QString sql =qsl("UPDATE Vertraege SET LaufzeitEnde=?, Kfrist=? WHERE id=?");
     QVector<QVariant> v {actualD.toString(Qt::ISODate), -1, id()};
     if( ! executeSql_wNoRecords(sql, v)) {
+        qCritical() << "faild to cancel contract ";
         return false;
     }
     setPlannedEndDate(actualD);
@@ -543,7 +544,7 @@ void saveRandomContracts(int count)
     for (int i = 0; i<count; i++)
         saveRandomContract(creditorIds[rand->bounded(creditorIds.size())].toLongLong());
 }
-QDate activateRandomContracts(int percent)
+QDate activateRandomContracts(const int percent)
 {   LOG_CALL;
     QDate minimumActivationDate =EndOfTheFuckingWorld; // needed for tests
     if( percent < 0 || percent > 100) return minimumActivationDate;

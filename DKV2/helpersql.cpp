@@ -3,7 +3,7 @@
 
 const QString dbTypeName {qsl("QSQLITE")};
 
-bool autoDetachDb::attachDb(QString filename)
+bool autoDetachDb::attachDb(const QString& filename)
 {
     LOG_CALL;
     QString sql {qsl("ATTACH DATABASE '%1' AS '%2'")};
@@ -17,7 +17,7 @@ autoDetachDb::~autoDetachDb()
 }
 
 
-QString DbInsertableString(QVariant v)
+QString DbInsertableString(const QVariant& v)
 {
     if( v.isNull() || !v.isValid())
         return qsl("''");
@@ -56,7 +56,7 @@ QString DbInsertableString(QVariant v)
     return "'" + s +"'";
 }
 
-QString dbCreateTable_type(QVariant::Type t)
+QString dbCreateTable_type(const QVariant::Type t)
 {   // these are the strings we use in data definition
     // so that they are expressive, but are still close
     // to the actual affinity data types
@@ -83,7 +83,7 @@ QString dbCreateTable_type(QVariant::Type t)
         return qsl("INVALID");
     }
 }
-QString dbAffinityType(QVariant::Type t)
+QString dbAffinityType(const QVariant::Type t)
 {   // affinities are, what the database actually uses
     // as a "preferred" type of data stored in a column
     switch( t)
@@ -107,7 +107,7 @@ QString dbAffinityType(QVariant::Type t)
     }
 }
 
-int rowCount(const QString& table, QSqlDatabase db /* =QSqlDatabase::database() */)
+int rowCount(const QString& table, const QSqlDatabase& db /* =QSqlDatabase::database() */)
 {
     QString sql;
     if( table.startsWith(qsl("SELECT"), Qt::CaseInsensitive))
@@ -126,15 +126,15 @@ int rowCount(const QString& table, QSqlDatabase db /* =QSqlDatabase::database() 
         return -1;
     }
 }
-bool tableExists(const QString& tablename, QSqlDatabase db)
+bool tableExists(const QString& tablename, const QSqlDatabase& db)
 {
     return db.tables().contains(tablename);
 }
-bool VarTypes_share_DbType( QVariant::Type t1, QVariant::Type t2)
+bool VarTypes_share_DbType( const QVariant::Type t1, const QVariant::Type t2)
 {
     return dbAffinityType(t1) == dbAffinityType(t2);
 }
-bool verifyTable( const dbtable& tableDef, QSqlDatabase db)
+bool verifyTable(const dbtable& tableDef, const QSqlDatabase &db)
 {
     QSqlRecord recordFromDb = db.record(tableDef.Name());
     if( recordFromDb.count() != tableDef.Fields().count()) {
@@ -156,7 +156,7 @@ bool verifyTable( const dbtable& tableDef, QSqlDatabase db)
     }
     return true;
 }
-bool ensureTable( const dbtable& table, QSqlDatabase db)
+bool ensureTable( const dbtable& table,const QSqlDatabase& db)
 {   LOG_CALL_W(table.Name());
     if( tableExists(table.Name(), db)) {
         return verifyTable(table, db);
@@ -223,7 +223,7 @@ QVariant executeSingleValueSql(const dbfield& field, const QString& where, QSqlD
     }
 }
 
-QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbForeignKey> keys, const QString& incomingWhere, const QString& order)
+QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbForeignKey>& keys, const QString& incomingWhere, const QString& order)
 {   //LOG_CALL;
 
     QString FieldList;
@@ -268,7 +268,7 @@ QSqlField adjustedType(const QSqlField& f, QVariant::Type t)
     return ret;
 }
 
-QVector<QVariant> executeSingleColumnSql( const dbfield field, const QString& where)
+QVector<QVariant> executeSingleColumnSql( const dbfield& field, const QString& where)
 {   LOG_CALL;
     if( field.tableName().isEmpty() || field.name().isEmpty()) {
         qCritical() << "incomplete dbfield";
@@ -335,8 +335,12 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
 bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result)
 {
     QSqlQuery q; q.setForwardOnly(true);
-    q.prepare(sql);
-    if( v.isValid()) q.bindValue(0, v);
+    if( q.prepare(sql)) {
+        qDebug() << "Faild to prep Query. Error:" << q.lastError();
+        return false;
+    }
+    if( v.isValid())
+        q.bindValue(0, v);
     if( q.exec()) {
         while(q.next()) {
             result.push_back(q.record());
@@ -350,7 +354,10 @@ bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& resu
 bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlRecord>& result)
 {
     QSqlQuery q; q.setForwardOnly(true);
-    q.prepare(sql);
+    if( ! q.prepare(sql)) {
+        qDebug() << "Faild to prep Query. Error:" << q.lastError();
+        return false;
+    }
     for( int i =0; i<v.size(); i++) {
         q.bindValue(i, v[i]);
     }
@@ -379,7 +386,10 @@ bool executeSql_wNoRecords(const QString& sql, const QVariant& v, const QSqlData
 bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& v, const QSqlDatabase& db)
 {   LOG_CALL;
     QSqlQuery q(db); // q.setForwardOnly(true);
-    q.prepare(sql);
+    if( ! q.prepare(sql)) {
+        qCritical() << "failed to prep query " << q.lastError() << Qt::endl << q.lastQuery();
+        return false;
+    }
     for( int i =0; i< v.count(); i++) {
         if( v[i].isValid()) {
             q.addBindValue(v[i]);

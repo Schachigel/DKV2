@@ -5,7 +5,7 @@
 #include "dbtable.h"
 #include "dbfield.h"
 
-dbfield dbtable::operator[](QString s) const
+dbfield dbtable::operator[](const QString& s) const
 {   // LOG_CALL_W(s);
     for (auto f : fields) {
         if( f.name() == s)

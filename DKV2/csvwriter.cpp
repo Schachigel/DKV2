@@ -5,14 +5,15 @@
 #include "appconfig.h"
 #include "csvwriter.h"
 
-void csvwriter::addColumn(QString header)
+void csvwriter::addColumn(const QString& header)
 {   LOG_CALL_W(header);
+    QString h(header);
     Q_ASSERT(rows.empty()); // no add. columns after adding data
-    header.replace(separator, qsl("#"));
-    headers.append(header.trimmed());
+    h.replace(separator, qsl("#"));
+    headers.append(h.trimmed());
 }
 
-int csvwriter::addColumns(QString headers)
+int csvwriter::addColumns(const QString& headers)
 {   LOG_CALL_W(headers);
     QList<QString> list = headers.split(separator);
     for(auto& s : qAsConst(list))
@@ -22,10 +23,11 @@ int csvwriter::addColumns(QString headers)
     return list.size();
 }
 
-void csvwriter::appendToRow( QString value)
+void csvwriter::appendToRow(const QString& value)
 {   LOG_CALL_W(value);
-    value.replace(separator, qsl("#"));
-    currentRow.append(value.trimmed());
+    QString v(value);
+    v.replace(separator, qsl("#"));
+    currentRow.append(v.trimmed());
     if( currentRow.size() == headers.size())
     {
         rows.append( currentRow);
@@ -33,7 +35,7 @@ void csvwriter::appendToRow( QString value)
     }
 }
 
-void csvwriter::addRow(QList<QString> cols)
+void csvwriter::addRow(const QList<QString>& cols)
 {   LOG_CALL;
     Q_ASSERT(cols.size() == headers.size());
     for( auto& s : qAsConst(cols))
@@ -42,28 +44,27 @@ void csvwriter::addRow(QList<QString> cols)
     }
 }
 
-void csvwriter::addRow(QString row)
+void csvwriter::addRow(const QString& row)
 {   LOG_CALL_W(row);
     QList<QString> list = row.split(separator);
     addRow(list);
 }
 
-QString csvwriter::appendCsvLine( QString line, QString appendix) const
+QString csvwriter::appendCsvLine(const QString& line, const QString& appendix) const
 {   LOG_CALL_W(line);
-    if( line.size()) line += separator + qsl(" ");
-    return line + appendix;
+    QString l(line);
+    if( l.size()) l += separator + qsl(" ");
+    return l + appendix;
 }
 
 
 QString csvwriter::out() const
 {   LOG_CALL;
     QString out;
-    for( auto& i : qAsConst(headers))
-    {
+    for( auto& i : qAsConst(headers)) {
         out = appendCsvLine(out, i);
     }
-    for( auto& j : qAsConst(rows))
-    {
+    for( auto& j : qAsConst(rows)) {
         QString line;
         for( auto& k : qAsConst(j))
         {
@@ -74,7 +75,7 @@ QString csvwriter::out() const
     return out;
 }
 
-bool csvwriter::saveAndShowInExplorer(const QString filename) const
+bool csvwriter::saveAndShowInExplorer(const QString& filename) const
 {   LOG_CALL_W(filename);
     QString path {appConfig::Outdir() + qsl("/") + filename};
     backupFile(path);
@@ -93,7 +94,7 @@ bool csvwriter::saveAndShowInExplorer(const QString filename) const
     return true;
 }
 
-bool table2csv(const QString filename, const QVector<dbfield> fields, const QVector<QVariant::Type> types, const QString where)
+bool table2csv(const QString& filename, const QVector<dbfield>& fields, const QVector<QVariant::Type>& types, const QString& where)
 {    LOG_CALL;
     csvwriter csv (qsl(";"));
     for(auto& f : qAsConst(fields))

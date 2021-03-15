@@ -27,7 +27,7 @@ public slots:
 
 struct wizTerminateContract : public QWizard
 {
-    wizTerminateContract(QWidget* p, contract c);
+    wizTerminateContract(QWidget* p, const contract& c);
     contract c;
     Q_OBJECT;
 };

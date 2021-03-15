@@ -360,8 +360,12 @@ void wizConfigureNewDatabaseWiz::updateDbConfig(QString dbFile)
     dbCloser closer{ qsl("updateDbConfig") };
     QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     db.setDatabaseName(dbFile);
-    db.open();
-    return updateDbConfig(db);
+    if( db.open()) {
+        qCritical() << "failed to open db";
+        return;
+    }
+    updateDbConfig(db);
+    return;
 }
 
 void wizConfigureNewDatabaseWiz::updateDbConfig(QSqlDatabase db)
