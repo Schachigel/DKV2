@@ -36,6 +36,14 @@ CONFIG += utf8_source
 
 DEFINES += GIT_COMMIT='\\"$$system(git log --format="%h" -n 1)\\"'
 
+# macx:ICON = $${TARGET}.icns
+# macx:QMAKE_INFO_PLIST = Info.plist
+CONFIG( release, debug|release ){
+   macx:QMAKE_POST_LINK += macdeployqt $${OUT_PWD}/$${TARGET}.app -dmg
+}
+# RESOURCES += $${TARGET}.qrc
+# RC_FILE += $${TARGET}.rc
+
 VERSION = 0.0.0.10
 VERSION_PE_HEADER = 0.10
 
