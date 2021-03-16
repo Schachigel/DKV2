@@ -833,6 +833,7 @@ void MainWindow::on_btnCreateFromContracts_clicked()
     if( newInvestments) {
         QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden ") +QString::number(newInvestments) +qsl(" Anlage(n) angelegt."));
         qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model())->select();
+        ui->InvestmentsTableView->resizeColumnsToContents();
     }
     else
         QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden keine neuen Anlageformen angelegt."));
@@ -843,6 +844,7 @@ void MainWindow::on_btnNewInvestment_clicked()
     createInvestment();
     QSqlTableModel* m =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
     m->select();
+    ui->InvestmentsTableView->resizeColumnsToContents();
 }
 void MainWindow::on_actionInvestmentLoeschen_triggered()
 {
