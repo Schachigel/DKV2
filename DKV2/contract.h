@@ -50,7 +50,24 @@ struct contract
     static QString booking_csv_header();
     inline friend bool operator==(const contract& lhs, const contract& rhs)
     {   // friend functions - even in the class definition - are not member
-        return lhs.td == rhs.td and lhs.latestB == rhs.latestB;
+        bool ret =true;
+        if( lhs.td.getRecord().count() != rhs.td.getRecord().count()) {
+            qInfo() << "contract comparison: field count mismatch " << lhs.td.getRecord().count() << " / " << rhs.td.getRecord().count();
+            ret =false;
+        }
+        dbtable table =getTableDef();
+        for( int i =0; i < table.Fields().count(); i++){
+            QString fname =table.Fields()[i].name();
+            if( fname == qsl("Zeitstempel"))
+                continue;
+            if( lhs.td.getValue(fname) == rhs.td.getValue(fname))
+                continue;
+            else {
+                qInfo() << "contract field missmatch " << fname << ": " << lhs.td.getValue(fname) << " / " << rhs.td.getValue(fname);
+                ret = false;
+            }
+        }
+        return ret;
     }
     inline friend bool operator!=(const contract& lhs, const contract& rhs)
     {

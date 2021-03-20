@@ -22,7 +22,7 @@ void initNumMetaInfo( const QString& name, const double& wert, QSqlDatabase db=Q
 QString getMetaInfo(const QString& name, const QString& def=QString(), QSqlDatabase db = QSqlDatabase::database());
 double getNumMetaInfo(const QString& name, const double def =0., QSqlDatabase db = QSqlDatabase::database());
 // writing
-void setMetaInfo(const QString& name, const QString& value, QSqlDatabase db = QSqlDatabase::database());
+void setMetaInfo(const QString& name, const QString& value, QSqlDatabase db = QSqlDatabase::database(), const QString& tblAlias =QString());
 void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db = QSqlDatabase::database(), const QString& tblAlias =QString());
 
 struct appConfig

@@ -243,11 +243,12 @@ QString convert_database_inplace( const QString& targetFilename, const QString& 
     // copy the data  - but if fields are missing: use only the available fields, leave the new fields to their default
     autoDb db(sourceFileName, qsl("convert"));
     // if foreign_keys are not enforced we can copy the tables in any order
-    QSqlQuery enableRefInt("PRAGMA foreign_keys = OFF", db);
+    switchForeignKeyHandling(db, fkh_off);
 
     autoRollbackTransaction transact(db.conName());
     autoDetachDb autodetatch( qsl("targetDb"), db.conName());
     autodetatch.attachDb(targetFilename);
+    switchForeignKeyHandling(db, autodetatch.alias(), fkh_off);
     QSqlQuery enableRefInt2("PRAGMA " +autodetatch.alias() +".foreign_keys = OFF", db);
 
     // there are tables with default content but w/o primIndex -> replace will not work

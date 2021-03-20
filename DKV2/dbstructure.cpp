@@ -46,7 +46,7 @@ bool dbstructure::createDb(const QString& dbFileName) const
 
 bool dbstructure::createDb(const QSqlDatabase& db) const
 {   LOG_CALL;
-    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
+    switchForeignKeyHandling(db, fkh_on);
     for(dbtable& table :getTables()) {
         if( not ensureTable(table, db)) {
             qCritical() << "could not create table " << table.name;

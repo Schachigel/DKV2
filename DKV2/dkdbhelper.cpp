@@ -78,14 +78,14 @@ void insert_DbProperties(QSqlDatabase db = QSqlDatabase::database())
     dbConfig::writeDefaults(db);
 }
 
-bool fill_DkDbDefaultContent(QSqlDatabase db)
+bool fill_DkDbDefaultContent(QSqlDatabase db, bool includeViews /*=true*/)
 {
     LOG_CALL;
     switchForeignKeyHandling(db, true);
     bool ret = false;
     autoRollbackTransaction art(db.connectionName());
     do {
-        if ( not insert_views(db)) break;
+        if( includeViews) if ( not insert_views(db)) break;
         insert_DbProperties(db);
         if ( not letterTemplate::insert_letterTypes(db)) break;
         if ( not letterTemplate::insert_elementTypes(db)) break;
@@ -179,7 +179,7 @@ bool open_databaseForApplication( QString newDbFile)
         return false;
     }
 
-    QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
+    switchForeignKeyHandling(db, fkh_on);
     if( not updateViews())
         return false;
     return true;

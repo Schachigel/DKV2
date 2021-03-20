@@ -60,19 +60,19 @@ double getNumMetaInfo(const QString& name, const double def, QSqlDatabase db)
     qInfo() << "Property " << name << " : " << value.toDouble();
     return value.toDouble();
 }
-void setMetaInfo(const QString& name, const QString& value, QSqlDatabase db)
+void setMetaInfo(const QString& name, const QString& value, QSqlDatabase db, const QString& tblAlias /*=QString()*/)
 {   LOG_CALL_W(name);
-    QSqlQuery q(db);
-    QString sql{qsl("INSERT OR REPLACE INTO Meta (Name, Wert) VALUES (:name, :value)")};
-    executeSql_wNoRecords(sql, {name, value}, db);
+    QString tname =qsl("Meta");
+    if( not tblAlias.isEmpty()) tname =tblAlias +qsl(".") +tname;
+    QString sql{qsl("INSERT OR REPLACE INTO %1 (Name, Wert) VALUES (:name, :value)")};
+    executeSql_wNoRecords(sql.arg(tname), {name, value}, db);
 }
 void setNumMetaInfo(const QString& name, const double value, QSqlDatabase db, const QString& tblAlias /*=QString()*/)
 {   LOG_CALL_W(name);
     QString tablename =qsl("Meta");
     if( not tblAlias.isEmpty()) tablename =tblAlias +qsl(".") +tablename;
     QString sql {qsl("INSERT OR REPLACE INTO %1 (Name, Wert) VALUES (:name, :value)")};
-    sql = sql.arg(tablename);
-    executeSql_wNoRecords(sql, {name, value}, db);
+    executeSql_wNoRecords(sql.arg(tablename), {name, value}, db);
 }
 
 /* statics */
@@ -220,15 +220,16 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
         return;
     }
     switch (value.type()) {
+    case QVariant::Double:
+        setNumMetaInfo(defaultParams.value(pc).first, value.toDouble(), db, tblAlias);
+        break;
     case QVariant::Int:
     case QVariant::UInt:
     case QVariant::LongLong:
     case QVariant::ULongLong:
-    case QVariant::Double:
-        setNumMetaInfo(defaultParams.value(pc).first, value.toDouble(), db, tblAlias);
-        break;
+    case QVariant::String:
     default:
-        setMetaInfo(defaultParams.value(pc).first, value.toString(), db);
+        setMetaInfo(defaultParams.value(pc).first, value.toString(), db, tblAlias);
     }
 }
 

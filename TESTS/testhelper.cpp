@@ -45,7 +45,7 @@ void initTestDb_withData()
     init_DKDBStruct();
     QVERIFY(dkdbstructur.createDb(db));
     QVERIFY2( QFile::exists(testDbFilename), "create database failed." );
-    fill_DkDbDefaultContent();
+    fill_DkDbDefaultContent(db, false);
     saveRandomCreditors(10);
     saveRandomContracts(8);
     activateRandomContracts(100 /* % */);

@@ -174,7 +174,7 @@ bool switchForeignKeyHandling(const QSqlDatabase& db, const QString& alias, bool
     sql =sql.arg(alias, OnOff?qsl("ON"):qsl("OFF"));
     return executeSql_wNoRecords(sql, db);
 }
-bool switchForeignKeyHandling(const QSqlDatabase& db, bool OnOff)
+bool switchForeignKeyHandling(const QSqlDatabase& db /*def. DB*/, bool OnOff /*=true*/)
 {
     if( OnOff)
         return executeSql_wNoRecords(qsl("PRAGMA FOREIGN_KEYS = ON"), db);

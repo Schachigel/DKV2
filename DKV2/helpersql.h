@@ -92,10 +92,12 @@ QString dbAffinityType(const QVariant::Type t);
 int rowCount(const QString& table, const QSqlDatabase& db =QSqlDatabase::database());
 bool tableExists(const QString& tablename, const QSqlDatabase& db = QSqlDatabase::database());
 bool verifyTable( const dbtable& table, const QSqlDatabase& db);
-bool ensureTable(const dbtable& table, const QSqlDatabase& db = QSqlDatabase::database());
+bool ensureTable(const dbtable& table, const QSqlDatabase& db =QSqlDatabase::database());
 
-bool switchForeignKeyHandling(const QSqlDatabase& db, const QString& alias, bool OnOff);
-bool switchForeignKeyHandling(const QSqlDatabase& db, bool OnOff);
+#define fkh_on  true
+#define fkh_off false
+bool switchForeignKeyHandling(const QSqlDatabase& db, const QString& alias, bool OnOff =fkh_on);
+bool switchForeignKeyHandling(const QSqlDatabase& db =QSqlDatabase::database(), bool OnOff =fkh_on);
 
 QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db = QSqlDatabase::database());
 QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where =QString(), QSqlDatabase db = QSqlDatabase::database());

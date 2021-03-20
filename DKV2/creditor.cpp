@@ -221,8 +221,11 @@ void KreditorenListeMitId(QList<QPair<int,QString>>& entries)
 {   LOG_CALL;
     QSqlQuery query;
     query.setForwardOnly(true);
-    QString sql{qsl("SELECT id,  Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse "
-                    "FROM Kreditoren ORDER BY Nachname ASC, Vorname ASC")};
+    QString sql{qsl(R"str(
+SELECT id
+  , Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse
+FROM Kreditoren
+ORDER BY Nachname ASC, Vorname ASC)str")};
     if( not query.exec(sql)) {
         qCritical() << "Error reading DKGeber while creating a contract: " << query.lastError().text();
         return;

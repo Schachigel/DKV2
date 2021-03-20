@@ -1,4 +1,3 @@
-#include <QSqlQuery>
 #include <QtMath>
 
 #include "contract.h"
