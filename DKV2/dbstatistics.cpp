@@ -101,7 +101,7 @@ QString dbStats::toString()
 
 void dbStats::addContract(double value, double interest, dbStats::payoutType kind, qlonglong credId)
 {   LOG_CALL;
-    Q_ASSERT(kind != dbStats::t_nt);
+    Q_ASSERT(kind not_eq dbStats::t_nt);
     dbStats old =*this;
     countCred_addContract( allContracts[t_nt].credCount, credId);
     countCred_addContract( inactiveContracts[t_nt].credCount, credId);

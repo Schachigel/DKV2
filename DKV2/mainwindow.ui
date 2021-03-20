@@ -176,7 +176,7 @@ p, li { white-space: pre-wrap; }
        </layout>
       </widget>
       <widget class="QWidget" name="InvestmentsPage">
-       <layout class="QVBoxLayout" name="verticalLayout_4">
+       <layout class="QVBoxLayout" name="verticalLayout_41">
         <item>
          <layout class="QHBoxLayout" name="horicontalLayout">
           <item>
@@ -735,6 +735,22 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="toolTip">
     <string>Das Investment wird aus der Datenbank gelsöcht. </string>
+   </property>
+  </action>
+  <action name="actionInvestmentSchliessen">
+   <property name="text">
+    <string>Investment schließen</string>
+   </property>
+   <property name="toolTip">
+    <string>Zu einer geschlossenen Geldanlage kann kein Vertrag mehr angelegt werden.</string>
+   </property>
+  </action>
+  <action name="actionTyp_Bezeichnung_aendern">
+   <property name="text">
+    <string>Typ &amp;Bezeichnung ändern</string>
+   </property>
+   <property name="toolTip">
+    <string>Mit dieser Option kannst Du den Typ ändern</string>
    </property>
   </action>
  </widget>

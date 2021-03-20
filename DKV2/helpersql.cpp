@@ -1,3 +1,5 @@
+#include <iso646.h>
+
 #include "helper.h"
 #include "helpersql.h"
 
@@ -19,7 +21,7 @@ autoDetachDb::~autoDetachDb()
 
 QString DbInsertableString(const QVariant& v)
 {
-    if( v.isNull() || !v.isValid())
+    if( v.isNull() or !v.isValid())
         return qsl("''");
     QString s;
     switch(v.type())
@@ -79,7 +81,7 @@ QString dbCreateTable_type(const QVariant::Type t)
     case QVariant::Double:
         return qsl("DOUBLE"); // affinity: REAL
     default:
-        Q_ASSERT(!bool("invalid database type"));
+        Q_ASSERT( not bool("invalid database type"));
         return qsl("INVALID");
     }
 }
@@ -102,7 +104,7 @@ QString dbAffinityType(const QVariant::Type t)
     case QVariant::Double:
         return qsl("REAL");
     default:
-        Q_ASSERT(!bool("invalid database type"));
+        Q_ASSERT( not bool("invalid database type"));
         return qsl("INVALID");
     }
 }
@@ -137,17 +139,17 @@ bool VarTypes_share_DbType( const QVariant::Type t1, const QVariant::Type t2)
 bool verifyTable(const dbtable& tableDef, const QSqlDatabase &db)
 {
     QSqlRecord recordFromDb = db.record(tableDef.Name());
-    if( recordFromDb.count() != tableDef.Fields().count()) {
+    if( recordFromDb.count() not_eq tableDef.Fields().count()) {
         qDebug() << "verifyTable(" << tableDef.Name() <<  ") failed: number of fields mismatch. expected / actual: " << tableDef.Fields().count() << " / " << recordFromDb.count();
         return false;
     }
     for( auto& field: tableDef.Fields()) {
         QSqlField FieldFromDb = recordFromDb.field(field.name());
-        if( ! FieldFromDb.isValid()) {
+        if( not FieldFromDb.isValid()) {
             qDebug() << "verifyTable() failed: table exists but field is missing" << field.name();
             return false;
         }
-        if( ! VarTypes_share_DbType(field.type(), recordFromDb.field(field.name()).type()))
+        if( not VarTypes_share_DbType(field.type(), recordFromDb.field(field.name()).type()))
         {
             qDebug() << "ensureTable() failed: field " << field.name() <<
                         " type mismatch. expected / actual: " << field.type() << " / " << recordFromDb.field(field.name()).type();
@@ -167,7 +169,7 @@ bool ensureTable( const dbtable& table,const QSqlDatabase& db)
 
 bool switchForeignKeyHandling(const QSqlDatabase& db, const QString& alias, bool OnOff)
 {
-    Q_ASSERT( ! alias.isEmpty());
+    Q_ASSERT( not alias.isEmpty());
     QString sql {qsl("PRAGMA %1.FOREIGN_KEYS = %2")};
     sql =sql.arg(alias, OnOff?qsl("ON"):qsl("OFF"));
     return executeSql_wNoRecords(sql, db);
@@ -207,11 +209,11 @@ QVariant executeSingleValueSql(const QString& fieldName, const QString& tableNam
 }
 QVariant executeSingleValueSql(const dbfield& field, const QString& where, QSqlDatabase db)
 {
-    if( field.name().isEmpty() || field.tableName().isEmpty())
+    if( field.name().isEmpty() or field.tableName().isEmpty())
         return QVariant();
     QVariant result = executeSingleValueSql(field.name(), field.tableName(), where, db);
 
-    if( ! result.isValid()) {
+    if( not result.isValid()) {
 //        qDebug() << "executeSingleValueSql found no value";
         return result;
     }
@@ -232,21 +234,21 @@ QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbFo
     QSet<QString> usedTables;
 
     for( auto& f : qAsConst(fields)) {
-        if( f.tableName().isEmpty() || f.name().isEmpty())
+        if( f.tableName().isEmpty() or f.name().isEmpty())
             qCritical() << "selectQueryFromFields: missing table or field name";
-        if( ! FieldList.isEmpty())
+        if( not FieldList.isEmpty())
             FieldList +=qsl(", ");
         FieldList +=f.tableName() +qsl(".") +f.name();
 
-        if( ! usedTables.contains(f.tableName())) {
+        if( not usedTables.contains(f.tableName())) {
             usedTables.insert(f.tableName());
-            if( ! TableList.isEmpty())
+            if( not TableList.isEmpty())
                 TableList +=qsl(", ");
             TableList += f.tableName();
         }
     }
     for( auto key: keys) {
-        if( ! calculatedWhere.isEmpty()) calculatedWhere += qsl(" AND ");
+        if( not calculatedWhere.isEmpty()) calculatedWhere += qsl(" AND ");
         calculatedWhere += key.get_SelectSqpSnippet();
     }
     QString Where =qsl("%1 AND %2");
@@ -254,7 +256,7 @@ QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbFo
 
     QString Query =qsl("SELECT %1 FROM %2 WHERE %3");
     Query = Query.arg(FieldList, TableList, Where);
-    if( ! order.isEmpty())
+    if( not order.isEmpty())
         Query = Query +qsl(" ORDER BY ") +order;
     qInfo() << "selectQueryFromFields created Query: " << Query;
     return Query;
@@ -270,7 +272,7 @@ QSqlField adjustedType(const QSqlField& f, QVariant::Type t)
 
 QVector<QVariant> executeSingleColumnSql( const dbfield& field, const QString& where)
 {   LOG_CALL;
-    if( field.tableName().isEmpty() || field.name().isEmpty()) {
+    if( field.tableName().isEmpty() or field.name().isEmpty()) {
         qCritical() << "incomplete dbfield";
         return QVector<QVariant>();
     }
@@ -298,7 +300,7 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
         return QSqlRecord();
     }
     q.last();
-    if(q.at() != 0) {
+    if(q.at() not_eq 0) {
         qCritical() << "SingleRecordSql returned more then one value or non\n" << q.lastQuery();
         return QSqlRecord();
     }
@@ -354,7 +356,7 @@ bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& resu
 bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlRecord>& result)
 {
     QSqlQuery q; q.setForwardOnly(true);
-    if( ! q.prepare(sql)) {
+    if( not q.prepare(sql)) {
         qDebug() << "Faild to prep Query. Error:" << q.lastError();
         return false;
     }
@@ -386,7 +388,7 @@ bool executeSql_wNoRecords(const QString& sql, const QVariant& v, const QSqlData
 bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& v, const QSqlDatabase& db)
 {   LOG_CALL;
     QSqlQuery q(db); // q.setForwardOnly(true);
-    if( ! q.prepare(sql)) {
+    if( not q.prepare(sql)) {
         qCritical() << "failed to prep query " << q.lastError() << Qt::endl << q.lastQuery();
         return false;
     }

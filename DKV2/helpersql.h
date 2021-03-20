@@ -38,7 +38,7 @@ struct autoDb{
         db =QSqlDatabase::addDatabase(dbTypeName, closer.conName);
         db.setDatabaseName(file);
         if(at == read_only) db.setConnectOptions(qsl("QSQLITE_OPEN_READONLY"));
-        if( ! db.open()) {
+        if( not db.open()) {
             qCritical() << "could not open db conncection " << closer.conName;
             qCritical() << db.lastError();
         }
@@ -59,7 +59,7 @@ struct autoRollbackTransaction
         comitted =true;
     }
     ~autoRollbackTransaction() {
-        if( ! comitted)
+        if( not comitted)
             QSqlDatabase::database(connection).rollback();
     }
 private:

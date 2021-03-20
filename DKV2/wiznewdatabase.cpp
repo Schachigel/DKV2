@@ -1,3 +1,4 @@
+#include <iso646.h>
 
 #include <QStringLiteral>
 #include <QLineEdit>
@@ -59,7 +60,7 @@ bool wpFileSelection_IntroPage::validatePage() {
         return QFile::exists(file);
     }
     else
-        return ! field(qsl("selectedFile")).toString().isEmpty();
+        return not field(qsl("selectedFile")).toString().isEmpty();
 }
 
 void wpFileSelection_IntroPage::setVisible(bool v) {
@@ -246,33 +247,33 @@ wpContractMinValues_Page:: wpContractMinValues_Page(QWidget* p) : QWizardPage(p)
     setSubTitle(qsl("Hier kannst Du den minimalen Auszahlungsbetrag und Vertragswert festlegen, für den das Programm eine Buchung erlaubt. "
                 "Dieser Werte werden bei Auszahlungen und beim Anlegen von Verträgen berücksichtigt.<p>"
                 "<small>Da Auszahlungen z.T. mit Überweisungskosten einhergehen und kleine Verträge unrentabel sind sollte man kleine Werte vermeiden.</small>"));
-    QLineEdit* leMa =new QLineEdit;
+    leMa =new QLineEdit;
     registerField(dbConfig::paramName(MIN_PAYOUT), leMa);
-    leMa->setValidator(new QIntValidator(this));
+    leMa->setValidator(new QIntValidator(1,1000,this));
     QLabel* lma     =new QLabel(qsl("Kleinster Auszahlungsbetrag in Euro:"));
     lma->setBuddy(leMa);
 
-    QLineEdit* leMc =new QLineEdit;
+    leMc =new QLineEdit;
     registerField(dbConfig::paramName(MIN_AMOUNT), leMc);
-    leMc->setValidator(new QIntValidator(this));
+    leMc->setValidator(new QIntValidator(1,1000, this));
     QLabel* lmc     =new QLabel(qsl("Kleinster Vertragswert in Euro:"));
     lmc->setBuddy(leMc);
 
-    QLineEdit* leMi =new QLineEdit;
+    leMi =new QLineEdit;
     registerField(dbConfig::paramName(MAX_INTEREST), leMi);
-    leMi->setValidator(new QIntValidator(this));
+    leMi->setValidator(new QIntValidator(100, 1000, this));
     QLabel* lmi     =new QLabel(qsl("Größter auswählbarer Zins in 100tel (100 entspricht 1%)"));
     lmi->setBuddy(leMi);
 
-    QLineEdit* leMaxINbr =new QLineEdit;
+    leMaxINbr =new QLineEdit;
     registerField(dbConfig::paramName(MAX_INVESTMENT_NBR), leMaxINbr);
-    leMaxINbr->setValidator(new QIntValidator(this));
+    leMaxINbr->setValidator(new QIntValidator(1, 100, this));
     QLabel* lmaxINbr =new QLabel(qsl("Ansahl von Verträgen in einem Investment ab der sie rot gekennzeichnet wird"));
     lmaxINbr->setBuddy(leMaxINbr);
 
-    QLineEdit* leMaxISum =new QLineEdit;
+    leMaxISum =new QLineEdit;
     registerField(dbConfig::paramName(MAX_INVESTMENT_SUM), leMaxISum);
-    leMaxISum->setValidator(new QIntValidator(this));
+    leMaxISum->setValidator(new QIntValidator(1, 1000000, this));
     QLabel* lmaxISum =new QLabel(qsl("Summe aller Verträge in einem Investment ab der sie rot gekennzeichnet wird"));
     lmaxISum->setBuddy(leMaxISum);
 
@@ -298,6 +299,14 @@ void wpContractMinValues_Page::initializePage()
     setField(dbConfig::paramName(MAX_INVESTMENT_NBR), dbConfig::readValue(MAX_INVESTMENT_NBR));
     setField(dbConfig::paramName(MAX_INVESTMENT_SUM), dbConfig::readValue(MAX_INVESTMENT_SUM));
 }
+
+bool wpContractMinValues_Page::validatePage()
+{
+    return leMa->hasAcceptableInput() and leMc->hasAcceptableInput()
+            and leMi->hasAcceptableInput() and leMaxINbr->hasAcceptableInput()
+            and leMaxISum->hasAcceptableInput();
+}
+
 
 wpNewDatabase_SummaryPage::wpNewDatabase_SummaryPage(QWidget* p) : QWizardPage(p)
 {
@@ -360,7 +369,7 @@ void wizConfigureNewDatabaseWiz::updateDbConfig(QString dbFile)
     dbCloser closer{ qsl("updateDbConfig") };
     QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     db.setDatabaseName(dbFile);
-    if( ! db.open()) {
+    if( not db.open()) {
         qCritical() << "failed to open db" << db.lastError();
         return;
     }

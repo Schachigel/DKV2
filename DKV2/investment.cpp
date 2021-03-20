@@ -76,6 +76,18 @@ bool deleteInvestment(const int ZSatz, const QDate& v, const QDate& b, const QSt
     return deleteInvestment(ZSatz, v.toString(Qt::ISODate), b.toString(Qt::ISODate), t);
 }
 
+
+bool closeInvestment(const int ZSatz, const QString& v, const QString& b, const QString& t)
+{   LOG_CALL;
+    QString sql{qsl("UPDATE  Geldanlagen  SET Offen = 0 WHERE ZSatz=%1 AND Anfang='%2' AND Ende='%3' AND Typ='%4'")};
+    sql =sql.arg(QString::number(ZSatz),v, b, t);
+    return executeSql_wNoRecords(sql);
+}
+bool closeInvestment(const int ZSatz, const QDate& v, const QDate& b, const QString& t)
+{
+    return closeInvestment(ZSatz, v.toString(Qt::ISODate), b.toString(Qt::ISODate), t);
+}
+
 int nbrActiveInvestments(const QDate& cDate/*=EndOfTheFuckingWorld*/)
 {   LOG_CALL;
     QString field {qsl("count(*)")};
@@ -99,12 +111,12 @@ QVector<QPair<qlonglong, QString>> activeInvestments(const QDate& cDate)
         where =qsl("Offen AND Anfang <= date('%1') AND Ende > date('%1')").arg(cDate.toString(Qt::ISODate));
     }
     QSqlQuery q;
-    if( ! q.prepare(qsl("SELECT rowid, Typ FROM Geldanlagen WHERE %1 ORDER BY %2").arg(where, fnInvestmentInterest))) {
+    if( not q.prepare(qsl("SELECT rowid, Typ FROM Geldanlagen WHERE %1 ORDER BY %2").arg(where, fnInvestmentInterest))) {
         qCritical() << "sql prep failed: " << q.lastError() << Qt::endl << q.lastQuery();
         return QVector<QPair<qlonglong, QString>>();
     }
 
-    if( ! q.exec()) {
+    if( not q.exec()) {
         qCritical() << "sql exec failed: " << q.lastError() << Qt::endl << q.lastQuery();
         return QVector<QPair<qlonglong, QString>>();
     }
@@ -139,7 +151,7 @@ QString investmentInfoForContract(qlonglong rowId, double amount)
     double maxSum =dbConfig::readValue(MAX_INVESTMENT_SUM).toDouble();
 
     QString sql {qsl("SELECT * FROM vInvestmentsOverview WHERE rowid=") +QString::number(rowId)};
-    QSqlQuery q (sql); if( ! q.next()) Q_ASSERT(true);
+    QSqlQuery q (sql); if( not q.next()) Q_ASSERT(true);
     QSqlRecord r =q.record();
     qDebug() << q.lastQuery() << Qt::endl << r;
     QString s_zSatz  = QString::number(r.value(qsl("ZSatz")).toInt()/100., 'g', 2) +qsl(" %");

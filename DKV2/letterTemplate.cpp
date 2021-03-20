@@ -349,17 +349,17 @@ bool letterTemplate::loadTemplate(letterTemplate::templId /*id*/, qlonglong /*kr
 
 bool letterTemplate::operator ==(const letterTemplate &) const
 {   LOG_CALL;
-    //if(tid != b.tid) return false;
-    //if( length.count() != b.length.count()) return false;
-    //if( html.count()   != b.html.count()) return false;
+    //if(tid not_eq b.tid) return false;
+    //if( length.count() not_eq b.length.count()) return false;
+    //if( html.count()   not_eq b.html.count()) return false;
     //for( int i = 0; i < maxDistance; i++)
     //{
-    //    if( b.length[i] != length[i])
+    //    if( b.length[i] not_eq length[i])
     //        return false;
     //}
     //for( int i = 0; i < maxSection; i++)
     //{
-    //    if( b.html[i] != html[i])
+    //    if( b.html[i] not_eq html[i])
     //        return false;
     //}
     return true;

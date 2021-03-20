@@ -23,13 +23,13 @@ QString getUniqueTempFilename(QString templateFileName)
 
 bool moveToBackup(QString fn)
 {
-    if( ! QFile(fn).exists())
+    if( not QFile(fn).exists())
         // no file, no backup
         return true;
 
     backupFile(fn, "db-bak");
     QFile(fn).remove();
-    if( ! QFile(fn).exists())
+    if( not QFile(fn).exists())
         return true;
     else {
         qCritical() << "File to be replaced can not be deleted";
@@ -43,7 +43,7 @@ bool backupFile(const QString&  fn, const QString& subfolder)
     QFileInfo fi{fn};
     QString suffix = fi.completeSuffix();
     QString path = fi.path();
-    if( ! subfolder.isEmpty())
+    if( not subfolder.isEmpty())
     {
         QDir d(path); d.mkdir(subfolder);
         backupname =d.path() + qsl("/") + subfolder + qsl("/") + fi.fileName();
@@ -51,7 +51,7 @@ bool backupFile(const QString&  fn, const QString& subfolder)
     backupname.chop(suffix.size()+1/*dot*/);
     backupname += "_" + QDateTime::currentDateTime().toString(qsl("yyyyMMdd_hhmmss")) + qsl(".") + suffix;
     // copy the file
-    if(!QFile().copy(fn, backupname))
+    if( not QFile().copy(fn, backupname))
     {
         qDebug() << "Backup copy failed. File to be copied: " << backupname;
         return false;

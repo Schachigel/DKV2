@@ -69,7 +69,7 @@
     tdi.setValue(qsl("Betrag"), ctFromEuro(amount));
     tdi.setValue(qsl("Datum"), date);
     tdi.setValue(qsl("Ausführung"), QDateTime(QDate::currentDate(), QTime::currentTime()));
-    if( -1 != tdi.InsertData()) {
+    if( -1 not_eq tdi.InsertData()) {
         qInfo() << "successful booking: " << typeName(t) << " contract#: " << contractId << " Amount: " << ctFromEuro(amount) << " date: " << date;
         return true;
     }

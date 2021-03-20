@@ -1,3 +1,5 @@
+#include <iso646.h>
+
 #include <qtest.h>
 #include <QString>
 #include <QDebug>
@@ -10,11 +12,11 @@ int dateDiff360(int startDay, int startMonth, int startYear, int endDay, int end
 {
     if (startDay == 31) {
         --startDay;
-    } else if (methodUS && (startMonth == 2 && (startDay == 29 || (startDay == 28 && !QDate::isLeapYear(startYear))))) {
+    } else if (methodUS and (startMonth == 2 and (startDay == 29 or (startDay == 28 and !QDate::isLeapYear(startYear))))) {
         startDay = 30;
     }
     if (endDay == 31) {
-        if (methodUS && startDay != 30) {
+        if (methodUS and startDay not_eq 30) {
             endDay = 1;
             if (endMonth == 12) {
                 ++endYear;
@@ -52,7 +54,7 @@ int getAnzTageUndJahreZeitraum(const QDate &dateFrom, const QDate &dateTo, int &
    tageBis = 0;
    ganzeJahre = 0;
    tageVon = 0;
-   if( dateFrom.isValid() && dateTo.isValid() && (dateFrom <= dateTo))
+   if( dateFrom.isValid() and dateTo.isValid() and (dateFrom <= dateTo))
    {
        if(dateFrom.year() == dateTo.year())
        {
@@ -92,7 +94,7 @@ double computeDkZinsen(double Betrag, double Zinssatz, int anzTage)
 double computeDkZinsenZeitraum(double Betrag, double Zinssatz, const QDate &dateFrom, const QDate &dateTo)
 {
     double Zinsen = 0;
-    if( dateFrom.isValid() && dateTo.isValid() && (dateFrom <= dateTo))
+    if( dateFrom.isValid() and dateTo.isValid() and (dateFrom <= dateTo))
     {
         int tageBis = 0;
         int ganzeJahre = 0;

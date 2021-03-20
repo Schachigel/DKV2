@@ -222,9 +222,10 @@ SELECT ga.ZSatz
             FROM Buchungen AS B
             WHERE B.VertragsId=v.id)>0
   ) AS SummeAktive
+  , CASE WHEN ga.Offen THEN 'Offen' ELSE 'Abgeschlossen' END AS Offen
   , ga.rowid
 FROM Geldanlagen AS ga
-ORDER BY ga.ZSatz DESC
+ORDER BY ga.Offen DESC, ga.ZSatz DESC
 )str"
 )};
 

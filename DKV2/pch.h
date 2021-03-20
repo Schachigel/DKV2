@@ -32,6 +32,7 @@
 #include <QWidget>
 #include <QWizard>
 #include <QMessageBox>
+#include <QInputDialog>
 
 #include <QTextDocument>
 #include <QTextImageFormat>

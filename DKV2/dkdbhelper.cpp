@@ -29,7 +29,7 @@ bool createView(const QString& name, const QString& sql, QSqlDatabase db = QSqlD
         qInfo() << "Failed to drop view " << name << " Error: " << q.lastError() << Qt::endl << q.lastQuery();
     QString createViewSql = "CREATE VIEW %1 AS " + sql;
     createViewSql = createViewSql.arg(name);
-    if( q.exec(createViewSql) && q.lastError().type() == QSqlError::NoError) {
+    if( q.exec(createViewSql) and q.lastError().type() == QSqlError::NoError) {
         db.commit();
         qInfo() << "Successfully created view " << name << Qt::endl << sql;
         return true;
@@ -41,7 +41,7 @@ bool createView(const QString& name, const QString& sql, QSqlDatabase db = QSqlD
 bool createViews( const QVector<dbViewDev>& views, QSqlDatabase db)
 {
     for( auto view: views) {
-        if( ! createView(view.name, view.sql, db))
+        if( not createView(view.name, view.sql, db))
             return false;
     }
     return true;
@@ -85,11 +85,11 @@ bool fill_DkDbDefaultContent(QSqlDatabase db)
     bool ret = false;
     autoRollbackTransaction art(db.connectionName());
     do {
-        if (!insert_views(db)) break;
+        if ( not insert_views(db)) break;
         insert_DbProperties(db);
-        if (!letterTemplate::insert_letterTypes(db)) break;
-        if (!letterTemplate::insert_elementTypes(db)) break;
-        if (!letterTemplate::insert_letterElements(db)) break;
+        if ( not letterTemplate::insert_letterTypes(db)) break;
+        if ( not letterTemplate::insert_elementTypes(db)) break;
+        if ( not letterTemplate::insert_letterElements(db)) break;
         ret = true;
     } while (false);
     if (ret)
@@ -103,7 +103,7 @@ version_check_result check_db_version(QString file)
     dbCloser closer(qsl("db_version_check"));
     QSqlDatabase db =QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     db.setDatabaseName(file);
-    if( ! db.open()) {
+    if( not db.open()) {
         qCritical() << "could not open db " << file << " for version check ";
         return noVersion;
     } else {
@@ -113,8 +113,8 @@ version_check_result check_db_version(QString file)
 
 version_check_result check_db_version(QSqlDatabase db)
 {   /*LOG_CALL;*/
-    QVariant vversion =dbConfig::readVersion(db);
-    if( ! (vversion.isValid() && vversion.canConvert(QMetaType::Double)))
+    QVariant vversion =dbConfig::read_DBVersion(db);
+    if( not (vversion.isValid() and vversion.canConvert(QMetaType::Double)))
         return noVersion; // big problem: no db
     double d =vversion.toDouble();
     qInfo() << "DB Version Comparison: expected / found: " << CURRENT_DB_VERSION << " / " << d;
@@ -124,7 +124,7 @@ version_check_result check_db_version(QSqlDatabase db)
         return sameVersion; // all good
     if( d >  CURRENT_DB_VERSION)
         return higherVersion; // the database is too young -> don't touch!
-    Q_ASSERT(!"one should never come here");
+    Q_ASSERT( not "one should never come here");
     return noVersion;
 }
 
@@ -132,7 +132,7 @@ bool updateViews(QSqlDatabase db =QSqlDatabase::database())
 {   LOG_CALL;
     QString lastProgramVersion = dbConfig::readValue(DKV2_VERSION).toString();
     QString thisProgramVersion = QCoreApplication::applicationVersion();
-    if( lastProgramVersion != thisProgramVersion) {
+    if( lastProgramVersion not_eq thisProgramVersion) {
         qInfo() << "Program versions used differ -> views will be updated";
         qInfo() << qsl("last exe: ") << lastProgramVersion << qsl(" / this exe: ") << thisProgramVersion;
         if( !insert_views(db)) {
@@ -166,7 +166,7 @@ void closeAllDatabaseConnections()
 
 bool open_databaseForApplication( QString newDbFile)
 {   LOG_CALL_W(newDbFile);
-    Q_ASSERT(!newDbFile.isEmpty());
+    Q_ASSERT( not newDbFile.isEmpty());
 
     closeAllDatabaseConnections();
     backupFile(newDbFile, "db-bak");
@@ -180,7 +180,7 @@ bool open_databaseForApplication( QString newDbFile)
     }
 
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON");
-    if( ! updateViews())
+    if( not updateViews())
         return false;
     return true;
 }
@@ -200,7 +200,7 @@ bool isExistingExContractLabel( const QString& newLabel)
 
 bool isValidNewContractLabel(const QString& label)
 {
-    return (! isExistingContractLabel(label)) && (! isExistingExContractLabel(label));
+    return ( not isExistingContractLabel(label)) and ( not isExistingExContractLabel(label));
 }
 
 QString proposeContractLabel()
@@ -224,7 +224,7 @@ int createNewInvestmentsFromContracts()
 {
     QString sql{qsl("SELECT ZSatz, Vertragsdatum FROM Vertraege ORDER BY Vertragsdatum ASC")};
     QSqlQuery q; q.setForwardOnly(true);
-    if( ! q.exec(sql)) {
+    if( not q.exec(sql)) {
         qCritical() << "query execute faild in " << __func__;
         return 0;
     }
@@ -291,10 +291,10 @@ QVector<rowData> contractRuntimeDistribution()
         double wert =   q.value("Wert").toReal();
         QDate von = q.value("Datum").toDate();
         QDate bis = q.value("Vertragsende").toDate();
-        if( ! bis.isValid() || bis == EndOfTheFuckingWorld) {
+        if( not bis.isValid() or bis == EndOfTheFuckingWorld) {
             AnzahlUnbegrenzet++;
             SummeUnbegrenzet += wert;
-        } else if( bis > von.addYears(1) && bis < von.addYears(5)) {
+        } else if( bis > von.addYears(1) and bis < von.addYears(5)) {
             AnzahlLaenger++;
             SummeLaenger += wert;
         } else if( bis < von.addYears(1)) {

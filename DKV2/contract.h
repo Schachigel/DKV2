@@ -36,7 +36,7 @@ inline int toInt(const interestModel m) {
     return static_cast<int>(m);
 }
 inline interestModel fromInt(const int i) {
-    if( i < 0 || i >=toInt(interestModel::maxId))
+    if( i < 0 or i >=toInt(interestModel::maxId))
         Q_ASSERT("Invalid interestModel");
     return static_cast<interestModel>(i);
 }
@@ -50,7 +50,7 @@ struct contract
     static QString booking_csv_header();
     inline friend bool operator==(const contract& lhs, const contract& rhs)
     {   // friend functions - even in the class definition - are not member
-        return lhs.td == rhs.td && lhs.latestB == rhs.latestB;
+        return lhs.td == rhs.td and lhs.latestB == rhs.latestB;
     }
     inline friend bool operator!=(const contract& lhs, const contract& rhs)
     {
@@ -77,10 +77,10 @@ struct contract
     double plannedInvest() const { return euroFromCt( td.getValue(qsl("Betrag")).toInt());}
     void setInterestModel( const interestModel b =interestModel::reinvest) { td.setValue(qsl("thesaurierend"), toInt(b));}
     interestModel iModel() const { return fromInt(td.getValue(qsl("thesaurierend")).toInt());}
-    void setNoticePeriod(const int m) { td.setValue(qsl("Kfrist"), m); if( -1 != m) setPlannedEndDate( EndOfTheFuckingWorld);}
+    void setNoticePeriod(const int m) { td.setValue(qsl("Kfrist"), m); if( -1 not_eq m) setPlannedEndDate( EndOfTheFuckingWorld);}
     int noticePeriod() const { return td.getValue(qsl("Kfrist")).toInt();}
     bool hasEndDate() const {return -1 == td.getValue(qsl("Kfrist"));}
-    void setPlannedEndDate( const QDate& d) { td.setValue(qsl("LaufzeitEnde"), d); if( d != EndOfTheFuckingWorld) setNoticePeriod(-1);}
+    void setPlannedEndDate( const QDate& d) { td.setValue(qsl("LaufzeitEnde"), d); if( d not_eq EndOfTheFuckingWorld) setNoticePeriod(-1);}
     QDate plannedEndDate() const { return td.getValue(qsl("LaufzeitEnde")).toDate();}
     void setConclusionDate(const QDate& d) { td.setValue(qsl("Vertragsdatum"), d);}
     QDate conclusionDate() const { return td.getValue(qsl("Vertragsdatum")).toDate();}

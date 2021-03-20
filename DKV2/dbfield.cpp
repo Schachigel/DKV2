@@ -1,3 +1,5 @@
+#include <iso646.h>
+
 #include "helper.h"
 #include "helpersql.h"
 
@@ -19,8 +21,8 @@
 bool dbfield::operator ==(const dbfield &b) const
 {
     return ((tableName() == b.tableName())
-            && (name() == b.name())
-            && (type() == b.type()));
+            and (name() == b.name())
+            and (type() == b.type()));
 }
 
 QString dbfield::get_CreateSqlSnippet() const
@@ -28,7 +30,7 @@ QString dbfield::get_CreateSqlSnippet() const
     return name()
             + qsl(" ") + dbCreateTable_type(type())
             + (primaryKey ? qsl(" PRIMARY KEY") : qsl(""))
-            + (!typeDetails().isEmpty() ? qsl(" ") + typeDetails() : qsl(""))
+            + ( not typeDetails().isEmpty() ? qsl(" ") + typeDetails() : qsl(""))
             + (isAutoValue()? qsl(" AUTOINCREMENT") : qsl(""))
             + ((requiredStatus()==Required)? qsl(" NOT NULL") : qsl(""))
             + ((unique ? qsl(" UNIQUE") : qsl("") ))
@@ -48,7 +50,7 @@ QString dbForeignKey::get_CreateSqlSnippet()
 QString dbForeignKey::get_SelectSqpSnippet()
 {
     QString sql;
-    if( ! table.isEmpty()) sql = table + ".";
+    if( not table.isEmpty()) sql = table + ".";
     sql += field + "=" + refTable + "." + refField;
     return sql;
 }

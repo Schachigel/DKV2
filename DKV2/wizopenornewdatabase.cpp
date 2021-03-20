@@ -119,8 +119,8 @@ bool wpNewDb::validatePage()
     QString path =folder +qsl("/") +file;
     bool allGood =false;
     do {
-        if( ! fiFolder.isDir()) break;
-        if( ! fiFolder.isWritable()) break;
+        if( not fiFolder.isDir()) break;
+        if( not fiFolder.isWritable()) break;
         if( QFile(path).exists()) break;
         allGood =true;
     }

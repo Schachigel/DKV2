@@ -22,7 +22,7 @@ QString createPreConversionCopy( const QString& file, const QString& fixedTempFi
         return newFile;
     else {
         qCritical() << "file rename failed " << f.error() << ": " << f.errorString();
-        Q_ASSERT(!"Faild to rename temporary file");
+        Q_ASSERT( not "Faild to rename temporary file");
         return QString();
     }
 }
@@ -48,15 +48,15 @@ bool copy_TableContent_byRecord( const QString& srcTbl, const QString& dstTbl, c
     QString copyableFields;
     QSqlRecord rec =db.record(srcTbl);
     for( int i =0; i < rec.count(); i++) {
-        if( ! copyableFields.isEmpty()) copyableFields +=qsl(", ");
+        if( not copyableFields.isEmpty()) copyableFields +=qsl(", ");
         copyableFields += rec.field(i).name();
     }
     QSqlQuery q (db);
-    if( ! q.prepare(qsl("SELECT * FROM ") + srcTbl)) {
+    if( not q.prepare(qsl("SELECT * FROM ") + srcTbl)) {
         qCritical() << "Could not prepare query to enumerate table";
         return false;
     }
-    if( ! q.exec()) {
+    if( not q.exec()) {
         qCritical() << "Could not enumerate source table";
         return false;
     }
@@ -74,7 +74,7 @@ bool copycreate_views(const QSqlDatabase& db, const QString& alias)
 {   LOG_CALL;
      QSqlQuery q(db);
      QString sql {qsl("SELECT name, sql FROM %1.sqlite_master WHERE type='view'").arg(alias)};
-     if( ! q.exec(sql)) {
+     if( not q.exec(sql)) {
          qCritical() << "query execute failed";
          return false;
      }
@@ -83,7 +83,7 @@ bool copycreate_views(const QSqlDatabase& db, const QString& alias)
          QString viewSql  = q.record().value(qsl("sql")).toString(); //.replace(qsl("\n"), qsl(" "));
 
          //sql =sql.replace(name , alias + qsl(".") +name);
-         if( ! executeSql_wNoRecords(viewSql, db)) {
+         if( not executeSql_wNoRecords(viewSql, db)) {
              return false;
          }
      }
@@ -99,13 +99,13 @@ bool copy_database( const QString& sourceFName,
 {
     qInfo() << "copy_database(" << sourceFName << ", " << targetFName << ")";
 
-    if( ! createFileWithDatabaseStructure(targetFName))
+    if( not createFileWithDatabaseStructure(targetFName))
         return false;
 
     autoDb autoTarget(targetFName, qsl("copyDbTarget"));
     autoRollbackTransaction transaction(autoTarget.db.connectionName());
     autoDetachDb ad(qsl("SourceDb"), autoTarget.conName());
-    if (!ad.attachDb(sourceFName))
+    if ( not ad.attachDb(sourceFName))
         return false;
 
     switchForeignKeyHandling(autoTarget.db, false);
@@ -113,10 +113,10 @@ bool copy_database( const QString& sourceFName,
 
     QVector<dbtable> tables = targetDbStructure.getTables();
     for (auto& table : qAsConst(tables)) {
-        if (!replace_TableContent(ad.alias() + qsl(".") + table.Name(), table.Name(), autoTarget.db))
+        if ( not replace_TableContent(ad.alias() + qsl(".") + table.Name(), table.Name(), autoTarget.db))
             return false;
     }
-    if (!replace_TableContent(ad.alias() +qsl(".sqlite_sequence"), qsl("sqlite_sequence"), autoTarget.db))
+    if ( not replace_TableContent(ad.alias() +qsl(".sqlite_sequence"), qsl("sqlite_sequence"), autoTarget.db))
         return false;
     if( !copycreate_views(autoTarget.db, ad.alias()))
         return false;
@@ -147,7 +147,7 @@ bool copy_mangledCreditors(const QSqlDatabase& db =QSqlDatabase::database())
     bool success = true;
     int recCount = 0;
     QSqlQuery q(db); // default database connection -> active database
-    if( ! q.exec("SELECT * FROM Kreditoren")) {
+    if( not q.exec("SELECT * FROM Kreditoren")) {
         qInfo() << "no data returned from creditor table";
         return false;
     }
@@ -180,7 +180,7 @@ bool copy_database_mangled(const QString& targetfn, const QString& source)
     dbCloser closer(qsl("copy_db"));
     QSqlDatabase db =QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     db.setDatabaseName(source);
-    if( ! db.open()) {
+    if( not db.open()) {
         qCritical() << "create_DB_copy could not open " << source;
         return false;
     } else {
@@ -194,28 +194,28 @@ bool copy_database_mangled(const QString& targetfn, const QSqlDatabase& dbToBeCo
     QString alias{qsl("targetDb")};
     autoRollbackTransaction trans( dbToBeCopied.connectionName());
     autoDetachDb ad( alias, dbToBeCopied.connectionName());
-    if( ! createFileWithDatabaseStructure (targetfn))
+    if( not createFileWithDatabaseStructure (targetfn))
         return false;
     // Attach the new file to the current connection
-    if( ! ad.attachDb(targetfn))
+    if( not ad.attachDb(targetfn))
         return false;
 
     QVector<dbtable> tables = dkdbstructur.getTables();
     for( auto& table : qAsConst(tables)) {
         if( table.Name() == qsl("Kreditoren")) {
-            if( ! copy_mangledCreditors( dbToBeCopied))
+            if( not copy_mangledCreditors( dbToBeCopied))
                 return false;
         }
         else if (table.Name() == qsl("BriefElemente")) {
-            if( ! replace_TableContent(table.Name(), alias +qsl(".") +table.Name(), dbToBeCopied))
+            if( not replace_TableContent(table.Name(), alias +qsl(".") +table.Name(), dbToBeCopied))
                 return false;
         }
         else
-            if( ! copy_TableContent(table.Name(), alias +qsl(".") +table.Name(), dbToBeCopied))
+            if( not copy_TableContent(table.Name(), alias +qsl(".") +table.Name(), dbToBeCopied))
                 return false;
     }
     // copy the values from sqlite_sequence, so that autoinc works the same in both databases
-    if( ! replace_TableContent(qsl("sqlite_sequence"), alias +qsl(".sqlite_sequence")))
+    if( not replace_TableContent(qsl("sqlite_sequence"), alias +qsl(".sqlite_sequence")))
         return false;
     // force views creation on next startup
     executeSql_wNoRecords(qsl("DELETE FROM %1.meta WHERE Name='dkv2.exe.Version'").arg(alias), dbToBeCopied);
@@ -236,7 +236,7 @@ QString convert_database_inplace( const QString& targetFilename, const QString& 
     }
     const QString& sourceFileName =backupFileName;
     // create a new db file with the current database structure
-    if( ! createNewDatabaseFileWDefaultContent(targetFilename, dbs)) {
+    if( not createNewDatabaseFileWDefaultContent(targetFilename, dbs)) {
         qCritical() << "db creation faild for database conversion -> abort";
         return QString();
     }
@@ -268,23 +268,23 @@ QString convert_database_inplace( const QString& targetFilename, const QString& 
             qCritical() << "destianation Table misses fields " << table.Name();
             return QString();
         } else if( destFields == srcFields) {
-            if( ! copy_TableContent(table.Name(), autodetatch.alias() +"."+table.Name(), db)) {
+            if( not copy_TableContent(table.Name(), autodetatch.alias() +"."+table.Name(), db)) {
                 qCritical() << "could not copy table while converting " << table.Name();
                 return QString();
             }
         } else if( destFields > srcFields) {
-            if( ! copy_TableContent_byRecord(table.Name(), autodetatch.alias() +"."+table.Name(), db)) {
+            if( not copy_TableContent_byRecord(table.Name(), autodetatch.alias() +"."+table.Name(), db)) {
                 qCritical() << "could not copy table by record while converting " << table.Name();
                 return QString();
             }
         }
     }
     // now we need to update sqlite_sequence, so that autoincrement index fields will be initialized correctly
-    if( ! replace_TableContent(qsl("sqlite_sequence"), autodetatch.alias() +qsl(".sqlite_sequence"), db)) {
+    if( not replace_TableContent(qsl("sqlite_sequence"), autodetatch.alias() +qsl(".sqlite_sequence"), db)) {
             qCritical() << "could not update sqlite_sequence table";
             return QString();
     }
-    dbConfig::writeVersion(db, autodetatch.alias());
+    dbConfig::write_DBVersion(db, autodetatch.alias());
     transact.commit();
     return backupFileName;
 }

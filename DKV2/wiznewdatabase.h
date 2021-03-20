@@ -75,6 +75,13 @@ struct wpContractMinValues_Page : public QWizardPage
     wpContractMinValues_Page(QWidget* p=nullptr);
     void cleanupPage() override  {};
     void initializePage() override;
+    bool validatePage() override;
+private:
+    QLineEdit* leMa =nullptr;
+    QLineEdit* leMc =nullptr;
+    QLineEdit* leMi =nullptr;
+    QLineEdit* leMaxINbr =nullptr;
+    QLineEdit* leMaxISum =nullptr;
 };
 /* new db summary Page */
 class wpNewDatabase_SummaryPage : public QWizardPage{

@@ -1,6 +1,8 @@
 #ifndef DBFIELD_H
 #define DBFIELD_H
 
+#include <iso646.h>
+
 #include <QSqlField>
 #include <QString>
 #include <QStringLiteral>
@@ -20,7 +22,7 @@ public: // types
      :  QSqlField(name), SqlTypeDetails(td)
     {
         Q_ASSERT(isSupportedType(type));
-        Q_ASSERT( ! name.contains(qsl("-")));
+        Q_ASSERT( not name.contains(qsl("-")));
         outputType = type;
         setType(type);
         SqlTypeDetails = SqlTypeDetails.toUpper();

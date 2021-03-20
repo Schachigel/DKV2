@@ -1,3 +1,5 @@
+#include <iso646.h>
+
 #include <QLabel>
 #include <QDateEdit>
 #include <QLineEdit>
@@ -63,7 +65,7 @@ bool wpActiateContract_AmountPage::validatePage()
     if( amount < dbConfig::readValue(MIN_AMOUNT).toDouble())
         return false;
     setField(qsl("amount"), r2(amount));
-    if( wiz->expectedAmount != amount) {
+    if( wiz->expectedAmount not_eq amount) {
         qInfo() << "activation with different amount";
     }
     return true;
@@ -88,7 +90,7 @@ void wpActivateContract_SummaryPage::initializePage()
     double amount = field(qsl("amount")).toDouble();
     QLocale locale;
     subt = subt.arg(wiz->label, wiz->creditorName, locale.toCurrencyString(amount), field(qsl("date")).toDate().toString(qsl("dd.MM.yyyy")));
-    if( amount != wiz->expectedAmount)
+    if( amount not_eq wiz->expectedAmount)
         subt += qsl(" <b><small>Der Überweisungsbetrag stimmt nicht mit dem Kreditbetrag überein.</small></b>");
     setSubTitle(subt);
 }

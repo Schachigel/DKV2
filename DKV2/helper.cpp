@@ -23,11 +23,11 @@ void logger(QtMsgType type, const QMessageLogContext &, const QString &msg)
 #endif
 {
     // secure this code with a critical section in case we start logging from multiple threads
-    if(!outFile_p)
+    if( not outFile_p)
     {
         outFile_p = new QFile(logFilePath());
         // this file will only be closed by the system at process end
-        if (!outFile_p->open(QIODevice::WriteOnly | QIODevice::Append))
+        if ( not outFile_p->open(QIODevice::WriteOnly | QIODevice::Append))
             abort();
     }
 
@@ -35,7 +35,7 @@ void logger(QtMsgType type, const QMessageLogContext &, const QString &msg)
 
     QString endlCorrectedMsg (msg);
     int lfCount = 0;
-    while( endlCorrectedMsg.endsWith(QChar::LineFeed) || endlCorrectedMsg.endsWith(QChar::CarriageReturn) )
+    while( endlCorrectedMsg.endsWith(QChar::LineFeed) or endlCorrectedMsg.endsWith(QChar::CarriageReturn) )
         {lfCount++; endlCorrectedMsg.chop(1);}
 
 //    static QMutex mutex;

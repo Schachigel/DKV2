@@ -26,12 +26,12 @@ bool checkSchema_ConvertIfneeded(const QString& origDbFile)
     case lowVersion:
     {
         qInfo() << "lower version -> converting";
-        if( QMessageBox::Yes != QMessageBox::question(nullptr, qsl("Achtung"), qsl("Das Format der Datenbank ist veraltet. Soll die Datenbank konvertiert werden?"))) {
+        if( QMessageBox::Yes not_eq QMessageBox::question(nullptr, qsl("Achtung"), qsl("Das Format der Datenbank ist veraltet. Soll die Datenbank konvertiert werden?"))) {
                 qInfo() << "conversion rejected by user";
                 return false;
         }
         QString backup =convert_database_inplace(origDbFile);
-        if ( ! backup.isEmpty()) {
+        if ( not backup.isEmpty()) {
             QMessageBox::information(nullptr, qsl("Erfolgsmeldung"), qsl("Die Konvertierung ware erfolgreich. Eine Kopie der ursprünglichen Datei liegt unter \n") +backup);
             return true;
         }
@@ -65,11 +65,11 @@ void activateContract(qlonglong cid)
     wiz.setField(qsl("amount"), v.plannedInvest());
     wiz.setField(qsl("date"), v.conclusionDate().addDays(1));
     wiz.exec();
-    if( ! wiz.field(qsl("confirmed")).toBool()) {
+    if( not wiz.field(qsl("confirmed")).toBool()) {
         qInfo() << "contract activation cancled by the user";
         return;
     }
-    if( ! v.activate(wiz.field(qsl("date")).toDate(), wiz.field(qsl("amount")).toDouble())) {
+    if( not v.activate(wiz.field(qsl("date")).toDate(), wiz.field(qsl("amount")).toDouble())) {
         qCritical() << "activation failed";
         Q_ASSERT(true);
     }
@@ -78,7 +78,7 @@ void activateContract(qlonglong cid)
 void changeContractValue(qlonglong cid)
 {   LOG_CALL;
     contract con(cid);
-    if( ! con.isActive()) {
+    if( not con.isActive()) {
         qCritical() << "tried to changeContractValue of an inactive contract";
         Q_ASSERT(true);
         return;
@@ -126,10 +126,10 @@ void terminateContract_Final( contract& c)
 {   LOG_CALL;
     wizTerminateContract wiz(getMainWindow(), c);
     wiz.exec();
-    if( ! wiz.field(qsl("confirm")).toBool())
+    if( not wiz.field(qsl("confirm")).toBool())
         return;
     double interest =0., finalValue =0.;
-    if( ! c.finalize(false, wiz.field(qsl("date")).toDate(), interest, finalValue)) {
+    if( not c.finalize(false, wiz.field(qsl("date")).toDate(), interest, finalValue)) {
         qDebug() << "failed to terminate contract";
     }
     return;
@@ -141,7 +141,7 @@ void cancelContract( contract& c)
     wiz.creditorName = executeSingleValueSql(qsl("Vorname || ' ' || Nachname"), qsl("Kreditoren"), qsl("id=") + QString::number(c.creditorId())).toString();
     wiz.contractualEnd =QDate::currentDate().addMonths(c.noticePeriod());
     wiz.exec();
-    if( ! wiz.field(qsl("confirmed")).toBool()) {
+    if( not wiz.field(qsl("confirmed")).toBool()) {
         qInfo() << "cancel wizard canceled by user";
         return;
     }
@@ -151,7 +151,7 @@ void cancelContract( contract& c)
 void annualSettlement()
 {   LOG_CALL;
     QDate bookingDate=bookings::dateOfnextSettlement();
-    if( ! bookingDate.isValid() || bookingDate.isNull()) {
+    if( not bookingDate.isValid() or bookingDate.isNull()) {
         QMessageBox::information(nullptr, qsl("Fehler"),
             qsl("Ein Jahr für die nächste Zinsberechnung konnte nicht gefunden werden."
             "Es gibt keine Verträge für die eine Abrechnung gemacht werden kann."));
@@ -161,11 +161,11 @@ void annualSettlement()
     wizAnnualSettlement wiz(getMainWindow());
     wiz.setField(qsl("year"), yearOfSettlement);
     wiz.exec();
-    if( ! wiz.field(qsl("confirm")).toBool())
+    if( not wiz.field(qsl("confirm")).toBool())
         return;
     QSqlQuery q;
     q.setForwardOnly(true);
-    if( ! q.exec(qsl("SELECT id FROM Vertraege"))) {
+    if( not q.exec(qsl("SELECT id FROM Vertraege"))) {
         qCritical() << "failed to execute query " << q.lastError() << Qt::endl << q.lastQuery();
         return;
     }
@@ -175,14 +175,14 @@ void annualSettlement()
     while(q.next()) {
         contract c(q.value(qsl("id")).toLongLong());
         QDate startDate = c.latestBooking().date;
-        if(0 != c.annualSettlement(yearOfSettlement)) {
+        if(0 not_eq c.annualSettlement(yearOfSettlement)) {
             changedContracts.push_back(c);
             asBookings.push_back(c.latestBooking());
             startOfInterrestCalculation.push_back(startDate);
         }
     }
 
-    if( ! wiz.field(qsl("printCsv")).toBool())
+    if( not wiz.field(qsl("printCsv")).toBool())
         return;
     csvwriter csv(qsl(";"));
     csv.addColumns(contract::booking_csv_header());
@@ -254,7 +254,7 @@ void createInvestment()
 {
     wizNewInvestment wiz;
     wiz.exec();
-    if( ! wiz.field(pnKorrekt).toBool()) {
+    if( not wiz.field(pnKorrekt).toBool()) {
         qInfo() << "investment wiz was canceled";
         return;
     }

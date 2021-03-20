@@ -9,6 +9,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QMessageBox>
+#include <QInputDialog>
 #include <QSortFilterProxyModel>
 #include <QSqlRelationalTableModel>
 #include <QPdfWriter>
@@ -59,14 +60,14 @@ QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
     // change font color for number of contracts (3,5) and sum of contract (4,6) columns
     if (role == Qt::ForegroundRole) {
         int col =i.column();
-        if( col == 4 || col == 6) {
+        if( col == 4 or col == 6) {
             int iMax =dbConfig::readValue(MAX_INVESTMENT_NBR).toInt();
             int nbr =i.data().toInt();
             if(nbr >= iMax){
                 qInfo() << "nbr: " << nbr << " row: " << col;
                 return QColor(Qt::red);
             }
-        } else if (col == 5 || col == 7) {
+        } else if (col == 5 or col == 7) {
             double dMax =dbConfig::readValue(MAX_INVESTMENT_SUM).toDouble();
             double sum =i.data().toDouble();
             if( sum >= dMax){
@@ -125,21 +126,21 @@ QString MainWindow::findValidDatabaseToUse()
 QString MainWindow::askUserForNextDb()
 {   LOG_CALL;
     wizOpenOrNewDb wizOpenOrNew (getMainWindow());
-    if( QDialog::Accepted != wizOpenOrNew.exec()) {
+    if( QDialog::Accepted not_eq wizOpenOrNew.exec()) {
         qInfo() << "wizard OpenOrNew was canceled by the user";
         return QString();
     }
     QString selectedDbPath {absoluteCanonicalPath(wizOpenOrNew.selectedFile)};
     { // busycursor scope
         busycursor b;
-        if( ! wizOpenOrNew.field(qsl("createNewDb")).toBool()) {
+        if( not wizOpenOrNew.field(qsl("createNewDb")).toBool()) {
             // the UI does not allow an empty string here
             qInfo() << "existing db " << selectedDbPath << "was selected";
             return selectedDbPath;
         }
         // a new db should be created -> ask project details
         // closeAllDatabaseConnections();
-        if( ! createNewDatabaseFileWDefaultContent(selectedDbPath)) {
+        if( not createNewDatabaseFileWDefaultContent(selectedDbPath)) {
             QMessageBox::critical(this, "Fehler", "Die neue Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen");
             return QString();
         }
@@ -215,7 +216,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::showDbInStatusbar( QString filename)
 {   LOG_CALL_W (filename);
-    Q_ASSERT( ! filename.isEmpty());
+    Q_ASSERT( not filename.isEmpty());
     ui->statusLabel->setText( filename);
 }
 
@@ -340,7 +341,7 @@ void MainWindow::on_action_menu_database_copy_triggered()
         return;
 
     busycursor b;
-    if( ! copy_database(QSqlDatabase::database().databaseName(), dbfile)) {
+    if( not copy_database(QSqlDatabase::database().databaseName(), dbfile)) {
         QMessageBox::information(this, qsl("Fehler beim Kopieren"), qsl("Die Datenbankkopie konnte nicht angelegt werden. "
                                                                "Weitere Info befindet sich in der LOG Datei"));
         qCritical() << "creating copy failed";
@@ -386,7 +387,7 @@ void MainWindow::on_action_menu_creditors_listview_triggered()
 {   LOG_CALL;
     busycursor b;
     prepare_CreditorsListPage();
-    if( ! ui->CreditorsTableView->currentIndex().isValid())
+    if( not ui->CreditorsTableView->currentIndex().isValid())
         ui->CreditorsTableView->selectRow(0);
 
     ui->stackedWidget->setCurrentIndex(creditorsListPageIndex);
@@ -467,7 +468,7 @@ void MainWindow::on_action_cmenu_delete_creaditor_triggered()
     QString msg( qsl("Soll der Kreditgeber %1 %2 (id %3) gelöscht werden?"));
     msg =msg.arg(c.getValue(qsl("Vorname")).toString(), c.getValue(qsl("Nachname")).toString(), QString::number(index));
 
-    if( QMessageBox::Yes != QMessageBox::question(this, qsl("Kreditgeber löschen?"), msg))
+    if( QMessageBox::Yes not_eq QMessageBox::question(this, qsl("Kreditgeber löschen?"), msg))
         return;
     busycursor b;
 
@@ -525,7 +526,7 @@ QString filterFromFilterphrase(QString fph)
     {
         bool conversionOK = true;
         qlonglong contractId = fph.rightRef(fph.length()-9).toInt(&conversionOK);
-        if( ! conversionOK)
+        if( not conversionOK)
             return "";
         else
             return qsl("KreditorId=") + QString::number(contractId);
@@ -590,7 +591,7 @@ void MainWindow::prepare_deleted_contracts_list_view()
                      SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
                      SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
 
-    if( ! model->rowCount()) {
+    if( not model->rowCount()) {
         ui->bookingsTableView->setModel(new QSqlTableModel(this));
     } else
         tv->setCurrentIndex(model->index(0, 1));
@@ -659,7 +660,7 @@ void MainWindow::prepare_valid_contraccts_list_view()
                      SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
                      SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
 
-    if( ! model->rowCount()) {
+    if( not model->rowCount()) {
         ui->bookingsTableView->setModel(new QSqlTableModel(this));
     } else
         tv->setCurrentIndex(model->index(0, 1));
@@ -796,7 +797,7 @@ void MainWindow::prepare_investmentsListView()
 {
     InvestmentsTableModel* model = new InvestmentsTableModel(this);
     model->setTable(qsl("vInvestmentsOverview"));
-    model->setSort(0, Qt::SortOrder::DescendingOrder);
+    //model->setSort(0, Qt::SortOrder::DescendingOrder);
 
     QTableView* tv =ui->InvestmentsTableView;
     tv->setModel(model);
@@ -812,7 +813,7 @@ void MainWindow::prepare_investmentsListView()
     model->setHeaderData(6, Qt::Horizontal, qsl("Anzahl\n(aktive)"), Qt::DisplayRole);
     tv->setItemDelegateForColumn(7, new CurrencyFormatter);
     model->setHeaderData(7, Qt::Horizontal, qsl("Summe\n(aktive)"), Qt::DisplayRole);
-    tv->hideColumn(8);
+    tv->hideColumn(9);
     tv->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     model->setEditStrategy(QSqlTableModel::OnFieldChange);
@@ -846,6 +847,20 @@ void MainWindow::on_btnNewInvestment_clicked()
     m->select();
     ui->InvestmentsTableView->resizeColumnsToContents();
 }
+
+void MainWindow::on_InvestmentsTableView_customContextMenuRequested(const QPoint &pos)
+{   LOG_CALL;
+    QTableView* tv =ui->InvestmentsTableView;
+    QModelIndex index =tv->indexAt(pos);
+
+    QMenu cmenu( qsl("investmentsContextMenu"), this);
+    ui->actionInvestmentLoeschen->setData(index);
+    cmenu.addAction(ui->actionInvestmentLoeschen);
+    cmenu.addAction(ui->actionInvestmentSchliessen);
+    cmenu.addAction(ui->actionTyp_Bezeichnung_aendern);
+    cmenu.exec(ui->InvestmentsTableView->mapToGlobal(pos));
+}
+
 void MainWindow::on_actionInvestmentLoeschen_triggered()
 {
     QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
@@ -872,15 +887,53 @@ void MainWindow::on_actionInvestmentLoeschen_triggered()
     }
 }
 
-void MainWindow::on_InvestmentsTableView_customContextMenuRequested(const QPoint &pos)
-{   LOG_CALL;
-    QTableView* tv =ui->InvestmentsTableView;
-    QModelIndex index =tv->indexAt(pos);
+void MainWindow::on_actionInvestmentSchliessen_triggered()
+{
+    QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
+    QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
+    QSqlRecord rec =tm->record(index.row());
+    QDate dAnfang =rec.value(qsl("Anfang")).toDate();
+    QString anfang =dAnfang.toString(qsl("yyyy.MM.dd"));
+    QDate dEnde =rec.value(qsl("Ende")).toDate();
+    QString ende =dEnde.toString(qsl("yyyy.MM.dd"));
+    int zinssatz =rec.value(qsl("ZSatz")).toInt();
+    QString typ =rec.value(qsl("Typ")).toString();
+    QString msg{qsl("Soll die Anlage mit <b>%1%</b>, vom %2 zum %3 mit dem Typ <br>  > %4 <  <br> geschlossen werden?")};
+    msg =msg.arg(QString::number(zinssatz/100., 'f', 2), anfang, ende, typ);
 
-    QMenu cmenu( qsl("investmentsContextMenu"), this);
-    ui->actionInvestmentLoeschen->setData(index);
-    cmenu.addAction(ui->actionInvestmentLoeschen);
-    cmenu.exec(ui->InvestmentsTableView->mapToGlobal(pos));
+    if( QMessageBox::Yes == QMessageBox::question(this, qsl("Schließen"), msg)) {
+        // delete the entry, update the view
+        if( closeInvestment(zinssatz, dAnfang, dEnde, typ)) {
+            qInfo() << "removed investment row " << index.row();
+            //tm->submitAll();
+            tm->select();
+        } else {
+            qWarning() << tm->lastError();
+        }
+    }
+
+}
+
+void MainWindow::on_actionTyp_Bezeichnung_aendern_triggered()
+{
+    QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
+    QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
+    QSqlRecord rec =tm->record(index.row());
+    QString typ =rec.value(qsl("Typ")).toString();
+
+    QInputDialog id(this);
+    QFont f =id.font(); f.setPointSize(10); id.setFont(f);
+    id.setInputMode(QInputDialog::InputMode::TextInput);
+    id.setWindowTitle(qsl("Geldanlagen Bezeichner"));
+    id.setLabelText(qsl("Bezeichner für den Anlage Typ"));
+    id.setTextValue(typ);
+    int idOk =id.exec();
+    QString txt = id.textValue().trimmed();
+    if( not idOk or txt.isEmpty())
+        return;
+    QString sql(qsl("UPDATE Geldanlagen SET Typ =? WHERE rowid =%1").arg(rec.value(qsl("rowid")).toString()));
+    if( executeSql_wNoRecords(sql, {QVariant(txt)}))
+        tm->select();
 }
 
 // statistics
@@ -986,7 +1039,7 @@ void MainWindow::on_actionTEST_triggered()
     // input nec. to display the dialog: a Vector of bookings
     toBePrinted.clear();
     toBePrinted = bookings::getAnnualSettelments(2019);
-    if (!toBePrinted.size()) {
+    if ( not toBePrinted.size()) {
         qWarning() << "nothing to be printed";
         return;
     }
@@ -1013,8 +1066,8 @@ QString letterName(booking b)
 void MainWindow::prepare_printPreview()
 {
     LOG_CALL;
-    ui->btnPrevBooking->setEnabled(currentBooking != toBePrinted.cbegin());
-    ui->btnNextBooking->setEnabled((currentBooking +1) != toBePrinted.cend());
+    ui->btnPrevBooking->setEnabled(currentBooking not_eq toBePrinted.cbegin());
+    ui->btnNextBooking->setEnabled((currentBooking +1) not_eq toBePrinted.cend());
 
     ui->lblLetter->setText (letterName(*currentBooking));
 

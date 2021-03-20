@@ -19,7 +19,7 @@ dbstructure dbstructure::appendTable(const dbtable& t)
     for (auto& table: qAsConst(Tables)) {
         if( table.Name() == t.Name()) {
             qCritical() << "Versuch eine Tabelle wiederholt zur Datenbank hinzuzufügen";
-            Q_ASSERT(!bool("redundent table in structure"));
+            Q_ASSERT( not bool("redundent table in structure"));
         }
     }
     Tables.append(t);
@@ -34,7 +34,7 @@ dbtable dbstructure::operator[](const QString& name) const
             return table;
     }
     qCritical() << "trying to access unknown table " << name;
-    Q_ASSERT(!bool("access to unknown database table"));
+    Q_ASSERT( not bool("access to unknown database table"));
     return dbtable();
 }
 
@@ -48,7 +48,7 @@ bool dbstructure::createDb(const QSqlDatabase& db) const
 {   LOG_CALL;
     QSqlQuery enableRefInt("PRAGMA foreign_keys = ON", db);
     for(dbtable& table :getTables()) {
-        if(!ensureTable(table, db)) {
+        if( not ensureTable(table, db)) {
             qCritical() << "could not create table " << table.name;
             return false;
         }
@@ -88,7 +88,7 @@ void init_DKDBStruct()
 // db creation for newDb and copy (w & w/o de-personalisation)
 bool createFileWithDatabaseStructure (const QString& targetfn, const dbstructure& dbs/* =dkdbstructu*/)
 {   LOG_CALL_W(targetfn);
-    if( ! moveToBackup(targetfn)) {
+    if( not moveToBackup(targetfn)) {
         return false;
     }
     dbCloser closer(qsl("createDbFile"));
@@ -106,11 +106,11 @@ bool createFileWithDatabaseStructure (const QString& targetfn, const dbstructure
 // database creation
 bool createNewDatabaseFileWDefaultContent(const QString& filename, const dbstructure& dbs/* =dkdbstructu*/)
 {   LOG_CALL_W(qsl("filename: ") + filename);
-    Q_ASSERT(!filename.isEmpty());
+    Q_ASSERT( not filename.isEmpty());
     dbgTimer timer( qsl("Db Creation Time"));
 
     // create file an schema
-    if( ! createFileWithDatabaseStructure (filename, dbs)) {
+    if( not createFileWithDatabaseStructure (filename, dbs)) {
         return false;
     }
     // create content

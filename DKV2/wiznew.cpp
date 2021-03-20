@@ -161,7 +161,7 @@ wpNewCreditorAddress::wpNewCreditorAddress(QWidget* p) : QWizardPage(p)
 void wpNewCreditorAddress::initializePage()
 {
     //    wizNew* wiz =qobject_cast<wizNew*> (wizard());
-    //    if( ! wiz->inUpdateMode()) {
+    //    if( not wiz->inUpdateMode()) {
     //        setField(pnFName, QString());
     //        setField(pnLName, QString());
     //        setField(pnStreet, QString());
@@ -232,7 +232,7 @@ bool wpEmail::validatePage()
 {   LOG_CALL;
     QString email =field(pnEMail).toString().trimmed().toLower();
     setField(pnEMail, email);
-    if( ! email.isEmpty())
+    if( not email.isEmpty())
     {
         QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b",
                               QRegularExpression::CaseInsensitiveOption);
@@ -280,9 +280,9 @@ bool wpBankAccount::validatePage()
 {   LOG_CALL;
     QString formatedIban =field(pnIban).toString().trimmed();
     QString iban =formatedIban.remove(' ');
-    if( ! iban.isEmpty()) {
+    if( not iban.isEmpty()) {
         IbanValidator iv; int pos =0;
-        if( iv.validate(iban, pos) != IbanValidator::State::Acceptable) {
+        if( iv.validate(iban, pos) not_eq IbanValidator::State::Acceptable) {
             QMessageBox::information(this, "Fehler", "Die eingegebene Zeichenfolge ist keine gültige IBAN");
             return false;
         }
@@ -338,7 +338,7 @@ void wpConfirmCreditor::initializePage()
     QString city   =field(pnCity).toString().isEmpty()      ? qsl("(keine Stadt)")   : field(pnCity).toString();
     QString country =field(pnCountry).toString();
     QString xxx = pcode +qsl(" ") +city;
-    if(!country.isEmpty())
+    if( not country.isEmpty())
         xxx += qsl(" (") +country +qsl(")");
     QString email  =field(pnEMail).toString().isEmpty()     ? qsl("(keine E-Mail Adresse)") :field(pnEMail).toString();
     QString comment=field(pnComment).toString().isEmpty()   ? qsl("(keine Anmerkung)"): field(pnComment).toString();
@@ -402,7 +402,7 @@ int wpConfirmCreditor::nextId() const
 void wpConfirmCreditor::onConfirmCreateContract_toggled(int state)
 {   LOG_CALL;
     qInfo() << "onConfirmCreateContract..." << state;
-    setFinalPage( ! state);
+    setFinalPage( not state);
 }
 
 /*
@@ -471,12 +471,12 @@ bool wpLableAndAmount::validatePage()
     const QString label =field(pnLabel).toString();
     if( label.isEmpty())
         msg =qsl("Die Vertragskennung darf nicht leer sein");
-    else if( ! isValidNewContractLabel(label))
+    else if( not isValidNewContractLabel(label))
         msg =qsl("Die Vertragskennung existiert bereits für einen laufenden oder beendeten Vertrag und darf nicht erneut vergeben werden");
     else if( field(pnAmount).toInt() < minContractValue)
         msg =qsl("Der Wert des Vertrags muss größer sein als der konfigurierte Minimalwert "
                  "eines Vertrages von ") +dbConfig::readValue(MIN_AMOUNT).toString() +qsl(" Euro");
-    if( ! msg.isEmpty()) {
+    if( not msg.isEmpty()) {
         QMessageBox::critical(this, qsl("Fehler"), msg);
         return false;
     }
@@ -756,7 +756,7 @@ const QString pnConfirmContract {qsl("confirmContract")};
 bool wpConfirmContract::saveContract()
 {
     wizNew* wiz =qobject_cast<wizNew*>(wizard());
-    if( ! wiz)  return false;
+    if( not wiz)  return false;
     if( wiz->field(pnConfirmContract).toBool()) {
         contract c;
         c.setCreditorId(wiz->creditorId);

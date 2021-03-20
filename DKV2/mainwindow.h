@@ -146,6 +146,10 @@ private slots:
 
     void on_actionInvestmentLoeschen_triggered();
 
+    void on_actionInvestmentSchliessen_triggered();
+
+    void on_actionTyp_Bezeichnung_aendern_triggered();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();

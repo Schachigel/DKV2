@@ -1,6 +1,8 @@
 #ifndef APPCONFIG_H
 #define APPCONFIG_H
 
+#include <iso646.h>
+
 #include <QString>
 #include <QStringLiteral>
 #include <QVariant>
@@ -66,8 +68,8 @@ enum projectConfiguration {
 struct dbConfig
 {
     dbConfig() =delete;
-    static QVariant readVersion(const QSqlDatabase& db =QSqlDatabase::database());
-    static void writeVersion(const QSqlDatabase& db =QSqlDatabase::database(), const QString& tblAlias =QString());
+    static QVariant read_DBVersion(const QSqlDatabase& db =QSqlDatabase::database());
+    static void write_DBVersion(const QSqlDatabase& db =QSqlDatabase::database(), const QString& tblAlias =QString());
     static QVariant readValue(const projectConfiguration& pc, const QSqlDatabase& db =QSqlDatabase::database());
     static void     writeValue(const projectConfiguration& pc, const QVariant& value, const QSqlDatabase& db =QSqlDatabase::database(), const QString& tblAlias =QString());
 
@@ -79,7 +81,7 @@ struct dbConfig
 private:
     static QMap<projectConfiguration,QPair<QString, QVariant>> defaultParams;
     static bool isValidIndex(projectConfiguration pc) {
-        return (pc >= 0) && (pc < projectConfiguration::MAX_PC_INDEX);
+        return (pc >= 0) and (pc < projectConfiguration::MAX_PC_INDEX);
     }
 };
 

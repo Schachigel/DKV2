@@ -150,14 +150,14 @@ QString htmlPayedInterestByYearTable()
     ret +=tableRow4(h2(qsl("Jahr")), h2(qsl("Zinstyp")), h2(qsl("Zinsmodus")), h2(qsl("Summe")));
     QVector<QSqlRecord> records;
     QLocale local;
-    if( ! executeSql(qsl("SELECT * FROM vStat_InterestByYear"), QVariant(), records)){
+    if( not executeSql(qsl("SELECT * FROM vStat_InterestByYear"), QVariant(), records)){
         ret += tableRow4(qsl("fehler bei der Datenabfrage"), QString(), QString(), QString());
         ret += endTable();
         return ret;
     }
     int lastYear =-1;
     for( auto rec : records) {
-        if( lastYear != rec.value(0).toInt()) {
+        if( lastYear not_eq rec.value(0).toInt()) {
             ret += emptyRow(4);
         }
         ret += tableRow4(rec.value(0).toString(),
@@ -202,7 +202,7 @@ QString htmlContractsByYearByInterestTable()
     ret += endRow();
     int year =-1;
     for( auto& x: qAsConst(yzv)) {
-        if( year != x.year)
+        if( year not_eq x.year)
             ret += emptyRow(4);
         ret += tableRow4( QString::number(x.year), QString(qsl("%1%")).arg(x.intrest, 2, 'g'), QString::number(x.count), locale.toCurrencyString(x.sum));
         year =x.year;

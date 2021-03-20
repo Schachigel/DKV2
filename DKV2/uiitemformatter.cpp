@@ -8,7 +8,7 @@
 QString DateItemFormatter::displayText(const QVariant& value, const QLocale& )const
 {
     QDate date= value.toDate();
-    if( date == QDate() || date > QDate(9990, 12, 31))
+    if( date == QDate() or date > QDate(9990, 12, 31))
         return "";
     else
         return date.toString(qsl("dd.MM.yyyy"));
