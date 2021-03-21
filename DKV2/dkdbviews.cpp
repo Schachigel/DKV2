@@ -8,6 +8,7 @@ SELECT
   ,K.id AS KreditorId
   ,K.Nachname || ', ' || K.Vorname          AS KreditorIn
   ,V.Kennung AS Vertragskennung
+  ,V.Anmerkung AS Anmerkung
   ,strftime('%d.%m.%Y',V.Vertragsdatum)     AS Vertragsdatum
 
   ,ifnull(strftime('%d.%m.%Y',Aktivierungsdatum), '(offen)') AS Aktivierungsdatum

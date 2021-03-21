@@ -101,7 +101,8 @@ struct contract
     QDate plannedEndDate() const { return td.getValue(qsl("LaufzeitEnde")).toDate();}
     void setConclusionDate(const QDate& d) { td.setValue(qsl("Vertragsdatum"), d);}
     QDate conclusionDate() const { return td.getValue(qsl("Vertragsdatum")).toDate();}
-
+    void setComment(const QString& q) {td.setValue(qsl("Anmerkung"), q);}
+    QString comment() const {return td.getValue(qsl("Anmerkung")).toString();}
     // interface
     // value -> sum of all bookings to a contract
     double value(const QDate& d =EndOfTheFuckingWorld) const;

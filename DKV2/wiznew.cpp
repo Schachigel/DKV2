@@ -412,6 +412,7 @@ void wpConfirmCreditor::onConfirmCreateContract_toggled(int state)
 */
 const QString pnLabel  {qsl("label")};
 const QString pnAmount {qsl("amount")};
+const QString pnContComment {qsl("contractComment")};
 
 wpLableAndAmount::wpLableAndAmount(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
@@ -430,11 +431,18 @@ wpLableAndAmount::wpLableAndAmount(QWidget* p) : QWizardPage(p)
     leAmount->setValidator(new QIntValidator(this));
     l2->setBuddy(leAmount);
 
+    QLabel* l3 =new QLabel(qsl("Anmerkung"));
+    QPlainTextEdit* eComment =new QPlainTextEdit;
+    registerField(pnContComment, eComment, "plainText", "textChanged");
+    eComment->setToolTip(qsl("Diese Anmerkung wird mit dem Vertrag gespeichert"));
+
     QGridLayout* g =new QGridLayout;
     g->addWidget(l1, 0, 0);
     g->addWidget(leKennung, 0, 1);
     g->addWidget(l2, 1, 0);
     g->addWidget(leAmount, 1, 1);
+    g->addWidget(l3, 2, 0);
+    g->addWidget(eComment, 2, 2);
     g->setColumnStretch(0, 1);
     g->setColumnStretch(1, 4);
 
@@ -767,6 +775,7 @@ bool wpConfirmContract::saveContract()
         c.setNoticePeriod(wiz->noticePeriod);
         c.setPlannedEndDate(field(pnEDate).toDate());
         c.setInterestModel(wiz->iPaymentMode);
+        c.setComment(field(pnContComment).toString());
         if( -1 == c.saveNewContract()) {
             qCritical() << "New contract could not be saved";
             QMessageBox::critical(getMainWindow(), "Fehler", "Der Vertrag konnte nicht "

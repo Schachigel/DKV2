@@ -604,6 +604,7 @@ void MainWindow::prepare_valid_contraccts_list_view()
         cp_Creditor_id,
         cp_Creditor,
         cp_ContractLabel,
+        cp_Comment,
         cp_ContractDate,
         cp_ActivationDate,
         cp_ContractValue,
@@ -622,6 +623,8 @@ void MainWindow::prepare_valid_contraccts_list_view()
     model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters"), Qt::ToolTipRole);
     model->setHeaderData(cp_ContractLabel, Qt::Horizontal, qsl("Vertragskennung"));
     model->setHeaderData(cp_ContractLabel, Qt::Horizontal, qsl("Die Vertragskennung identifiziert den Vertrag eindeutig"), Qt::ToolTipRole);
+    model->setHeaderData(cp_Comment, Qt::Horizontal, qsl("Anmerkung"));
+    model->setHeaderData(cp_Comment, Qt::Horizontal, qsl("Freitext zum Vertrag"), Qt::ToolTipRole);
     model->setHeaderData(cp_ContractDate, Qt::Horizontal, qsl(""), Qt::ToolTipRole);
     model->setHeaderData(cp_ContractValue, Qt::Horizontal, qsl("Bei aktiven Verträgen: Höhe der Ersteinlage, sonst der im Vertrag vereinbarte Kreditbetrag"), Qt::ToolTipRole);
     model->setHeaderData(cp_InterestRate, Qt::Horizontal, qsl(""), Qt::ToolTipRole);
