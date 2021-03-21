@@ -183,7 +183,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     // if we come here, dbPath contains a valid Databse, lets use it
-    if( !useDb(dbPath)) {
+    if( not useDb(dbPath)) {
         QMessageBox::critical(nullptr, qsl("FEHLER"), qsl("Die angegebene Datenbank kann nicht verwendet werden. DKV2 wird beendet"));
         return;
     }
@@ -315,7 +315,7 @@ void MainWindow::on_action_menu_database_new_triggered()
         QMessageBox::information( this, qsl("Abbruch"), qsl("Die Dateiauswahl wurde abgebrochen."));
         return;
     }
-    if( !checkSchema_ConvertIfneeded(dbFile)) {
+    if( not checkSchema_ConvertIfneeded(dbFile)) {
         // selected file is not valid or can not be converted
         // do nothing
         QMessageBox::information( this, qsl("Abbruch"), qsl("Die ausgewählte Datei ist keine gültige Datenbank."));
@@ -356,7 +356,7 @@ void MainWindow::on_action_menu_database_anonymous_copy_triggered()
     if( dbfile == qsl(""))
         return;
     busycursor b;
-    if( !copy_database_mangled(dbfile)) {
+    if( not copy_database_mangled(dbfile)) {
         QMessageBox::information(this, qsl("Fehler beim Kopieren"),
                                  qsl("Die anonymisierte Datenbankkopie konnte nicht angelegt werden. "
                                      "Weitere Info befindet sich in der LOG Datei"));
@@ -515,7 +515,7 @@ void MainWindow::on_action_menu_contracts_listview_triggered()
 {   LOG_CALL;
     showDeletedContracts =false;
     prepare_contracts_list_view();
-    if( !ui->contractsTableView->currentIndex().isValid())
+    if( not ui->contractsTableView->currentIndex().isValid())
         ui->contractsTableView->selectRow(0);
 
     ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
@@ -570,7 +570,7 @@ void MainWindow::prepare_deleted_contracts_list_view()
 
     QTableView*& tv = ui->contractsTableView;
     tv->setModel(model);
-    if ( !model->select()) {
+    if ( not model->select()) {
         qCritical() << "Model selection failed" << model->lastError();
         return;
     }
@@ -638,7 +638,7 @@ void MainWindow::prepare_valid_contraccts_list_view()
 
     QTableView*& tv = ui->contractsTableView;
     tv->setModel(model);
-    if ( !model->select()) {
+    if ( not model->select()) {
         qCritical() << "Model selection failed" << model->lastError();
         return;
     }
@@ -757,7 +757,7 @@ void MainWindow::on_action_cmenu_activate_contract_triggered()
 void MainWindow::on_action_cmenu_terminate_contract_triggered()
 {   LOG_CALL;
     QModelIndex mi(ui->contractsTableView->currentIndex());
-    if( !mi.isValid()) return;
+    if( not mi.isValid()) return;
     int index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toInt();
     terminateContract(index);
     updateListViews();
@@ -765,7 +765,7 @@ void MainWindow::on_action_cmenu_terminate_contract_triggered()
 void MainWindow::on_action_cmenu_delete_inactive_contract_triggered()
 {   LOG_CALL;
     QModelIndex mi(ui->contractsTableView->currentIndex());
-    if( !mi.isValid()) return;
+    if( not mi.isValid()) return;
 
     deleteInactiveContract(ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toLongLong());
     updateListViews();
@@ -773,7 +773,7 @@ void MainWindow::on_action_cmenu_delete_inactive_contract_triggered()
 void MainWindow::on_action_cmenu_change_contract_triggered()
 {   // deposit or payout...
     QModelIndex mi(ui->contractsTableView->currentIndex());
-    if( !mi.isValid()) return;
+    if( not mi.isValid()) return;
     qlonglong contractId = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toLongLong();
     changeContractValue(contractId);
     updateListViews();
@@ -788,7 +788,7 @@ void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
 {
     showDeletedContracts =true;
     prepare_contracts_list_view();
-    if( !ui->contractsTableView->currentIndex().isValid())
+    if( not ui->contractsTableView->currentIndex().isValid())
         ui->contractsTableView->selectRow(0);
     ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
 }
@@ -977,7 +977,7 @@ void MainWindow::on_action_menu_contracts_annual_interest_settlement_triggered()
 // list creation csv, printouts
 void MainWindow::on_action_menu_contracts_print_lists_triggered()
 {   LOG_CALL;
-    if( !createCsvActiveContracts())
+    if( not createCsvActiveContracts())
         QMessageBox::critical(this, qsl("Fehler"), qsl("Die Datei konnte nicht angelegt werden. Ist sie z.B. in Excel geöffnet?"));
 }
 void MainWindow::on_actionAktuelle_Auswahl_triggered()

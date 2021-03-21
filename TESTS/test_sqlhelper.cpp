@@ -410,13 +410,13 @@ void test_sqlhelper::test_getHighestRowId()
     int maxrow = 100;
     for( int i = 0; i<maxrow; i++) {
         q.addBindValue(QString::number(i));
-        if( !q.exec()) qDebug() << q.lastError() << Qt::endl << q.lastQuery();
+        if( not q.exec()) qDebug() << q.lastError() << Qt::endl << q.lastQuery();
     }
     QCOMPARE( getHighestRowId(tablename), maxrow);
     q.prepare("DELETE FROM " + tablename + " WHERE col_S=?");
     for( int i = 0; i<maxrow; i+=2) {
         q.addBindValue(QString::number(i));
-        if( !q.exec()) qDebug() << q.lastError() << Qt::endl << q.lastQuery();
+        if( not q.exec()) qDebug() << q.lastError() << Qt::endl << q.lastQuery();
     }
     QCOMPARE( getHighestRowId(tablename), maxrow);
     QCOMPARE(rowCount(tablename), maxrow/2);

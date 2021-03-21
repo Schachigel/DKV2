@@ -74,7 +74,7 @@ void showFileInFolder(const QString &fullPath)
     p.setProgram(qsl("explorer.exe"));
     qint64 pid;
     p.startDetached(&pid);
-    if( !p.waitForStarted(1000))
+    if( not p.waitForStarted(1000))
         qDebug() << "failed to start explorer. Arg was: " << explorerW_selectedFile;
 
 #elif defined(__APPLE__)    //Code for Mac

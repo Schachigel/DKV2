@@ -12,7 +12,7 @@ int dateDiff360(int startDay, int startMonth, int startYear, int endDay, int end
 {
     if (startDay == 31) {
         --startDay;
-    } else if (methodUS and (startMonth == 2 and (startDay == 29 or (startDay == 28 and !QDate::isLeapYear(startYear))))) {
+    } else if (methodUS and (startMonth == 2 and (startDay == 29 or (startDay == 28 and not QDate::isLeapYear(startYear))))) {
         startDay = 30;
     }
     if (endDay == 31) {

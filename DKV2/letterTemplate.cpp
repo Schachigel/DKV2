@@ -276,7 +276,7 @@ void letterTemplate::init_defaults()
 letterTemplate::letterTemplate( /*const qlonglong kreditor, */const letterTemplate::templId )
 {   LOG_CALL;
     //tid=id;
-    //if( !loadTemplate(id))
+    //if( not loadTemplate(id))
     //{
     //    init_defaults();
     //    saveTemplate();
@@ -285,7 +285,7 @@ letterTemplate::letterTemplate( /*const qlonglong kreditor, */const letterTempla
 
 void letterTemplate::setPlaceholder(QString var, QString val)
 {   LOG_CALL;
-    if( !placeholders.contains(var))
+    if( not placeholders.contains(var))
         qWarning() << "Unknown placeholder " << var << " set to value " << val;
     placeholders.insert (var, val);
 }
@@ -307,14 +307,14 @@ bool letterTemplate::saveDefaultTemplate() const
 }
 bool letterTemplate::saveTemplate(qlonglong /*kreditor*/) const
 {   LOG_CALL;
-    if( !tableExists("Briefvorlagen"))
+    if( not tableExists("Briefvorlagen"))
         return false;
     return true;
 }
 
 bool letterTemplate::loadTemplate(letterTemplate::templId /*id*/, qlonglong /*kreditor*/)
 {   LOG_CALL;
-    //if( !tableExists("Briefvorlagen"))
+    //if( not tableExists("Briefvorlagen"))
     //{
     //    qDebug() << "Tabelle mit Briefvorlagen existiert nicht, Template Daten können nicht gespeichert werden";
     //    return false;
@@ -323,7 +323,7 @@ bool letterTemplate::loadTemplate(letterTemplate::templId /*id*/, qlonglong /*kr
     //QString q = selectQueryFromFields( dkdbstructur["Briefvorlagen"].Fields(), QVector<dbForeignKey>(), "templateId ='" + templName(tid) + qsl("'"));
     //QSqlQuery query;
     //query.prepare(q);
-    //if( !query.exec())
+    //if( not query.exec())
     //{
     //    qDebug() << "reading template from DB failed: " << query.lastError();
     //    return false;

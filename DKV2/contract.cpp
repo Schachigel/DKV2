@@ -213,7 +213,7 @@ bool contract::isActive() const
 }
 QDate contract::activationDate() const
 {
-    if( !isActive())
+    if( not isActive())
         return QDate();
     if( aDate.isValid())
         return aDate;
@@ -247,7 +247,7 @@ QDate contract::nextDateForAnnualSettlement()
 bool contract::needsAnnualSettlement(const QDate& intendedNextBooking)
 {   LOG_CALL_W(intendedNextBooking.toString());
 
-    if( !isActive()) return false;
+    if( not isActive()) return false;
     if( latestBooking().date >= intendedNextBooking) {
         qInfo() << "Latest booking date too young for this settlement";
         return false;
@@ -353,7 +353,7 @@ bool contract::deposit(const QDate& d, const double& amount)
     QString error;
     if( not isActive())
         error = qsl("could not put money on an inactive account");
-    else if ( !d.isValid())
+    else if ( not d.isValid())
         error = qsl("Year End is a Invalid Date") + d.toString();
     else if ( latestBooking().date >= d)
         error = qsl("bookings have to be in a consecutive order. Last booking: ")
@@ -365,7 +365,7 @@ bool contract::deposit(const QDate& d, const double& amount)
     QDate actualD =avoidYearEndBookings(d);
     // update interest calculation
     QSqlDatabase::database().transaction();
-    if( !bookInBetweenInterest(actualD)) {
+    if( not bookInBetweenInterest(actualD)) {
         QSqlDatabase::database().rollback();
         return false;
     }
@@ -394,11 +394,11 @@ bool contract::payout(const QDate& d, const double& amount)
     QDate actualD =avoidYearEndBookings(d);
     // update interest calculation
     QSqlDatabase::database().transaction();
-    if( !bookInBetweenInterest(actualD)) {
+    if( not bookInBetweenInterest(actualD)) {
         QSqlDatabase::database().rollback();
         return false;
     }
-    if( !booking::bookPayout(id(), actualD, actualAmount)) {
+    if( not booking::bookPayout(id(), actualD, actualAmount)) {
         QSqlDatabase::database().rollback();
         qCritical() << "booking of payout failed";
         return false;
@@ -443,7 +443,7 @@ bool contract::finalize(bool simulate, const QDate& finDate,
     // as we are terminating the contract we have to sum up all interests
     setInterestModel(interestModel::reinvest);
     if( needsAnnualSettlement(finDate))
-        if( !annualSettlement(finDate.year() -1)) {
+        if( not annualSettlement(finDate.year() -1)) {
             executeSql_wNoRecords(qsl("ROLLBACK"));
             return false;
         }
@@ -488,7 +488,7 @@ QString contract::toString(QString title) const
         stream << qsl("[contract was not saved or loaded from DB]") << Qt::endl;
     else
         stream << qsl("[id:") << id_aS() << qsl("]") << Qt::endl;
-    if( !isActive()) {
+    if( not isActive()) {
         stream << "Wert (gepl.):     " << plannedInvest() << Qt::endl;
         stream << "Zinssatz (gepl.): " << interestRate() << Qt::endl;
         return ret;

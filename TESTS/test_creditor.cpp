@@ -14,7 +14,7 @@ void test_creditor::initTestCase()
 void test_creditor::init()
 {   LOG_CALL_W("test");
     initTestDb();
-    fill_DkDbDefaultContent();
+    fill_DkDbDefaultContent(QSqlDatabase::database(), false);
 }
 void test_creditor::cleanup()
 {   LOG_CALL;

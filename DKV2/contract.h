@@ -51,7 +51,7 @@ struct contract
     inline friend bool operator==(const contract& lhs, const contract& rhs)
     {   // friend functions - even in the class definition - are not member
         bool ret =true;
-        if( lhs.td.getRecord().count() != rhs.td.getRecord().count()) {
+        if( lhs.td.getRecord().count() not_eq rhs.td.getRecord().count()) {
             qInfo() << "contract comparison: field count mismatch " << lhs.td.getRecord().count() << " / " << rhs.td.getRecord().count();
             ret =false;
         }
@@ -71,7 +71,7 @@ struct contract
     }
     inline friend bool operator!=(const contract& lhs, const contract& rhs)
     {
-        return !(lhs==rhs);
+        return not (lhs==rhs);
     }
     // construction
     contract(const qlonglong id =-1);

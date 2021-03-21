@@ -17,7 +17,7 @@ void test_dkdbhelper::initTestCase()
 void test_dkdbhelper::init()
 {   LOG_CALL;
     initTestDb();
-    fill_DkDbDefaultContent();
+    fill_DkDbDefaultContent(QSqlDatabase::database(), false);
 }
 
 void test_dkdbhelper::cleanup()

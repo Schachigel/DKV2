@@ -21,7 +21,7 @@ autoDetachDb::~autoDetachDb()
 
 QString DbInsertableString(const QVariant& v)
 {
-    if( v.isNull() or !v.isValid())
+    if( v.isNull() or not v.isValid())
         return qsl("''");
     QString s;
     switch(v.type())
@@ -186,7 +186,7 @@ bool switchForeignKeyHandling(const QSqlDatabase& db /*def. DB*/, bool OnOff /*=
 QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db)
 {
     QSqlQuery q(db);
-    if( !q.exec(sql)) {
+    if( not q.exec(sql)) {
         qCritical() << "SingleValueSql failed to execute: " << q.lastError() << Qt::endl << q.lastQuery() << Qt::endl;;
         return QVariant();
     }
@@ -295,7 +295,7 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
     qDebug() << "ExecuteSingleRecordSql:\n" << sql;
 
     QSqlQuery q;
-    if( !q.exec(sql)) {
+    if( not q.exec(sql)) {
         qCritical() << "SingleRecordSql failed " << q.lastError() << Qt::endl << q.lastQuery();
         return QSqlRecord();
     }
@@ -312,12 +312,28 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
     }
     return result;
 }
+
+QSqlRecord executeSingleRecordSql(const QString& sql)
+{   LOG_CALL_W (sql);
+    QSqlQuery q; q.setForwardOnly(true);
+    q.prepare(sql);
+    if( not (q.exec() and q.next())) {
+        qCritical() << "failed to execute query /get first record" << q.lastError() << Qt::endl << q.lastQuery();
+        return QSqlRecord();
+    }
+    QSqlRecord res =q.record();
+    int count =1;
+    while(q.next()) count++;
+    if( count > 1) qCritical() << "single record query returned more than one value";
+    return res;
+}
+
 QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where, const QString& order)
 {
     QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where, order);
     QVector<QSqlRecord> result;
     QSqlQuery q; q.setForwardOnly(true);
-    if( !q.exec(sql)) {
+    if( not q.exec(sql)) {
         qCritical() << "executeSql failed " << q.lastError() << Qt::endl << q.lastQuery();
         return result;
     }
@@ -337,8 +353,8 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
 bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result)
 {
     QSqlQuery q; q.setForwardOnly(true);
-    if( q.prepare(sql)) {
-        qDebug() << "Faild to prep Query. Error:" << q.lastError();
+    if( not q.prepare(sql)) {
+        qDebug() << "Faild to prep Query. Error:" << sql << Qt::endl << q.lastError();
         return false;
     }
     if( v.isValid())

@@ -2,7 +2,6 @@
 #define DBSTRUCTURE_H
 
 #include <QSqlDatabase>
-#include <QSqlQuery>
 #include <QString>
 #include <QVector>
 

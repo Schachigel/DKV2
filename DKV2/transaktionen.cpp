@@ -163,17 +163,15 @@ void annualSettlement()
     wiz.exec();
     if( not wiz.field(qsl("confirm")).toBool())
         return;
-    QSqlQuery q;
-    q.setForwardOnly(true);
-    if( not q.exec(qsl("SELECT id FROM Vertraege"))) {
-        qCritical() << "failed to execute query " << q.lastError() << Qt::endl << q.lastQuery();
-        return;
-    }
+
+    QVector<QVariant> ids =executeSingleColumnSql(dkdbstructur[qsl("Vertraege")][qsl("id")]);
+
     QVector<contract> changedContracts;
     QVector<QDate> startOfInterrestCalculation;
     QVector<booking>  asBookings;
-    while(q.next()) {
-        contract c(q.value(qsl("id")).toLongLong());
+    for( auto id: ids)
+    {
+        contract c(id.toLongLong());
         QDate startDate = c.latestBooking().date;
         if(0 not_eq c.annualSettlement(yearOfSettlement)) {
             changedContracts.push_back(c);
@@ -258,7 +256,7 @@ void createInvestment()
         qInfo() << "investment wiz was canceled";
         return;
     }
-    if( !saveNewInvestment( wiz.field(pnZSatz).toInt(),
+    if( not saveNewInvestment( wiz.field(pnZSatz).toInt(),
                           wiz.field(pnVon).toDate(),
                           wiz.field(pnBis).toDate(),
                           wiz.field(pnTyp).toString())) {

@@ -236,7 +236,7 @@ bool wpEmail::validatePage()
     {
         QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b",
                               QRegularExpression::CaseInsensitiveOption);
-        if( !rx.match(field(pnEMail).toString()).hasMatch()) {
+        if( not rx.match(field(pnEMail).toString()).hasMatch()) {
             QMessageBox::information(this, qsl("Fehler"), qsl("Das Format der e-mail Adresse ist ungültig: ") + email);
             return false;
         }

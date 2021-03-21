@@ -51,7 +51,7 @@ bool copy_TableContent_byRecord( const QString& srcTbl, const QString& dstTbl, c
         if( not copyableFields.isEmpty()) copyableFields +=qsl(", ");
         copyableFields += rec.field(i).name();
     }
-    QSqlQuery q (db);
+    QSqlQuery q(db); q.setForwardOnly(true);
     if( not q.prepare(qsl("SELECT * FROM ") + srcTbl)) {
         qCritical() << "Could not prepare query to enumerate table";
         return false;
@@ -72,7 +72,7 @@ bool copy_TableContent_byRecord( const QString& srcTbl, const QString& dstTbl, c
 
 bool copycreate_views(const QSqlDatabase& db, const QString& alias)
 {   LOG_CALL;
-     QSqlQuery q(db);
+     QSqlQuery q(db); q.setForwardOnly(true);
      QString sql {qsl("SELECT name, sql FROM %1.sqlite_master WHERE type='view'").arg(alias)};
      if( not q.exec(sql)) {
          qCritical() << "query execute failed";
@@ -82,7 +82,6 @@ bool copycreate_views(const QSqlDatabase& db, const QString& alias)
          QString name = q.record().value(qsl("name")).toString();
          QString viewSql  = q.record().value(qsl("sql")).toString(); //.replace(qsl("\n"), qsl(" "));
 
-         //sql =sql.replace(name , alias + qsl(".") +name);
          if( not executeSql_wNoRecords(viewSql, db)) {
              return false;
          }
@@ -118,7 +117,7 @@ bool copy_database( const QString& sourceFName,
     }
     if ( not replace_TableContent(ad.alias() +qsl(".sqlite_sequence"), qsl("sqlite_sequence"), autoTarget.db))
         return false;
-    if( !copycreate_views(autoTarget.db, ad.alias()))
+    if( not copycreate_views(autoTarget.db, ad.alias()))
         return false;
     // if we had indices which do not come from table creation, they should also be copied
     /////////// all done
@@ -147,6 +146,7 @@ bool copy_mangledCreditors(const QSqlDatabase& db =QSqlDatabase::database())
     bool success = true;
     int recCount = 0;
     QSqlQuery q(db); // default database connection -> active database
+    q.setForwardOnly(true);
     if( not q.exec("SELECT * FROM Kreditoren")) {
         qInfo() << "no data returned from creditor table";
         return false;
@@ -249,14 +249,13 @@ QString convert_database_inplace( const QString& targetFilename, const QString& 
     autoDetachDb autodetatch( qsl("targetDb"), db.conName());
     autodetatch.attachDb(targetFilename);
     switchForeignKeyHandling(db, autodetatch.alias(), fkh_off);
-    QSqlQuery enableRefInt2("PRAGMA " +autodetatch.alias() +".foreign_keys = OFF", db);
 
     // there are tables with default content but w/o primIndex -> replace will not work
     // so they must be deleted first
     if( &dbs == &dkdbstructur) {
         QStringList tablesToBeDeleted {"Briefelemente"};
         for( auto& table : qAsConst(tablesToBeDeleted)) {
-            QSqlQuery q("DELETE FROM " +autodetatch.alias() +"." +table, db);
+            executeSql_wNoRecords(qsl("DELETE FROM ") +autodetatch.alias() +qsl(".") +table, db);
         }
     }
 

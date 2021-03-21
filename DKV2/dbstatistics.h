@@ -89,7 +89,7 @@ struct dbStats
             return ret;
         }
         inline friend bool operator!=(const dataset& lhs, const dataset& rhs) {
-            return !(lhs == rhs);
+            return not (lhs == rhs);
         }
         QString toString() const;
     };

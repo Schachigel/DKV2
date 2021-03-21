@@ -1,5 +1,4 @@
 #include <QString>
-#include <QSqlQuery>
 
 #include "helper.h"
 #include "appconfig.h"
@@ -102,7 +101,8 @@ int nbrActiveInvestments(const QDate& cDate/*=EndOfTheFuckingWorld*/)
 }
 
 QVector<QPair<qlonglong, QString>> activeInvestments(const QDate& cDate)
-{   LOG_CALL;
+{   LOG_CALL_W(cDate.toString(qsl("yyyy.MM.dd")));
+
     QVector<QPair<qlonglong, QString>> investments;
     QString where;
     if(cDate == EndOfTheFuckingWorld)
@@ -110,18 +110,13 @@ QVector<QPair<qlonglong, QString>> activeInvestments(const QDate& cDate)
     else {
         where =qsl("Offen AND Anfang <= date('%1') AND Ende > date('%1')").arg(cDate.toString(Qt::ISODate));
     }
-    QSqlQuery q;
-    if( not q.prepare(qsl("SELECT rowid, Typ FROM Geldanlagen WHERE %1 ORDER BY %2").arg(where, fnInvestmentInterest))) {
-        qCritical() << "sql prep failed: " << q.lastError() << Qt::endl << q.lastQuery();
-        return QVector<QPair<qlonglong, QString>>();
-    }
 
-    if( not q.exec()) {
-        qCritical() << "sql exec failed: " << q.lastError() << Qt::endl << q.lastQuery();
-        return QVector<QPair<qlonglong, QString>>();
+    QString sql {(qsl("SELECT rowid, Typ FROM Geldanlagen WHERE %1 ORDER BY %2").arg(where, fnInvestmentInterest))};
+    QVector<QSqlRecord> result;
+    if( not executeSql(sql, QVariant(), result)) {
+            return QVector<QPair<qlonglong, QString>>();
     }
-    while( q.next()) {
-        QSqlRecord rec =q.record();
+    for(auto rec : result) {
         investments.push_back({rec.value(qsl("rowid")).toLongLong(), rec.value(fnInvestmentTyp).toString()});
     }
     return investments;
@@ -147,13 +142,12 @@ QString redOrBlack(double d, double max)
 }
 QString investmentInfoForContract(qlonglong rowId, double amount)
 {   LOG_CALL;
+
     int maxNbr =dbConfig::readValue(MAX_INVESTMENT_NBR).toInt();
     double maxSum =dbConfig::readValue(MAX_INVESTMENT_SUM).toDouble();
 
     QString sql {qsl("SELECT * FROM vInvestmentsOverview WHERE rowid=") +QString::number(rowId)};
-    QSqlQuery q (sql); if( not q.next()) Q_ASSERT(true);
-    QSqlRecord r =q.record();
-    qDebug() << q.lastQuery() << Qt::endl << r;
+    QSqlRecord r =executeSingleRecordSql(sql);
     QString s_zSatz  = QString::number(r.value(qsl("ZSatz")).toInt()/100., 'g', 2) +qsl(" %");
     QString from =r.value(qsl("Anfang")).toDate().toString(qsl("dd.MM.yyyy"));
     QString bis  =r.value(qsl("Ende")).toDate().toString(qsl("dd.MM.yyyy"));

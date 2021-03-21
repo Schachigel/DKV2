@@ -23,7 +23,7 @@ void test_letterTemplate::initTestCase()
 void test_letterTemplate::init()
 {   LOG_CALL;
     initTestDb();
-    fill_DkDbDefaultContent();
+    fill_DkDbDefaultContent(QSqlDatabase::database(), false);
 }
 
 void test_letterTemplate::cleanup()

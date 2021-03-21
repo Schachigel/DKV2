@@ -95,7 +95,7 @@ bool createFileWithDatabaseStructure (const QString& targetfn, const dbstructure
 
     QSqlDatabase newDb = QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     newDb.setDatabaseName(targetfn);
-    if( !newDb.open()) {
+    if( not newDb.open()) {
         qDebug() << "faild to open new database";
         return false;
     }
@@ -118,7 +118,7 @@ bool createNewDatabaseFileWDefaultContent(const QString& filename, const dbstruc
     QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     db.setDatabaseName(filename);
 
-    if( !db.open()) {
+    if( not db.open()) {
         qCritical() << "DkDatenbankAnlegen failed in db.open";
         return false;
     }
@@ -132,7 +132,7 @@ bool createNewDatabaseFileWDefaultContent(const QString& filename, const dbstruc
 bool hasAllTablesAndFields(const QSqlDatabase& db, const dbstructure& dbs /*=dkdbstructur*/)
 {   LOG_CALL;
     for( auto& table : dbs.getTables()) {
-        if( !verifyTable(table, db))
+        if( not verifyTable(table, db))
             return false;
     }
     qInfo() << db.databaseName() << " has all tables expected";
@@ -145,7 +145,7 @@ bool validateDbSchema(const QString& filename, const dbstructure& dbs /*=dkdbstr
     QString msg;
     if( filename == "")
         msg = qsl("no filename");
-    else if( !QFile::exists(filename))
+    else if( not QFile::exists(filename))
         msg = qsl("file not found");
     else {
         dbCloser closer{ qsl("validateDbSchema") };

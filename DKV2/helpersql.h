@@ -55,7 +55,7 @@ struct autoRollbackTransaction
         QSqlDatabase::database(con).transaction();
     };
     void commit() { LOG_CALL;
-        if( !comitted) QSqlDatabase::database(connection).commit();
+        if( not comitted) QSqlDatabase::database(connection).commit();
         comitted =true;
     }
     ~autoRollbackTransaction() {
@@ -109,9 +109,12 @@ QString selectQueryFromFields(const QVector<dbfield>& fields,
 // QVector<QVariant> executeSingleColumnSql( const QString field, const QString table, const QString& where);
 QVector<QVariant> executeSingleColumnSql( const dbfield& field, const QString& where =QString());
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString());
+QSqlRecord executeSingleRecordSql(const QString& sql);
+
 QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString());
 bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result);
 bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlRecord>& result);
+
 bool executeSql_wNoRecords(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database());
 bool executeSql_wNoRecords(const QString& sql, const QVariant& v, const QSqlDatabase& db = QSqlDatabase::database());
 bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& v, const QSqlDatabase& db = QSqlDatabase::database());

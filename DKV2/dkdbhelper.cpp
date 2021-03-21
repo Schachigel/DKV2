@@ -20,22 +20,20 @@
 #include "dbstructure.h"
 
 
-bool createView(const QString& name, const QString& sql, QSqlDatabase db = QSqlDatabase::database()) {
-    db.transaction();
-    QSqlQuery q(db);
-    if( q.exec("DROP VIEW " + name))
-        qInfo() << "Successfully dropped view " << name;
-    else
-        qInfo() << "Failed to drop view " << name << " Error: " << q.lastError() << Qt::endl << q.lastQuery();
+bool createView(const QString& name, const QString& sql, QSqlDatabase db = QSqlDatabase::database())
+{   LOG_CALL_W(name);
+
+    autoRollbackTransaction art(db.connectionName());
+    if( not executeSql_wNoRecords(qsl("DROP VIEW ") + name, db))
+        qInfo() << "drop view returned false: " << name;
+
     QString createViewSql = "CREATE VIEW %1 AS " + sql;
     createViewSql = createViewSql.arg(name);
-    if( q.exec(createViewSql) and q.lastError().type() == QSqlError::NoError) {
-        db.commit();
-        qInfo() << "Successfully created view " << name << Qt::endl << sql;
+    if( executeSql_wNoRecords(createViewSql, db)) {
+        art.commit();
         return true;
     }
-    db.rollback();
-    qCritical() << "Faild to create view " << name << Qt::endl << q.lastQuery() << Qt::endl << q.lastError() << Qt::endl << sql;
+    qCritical() << "Faild to create view " << name;
     return false;
 }
 bool createViews( const QVector<dbViewDev>& views, QSqlDatabase db)
@@ -135,7 +133,7 @@ bool updateViews(QSqlDatabase db =QSqlDatabase::database())
     if( lastProgramVersion not_eq thisProgramVersion) {
         qInfo() << "Program versions used differ -> views will be updated";
         qInfo() << qsl("last exe: ") << lastProgramVersion << qsl(" / this exe: ") << thisProgramVersion;
-        if( !insert_views(db)) {
+        if( not insert_views(db)) {
             qDebug() << "Faild to insert views for current exe version";
             return false;
         }
@@ -174,7 +172,7 @@ bool open_databaseForApplication( QString newDbFile)
     // setting the default database for the application
     QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName);
     db.setDatabaseName(newDbFile);
-    if( !db.open()) {
+    if( not db.open()) {
         qCritical() << "open database file " << newDbFile << " failed";
         return false;
     }
@@ -267,7 +265,7 @@ bool createCsvActiveContracts()
     t.append(dbfield("Vertragsende", QVariant::Type::Date));
     t.append(dbfield("thesa", QVariant::Type::Bool));
 
-    if( !table2csv( filename, t.Fields())) {
+    if( not table2csv( filename, t.Fields())) {
         qDebug() << "failed to print table";
         return false;
     }
@@ -281,8 +279,8 @@ QVector<rowData> contractRuntimeDistribution()
     double SummeBisEinJahr=0., SummeBisFuenfJahre=0., SummeLaenger=0., SummeUnbegrenzet = 0.;
     QString sql = "SELECT Wert, Aktivierungsdatum, Vertragsende "
                   "FROM vVertraege_aktiv";
-    QSqlQuery q;
-    if( !q.exec(sql)) {
+    QSqlQuery q; q.setForwardOnly(true);
+    if( not q.exec(sql)) {
         qCritical() << "calculation of runtime distribution failed: " << q.lastError() << Qt::endl << q.lastQuery();
         return QVector<rowData>();
     }
@@ -332,8 +330,8 @@ void calc_contractEnd( QVector<ContractEnd>& ces)
 void calc_annualInterestDistribution( QVector<YZV>& yzv)
 {   LOG_CALL;
     QString sql ="SELECT * FROM vContractsByYearByInterest ORDER BY Year";
-    QSqlQuery query;
-    if( !query.exec(sql)) {
+    QSqlQuery query; query.setForwardOnly(true);
+    if( not query.exec(sql)) {
         qCritical() << "execute query failed";
         return;
     }

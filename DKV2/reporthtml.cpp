@@ -177,7 +177,7 @@ QString htmlContractsByContractEndTable()
     ret += h1(qsl("Auslaufende Verträge")) + newLine( qsl("Stand: ")  + QDate::currentDate().toString(qsl("dd.MM.yyyy<br>")));
      QVector<ContractEnd> ce;
      calc_contractEnd(ce);
-     if( !ce.isEmpty()) {
+     if( not ce.isEmpty()) {
          ret += startTable();
          ret += tableRow3(h2(qsl("Jahr")), h2(qsl("Anzahl")),  h2(qsl("Summe")));
          for( auto& x: qAsConst(ce))

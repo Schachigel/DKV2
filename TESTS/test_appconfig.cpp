@@ -13,7 +13,7 @@ void test_appConfig::initTestCase()
     QVERIFY( not appConfig::Outdir().isEmpty());
     init_DKDBStruct();
     initTestDb();
-    fill_DkDbDefaultContent();
+    fill_DkDbDefaultContent(QSqlDatabase::database(), false);
 
 }
 void test_appConfig::cleanupTestCase()

@@ -11,7 +11,7 @@ void test_booking::initTestCase()
 {   LOG_CALL;
     init_DKDBStruct();
     initTestDb();
-    fill_DkDbDefaultContent();
+    fill_DkDbDefaultContent(QSqlDatabase::database(), true);
     if( QFile::copy(testDbFilename, tempFile))
         qInfo() << "speed up test with db copy " << tempFile;
 }
@@ -30,7 +30,7 @@ void test_booking::init()
         usingTempFile =QFile::copy(tempFile, testDbFilename);
         openDbConnection(testDbFilename);
     }
-    if( !usingTempFile) {
+    if( not usingTempFile) {
         qWarning() << "temp file not found";
         initTestDb();
         fill_DkDbDefaultContent();
