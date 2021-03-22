@@ -27,6 +27,7 @@
 #include "uiitemformatter.h"
 #include "dkdbhelper.h"
 #include "dkdbcopy.h"
+#include "dkdbviews.h"
 #include "dbstatistics.h"
 #include "letters.h"
 #include "transaktionen.h"
@@ -617,7 +618,7 @@ void MainWindow::prepare_valid_contraccts_list_view()
     };
 
     QSqlTableModel* model = new QSqlTableModel(this);
-    model->setTable(qsl("vVertraege_alle_4view"));
+    model->setTable(vnContractView);
     model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
     model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("KreditorIn"));
     model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters"), Qt::ToolTipRole);
@@ -799,7 +800,7 @@ void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
 void MainWindow::prepare_investmentsListView()
 {
     InvestmentsTableModel* model = new InvestmentsTableModel(this);
-    model->setTable(qsl("vInvestmentsOverview"));
+    model->setTable(vnInvestmentsView);
     //model->setSort(0, Qt::SortOrder::DescendingOrder);
 
     QTableView* tv =ui->InvestmentsTableView;

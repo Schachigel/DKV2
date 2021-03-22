@@ -18,7 +18,6 @@ autoDetachDb::~autoDetachDb()
     executeSql_wNoRecords(sql.arg(alias()), QSqlDatabase::database(conname()));
 }
 
-
 QString DbInsertableString(const QVariant& v)
 {
     if( v.isNull() or not v.isValid())
@@ -430,4 +429,29 @@ bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& v, const
 int getHighestRowId(const QString& tablename)
 {   LOG_CALL;
     return executeSingleValueSql(qsl("MAX(rowid)"), tablename).toInt();
+}
+
+bool createView(const QString& name, const QString& sql, QSqlDatabase db /*= QSqlDatabase::database()*/)
+{   LOG_CALL_W(name);
+
+    autoRollbackTransaction art(db.connectionName());
+    if( not executeSql_wNoRecords(qsl("DROP VIEW ") + name, db))
+        qInfo() << "drop view returned false: " << name;
+
+    QString createViewSql = "CREATE VIEW %1 AS " + sql;
+    createViewSql = createViewSql.arg(name);
+    if( executeSql_wNoRecords(createViewSql, db)) {
+        art.commit();
+        return true;
+    }
+    qCritical() << "Faild to create view " << name;
+    return false;
+}
+bool createViews( const QVector<dbViewDev>& views, QSqlDatabase db)
+{
+    for( auto view: views) {
+        if( not createView(view.name, view.sql, db))
+            return false;
+    }
+    return true;
 }

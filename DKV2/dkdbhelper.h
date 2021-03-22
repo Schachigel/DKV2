@@ -66,6 +66,4 @@ struct rowData
 
 QVector<rowData> contractRuntimeDistribution();
 
-extern const QString sqlContractView;
-
 #endif // DKDBHELPER_H

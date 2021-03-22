@@ -19,55 +19,9 @@
 #include "dkdbcopy.h"
 #include "dbstructure.h"
 
-
-bool createView(const QString& name, const QString& sql, QSqlDatabase db = QSqlDatabase::database())
-{   LOG_CALL_W(name);
-
-    autoRollbackTransaction art(db.connectionName());
-    if( not executeSql_wNoRecords(qsl("DROP VIEW ") + name, db))
-        qInfo() << "drop view returned false: " << name;
-
-    QString createViewSql = "CREATE VIEW %1 AS " + sql;
-    createViewSql = createViewSql.arg(name);
-    if( executeSql_wNoRecords(createViewSql, db)) {
-        art.commit();
-        return true;
-    }
-    qCritical() << "Faild to create view " << name;
-    return false;
-}
-bool createViews( const QVector<dbViewDev>& views, QSqlDatabase db)
-{
-    for( auto view: views) {
-        if( not createView(view.name, view.sql, db))
-            return false;
-    }
-    return true;
-}
 bool insert_views( QSqlDatabase db)
 {   LOG_CALL;
-    QString sql_precalc {
-        qsl("SELECT *, ROUND(100* Jahreszins/Wert,6) as gewMittel FROM ("
-           "SELECT "
-              "count(*) as Anzahl, "
-              "SUM(Wert) as Wert, "
-              "SUM(ROUND(Zinssatz *Wert /100,2)) AS Jahreszins,"
-              "ROUND(AVG(Zinssatz),4) as mittlereRate "
-           "FROM %1 %2)")};
-    views.append({qsl("vStat_allerVertraege"),         sql_precalc.arg(qsl("vVertraege_alle"), qsl(""))});
-    views.append({qsl("vStat_allerVertraege_thesa"),   sql_precalc.arg(qsl("vVertraege_alle"), qsl("WHERE thesa"))});
-    views.append({qsl("vStat_allerVertraege_ausz"),    sql_precalc.arg(qsl("vVertraege_alle"), qsl("WHERE NOT thesa"))});
-    views.append({qsl("vStat_aktiverVertraege"),       sql_precalc.arg(qsl("vVertraege_aktiv"), qsl(""))});
-    views.append({qsl("vStat_aktiverVertraege_thesa"), sql_precalc.arg(qsl("vVertraege_aktiv"), qsl("WHERE thesa"))});
-    views.append({qsl("vStat_aktiverVertraege_ausz"),  sql_precalc.arg(qsl("vVertraege_aktiv"), qsl("WHERE NOT thesa"))});
-    views.append({qsl("vStat_passiverVertraege"),      sql_precalc.arg(qsl("vVertraege_passiv"), qsl(""))});
-    views.append({qsl("vStat_passiverVertraege_thesa"),sql_precalc.arg(qsl("vVertraege_passiv"), qsl("WHERE thesa"))});
-    views.append({qsl("vStat_passiverVertraege_ausz"), sql_precalc.arg(qsl("vVertraege_passiv"), qsl("WHERE NOT thesa"))});
-
-    // for convenience only, not used in code
-    views.append({qsl("vBuchungen"), sqlBookingsOverview});
-
-    return createViews(views, db);
+    return createViews(getViews(), db);
 }// initial database tables and content
 
 void insert_DbProperties(QSqlDatabase db = QSqlDatabase::database())

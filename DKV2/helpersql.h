@@ -121,4 +121,11 @@ bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& v, const
 
 int getHighestRowId(const QString& tablename);
 
+struct dbViewDev{
+    const QString name;
+    const QString sql;
+};
+bool createView(const QString& name, const QString& sql, QSqlDatabase db = QSqlDatabase::database());
+bool createViews( const QVector<dbViewDev>& views, QSqlDatabase db);
+
 #endif // SQLHELPER_H

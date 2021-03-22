@@ -1,6 +1,7 @@
 
 #include "helperfin.h"
 #include "helpersql.h"
+#include "dkdbviews.h"
 #include "dbfield.h"
 #include "dbstatistics.h"
 
@@ -63,17 +64,17 @@ bool datasetFromViews(dbStats::dataset& ds, QString statsView, const QString& cr
 
 bool dbStats::fillall()
 {   LOG_CALL;
-    datasetFromViews(allContracts[0], qsl("vStat_allerVertraege"),       qsl("vAnzahl_allerKreditoren"));
-    datasetFromViews(allContracts[1], qsl("vStat_allerVertraege_thesa"), qsl("vAnzahl_allerKreditoren_thesa"));
-    datasetFromViews(allContracts[2], qsl("vStat_allerVertraege_ausz"),  qsl("vAnzahl_allerKreditoren_ausz"));
+    datasetFromViews(allContracts[0], vnStat_allerVertraege,       vnNbrAllCreditors);
+    datasetFromViews(allContracts[1], vnStat_allerVertraege_thesa, vnNbrAllCreditors_thesa);
+    datasetFromViews(allContracts[2], vnStat_allerVertraege_ausz,  vnNbrAllCreditors_payout);
 
-    datasetFromViews(activeContracts[0], qsl("vStat_aktiverVertraege"),       qsl("vAnzahl_aktiverKreditoren"));
-    datasetFromViews(activeContracts[1], qsl("vStat_aktiverVertraege_thesa"), qsl("vAnzahl_aktiverKreditoren_thesa"));
-    datasetFromViews(activeContracts[2], qsl("vStat_aktiverVertraege_ausz"),  qsl("vAnzahl_aktiverKreditoren_ausz"));
+    datasetFromViews(activeContracts[0], vnStat_aktiverVertraege,       vnNbrActiveCreditors);
+    datasetFromViews(activeContracts[1], vnStat_aktiverVertraege_thesa, vnNbrActiveCreditors_thesa);
+    datasetFromViews(activeContracts[2], vnStat_aktiverVertraege_ausz,  vnNbrActiveCreditors_payout);
 
-    datasetFromViews(inactiveContracts[0], qsl("vStat_passiverVertraege"),       qsl("vAnzahl_passiverKreditoren"));
-    datasetFromViews(inactiveContracts[1], qsl("vStat_passiverVertraege_thesa"), qsl("vAnzahl_passiverKreditoren_thesa"));
-    datasetFromViews(inactiveContracts[2], qsl("vStat_passiverVertraege_ausz"),  qsl("vAnzahl_passiverKreditoren_ausz"));
+    datasetFromViews(inactiveContracts[0], vnStat_passiverVertraege,       vnInactiveCreditors);
+    datasetFromViews(inactiveContracts[1], vnStat_passiverVertraege_thesa, vnInactiveCreditors_thesa);
+    datasetFromViews(inactiveContracts[2], vnStat_passiverVertraege_ausz,  vnInactiveCreditors_payout);
 
     return false;
 }
