@@ -342,13 +342,13 @@ void MainWindow::on_action_menu_database_copy_triggered()
         return;
 
     busycursor b;
-    if( not copy_database(QSqlDatabase::database().databaseName(), dbfile)) {
+    if( copy_dkdb_database(QSqlDatabase::database().databaseName(), dbfile))
+        QMessageBox::information(this, qsl("Kopie angelegt"), qsl("Die Kopie ") +dbfile +qsl(" wurde erfolgreich angelegt"));
+    else {
         QMessageBox::information(this, qsl("Fehler beim Kopieren"), qsl("Die Datenbankkopie konnte nicht angelegt werden. "
                                                                "Weitere Info befindet sich in der LOG Datei"));
         qCritical() << "creating copy failed";
-    } else
-        QMessageBox::information(this, qsl("Kopie angelegt"), qsl("Die Kopie ") +dbfile +qsl(" wurde erfolgreich angelegt"));
-
+    }
     return;
 }
 void MainWindow::on_action_menu_database_anonymous_copy_triggered()
@@ -951,7 +951,7 @@ void MainWindow::on_action_menu_contracts_statistics_view_triggered()
         combo->addItem(qsl("Anzahl auslaufender Verträge nach Jahr"),QVariant(BY_CONTRACT_END));
         combo->addItem(qsl("Anzahl Verträge nach Zinssatz und Jahr"),QVariant(INTEREST_DISTRIBUTION));
         combo->addItem(qsl("Anzahl Verträge nach Laufzeiten"),       QVariant(CONTRACT_TERMS));
-        combo->addItem(qsl("Überblick über alle Verträge"),          QVariant(ALL_CONTRACT_INFO));
+//        combo->addItem(qsl("Überblick über alle Verträge"),          QVariant(ALL_CONTRACT_INFO));
         combo->setCurrentIndex(0);
     }
 

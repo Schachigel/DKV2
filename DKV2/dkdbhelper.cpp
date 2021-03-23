@@ -200,7 +200,7 @@ void create_sampleData(int datensaetze)
 bool createCsvActiveContracts()
 {   LOG_CALL;
     QString filename(QDate::currentDate().toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
-    dbtable t("vVertraege_aktiv_detail");
+    dbtable t(vnContractsActiveDetailsView);
     t.append(dbfield("Id", QVariant::Type::Int));
     t.append(dbfield("KreditorId", QVariant::Type::Int));
     t.append(dbfield("Vorname"));
@@ -231,8 +231,8 @@ QVector<rowData> contractRuntimeDistribution()
 {   LOG_CALL;
     int AnzahlBisEinJahr=0, AnzahlBisFuenfJahre=0, AnzahlLaenger=0, AnzahlUnbegrenzet = 0;
     double SummeBisEinJahr=0., SummeBisFuenfJahre=0., SummeLaenger=0., SummeUnbegrenzet = 0.;
-    QString sql = "SELECT Wert, Aktivierungsdatum, Vertragsende "
-                  "FROM vVertraege_aktiv";
+    QString sql = qsl("SELECT Wert, Aktivierungsdatum, Vertragsende "
+                  "FROM (%1)").arg(getSqls()[vnContractsActiveView]);
     QSqlQuery q; q.setForwardOnly(true);
     if( not q.exec(sql)) {
         qCritical() << "calculation of runtime distribution failed: " << q.lastError() << Qt::endl << q.lastQuery();
@@ -270,8 +270,8 @@ QVector<rowData> contractRuntimeDistribution()
 void calc_contractEnd( QVector<ContractEnd>& ces)
 {   LOG_CALL;
     QString sql {qsl("SELECT count(*) AS Anzahl, sum(Wert) AS Wert, strftime('%Y',Vertragsende) AS Jahr "
-             "FROM vVertraege_aktiv "
-             "WHERE Vertragsende < 9999-01-01 GROUP BY strftime('%Y',Vertragsende) ORDER BY Jahr")};
+             "FROM (%1) "
+             "WHERE Vertragsende < 9999-01-01 GROUP BY strftime('%Y',Vertragsende) ORDER BY Jahr").arg(getSqls()[vnContractsActiveView])};
     QSqlQuery q; q.setForwardOnly(true);
     if( q.exec(sql)) {
         while( q.next()) {
@@ -283,7 +283,8 @@ void calc_contractEnd( QVector<ContractEnd>& ces)
 }
 void calc_annualInterestDistribution( QVector<YZV>& yzv)
 {   LOG_CALL;
-    QString sql ="SELECT * FROM vContractsByYearByInterest ORDER BY Year";
+    QString sql =qsl("SELECT * FROM (%1) ORDER BY Year").arg(getSqls()[vnContractsByYearByInterest]);
+
     QSqlQuery query; query.setForwardOnly(true);
     if( not query.exec(sql)) {
         qCritical() << "execute query failed";

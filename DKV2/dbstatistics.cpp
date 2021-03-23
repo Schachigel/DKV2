@@ -26,28 +26,10 @@ QString dbStats::dataset::toString() const
 
 bool datasetFromViews(dbStats::dataset& ds, QString statsView, const QString& creditorNbrView)
 {   LOG_CALL_W(statsView);
-    QVector<dbfield> v;
-    dbfield contractCount(qsl("Anzahl"), QVariant::Type::Int);
-    contractCount.setTableName(statsView);
-    v.append(contractCount);
 
-    dbfield value(qsl("Wert"), QVariant::Type::Double);
-    value.setTableName(statsView);
-    v.append(value);
+    QString sql =getSqls()[statsView];
+    QSqlRecord rec =executeSingleRecordSql(sql);
 
-    dbfield interest(qsl("Jahreszins"), QVariant::Type::Double);
-    interest.setTableName(statsView);
-    v.append(interest);
-
-    dbfield average(qsl("mittlereRate"), QVariant::Type::Double);
-    average.setTableName(statsView);
-    v.append(average);
-
-    dbfield weighted(qsl("gewMittel"), QVariant::Type::Double);
-    weighted.setTableName(statsView);
-    v.append(weighted);
-
-    QSqlRecord rec = executeSingleRecordSql(v);
     if( rec.isEmpty())
         return false;
     ds.nbrContracts = rec.value(qsl("Anzahl")).toInt();
@@ -56,7 +38,8 @@ bool datasetFromViews(dbStats::dataset& ds, QString statsView, const QString& cr
     ds.avgInterestRate = rec.value(qsl("mittlereRate")).toDouble();
     ds.weightedAvgInterestRate = rec.value(qsl("gewMittel")).toDouble();
 
-    int nbrCreditors = executeSingleValueSql(qsl("Anzahl"), creditorNbrView).toInt();
+    QString sqlCNbr {qsl("SELECT Anzahl FROM (%1)").arg(getSqls()[creditorNbrView])};
+    int nbrCreditors = executeSingleValueSql(sqlCNbr).toInt();
     for( int i=0; i<nbrCreditors; i++)
         ds.credCount.insert(i, 1);
     return true;

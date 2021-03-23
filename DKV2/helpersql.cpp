@@ -225,7 +225,7 @@ QVariant executeSingleValueSql(const dbfield& field, const QString& where, QSqlD
 }
 
 QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbForeignKey>& keys, const QString& incomingWhere, const QString& order)
-{   //LOG_CALL;
+{   LOG_CALL;
 
     QString FieldList;
     QString TableList;
@@ -349,9 +349,9 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
     qInfo() << "executeSql returns " << result;
     return result;
 }
-bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result)
+bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result, const QSqlDatabase& db /*= ...*/ )
 {
-    QSqlQuery q; q.setForwardOnly(true);
+    QSqlQuery q(db); q.setForwardOnly(true);
     if( not q.prepare(sql)) {
         qDebug() << "Faild to prep Query. Error:" << sql << Qt::endl << q.lastError();
         return false;
@@ -447,10 +447,10 @@ bool createView(const QString& name, const QString& sql, QSqlDatabase db /*= QSq
     qCritical() << "Faild to create view " << name;
     return false;
 }
-bool createViews( const QVector<dbViewDev>& views, QSqlDatabase db)
+bool createViews( const QMap<QString, QString>& views, QSqlDatabase db)
 {
-    for( auto view: views) {
-        if( not createView(view.name, view.sql, db))
+    foreach(QString view, views.keys()) {
+        if( not createView(view, views[view], db))
             return false;
     }
     return true;

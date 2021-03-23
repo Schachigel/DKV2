@@ -13,10 +13,11 @@ extern const QString vnInvestmentsView;
 extern const QString vnContractsActiveDetailsView;
 extern const QString vnVertraege_aktiv;
 extern const QString vnContractsInactiveView;
+extern const QString vnContractsActiveView;
 extern const QString vnContractsAllView;
 
-extern const QString vnNextAnnualSettlement_firstAS;
-extern const QString vnNextAnnualSettlement_nextAS;
+// extern const QString vnNextAnnualSettlement_firstAS;
+// extern const QString vnNextAnnualSettlement_nextAS;
 extern const QString vnNextAnnualSettlement;
 
 extern const QString vnContractsByYearByInterest;
@@ -43,6 +44,9 @@ extern const QString vnStat_passiverVertraege_ausz;
 
 extern const QString vnBookingsOverview;
 
-QVector<dbViewDev>& getViews();
+QMap<QString, QString>& getSqls();
+QMap<QString, QString>& getViews();
+
+bool remove_all_views(const QSqlDatabase& db =QSqlDatabase::database());
 
 #endif // DKDBVIEWS_H

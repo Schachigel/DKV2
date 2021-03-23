@@ -112,7 +112,7 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
 QSqlRecord executeSingleRecordSql(const QString& sql);
 
 QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString());
-bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result);
+bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result, const QSqlDatabase& db =QSqlDatabase::database());
 bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlRecord>& result);
 
 bool executeSql_wNoRecords(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database());
@@ -126,6 +126,6 @@ struct dbViewDev{
     const QString sql;
 };
 bool createView(const QString& name, const QString& sql, QSqlDatabase db = QSqlDatabase::database());
-bool createViews( const QVector<dbViewDev>& views, QSqlDatabase db);
+bool createViews( const QMap<QString, QString>& views, QSqlDatabase db);
 
 #endif // SQLHELPER_H

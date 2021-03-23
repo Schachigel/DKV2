@@ -4,6 +4,7 @@
 #include "tabledatainserter.h"
 #include "helperfile.h"
 #include "appconfig.h"
+#include "dkdbviews.h"
 #include "dkdbhelper.h"
 #include "dkdbcopy.h"
 
@@ -126,15 +127,17 @@ bool copy_database( const QString& sourceFName,
     return true;
 }
 
-//bool copy_dkdb_database( const QString& sourceFName,
-//                         const QString& targetFName)
-//{
-//    copy_database(sourceFName, targetFName);
-//    // force views creation on next startup
-//    QString sql{qsl("DELETE FROM meta WHERE Name='dkv2.exe.Version'")};
-//    autoDb target(targetFName, qsl("copy_dkdb"));
-//    return executeSql_wNoRecords(qsl("INSERT INTO sqlite_master FROM "), target.db);
-//}
+bool copy_dkdb_database( const QString& sourceFName,
+                         const QString& targetFName)
+{
+    copy_database(sourceFName, targetFName);
+    // force views creation on next startup
+    autoDb target(targetFName, qsl("copy_dkdb"));
+    if( executeSql_wNoRecords(qsl("DELETE FROM meta WHERE Name='dkv2.exe.Version'"), target.db))
+        if( remove_all_views( target.db))
+            return true;
+    return false;
+}
 
 
 /*

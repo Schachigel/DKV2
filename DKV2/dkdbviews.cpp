@@ -250,9 +250,8 @@ SELECT id
   ,Vertragsende
   ,thesa
   ,KreditorId
-FROM vVertraege_aktiv_detail
-)str"
-)};
+FROM (%1)
+)str").arg(sqlContractsActiveDetailsView)};
 
 const QString vnContractsInactiveView {qsl("vVertraege_passiv")};
 const QString sqlContractsInactiveView {qsl(
@@ -286,7 +285,7 @@ R"str(
       ,Vertragsende
       ,thesa
       ,KreditorId
-    FROM vVertraege_aktiv
+    FROM (%1)
 UNION
     SELECT id
       ,Kreditorin
@@ -298,9 +297,9 @@ UNION
       ,Vertragsende
       ,thesa
       ,KreditorId
-  FROM vVertraege_passiv
+  FROM (%2)
 )str"
-)};
+).arg(sqlContractsActiveView, sqlContractsInactiveView)};
 
 const QString vnNextAnnualSettlement_firstAS {qsl("vNextAnnualS_first")};
 const QString sqlNextAnnualSettlement_firstAS {qsl(
@@ -334,11 +333,10 @@ const QString sqlNextAnnualSettlement {qsl(
 R"str(
 SELECT MIN(nextInterestDate) AS date
 FROM
-  (SELECT nextInterestDate FROM vNextAnnualS_first
+  (SELECT nextInterestDate FROM (%1)
      UNION
-  SELECT nextInterestDate FROM vNextAnnualS_next)
-)str"
-)};
+  SELECT nextInterestDate FROM (%2))
+)str").arg(sqlNextAnnualSettlement_firstAS, sqlNextAnnualSettlement_nextAS)};
 
 const QString vnContractsByYearByInterest {qsl("vContractsByYearByInterest")};
 const QString sqlContractsByYearByInterest {qsl(R"str(
@@ -381,48 +379,48 @@ const QString sqlNbrActiveCreditors {qsl(R"str(
 SELECT count(*) AS Anzahl
 FROM
   (SELECT DISTINCT KreditorId
-   FROM vVertraege_aktiv)
-)str")};
+   FROM (%1))
+)str").arg(sqlContractsActiveView)};
 
 const QString vnNbrActiveCreditors_thesa {qsl("vAnzahl_aktiverKreditoren_thesa")};
 const QString sqlNbrActiveCreditors_thesa{qsl(R"str(
 SELECT count(*) AS Anzahl
 FROM
   (SELECT DISTINCT KreditorId
-   FROM vVertraege_aktiv WHERE thesa)
-)str")};
+   FROM (%1) WHERE thesa)
+)str").arg(sqlContractsActiveView)};
 
 const QString vnNbrActiveCreditors_payout {qsl("vAnzahl_aktiverKreditoren_ausz")};
 const QString sqlNbrActiveCreditors_payout{qsl(R"str(
 SELECT count(*) AS Anzahl
 FROM
   (SELECT DISTINCT KreditorId
-   FROM vVertraege_aktiv WHERE NOT thesa)
-)str")};
+   FROM (%1) WHERE NOT thesa)
+)str").arg(sqlContractsActiveView)};
 
 const QString vnInactiveCreditors {qsl("vAnzahl_passiverKreditoren")};
 const QString sqlInactiveCreditors{qsl(R"str(
 SELECT count(*) AS Anzahl
 FROM
   (SELECT DISTINCT KreditorId
-   FROM vVertraege_passiv)
-)str")};
+   FROM (%1))
+)str").arg(sqlContractsInactiveView)};
 
 const QString vnInactiveCreditors_thesa {qsl("vAnzahl_passiverKreditoren_thesa")};
 const QString sqlInactiveCreditors_thesa{qsl(R"str(
 SELECT count(*) AS Anzahl
 FROM
   (SELECT DISTINCT KreditorId
-   FROM vVertraege_passiv WHERE thesa)
-)str")};
+   FROM (%1) WHERE thesa)
+)str").arg(sqlContractsInactiveView)};
 
 const QString vnInactiveCreditors_payout {qsl("vAnzahl_passiverKreditoren_ausz")};
 const QString sqlInactiveCreditors_payout{qsl(R"str(
 SELECT count(*) AS Anzahl
 FROM
   (SELECT DISTINCT KreditorId
-   FROM vVertraege_passiv WHERE NOT thesa)
-)str")};
+   FROM (%1) WHERE NOT thesa)
+)str").arg(sqlContractsInactiveView)};
 
 const QString vnInterestByYearOverview {qsl("vStat_InterestByYear")};
 const QString sqlInterestByYearOverview {qsl(
@@ -493,7 +491,7 @@ ORDER BY V.id, B.Datum
 )};
 
 const QString vnStat_allerVertraege {qsl("vStat_allerVertraege")};
-const QString vnStat_allerVertraege_thesa {qsl("vnStat_allerVertraege_thesaqsl")};
+const QString vnStat_allerVertraege_thesa {qsl("vnStat_allerVertraege_thesa")};
 const QString vnStat_allerVertraege_ausz {qsl("vStat_allerVertraege_ausz")};
 const QString vnStat_aktiverVertraege {qsl("vStat_aktiverVertraege")};
 const QString vnStat_aktiverVertraege_thesa {qsl("vStat_aktiverVertraege_thesa")};
@@ -505,14 +503,7 @@ const QString vnStat_passiverVertraege_ausz {qsl("vStat_passiverVertraege_ausz")
 
 // {qsl(R"str()str")};
 
-QVector<dbViewDev> views = {
-    // model of table view: contracts
-    {vnContractView, sqlContractView},
-    // model of table view: deleted contracts
-    {vnExContractView, sqlExContractView},
-    // model of table view: investments
-    {vnInvestmentsView, sqlInvestmentsView},
-
+QMap<QString, QString> sqls = {
     // reporthtml.cpp: Übersichten: Ausgabe aller Vertragsdaten
     // menü: Verträge -> Liste drucken
     // base of sqlContractsActiveView
@@ -524,12 +515,6 @@ QVector<dbViewDev> views = {
     {vnContractsInactiveView, sqlContractsInactiveView},
     // vVertraege_alle is the base of  vStat_allerVertraege, ..._thesa, ..._ausz
     {vnContractsAllView, sqlContractsAllView},
-
-
-    // calculation of the next annual statement
-    {vnNextAnnualSettlement_firstAS,sqlNextAnnualSettlement_firstAS},
-    {vnNextAnnualSettlement_nextAS, sqlNextAnnualSettlement_nextAS},
-    {vnNextAnnualSettlement, sqlNextAnnualSettlement},
 
     // statistics: cound creditors etc.
     {vnContractsByYearByInterest, sqlContractsByYearByInterest},
@@ -543,12 +528,28 @@ QVector<dbViewDev> views = {
     {vnInactiveCreditors_thesa, sqlInactiveCreditors_thesa},
     {vnInactiveCreditors_payout,  sqlInactiveCreditors_payout},
     {vnInterestByYearOverview, sqlInterestByYearOverview},
-
-    // convenientce view
-    {vnBookingsOverview, sqlBookingsOverview}
+    // calculation of the next annual statement
+//    {vnNextAnnualSettlement_firstAS,sqlNextAnnualSettlement_firstAS},
+//    {vnNextAnnualSettlement_nextAS, sqlNextAnnualSettlement_nextAS},
+    {vnNextAnnualSettlement, sqlNextAnnualSettlement}
 };
 
-QVector<dbViewDev>& getViews() {
+QMap<QString, QString> views ={
+    // model of table view: contracts
+    {vnContractView, sqlContractView},
+    // model of table view: deleted contracts
+    {vnExContractView, sqlExContractView},
+    // model of table view: investments
+    {vnInvestmentsView, sqlInvestmentsView},
+    // convenientce view
+    {vnBookingsOverview, sqlBookingsOverview},
+
+};
+QMap<QString, QString>& getViews() {
+    return views;
+}
+
+QMap<QString, QString>& getSqls() {
     static bool init =false;
     if( not init) {
         QString sql_precalc {
@@ -558,18 +559,32 @@ QVector<dbViewDev>& getViews() {
                   "SUM(Wert) as Wert, "
                   "SUM(ROUND(Zinssatz *Wert /100,2)) AS Jahreszins,"
                   "ROUND(AVG(Zinssatz),4) as mittlereRate "
-               "FROM %1 %2)")};
-        views.append({vnStat_allerVertraege,         sql_precalc.arg(qsl("vVertraege_alle"), qsl(""))});
-        views.append({vnStat_allerVertraege_thesa,   sql_precalc.arg(qsl("vVertraege_alle"), qsl("WHERE thesa"))});
-        views.append({vnStat_allerVertraege_ausz,    sql_precalc.arg(qsl("vVertraege_alle"), qsl("WHERE NOT thesa"))});
-        views.append({vnStat_aktiverVertraege,       sql_precalc.arg(qsl("vVertraege_aktiv"), qsl(""))});
-        views.append({vnStat_aktiverVertraege_thesa, sql_precalc.arg(qsl("vVertraege_aktiv"), qsl("WHERE thesa"))});
-        views.append({vnStat_aktiverVertraege_ausz,  sql_precalc.arg(qsl("vVertraege_aktiv"), qsl("WHERE NOT thesa"))});
-        views.append({vnStat_passiverVertraege,      sql_precalc.arg(qsl("vVertraege_passiv"), qsl(""))});
-        views.append({vnStat_passiverVertraege_thesa,sql_precalc.arg(qsl("vVertraege_passiv"), qsl("WHERE thesa"))});
-        views.append({vnStat_passiverVertraege_ausz, sql_precalc.arg(qsl("vVertraege_passiv"), qsl("WHERE NOT thesa"))});
+               "FROM (%1) %2)")};
+        sqls.insert(vnStat_allerVertraege,         sql_precalc.arg(sqls[vnContractsAllView], qsl("")));
+        sqls.insert(vnStat_allerVertraege_thesa,   sql_precalc.arg(sqls[vnContractsAllView], qsl("WHERE thesa")));
+        sqls.insert(vnStat_allerVertraege_ausz,    sql_precalc.arg(sqls[vnContractsAllView], qsl("WHERE NOT thesa")));
+        sqls.insert(vnStat_aktiverVertraege,       sql_precalc.arg(sqls[vnContractsActiveView], qsl("")));
+        sqls.insert(vnStat_aktiverVertraege_thesa, sql_precalc.arg(sqls[vnContractsActiveView], qsl("WHERE thesa")));
+        sqls.insert(vnStat_aktiverVertraege_ausz,  sql_precalc.arg(sqls[vnContractsActiveView], qsl("WHERE NOT thesa")));
+        sqls.insert(vnStat_passiverVertraege,      sql_precalc.arg(sqls[vnContractsInactiveView], qsl("")));
+        sqls.insert(vnStat_passiverVertraege_thesa,sql_precalc.arg(sqls[vnContractsInactiveView], qsl("WHERE thesa")));
+        sqls.insert(vnStat_passiverVertraege_ausz, sql_precalc.arg(sqls[vnContractsInactiveView], qsl("WHERE NOT thesa")));
         init =true;
     }
-    return views;
+    return sqls;
+}
+
+bool remove_all_views(const QSqlDatabase& db /*=QSqlDatabase::database()*/)
+{   LOG_CALL;
+    QVector<QSqlRecord> views;
+    if( not executeSql(qsl("SELECT name FROM sqlite_master WHERE type = ?"), QVariant(qsl("view")), views, db)) {
+        return false;
+    }
+    for( auto rec : views) {
+        if( executeSql_wNoRecords(qsl("DROP view %1").arg(rec.value(0).toString()), db))
+            continue;
+        return false;
+    }
+    return true;
 }
 

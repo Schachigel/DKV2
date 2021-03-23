@@ -4,6 +4,7 @@
 #include "appconfig.h"
 #include "helper.h"
 #include "dkdbhelper.h"
+#include "dkdbviews.h"
 #include "dbstatistics.h"
 #include "reporthtml.h"
 
@@ -150,7 +151,7 @@ QString htmlPayedInterestByYearTable()
     ret +=tableRow4(h2(qsl("Jahr")), h2(qsl("Zinstyp")), h2(qsl("Zinsmodus")), h2(qsl("Summe")));
     QVector<QSqlRecord> records;
     QLocale local;
-    if( not executeSql(qsl("SELECT * FROM vStat_InterestByYear"), QVariant(), records)){
+    if( not executeSql(qsl("SELECT * FROM (%1)").arg(getSqls()[vnInterestByYearOverview]), QVariant(), records)){
         ret += tableRow4(qsl("fehler bei der Datenabfrage"), QString(), QString(), QString());
         ret += endTable();
         return ret;
@@ -225,47 +226,47 @@ QString htmlContractsByRuntimeTable()
     ret += endTable();
     return ret;
 }
-QString htmlAllContractInfo()
-{
-    dbtable t(qsl("vVertraege_aktiv_detail"));
-    t.append(dbfield(qsl("Id"), QVariant::Type::Int));
-    t.append(dbfield(qsl("KreditorId"), QVariant::Type::Int));
-    t.append(dbfield(qsl("Vertragskennung")));
-    t.append(dbfield(qsl("Vorname")));
-    t.append(dbfield(qsl("Nachname")));
-    t.append(dbfield(qsl("Strasse")));
-    t.append(dbfield(qsl("Plz")));
-    t.append(dbfield(qsl("Stadt")));
-    t.append(dbfield(qsl("Email")));
-    t.append(dbfield(qsl("Iban")));
-    t.append(dbfield(qsl("Bic")));
-    t.append(dbfield(qsl("Strasse")));
-    t.append(dbfield(qsl("Zinssatz"), QVariant::Type::Double));
-    t.append(dbfield(qsl("Wert"), QVariant::Type::Double));
-    t.append(dbfield(qsl("Aktivierungsdatum"), QVariant::Type::Date));
-    t.append(dbfield(qsl("Kuendigungsfrist"), QVariant::Type::Int));
-    t.append(dbfield(qsl("Vertragsende"), QVariant::Type::Date));
-    t.append(dbfield(qsl("thesa"), QVariant::Type::Bool));
+//QString htmlAllContractInfo()
+//{
+//    dbtable t(vnContractsActiveDetailsView);
+//    t.append(dbfield(qsl("Id"), QVariant::Type::Int));
+//    t.append(dbfield(qsl("KreditorId"), QVariant::Type::Int));
+//    t.append(dbfield(qsl("Vertragskennung")));
+//    t.append(dbfield(qsl("Vorname")));
+//    t.append(dbfield(qsl("Nachname")));
+//    t.append(dbfield(qsl("Strasse")));
+//    t.append(dbfield(qsl("Plz")));
+//    t.append(dbfield(qsl("Stadt")));
+//    t.append(dbfield(qsl("Email")));
+//    t.append(dbfield(qsl("Iban")));
+//    t.append(dbfield(qsl("Bic")));
+//    t.append(dbfield(qsl("Strasse")));
+//    t.append(dbfield(qsl("Zinssatz"), QVariant::Type::Double));
+//    t.append(dbfield(qsl("Wert"), QVariant::Type::Double));
+//    t.append(dbfield(qsl("Aktivierungsdatum"), QVariant::Type::Date));
+//    t.append(dbfield(qsl("Kuendigungsfrist"), QVariant::Type::Int));
+//    t.append(dbfield(qsl("Vertragsende"), QVariant::Type::Date));
+//    t.append(dbfield(qsl("thesa"), QVariant::Type::Bool));
 
-    QString ret =startTable();
-    ret += startRow();
-    for(auto& field : t.Fields()) {
-        ret +=tag(field.name(), qsl("th"));
-    }
-    ret += endRow();
-    QVector<QSqlRecord> data = executeSql(t.Fields());
-    for(auto& rec : qAsConst(data)) {
-        ret += startRow();
-        for( int i =0; i<rec.count(); i++) {
-            ret += td(rec.field(i).value().toString());
-        }
-        ret += endRow();
-    }
-    ret += endTable();
-    return ret;
-}
+//    QString ret =startTable();
+//    ret += startRow();
+//    for(auto& field : t.Fields()) {
+//        ret +=tag(field.name(), qsl("th"));
+//    }
+//    ret += endRow();
+//    QVector<QSqlRecord> data = executeSql(t.Fields());
+//    for(auto& rec : qAsConst(data)) {
+//        ret += startRow();
+//        for( int i =0; i<rec.count(); i++) {
+//            ret += td(rec.field(i).value().toString());
+//        }
+//        ret += endRow();
+//    }
+//    ret += endTable();
+//    return ret;
+//}
 QString reportHtml(Uebersichten u)
-{
+{   LOG_CALL;
     QString html =qsl("<html><body>"
                     "<style>"
                       "table { font-family: Verdana; font-size: medium; border: 1px solid black; border-collapse: collapse; }"
@@ -293,9 +294,9 @@ QString reportHtml(Uebersichten u)
     case CONTRACT_TERMS: {
         return html.arg(htmlContractsByRuntimeTable());
     }
-    case ALL_CONTRACT_INFO: {
-        return html.arg(htmlAllContractInfo());
-    }
+//    case ALL_CONTRACT_INFO: {
+//        return html.arg(htmlAllContractInfo());
+//    }
     default:
     {Q_ASSERT(false);}
     return QString();

@@ -1,5 +1,6 @@
 #include <QtMath>
 
+#include "dkdbviews.h"
 #include "contract.h"
 #include "booking.h"
 
@@ -98,7 +99,8 @@
 
 /* static */ QDate bookings::dateOfnextSettlement()
 {   LOG_CALL;
-    return  executeSingleValueSql(qsl("date"), qsl("vNextAnnualSettlement")).toDate();
+    // qDebug() << getSqls();
+    return  executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(getSqls()[vnNextAnnualSettlement])).toDate();
 }
 /*static */ QVector<booking> bookings::bookingsFromSql(const QString& where, const QString& order)
 {
