@@ -442,7 +442,7 @@ wpLableAndAmount::wpLableAndAmount(QWidget* p) : QWizardPage(p)
     g->addWidget(l2, 1, 0);
     g->addWidget(leAmount, 1, 1);
     g->addWidget(l3, 2, 0);
-    g->addWidget(eComment, 2, 2);
+    g->addWidget(eComment, 2, 1);
     g->setColumnStretch(0, 1);
     g->setColumnStretch(1, 4);
 
