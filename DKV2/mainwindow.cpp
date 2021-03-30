@@ -655,6 +655,7 @@ void MainWindow::prepare_valid_contraccts_list_view()
     tv->setItemDelegateForColumn(cp_ContractValue, new CurrencyFormatter(tv));
     tv->setItemDelegateForColumn(cp_InterestBearing, new CurrencyFormatter(tv));
     tv->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(tv));
+    tv->setItemDelegateForColumn(cp_InterestMode, new thesaItemFormatter(tv));
     tv->hideColumn(cp_vid);
     tv->hideColumn(cp_Creditor_id);
 

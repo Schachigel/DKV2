@@ -2,6 +2,7 @@
 #include <QDate>
 
 #include "booking.h"
+#include "contract.h"
 #include "helperfin.h"
 #include "uiitemformatter.h"
 
@@ -93,10 +94,8 @@ void KFristItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &o
 
 QString thesaItemFormatter::displayText(const QVariant &value, const QLocale &) const
 {
-    if( value.toBool())
-        return qsl("thesaur.");
-    else
-        return qsl("auszahlend");
+    interestModel im =fromInt(value.toInt());
+    return toString(im);
 }
 void thesaItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {

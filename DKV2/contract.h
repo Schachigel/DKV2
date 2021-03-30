@@ -16,6 +16,7 @@ enum class interestModel {
     payout   =0,
     reinvest =1,
     fixed    =2,
+    zero     =3,
     maxId
 };
 inline QString toString(const interestModel m) {
@@ -26,6 +27,8 @@ inline QString toString(const interestModel m) {
         return "thesaurierend";
     case interestModel::fixed:
         return "unveränderlich";
+    case interestModel::zero:
+        return "zinslos";
     case interestModel::maxId:
     default:
         Q_ASSERT(true);
@@ -85,14 +88,20 @@ struct contract
     qlonglong creditorId() const{ return td.getValue(qsl("KreditorId")).toLongLong();}
     void setLabel(const QString& l) { td.setValue(qsl("Kennung"), l);}
     QString label() const { return td.getValue(qsl("Kennung")).toString();};
-    void setInterestRate( const double& percent) { td.setValue(qsl("ZSatz"), QVariant (qRound(percent * 100.))); }
+    void setInterestRate( const double& percent) {
+        td.setValue(qsl("ZSatz"), QVariant (qRound(percent * 100.)));
+        if( percent == 0) td.setValue(qsl("thesaurierend"), toInt(interestModel::zero));
+    }
     double interestRate() const {
         QVariant p(td.getValue(qsl("ZSatz"))); // stored as a int (100th percent)
         return r2(double(p.toInt())/100.);
     }
     void setPlannedInvest(const double& d) { td.setValue(qsl("Betrag"), ctFromEuro(d));}
     double plannedInvest() const { return euroFromCt( td.getValue(qsl("Betrag")).toInt());}
-    void setInterestModel( const interestModel b =interestModel::reinvest) { td.setValue(qsl("thesaurierend"), toInt(b));}
+    void setInterestModel( const interestModel b =interestModel::reinvest) {
+        td.setValue(qsl("thesaurierend"), toInt(b));
+        if( b == interestModel::zero) td.setValue(qsl("ZSatz"), 0);
+    }
     interestModel iModel() const { return fromInt(td.getValue(qsl("thesaurierend")).toInt());}
     void setNoticePeriod(const int m) { td.setValue(qsl("Kfrist"), m); if( -1 not_eq m) setPlannedEndDate( EndOfTheFuckingWorld);}
     int noticePeriod() const { return td.getValue(qsl("Kfrist")).toInt();}

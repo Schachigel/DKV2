@@ -665,8 +665,8 @@ bool wpInterestFromInvestment::validatePage()
     wizNew* wiz =qobject_cast<wizNew*>(wizard());
     wiz->interest =interestOfInvestmentByRowId(rowid_investment);
     if( wiz->interest == 0){
-        // without interest -> interest payout mode "payout"
-        wiz->iPaymentMode =fromInt(0);
+        // without interest -> interest payout mode "zero"
+        wiz->iPaymentMode =interestModel::zero;
     }
 
     return true;
@@ -707,7 +707,10 @@ bool wpInterestSelection::validatePage()
 {
     // without interest -> interest payout mode "payout"
     wizNew* wiz =qobject_cast<wizNew*>(wizard());
-    wiz->iPaymentMode =fromInt(0);
+    if( field(pnInterestIndex) == 0)
+        wiz->iPaymentMode =interestModel::zero;
+    else
+        wiz->iPaymentMode =interestModel::payout; // default for the next wiz page
     return true;
 }
 int wpInterestSelection::nextId() const
@@ -821,9 +824,7 @@ void wpConfirmContract::initializePage()
     if( wiz)
     {
         interestModel iMode{wiz->iPaymentMode};
-        QString interestMode{"Auszahlend"};
-        if( iMode == interestModel::reinvest) interestMode = "Thesaurierend";
-        if( iMode == interestModel::fixed) interestMode = "Fester Zins ohne Zinsauszahlung";
+        QString interestMode =toString(iMode);
         setSubTitle(summary.arg(field(pnFName).toString(), field(pnLName).toString(),
                                 field(pnLabel).toString(),
                                 l.toCurrencyString(field(pnAmount).toDouble()),

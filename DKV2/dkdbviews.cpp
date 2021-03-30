@@ -20,10 +20,7 @@ SELECT
   ,CAST(V.Zsatz / 100. AS VARCHAR) || ' %'    AS Zinssatz
 
 -- Zinsmodus
-  ,CASE WHEN V.thesaurierend = 0 THEN 'Auszahlend'
-       ELSE CASE WHEN V.thesaurierend = 1 THEN 'Thesaur.'
-       ELSE CASE WHEN V.thesaurierend = 2 THEN 'Fester Zins'
-       ELSE 'ERROR' END END END       AS Zinsmodus
+  ,V.thesaurierend AS Zinsmodus
 
 -- VerzinslGuthaben
   ,CASE WHEN V.thesaurierend = 0 THEN ifnull(summeAllerBuchungen, '-')
@@ -362,7 +359,7 @@ SELECT COUNT(*) AS Anzahl
 FROM
   (SELECT DISTINCT KreditorId
    FROM Vertraege
-   WHERE thesaurierend)
+   WHERE thesaurierend = 1)
 )str")};
 
 const QString vnNbrAllCreditors_payout {qsl("vAnzahl_allerKreditoren_ausz")};
