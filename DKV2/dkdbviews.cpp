@@ -72,7 +72,6 @@ LEFT JOIN
 )str"
 )};
 
-
 const QString vnExContractView {qsl("vVertraege_geloescht")};
 const QString sqlExContractView {qsl(
 R"str(
@@ -497,6 +496,254 @@ const QString vnStat_passiverVertraege {qsl("vStat_passiverVertraege")};
 const QString vnStat_passiverVertraege_thesa {qsl("vStat_passiverVertraege_thesa")};
 const QString vnStat_passiverVertraege_ausz {qsl("vStat_passiverVertraege_ausz")};
 
+const QString vnStat_activeContracts_byIMode_toDate {qsl("vStat_aktiveVertraege_nachZinsModus_bisDatum")};
+const QString sqlStat_activeContracts_byIMode_toDate {qsl(
+R"str(
+WITH
+T1 AS ( -- Summe Kredite, Summe Zinsen nach Zeit und Zinsmodus
+  SELECT thesaurierend
+    , sum(Betrag) /100. AS Kreditvolumen
+    , round(sum(Betrag * Zinssatz) /100./100./100., 2) AS Jahreszins
+
+  FROM (
+    SELECT B.Datum as Buchungsdatum
+      , B.Betrag as Betrag
+      , V.ZSatz as Zinssatz
+      , thesaurierend
+
+    FROM Buchungen AS B
+    INNER JOIN Vertraege AS V
+      On B.VertragsId = V.id
+    )
+  WHERE Buchungsdatum <= date(:date)
+  GROUP BY thesaurierend
+)
+, T2 AS ( -- Anzahl *aktiver* Verträge / Creditoren nach Zeit und Zinsmodus
+  SELECT thesaurierend
+    , count(*) AS nbrContracts
+    , count(DISTINCT KreditorId) AS nbrCreditors
+  FROM Vertraege
+  INNER JOIN
+  (
+    SELECT DISTINCT Buchungen.VertragsId AS Vid, min(Buchungen.Datum) AS Aktivierungsdatum
+    FROM Buchungen
+    GROUP BY Vid
+  ) ON Vertraege.id =Vid
+  WHERE Aktivierungsdatum <=date(:date)
+  GROUP BY thesaurierend
+)
+, all_IModes_T1 AS ( -- Summe Kredite und Zinsen für alle Kredite
+  SELEcT 'all' AS thesaurierend
+    , sum(Betrag) /100. AS KreditVolumen
+    , round(sum(Betrag * Zinssatz) /100. /100. /100., 2) AS Jahreszins
+  FROM (
+    SELECT Buchungen.Datum AS BuchungsDatum
+    , Buchungen.Betrag AS Betrag
+    , Vertraege.ZSatz as Zinssatz
+    FROM Buchungen
+    INNER JOIN Vertraege
+      On Buchungen.VertragsId = Vertraege.id
+  )
+  WHERE Buchungsdatum <= date(:date)
+)
+, all_IModes_T2 AS (
+  SELECT 'all' AS thesaurierend
+    , count(*) AS nbrContracts
+    , count(DISTINCT KreditorId) AS nbrCreditors
+  FROM Vertraege
+  INNER JOIN
+  (
+    SELECT DISTINCT Buchungen.VertragsId AS Vid, min(Buchungen.Datum) AS Aktivierungsdatum
+    FROM Buchungen
+    GROUP BY Vid
+  ) ON Vertraege.id =Vid
+  WHERE Aktivierungsdatum <=date(:date)
+)
+------ THE ACTION STARTS HERE
+SELEcT T1.thesaurierend
+  , T2.nbrCreditors AS nbrCreditorsActiveContracts
+  , T2.nbrContracts AS nbrActiveContracts
+  , T1.KreditVolumen AS activeCreditVolume
+  , T1.Jahreszins AS activeAnnualInterest
+  , round(100. * T1.Jahreszins / T1.KreditVolumen,2) AS activeContractsAvgInterest
+FROM T1
+INNER JOIN T2 ON T1.thesaurierend = T2.thesaurierend
+
+UNION
+
+SELEcT all_IModes_T1.thesaurierend
+  , all_IModes_T2.nbrCreditors AS nbrCreditorsActiveContracts
+  , all_IModes_T2.nbrContracts AS nbrActiveContracts
+  , all_IModes_T1.KreditVolumen AS activeCreditVolume
+  , all_IModes_T1.Jahreszins AS activeAnnualInterest
+  , round(100. * all_IModes_T1.Jahreszins / all_IModes_T1.KreditVolumen,2) AS activeContractsAvgInterest
+FROM all_IModes_T1
+INNER JOIN all_IModes_T2 ON all_IModes_T1.thesaurierend = all_IModes_T2.thesaurierend
+)str")
+};
+
+const QString vnStat_activeContracts_byIMode{qsl("vStat_aktiveVertraege_nachZinsModus")};
+const QString sqlStat_activeContracts_byIMode{qsl(
+R"str(
+WITH
+T1 AS ( -- Summe Kredite, Summe Zinsen nach Zeit und Zinsmodus
+  SELECT thesaurierend
+    , sum(Betrag) /100. AS Kreditvolumen
+    , round(sum(Betrag * Zinssatz) /100./100./100., 2) AS Jahreszins
+  FROM (
+    SELECT B.Datum as Buchungsdatum
+      , B.Betrag as Betrag
+      , V.ZSatz as Zinssatz
+      , thesaurierend
+    FROM Buchungen AS B
+    INNER JOIN Vertraege AS V
+      On B.VertragsId = V.id
+    )
+  GROUP BY thesaurierend
+)
+, T2 AS ( -- Anzahl *aktiver* Verträge / Creditoren nach Zeit und Zinsmodus
+  SELECT thesaurierend
+    , count(*) AS nbrContracts
+    , count(DISTINCT KreditorId) AS nbrCreditors
+  FROM Vertraege
+  INNER JOIN
+  (
+    SELECT DISTINCT Buchungen.VertragsId AS Vid, min(Buchungen.Datum) AS Aktivierungsdatum
+    FROM Buchungen
+    GROUP BY Vid
+  ) ON Vertraege.id =Vid
+  GROUP BY thesaurierend
+)
+, all_IModes_T1 AS ( -- Summe Kredite und Zinsen für alle Kredite
+  SELEcT 'all' AS thesaurierend
+    , sum(Betrag) /100. AS KreditVolumen
+    , round(sum(Betrag * Zinssatz) /100. /100. /100., 2) AS Jahreszins
+  FROM (
+    SELECT Buchungen.Datum AS BuchungsDatum
+    , Buchungen.Betrag AS Betrag
+    , Vertraege.ZSatz as Zinssatz
+    FROM Buchungen
+    INNER JOIN Vertraege
+      On Buchungen.VertragsId = Vertraege.id
+  )
+)
+, all_IModes_T2 AS (
+  SELECT 'all' AS thesaurierend
+    , count(*) AS nbrContracts
+    , count(DISTINCT KreditorId) AS nbrCreditors
+  FROM Vertraege
+  INNER JOIN
+  (
+    SELECT DISTINCT Buchungen.VertragsId AS Vid, min(Buchungen.Datum) AS Aktivierungsdatum
+    FROM Buchungen
+    GROUP BY Vid
+  ) ON Vertraege.id =Vid
+)
+------ THE ACTION STARTS HERE
+SELEcT T1.thesaurierend
+  , T2.nbrCreditors AS nbrCreditorsActiveContracts
+  , T2.nbrContracts AS nbrActiveContracts
+  , T1.KreditVolumen AS activeCreditVolume
+  , T1.Jahreszins AS activeAnnualInterest
+  , round(100. * T1.Jahreszins / T1.KreditVolumen,2) AS activeContractsAvgInterest
+FROM T1
+INNER JOIN T2 ON T1.thesaurierend = T2.thesaurierend
+
+UNION
+
+SELEcT all_IModes_T1.thesaurierend
+  , all_IModes_T2.nbrCreditors AS nbrCreditorsActiveContracts
+  , all_IModes_T2.nbrContracts AS nbrActiveContracts
+  , all_IModes_T1.KreditVolumen AS activeCreditVolume
+  , all_IModes_T1.Jahreszins AS activeAnnualInterest
+  , round(100. * all_IModes_T1.Jahreszins / all_IModes_T1.KreditVolumen,2) AS activeContractsAvgInterest
+FROM all_IModes_T1
+INNER JOIN all_IModes_T2 ON all_IModes_T1.thesaurierend = all_IModes_T2.thesaurierend
+)str"
+)};
+
+const QString vnStat_inactiveContracts_byIMode_toDate {qsl("vStat_inaktiveVertraege_nachZinsmodus_bisDatum")};
+const QString sqlStat_inactiveContracts_byIMode_toDate {qsl(
+R"str(
+-- Werte aller inaktiven Vertraege
+SELECT thesaurierend
+  , nbrCreditorsInactiveContracts
+  , nbrInactiveContracts
+  , inactiveCreditVolume
+  , inactiveAnnualInterest
+  , round(100. * inactiveAnnualInterest / inactiveCreditVolume, 2) AS inactiveContractsAvgInterest
+
+FROM (
+  SELECT thesaurierend
+    , COUNT(*) AS nbrInactiveContracts
+    , COUNT( DISTINCT KreditorId) AS nbrCreditorsInactiveContracts
+    , SUM(Betrag) /100. AS inactiveCreditVolume
+    , round(SUM(Betrag * ZSatz) /100. /100. /100.,2) AS inactiveAnnualInterest
+  FROM Vertraege
+  WHERE Vertragsdatum <= date(:date)
+    AND id NOT IN (SELECT DISTINCT VertragsId FROM Buchungen)
+  GROUP BY thesaurierend
+)
+UNION
+SELECT 'all' AS thesaurierend
+  , nbrCreditorsInactiveContracts
+  , nbrInactiveContracts
+  , inactiveCreditVolume
+  , inactiveAnnualInterest
+  , round(100. * inactiveAnnualInterest / inactiveCreditVolume, 2) AS inactiveContractsAvgInterest
+FROM (
+  SELECT thesaurierend
+    , COUNT(*) AS nbrInactiveContracts
+    , COUNT( DISTINCT KreditorId) AS nbrCreditorsInactiveContracts
+    , SUM(Betrag) /100. AS inactiveCreditVolume
+    , round(SUM(Betrag * ZSatz) /100. /100. /100.,2) AS inactiveAnnualInterest
+  FROM Vertraege
+  WHERE Vertragsdatum <= date(:date)
+    AND id NOT IN (SELECT DISTINCT VertragsId FROM Buchungen)
+)
+))str"
+)};
+
+const QString vnStat_inactiveContracts_byIMode {qsl("vStat_inaktiveVertraege_nachZinsmodus")};
+const QString sqlStat_inactiveContracts_byIMode {qsl(
+R"str(
+-- Werte aller inaktiven Vertraege
+SELECT thesaurierend
+  , nbrCreditorsInactiveContracts
+  , nbrInactiveContracts
+  , inactiveCreditVolume
+  , inactiveAnnualInterest
+  , round(100. * inactiveAnnualInterest / inactiveCreditVolume, 2) AS inactiveContractsAvgInterest
+FROM (
+  SELECT thesaurierend
+    , COUNT(*) AS nbrInactiveContracts
+    , COUNT( DISTINCT KreditorId) AS nbrCreditorsInactiveContracts
+    , SUM(Betrag) /100. AS inactiveCreditVolume
+    , round(SUM(Betrag * ZSatz) /100. /100. /100.,2) AS inactiveAnnualInterest
+
+  FROM Vertraege
+  WHERE id NOT IN (SELECT DISTINCT VertragsId FROM Buchungen)
+  GROUP BY thesaurierend
+)
+
+UNION
+
+SELECT 'all' AS thesaurierend
+  , nbrCreditorsInactiveContracts
+  , nbrInactiveContracts
+  , inactiveCreditVolume
+  , inactiveAnnualInterest
+  , round(100. * inactiveAnnualInterest / inactiveCreditVolume, 2) AS inactiveContractsAvgInterest
+FROM (
+  SELECT thesaurierend
+    , COUNT(*) AS nbrInactiveContracts
+    , COUNT( DISTINCT KreditorId) AS nbrCreditorsInactiveContracts
+    , SUM(Betrag) /100. AS inactiveCreditVolume
+    , round(SUM(Betrag * ZSatz) /100. /100. /100.,2) AS inactiveAnnualInterest
+  FROM Vertraege
+  WHERE id NOT IN (SELECT DISTINCT VertragsId FROM Buchungen)
+)
+)str")};
 
 // {qsl(R"str()str")};
 
@@ -528,7 +775,10 @@ QMap<QString, QString> sqls = {
     // calculation of the next annual statement
 //    {vnNextAnnualSettlement_firstAS,sqlNextAnnualSettlement_firstAS},
 //    {vnNextAnnualSettlement_nextAS, sqlNextAnnualSettlement_nextAS},
-    {vnNextAnnualSettlement, sqlNextAnnualSettlement}
+    {vnNextAnnualSettlement, sqlNextAnnualSettlement},
+    // statistics by time and iMode
+    {vnStat_activeContracts_byIMode_toDate, sqlStat_activeContracts_byIMode_toDate},
+    {vnStat_inactiveContracts_byIMode_toDate, sqlStat_inactiveContracts_byIMode_toDate}
 };
 
 QMap<QString, QString> views ={
@@ -540,7 +790,8 @@ QMap<QString, QString> views ={
     {vnInvestmentsView, sqlInvestmentsView},
     // convenientce view
     {vnBookingsOverview, sqlBookingsOverview},
-
+    {vnStat_activeContracts_byIMode, sqlStat_activeContracts_byIMode},
+    {vnStat_inactiveContracts_byIMode, sqlStat_inactiveContracts_byIMode}
 };
 QMap<QString, QString>& getViews() {
     return views;

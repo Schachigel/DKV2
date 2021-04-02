@@ -42,6 +42,13 @@ extern const QString vnStat_passiverVertraege;
 extern const QString vnStat_passiverVertraege_thesa;
 extern const QString vnStat_passiverVertraege_ausz;
 
+// new, time dep. statistics
+extern const QString vnStat_activeContracts_byIMode_toDate;
+extern const QString vnStat_inactiveContracts_byIMode_toDate;
+// statistics w/o time dep. saved as views
+extern const QString vnStat_activeContracts_byIMode;
+extern const QString vnStat_inactiveContracts_byIMode;
+
 extern const QString vnBookingsOverview;
 
 QMap<QString, QString>& getSqls();
