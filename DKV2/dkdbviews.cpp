@@ -500,7 +500,7 @@ const QString vnStat_activeContracts_byIMode_toDate {qsl("vStat_aktiveVertraege_
 const QString sqlStat_activeContracts_byIMode_toDate {qsl(
 R"str(
 WITH
-T1 AS ( -- Summe Kredite, Summe Zinsen nach Zeit und Zinsmodus
+sum_by_iModes AS ( -- Summe Kredite, Summe Zinsen nach Zeit und Zinsmodus
   SELECT thesaurierend
     , sum(Betrag) /100. AS Kreditvolumen
     , round(sum(Betrag * Zinssatz) /100./100./100., 2) AS Jahreszins
@@ -518,67 +518,68 @@ T1 AS ( -- Summe Kredite, Summe Zinsen nach Zeit und Zinsmodus
   WHERE Buchungsdatum <= date(:date)
   GROUP BY thesaurierend
 )
-, T2 AS ( -- Anzahl *aktiver* Verträge / Creditoren nach Zeit und Zinsmodus
+, count_by_iModes AS ( -- Anzahl *aktiver* Verträge / Creditoren nach Zeit und Zinsmodus
   SELECT thesaurierend
     , count(*) AS nbrContracts
     , count(DISTINCT KreditorId) AS nbrCreditors
-  FROM Vertraege
+  FROM Vertraege AS V
   INNER JOIN
   (
-    SELECT DISTINCT Buchungen.VertragsId AS Vid, min(Buchungen.Datum) AS Aktivierungsdatum
-    FROM Buchungen
+    SELECT DISTINCT B.VertragsId AS Vid, min(B.Datum) AS Aktivierungsdatum
+    FROM Buchungen AS B
     GROUP BY Vid
-  ) ON Vertraege.id =Vid
+  ) ON V.id =Vid
   WHERE Aktivierungsdatum <=date(:date)
   GROUP BY thesaurierend
 )
-, all_IModes_T1 AS ( -- Summe Kredite und Zinsen für alle Kredite
+, sum_all_iModes AS ( -- Summe Kredite und Zinsen für alle Kredite
   SELEcT 'all' AS thesaurierend
     , sum(Betrag) /100. AS KreditVolumen
     , round(sum(Betrag * Zinssatz) /100. /100. /100., 2) AS Jahreszins
   FROM (
-    SELECT Buchungen.Datum AS BuchungsDatum
-    , Buchungen.Betrag AS Betrag
-    , Vertraege.ZSatz as Zinssatz
-    FROM Buchungen
-    INNER JOIN Vertraege
-      On Buchungen.VertragsId = Vertraege.id
+    SELECT B.Datum AS BuchungsDatum
+    , B.Betrag AS Betrag
+    , V.ZSatz as Zinssatz
+    FROM Buchungen AS B
+    INNER JOIN Vertraege AS V
+      On B.VertragsId = V.id
   )
   WHERE Buchungsdatum <= date(:date)
 )
-, all_IModes_T2 AS (
+, count_all_iModes AS (
   SELECT 'all' AS thesaurierend
     , count(*) AS nbrContracts
     , count(DISTINCT KreditorId) AS nbrCreditors
-  FROM Vertraege
+  FROM Vertraege AS V
   INNER JOIN
   (
-    SELECT DISTINCT Buchungen.VertragsId AS Vid, min(Buchungen.Datum) AS Aktivierungsdatum
-    FROM Buchungen
+    SELECT DISTINCT B.VertragsId AS Vid, min(B.Datum) AS Aktivierungsdatum
+    FROM Buchungen AS B
     GROUP BY Vid
-  ) ON Vertraege.id =Vid
+  ) ON V.id =Vid
   WHERE Aktivierungsdatum <=date(:date)
 )
 ------ THE ACTION STARTS HERE
-SELEcT T1.thesaurierend
-  , T2.nbrCreditors AS nbrCreditorsActiveContracts
-  , T2.nbrContracts AS nbrActiveContracts
-  , T1.KreditVolumen AS activeCreditVolume
-  , T1.Jahreszins AS activeAnnualInterest
-  , round(100. * T1.Jahreszins / T1.KreditVolumen,2) AS activeContractsAvgInterest
-FROM T1
-INNER JOIN T2 ON T1.thesaurierend = T2.thesaurierend
+SELEcT sum_by_iModes.thesaurierend
+  , count_by_iModes.nbrCreditors AS nbrCreditorsActiveContracts
+  , count_by_iModes.nbrContracts AS nbrActiveContracts
+  , sum_by_iModes.KreditVolumen AS activeCreditVolume
+  , sum_by_iModes.Jahreszins AS activeAnnualInterest
+  , round(100. * sum_by_iModes.Jahreszins / sum_by_iModes.KreditVolumen,2) AS activeContractsAvgInterest
+FROM sum_by_iModes
+INNER JOIN count_by_iModes ON sum_by_iModes.thesaurierend = count_by_iModes.thesaurierend
 
 UNION
 
-SELEcT all_IModes_T1.thesaurierend
-  , all_IModes_T2.nbrCreditors AS nbrCreditorsActiveContracts
-  , all_IModes_T2.nbrContracts AS nbrActiveContracts
-  , all_IModes_T1.KreditVolumen AS activeCreditVolume
-  , all_IModes_T1.Jahreszins AS activeAnnualInterest
-  , round(100. * all_IModes_T1.Jahreszins / all_IModes_T1.KreditVolumen,2) AS activeContractsAvgInterest
-FROM all_IModes_T1
-INNER JOIN all_IModes_T2 ON all_IModes_T1.thesaurierend = all_IModes_T2.thesaurierend
+SELEcT sum_all_iModes.thesaurierend
+  , count_all_iModes.nbrCreditors AS nbrCreditorsActiveContracts
+  , count_all_iModes.nbrContracts AS nbrActiveContracts
+  , sum_all_iModes.KreditVolumen AS activeCreditVolume
+  , sum_all_iModes.Jahreszins AS activeAnnualInterest
+  , round(100. * sum_all_iModes.Jahreszins / sum_all_iModes.KreditVolumen,2) AS activeContractsAvgInterest
+FROM sum_all_iModes
+INNER JOIN count_all_iModes ON sum_all_iModes.thesaurierend = count_all_iModes.thesaurierend
+
 )str")
 };
 
@@ -586,79 +587,81 @@ const QString vnStat_activeContracts_byIMode{qsl("vStat_aktiveVertraege_nachZins
 const QString sqlStat_activeContracts_byIMode{qsl(
 R"str(
 WITH
-T1 AS ( -- Summe Kredite, Summe Zinsen nach Zeit und Zinsmodus
+sum_by_iModes AS ( -- Summe Kredite, Summe Zinsen nach Zeit und Zinsmodus
   SELECT thesaurierend
     , sum(Betrag) /100. AS Kreditvolumen
     , round(sum(Betrag * Zinssatz) /100./100./100., 2) AS Jahreszins
+
   FROM (
     SELECT B.Datum as Buchungsdatum
       , B.Betrag as Betrag
       , V.ZSatz as Zinssatz
       , thesaurierend
+
     FROM Buchungen AS B
     INNER JOIN Vertraege AS V
       On B.VertragsId = V.id
     )
   GROUP BY thesaurierend
 )
-, T2 AS ( -- Anzahl *aktiver* Verträge / Creditoren nach Zeit und Zinsmodus
+, count_by_iModes AS ( -- Anzahl *aktiver* Verträge / Creditoren nach Zeit und Zinsmodus
   SELECT thesaurierend
     , count(*) AS nbrContracts
     , count(DISTINCT KreditorId) AS nbrCreditors
-  FROM Vertraege
+  FROM Vertraege AS V
   INNER JOIN
   (
-    SELECT DISTINCT Buchungen.VertragsId AS Vid, min(Buchungen.Datum) AS Aktivierungsdatum
-    FROM Buchungen
+    SELECT DISTINCT B.VertragsId AS Vid, min(B.Datum) AS Aktivierungsdatum
+    FROM Buchungen AS B
     GROUP BY Vid
-  ) ON Vertraege.id =Vid
+  ) ON V.id =Vid
   GROUP BY thesaurierend
 )
-, all_IModes_T1 AS ( -- Summe Kredite und Zinsen für alle Kredite
+, sum_all_iModes AS ( -- Summe Kredite und Zinsen für alle Kredite
   SELEcT 'all' AS thesaurierend
     , sum(Betrag) /100. AS KreditVolumen
     , round(sum(Betrag * Zinssatz) /100. /100. /100., 2) AS Jahreszins
   FROM (
-    SELECT Buchungen.Datum AS BuchungsDatum
-    , Buchungen.Betrag AS Betrag
-    , Vertraege.ZSatz as Zinssatz
-    FROM Buchungen
-    INNER JOIN Vertraege
-      On Buchungen.VertragsId = Vertraege.id
+    SELECT B.Datum AS BuchungsDatum
+    , B.Betrag AS Betrag
+    , V.ZSatz as Zinssatz
+    FROM Buchungen AS B
+    INNER JOIN Vertraege AS V
+      On B.VertragsId = V.id
   )
 )
-, all_IModes_T2 AS (
+, count_all_iModes AS (
   SELECT 'all' AS thesaurierend
     , count(*) AS nbrContracts
     , count(DISTINCT KreditorId) AS nbrCreditors
-  FROM Vertraege
+  FROM Vertraege AS V
   INNER JOIN
   (
-    SELECT DISTINCT Buchungen.VertragsId AS Vid, min(Buchungen.Datum) AS Aktivierungsdatum
-    FROM Buchungen
+    SELECT DISTINCT B.VertragsId AS Vid, min(B.Datum) AS Aktivierungsdatum
+    FROM Buchungen AS B
     GROUP BY Vid
-  ) ON Vertraege.id =Vid
+  ) ON V.id =Vid
 )
 ------ THE ACTION STARTS HERE
-SELEcT T1.thesaurierend
-  , T2.nbrCreditors AS nbrCreditorsActiveContracts
-  , T2.nbrContracts AS nbrActiveContracts
-  , T1.KreditVolumen AS activeCreditVolume
-  , T1.Jahreszins AS activeAnnualInterest
-  , round(100. * T1.Jahreszins / T1.KreditVolumen,2) AS activeContractsAvgInterest
-FROM T1
-INNER JOIN T2 ON T1.thesaurierend = T2.thesaurierend
+SELEcT sum_by_iModes.thesaurierend
+  , count_by_iModes.nbrCreditors AS nbrCreditorsActiveContracts
+  , count_by_iModes.nbrContracts AS nbrActiveContracts
+  , sum_by_iModes.KreditVolumen AS activeCreditVolume
+  , sum_by_iModes.Jahreszins AS activeAnnualInterest
+  , round(100. * sum_by_iModes.Jahreszins / sum_by_iModes.KreditVolumen,2) AS activeContractsAvgInterest
+FROM sum_by_iModes
+INNER JOIN count_by_iModes ON sum_by_iModes.thesaurierend = count_by_iModes.thesaurierend
 
 UNION
 
-SELEcT all_IModes_T1.thesaurierend
-  , all_IModes_T2.nbrCreditors AS nbrCreditorsActiveContracts
-  , all_IModes_T2.nbrContracts AS nbrActiveContracts
-  , all_IModes_T1.KreditVolumen AS activeCreditVolume
-  , all_IModes_T1.Jahreszins AS activeAnnualInterest
-  , round(100. * all_IModes_T1.Jahreszins / all_IModes_T1.KreditVolumen,2) AS activeContractsAvgInterest
-FROM all_IModes_T1
-INNER JOIN all_IModes_T2 ON all_IModes_T1.thesaurierend = all_IModes_T2.thesaurierend
+SELEcT sum_all_iModes.thesaurierend
+  , count_all_iModes.nbrCreditors AS nbrCreditorsActiveContracts
+  , count_all_iModes.nbrContracts AS nbrActiveContracts
+  , sum_all_iModes.KreditVolumen AS activeCreditVolume
+  , sum_all_iModes.Jahreszins AS activeAnnualInterest
+  , round(100. * sum_all_iModes.Jahreszins / sum_all_iModes.KreditVolumen,2) AS activeContractsAvgInterest
+FROM sum_all_iModes
+INNER JOIN count_all_iModes ON sum_all_iModes.thesaurierend = count_all_iModes.thesaurierend
 )str"
 )};
 
