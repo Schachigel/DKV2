@@ -500,7 +500,14 @@ const QString vnStat_activeContracts_byIMode_toDate {qsl("vStat_aktiveVertraege_
 const QString sqlStat_activeContracts_byIMode_toDate {qsl(
 R"str(
 WITH
-sum_by_iModes AS ( -- Summe Kredite, Summe Zinsen nach Zeit und Zinsmodus
+---- To see the history of all contracts we have to take the ex- contracts into account
+alleVertraege AS (
+  SELECT * FROM Vertraege UNION SELECT * FROM exVertraege
+)
+, alleBuchungen AS (
+  SELECT * FROM Buchungen UNION SELECT * FROM exBuchungen
+)
+, sum_by_iModes AS ( -- Summe Kredite, Summe Zinsen nach Zeit und Zinsmodus
   SELECT thesaurierend
     , sum(Betrag) /100. AS Kreditvolumen
     , round(sum(Betrag * Zinssatz) /100./100./100., 2) AS Jahreszins
@@ -511,8 +518,8 @@ sum_by_iModes AS ( -- Summe Kredite, Summe Zinsen nach Zeit und Zinsmodus
       , V.ZSatz as Zinssatz
       , thesaurierend
 
-    FROM Buchungen AS B
-    INNER JOIN Vertraege AS V
+    FROM alleBuchungen AS B
+    INNER JOIN alleVertraege AS V
       On B.VertragsId = V.id
     )
   WHERE Buchungsdatum <= date(:date)
@@ -522,11 +529,11 @@ sum_by_iModes AS ( -- Summe Kredite, Summe Zinsen nach Zeit und Zinsmodus
   SELECT thesaurierend
     , count(*) AS nbrContracts
     , count(DISTINCT KreditorId) AS nbrCreditors
-  FROM Vertraege AS V
+  FROM alleVertraege AS V
   INNER JOIN
   (
     SELECT DISTINCT B.VertragsId AS Vid, min(B.Datum) AS Aktivierungsdatum
-    FROM Buchungen AS B
+    FROM alleBuchungen AS B
     GROUP BY Vid
   ) ON V.id =Vid
   WHERE Aktivierungsdatum <=date(:date)
@@ -540,8 +547,8 @@ sum_by_iModes AS ( -- Summe Kredite, Summe Zinsen nach Zeit und Zinsmodus
     SELECT B.Datum AS BuchungsDatum
     , B.Betrag AS Betrag
     , V.ZSatz as Zinssatz
-    FROM Buchungen AS B
-    INNER JOIN Vertraege AS V
+    FROM alleBuchungen AS B
+    INNER JOIN alleVertraege AS V
       On B.VertragsId = V.id
   )
   WHERE Buchungsdatum <= date(:date)
@@ -550,11 +557,11 @@ sum_by_iModes AS ( -- Summe Kredite, Summe Zinsen nach Zeit und Zinsmodus
   SELECT 'all' AS thesaurierend
     , count(*) AS nbrContracts
     , count(DISTINCT KreditorId) AS nbrCreditors
-  FROM Vertraege AS V
+  FROM alleVertraege AS V
   INNER JOIN
   (
     SELECT DISTINCT B.VertragsId AS Vid, min(B.Datum) AS Aktivierungsdatum
-    FROM Buchungen AS B
+    FROM alleBuchungen AS B
     GROUP BY Vid
   ) ON V.id =Vid
   WHERE Aktivierungsdatum <=date(:date)
@@ -579,13 +586,13 @@ SELEcT sum_all_iModes.thesaurierend
   , round(100. * sum_all_iModes.Jahreszins / sum_all_iModes.KreditVolumen,2) AS activeContractsAvgInterest
 FROM sum_all_iModes
 INNER JOIN count_all_iModes ON sum_all_iModes.thesaurierend = count_all_iModes.thesaurierend
-
 )str")
 };
 
 const QString vnStat_activeContracts_byIMode{qsl("vStat_aktiveVertraege_nachZinsModus")};
 const QString sqlStat_activeContracts_byIMode{qsl(
 R"str(
+-- no terminated contracts here because the payout cancels their value
 WITH
 sum_by_iModes AS ( -- Summe Kredite, Summe Zinsen nach Zeit und Zinsmodus
   SELECT thesaurierend
