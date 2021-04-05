@@ -26,6 +26,7 @@
 #include "csvwriter.h"
 #include "uiitemformatter.h"
 #include "dkdbhelper.h"
+#include "dkdbviews.h"
 #include "dkdbcopy.h"
 #include "dkdbviews.h"
 #include "dbstatistics.h"
@@ -244,6 +245,10 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
         ui->menu_contracts_subm_print_lists->setEnabled(true);
         break;
     case overviewsPageIndex:
+        ui->action_menu_creditors_delete->setEnabled(false);
+        ui->menu_contracts_subm_print_lists->setEnabled(false);
+        break;
+    case statisticsPageIndex:
         ui->action_menu_creditors_delete->setEnabled(false);
         ui->menu_contracts_subm_print_lists->setEnabled(false);
         break;
@@ -725,7 +730,9 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
     ui->bookingsTableView->setItemDelegateForColumn(4, new BookingAmountItemFormatter);
 }
 
+/////////////////////////////////////////////////
 // contract list context menu
+/////////////////////////////////////////////////
 void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &pos)
 {   LOG_CALL;
     if( showDeletedContracts)
@@ -783,12 +790,17 @@ void MainWindow::on_action_cmenu_change_contract_triggered()
     changeContractValue(contractId);
     updateListViews();
 }
+/////////////////////////////////////////////////
 // new creditor or contract from contract menu
+/////////////////////////////////////////////////
 void MainWindow::on_action_Neu_triggered()
 {
     on_actionNeu_triggered();
 }
+
+/////////////////////////////////////////////////
 // terminated contracts list
+/////////////////////////////////////////////////
 void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
 {
     showDeletedContracts =true;
@@ -797,7 +809,9 @@ void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
         ui->contractsTableView->selectRow(0);
     ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
 }
+/////////////////////////////////////////////////
 // List of investments
+/////////////////////////////////////////////////
 void MainWindow::prepare_investmentsListView()
 {
     InvestmentsTableModel* model = new InvestmentsTableModel(this);
@@ -826,13 +840,11 @@ void MainWindow::prepare_investmentsListView()
     tv->resizeColumnsToContents();
     tv->setAlternatingRowColors(true);
 }
-
 void MainWindow::on_actionAnlagen_verwalten_triggered()
 {
     prepare_investmentsListView();
     ui->stackedWidget->setCurrentIndex(investmentsPageIndex);
 }
-
 void MainWindow::on_btnCreateFromContracts_clicked()
 {   LOG_CALL;
     int newInvestments =createNewInvestmentsFromContracts();
@@ -844,7 +856,6 @@ void MainWindow::on_btnCreateFromContracts_clicked()
     else
         QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden keine neuen Anlageformen angelegt."));
 }
-
 void MainWindow::on_btnNewInvestment_clicked()
 {   LOG_CALL;
     createInvestment();
@@ -852,7 +863,6 @@ void MainWindow::on_btnNewInvestment_clicked()
     m->select();
     ui->InvestmentsTableView->resizeColumnsToContents();
 }
-
 void MainWindow::on_InvestmentsTableView_customContextMenuRequested(const QPoint &pos)
 {   LOG_CALL;
     QTableView* tv =ui->InvestmentsTableView;
@@ -865,7 +875,6 @@ void MainWindow::on_InvestmentsTableView_customContextMenuRequested(const QPoint
     cmenu.addAction(ui->actionTyp_Bezeichnung_aendern);
     cmenu.exec(ui->InvestmentsTableView->mapToGlobal(pos));
 }
-
 void MainWindow::on_actionInvestmentLoeschen_triggered()
 {
     QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
@@ -891,7 +900,6 @@ void MainWindow::on_actionInvestmentLoeschen_triggered()
         }
     }
 }
-
 void MainWindow::on_actionInvestmentSchliessen_triggered()
 {
     QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
@@ -918,7 +926,6 @@ void MainWindow::on_actionInvestmentSchliessen_triggered()
     }
 
 }
-
 void MainWindow::on_actionTyp_Bezeichnung_aendern_triggered()
 {
     QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
@@ -941,7 +948,9 @@ void MainWindow::on_actionTyp_Bezeichnung_aendern_triggered()
         tm->select();
 }
 
-// statistics
+/////////////////////////////////////////////////
+// Übersichten
+/////////////////////////////////////////////////
 void MainWindow::on_action_menu_contracts_statistics_view_triggered()
 {   LOG_CALL;
     QComboBox* combo =ui->comboUebersicht;
@@ -973,13 +982,136 @@ void MainWindow::on_pbPrint_clicked()
     ui->txtOverview->print(&write);
     showFileInFolder(filename);
 }
+
+/////////////////////////////////////////////////
+//              Statistics                     //
+/////////////////////////////////////////////////
+QVector<QDate> dates;
+int currentDateIndex =0;
+void MainWindow::fillStatisticsTableView()
+{//   LOG_CALL_W(dates[currentDateIndex].toString(Qt::ISODate));
+    QString sql;
+    if( ui->rbActive->isChecked()) {
+        qInfo() << "calculating active contracts data for index " << currentDateIndex << " date: " << dates[currentDateIndex];
+        sql =sqlStat_activeContracts_byIMode_toDate;
+    } else if (ui->rbInactive->isChecked()){
+        qInfo() << "calculating INactive contracts data" << currentDateIndex << " date: " << dates[currentDateIndex];
+        sql =sqlStat_inactiveContracts_byIMode_toDate;
+    } else if (ui->rbAll->isChecked()) {
+        qInfo() << "calculating ALL contracts data" << currentDateIndex << " date: " << dates[currentDateIndex];
+        sql =sqlStat_allContracts_byIMode_toDate;
+    } else
+        Q_ASSERT (!"never reach this point");
+    sql.replace(qsl(":date"), dates[currentDateIndex].toString(Qt::ISODate)).replace("\n", " ");
+    // qDebug() << sql;
+
+    QSqlQueryModel *mod =new QSqlQueryModel();
+    mod->setQuery(sql);
+    if( mod->lastError().type() not_eq QSqlError::NoError) {
+        qInfo() << "SqlError: " << mod->lastError();
+        return;
+    }
+    ui->tvData->setModel(mod);
+
+}
+void MainWindow::on_rbActive_toggled(bool checked)
+{
+    if( checked) prepare_statisticsPage();
+}
+void MainWindow::on_rbInactive_toggled(bool checked)
+{
+    if( checked) prepare_statisticsPage();
+}
+void MainWindow::on_rbAll_toggled(bool checked)
+{
+    if( checked) prepare_statisticsPage();
+}
+void MainWindow::on_pbBack_clicked()
+{
+    // back increases the index
+    int newIndex =currentDateIndex +1;
+    int maxIndex =dates.size() -1;
+    qDebug() << "newIndex: " << newIndex << " (maxI: " << maxIndex << ")";
+
+    if( newIndex >= maxIndex)
+        currentDateIndex =maxIndex;
+    else
+        currentDateIndex =newIndex;
+    ui->lblBookingDate->setText(dates[currentDateIndex].toString(qsl("dd.MM.yyyy")));
+    ui->pbBack->setEnabled(currentDateIndex < maxIndex);
+    ui->pbNext->setEnabled(true);
+    fillStatisticsTableView();
+}
+void MainWindow::on_pbNext_clicked()
+{
+    // next decreases the index
+    int newIndex =currentDateIndex -1;
+    qDebug() << "newIndex: " << newIndex;
+    if( newIndex <= 0) {
+        currentDateIndex =0;
+        ui->lblBookingDate->setText(dates[currentDateIndex].toString(qsl("dd.MM.yyyy")));
+        ui->pbBack->setEnabled(true);
+        ui->pbNext->setEnabled(false);
+        return;
+    }
+    currentDateIndex =newIndex;
+    ui->lblBookingDate->setText(dates[currentDateIndex].toString(qsl("dd.MM.yyyy")));
+    ui->pbBack->setEnabled(true);
+    ui->pbNext->setEnabled(true);
+    fillStatisticsTableView();
+}
+void MainWindow::getDatesFromContractStates()
+{
+    dates.clear();
+    currentDateIndex =0;
+    if( ui->rbActive->isChecked()){
+        qInfo() << "init dates for active contracts";
+        getActiveContracsDates( dates);
+    }
+    else if (ui->rbInactive->isChecked()){
+        qInfo() << "init dates for INactive contracts";
+        getInactiveContractDates( dates);
+    }
+    else if (ui->rbAll->isChecked()){
+        qInfo() << "init dates for ALL contracts";
+        getAllContractDates( dates);
+    }
+    else
+        Q_ASSERT(! "never come here");
+}
+void MainWindow::prepare_statisticsPage()
+{
+    getDatesFromContractStates();
+    if( dates.isEmpty()) {
+        ui->pbNext->setEnabled(false);
+        ui->pbBack->setEnabled(false);
+        ui->lblBookingDate->setText(qsl("&nbr;-   <i>  Keine Daten  </i>   -&nbr;"));
+        return;
+    }
+    qDebug() << dates;
+    ui->lblBookingDate->setText(dates[0].toString(qsl("dd.MM.yyyy")));
+    ui->pbNext->setEnabled(false);
+    ui->pbBack->setEnabled(dates.size()>1);
+    fillStatisticsTableView();
+}
+void MainWindow::on_actionStatistik_triggered()
+{
+    prepare_statisticsPage();
+    ui->stackedWidget->setCurrentIndex(statisticsPageIndex);
+}
+
+/////////////////////////////////////////////////
 // annual settlement
+/////////////////////////////////////////////////
 void MainWindow::on_action_menu_contracts_annual_interest_settlement_triggered()
 {   LOG_CALL;
     annualSettlement();
     updateListViews();
 }
+
+/////////////////////////////////////////////////
 // list creation csv, printouts
+/////////////////////////////////////////////////
 void MainWindow::on_action_menu_contracts_print_lists_triggered()
 {   LOG_CALL;
     if( not createCsvActiveContracts())
@@ -1003,7 +1135,10 @@ void MainWindow::on_actionAktuelle_Auswahl_triggered()
     }
     csv.saveAndShowInExplorer(QDate::currentDate().toString("yyyy-MM-dd_Vertragsliste.csv"));
 }
+
+/////////////////////////////////////////////////
 // debug funktions
+/////////////////////////////////////////////////
 void MainWindow::on_action_menu_debug_create_sample_data_triggered()
 {   LOG_CALL;
     busycursor b;

@@ -66,4 +66,8 @@ struct rowData
 
 QVector<rowData> contractRuntimeDistribution();
 
+void getActiveContracsDates( QVector<QDate>& dates);
+void getInactiveContractDates( QVector<QDate>& dates);
+void getAllContractDates( QVector<QDate>& dates);
+
 #endif // DKDBHELPER_H

@@ -100,7 +100,7 @@
 /* static */ QDate bookings::dateOfnextSettlement()
 {   LOG_CALL;
     // qDebug() << getSqls();
-    return  executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(getSqls()[vnNextAnnualSettlement])).toDate();
+    return  executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(sqlNextAnnualSettlement)).toDate();
 }
 /*static */ QVector<booking> bookings::bookingsFromSql(const QString& where, const QString& order)
 {

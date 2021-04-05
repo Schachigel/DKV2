@@ -27,7 +27,7 @@ QString dbStats::dataset::toString() const
 bool datasetFromViews(dbStats::dataset& ds, QString statsView, const QString& creditorNbrView)
 {   LOG_CALL_W(statsView);
 
-    QString sql =getSqls()[statsView];
+    QString sql =statsView;
     QSqlRecord rec =executeSingleRecordSql(sql);
 
     if( rec.isEmpty())
@@ -38,7 +38,7 @@ bool datasetFromViews(dbStats::dataset& ds, QString statsView, const QString& cr
     ds.avgInterestRate = rec.value(qsl("mittlereRate")).toDouble();
     ds.weightedAvgInterestRate = rec.value(qsl("gewMittel")).toDouble();
 
-    QString sqlCNbr {qsl("SELECT Anzahl FROM (%1)").arg(getSqls()[creditorNbrView])};
+    QString sqlCNbr {qsl("SELECT Anzahl FROM (%1)").arg(creditorNbrView)};
     int nbrCreditors = executeSingleValueSql(sqlCNbr).toInt();
     for( int i=0; i<nbrCreditors; i++)
         ds.credCount.insert(i, 1);
@@ -47,17 +47,17 @@ bool datasetFromViews(dbStats::dataset& ds, QString statsView, const QString& cr
 
 bool dbStats::fillall()
 {   LOG_CALL;
-    datasetFromViews(allContracts[0], vnStat_allerVertraege,       vnNbrAllCreditors);
-    datasetFromViews(allContracts[1], vnStat_allerVertraege_thesa, vnNbrAllCreditors_thesa);
-    datasetFromViews(allContracts[2], vnStat_allerVertraege_ausz,  vnNbrAllCreditors_payout);
+    datasetFromViews(allContracts[0], sqlStat_allerVertraege,       sqlNbrAllCreditors);
+    datasetFromViews(allContracts[1], sqlStat_allerVertraege_thesa, sqlNbrAllCreditors_thesa);
+    datasetFromViews(allContracts[2], sqlStat_allerVertraege_ausz,  sqlNbrAllCreditors_payout);
 
-    datasetFromViews(activeContracts[0], vnStat_aktiverVertraege,       vnNbrActiveCreditors);
-    datasetFromViews(activeContracts[1], vnStat_aktiverVertraege_thesa, vnNbrActiveCreditors_thesa);
-    datasetFromViews(activeContracts[2], vnStat_aktiverVertraege_ausz,  vnNbrActiveCreditors_payout);
+    datasetFromViews(activeContracts[0], sqlStat_aktiverVertraege,       sqlNbrActiveCreditors);
+    datasetFromViews(activeContracts[1], sqlStat_aktiverVertraege_thesa, sqlNbrActiveCreditors_thesa);
+    datasetFromViews(activeContracts[2], sqlStat_aktiverVertraege_ausz,  sqlNbrActiveCreditors_payout);
 
-    datasetFromViews(inactiveContracts[0], vnStat_passiverVertraege,       vnInactiveCreditors);
-    datasetFromViews(inactiveContracts[1], vnStat_passiverVertraege_thesa, vnInactiveCreditors_thesa);
-    datasetFromViews(inactiveContracts[2], vnStat_passiverVertraege_ausz,  vnInactiveCreditors_payout);
+    datasetFromViews(inactiveContracts[0], sqlStat_passiverVertraege,       sqlInactiveCreditors);
+    datasetFromViews(inactiveContracts[1], sqlStat_passiverVertraege_thesa, sqlInactiveCreditors_thesa);
+    datasetFromViews(inactiveContracts[2], sqlStat_passiverVertraege_ausz,  sqlInactiveCreditors_payout);
 
     return false;
 }

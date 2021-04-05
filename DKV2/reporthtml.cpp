@@ -151,7 +151,7 @@ QString htmlPayedInterestByYearTable()
     ret +=tableRow4(h2(qsl("Jahr")), h2(qsl("Zinstyp")), h2(qsl("Zinsmodus")), h2(qsl("Summe")));
     QVector<QSqlRecord> records;
     QLocale local;
-    if( not executeSql(qsl("SELECT * FROM (%1)").arg(getSqls()[vnInterestByYearOverview]), QVariant(), records)){
+    if( not executeSql(qsl("SELECT * FROM (%1)").arg(sqlInterestByYearOverview), QVariant(), records)){
         ret += tableRow4(qsl("fehler bei der Datenabfrage"), QString(), QString(), QString());
         ret += endTable();
         return ret;

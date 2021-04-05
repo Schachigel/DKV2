@@ -150,16 +150,31 @@ private slots:
 
     void on_actionTyp_Bezeichnung_aendern_triggered();
 
+    void on_actionStatistik_triggered();
+
+    void on_rbActive_toggled(bool checked);
+
+    void on_rbInactive_toggled(bool checked);
+
+    void on_rbAll_toggled(bool checked);
+
+    void on_pbBack_clicked();
+
+    void on_pbNext_clicked();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();
     void prepare_deleted_contracts_list_view();
     void prepare_valid_contraccts_list_view();
     void prepare_contracts_list_view();
+    void getDatesFromContractStates();
+    void prepare_statisticsPage();
+    void fillStatisticsTableView();
     void prepare_investmentsListView();
     void prepare_startPage();
-
     void prepare_printPreview();
+
     QVector<booking> toBePrinted;
     QVector<booking>::const_iterator currentBooking;
 
@@ -174,6 +189,7 @@ private:
         ,creditorsListPageIndex
         ,contractsListPageIndex
         ,overviewsPageIndex
+        ,statisticsPageIndex
         ,investmentsPageIndex
         ,printPreviewPageIndex
     };
