@@ -8,12 +8,12 @@
 void test_appConfig::initTestCase()
 {
     appConfig::setLastDb("c:/temp/data.dkdb");
-    QVERIFY( ! appConfig::LastDb().isEmpty());
+    QVERIFY( not appConfig::LastDb().isEmpty());
     appConfig::setOutDir("C:/temp/output");
-    QVERIFY( ! appConfig::Outdir().isEmpty());
+    QVERIFY( not appConfig::Outdir().isEmpty());
     init_DKDBStruct();
     initTestDb();
-    fill_DkDbDefaultContent();
+    fill_DkDbDefaultContent(QSqlDatabase::database(), false);
 
 }
 void test_appConfig::cleanupTestCase()
@@ -63,7 +63,7 @@ void test_appConfig::test_dbConfig_Db()
     // now lets start a second db
     QString newDbFilename{qsl("../data/new.dkdb")};
     if( QFile::exists(newDbFilename)) QFile::remove(newDbFilename);
-    QVERIFY( ! QFile::exists(newDbFilename));
+    QVERIFY( not QFile::exists(newDbFilename));
     {
         QSqlDatabase newDb =QSqlDatabase::addDatabase(dbTypeName, qsl("newdb"));
         newDb.setDatabaseName(newDbFilename);

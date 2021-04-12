@@ -8,7 +8,7 @@
 #include "contract.h"
 
 inline bool icmp (QString s, int l, int r) {
-    if( l != r) {
+    if( l not_eq r) {
         qInfo() << "comparison of stat.data failed. " << s + qsl(" (%1, %2)").arg(i2s(l), i2s(r));
         return false;
     }
@@ -16,7 +16,7 @@ inline bool icmp (QString s, int l, int r) {
 }
 
 inline bool dcmp (QString s, double l, double r) {
-    if( ! qFuzzyCompare(1. +l, 1.+ r)) {
+    if( not qFuzzyCompare(1. +l, 1.+ r)) {
         qInfo() << "comparison of stat.data failed. " << s + qsl(" (%1, %2)").arg(d2s_4d(l), d2s_4d(r));
         return false;
     }
@@ -54,7 +54,7 @@ struct dataset
         return ret;
     }
     inline friend bool operator!=(const dataset& lhs, const dataset& rhs) {
-        return ! (lhs == rhs);
+        return not (lhs == rhs);
     }
     QString toString() const;
 };
@@ -89,7 +89,7 @@ struct dbStats
             return ret;
         }
         inline friend bool operator!=(const dataset& lhs, const dataset& rhs) {
-            return !(lhs == rhs);
+            return not (lhs == rhs);
         }
         QString toString() const;
     };
@@ -101,14 +101,14 @@ struct dbStats
     inline friend bool operator==(const dbStats& lhs, const dbStats& rhs)
     {
         for( int i =0; i<3; i++) {
-            if( lhs.allContracts[i]     != rhs.allContracts[i] )    return false;
-            if( lhs.activeContracts[i]   != rhs.activeContracts[i])   return false;
-            if( lhs.inactiveContracts[i] != rhs.inactiveContracts[i]) return false;
+            if( lhs.allContracts[i]     not_eq rhs.allContracts[i] )    return false;
+            if( lhs.activeContracts[i]   not_eq rhs.activeContracts[i])   return false;
+            if( lhs.inactiveContracts[i] not_eq rhs.inactiveContracts[i]) return false;
         }
         return true;
     }
     inline friend bool operator!=(const dbStats& lhs, const dbStats& rhs) {
-        return ! (lhs == rhs);
+        return not (lhs == rhs);
     }
     bool fillall();
     static const bool calculate;

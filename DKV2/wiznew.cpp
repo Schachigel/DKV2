@@ -161,7 +161,7 @@ wpNewCreditorAddress::wpNewCreditorAddress(QWidget* p) : QWizardPage(p)
 void wpNewCreditorAddress::initializePage()
 {
     //    wizNew* wiz =qobject_cast<wizNew*> (wizard());
-    //    if( ! wiz->inUpdateMode()) {
+    //    if( not wiz->inUpdateMode()) {
     //        setField(pnFName, QString());
     //        setField(pnLName, QString());
     //        setField(pnStreet, QString());
@@ -232,11 +232,11 @@ bool wpEmail::validatePage()
 {   LOG_CALL;
     QString email =field(pnEMail).toString().trimmed().toLower();
     setField(pnEMail, email);
-    if( ! email.isEmpty())
+    if( not email.isEmpty())
     {
         QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b",
                               QRegularExpression::CaseInsensitiveOption);
-        if( !rx.match(field(pnEMail).toString()).hasMatch()) {
+        if( not rx.match(field(pnEMail).toString()).hasMatch()) {
             QMessageBox::information(this, qsl("Fehler"), qsl("Das Format der e-mail Adresse ist ungültig: ") + email);
             return false;
         }
@@ -280,9 +280,9 @@ bool wpBankAccount::validatePage()
 {   LOG_CALL;
     QString formatedIban =field(pnIban).toString().trimmed();
     QString iban =formatedIban.remove(' ');
-    if( ! iban.isEmpty()) {
+    if( not iban.isEmpty()) {
         IbanValidator iv; int pos =0;
-        if( iv.validate(iban, pos) != IbanValidator::State::Acceptable) {
+        if( iv.validate(iban, pos) not_eq IbanValidator::State::Acceptable) {
             QMessageBox::information(this, "Fehler", "Die eingegebene Zeichenfolge ist keine gültige IBAN");
             return false;
         }
@@ -338,7 +338,7 @@ void wpConfirmCreditor::initializePage()
     QString city   =field(pnCity).toString().isEmpty()      ? qsl("(keine Stadt)")   : field(pnCity).toString();
     QString country =field(pnCountry).toString();
     QString xxx = pcode +qsl(" ") +city;
-    if(!country.isEmpty())
+    if( not country.isEmpty())
         xxx += qsl(" (") +country +qsl(")");
     QString email  =field(pnEMail).toString().isEmpty()     ? qsl("(keine E-Mail Adresse)") :field(pnEMail).toString();
     QString comment=field(pnComment).toString().isEmpty()   ? qsl("(keine Anmerkung)"): field(pnComment).toString();
@@ -402,7 +402,7 @@ int wpConfirmCreditor::nextId() const
 void wpConfirmCreditor::onConfirmCreateContract_toggled(int state)
 {   LOG_CALL;
     qInfo() << "onConfirmCreateContract..." << state;
-    setFinalPage( ! state);
+    setFinalPage( not state);
 }
 
 /*
@@ -412,6 +412,7 @@ void wpConfirmCreditor::onConfirmCreateContract_toggled(int state)
 */
 const QString pnLabel  {qsl("label")};
 const QString pnAmount {qsl("amount")};
+const QString pnContComment {qsl("contractComment")};
 
 wpLableAndAmount::wpLableAndAmount(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
@@ -430,11 +431,18 @@ wpLableAndAmount::wpLableAndAmount(QWidget* p) : QWizardPage(p)
     leAmount->setValidator(new QIntValidator(this));
     l2->setBuddy(leAmount);
 
+    QLabel* l3 =new QLabel(qsl("Anmerkung"));
+    QPlainTextEdit* eComment =new QPlainTextEdit;
+    registerField(pnContComment, eComment, "plainText", "textChanged");
+    eComment->setToolTip(qsl("Diese Anmerkung wird mit dem Vertrag gespeichert"));
+
     QGridLayout* g =new QGridLayout;
     g->addWidget(l1, 0, 0);
     g->addWidget(leKennung, 0, 1);
     g->addWidget(l2, 1, 0);
     g->addWidget(leAmount, 1, 1);
+    g->addWidget(l3, 2, 0);
+    g->addWidget(eComment, 2, 1);
     g->setColumnStretch(0, 1);
     g->setColumnStretch(1, 4);
 
@@ -471,12 +479,12 @@ bool wpLableAndAmount::validatePage()
     const QString label =field(pnLabel).toString();
     if( label.isEmpty())
         msg =qsl("Die Vertragskennung darf nicht leer sein");
-    else if( ! isValidNewContractLabel(label))
+    else if( not isValidNewContractLabel(label))
         msg =qsl("Die Vertragskennung existiert bereits für einen laufenden oder beendeten Vertrag und darf nicht erneut vergeben werden");
     else if( field(pnAmount).toInt() < minContractValue)
         msg =qsl("Der Wert des Vertrags muss größer sein als der konfigurierte Minimalwert "
                  "eines Vertrages von ") +dbConfig::readValue(MIN_AMOUNT).toString() +qsl(" Euro");
-    if( ! msg.isEmpty()) {
+    if( not msg.isEmpty()) {
         QMessageBox::critical(this, qsl("Fehler"), msg);
         return false;
     }
@@ -657,8 +665,8 @@ bool wpInterestFromInvestment::validatePage()
     wizNew* wiz =qobject_cast<wizNew*>(wizard());
     wiz->interest =interestOfInvestmentByRowId(rowid_investment);
     if( wiz->interest == 0){
-        // without interest -> interest payout mode "payout"
-        wiz->iPaymentMode =fromInt(0);
+        // without interest -> interest payout mode "zero"
+        wiz->iPaymentMode =interestModel::zero;
     }
 
     return true;
@@ -699,7 +707,10 @@ bool wpInterestSelection::validatePage()
 {
     // without interest -> interest payout mode "payout"
     wizNew* wiz =qobject_cast<wizNew*>(wizard());
-    wiz->iPaymentMode =fromInt(0);
+    if( field(pnInterestIndex) == 0)
+        wiz->iPaymentMode =interestModel::zero;
+    else
+        wiz->iPaymentMode =interestModel::payout; // default for the next wiz page
     return true;
 }
 int wpInterestSelection::nextId() const
@@ -756,7 +767,7 @@ const QString pnConfirmContract {qsl("confirmContract")};
 bool wpConfirmContract::saveContract()
 {
     wizNew* wiz =qobject_cast<wizNew*>(wizard());
-    if( ! wiz)  return false;
+    if( not wiz)  return false;
     if( wiz->field(pnConfirmContract).toBool()) {
         contract c;
         c.setCreditorId(wiz->creditorId);
@@ -767,6 +778,7 @@ bool wpConfirmContract::saveContract()
         c.setNoticePeriod(wiz->noticePeriod);
         c.setPlannedEndDate(field(pnEDate).toDate());
         c.setInterestModel(wiz->iPaymentMode);
+        c.setComment(field(pnContComment).toString());
         if( -1 == c.saveNewContract()) {
             qCritical() << "New contract could not be saved";
             QMessageBox::critical(getMainWindow(), "Fehler", "Der Vertrag konnte nicht "
@@ -812,9 +824,7 @@ void wpConfirmContract::initializePage()
     if( wiz)
     {
         interestModel iMode{wiz->iPaymentMode};
-        QString interestMode{"Auszahlend"};
-        if( iMode == interestModel::reinvest) interestMode = "Thesaurierend";
-        if( iMode == interestModel::fixed) interestMode = "Fester Zins ohne Zinsauszahlung";
+        QString interestMode =toString(iMode);
         setSubTitle(summary.arg(field(pnFName).toString(), field(pnLName).toString(),
                                 field(pnLabel).toString(),
                                 l.toCurrencyString(field(pnAmount).toDouble()),

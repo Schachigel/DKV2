@@ -14,7 +14,7 @@ void test_creditor::initTestCase()
 void test_creditor::init()
 {   LOG_CALL_W("test");
     initTestDb();
-    fill_DkDbDefaultContent();
+    fill_DkDbDefaultContent(QSqlDatabase::database(), false);
 }
 void test_creditor::cleanup()
 {   LOG_CALL;
@@ -50,23 +50,23 @@ void test_creditor::test_invalidCreditor()
 {   LOG_CALL;
     creditor c;
     QString errortext;
-    QVERIFY2( ! c.isValid(errortext), errortext.toUtf8());
+    QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
     c.setFirstname("Holger");
-    QVERIFY2( ! c.isValid(errortext), errortext.toUtf8());
+    QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
     c.setLastname("Mairon");
-    QVERIFY2( ! c.isValid(errortext), errortext.toUtf8());
+    QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
     c.setStreet("Sesamstrasse");
-    QVERIFY2( ! c.isValid(errortext), errortext.toUtf8());
+    QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
     c.setPostalCode("49534");
-    QVERIFY2( ! c.isValid(errortext), errortext.toUtf8());
+    QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
     c.setCity("braunschweig"); // now all mandatory values are set
     QVERIFY2( c.isValid(errortext), errortext.toUtf8());
     c.setEmail("invalid_email");
-    QVERIFY2( ! c.isValid(errortext), errortext.toUtf8());
+    QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
     c.setEmail("holger@mairon.esp");
     QVERIFY2( c.isValid(errortext), errortext.toUtf8());
     c.setIban("invalid_iban");
-    QVERIFY2( ! c.isValid(errortext), errortext.toUtf8());
+    QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
     c.setIban("DE07123412341234123412");
     QVERIFY2( c.isValid(errortext), errortext.toUtf8());
 }

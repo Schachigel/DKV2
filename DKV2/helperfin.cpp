@@ -1,3 +1,4 @@
+#include <iso646.h>
 
 #include <QStringLiteral>
 #include <QFile>
@@ -60,7 +61,7 @@ int TageSeitJahresAnfang(const QDate& d)
 double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)
 {
     qDebug().noquote() << "\n\nZinsberechnung von " << von << " bis " << bis << QString((thesa)? " thesaurierend\n" : ("ausschüttend\n"));
-    if( !(von.isValid() && bis.isValid()) || ( von > bis)) {
+    if( not (von.isValid() and bis.isValid()) or ( von > bis)) {
         qCritical() << "Zinseszins kann nicht berechnet werden - ungültige Parameter";
         return -1.;
     }
@@ -111,7 +112,7 @@ IbanValidator::State IbanValidator::validate(QString& input, int& pos) const
     iban.remove(QLatin1Char(' '));    // generously ignore spaces
     iban = iban.toUpper();            // generously accept non-capitalized letters
     State result = QRegExpValidator::validate(iban, pos);
-    if (result != QValidator::Acceptable)
+    if (result not_eq QValidator::Acceptable)
         return result;
     // qDebug() << "2. string passed reg exp validation and is forwarded to checksum calculation" << iban;
     QString first4(iban.left(4));
@@ -120,7 +121,7 @@ IbanValidator::State IbanValidator::validate(QString& input, int& pos) const
     QString ibanNumeric;
     for (int i(0); i < iban.length(); ++i){
         QChar character(iban.at(i));
-        Q_ASSERT_X(character.isDigit() || character.isUpper(), "illegal character survived QRegExp validation", QString(character).toLatin1());
+        Q_ASSERT_X(character.isDigit() or character.isUpper(), "illegal character survived QRegExp validation", QString(character).toLatin1());
         if (character.isDigit())
             ibanNumeric.append(character);
         else

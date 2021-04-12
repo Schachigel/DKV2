@@ -15,7 +15,7 @@
 
 
 bool insert_views( QSqlDatabase db =QSqlDatabase::database());
-bool fill_DkDbDefaultContent(QSqlDatabase db = QSqlDatabase::database());
+bool fill_DkDbDefaultContent(QSqlDatabase db = QSqlDatabase::database(), bool includeViews =true);
 
 enum version_check_result {
     noVersion =-1,
@@ -66,6 +66,8 @@ struct rowData
 
 QVector<rowData> contractRuntimeDistribution();
 
-extern const QString sqlContractView;
+void getActiveContracsDates( QVector<QDate>& dates);
+void getInactiveContractDates( QVector<QDate>& dates);
+void getAllContractDates( QVector<QDate>& dates);
 
 #endif // DKDBHELPER_H

@@ -104,7 +104,7 @@ DONEDONEDONEDONEDONEDONEDONEDONE
 
 -- Übersicht: #DK Geber nur für aktive Verträge
 
--- output folder != db folder; search for db next to db
+-- output folder not_eq db folder; search for db next to db
 
 -- statusbar update on "opendb"
 

@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1128</width>
-    <height>907</height>
+    <width>1112</width>
+    <height>802</height>
    </rect>
   </property>
   <property name="font">
@@ -20,7 +20,14 @@
    <string>-  DKV2 -</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_5">
+   <layout class="QVBoxLayout" name="verticalLayout_6">
+    <item>
+     <widget class="QLabel" name="statusLabel">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
@@ -175,8 +182,127 @@ p, li { white-space: pre-wrap; }
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="Statistics">
+       <layout class="QVBoxLayout" name="verticalLayout_7">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QGroupBox" name="gbContractRadioBoxes">
+            <property name="title">
+             <string/>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item>
+              <widget class="QRadioButton" name="rbActive">
+               <property name="text">
+                <string>Aktive Verträge</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="rbInactive">
+               <property name="text">
+                <string>Inaktive Verträge</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="rbAll">
+               <property name="text">
+                <string>Alle Verträge</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_3">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="0,1,0,6">
+          <item>
+           <widget class="QPushButton" name="pbBack">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>&lt; Zurück</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lblBookingDate">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>  2021-04-01  </string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pbNext">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Weiter &gt;</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTableView" name="tvData"/>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="InvestmentsPage">
-       <layout class="QVBoxLayout" name="verticalLayout_4">
+       <layout class="QVBoxLayout" name="verticalLayout_41">
         <item>
          <layout class="QHBoxLayout" name="horicontalLayout">
           <item>
@@ -434,13 +560,6 @@ p, li { white-space: pre-wrap; }
       </widget>
      </widget>
     </item>
-    <item>
-     <widget class="QLabel" name="statusLabel">
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -448,7 +567,7 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1128</width>
+     <width>1112</width>
      <height>28</height>
     </rect>
    </property>
@@ -497,6 +616,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="separator"/>
     <addaction name="actionAnlagen_verwalten"/>
     <addaction name="action_menu_contracts_statistics_view"/>
+    <addaction name="actionStatistik"/>
     <addaction name="menu_contracts_subm_print_lists"/>
    </widget>
    <widget class="QMenu" name="menu_debug">
@@ -615,7 +735,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="action_menu_contracts_statistics_view">
    <property name="text">
-    <string>Übersichten</string>
+    <string>Ü&amp;bersichten</string>
    </property>
    <property name="toolTip">
     <string>Übersicht über Vertragsdaten anzeigen</string>
@@ -693,7 +813,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionBeendete_Vertr_ge_anzeigen">
    <property name="text">
-    <string>Beendete Verträge anzeigen</string>
+    <string>&amp;Beendete Verträge anzeigen</string>
    </property>
   </action>
   <action name="actionProjektkonfiguration_ndern">
@@ -711,7 +831,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="action_Neu">
    <property name="text">
-    <string>&amp;Neu</string>
+    <string>&amp;Neuen Vertrag anlegen</string>
    </property>
   </action>
   <action name="actionAktuelle_Auswahl">
@@ -726,7 +846,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionAnlagen_verwalten">
    <property name="text">
-    <string>Anlagen verwalten</string>
+    <string>&amp;Anlagen verwalten</string>
    </property>
   </action>
   <action name="actionInvestmentLoeschen">
@@ -735,6 +855,27 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="toolTip">
     <string>Das Investment wird aus der Datenbank gelsöcht. </string>
+   </property>
+  </action>
+  <action name="actionInvestmentSchliessen">
+   <property name="text">
+    <string>Investment schließen</string>
+   </property>
+   <property name="toolTip">
+    <string>Zu einer geschlossenen Geldanlage kann kein Vertrag mehr angelegt werden.</string>
+   </property>
+  </action>
+  <action name="actionTyp_Bezeichnung_aendern">
+   <property name="text">
+    <string>Typ &amp;Bezeichnung ändern</string>
+   </property>
+   <property name="toolTip">
+    <string>Mit dieser Option kannst Du den Typ ändern</string>
+   </property>
+  </action>
+  <action name="actionStatistik">
+   <property name="text">
+    <string>&amp;Statistiken</string>
    </property>
   </action>
  </widget>

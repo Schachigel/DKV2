@@ -42,7 +42,7 @@ bool wpChangeContract_IntroPage::validatePage()
     double minPayout   =dbConfig::readValue(MIN_PAYOUT).toDouble();
     double minAmountToMakeA_Payout = minContract + minPayout +1;
     QLocale l;
-    if( ! field(qsl("deposit_notPayment")).toBool() && wiz->currentAmount < minAmountToMakeA_Payout) {
+    if( not field(qsl("deposit_notPayment")).toBool() and wiz->currentAmount < minAmountToMakeA_Payout) {
         QString msg(qsl("Die kleinste Einlage beträgt %1. Die kleinste Auszahlung beträgt %2. "
                     "Daher ist im Moment keine Auszahlung möglich.<p>Du kannst einen Einzahlung machen oder "
                     "über den entsprechenden Menüpunkt den Vertrag beenden"));
@@ -98,11 +98,11 @@ bool wpChangeContract_AmountPage::validatePage()
         return false;
     setField("amount", amount);
 
-    if( ! deposit) {
+    if( not deposit) {
         wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
         double currentAmount = wiz->currentAmount;
         // double minPayout = 100., minRemains = 500.
-        if( field("amount").toDouble() <100 || (currentAmount-amount) <500)
+        if( field("amount").toDouble() <100 or (currentAmount-amount) <500)
             return false;
     }
     return true;
@@ -141,7 +141,7 @@ bool wpChangeContract_DatePage::validatePage()
     QDate d {field(qsl("date")).toDate()};
     if( d < wiz->earlierstDate)
         return false;
-    if( d.month() == 1 && d.day() == 1)
+    if( d.month() == 1 and d.day() == 1)
         // avoid interest bookings on the date of anual settlements.
         // it is a holiday anyways
         return false;

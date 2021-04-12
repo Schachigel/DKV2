@@ -43,11 +43,11 @@ void test_tableDataInserter::test_insert_and_retreive()
     tdi.setValue("type_string", type_string);
     tdi.setValue("type_bool", type_bool);
     tdi.setValue("type_date", type_date);
-    QVERIFY(-1 != tdi.InsertData());
+    QVERIFY(-1 not_eq tdi.InsertData());
     QSqlRecord r = executeSingleRecordSql( t.Fields());
     qDebug() << r;
     QVERIFY( r.value("id").type() == QVariant::LongLong
-             || r.value("id").type() == QVariant::Int);
+             or r.value("id").type() == QVariant::Int);
     QCOMPARE( r.value("id"), 1);
 
     QVariant v = r.value("type_integer");

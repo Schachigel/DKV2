@@ -81,7 +81,7 @@ bool csvwriter::saveAndShowInExplorer(const QString& filename) const
     backupFile(path);
     {
     QFile file(path);
-    if( !file.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
+    if( not file.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
         qCritical() << "could not open csv file for writing: " << filename;
         return false;
     }
@@ -101,7 +101,7 @@ bool table2csv(const QString& filename, const QVector<dbfield>& fields, const QV
         csv.addColumn(f.name());
     QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where);
     QSqlQuery q;
-    if( !q.exec(sql)) {
+    if( not q.exec(sql)) {
         qCritical() << "sql faild to execute" << q.lastError() << Qt::endl << "SQL: " << q.lastQuery();
         return false;
     }

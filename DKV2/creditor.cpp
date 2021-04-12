@@ -49,19 +49,19 @@ bool creditor::operator==(const creditor& c) const
 {
     bool ret = false;
     do{
-        if( id()        != c.id()) break;
-        if( firstname() != c.firstname()) break;
-        if( lastname()  != c.lastname()) break;
-        if( street()    != c.street()) break;
-        if( postalCode()!= c.postalCode()) break;
-        if( city()      != c.city()) break;
-        if( comment()   != c.comment()) break;
-        if( email()     != c.email()) break;
-        if( iban()      != c.iban()) break;
-        if( bic()       != c.bic()) break;
+        if( id()        not_eq c.id()) break;
+        if( firstname() not_eq c.firstname()) break;
+        if( lastname()  not_eq c.lastname()) break;
+        if( street()    not_eq c.street()) break;
+        if( postalCode() not_eq c.postalCode()) break;
+        if( city()      not_eq c.city()) break;
+        if( comment()   not_eq c.comment()) break;
+        if( email()     not_eq c.email()) break;
+        if( iban()      not_eq c.iban()) break;
+        if( bic()       not_eq c.bic()) break;
         ret = true;
     } while(false);
-    if( !ret) {
+    if( not ret) {
         qInfo() << id() << " vs. " << c.id();
         qInfo() << firstname() << " vs. " << c.firstname();
         qInfo() << lastname() << " vs. " << c.lastname();
@@ -107,7 +107,7 @@ bool creditor::isValid() const
 bool creditor::isValid( QString& errortext) const
 {//   LOG_CALL;
     errortext.clear();
-    if( (ti.getValue(qsl("Vorname")).toString().isEmpty() && ti.getValue(qsl("Nachname")).toString().isEmpty())
+    if( (ti.getValue(qsl("Vorname")).toString().isEmpty() and ti.getValue(qsl("Nachname")).toString().isEmpty())
          ||
         ti.getValue(qsl("Strasse")).toString().isEmpty()
          ||
@@ -117,19 +117,19 @@ bool creditor::isValid( QString& errortext) const
         errortext = qsl("Die Adressdaten sind unvollständig");
 
     QString email = ti.getValue(qsl("Email")).toString();
-    if( !email.isEmpty() || email == qsl("NULL_STRING"))
+    if( not email.isEmpty() or email == qsl("NULL_STRING"))
     {
         QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b",
                               QRegularExpression::CaseInsensitiveOption);
-        if( !rx.match(email).hasMatch())
+        if( not rx.match(email).hasMatch())
             errortext = "Das Format der e-mail Adresse ist ungültig: " + email;
     }
 
     IbanValidator iv;
     QString iban = ti.getValue(qsl("IBAN")).toString();
-    if( !iban.isEmpty()){
+    if( not iban.isEmpty()){
         int pos =0;
-        if( iv.validate(iban, pos) != IbanValidator::State::Acceptable)
+        if( iv.validate(iban, pos) not_eq IbanValidator::State::Acceptable)
             errortext = qsl("Das Format der IBAN ist nicht korrekt: ") + iban;
     }
 
@@ -167,15 +167,10 @@ bool creditor::remove()
     // [ creditor <-> contract ] On Delete Cascade
     // deletion with active contracts will fail due to ref. integrity contracts <> bookings
     // [ contract <-> booking ] On Delete Restrict
-    QSqlQuery deleteQ;
-    if( deleteQ.exec(qsl("DELETE FROM Kreditoren WHERE Id=") +QString::number(index)))
+    if( executeSql_wNoRecords(qsl("DELETE FROM Kreditoren WHERE Id=") +QString::number(index)))
         return true;
-
-    if( "19" == deleteQ.lastError().nativeErrorCode())
-        qDebug() << qsl("Delete Kreditor failed due to refer. integrity rules") << Qt::endl << deleteQ.lastQuery();
     else
-        qCritical() << qsl("Delete Kreditor failed ")<< deleteQ.lastError() << Qt::endl << deleteQ.lastQuery();
-    return false;
+        return false;
 }
 
 /* static */ bool creditor::hasActiveContracts(const qlonglong i)
@@ -219,11 +214,14 @@ bool creditor::remove()
 
 void KreditorenListeMitId(QList<QPair<int,QString>>& entries)
 {   LOG_CALL;
-    QSqlQuery query;
-    query.setForwardOnly(true);
-    QString sql{qsl("SELECT id,  Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse "
-                    "FROM Kreditoren ORDER BY Nachname ASC, Vorname ASC")};
-    if( ! query.exec(sql)) {
+    QSqlQuery query; query.setForwardOnly(true);
+    QString sql{qsl(R"str(
+SELECT id
+  , Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse
+FROM Kreditoren
+ORDER BY Nachname ASC, Vorname ASC
+)str")};
+    if( not query.exec(sql)) {
         qCritical() << "Error reading DKGeber while creating a contract: " << query.lastError().text();
         return;
     }

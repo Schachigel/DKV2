@@ -1,6 +1,8 @@
 #ifndef APPCONFIG_H
 #define APPCONFIG_H
 
+#include <iso646.h>
+
 #include <QString>
 #include <QStringLiteral>
 #include <QVariant>
@@ -20,7 +22,7 @@ void initNumMetaInfo( const QString& name, const double& wert, QSqlDatabase db=Q
 QString getMetaInfo(const QString& name, const QString& def=QString(), QSqlDatabase db = QSqlDatabase::database());
 double getNumMetaInfo(const QString& name, const double def =0., QSqlDatabase db = QSqlDatabase::database());
 // writing
-void setMetaInfo(const QString& name, const QString& value, QSqlDatabase db = QSqlDatabase::database());
+void setMetaInfo(const QString& name, const QString& value, QSqlDatabase db = QSqlDatabase::database(), const QString& tblAlias =QString());
 void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db = QSqlDatabase::database(), const QString& tblAlias =QString());
 
 struct appConfig
@@ -66,8 +68,8 @@ enum projectConfiguration {
 struct dbConfig
 {
     dbConfig() =delete;
-    static QVariant readVersion(const QSqlDatabase& db =QSqlDatabase::database());
-    static void writeVersion(const QSqlDatabase& db =QSqlDatabase::database(), const QString& tblAlias =QString());
+    static QVariant read_DBVersion(const QSqlDatabase& db =QSqlDatabase::database());
+    static void write_DBVersion(const QSqlDatabase& db =QSqlDatabase::database(), const QString& tblAlias =QString());
     static QVariant readValue(const projectConfiguration& pc, const QSqlDatabase& db =QSqlDatabase::database());
     static void     writeValue(const projectConfiguration& pc, const QVariant& value, const QSqlDatabase& db =QSqlDatabase::database(), const QString& tblAlias =QString());
 
@@ -79,7 +81,7 @@ struct dbConfig
 private:
     static QMap<projectConfiguration,QPair<QString, QVariant>> defaultParams;
     static bool isValidIndex(projectConfiguration pc) {
-        return (pc >= 0) && (pc < projectConfiguration::MAX_PC_INDEX);
+        return (pc >= 0) and (pc < projectConfiguration::MAX_PC_INDEX);
     }
 };
 

@@ -1,5 +1,6 @@
 #ifndef TABLEDATAINSERTER_H
 #define TABLEDATAINSERTER_H
+#include <iso646.h>
 
 #include <QSqlDatabase>
 #include <QSqlRecord>
@@ -37,29 +38,29 @@ private:
     QString getInsert_noAuto_RecordSQL() const;
     QString getUpdateRecordSQL(qlonglong& autovalue) const;
 public:
-    friend inline bool operator==(const TableDataInserter& lhs, const TableDataInserter& rhs)
-    { /* do actual comparison */
-        if( lhs.tablename != rhs.tablename){
-            qInfo() << "table name missmatch " << lhs.tablename << " vs. " << rhs.tablename;
-            return false;
-        }
-        if( lhs.record.count() != rhs.record.count()) {
-            qInfo() << "Record count missmatch " << lhs.record << "vs. " << rhs.record;
-            return false;
-        }
-        bool bRet =true;
-        if( lhs.record != rhs.record) {
-            qInfo() << "QSqlRecord mismatch: " << "\n" << lhs.record << "\nvs\n" << rhs.record;
-            bRet =false;
-        }
-        for( int i =0; i< lhs.record.count(); i++) {
-            if( lhs.record.field(i) != rhs.record.field(i)) {
-                qInfo() << "QSqlField mismatch " << lhs.record.field(i) << rhs.record.field(i);
-                bRet =false;
-            }
-        }
-        return bRet;
-    }
+//    friend inline bool operator==(const TableDataInserter& lhs, const TableDataInserter& rhs)
+//    { /* do actual comparison */
+//        if( lhs.tablename not_eq rhs.tablename){
+//            qInfo() << "table name missmatch " << lhs.tablename << " vs. " << rhs.tablename;
+//            return false;
+//        }
+//        if( lhs.record.count() not_eq rhs.record.count()) {
+//            qInfo() << "Record count missmatch " << lhs.record << "vs. " << rhs.record;
+//            return false;
+//        }
+//        bool bRet =true;
+//        if( lhs.record not_eq rhs.record) {
+//            qInfo() << "QSqlRecord mismatch: " << "\n" << lhs.record << "\nvs\n" << rhs.record;
+//            bRet =false;
+//        }
+//        for( int i =0; i< lhs.record.count(); i++) {
+//            if( lhs.record.field(i) not_eq rhs.record.field(i)) {
+//                qInfo() << "QSqlField mismatch " << lhs.record.field(i) << rhs.record.field(i);
+//                bRet =false;
+//            }
+//        }
+//        return bRet;
+//    }
 
 };
 

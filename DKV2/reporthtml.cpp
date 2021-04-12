@@ -4,6 +4,7 @@
 #include "appconfig.h"
 #include "helper.h"
 #include "dkdbhelper.h"
+#include "dkdbviews.h"
 #include "dbstatistics.h"
 #include "reporthtml.h"
 
@@ -150,14 +151,14 @@ QString htmlPayedInterestByYearTable()
     ret +=tableRow4(h2(qsl("Jahr")), h2(qsl("Zinstyp")), h2(qsl("Zinsmodus")), h2(qsl("Summe")));
     QVector<QSqlRecord> records;
     QLocale local;
-    if( ! executeSql(qsl("SELECT * FROM vStat_InterestByYear"), QVariant(), records)){
+    if( not executeSql(qsl("SELECT * FROM (%1)").arg(sqlInterestByYearOverview), QVariant(), records)){
         ret += tableRow4(qsl("fehler bei der Datenabfrage"), QString(), QString(), QString());
         ret += endTable();
         return ret;
     }
     int lastYear =-1;
     for( auto rec : records) {
-        if( lastYear != rec.value(0).toInt()) {
+        if( lastYear not_eq rec.value(0).toInt()) {
             ret += emptyRow(4);
         }
         ret += tableRow4(rec.value(0).toString(),
@@ -177,7 +178,7 @@ QString htmlContractsByContractEndTable()
     ret += h1(qsl("Auslaufende Verträge")) + newLine( qsl("Stand: ")  + QDate::currentDate().toString(qsl("dd.MM.yyyy<br>")));
      QVector<ContractEnd> ce;
      calc_contractEnd(ce);
-     if( !ce.isEmpty()) {
+     if( not ce.isEmpty()) {
          ret += startTable();
          ret += tableRow3(h2(qsl("Jahr")), h2(qsl("Anzahl")),  h2(qsl("Summe")));
          for( auto& x: qAsConst(ce))
@@ -202,7 +203,7 @@ QString htmlContractsByYearByInterestTable()
     ret += endRow();
     int year =-1;
     for( auto& x: qAsConst(yzv)) {
-        if( year != x.year)
+        if( year not_eq x.year)
             ret += emptyRow(4);
         ret += tableRow4( QString::number(x.year), QString(qsl("%1%")).arg(x.intrest, 2, 'g'), QString::number(x.count), locale.toCurrencyString(x.sum));
         year =x.year;
@@ -225,47 +226,47 @@ QString htmlContractsByRuntimeTable()
     ret += endTable();
     return ret;
 }
-QString htmlAllContractInfo()
-{
-    dbtable t(qsl("vVertraege_aktiv_detail"));
-    t.append(dbfield(qsl("Id"), QVariant::Type::Int));
-    t.append(dbfield(qsl("KreditorId"), QVariant::Type::Int));
-    t.append(dbfield(qsl("Vertragskennung")));
-    t.append(dbfield(qsl("Vorname")));
-    t.append(dbfield(qsl("Nachname")));
-    t.append(dbfield(qsl("Strasse")));
-    t.append(dbfield(qsl("Plz")));
-    t.append(dbfield(qsl("Stadt")));
-    t.append(dbfield(qsl("Email")));
-    t.append(dbfield(qsl("Iban")));
-    t.append(dbfield(qsl("Bic")));
-    t.append(dbfield(qsl("Strasse")));
-    t.append(dbfield(qsl("Zinssatz"), QVariant::Type::Double));
-    t.append(dbfield(qsl("Wert"), QVariant::Type::Double));
-    t.append(dbfield(qsl("Aktivierungsdatum"), QVariant::Type::Date));
-    t.append(dbfield(qsl("Kuendigungsfrist"), QVariant::Type::Int));
-    t.append(dbfield(qsl("Vertragsende"), QVariant::Type::Date));
-    t.append(dbfield(qsl("thesa"), QVariant::Type::Bool));
+//QString htmlAllContractInfo()
+//{
+//    dbtable t(vnContractsActiveDetailsView);
+//    t.append(dbfield(qsl("Id"), QVariant::Type::Int));
+//    t.append(dbfield(qsl("KreditorId"), QVariant::Type::Int));
+//    t.append(dbfield(qsl("Vertragskennung")));
+//    t.append(dbfield(qsl("Vorname")));
+//    t.append(dbfield(qsl("Nachname")));
+//    t.append(dbfield(qsl("Strasse")));
+//    t.append(dbfield(qsl("Plz")));
+//    t.append(dbfield(qsl("Stadt")));
+//    t.append(dbfield(qsl("Email")));
+//    t.append(dbfield(qsl("Iban")));
+//    t.append(dbfield(qsl("Bic")));
+//    t.append(dbfield(qsl("Strasse")));
+//    t.append(dbfield(qsl("Zinssatz"), QVariant::Type::Double));
+//    t.append(dbfield(qsl("Wert"), QVariant::Type::Double));
+//    t.append(dbfield(qsl("Aktivierungsdatum"), QVariant::Type::Date));
+//    t.append(dbfield(qsl("Kuendigungsfrist"), QVariant::Type::Int));
+//    t.append(dbfield(qsl("Vertragsende"), QVariant::Type::Date));
+//    t.append(dbfield(qsl("thesa"), QVariant::Type::Bool));
 
-    QString ret =startTable();
-    ret += startRow();
-    for(auto& field : t.Fields()) {
-        ret +=tag(field.name(), qsl("th"));
-    }
-    ret += endRow();
-    QVector<QSqlRecord> data = executeSql(t.Fields());
-    for(auto& rec : qAsConst(data)) {
-        ret += startRow();
-        for( int i =0; i<rec.count(); i++) {
-            ret += td(rec.field(i).value().toString());
-        }
-        ret += endRow();
-    }
-    ret += endTable();
-    return ret;
-}
+//    QString ret =startTable();
+//    ret += startRow();
+//    for(auto& field : t.Fields()) {
+//        ret +=tag(field.name(), qsl("th"));
+//    }
+//    ret += endRow();
+//    QVector<QSqlRecord> data = executeSql(t.Fields());
+//    for(auto& rec : qAsConst(data)) {
+//        ret += startRow();
+//        for( int i =0; i<rec.count(); i++) {
+//            ret += td(rec.field(i).value().toString());
+//        }
+//        ret += endRow();
+//    }
+//    ret += endTable();
+//    return ret;
+//}
 QString reportHtml(Uebersichten u)
-{
+{   LOG_CALL;
     QString html =qsl("<html><body>"
                     "<style>"
                       "table { font-family: Verdana; font-size: medium; border: 1px solid black; border-collapse: collapse; }"
@@ -293,9 +294,9 @@ QString reportHtml(Uebersichten u)
     case CONTRACT_TERMS: {
         return html.arg(htmlContractsByRuntimeTable());
     }
-    case ALL_CONTRACT_INFO: {
-        return html.arg(htmlAllContractInfo());
-    }
+//    case ALL_CONTRACT_INFO: {
+//        return html.arg(htmlAllContractInfo());
+//    }
     default:
     {Q_ASSERT(false);}
     return QString();

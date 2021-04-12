@@ -49,7 +49,7 @@ void test_sqlhelper::test_tableExists()
     QVERIFY( QSqlQuery().exec("INSERT INTO testSqlVal VALUES "
                "(1, 1, 1.1, 'teststring', '2019-01-01 00:00:00.000')"));
     QVERIFY2(tableExists("testSqlVal"), "test of tableExists faild on existing table");
-    QVERIFY2(!tableExists("notExistingTable"), "test of tableExists faild on NOT existing table");
+    QVERIFY2( not tableExists("notExistingTable"), "test of tableExists faild on NOT existing table");
     QSqlQuery("DROP TABLE testSqlVal");
 }
 
@@ -75,7 +75,7 @@ void test_sqlhelper::test_ensureTable_existingTable_tableSizeMismatch()
     t.append(dbfield("id", QVariant::LongLong));
     t.append(dbfield("s"));
     t.append(dbfield("i", QVariant::Int));
-    QVERIFY( ! ensureTable(t));
+    QVERIFY( not ensureTable(t));
     QVERIFY(query.exec("DROP TABLE " + tname));
 }
 void test_sqlhelper::test_ensureTable_existingtable_fieldTypeMismatch()
@@ -88,7 +88,7 @@ void test_sqlhelper::test_ensureTable_existingtable_fieldTypeMismatch()
     t.append(dbfield("id", QVariant::String));
     t.append(dbfield("s"));
     t.append(dbfield("i", QVariant::Int));
-    QVERIFY( ! ensureTable(t));
+    QVERIFY( not ensureTable(t));
     QVERIFY(query.exec("DROP TABLE " + tname));
 }
 void test_sqlhelper::test_ensureTable_nonexistingTable()
@@ -370,7 +370,7 @@ void test_sqlhelper::test_variantTypeConservation()
     sql += DbInsertableString(b) +")";
 
     QSqlQuery q;
-    if( ! q.exec(sql)) {
+    if( not q.exec(sql)) {
         qDebug() << q.lastError() << Qt::endl << q.lastQuery();
         QFAIL("query execution failed");
     }
@@ -410,13 +410,13 @@ void test_sqlhelper::test_getHighestRowId()
     int maxrow = 100;
     for( int i = 0; i<maxrow; i++) {
         q.addBindValue(QString::number(i));
-        if( !q.exec()) qDebug() << q.lastError() << Qt::endl << q.lastQuery();
+        if( not q.exec()) qDebug() << q.lastError() << Qt::endl << q.lastQuery();
     }
     QCOMPARE( getHighestRowId(tablename), maxrow);
     q.prepare("DELETE FROM " + tablename + " WHERE col_S=?");
     for( int i = 0; i<maxrow; i+=2) {
         q.addBindValue(QString::number(i));
-        if( !q.exec()) qDebug() << q.lastError() << Qt::endl << q.lastQuery();
+        if( not q.exec()) qDebug() << q.lastError() << Qt::endl << q.lastQuery();
     }
     QCOMPARE( getHighestRowId(tablename), maxrow);
     QCOMPARE(rowCount(tablename), maxrow/2);

@@ -23,7 +23,7 @@ void test_letterTemplate::initTestCase()
 void test_letterTemplate::init()
 {   LOG_CALL;
     initTestDb();
-    fill_DkDbDefaultContent();
+    fill_DkDbDefaultContent(QSqlDatabase::database(), false);
 }
 
 void test_letterTemplate::cleanup()
@@ -73,7 +73,7 @@ void test_letterTemplate::test_applyPlaceholders()
     //{
 
     //    qDebug() << "comparing " << tlate.Html()[i] << " to " << result [i];
-    //    if(  tlate.Html()[i] != result[i] )
+    //    if(  tlate.Html()[i] not_eq result[i] )
     //        qDebug() << "applyPlaceholders failed in test " << i << ": " << tlate.Html()[i] << "!= " << result[i] << " (error #" << ++testfails << ")";
     //}
     //if( testfails) qDebug() << "applyPlacehoders had " << testfails << "errors";

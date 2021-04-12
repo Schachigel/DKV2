@@ -15,7 +15,7 @@ void printThankyouLetter( const contract& )
 //    tlate.setPlaceholder(GMBH_EMAIL, getMetaInfo(GMBH_EMAIL));
 //    tlate.setPlaceholder(GMBH_URL, getMetaInfo(GMBH_URL));
 
-Q_ASSERT(!"repair");
+Q_ASSERT( not "repair");
 //    tlate.setPlaceholder("vertraege.betrag", locale.toCurrencyString( v.Betrag()));
 //    tlate.setPlaceholder("vertraege.buchungsdatum", v.StartZinsberechnung().toString("dd. MMM yyyy"));
 //    tlate.setPlaceholder("vertraege.kennung", v.Kennung());
@@ -43,7 +43,7 @@ void printTerminationLetter( const contract& , QDate kDate, int )
 //    tlate.setPlaceholder(GMBH_STREET, getMetaInfo(GMBH_STREET));
 //    tlate.setPlaceholder(GMBH_EMAIL, getMetaInfo(GMBH_EMAIL));
 //    tlate.setPlaceholder(GMBH_URL, getMetaInfo(GMBH_URL));
-Q_ASSERT(!"repair");
+Q_ASSERT( not "repair");
 //    tlate.setPlaceholder("vertraege.kennung", v.Kennung());
 //    tlate.setPlaceholder("vertraege.kfrist", QString::number(kMonate));
 //    tlate.setPlaceholder("vertraege.laufzeitende", v.LaufzeitEnde().toString("dd.MM.yyyy"));
@@ -69,7 +69,7 @@ void printFinalLetter( const contract& , QDate )
 //    tlate.setPlaceholder(GMBH_STREET, getMetaInfo(GMBH_STREET));
 //    tlate.setPlaceholder(GMBH_EMAIL, getMetaInfo(GMBH_EMAIL));
 //    tlate.setPlaceholder(GMBH_URL, getMetaInfo(GMBH_URL));
-Q_ASSERT(!"repair");
+Q_ASSERT( not "repair");
 //    tlate.setPlaceholder("vertraege.kennung", v.Kennung());
 //    tlate.setPlaceholder("datum", QDate::currentDate().toString("dd. MMM yyyy"));
 //    tlate.setPlaceholder("vertraege.buchungsdatum", contractEnd.toString("dd.MM.yyyy"));

@@ -11,7 +11,7 @@ enum Uebersichten
     BY_CONTRACT_END,
     INTEREST_DISTRIBUTION,
     CONTRACT_TERMS,
-    ALL_CONTRACT_INFO
+//    ALL_CONTRACT_INFO
 };
 
 QString reportHtml(Uebersichten u);

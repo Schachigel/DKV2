@@ -45,7 +45,7 @@ void initTestDb_withData()
     init_DKDBStruct();
     QVERIFY(dkdbstructur.createDb(db));
     QVERIFY2( QFile::exists(testDbFilename), "create database failed." );
-    fill_DkDbDefaultContent();
+    fill_DkDbDefaultContent(db, false);
     saveRandomCreditors(10);
     saveRandomContracts(8);
     activateRandomContracts(100 /* % */);
@@ -127,7 +127,7 @@ bool dbsHaveSameTables(const QSqlDatabase &db1, const QSqlDatabase &db2)
     bool ret =true;
     QStringList tl1 =db1.tables();
     QStringList tl2 =db2.tables();
-    if( tl1.count() != tl2.count()) {
+    if( tl1.count() not_eq tl2.count()) {
          qInfo() << "db comparison: table list count missmatch";
          ret =false;
     }
@@ -136,7 +136,7 @@ bool dbsHaveSameTables(const QSqlDatabase &db1, const QSqlDatabase &db2)
             qInfo() << "common table: " << table;
             int rc1 =rowCount(table, db1);
             int rc2 =rowCount(table, db2);
-            if( rc1 != rc2) {
+            if( rc1 not_eq rc2) {
                 qCritical() << "Tables " << table << " differ in rowCount: " << rc1 << " / " << rc2;
                 ret =false;
             }
@@ -168,7 +168,7 @@ bool dbTablesHaveSameFields(const QString& table1, const QString& table2, const 
         qInfo() << "table 2 has no fields";
         ret =false;
     }
-    if( rec1.count() != rec2.count()) {
+    if( rec1.count() not_eq rec2.count()) {
         qInfo() << "field count of tables to be compared are not equal: " << rec1 << rec2;
         ret =false;
     }

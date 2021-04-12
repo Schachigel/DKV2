@@ -9,6 +9,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QMessageBox>
+#include <QInputDialog>
 #include <QSortFilterProxyModel>
 #include <QSqlRelationalTableModel>
 #include <QPdfWriter>
@@ -25,7 +26,9 @@
 #include "csvwriter.h"
 #include "uiitemformatter.h"
 #include "dkdbhelper.h"
+#include "dkdbviews.h"
 #include "dkdbcopy.h"
+#include "dkdbviews.h"
 #include "dbstatistics.h"
 #include "letters.h"
 #include "transaktionen.h"
@@ -59,14 +62,14 @@ QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
     // change font color for number of contracts (3,5) and sum of contract (4,6) columns
     if (role == Qt::ForegroundRole) {
         int col =i.column();
-        if( col == 4 || col == 6) {
+        if( col == 4 or col == 6) {
             int iMax =dbConfig::readValue(MAX_INVESTMENT_NBR).toInt();
             int nbr =i.data().toInt();
             if(nbr >= iMax){
                 qInfo() << "nbr: " << nbr << " row: " << col;
                 return QColor(Qt::red);
             }
-        } else if (col == 5 || col == 7) {
+        } else if (col == 5 or col == 7) {
             double dMax =dbConfig::readValue(MAX_INVESTMENT_SUM).toDouble();
             double sum =i.data().toDouble();
             if( sum >= dMax){
@@ -125,21 +128,21 @@ QString MainWindow::findValidDatabaseToUse()
 QString MainWindow::askUserForNextDb()
 {   LOG_CALL;
     wizOpenOrNewDb wizOpenOrNew (getMainWindow());
-    if( QDialog::Accepted != wizOpenOrNew.exec()) {
+    if( QDialog::Accepted not_eq wizOpenOrNew.exec()) {
         qInfo() << "wizard OpenOrNew was canceled by the user";
         return QString();
     }
     QString selectedDbPath {absoluteCanonicalPath(wizOpenOrNew.selectedFile)};
     { // busycursor scope
         busycursor b;
-        if( ! wizOpenOrNew.field(qsl("createNewDb")).toBool()) {
+        if( not wizOpenOrNew.field(qsl("createNewDb")).toBool()) {
             // the UI does not allow an empty string here
             qInfo() << "existing db " << selectedDbPath << "was selected";
             return selectedDbPath;
         }
         // a new db should be created -> ask project details
         // closeAllDatabaseConnections();
-        if( ! createNewDatabaseFileWDefaultContent(selectedDbPath)) {
+        if( not createNewDatabaseFileWDefaultContent(selectedDbPath)) {
             QMessageBox::critical(this, "Fehler", "Die neue Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen");
             return QString();
         }
@@ -182,7 +185,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     // if we come here, dbPath contains a valid Databse, lets use it
-    if( !useDb(dbPath)) {
+    if( not useDb(dbPath)) {
         QMessageBox::critical(nullptr, qsl("FEHLER"), qsl("Die angegebene Datenbank kann nicht verwendet werden. DKV2 wird beendet"));
         return;
     }
@@ -215,7 +218,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::showDbInStatusbar( QString filename)
 {   LOG_CALL_W (filename);
-    Q_ASSERT( ! filename.isEmpty());
+    Q_ASSERT( not filename.isEmpty());
     ui->statusLabel->setText( filename);
 }
 
@@ -242,6 +245,10 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
         ui->menu_contracts_subm_print_lists->setEnabled(true);
         break;
     case overviewsPageIndex:
+        ui->action_menu_creditors_delete->setEnabled(false);
+        ui->menu_contracts_subm_print_lists->setEnabled(false);
+        break;
+    case statisticsPageIndex:
         ui->action_menu_creditors_delete->setEnabled(false);
         ui->menu_contracts_subm_print_lists->setEnabled(false);
         break;
@@ -314,7 +321,7 @@ void MainWindow::on_action_menu_database_new_triggered()
         QMessageBox::information( this, qsl("Abbruch"), qsl("Die Dateiauswahl wurde abgebrochen."));
         return;
     }
-    if( !checkSchema_ConvertIfneeded(dbFile)) {
+    if( not checkSchema_ConvertIfneeded(dbFile)) {
         // selected file is not valid or can not be converted
         // do nothing
         QMessageBox::information( this, qsl("Abbruch"), qsl("Die ausgewählte Datei ist keine gültige Datenbank."));
@@ -340,13 +347,13 @@ void MainWindow::on_action_menu_database_copy_triggered()
         return;
 
     busycursor b;
-    if( ! copy_database(QSqlDatabase::database().databaseName(), dbfile)) {
+    if( copy_dkdb_database(QSqlDatabase::database().databaseName(), dbfile))
+        QMessageBox::information(this, qsl("Kopie angelegt"), qsl("Die Kopie ") +dbfile +qsl(" wurde erfolgreich angelegt"));
+    else {
         QMessageBox::information(this, qsl("Fehler beim Kopieren"), qsl("Die Datenbankkopie konnte nicht angelegt werden. "
                                                                "Weitere Info befindet sich in der LOG Datei"));
         qCritical() << "creating copy failed";
-    } else
-        QMessageBox::information(this, qsl("Kopie angelegt"), qsl("Die Kopie ") +dbfile +qsl(" wurde erfolgreich angelegt"));
-
+    }
     return;
 }
 void MainWindow::on_action_menu_database_anonymous_copy_triggered()
@@ -355,7 +362,7 @@ void MainWindow::on_action_menu_database_anonymous_copy_triggered()
     if( dbfile == qsl(""))
         return;
     busycursor b;
-    if( !copy_database_mangled(dbfile)) {
+    if( not copy_database_mangled(dbfile)) {
         QMessageBox::information(this, qsl("Fehler beim Kopieren"),
                                  qsl("Die anonymisierte Datenbankkopie konnte nicht angelegt werden. "
                                      "Weitere Info befindet sich in der LOG Datei"));
@@ -386,7 +393,7 @@ void MainWindow::on_action_menu_creditors_listview_triggered()
 {   LOG_CALL;
     busycursor b;
     prepare_CreditorsListPage();
-    if( ! ui->CreditorsTableView->currentIndex().isValid())
+    if( not ui->CreditorsTableView->currentIndex().isValid())
         ui->CreditorsTableView->selectRow(0);
 
     ui->stackedWidget->setCurrentIndex(creditorsListPageIndex);
@@ -467,7 +474,7 @@ void MainWindow::on_action_cmenu_delete_creaditor_triggered()
     QString msg( qsl("Soll der Kreditgeber %1 %2 (id %3) gelöscht werden?"));
     msg =msg.arg(c.getValue(qsl("Vorname")).toString(), c.getValue(qsl("Nachname")).toString(), QString::number(index));
 
-    if( QMessageBox::Yes != QMessageBox::question(this, qsl("Kreditgeber löschen?"), msg))
+    if( QMessageBox::Yes not_eq QMessageBox::question(this, qsl("Kreditgeber löschen?"), msg))
         return;
     busycursor b;
 
@@ -514,7 +521,7 @@ void MainWindow::on_action_menu_contracts_listview_triggered()
 {   LOG_CALL;
     showDeletedContracts =false;
     prepare_contracts_list_view();
-    if( !ui->contractsTableView->currentIndex().isValid())
+    if( not ui->contractsTableView->currentIndex().isValid())
         ui->contractsTableView->selectRow(0);
 
     ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
@@ -525,7 +532,7 @@ QString filterFromFilterphrase(QString fph)
     {
         bool conversionOK = true;
         qlonglong contractId = fph.rightRef(fph.length()-9).toInt(&conversionOK);
-        if( ! conversionOK)
+        if( not conversionOK)
             return "";
         else
             return qsl("KreditorId=") + QString::number(contractId);
@@ -569,7 +576,7 @@ void MainWindow::prepare_deleted_contracts_list_view()
 
     QTableView*& tv = ui->contractsTableView;
     tv->setModel(model);
-    if ( !model->select()) {
+    if ( not model->select()) {
         qCritical() << "Model selection failed" << model->lastError();
         return;
     }
@@ -590,7 +597,7 @@ void MainWindow::prepare_deleted_contracts_list_view()
                      SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
                      SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
 
-    if( ! model->rowCount()) {
+    if( not model->rowCount()) {
         ui->bookingsTableView->setModel(new QSqlTableModel(this));
     } else
         tv->setCurrentIndex(model->index(0, 1));
@@ -603,6 +610,7 @@ void MainWindow::prepare_valid_contraccts_list_view()
         cp_Creditor_id,
         cp_Creditor,
         cp_ContractLabel,
+        cp_Comment,
         cp_ContractDate,
         cp_ActivationDate,
         cp_ContractValue,
@@ -615,12 +623,14 @@ void MainWindow::prepare_valid_contraccts_list_view()
     };
 
     QSqlTableModel* model = new QSqlTableModel(this);
-    model->setTable(qsl("vVertraege_alle_4view"));
+    model->setTable(vnContractView);
     model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
     model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("KreditorIn"));
     model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters"), Qt::ToolTipRole);
     model->setHeaderData(cp_ContractLabel, Qt::Horizontal, qsl("Vertragskennung"));
     model->setHeaderData(cp_ContractLabel, Qt::Horizontal, qsl("Die Vertragskennung identifiziert den Vertrag eindeutig"), Qt::ToolTipRole);
+    model->setHeaderData(cp_Comment, Qt::Horizontal, qsl("Anmerkung"));
+    model->setHeaderData(cp_Comment, Qt::Horizontal, qsl("Freitext zum Vertrag"), Qt::ToolTipRole);
     model->setHeaderData(cp_ContractDate, Qt::Horizontal, qsl(""), Qt::ToolTipRole);
     model->setHeaderData(cp_ContractValue, Qt::Horizontal, qsl("Bei aktiven Verträgen: Höhe der Ersteinlage, sonst der im Vertrag vereinbarte Kreditbetrag"), Qt::ToolTipRole);
     model->setHeaderData(cp_InterestRate, Qt::Horizontal, qsl(""), Qt::ToolTipRole);
@@ -637,7 +647,7 @@ void MainWindow::prepare_valid_contraccts_list_view()
 
     QTableView*& tv = ui->contractsTableView;
     tv->setModel(model);
-    if ( !model->select()) {
+    if ( not model->select()) {
         qCritical() << "Model selection failed" << model->lastError();
         return;
     }
@@ -650,6 +660,7 @@ void MainWindow::prepare_valid_contraccts_list_view()
     tv->setItemDelegateForColumn(cp_ContractValue, new CurrencyFormatter(tv));
     tv->setItemDelegateForColumn(cp_InterestBearing, new CurrencyFormatter(tv));
     tv->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(tv));
+    tv->setItemDelegateForColumn(cp_InterestMode, new thesaItemFormatter(tv));
     tv->hideColumn(cp_vid);
     tv->hideColumn(cp_Creditor_id);
 
@@ -659,7 +670,7 @@ void MainWindow::prepare_valid_contraccts_list_view()
                      SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
                      SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
 
-    if( ! model->rowCount()) {
+    if( not model->rowCount()) {
         ui->bookingsTableView->setModel(new QSqlTableModel(this));
     } else
         tv->setCurrentIndex(model->index(0, 1));
@@ -719,7 +730,9 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
     ui->bookingsTableView->setItemDelegateForColumn(4, new BookingAmountItemFormatter);
 }
 
+/////////////////////////////////////////////////
 // contract list context menu
+/////////////////////////////////////////////////
 void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &pos)
 {   LOG_CALL;
     if( showDeletedContracts)
@@ -756,7 +769,7 @@ void MainWindow::on_action_cmenu_activate_contract_triggered()
 void MainWindow::on_action_cmenu_terminate_contract_triggered()
 {   LOG_CALL;
     QModelIndex mi(ui->contractsTableView->currentIndex());
-    if( !mi.isValid()) return;
+    if( not mi.isValid()) return;
     int index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toInt();
     terminateContract(index);
     updateListViews();
@@ -764,7 +777,7 @@ void MainWindow::on_action_cmenu_terminate_contract_triggered()
 void MainWindow::on_action_cmenu_delete_inactive_contract_triggered()
 {   LOG_CALL;
     QModelIndex mi(ui->contractsTableView->currentIndex());
-    if( !mi.isValid()) return;
+    if( not mi.isValid()) return;
 
     deleteInactiveContract(ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toLongLong());
     updateListViews();
@@ -772,31 +785,38 @@ void MainWindow::on_action_cmenu_delete_inactive_contract_triggered()
 void MainWindow::on_action_cmenu_change_contract_triggered()
 {   // deposit or payout...
     QModelIndex mi(ui->contractsTableView->currentIndex());
-    if( !mi.isValid()) return;
+    if( not mi.isValid()) return;
     qlonglong contractId = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toLongLong();
     changeContractValue(contractId);
     updateListViews();
 }
+/////////////////////////////////////////////////
 // new creditor or contract from contract menu
+/////////////////////////////////////////////////
 void MainWindow::on_action_Neu_triggered()
 {
     on_actionNeu_triggered();
 }
+
+/////////////////////////////////////////////////
 // terminated contracts list
+/////////////////////////////////////////////////
 void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
 {
     showDeletedContracts =true;
     prepare_contracts_list_view();
-    if( !ui->contractsTableView->currentIndex().isValid())
+    if( not ui->contractsTableView->currentIndex().isValid())
         ui->contractsTableView->selectRow(0);
     ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
 }
+/////////////////////////////////////////////////
 // List of investments
+/////////////////////////////////////////////////
 void MainWindow::prepare_investmentsListView()
 {
     InvestmentsTableModel* model = new InvestmentsTableModel(this);
-    model->setTable(qsl("vInvestmentsOverview"));
-    model->setSort(0, Qt::SortOrder::DescendingOrder);
+    model->setTable(vnInvestmentsView);
+    //model->setSort(0, Qt::SortOrder::DescendingOrder);
 
     QTableView* tv =ui->InvestmentsTableView;
     tv->setModel(model);
@@ -812,7 +832,7 @@ void MainWindow::prepare_investmentsListView()
     model->setHeaderData(6, Qt::Horizontal, qsl("Anzahl\n(aktive)"), Qt::DisplayRole);
     tv->setItemDelegateForColumn(7, new CurrencyFormatter);
     model->setHeaderData(7, Qt::Horizontal, qsl("Summe\n(aktive)"), Qt::DisplayRole);
-    tv->hideColumn(8);
+    tv->hideColumn(9);
     tv->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     model->setEditStrategy(QSqlTableModel::OnFieldChange);
@@ -820,29 +840,40 @@ void MainWindow::prepare_investmentsListView()
     tv->resizeColumnsToContents();
     tv->setAlternatingRowColors(true);
 }
-
 void MainWindow::on_actionAnlagen_verwalten_triggered()
 {
     prepare_investmentsListView();
     ui->stackedWidget->setCurrentIndex(investmentsPageIndex);
 }
-
 void MainWindow::on_btnCreateFromContracts_clicked()
 {   LOG_CALL;
     int newInvestments =createNewInvestmentsFromContracts();
     if( newInvestments) {
         QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden ") +QString::number(newInvestments) +qsl(" Anlage(n) angelegt."));
         qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model())->select();
+        ui->InvestmentsTableView->resizeColumnsToContents();
     }
     else
         QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden keine neuen Anlageformen angelegt."));
 }
-
 void MainWindow::on_btnNewInvestment_clicked()
 {   LOG_CALL;
     createInvestment();
     QSqlTableModel* m =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
     m->select();
+    ui->InvestmentsTableView->resizeColumnsToContents();
+}
+void MainWindow::on_InvestmentsTableView_customContextMenuRequested(const QPoint &pos)
+{   LOG_CALL;
+    QTableView* tv =ui->InvestmentsTableView;
+    QModelIndex index =tv->indexAt(pos);
+
+    QMenu cmenu( qsl("investmentsContextMenu"), this);
+    ui->actionInvestmentLoeschen->setData(index);
+    cmenu.addAction(ui->actionInvestmentLoeschen);
+    cmenu.addAction(ui->actionInvestmentSchliessen);
+    cmenu.addAction(ui->actionTyp_Bezeichnung_aendern);
+    cmenu.exec(ui->InvestmentsTableView->mapToGlobal(pos));
 }
 void MainWindow::on_actionInvestmentLoeschen_triggered()
 {
@@ -869,19 +900,57 @@ void MainWindow::on_actionInvestmentLoeschen_triggered()
         }
     }
 }
+void MainWindow::on_actionInvestmentSchliessen_triggered()
+{
+    QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
+    QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
+    QSqlRecord rec =tm->record(index.row());
+    QDate dAnfang =rec.value(qsl("Anfang")).toDate();
+    QString anfang =dAnfang.toString(qsl("yyyy.MM.dd"));
+    QDate dEnde =rec.value(qsl("Ende")).toDate();
+    QString ende =dEnde.toString(qsl("yyyy.MM.dd"));
+    int zinssatz =rec.value(qsl("ZSatz")).toInt();
+    QString typ =rec.value(qsl("Typ")).toString();
+    QString msg{qsl("Soll die Anlage mit <b>%1%</b>, vom %2 zum %3 mit dem Typ <br>  > %4 <  <br> geschlossen werden?")};
+    msg =msg.arg(QString::number(zinssatz/100., 'f', 2), anfang, ende, typ);
 
-void MainWindow::on_InvestmentsTableView_customContextMenuRequested(const QPoint &pos)
-{   LOG_CALL;
-    QTableView* tv =ui->InvestmentsTableView;
-    QModelIndex index =tv->indexAt(pos);
+    if( QMessageBox::Yes == QMessageBox::question(this, qsl("Schließen"), msg)) {
+        // delete the entry, update the view
+        if( closeInvestment(zinssatz, dAnfang, dEnde, typ)) {
+            qInfo() << "removed investment row " << index.row();
+            //tm->submitAll();
+            tm->select();
+        } else {
+            qWarning() << tm->lastError();
+        }
+    }
 
-    QMenu cmenu( qsl("investmentsContextMenu"), this);
-    ui->actionInvestmentLoeschen->setData(index);
-    cmenu.addAction(ui->actionInvestmentLoeschen);
-    cmenu.exec(ui->InvestmentsTableView->mapToGlobal(pos));
+}
+void MainWindow::on_actionTyp_Bezeichnung_aendern_triggered()
+{
+    QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
+    QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
+    QSqlRecord rec =tm->record(index.row());
+    QString typ =rec.value(qsl("Typ")).toString();
+
+    QInputDialog id(this);
+    QFont f =id.font(); f.setPointSize(10); id.setFont(f);
+    id.setInputMode(QInputDialog::InputMode::TextInput);
+    id.setWindowTitle(qsl("Geldanlagen Bezeichner"));
+    id.setLabelText(qsl("Bezeichner für den Anlage Typ"));
+    id.setTextValue(typ);
+    int idOk =id.exec();
+    QString txt = id.textValue().trimmed();
+    if( not idOk or txt.isEmpty())
+        return;
+    QString sql(qsl("UPDATE Geldanlagen SET Typ =? WHERE rowid =%1").arg(rec.value(qsl("rowid")).toString()));
+    if( executeSql_wNoRecords(sql, {QVariant(txt)}))
+        tm->select();
 }
 
-// statistics
+/////////////////////////////////////////////////
+// Übersichten
+/////////////////////////////////////////////////
 void MainWindow::on_action_menu_contracts_statistics_view_triggered()
 {   LOG_CALL;
     QComboBox* combo =ui->comboUebersicht;
@@ -892,7 +961,7 @@ void MainWindow::on_action_menu_contracts_statistics_view_triggered()
         combo->addItem(qsl("Anzahl auslaufender Verträge nach Jahr"),QVariant(BY_CONTRACT_END));
         combo->addItem(qsl("Anzahl Verträge nach Zinssatz und Jahr"),QVariant(INTEREST_DISTRIBUTION));
         combo->addItem(qsl("Anzahl Verträge nach Laufzeiten"),       QVariant(CONTRACT_TERMS));
-        combo->addItem(qsl("Überblick über alle Verträge"),          QVariant(ALL_CONTRACT_INFO));
+//        combo->addItem(qsl("Überblick über alle Verträge"),          QVariant(ALL_CONTRACT_INFO));
         combo->setCurrentIndex(0);
     }
 
@@ -913,16 +982,139 @@ void MainWindow::on_pbPrint_clicked()
     ui->txtOverview->print(&write);
     showFileInFolder(filename);
 }
+
+/////////////////////////////////////////////////
+//              Statistics                     //
+/////////////////////////////////////////////////
+QVector<QDate> dates;
+int currentDateIndex =0;
+void MainWindow::fillStatisticsTableView()
+{//   LOG_CALL_W(dates[currentDateIndex].toString(Qt::ISODate));
+    QString sql;
+    if( ui->rbActive->isChecked()) {
+        qInfo() << "calculating active contracts data for index " << currentDateIndex << " date: " << dates[currentDateIndex];
+        sql =sqlStat_activeContracts_byIMode_toDate;
+    } else if (ui->rbInactive->isChecked()){
+        qInfo() << "calculating INactive contracts data" << currentDateIndex << " date: " << dates[currentDateIndex];
+        sql =sqlStat_inactiveContracts_byIMode_toDate;
+    } else if (ui->rbAll->isChecked()) {
+        qInfo() << "calculating ALL contracts data" << currentDateIndex << " date: " << dates[currentDateIndex];
+        sql =sqlStat_allContracts_byIMode_toDate;
+    } else
+        Q_ASSERT (!"never reach this point");
+    sql.replace(qsl(":date"), dates[currentDateIndex].toString(Qt::ISODate)).replace("\n", " ");
+    // qDebug() << sql;
+
+    QSqlQueryModel *mod =new QSqlQueryModel();
+    mod->setQuery(sql);
+    if( mod->lastError().type() not_eq QSqlError::NoError) {
+        qInfo() << "SqlError: " << mod->lastError();
+        return;
+    }
+    ui->tvData->setModel(mod);
+
+}
+void MainWindow::on_rbActive_toggled(bool checked)
+{
+    if( checked) prepare_statisticsPage();
+}
+void MainWindow::on_rbInactive_toggled(bool checked)
+{
+    if( checked) prepare_statisticsPage();
+}
+void MainWindow::on_rbAll_toggled(bool checked)
+{
+    if( checked) prepare_statisticsPage();
+}
+void MainWindow::on_pbBack_clicked()
+{
+    // back increases the index
+    int newIndex =currentDateIndex +1;
+    int maxIndex =dates.size() -1;
+    qDebug() << "newIndex: " << newIndex << " (maxI: " << maxIndex << ")";
+
+    if( newIndex >= maxIndex)
+        currentDateIndex =maxIndex;
+    else
+        currentDateIndex =newIndex;
+    ui->lblBookingDate->setText(dates[currentDateIndex].toString(qsl("dd.MM.yyyy")));
+    ui->pbBack->setEnabled(currentDateIndex < maxIndex);
+    ui->pbNext->setEnabled(true);
+    fillStatisticsTableView();
+}
+void MainWindow::on_pbNext_clicked()
+{
+    // next decreases the index
+    int newIndex =currentDateIndex -1;
+    qDebug() << "newIndex: " << newIndex;
+    if( newIndex <= 0) {
+        currentDateIndex =0;
+        ui->lblBookingDate->setText(dates[currentDateIndex].toString(qsl("dd.MM.yyyy")));
+        ui->pbBack->setEnabled(true);
+        ui->pbNext->setEnabled(false);
+        return;
+    }
+    currentDateIndex =newIndex;
+    ui->lblBookingDate->setText(dates[currentDateIndex].toString(qsl("dd.MM.yyyy")));
+    ui->pbBack->setEnabled(true);
+    ui->pbNext->setEnabled(true);
+    fillStatisticsTableView();
+}
+void MainWindow::getDatesFromContractStates()
+{
+    dates.clear();
+    currentDateIndex =0;
+    if( ui->rbActive->isChecked()){
+        qInfo() << "init dates for active contracts";
+        getActiveContracsDates( dates);
+    }
+    else if (ui->rbInactive->isChecked()){
+        qInfo() << "init dates for INactive contracts";
+        getInactiveContractDates( dates);
+    }
+    else if (ui->rbAll->isChecked()){
+        qInfo() << "init dates for ALL contracts";
+        getAllContractDates( dates);
+    }
+    else
+        Q_ASSERT(! "never come here");
+}
+void MainWindow::prepare_statisticsPage()
+{
+    getDatesFromContractStates();
+    if( dates.isEmpty()) {
+        ui->pbNext->setEnabled(false);
+        ui->pbBack->setEnabled(false);
+        ui->lblBookingDate->setText(qsl("&nbr;-   <i>  Keine Daten  </i>   -&nbr;"));
+        return;
+    }
+    qDebug() << dates;
+    ui->lblBookingDate->setText(dates[0].toString(qsl("dd.MM.yyyy")));
+    ui->pbNext->setEnabled(false);
+    ui->pbBack->setEnabled(dates.size()>1);
+    fillStatisticsTableView();
+}
+void MainWindow::on_actionStatistik_triggered()
+{
+    prepare_statisticsPage();
+    ui->stackedWidget->setCurrentIndex(statisticsPageIndex);
+}
+
+/////////////////////////////////////////////////
 // annual settlement
+/////////////////////////////////////////////////
 void MainWindow::on_action_menu_contracts_annual_interest_settlement_triggered()
 {   LOG_CALL;
     annualSettlement();
     updateListViews();
 }
+
+/////////////////////////////////////////////////
 // list creation csv, printouts
+/////////////////////////////////////////////////
 void MainWindow::on_action_menu_contracts_print_lists_triggered()
 {   LOG_CALL;
-    if( !createCsvActiveContracts())
+    if( not createCsvActiveContracts())
         QMessageBox::critical(this, qsl("Fehler"), qsl("Die Datei konnte nicht angelegt werden. Ist sie z.B. in Excel geöffnet?"));
 }
 void MainWindow::on_actionAktuelle_Auswahl_triggered()
@@ -943,7 +1135,10 @@ void MainWindow::on_actionAktuelle_Auswahl_triggered()
     }
     csv.saveAndShowInExplorer(QDate::currentDate().toString("yyyy-MM-dd_Vertragsliste.csv"));
 }
+
+/////////////////////////////////////////////////
 // debug funktions
+/////////////////////////////////////////////////
 void MainWindow::on_action_menu_debug_create_sample_data_triggered()
 {   LOG_CALL;
     busycursor b;
@@ -984,7 +1179,7 @@ void MainWindow::on_actionTEST_triggered()
     // input nec. to display the dialog: a Vector of bookings
     toBePrinted.clear();
     toBePrinted = bookings::getAnnualSettelments(2019);
-    if (!toBePrinted.size()) {
+    if ( not toBePrinted.size()) {
         qWarning() << "nothing to be printed";
         return;
     }
@@ -1011,8 +1206,8 @@ QString letterName(booking b)
 void MainWindow::prepare_printPreview()
 {
     LOG_CALL;
-    ui->btnPrevBooking->setEnabled(currentBooking != toBePrinted.cbegin());
-    ui->btnNextBooking->setEnabled((currentBooking +1) != toBePrinted.cend());
+    ui->btnPrevBooking->setEnabled(currentBooking not_eq toBePrinted.cbegin());
+    ui->btnNextBooking->setEnabled((currentBooking +1) not_eq toBePrinted.cend());
 
     ui->lblLetter->setText (letterName(*currentBooking));
 

@@ -1,7 +1,7 @@
-#include <QSqlQuery>
 #include <QSqlError>
 
 #include "helper.h"
+#include "helpersql.h"
 #include "dbtable.h"
 #include "dbfield.h"
 
@@ -33,7 +33,7 @@ void dbtable::setUnique( const QVector<dbfield>& fs)
     QString tmp;
     for( auto& f : qAsConst(fs))
     {
-        if( ! tmp.isEmpty()) tmp = tmp + qsl(", ");
+        if( not tmp.isEmpty()) tmp = tmp + qsl(", ");
         tmp =tmp + f.name();
     }
     unique = qsl(", UNIQUE (") +tmp +qsl(")");
@@ -50,7 +50,7 @@ QString dbtable::createTableSql() const
         sql.append(", ");
         sql.append(fk.get_CreateSqlSnippet());
     }
-    if( !unique.isEmpty())
+    if( not unique.isEmpty())
         sql.append(unique);
     sql.append(")");
 
@@ -59,13 +59,11 @@ QString dbtable::createTableSql() const
 
 bool dbtable::create(QSqlDatabase db) const
 {   LOG_CALL_W(name);
-    QSqlQuery q(db);
-    if( !q.exec(createTableSql()))
-    {
-        qCritical() << "dbtable::create failed" << q.lastError() << Qt::endl << "SQL: " << q.lastQuery();
+    if( executeSql_wNoRecords( createTableSql(), db)) {
+        qDebug() << "Successfully ceated Table " << name;
+        return true;
+    } else {
+        qCritical() << "dbtable::create failed";
         return false;
     }
-    else
-        qDebug() << "Successfully ceated Table (SQL: " << q.lastQuery() << ")";
-    return true;
 }

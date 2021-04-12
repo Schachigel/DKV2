@@ -15,21 +15,21 @@ void test_dkdbcopy::init()
 
 void test_dkdbcopy::cleanup() {
     QFile::remove(dbfn1);
-    QVERIFY( ! QFile::exists(dbfn1));
+    QVERIFY( not QFile::exists(dbfn1));
     QFile::remove(dbfn2);
-    QVERIFY( ! QFile::exists(dbfn2));
+    QVERIFY( not QFile::exists(dbfn2));
     QFile::remove(testDbFilename);
-    QVERIFY( ! QFile::exists(testDbFilename));
+    QVERIFY( not QFile::exists(testDbFilename));
     QFile::remove(tempFileName);
-    QVERIFY( ! QFile::exists(tempFileName));
+    QVERIFY( not QFile::exists(tempFileName));
 }
 
 void test_dkdbcopy::test_moveToPreconversionBackup()
 {
     createEmptyFile(testDbFilename);
     QString result =createPreConversionCopy(testDbFilename, tempFileName);
-    QVERIFY( ! result.isEmpty());
-    QVERIFY( ! QFile::exists(testDbFilename));
+    QVERIFY( not result.isEmpty());
+    QVERIFY( not QFile::exists(testDbFilename));
     QVERIFY( QFile::exists(result));
 }
 
@@ -37,8 +37,8 @@ void test_dkdbcopy::test_moveToPreconversionBackup_tmpfn()
 {
     createEmptyFile(testDbFilename);
     QString result =createPreConversionCopy(testDbFilename);
-    QVERIFY( ! result.isEmpty());
-    QVERIFY( ! QFile::exists(testDbFilename));
+    QVERIFY( not result.isEmpty());
+    QVERIFY( not QFile::exists(testDbFilename));
     QVERIFY( QFile::exists(result));
     QVERIFY( QFile::remove(result));
 }
@@ -86,7 +86,7 @@ void test_dkdbcopy::test_dbsHaveSameTables_fails_more_tables()
     dbs1.appendTable(t2);
     dbs1.createDb(dbfn2);
 
-    QVERIFY( ! dbsHaveSameTables(dbfn1, dbfn2));
+    QVERIFY( not dbsHaveSameTables(dbfn1, dbfn2));
 }
 
 void test_dkdbcopy::test_dbsHaveSameTables_more_fields()
@@ -112,7 +112,7 @@ void test_dkdbcopy::test_dbsHaveSameTables_more_fields()
 
     autoDetachDb ad(qsl("db2"), db.conName());
     ad.attachDb(dbfn2);
-    QVERIFY( ! dbTablesHaveSameFields(t1.Name(), qsl("db2.") +t1.Name(), db));
+    QVERIFY( not dbTablesHaveSameFields(t1.Name(), qsl("db2.") +t1.Name(), db));
 }
 
 
@@ -123,7 +123,7 @@ bool insertData(const QString& dbfn, const QString& table, const QString& field)
     dbCloser closer{qsl("con")};
     QSqlDatabase db =QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     db.setDatabaseName(dbfn);
-    if( ! db.open())
+    if( not db.open())
         return false;
     QString sql (qsl("INSERT INTO %1 (%2) VALUES ('%3')"));
     return executeSql_wNoRecords(sql.arg(table).arg(field).arg(QString::number(i)), QVector<QVariant>(), db);
@@ -146,7 +146,7 @@ void test_dkdbcopy::test_dbsHaveSameTables_fails_diffRowCount()
     QVERIFY( dbsHaveSameTables(dbfn1, dbfn2));
 
     QVERIFY(insertData(dbfn2, tname, fname));
-    QVERIFY( ! dbsHaveSameTables(dbfn1, dbfn2));
+    QVERIFY( not dbsHaveSameTables(dbfn1, dbfn2));
 }
 
 void test_dkdbcopy::test_copyDatabase()
@@ -212,7 +212,7 @@ void test_dkdbcopy::test_convertDatabaseInplace_wNewColumn()
     newDbStructure.appendTable(t2);
     // Code under TEST:
     // convert the old file into a file with the new datastructure
-    QVERIFY(! convert_database_inplace(dbfn1, dbfn2, newDbStructure).isEmpty());
+    QVERIFY( not convert_database_inplace(dbfn1, dbfn2, newDbStructure).isEmpty());
     // VERIFICATION
     dbCloser closer {qsl("closeVerifiy")};
     QSqlDatabase verifyDb =QSqlDatabase::addDatabase(dbTypeName, closer.conName);

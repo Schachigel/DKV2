@@ -1,3 +1,5 @@
+#include <iso646.h>
+
 #include "helper.h"
 #include "helpersql.h"
 
@@ -16,10 +18,9 @@ autoDetachDb::~autoDetachDb()
     executeSql_wNoRecords(sql.arg(alias()), QSqlDatabase::database(conname()));
 }
 
-
 QString DbInsertableString(const QVariant& v)
 {
-    if( v.isNull() || !v.isValid())
+    if( v.isNull() or not v.isValid())
         return qsl("''");
     QString s;
     switch(v.type())
@@ -79,7 +80,7 @@ QString dbCreateTable_type(const QVariant::Type t)
     case QVariant::Double:
         return qsl("DOUBLE"); // affinity: REAL
     default:
-        Q_ASSERT(!bool("invalid database type"));
+        Q_ASSERT( not bool("invalid database type"));
         return qsl("INVALID");
     }
 }
@@ -102,7 +103,7 @@ QString dbAffinityType(const QVariant::Type t)
     case QVariant::Double:
         return qsl("REAL");
     default:
-        Q_ASSERT(!bool("invalid database type"));
+        Q_ASSERT( not bool("invalid database type"));
         return qsl("INVALID");
     }
 }
@@ -137,17 +138,17 @@ bool VarTypes_share_DbType( const QVariant::Type t1, const QVariant::Type t2)
 bool verifyTable(const dbtable& tableDef, const QSqlDatabase &db)
 {
     QSqlRecord recordFromDb = db.record(tableDef.Name());
-    if( recordFromDb.count() != tableDef.Fields().count()) {
+    if( recordFromDb.count() not_eq tableDef.Fields().count()) {
         qDebug() << "verifyTable(" << tableDef.Name() <<  ") failed: number of fields mismatch. expected / actual: " << tableDef.Fields().count() << " / " << recordFromDb.count();
         return false;
     }
     for( auto& field: tableDef.Fields()) {
         QSqlField FieldFromDb = recordFromDb.field(field.name());
-        if( ! FieldFromDb.isValid()) {
+        if( not FieldFromDb.isValid()) {
             qDebug() << "verifyTable() failed: table exists but field is missing" << field.name();
             return false;
         }
-        if( ! VarTypes_share_DbType(field.type(), recordFromDb.field(field.name()).type()))
+        if( not VarTypes_share_DbType(field.type(), recordFromDb.field(field.name()).type()))
         {
             qDebug() << "ensureTable() failed: field " << field.name() <<
                         " type mismatch. expected / actual: " << field.type() << " / " << recordFromDb.field(field.name()).type();
@@ -167,12 +168,12 @@ bool ensureTable( const dbtable& table,const QSqlDatabase& db)
 
 bool switchForeignKeyHandling(const QSqlDatabase& db, const QString& alias, bool OnOff)
 {
-    Q_ASSERT( ! alias.isEmpty());
+    Q_ASSERT( not alias.isEmpty());
     QString sql {qsl("PRAGMA %1.FOREIGN_KEYS = %2")};
     sql =sql.arg(alias, OnOff?qsl("ON"):qsl("OFF"));
     return executeSql_wNoRecords(sql, db);
 }
-bool switchForeignKeyHandling(const QSqlDatabase& db, bool OnOff)
+bool switchForeignKeyHandling(const QSqlDatabase& db /*def. DB*/, bool OnOff /*=true*/)
 {
     if( OnOff)
         return executeSql_wNoRecords(qsl("PRAGMA FOREIGN_KEYS = ON"), db);
@@ -184,7 +185,7 @@ bool switchForeignKeyHandling(const QSqlDatabase& db, bool OnOff)
 QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db)
 {
     QSqlQuery q(db);
-    if( !q.exec(sql)) {
+    if( not q.exec(sql)) {
         qCritical() << "SingleValueSql failed to execute: " << q.lastError() << Qt::endl << q.lastQuery() << Qt::endl;;
         return QVariant();
     }
@@ -207,11 +208,11 @@ QVariant executeSingleValueSql(const QString& fieldName, const QString& tableNam
 }
 QVariant executeSingleValueSql(const dbfield& field, const QString& where, QSqlDatabase db)
 {
-    if( field.name().isEmpty() || field.tableName().isEmpty())
+    if( field.name().isEmpty() or field.tableName().isEmpty())
         return QVariant();
     QVariant result = executeSingleValueSql(field.name(), field.tableName(), where, db);
 
-    if( ! result.isValid()) {
+    if( not result.isValid()) {
 //        qDebug() << "executeSingleValueSql found no value";
         return result;
     }
@@ -224,7 +225,7 @@ QVariant executeSingleValueSql(const dbfield& field, const QString& where, QSqlD
 }
 
 QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbForeignKey>& keys, const QString& incomingWhere, const QString& order)
-{   //LOG_CALL;
+{   LOG_CALL;
 
     QString FieldList;
     QString TableList;
@@ -232,21 +233,21 @@ QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbFo
     QSet<QString> usedTables;
 
     for( auto& f : qAsConst(fields)) {
-        if( f.tableName().isEmpty() || f.name().isEmpty())
+        if( f.tableName().isEmpty() or f.name().isEmpty())
             qCritical() << "selectQueryFromFields: missing table or field name";
-        if( ! FieldList.isEmpty())
+        if( not FieldList.isEmpty())
             FieldList +=qsl(", ");
         FieldList +=f.tableName() +qsl(".") +f.name();
 
-        if( ! usedTables.contains(f.tableName())) {
+        if( not usedTables.contains(f.tableName())) {
             usedTables.insert(f.tableName());
-            if( ! TableList.isEmpty())
+            if( not TableList.isEmpty())
                 TableList +=qsl(", ");
             TableList += f.tableName();
         }
     }
     for( auto key: keys) {
-        if( ! calculatedWhere.isEmpty()) calculatedWhere += qsl(" AND ");
+        if( not calculatedWhere.isEmpty()) calculatedWhere += qsl(" AND ");
         calculatedWhere += key.get_SelectSqpSnippet();
     }
     QString Where =qsl("%1 AND %2");
@@ -254,7 +255,7 @@ QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbFo
 
     QString Query =qsl("SELECT %1 FROM %2 WHERE %3");
     Query = Query.arg(FieldList, TableList, Where);
-    if( ! order.isEmpty())
+    if( not order.isEmpty())
         Query = Query +qsl(" ORDER BY ") +order;
     qInfo() << "selectQueryFromFields created Query: " << Query;
     return Query;
@@ -270,7 +271,7 @@ QSqlField adjustedType(const QSqlField& f, QVariant::Type t)
 
 QVector<QVariant> executeSingleColumnSql( const dbfield& field, const QString& where)
 {   LOG_CALL;
-    if( field.tableName().isEmpty() || field.name().isEmpty()) {
+    if( field.tableName().isEmpty() or field.name().isEmpty()) {
         qCritical() << "incomplete dbfield";
         return QVector<QVariant>();
     }
@@ -293,12 +294,12 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
     qDebug() << "ExecuteSingleRecordSql:\n" << sql;
 
     QSqlQuery q;
-    if( !q.exec(sql)) {
+    if( not q.exec(sql)) {
         qCritical() << "SingleRecordSql failed " << q.lastError() << Qt::endl << q.lastQuery();
         return QSqlRecord();
     }
     q.last();
-    if(q.at() != 0) {
+    if(q.at() not_eq 0) {
         qCritical() << "SingleRecordSql returned more then one value or non\n" << q.lastQuery();
         return QSqlRecord();
     }
@@ -310,12 +311,28 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
     }
     return result;
 }
+
+QSqlRecord executeSingleRecordSql(const QString& sql)
+{   LOG_CALL_W (sql);
+    QSqlQuery q; q.setForwardOnly(true);
+    q.prepare(sql);
+    if( not (q.exec() and q.next())) {
+        qCritical() << "failed to execute query /get first record" << q.lastError() << Qt::endl << q.lastQuery();
+        return QSqlRecord();
+    }
+    QSqlRecord res =q.record();
+    int count =1;
+    while(q.next()) count++;
+    if( count > 1) qCritical() << "single record query returned more than one value";
+    return res;
+}
+
 QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where, const QString& order)
 {
     QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where, order);
     QVector<QSqlRecord> result;
     QSqlQuery q; q.setForwardOnly(true);
-    if( !q.exec(sql)) {
+    if( not q.exec(sql)) {
         qCritical() << "executeSql failed " << q.lastError() << Qt::endl << q.lastQuery();
         return result;
     }
@@ -332,11 +349,11 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
     qInfo() << "executeSql returns " << result;
     return result;
 }
-bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result)
+bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result, const QSqlDatabase& db /*= ...*/ )
 {
-    QSqlQuery q; q.setForwardOnly(true);
-    if( q.prepare(sql)) {
-        qDebug() << "Faild to prep Query. Error:" << q.lastError();
+    QSqlQuery q(db); q.setForwardOnly(true);
+    if( not q.prepare(sql)) {
+        qDebug() << "Faild to prep Query. Error:" << sql << Qt::endl << q.lastError();
         return false;
     }
     if( v.isValid())
@@ -354,7 +371,7 @@ bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& resu
 bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlRecord>& result)
 {
     QSqlQuery q; q.setForwardOnly(true);
-    if( ! q.prepare(sql)) {
+    if( not q.prepare(sql)) {
         qDebug() << "Faild to prep Query. Error:" << q.lastError();
         return false;
     }
@@ -386,7 +403,7 @@ bool executeSql_wNoRecords(const QString& sql, const QVariant& v, const QSqlData
 bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& v, const QSqlDatabase& db)
 {   LOG_CALL;
     QSqlQuery q(db); // q.setForwardOnly(true);
-    if( ! q.prepare(sql)) {
+    if( not q.prepare(sql)) {
         qCritical() << "failed to prep query " << q.lastError() << Qt::endl << q.lastQuery();
         return false;
     }
@@ -412,4 +429,29 @@ bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& v, const
 int getHighestRowId(const QString& tablename)
 {   LOG_CALL;
     return executeSingleValueSql(qsl("MAX(rowid)"), tablename).toInt();
+}
+
+bool createView(const QString& name, const QString& sql, QSqlDatabase db /*= QSqlDatabase::database()*/)
+{   LOG_CALL_W(name);
+
+    autoRollbackTransaction art(db.connectionName());
+    if( not executeSql_wNoRecords(qsl("DROP VIEW ") + name, db))
+        qInfo() << "drop view returned false: " << name;
+
+    QString createViewSql = "CREATE VIEW %1 AS " + sql;
+    createViewSql = createViewSql.arg(name);
+    if( executeSql_wNoRecords(createViewSql, db)) {
+        art.commit();
+        return true;
+    }
+    qCritical() << "Faild to create view " << name;
+    return false;
+}
+bool createViews( const QMap<QString, QString>& views, QSqlDatabase db)
+{
+    foreach(QString view, views.keys()) {
+        if( not createView(view, views[view], db))
+            return false;
+    }
+    return true;
 }

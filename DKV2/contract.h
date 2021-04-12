@@ -16,6 +16,7 @@ enum class interestModel {
     payout   =0,
     reinvest =1,
     fixed    =2,
+    zero     =3,
     maxId
 };
 inline QString toString(const interestModel m) {
@@ -26,6 +27,8 @@ inline QString toString(const interestModel m) {
         return "thesaurierend";
     case interestModel::fixed:
         return "unveränderlich";
+    case interestModel::zero:
+        return "zinslos";
     case interestModel::maxId:
     default:
         Q_ASSERT(true);
@@ -36,7 +39,7 @@ inline int toInt(const interestModel m) {
     return static_cast<int>(m);
 }
 inline interestModel fromInt(const int i) {
-    if( i < 0 || i >=toInt(interestModel::maxId))
+    if( i < 0 or i >=toInt(interestModel::maxId))
         Q_ASSERT("Invalid interestModel");
     return static_cast<interestModel>(i);
 }
@@ -50,11 +53,28 @@ struct contract
     static QString booking_csv_header();
     inline friend bool operator==(const contract& lhs, const contract& rhs)
     {   // friend functions - even in the class definition - are not member
-        return lhs.td == rhs.td && lhs.latestB == rhs.latestB;
+        bool ret =true;
+        if( lhs.td.getRecord().count() not_eq rhs.td.getRecord().count()) {
+            qInfo() << "contract comparison: field count mismatch " << lhs.td.getRecord().count() << " / " << rhs.td.getRecord().count();
+            ret =false;
+        }
+        dbtable table =getTableDef();
+        for( int i =0; i < table.Fields().count(); i++){
+            QString fname =table.Fields()[i].name();
+            if( fname == qsl("Zeitstempel"))
+                continue;
+            if( lhs.td.getValue(fname) == rhs.td.getValue(fname))
+                continue;
+            else {
+                qInfo() << "contract field missmatch " << fname << ": " << lhs.td.getValue(fname) << " / " << rhs.td.getValue(fname);
+                ret = false;
+            }
+        }
+        return ret;
     }
     inline friend bool operator!=(const contract& lhs, const contract& rhs)
     {
-        return !(lhs==rhs);
+        return not (lhs==rhs);
     }
     // construction
     contract(const qlonglong id =-1);
@@ -68,23 +88,30 @@ struct contract
     qlonglong creditorId() const{ return td.getValue(qsl("KreditorId")).toLongLong();}
     void setLabel(const QString& l) { td.setValue(qsl("Kennung"), l);}
     QString label() const { return td.getValue(qsl("Kennung")).toString();};
-    void setInterestRate( const double& percent) { td.setValue(qsl("ZSatz"), QVariant (qRound(percent * 100.))); }
+    void setInterestRate( const double& percent) {
+        td.setValue(qsl("ZSatz"), QVariant (qRound(percent * 100.)));
+        if( percent == 0) td.setValue(qsl("thesaurierend"), toInt(interestModel::zero));
+    }
     double interestRate() const {
         QVariant p(td.getValue(qsl("ZSatz"))); // stored as a int (100th percent)
         return r2(double(p.toInt())/100.);
     }
     void setPlannedInvest(const double& d) { td.setValue(qsl("Betrag"), ctFromEuro(d));}
     double plannedInvest() const { return euroFromCt( td.getValue(qsl("Betrag")).toInt());}
-    void setInterestModel( const interestModel b =interestModel::reinvest) { td.setValue(qsl("thesaurierend"), toInt(b));}
+    void setInterestModel( const interestModel b =interestModel::reinvest) {
+        td.setValue(qsl("thesaurierend"), toInt(b));
+        if( b == interestModel::zero) td.setValue(qsl("ZSatz"), 0);
+    }
     interestModel iModel() const { return fromInt(td.getValue(qsl("thesaurierend")).toInt());}
-    void setNoticePeriod(const int m) { td.setValue(qsl("Kfrist"), m); if( -1 != m) setPlannedEndDate( EndOfTheFuckingWorld);}
+    void setNoticePeriod(const int m) { td.setValue(qsl("Kfrist"), m); if( -1 not_eq m) setPlannedEndDate( EndOfTheFuckingWorld);}
     int noticePeriod() const { return td.getValue(qsl("Kfrist")).toInt();}
     bool hasEndDate() const {return -1 == td.getValue(qsl("Kfrist"));}
-    void setPlannedEndDate( const QDate& d) { td.setValue(qsl("LaufzeitEnde"), d); if( d != EndOfTheFuckingWorld) setNoticePeriod(-1);}
+    void setPlannedEndDate( const QDate& d) { td.setValue(qsl("LaufzeitEnde"), d); if( d not_eq EndOfTheFuckingWorld) setNoticePeriod(-1);}
     QDate plannedEndDate() const { return td.getValue(qsl("LaufzeitEnde")).toDate();}
     void setConclusionDate(const QDate& d) { td.setValue(qsl("Vertragsdatum"), d);}
     QDate conclusionDate() const { return td.getValue(qsl("Vertragsdatum")).toDate();}
-
+    void setComment(const QString& q) {td.setValue(qsl("Anmerkung"), q);}
+    QString comment() const {return td.getValue(qsl("Anmerkung")).toString();}
     // interface
     // value -> sum of all bookings to a contract
     double value(const QDate& d =EndOfTheFuckingWorld) const;

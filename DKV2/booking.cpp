@@ -1,6 +1,6 @@
-#include <QSqlQuery>
 #include <QtMath>
 
+#include "dkdbviews.h"
 #include "contract.h"
 #include "booking.h"
 
@@ -69,7 +69,7 @@
     tdi.setValue(qsl("Betrag"), ctFromEuro(amount));
     tdi.setValue(qsl("Datum"), date);
     tdi.setValue(qsl("Ausführung"), QDateTime(QDate::currentDate(), QTime::currentTime()));
-    if( -1 != tdi.InsertData()) {
+    if( -1 not_eq tdi.InsertData()) {
         qInfo() << "successful booking: " << typeName(t) << " contract#: " << contractId << " Amount: " << ctFromEuro(amount) << " date: " << date;
         return true;
     }
@@ -99,7 +99,8 @@
 
 /* static */ QDate bookings::dateOfnextSettlement()
 {   LOG_CALL;
-    return  executeSingleValueSql(qsl("date"), qsl("vNextAnnualSettlement")).toDate();
+    // qDebug() << getSqls();
+    return  executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(sqlNextAnnualSettlement)).toDate();
 }
 /*static */ QVector<booking> bookings::bookingsFromSql(const QString& where, const QString& order)
 {

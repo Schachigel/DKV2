@@ -1,6 +1,8 @@
 #ifndef HELPER_H
 #define HELPER_H
 
+#include <iso646.h>
+
 #include <QObject>
 #include <QApplication>
 #include <QString>

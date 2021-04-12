@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 #endif
 
     MainWindow w;
-    if( !w.dbLoadedSuccessfully) return -1;
+    if( not w.dbLoadedSuccessfully) return -1;
 
     w.show();
     int ret = a.exec();

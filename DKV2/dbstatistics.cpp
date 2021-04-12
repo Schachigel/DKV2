@@ -1,6 +1,7 @@
 
 #include "helperfin.h"
 #include "helpersql.h"
+#include "dkdbviews.h"
 #include "dbfield.h"
 #include "dbstatistics.h"
 
@@ -25,28 +26,10 @@ QString dbStats::dataset::toString() const
 
 bool datasetFromViews(dbStats::dataset& ds, QString statsView, const QString& creditorNbrView)
 {   LOG_CALL_W(statsView);
-    QVector<dbfield> v;
-    dbfield contractCount(qsl("Anzahl"), QVariant::Type::Int);
-    contractCount.setTableName(statsView);
-    v.append(contractCount);
 
-    dbfield value(qsl("Wert"), QVariant::Type::Double);
-    value.setTableName(statsView);
-    v.append(value);
+    QString sql =statsView;
+    QSqlRecord rec =executeSingleRecordSql(sql);
 
-    dbfield interest(qsl("Jahreszins"), QVariant::Type::Double);
-    interest.setTableName(statsView);
-    v.append(interest);
-
-    dbfield average(qsl("mittlereRate"), QVariant::Type::Double);
-    average.setTableName(statsView);
-    v.append(average);
-
-    dbfield weighted(qsl("gewMittel"), QVariant::Type::Double);
-    weighted.setTableName(statsView);
-    v.append(weighted);
-
-    QSqlRecord rec = executeSingleRecordSql(v);
     if( rec.isEmpty())
         return false;
     ds.nbrContracts = rec.value(qsl("Anzahl")).toInt();
@@ -55,7 +38,8 @@ bool datasetFromViews(dbStats::dataset& ds, QString statsView, const QString& cr
     ds.avgInterestRate = rec.value(qsl("mittlereRate")).toDouble();
     ds.weightedAvgInterestRate = rec.value(qsl("gewMittel")).toDouble();
 
-    int nbrCreditors = executeSingleValueSql(qsl("Anzahl"), creditorNbrView).toInt();
+    QString sqlCNbr {qsl("SELECT Anzahl FROM (%1)").arg(creditorNbrView)};
+    int nbrCreditors = executeSingleValueSql(sqlCNbr).toInt();
     for( int i=0; i<nbrCreditors; i++)
         ds.credCount.insert(i, 1);
     return true;
@@ -63,17 +47,17 @@ bool datasetFromViews(dbStats::dataset& ds, QString statsView, const QString& cr
 
 bool dbStats::fillall()
 {   LOG_CALL;
-    datasetFromViews(allContracts[0], qsl("vStat_allerVertraege"),       qsl("vAnzahl_allerKreditoren"));
-    datasetFromViews(allContracts[1], qsl("vStat_allerVertraege_thesa"), qsl("vAnzahl_allerKreditoren_thesa"));
-    datasetFromViews(allContracts[2], qsl("vStat_allerVertraege_ausz"),  qsl("vAnzahl_allerKreditoren_ausz"));
+    datasetFromViews(allContracts[0], sqlStat_allerVertraege,       sqlNbrAllCreditors);
+    datasetFromViews(allContracts[1], sqlStat_allerVertraege_thesa, sqlNbrAllCreditors_thesa);
+    datasetFromViews(allContracts[2], sqlStat_allerVertraege_ausz,  sqlNbrAllCreditors_payout);
 
-    datasetFromViews(activeContracts[0], qsl("vStat_aktiverVertraege"),       qsl("vAnzahl_aktiverKreditoren"));
-    datasetFromViews(activeContracts[1], qsl("vStat_aktiverVertraege_thesa"), qsl("vAnzahl_aktiverKreditoren_thesa"));
-    datasetFromViews(activeContracts[2], qsl("vStat_aktiverVertraege_ausz"),  qsl("vAnzahl_aktiverKreditoren_ausz"));
+    datasetFromViews(activeContracts[0], sqlStat_aktiverVertraege,       sqlNbrActiveCreditors);
+    datasetFromViews(activeContracts[1], sqlStat_aktiverVertraege_thesa, sqlNbrActiveCreditors_thesa);
+    datasetFromViews(activeContracts[2], sqlStat_aktiverVertraege_ausz,  sqlNbrActiveCreditors_payout);
 
-    datasetFromViews(inactiveContracts[0], qsl("vStat_passiverVertraege"),       qsl("vAnzahl_passiverKreditoren"));
-    datasetFromViews(inactiveContracts[1], qsl("vStat_passiverVertraege_thesa"), qsl("vAnzahl_passiverKreditoren_thesa"));
-    datasetFromViews(inactiveContracts[2], qsl("vStat_passiverVertraege_ausz"),  qsl("vAnzahl_passiverKreditoren_ausz"));
+    datasetFromViews(inactiveContracts[0], sqlStat_passiverVertraege,       sqlInactiveCreditors);
+    datasetFromViews(inactiveContracts[1], sqlStat_passiverVertraege_thesa, sqlInactiveCreditors_thesa);
+    datasetFromViews(inactiveContracts[2], sqlStat_passiverVertraege_ausz,  sqlInactiveCreditors_payout);
 
     return false;
 }
@@ -101,7 +85,7 @@ QString dbStats::toString()
 
 void dbStats::addContract(double value, double interest, dbStats::payoutType kind, qlonglong credId)
 {   LOG_CALL;
-    Q_ASSERT(kind != dbStats::t_nt);
+    Q_ASSERT(kind not_eq dbStats::t_nt);
     dbStats old =*this;
     countCred_addContract( allContracts[t_nt].credCount, credId);
     countCred_addContract( inactiveContracts[t_nt].credCount, credId);

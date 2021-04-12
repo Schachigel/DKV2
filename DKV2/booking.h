@@ -1,5 +1,6 @@
 #ifndef BOOKING_H
 #define BOOKING_H
+#include <iso646.h>
 
 #include <QDate>
 #include "helper.h"
@@ -28,10 +29,10 @@ struct booking
     inline friend bool operator==(const booking& lhs, const booking& rhs)
     {
         QString error;
-        if( (lhs.type != rhs.type)) error =qsl("comparing bookings: different types");
-        if( (lhs.date != rhs.date)) error += qsl(", comparing bookings: different dates");
-        if( (lhs.amount != rhs.amount)) error += qsl(", comparing bookings: different amounts");
-        if( (lhs.contractId!= rhs.contractId)) error += qsl(", comparing bookings: different contractIds");
+        if( (lhs.type not_eq rhs.type)) error =qsl("comparing bookings: different types");
+        if( (lhs.date not_eq rhs.date)) error += qsl(", comparing bookings: different dates");
+        if( (lhs.amount not_eq rhs.amount)) error += qsl(", comparing bookings: different amounts");
+        if( (lhs.contractId not_eq rhs.contractId)) error += qsl(", comparing bookings: different contractIds");
         if(error.isEmpty())
             return true;
         else {

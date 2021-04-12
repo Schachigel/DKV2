@@ -2,13 +2,14 @@
 #include <QDate>
 
 #include "booking.h"
+#include "contract.h"
 #include "helperfin.h"
 #include "uiitemformatter.h"
 
 QString DateItemFormatter::displayText(const QVariant& value, const QLocale& )const
 {
     QDate date= value.toDate();
-    if( date == QDate() || date > QDate(9990, 12, 31))
+    if( date == QDate() or date > QDate(9990, 12, 31))
         return "";
     else
         return date.toString(qsl("dd.MM.yyyy"));
@@ -93,10 +94,8 @@ void KFristItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &o
 
 QString thesaItemFormatter::displayText(const QVariant &value, const QLocale &) const
 {
-    if( value.toBool())
-        return qsl("thesaur.");
-    else
-        return qsl("auszahlend");
+    interestModel im =fromInt(value.toInt());
+    return toString(im);
 }
 void thesaItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
