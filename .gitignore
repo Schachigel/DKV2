@@ -82,3 +82,6 @@ DKV2/wix/*.log
 
 # stuff
 DOCS/Screenshots
+
+# macos
+.DS_Store
