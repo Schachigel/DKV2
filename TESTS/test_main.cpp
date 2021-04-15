@@ -18,6 +18,7 @@
 #include "test_contract.h"
 #include "test_views.h"
 #include "test_booking.h"
+#include "test_statistics.h"
 #include "test_tabledatainserter.h"
 
 #ifndef TESTLIB_SELFCOVERAGE_START
@@ -44,20 +45,21 @@ int main(int argc, char *argv[])
     };
 
     std::vector<QObject*> tests;
-    tests.push_back(new test_appConfig);
-    tests.push_back(new test_dkdbcopy);
-    tests.push_back(new test_booking);
-    tests.push_back(new test_contract);
-    tests.push_back(new test_views);
-    tests.push_back(new test_db);
-    tests.push_back(new test_creditor);
-    tests.push_back(new test_csv);
-    tests.push_back(new test_dkdbhelper);
-    tests.push_back(new test_letterTemplate);
-    tests.push_back(new test_finance);
-    tests.push_back(new test_properties);
-    tests.push_back(new test_sqlhelper);
-    tests.push_back(new test_tableDataInserter);
+    tests.push_back(new test_statistics);
+//    tests.push_back(new test_appConfig);
+//    tests.push_back(new test_dkdbcopy);
+//    tests.push_back(new test_booking);
+//    tests.push_back(new test_contract);
+//    tests.push_back(new test_views);
+//    tests.push_back(new test_db);
+//    tests.push_back(new test_creditor);
+//    tests.push_back(new test_csv);
+//    tests.push_back(new test_dkdbhelper);
+//    tests.push_back(new test_letterTemplate);
+//    tests.push_back(new test_finance);
+//    tests.push_back(new test_properties);
+//    tests.push_back(new test_sqlhelper);
+//    tests.push_back(new test_tableDataInserter);
 
     srand(time(0));
     std::random_shuffle(tests.begin(), tests.end());

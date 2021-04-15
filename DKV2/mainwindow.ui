@@ -238,7 +238,7 @@ p, li { white-space: pre-wrap; }
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="0,1,0,6">
+         <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="0,1,0,0,6">
           <item>
            <widget class="QPushButton" name="pbBack">
             <property name="sizePolicy">
@@ -248,7 +248,7 @@ p, li { white-space: pre-wrap; }
              </sizepolicy>
             </property>
             <property name="text">
-             <string>&lt; Zurück</string>
+             <string> &lt; &amp;Frühere Buchungstage </string>
             </property>
            </widget>
           </item>
@@ -277,7 +277,14 @@ p, li { white-space: pre-wrap; }
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Weiter &gt;</string>
+             <string> &amp;Spätere Buchungstage &gt; </string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pbLetzter">
+            <property name="text">
+             <string>&amp;Jüngste Buchung &gt;&gt;</string>
             </property>
            </widget>
           </item>

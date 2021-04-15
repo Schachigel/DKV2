@@ -11,7 +11,6 @@ class test_contract : public QObject
     Q_OBJECT
 public:
     explicit test_contract(QObject *parent = nullptr) : QObject(parent){}
-    ~test_contract(){}
 private:
     // helper
 signals:

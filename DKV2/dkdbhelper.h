@@ -66,8 +66,14 @@ struct rowData
 
 QVector<rowData> contractRuntimeDistribution();
 
-void getActiveContracsDates( QVector<QDate>& dates);
-void getInactiveContractDates( QVector<QDate>& dates);
-void getAllContractDates( QVector<QDate>& dates);
+struct BookingDateData {
+    int count;
+    QString type;
+    QDate date;
+};
+
+void getActiveContracsBookingDates( QVector<BookingDateData>& dates);
+void getInactiveContractBookingDates( QVector<BookingDateData>& dates);
+void getAllContractBookingDates( QVector<BookingDateData>& dates);
 
 #endif // DKDBHELPER_H

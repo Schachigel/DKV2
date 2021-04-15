@@ -186,3 +186,4 @@ bool dbTablesHaveSameFields(const QString& table1, const QString& table2, const 
     }
     return ret;
 }
+

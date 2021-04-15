@@ -162,6 +162,8 @@ private slots:
 
     void on_pbNext_clicked();
 
+    void on_pbLetzter_clicked();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();

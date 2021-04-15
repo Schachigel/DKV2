@@ -1,10 +1,18 @@
 //#include "finhelper.h"
 #include <QDate>
+#include <QtDebug>
 
 #include "booking.h"
 #include "contract.h"
 #include "helperfin.h"
 #include "uiitemformatter.h"
+
+void centralAlignedTextFormatter::paint(QPainter *p, const QStyleOptionViewItem &option, const QModelIndex& i) const
+{
+    QStyleOptionViewItem alignedOption(option);
+    alignedOption.displayAlignment = Qt::AlignCenter;
+    QStyledItemDelegate::paint(p, alignedOption, i);
+}
 
 QString DateItemFormatter::displayText(const QVariant& value, const QLocale& )const
 {
@@ -92,18 +100,6 @@ void KFristItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &o
     QStyledItemDelegate::paint(painter, alignedOption, index);
 }
 
-QString thesaItemFormatter::displayText(const QVariant &value, const QLocale &) const
-{
-    interestModel im =fromInt(value.toInt());
-    return toString(im);
-}
-void thesaItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
-{
-    QStyleOptionViewItem alignedOption(option);
-    alignedOption.displayAlignment = Qt::AlignCenter;
-    QStyledItemDelegate::paint(painter, alignedOption, index);
-}
-
 QString bookingTypeFormatter::displayText(const QVariant &value, const QLocale &) const
 {
     return booking::displayString( (booking::Type) value.toInt());
@@ -114,3 +110,22 @@ void bookingTypeFormatter::paint(QPainter *painter, const QStyleOptionViewItem &
     alignedOption.displayAlignment = Qt::AlignCenter;
     QStyledItemDelegate::paint(painter, alignedOption, index);
 }
+
+QString interestModeFormatter::displayText(const QVariant &value, const QLocale &) const
+{
+    if( value.toString().toLower() == qsl("all"))
+        return qsl("Alle");
+    int index =value.toInt();
+    if( index <0 or index >= toInt(interestModel::maxId)){
+        qCritical() << !"invalid interest model index: " << index;
+        return qsl("Fehler");
+    } else
+        return toString( fromInt(index));
+}
+void interestModeFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    QStyleOptionViewItem alignedOption(option);
+    alignedOption.displayAlignment = Qt::AlignCenter;
+    QStyledItemDelegate::paint(painter, alignedOption, index);
+}
+

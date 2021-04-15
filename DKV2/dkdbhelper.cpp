@@ -298,7 +298,7 @@ void calc_annualInterestDistribution( QVector<YZV>& yzv)
     return;
 }
 
-void getDatesBySql(QString sql, QVector<QDate>& dates)
+void getBookingDateInfoBySql(QString sql, QVector<BookingDateData>& dates)
 {
     QVector<QSqlRecord> records;
     if( not executeSql(sql, QVector<QVariant>(), records)) {
@@ -306,55 +306,105 @@ void getDatesBySql(QString sql, QVector<QDate>& dates)
         return;
     }
     for (auto rec : records) {
-        dates.push_back(rec.value(0).toDate());
+        dates.push_back({rec.value(0).toInt(), rec.value(1).toString(), rec.value(2).toDate()});
     }
     qInfo() << "getDatesBySql added " << dates.size() << " dates to the vector";
 }
 
 // get dates for statistic page
-void getActiveContracsDates( QVector<QDate>& dates)
+void getActiveContracsBookingDates( QVector<BookingDateData>& dates)
 {
+    // Statistic of active contracts changes by
+    // contract activation, contract termination and all other bookings
+    // from Buchungen and exBuchungen
     QString sql {qsl(R"str(
-SELECT DISTINCT Datum FROM
+WITH allBookings AS
 (
-    SELECT Datum
-    FROM Buchungen
-       UNION
-    SELECT Datum
-    FROM exBuchungen
-)
-ORDER BY Datum DESC
-)str")};
-    return getDatesBySql(sql, dates);
-}
-
-void getInactiveContractDates( QVector<QDate>& dates)
-{
-    QString sql {qsl(R"str(
-SELECT DISTINCT Vertragsdatum AS Datum
-FROM Vertraege
-ORDER BY Datum DESC
-)str")};
-    return getDatesBySql(sql, dates);
-}
-
-void getAllContractDates( QVector<QDate>& dates)
-{
-QString sql {qsl(R"str(
-SELECT DISTINCT Datum FROM
-(
-  SELECT Datum
+  SELECT Buchungen.BuchungsArt
+    , Datum
   FROM Buchungen
-    UNION
-  SELECT Datum
+    UNION ALL
+  SELECT exBuchungen.BuchungsArt
+    , Datum
   FROM exBuchungen
-    UNION
-  SELECT Vertragsdatum AS Datum
-  FROM Vertraege
 )
+SELECT COUNT(*) AS Anzahl
+  , BuchungsArt AS Typ
+  , Datum
+FROM allBookings
+GROUP BY Datum
 ORDER BY Datum DESC
 )str")};
-    return getDatesBySql(sql, dates);
+    return getBookingDateInfoBySql(sql, dates);
+}
+
+void getInactiveContractBookingDates( QVector<BookingDateData>& dates)
+{
+    // statistics of inactive contracts change by
+    // contract conclusion and contract activation
+    QString sql {qsl(R"str(
+WITH allDatesInactiveContracts AS (
+  SELECT Vertragsdatum AS Datum
+    , 'VD' as Typ
+  FROM Vertraege
+  GROUP BY Datum
+    UNION ALL
+  SELECT Vertragsdatum AS Datum
+    , 'VDex' as Typ
+  FROM exVertraege
+  GROUP BY Datum
+    UNION ALL
+  SELECT MIN(Datum) AS Datum
+    , 'AD' as Typ
+  FROM Buchungen
+  GROUP BY VertragsId
+      UNION ALL
+  SELECT MIN(Datum) AS Datum
+    , 'ADex' as Typ
+  FROM exBuchungen
+  GROUP BY VertragsId
+)
+SELECT count(*) AS Anzahl, Typ, Datum
+FROM allDatesInactiveContracts
+GROUP BY Datum
+ORDER BY Datum DESC
+)str")};
+    return getBookingDateInfoBySql(sql, dates);
+}
+
+void getAllContractBookingDates( QVector<BookingDateData>& dates)
+{
+    // statistics of all contracts changes by
+    // contract conclusions and all kinds of bookings
+    // in Buchungen and exBuchungen
+    QString sql {qsl(R"str(
+  SELECT COUNT(*) AS Anzahl
+    , 'VD' AS Typ
+    , Vertragsdatum AS Datum
+  FROM Vertraege
+  GROUP BY Datum
+UNION ALL
+  SELECT COUNT(*) AS Anzahl
+    , 'VDex' AS Typ
+    , Vertragsdatum AS Datum
+  FROM exVertraege
+  GROUP BY Datum
+UNION ALL
+  -- alle Buchungen laufender Verträge
+  SELECT COUNT(*) AS Anzahl
+    , 'BD' AS Typ
+    , Datum
+  FROM Buchungen
+  GROUP BY Datum
+UNION ALL
+  -- alle Buchungen beendeter Verträge
+  SELECT COUNT(*) AS Anzahl
+    , 'BDex' AS Typ
+    , Datum
+  FROM exBuchungen
+  GROUP BY Datum
+)str")};
+    return getBookingDateInfoBySql(sql, dates);
 }
 
 

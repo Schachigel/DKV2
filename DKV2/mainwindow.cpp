@@ -660,7 +660,7 @@ void MainWindow::prepare_valid_contraccts_list_view()
     tv->setItemDelegateForColumn(cp_ContractValue, new CurrencyFormatter(tv));
     tv->setItemDelegateForColumn(cp_InterestBearing, new CurrencyFormatter(tv));
     tv->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(tv));
-    tv->setItemDelegateForColumn(cp_InterestMode, new thesaItemFormatter(tv));
+    tv->setItemDelegateForColumn(cp_InterestMode, new interestModeFormatter(tv));
     tv->hideColumn(cp_vid);
     tv->hideColumn(cp_Creditor_id);
 
@@ -986,34 +986,41 @@ void MainWindow::on_pbPrint_clicked()
 /////////////////////////////////////////////////
 //              Statistics                     //
 /////////////////////////////////////////////////
-QVector<QDate> dates;
-int currentDateIndex =0;
-void MainWindow::fillStatisticsTableView()
-{//   LOG_CALL_W(dates[currentDateIndex].toString(Qt::ISODate));
-    QString sql;
-    if( ui->rbActive->isChecked()) {
-        qInfo() << "calculating active contracts data for index " << currentDateIndex << " date: " << dates[currentDateIndex];
-        sql =sqlStat_activeContracts_byIMode_toDate;
-    } else if (ui->rbInactive->isChecked()){
-        qInfo() << "calculating INactive contracts data" << currentDateIndex << " date: " << dates[currentDateIndex];
-        sql =sqlStat_inactiveContracts_byIMode_toDate;
-    } else if (ui->rbAll->isChecked()) {
-        qInfo() << "calculating ALL contracts data" << currentDateIndex << " date: " << dates[currentDateIndex];
-        sql =sqlStat_allContracts_byIMode_toDate;
-    } else
-        Q_ASSERT (!"never reach this point");
-    sql.replace(qsl(":date"), dates[currentDateIndex].toString(Qt::ISODate)).replace("\n", " ");
-    // qDebug() << sql;
+QVector<BookingDateData> dates;
 
-    QSqlQueryModel *mod =new QSqlQueryModel();
-    mod->setQuery(sql);
-    if( mod->lastError().type() not_eq QSqlError::NoError) {
-        qInfo() << "SqlError: " << mod->lastError();
-        return;
-    }
-    ui->tvData->setModel(mod);
+QString descriptionFromType(QString bddType)
+{
+    if( bddType == qsl("VD") || bddType == qsl("VDex"))
+        return qsl("Vertragsabschluß");
+    if( bddType == qsl("AD") || bddType == qsl("ADex"))
+        return qsl("Vertragsaktivierung");
+    if( bddType == qsl("1"))
+        return qsl("Einzahlung");
+    if( bddType == qsl("2"))
+        return qsl("Auszahlung");
+    if( bddType == qsl("4"))
+        return qsl("ZwischenZins für Ein- oder Auszahlung");
+    if( bddType == qsl("8"))
+        return qsl("Jahreszinsanrechnung");
+    return (qsl("unknown booking type ") +bddType);
 
 }
+QString bookingDateDesc( BookingDateData bdd)
+{
+    QString date =bdd.date.toString(qsl("  dd.MM.yyyy  "));
+    if( bdd.count == 1) {
+        QString line {qsl("%1  <small>(%2)</small>")};
+        return line.arg(date, descriptionFromType(bdd.type));
+    }
+    else {
+        QString line {qsl("%1  <small>(%2, und %3 weitere)  </small>")};
+        return line.arg(date, descriptionFromType(bdd.type),
+                        QString::number(bdd.count-1));
+    }
+}
+
+int currentDateIndex =0;
+
 void MainWindow::on_rbActive_toggled(bool checked)
 {
     if( checked) prepare_statisticsPage();
@@ -1029,15 +1036,9 @@ void MainWindow::on_rbAll_toggled(bool checked)
 void MainWindow::on_pbBack_clicked()
 {
     // back increases the index
-    int newIndex =currentDateIndex +1;
-    int maxIndex =dates.size() -1;
-    qDebug() << "newIndex: " << newIndex << " (maxI: " << maxIndex << ")";
-
-    if( newIndex >= maxIndex)
-        currentDateIndex =maxIndex;
-    else
-        currentDateIndex =newIndex;
-    ui->lblBookingDate->setText(dates[currentDateIndex].toString(qsl("dd.MM.yyyy")));
+    const int maxIndex =dates.size() -1;
+    currentDateIndex =min(currentDateIndex +1, maxIndex);
+    ui->lblBookingDate->setText(bookingDateDesc(dates[currentDateIndex]));
     ui->pbBack->setEnabled(currentDateIndex < maxIndex);
     ui->pbNext->setEnabled(true);
     fillStatisticsTableView();
@@ -1045,54 +1046,91 @@ void MainWindow::on_pbBack_clicked()
 void MainWindow::on_pbNext_clicked()
 {
     // next decreases the index
-    int newIndex =currentDateIndex -1;
-    qDebug() << "newIndex: " << newIndex;
-    if( newIndex <= 0) {
-        currentDateIndex =0;
-        ui->lblBookingDate->setText(dates[currentDateIndex].toString(qsl("dd.MM.yyyy")));
-        ui->pbBack->setEnabled(true);
-        ui->pbNext->setEnabled(false);
-        return;
-    }
-    currentDateIndex =newIndex;
-    ui->lblBookingDate->setText(dates[currentDateIndex].toString(qsl("dd.MM.yyyy")));
+    currentDateIndex =max(currentDateIndex -1, 0);
+    ui->lblBookingDate->setText(bookingDateDesc(dates[currentDateIndex]));
     ui->pbBack->setEnabled(true);
-    ui->pbNext->setEnabled(true);
+    ui->pbNext->setEnabled(currentDateIndex != 0);
     fillStatisticsTableView();
 }
+void MainWindow::on_pbLetzter_clicked()
+{
+    currentDateIndex =0;
+    on_pbNext_clicked();
+    prepare_statisticsPage();
+}
+
 void MainWindow::getDatesFromContractStates()
 {
     dates.clear();
     currentDateIndex =0;
     if( ui->rbActive->isChecked()){
         qInfo() << "init dates for active contracts";
-        getActiveContracsDates( dates);
+        getActiveContracsBookingDates( dates);
     }
     else if (ui->rbInactive->isChecked()){
         qInfo() << "init dates for INactive contracts";
-        getInactiveContractDates( dates);
+        getInactiveContractBookingDates( dates);
     }
     else if (ui->rbAll->isChecked()){
         qInfo() << "init dates for ALL contracts";
-        getAllContractDates( dates);
+        getAllContractBookingDates( dates);
     }
     else
         Q_ASSERT(! "never come here");
+}
+void MainWindow::fillStatisticsTableView()
+{   LOG_CALL_W(dates[currentDateIndex].date.toString(Qt::ISODate));
+    QString sql;
+    if( ui->rbActive->isChecked()) {
+        sql =sqlStat_activeContracts_byIMode_toDate;
+    } else if (ui->rbInactive->isChecked()){
+        sql =sqlStat_inactiveContracts_byIMode_toDate;
+    } else if (ui->rbAll->isChecked()) {
+        sql =sqlStat_allContracts_byIMode_toDate;
+    } else
+        Q_ASSERT (!"never reach this point");
+    sql.replace(qsl(":date"), dates[currentDateIndex].date.toString(Qt::ISODate)).replace("\n", " ");
+    // qDebug() << sql;
+
+    QSqlQueryModel *mod =new QSqlQueryModel();
+    mod->setQuery(sql);
+    if( mod->lastError().type() not_eq QSqlError::NoError) {
+        qInfo() << "SqlError: " << mod->lastError();
+        qInfo().nospace() << mod->query().lastQuery();
+        return;
+    }
+    mod->setHeaderData(0, Qt::Horizontal, qsl("Zinsmodus"));
+    mod->setHeaderData(1, Qt::Horizontal, qsl("Anzahl\nVerträge"));
+    mod->setHeaderData(2, Qt::Horizontal, qsl("Anzahl\nKreditor*innen"));
+    mod->setHeaderData(3, Qt::Horizontal, qsl("Kreditvolumen"));
+    mod->setHeaderData(4, Qt::Horizontal, qsl("jährl. Zinsen"));
+    mod->setHeaderData(5, Qt::Horizontal, qsl("durchschn.\nZins"));
+
+    ui->tvData->setModel(mod);
 }
 void MainWindow::prepare_statisticsPage()
 {
     getDatesFromContractStates();
     if( dates.isEmpty()) {
+        ui->tvData->reset(); ui->tvData->setModel(new QSqlTableModel());
         ui->pbNext->setEnabled(false);
         ui->pbBack->setEnabled(false);
         ui->lblBookingDate->setText(qsl("&nbr;-   <i>  Keine Daten  </i>   -&nbr;"));
         return;
     }
-    qDebug() << dates;
-    ui->lblBookingDate->setText(dates[0].toString(qsl("dd.MM.yyyy")));
+
+    ui->lblBookingDate->setText(bookingDateDesc(dates[currentDateIndex]));
     ui->pbNext->setEnabled(false);
     ui->pbBack->setEnabled(dates.size()>1);
     fillStatisticsTableView();
+    ui->tvData->resizeColumnsToContents();
+    ui->tvData->setItemDelegateForColumn(0/*iMode*/, new interestModeFormatter);
+    ui->tvData->setItemDelegateForColumn(1/*mbrContr.*/, new centralAlignedTextFormatter);
+    ui->tvData->setItemDelegateForColumn(2/*mbrcredi.*/, new centralAlignedTextFormatter);
+    ui->tvData->setItemDelegateForColumn(3/*Volume*/, new CurrencyFormatter);
+    ui->tvData->setItemDelegateForColumn(4/*annualCost*/, new CurrencyFormatter);
+    ui->tvData->setItemDelegateForColumn(5/*avgInterest*/, new PercentItemFormatter);
+
 }
 void MainWindow::on_actionStatistik_triggered()
 {
@@ -1264,3 +1302,4 @@ void MainWindow::closeEvent(QCloseEvent *event)
         event->ignore();
 }
 #endif
+

@@ -24,9 +24,9 @@ inline QString toString(const interestModel m) {
     case interestModel::payout:
         return "auszahlend";
     case interestModel::reinvest:
-        return "thesaurierend";
+        return "ansparend";
     case interestModel::fixed:
-        return "unveränderlich";
+        return " fest ";
     case interestModel::zero:
         return "zinslos";
     case interestModel::maxId:
