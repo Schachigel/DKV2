@@ -42,21 +42,10 @@ CONFIG( release, debug|release ){
    macx:QMAKE_POST_LINK += macdeployqt $${OUT_PWD}/$${TARGET}.app -dmg
 }
 # RESOURCES += $${TARGET}.qrc
-# RC_FILE += $${TARGET}.rc
+RC_FILE += $${TARGET}.rc
 
-VERSION = 0.0.0.11
-VERSION_PE_HEADER = 0.11
-
-QMAKE_TARGET_COMPANY = HoMSoft
-QMAKE_TARGET_PRODUCT = DKV2 Direktkredit Verwaltung
-QMAKE_TARGET_DESCRIPTION = DK Verwaltung f. MHS Projekte
-
-RC_CODEPAGE = 850
-RC_LANG = 0x0407
-
-
-win32:LIBS += \
-        -lVersion
+# win32:LIBS += \
+#         -lVersion
 
 SOURCES += \
         appconfig.cpp \
@@ -111,6 +100,7 @@ HEADERS += pch.h\
         dkdbcopy.h \
         dkdbhelper.h \
         dkdbviews.h \
+        dkv2version.h \
         helper.h \
         helperfile.h \
         helperfin.h \

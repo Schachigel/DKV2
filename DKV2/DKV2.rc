@@ -1,0 +1,39 @@
+#include <windows.h>
+
+#include "dkv2version.h"
+
+IDI_ICON1	ICON	DISCARDABLE	"res\\logo.ico"
+
+VS_VERSION_INFO VERSIONINFO
+        FILEVERSION DKV2_VERSION_MAJOR,DKV2_VERSION_MINOR,DKV2_VERSION_BUILD,DKV2_VERSION_LAST
+        PRODUCTVERSION DKV2_VERSION_MAJOR,DKV2_VERSION_MINOR,DKV2_VERSION_BUILD,DKV2_VERSION_LAST
+	FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+	FILEFLAGS VS_FF_DEBUG
+#else
+	FILEFLAGS 0x0L
+#endif
+	FILEOS VOS__WINDOWS32
+	FILETYPE VFT_DLL
+	FILESUBTYPE 0x0L
+	BEGIN
+		BLOCK "StringFileInfo"
+		BEGIN
+			BLOCK "04070352"
+			BEGIN
+                                VALUE "CompanyName", TARGET_COMPANY "\0"
+                                VALUE "FileDescription", TARGET_DESCRIPTION "\0"
+                                VALUE "FileVersion", DKV2_VERSION_TEXT "\0"
+				VALUE "LegalCopyright", "\0"
+				VALUE "OriginalFilename", "DKV2.exe\0"
+                                VALUE "ProductName", TARGET_PRODUCT "\0"
+                                VALUE "ProductVersion", DKV2_VERSION_TEXT "\0"
+			END
+		END
+		BLOCK "VarFileInfo"
+		BEGIN
+			VALUE "Translation", 0x0407,  850
+		END
+	END
+/* End of Version info */
+
