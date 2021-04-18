@@ -17,8 +17,7 @@
 #include "dkdbhelper.h"
 #include "mainwindow.h"
 
-
-
+#include "dkv2version.h"
 
 #if defined (Q_OS_WIN)
 #include <windows.h>
@@ -68,6 +67,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setOrganizationName(qsl("4-MHS")); // used to store our settings
     a.setApplicationName(qsl("DKV2"));
+    a.setApplicationVersion(qsl(DKV2_VERSION_STRING));
 
     QLocale locale(QLocale::German, QLocale::LatinScript, QLocale::Germany);
     QLocale::setDefault(locale); // do before starting the event loop

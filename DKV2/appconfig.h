@@ -12,7 +12,7 @@
 
 #include "helper.h"
 
-extern const double CURRENT_DB_VERSION;
+#include "dkv2version.h"
 
 // db config info in 'meta' table
 // init = write only if not set

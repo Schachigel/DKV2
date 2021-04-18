@@ -9,7 +9,6 @@
 #include "dkdbhelper.h"
 
 
-const double CURRENT_DB_VERSION {4};
 /* static data */
 #ifndef QT_DEBUG
 QString appConfig::keyOutdir = qsl("outdir");
@@ -155,7 +154,7 @@ void appConfig::deleteUserData(const QString& name)
 
 QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
     {DB_VERSION,     {qsl("Version"),              QVariant(CURRENT_DB_VERSION)}},
-    {DKV2_VERSION,   {qsl("dkv2.exe.Version"),     QVariant(0)}},
+    {DKV2_VERSION,   {qsl("dkv2.exe.Version"),     QVariant(CURRENT_DKV2_VERSION)}},
     {GMBH_ADDRESS1,  {qsl("gmbh.address1"),        QVariant("Esperanza Franklin GmbH")}},
     {GMBH_ADDRESS2,  {qsl("gmbh.address2"),        QVariant("")}},
     {GMBH_STREET,    {qsl("gmbh.strasse"),     QVariant("Turley-Platz 9")}},
