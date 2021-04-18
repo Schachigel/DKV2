@@ -648,6 +648,7 @@ wpInterestFromInvestment::wpInterestFromInvestment(QWidget* w) : QWizardPage(w)
 void wpInterestFromInvestment::initializePage()
 {
     QVector<QPair<qlonglong, QString>> investments =activeInvestments(field(pnCDate).toDate());
+    cbInvestments->clear();
     for( auto invest : qAsConst(investments)) {
         cbInvestments->addItem(invest.second, invest.first);
     }

@@ -881,6 +881,9 @@ p, li { white-space: pre-wrap; }
    </property>
   </action>
   <action name="actionStatistik">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>&amp;Statistiken</string>
    </property>

@@ -77,9 +77,9 @@ int main(int argc, char *argv[])
 
     LOG_CALL;
     qInfo() << "************************************************";
-    qInfo() << "DKV2 started " << QDate::currentDate().toString(qsl("dd.MM.yyyy")) << qsl("-") << QTime::currentTime().toString();
-    qInfo() << "DKV2 Version: " << QCoreApplication::applicationVersion();
-    qInfo() << "DKV2 latest commit" << GIT_COMMIT;
+    qInfo().noquote() << "DKV2 started " << QDate::currentDate().toString(qsl("dd.MM.yyyy")) << qsl("-") << QTime::currentTime().toString();
+    qInfo().noquote() << "DKV2 Version: " << QCoreApplication::applicationVersion();
+    qInfo().noquote() << "DKV2 latest commit" << GIT_COMMIT;
     qInfo() << "************************************************";
 
     init_DKDBStruct();
