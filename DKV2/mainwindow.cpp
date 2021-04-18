@@ -1036,7 +1036,7 @@ void MainWindow::on_pbBack_clicked()
 {
     // back increases the index
     const int maxIndex =dates.size() -1;
-    currentDateIndex =min(currentDateIndex +1, maxIndex);
+    currentDateIndex = qMin(currentDateIndex +1, maxIndex);
     ui->lblBookingDate->setText(bookingDateDesc(dates[currentDateIndex]));
     ui->pbBack->setEnabled(currentDateIndex < maxIndex);
     ui->pbNext->setEnabled(true);
@@ -1045,7 +1045,7 @@ void MainWindow::on_pbBack_clicked()
 void MainWindow::on_pbNext_clicked()
 {
     // next decreases the index
-    currentDateIndex =max(currentDateIndex -1, 0);
+    currentDateIndex = qMax(currentDateIndex -1, 0);
     ui->lblBookingDate->setText(bookingDateDesc(dates[currentDateIndex]));
     ui->pbBack->setEnabled(true);
     ui->pbNext->setEnabled(currentDateIndex != 0);
