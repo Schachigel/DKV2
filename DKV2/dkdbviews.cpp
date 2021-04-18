@@ -25,9 +25,9 @@ SELECT
   ,V.thesaurierend AS Zinsmodus
 
 -- VerzinslGuthaben
-  ,CASE WHEN V.thesaurierend = 0 THEN ifnull(summeAllerBuchungen, ' error ')
-       ELSE CASE WHEN V.thesaurierend = 1 THEN ifnull(summeAllerBuchungen, ' error  ')
-       ELSE CASE WHEN V.thesaurierend = 2 THEN ifnull(summeEinUndAuszahlungen, ' error  ')
+  ,CASE WHEN V.thesaurierend = 0 THEN ifnull(summeAllerBuchungen, ' (inaktiv) ')
+       ELSE CASE WHEN V.thesaurierend = 1 THEN ifnull(summeAllerBuchungen, ' (inaktiv) ')
+       ELSE CASE WHEN V.thesaurierend = 2 THEN ifnull(summeEinUndAuszahlungen, ' (inaktiv) ')
        ELSE CASE WHEN V.thesaurierend = 3 THEN ' ohne Verzinsung '
        ELSE 'ERROR' END END END END   AS VerzinslGuthaben
 

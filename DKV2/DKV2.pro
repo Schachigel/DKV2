@@ -44,8 +44,8 @@ CONFIG( release, debug|release ){
 # RESOURCES += $${TARGET}.qrc
 # RC_FILE += $${TARGET}.rc
 
-VERSION = 0.0.0.10
-VERSION_PE_HEADER = 0.10
+VERSION = 0.0.0.11
+VERSION_PE_HEADER = 0.11
 
 QMAKE_TARGET_COMPANY = HoMSoft
 QMAKE_TARGET_PRODUCT = DKV2 Direktkredit Verwaltung

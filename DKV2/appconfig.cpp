@@ -9,7 +9,7 @@
 #include "dkdbhelper.h"
 
 
-const double CURRENT_DB_VERSION {3.1};
+const double CURRENT_DB_VERSION {4};
 /* static data */
 #ifndef QT_DEBUG
 QString appConfig::keyOutdir = qsl("outdir");
