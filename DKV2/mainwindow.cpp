@@ -339,7 +339,6 @@ void MainWindow::on_action_menu_database_new_triggered()
         close();
     }
 }
-
 void MainWindow::on_action_menu_database_copy_triggered()
 {   LOG_CALL;
     QString dbfile = askUserFilenameForCopy(qsl("Dateiname der Kopie Datenbank angeben."));

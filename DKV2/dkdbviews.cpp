@@ -25,16 +25,18 @@ SELECT
   ,V.thesaurierend AS Zinsmodus
 
 -- VerzinslGuthaben
-  ,CASE WHEN V.thesaurierend = 0 THEN ifnull(summeAllerBuchungen, '-')
-       ELSE CASE WHEN V.thesaurierend = 1 THEN ifnull(summeAllerBuchungen, '-')
-       ELSE CASE WHEN V.thesaurierend = 2 THEN ifnull(summeEinUndAuszahlungen, '-')
-       ELSE 'ERROR' END END END    AS VerzinslGuthaben
+  ,CASE WHEN V.thesaurierend = 0 THEN ifnull(summeAllerBuchungen, ' error ')
+       ELSE CASE WHEN V.thesaurierend = 1 THEN ifnull(summeAllerBuchungen, ' error  ')
+       ELSE CASE WHEN V.thesaurierend = 2 THEN ifnull(summeEinUndAuszahlungen, ' error  ')
+       ELSE CASE WHEN V.thesaurierend = 3 THEN ' ohne Verzinsung '
+       ELSE 'ERROR' END END END END   AS VerzinslGuthaben
 
 -- angesparter Zins
-  ,CASE WHEN V.thesaurierend = 0 THEN ifnull(summeAllerZinsZwBuchungen, '-')
-       ELSE CASE WHEN V.thesaurierend = 1 THEN ifnull(summeAllerZinsBuchungen, '-')
-       ELSE CASE WHEN V.thesaurierend = 2 THEN ifnull(summeAllerZinsBuchungen, '-')
-       ELSE 'ERROR' END END END    AS angespZins
+  ,CASE WHEN V.thesaurierend = 0 THEN ifnull(summeAllerZinsZwBuchungen, '(noch 0) ')
+       ELSE CASE WHEN V.thesaurierend = 1 THEN ifnull(summeAllerZinsBuchungen, '(noch 0) ')
+       ELSE CASE WHEN V.thesaurierend = 2 THEN ifnull(summeAllerZinsBuchungen, '(noch 0) ')
+       ELSE CASE WHEN V.thesaurierend = 3 THEN '(zinslos)   '
+       ELSE 'ERROR' END END END END    AS angespZins
 
 -- letzte Buchungen
   ,ifnull(LetzteBuchung, ' - ') AS LetzteBuchung

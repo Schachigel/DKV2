@@ -15,6 +15,7 @@ CONFIG += qt warn_on testcase
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
+DEFINES *= QT_USE_QSTRINGBUILDER
 #DEFINES += Q_QDOC
 
 # You can also make your code fail to compile if you use deprecated APIs.
@@ -27,6 +28,8 @@ CONFIG += c++14
 #win32:QMAKE_CXXFLAGS += /utf-8
 #win32:QMAKE_CXXFLAGS += /FS
 CONFIG += utf8_source
+
+DEFINES += GIT_COMMIT='\\"$$system(git log --format="%h" -n 1)\\"'
 
 SOURCES +=  tst_db.cpp \
     ../DKV2/appconfig.cpp \
@@ -65,6 +68,9 @@ SOURCES +=  tst_db.cpp \
     test_tabledatainserter.cpp \
     test_views.cpp \
     testhelper.cpp
+
+#use precompiled header
+PRECOMPILED_HEADER  = ../DKV2/pch.h
 
 HEADERS += \
     financaltimespan.h \

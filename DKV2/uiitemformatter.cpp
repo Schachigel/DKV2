@@ -57,9 +57,12 @@ void PercentFrom100sItemFormatter::paint(QPainter *painter, const QStyleOptionVi
 
 QString CurrencyFormatter::displayText(const QVariant& value, const QLocale& )const
 {
+    QVariant vv(value);
+    if( not vv.convert(qMetaTypeId<double>()))
+        return value.toString();
     double w =value.toDouble();
     QLocale l;
-    return l.toCurrencyString(w)+ qsl(" ");
+    return qsl(" %1 ").arg(l.toCurrencyString(w));
 };
 void CurrencyFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
