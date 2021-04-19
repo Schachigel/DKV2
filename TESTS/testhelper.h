@@ -8,11 +8,18 @@
 #include "../DKV2/helper.h"
 
 extern const QString testDbFilename;
+extern const QString testTemplateDb;
 
+void getRidOfFile(QString fn);
 void initTestDb();
-void initTestDb_withData();
+void createTestDb();
+void createTestDbTemplate();
+void cleanupTestDbTemplate();
+void initTestDbFromTemplate();
+
+void createTestDb_withRandomData();
 void cleanupTestDb();
-void openDbConnection(QString file);
+void openDbConnection(QString file =testDbFilename);
 void closeDbConnection( QSqlDatabase db =QSqlDatabase::database());
 void createEmptyFile(const QString& fn);
 int tableRecordCount(const QString& table, const QSqlDatabase& db =QSqlDatabase::database());

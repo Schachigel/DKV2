@@ -419,7 +419,6 @@ bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& v, const
     if( q.exec()) {
         qInfo() << "Successfully executed query " << q.lastQuery() << " with "
         << (q.numRowsAffected() ? QString::number(q.numRowsAffected()) : QString("no")) << " affected Rows";
-        qInfo() << Qt::endl;
         return true;
     }
     qDebug() << "Failed to execute query. Error: " << q.lastQuery() << Qt::endl << q.lastError() ;
@@ -435,8 +434,10 @@ bool createView(const QString& name, const QString& sql, QSqlDatabase db /*= QSq
 {   LOG_CALL_W(name);
 
     autoRollbackTransaction art(db.connectionName());
-    if( not executeSql_wNoRecords(qsl("DROP VIEW ") + name, db))
-        qInfo() << "drop view returned false: " << name;
+    QSqlQuery qDropView(qsl("DROP VIEW %1").arg(name), db);
+//    if( qDropView.lastError().type() != QSqlError::NoError)
+//    if( not executeSql_wNoRecords(qsl("DROP VIEW ") + name, db))
+//        qInfo() << "drop view returned false: " << name << qDropView.lastError();
 
     QString createViewSql = "CREATE VIEW %1 AS " + sql;
     createViewSql = createViewSql.arg(name);

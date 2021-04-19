@@ -28,7 +28,7 @@ void test_booking::init()
         closeDbConnection();
         QFile::remove(testDbFilename);
         usingTempFile =QFile::copy(tempFile, testDbFilename);
-        openDbConnection(testDbFilename);
+        openDbConnection();
     }
     if( not usingTempFile) {
         qWarning() << "temp file not found";

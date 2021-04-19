@@ -14,43 +14,57 @@
 #include "testhelper.h"
 
 
-const QString testDbFilename = "../data/testdb.sqlite";
+const QString testDbFilename {qsl("../data/testdb.sqlite")};
+const QString testTemplateDb {qsl("../data/template.sqlite")};
+
+void getRidOfFile(QString filename)
+{
+    if( QFile::exists(filename))
+        QFile::remove(filename);
+    QVERIFY(not QFile::exists(filename));
+}
 
 void initTestDb()
 {   LOG_CALL;
+    init_DKDBStruct();
     QDir().mkdir(QString("../data"));
     if (QFile::exists(testDbFilename))
         QFile::remove(testDbFilename);
     if (QFile::exists(testDbFilename))
         QFAIL("test db still in use");
-    QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName);
-    db.setDatabaseName(testDbFilename);
-    QVERIFY(db.open());
-//    init_DKDBStruct();
-    QVERIFY(dkdbstructur.createDb(db));
+    openDbConnection();
+    QVERIFY(dkdbstructur.createDb());
     QVERIFY2( QFile::exists(testDbFilename), "create database failed." );
 }
-
-void initTestDb_withData()
+void createTestDb()
 {   LOG_CALL;
-    QDir().mkdir(QString("../data"));
-    if (QFile::exists(testDbFilename))
-        QFile::remove(testDbFilename);
-    if (QFile::exists(testDbFilename))
-        QFAIL("test db still in use");
-//    dbCloser closer(qsl("qt_sql_default_connection"));
-    QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName);
-    db.setDatabaseName(testDbFilename);
-    QVERIFY(db.open());
-    init_DKDBStruct();
-    QVERIFY(dkdbstructur.createDb(db));
-    QVERIFY2( QFile::exists(testDbFilename), "create database failed." );
-    fill_DkDbDefaultContent(db, false);
+    initTestDb();
+    QVERIFY(fill_DkDbDefaultContent());
+}
+void createTestDbTemplate()
+{
+    createTestDb();
+    closeAllDatabaseConnections();
+    QFile::copy(testDbFilename, testTemplateDb);
+}
+void cleanupTestDbTemplate()
+{
+    getRidOfFile(testDbFilename);
+    getRidOfFile(testTemplateDb);
+}
+void initTestDbFromTemplate()
+{
+    getRidOfFile(testDbFilename);
+    QFile::copy(testTemplateDb, testDbFilename);
+    openDbConnection();
+}
+void createTestDb_withRandomData()
+{   LOG_CALL;
+    createTestDb();
     saveRandomCreditors(10);
     saveRandomContracts(8);
     activateRandomContracts(100 /* % */);
 }
-
 void cleanupTestDb()
 {   LOG_CALL;
     closeAllDatabaseConnections();
@@ -59,12 +73,11 @@ void cleanupTestDb()
     QDir().rmdir("../data");
     QVERIFY2( (QFile::exists(testDbFilename) == false), "destroy database failed." );
 }
-
-void openDbConnection(QString file)
+void openDbConnection(QString file /*testDbFilename*/)
 {
     QSqlDatabase::addDatabase(dbTypeName);
     QSqlDatabase::database().setDatabaseName(file);
-    QSqlDatabase::database().open();
+    QVERIFY(QSqlDatabase::database().open());
 }
 void closeDbConnection( QSqlDatabase db /*=QSqlDatabase::database()*/)
 {

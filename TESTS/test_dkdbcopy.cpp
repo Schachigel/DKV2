@@ -152,7 +152,7 @@ void test_dkdbcopy::test_dbsHaveSameTables_fails_diffRowCount()
 void test_dkdbcopy::test_copyDatabase()
 {
     // setup
-    initTestDb_withData();
+    createTestDb_withRandomData();
 //    QSqlDatabase::database().close();
 //    QSqlDatabase::database().removeDatabase(QSqlDatabase::database().connectionName());
 
@@ -168,7 +168,7 @@ void test_dkdbcopy::test_copyDatabase()
 void test_dkdbcopy::test_convertDatabaseInplace() {
 
     // setup
-    initTestDb_withData();
+    createTestDb_withRandomData();
     closeDbConnection();
     // code under test
     convert_database_inplace(testDbFilename, tempFileName);

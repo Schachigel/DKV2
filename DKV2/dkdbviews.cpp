@@ -699,7 +699,7 @@ WITH BookingsFromOpenContracts AS (
   FROM BookingsExContracts
   GROUP BY vid
 )
-, valueTableByIMode AS (
+, aggregateTableByIMode AS (
 SELEcT imode
   , COUNT(*) AS AnzahlVertraege
   , COUNT(DISTINCT kid) AS AnzahlKreditoren
@@ -716,7 +716,7 @@ FROM bUndExB
 WHERE gesamtBetrag > 0
 GROUP BY imode
 )
-, valueTableAll AS (
+, aggregateTableByAll AS (
 SELEcT imode
   , COUNT(*) AS AnzahlVertraege
   , COUNT(DISTINCT kid) AS AnzahlKreditoren
@@ -739,7 +739,7 @@ SELEcT imode
   , VerzinslGuthabenFIX  AS totalVolume
   , ROUND(JahresZins, 2) AS  totalInterest
   , ROUND(JahresZins/ VerzinslGuthabenFIX *100., 2) AS avgInterest
-FROM valueTableByIMode
+FROM aggregateTableByIMode
 
 UNION
 
@@ -749,7 +749,7 @@ SELEcT 'all' as imode
   , VerzinslGuthabenFIX  AS totalVolume
   , ROUND(JahresZins, 2) AS  totalInterest
   , ROUND(JahresZins/ VerzinslGuthabenFIX *100., 2) AS avgInterest
-FROM valueTableAll
+FROM aggregateTableByAll
 )str")
 };
 

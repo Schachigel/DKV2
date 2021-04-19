@@ -40,7 +40,7 @@ void dbtable::setUnique( const QVector<dbfield>& fs)
 }
 
 QString dbtable::createTableSql() const
-{   LOG_CALL;
+{   //LOG_CALL;
     QString sql(qsl("CREATE TABLE ") + name + qsl(" ("));
     for( int i = 0; i< Fields().count(); i++) {
         if( i>0) sql.append(qsl(", "));
@@ -58,12 +58,12 @@ QString dbtable::createTableSql() const
 }
 
 bool dbtable::create(QSqlDatabase db) const
-{   LOG_CALL_W(name);
+{   // LOG_CALL_W(name);
     if( executeSql_wNoRecords( createTableSql(), db)) {
-        qDebug() << "Successfully ceated Table " << name;
+        qDebug() << "Successfully created Table " << name;
         return true;
     } else {
-        qCritical() << "dbtable::create failed";
+        qCritical() << "dbtable::create " << name << " failed";
         return false;
     }
 }

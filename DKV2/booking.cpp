@@ -68,7 +68,7 @@
     tdi.setValue(qsl("BuchungsArt"), static_cast<int>(t));
     tdi.setValue(qsl("Betrag"), ctFromEuro(amount));
     tdi.setValue(qsl("Datum"), date);
-    tdi.setValue(qsl("Ausführung"), QDateTime(QDate::currentDate(), QTime::currentTime()));
+//    "Zeitstempel" will be created by default
     if( -1 not_eq tdi.InsertData()) {
         qInfo() << "successful booking: " << typeName(t) << " contract#: " << contractId << " Amount: " << ctFromEuro(amount) << " date: " << date;
         return true;

@@ -12,8 +12,14 @@ stats getStatsFromSql(QString sql, QDate date) {
         qInfo() << "getStatsFromSql: Query failed: " << q.lastError() << Qt::endl << q.lastQuery();
         return retval;
     }
+    // init
+    for (int i=0; i<=toInt(interestModel::maxId); i++)
+        retval.insert(fromInt(i), statSet());
+
+    int recordCount =0;
     while( q.next()) {
         QSqlRecord rec =q.record();
+        recordCount++;
         interestModel key =rec.value(0).toString() == qsl("all") ? interestModel::maxId : fromInt(rec.value(0).toInt());
         statSet set;
         set.nbrContracts =rec.value(1).toInt();
@@ -23,36 +29,23 @@ stats getStatsFromSql(QString sql, QDate date) {
         set.avgInterest  =rec.value(5).toDouble();
         retval.insert(key, set);
     }
-    if( retval.size() not_eq toInt(interestModel::maxId)) {
-        qCritical() << "getStatsFromSql: data not complete. retval size:" << retval.count();
-        return stats();
-    }
+    qInfo().noquote() << "read " << recordCount << qsl(" set(s) from the database");
     return retval;
 }
 
 void test_statistics::initTestCase()
 {   LOG_CALL;
-    init_DKDBStruct();
-    initTestDb();
-    fill_DkDbDefaultContent(QSqlDatabase::database(), true);
-    closeAllDatabaseConnections();
-    QFile::copy(testDbFilename, testTemplateDb);
+    createTestDbTemplate();
 }
 
 void test_statistics::cleanupTestCase()
 {   LOG_CALL;
-    QFile::remove(testDbFilename);
-    QFile::remove(testTemplateDb);
+    cleanupTestDbTemplate();
 }
 
 void test_statistics::init()
 {   LOG_CALL;
-    QFile::remove(testDbFilename);
-    QVERIFY(not QFile::exists(testDbFilename));
-    QFile::copy(testTemplateDb, testDbFilename);
-    QSqlDatabase db =QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(testDbFilename);
-    QVERIFY(db.open());
+    initTestDbFromTemplate();
 }
 
 void test_statistics::cleanup()
@@ -65,7 +58,19 @@ void test_statistics::test_start()
 {
     QString sql(sqlStat_activeContracts_byIMode_toDate);
     stats data =getStatsFromSql(sql, QDate(2021,3,31));
-    QVERIFY(not data.isEmpty());
 
     QVERIFY(data.value(interestModel::payout) == statSet(0, 0, 0., 0., 0.));
+}
+
+void test_statistics::test_oneInactiveContract()
+{
+    saveRandomCreditors(10);
+    saveRandomContracts(8);
+    activateRandomContracts(50/* % */);
+
+    QString sql(sqlStat_activeContracts_byIMode_toDate);
+    stats data =getStatsFromSql(sql, QDate(2021,3,31));
+
+    QCOMPARE(data.value(interestModel::maxId).nbrContracts, 4);
+
 }
