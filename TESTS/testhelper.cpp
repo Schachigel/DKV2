@@ -57,6 +57,7 @@ void initTestDbFromTemplate()
     getRidOfFile(testDbFilename);
     QFile::copy(testTemplateDb, testDbFilename);
     openDbConnection();
+    switchForeignKeyHandling();
 }
 void createTestDb_withRandomData()
 {   LOG_CALL;
@@ -70,7 +71,7 @@ void cleanupTestDb()
     closeAllDatabaseConnections();
     if (QFile::exists(testDbFilename))
         QFile::remove(testDbFilename);
-    QDir().rmdir("../data");
+//    QDir().rmdir("../data");
     QVERIFY2( (QFile::exists(testDbFilename) == false), "destroy database failed." );
 }
 void openDbConnection(QString file /*testDbFilename*/)

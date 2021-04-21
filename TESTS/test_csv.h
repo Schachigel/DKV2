@@ -7,14 +7,11 @@
 class test_csv : public QObject
 {
     Q_OBJECT
-public:
-    explicit test_csv(QObject *parent = nullptr);
-    virtual ~test_csv(){}
 private slots:
     //    void initTestCase();
     //    void cleanupTestCase();
-    void init(){}
-    void cleanup(){}
+    //    void init(){}
+    //    void cleanup(){}
     void test_empty_csv();
     void test_csv_oneHeader();
     void test_csv_twoHeader();

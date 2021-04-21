@@ -18,7 +18,7 @@ private:
 signals:
 private slots:
     void initTestCase();
-//    void cleanupTestCase();
+    void cleanupTestCase();
     void init();
     void cleanup();
     // the actual tests

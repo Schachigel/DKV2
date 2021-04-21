@@ -6,18 +6,12 @@
 class test_sqlhelper : public QObject
 {
     Q_OBJECT
-public:
-    explicit test_sqlhelper(QObject *parent = nullptr);
-
-private:
-
-signals:
 
 private slots:
     void initTestCase();
-    void cleanupTestCase();
-    // void init();
-    // void cleanup();
+    void init();
+    void cleanup();
+
     void test_rowCount();
     void test_tableExists();
     void test_ensureTable_existingTableOK();

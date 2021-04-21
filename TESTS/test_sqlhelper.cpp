@@ -11,15 +11,17 @@
 
 #include "test_sqlhelper.h"
 
-test_sqlhelper::test_sqlhelper(QObject *parent) : QObject(parent)
-{}
-
 void test_sqlhelper::initTestCase()
-{   LOG_CALL;
-    initTestDb();
+{
+    init_DKDBStruct();
 }
 
-void test_sqlhelper::cleanupTestCase()
+void test_sqlhelper::init()
+{   LOG_CALL;
+    initTestDb(); // start each test with an dkdb w/o any data
+}
+
+void test_sqlhelper::cleanup()
 {   LOG_CALL;
     cleanupTestDb();
 }

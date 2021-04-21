@@ -9,14 +9,14 @@ class test_properties : public QObject
 {
     Q_OBJECT
 public:
-    explicit test_properties(QObject *p = nullptr);
+//    explicit test_properties(QObject *p = nullptr);
     virtual ~test_properties(){}
 
 private:
 
 private slots:
     void initTestCase();
-    //    void cleanupTestCase();
+    void cleanupTestCase();
     void init();
     void cleanup();
     void test_setProperty_getProperty();

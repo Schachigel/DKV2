@@ -9,15 +9,17 @@
 #include "testhelper.h"
 #include "test_tabledatainserter.h"
 
-test_tableDataInserter::test_tableDataInserter(QObject *parent) :QObject(parent)
-{}
-
 void test_tableDataInserter::initTestCase()
+{
+    init_DKDBStruct();
+}
+
+void test_tableDataInserter::init()
 {   LOG_CALL;
     initTestDb();
 }
 
-void test_tableDataInserter::cleanupTestCase()
+void test_tableDataInserter::cleanup()
 {   LOG_CALL;
     cleanupTestDb();
 

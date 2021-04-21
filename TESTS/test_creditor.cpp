@@ -9,13 +9,19 @@
 
 void test_creditor::initTestCase()
 {   LOG_CALL;
-    init_DKDBStruct();
+    createTestDbTemplate();
 }
-void test_creditor::init()
+
+void test_creditor::cleanupTestCase()
 {   LOG_CALL_W("test");
-    initTestDb();
-    fill_DkDbDefaultContent(QSqlDatabase::database(), false);
+    cleanupTestDbTemplate();
 }
+
+void test_creditor::init()
+{
+    initTestDbFromTemplate();
+}
+
 void test_creditor::cleanup()
 {   LOG_CALL;
     cleanupTestDb();

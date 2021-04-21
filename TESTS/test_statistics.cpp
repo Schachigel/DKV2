@@ -50,8 +50,7 @@ void test_statistics::init()
 
 void test_statistics::cleanup()
 {   LOG_CALL;
-    closeAllDatabaseConnections();
-    QFile::remove(testDbFilename);
+    cleanupTestDb();
 }
 
 void test_statistics::test_start()

@@ -11,13 +11,17 @@
 
 void test_dkdbhelper::initTestCase()
 {   LOG_CALL;
-    init_DKDBStruct();
+    createTestDbTemplate();
+}
+
+void test_dkdbhelper::cleanupTestCase()
+{
+    cleanupTestDbTemplate();
 }
 
 void test_dkdbhelper::init()
 {   LOG_CALL;
-    initTestDb();
-    fill_DkDbDefaultContent(QSqlDatabase::database(), false);
+    initTestDbFromTemplate();
 }
 
 void test_dkdbhelper::cleanup()

@@ -6,26 +6,26 @@
 #include "testhelper.h"
 #include "test_properties.h"
 
-test_properties::test_properties(QObject *parent) : QObject(parent)
-{
-}
-
 void test_properties::initTestCase()
 {
-    init_DKDBStruct();
+    createTestDbTemplate();
 }
+
+void test_properties::cleanupTestCase()
+{
+    cleanupTestDbTemplate();
+}
+
 void test_properties::init()
 {    LOG_CALL;
-    initTestDb();
-
-    dbtable table(dkdbstructur["Meta"]);
-    table.create();
+     initTestDbFromTemplate();
 }
 
 void test_properties::cleanup()
 {   LOG_CALL;
     cleanupTestDb();
 }
+
 void test_properties::test_setProperty_getProperty()
 {
     setMetaInfo("Hallo", "Welt");

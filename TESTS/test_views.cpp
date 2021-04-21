@@ -8,16 +8,15 @@
 
 void test_views::initTestCase()
 {
-    init_DKDBStruct();
+    createTestDbTemplate();
 }
 void test_views::cleanupTestCase()
 {
-
+    cleanupTestDbTemplate();
 }
 void test_views::init()
 {
-    initTestDb();
-    QVERIFY(fill_DkDbDefaultContent());
+    initTestDbFromTemplate();
 }
 void test_views::cleanup()
 {

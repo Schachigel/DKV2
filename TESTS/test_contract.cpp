@@ -10,16 +10,19 @@
 
 void test_contract::initTestCase()
 {   LOG_CALL;
-    init_DKDBStruct();
+    createTestDbTemplate();
 }
+
 void test_contract::cleanupTestCase()
 {   LOG_CALL;
+    cleanupTestDbTemplate();
 }
+
 void test_contract::init()
 {   LOG_CALL;
-    initTestDb();
-    QVERIFY(fill_DkDbDefaultContent(QSqlDatabase::database(), false));
+    initTestDbFromTemplate();
 }
+
 void test_contract::cleanup()
 {   LOG_CALL;
     cleanupTestDb();
