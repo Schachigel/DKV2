@@ -18,7 +18,7 @@ QString DateItemFormatter::displayText(const QVariant& value, const QLocale& )co
 {
     QDate date= value.toDate();
     if( date == QDate() or date > QDate(9990, 12, 31))
-        return "";
+        return value.toString();
     else
         return date.toString(qsl("dd.MM.yyyy"));
 };
@@ -132,3 +132,6 @@ void interestModeFormatter::paint(QPainter *painter, const QStyleOptionViewItem 
     QStyledItemDelegate::paint(painter, alignedOption, index);
 }
 
+//////////////////////////////////////////
+/// support sorting by date in table views
+//////////////////////////////////////////

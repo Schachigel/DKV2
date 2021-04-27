@@ -277,7 +277,7 @@ void MainWindow::prepare_startPage()
     double allContractsValue = stats.allContracts[dbStats::t_nt].value;
     QString pName =dbConfig::readValue(projectConfiguration::GMBH_ADDRESS1).toString();
     if( not pName.isEmpty()) {
-        messageHtml += qsl("<tr><td><br><h3>%1</h3></td></tr>").arg(pName);
+        messageHtml += qsl("<tr><td><h3>DK Verwaltung für <font color=blue>%1</font></h3></td></tr>").arg(pName);
     }
     if( allContractsValue > 0) {
         QLocale l;
@@ -660,6 +660,9 @@ void MainWindow::prepare_valid_contraccts_list_view()
     tv->setSelectionBehavior(QAbstractItemView::SelectRows);
     tv->setAlternatingRowColors(true);
     tv->setSortingEnabled(true);
+    tv->setItemDelegateForColumn(cp_ActivationDate, new DateItemFormatter);
+    tv->setItemDelegateForColumn(cp_ContractDate, new DateItemFormatter);
+    tv->setItemDelegateForColumn(cp_LastBooking, new DateItemFormatter);
     tv->setItemDelegateForColumn(cp_ContractValue, new CurrencyFormatter(tv));
     tv->setItemDelegateForColumn(cp_InterestBearing, new CurrencyFormatter(tv));
     tv->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(tv));
@@ -688,7 +691,6 @@ void MainWindow::prepare_contracts_list_view()
     else
         prepare_valid_contraccts_list_view();
 }
-
 int  MainWindow::get_current_id_from_contracts_list()
 {   LOG_CALL;
     QModelIndex mi(ui->contractsTableView->currentIndex().siblingAtColumn(0));
