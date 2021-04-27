@@ -275,6 +275,10 @@ void MainWindow::prepare_startPage()
 
     dbStats stats(dbStats::calculate);
     double allContractsValue = stats.allContracts[dbStats::t_nt].value;
+    QString pName =dbConfig::readValue(projectConfiguration::GMBH_ADDRESS1).toString();
+    if( not pName.isEmpty()) {
+        messageHtml += qsl("<tr><td><br><h3>%1</h3></td></tr>").arg(pName);
+    }
     if( allContractsValue > 0) {
         QLocale l;
         QString valueRow = qsl("<tr><td>Die Summer aller DK beträgt <big><font color=red>") + l.toCurrencyString(allContractsValue) + qsl("</font></big></td></tr>");
