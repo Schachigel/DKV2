@@ -92,7 +92,7 @@ QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
         case 3:
             return QVariant(Qt::AlignLeft|Qt::AlignVCenter);
         default:
-            Q_ASSERT(true);
+            Q_ASSERT(false);
         }
 
     }
@@ -543,7 +543,6 @@ QString filterFromFilterphrase(QString fph)
     return fph.isEmpty() ? QString() :
                            (qsl("Kreditorin LIKE '%") + fph + qsl("%' OR Vertragskennung LIKE '%") + fph + qsl("%'"));
 }
-
 void MainWindow::prepare_deleted_contracts_list_view()
 { LOG_CALL;
     enum column_pos_del {
@@ -605,7 +604,6 @@ void MainWindow::prepare_deleted_contracts_list_view()
     } else
         tv->setCurrentIndex(model->index(0, 1));
 }
-
 void MainWindow::prepare_valid_contraccts_list_view()
 { LOG_CALL;
     enum colmn_Pos {
@@ -681,7 +679,6 @@ void MainWindow::prepare_valid_contraccts_list_view()
     } else
         tv->setCurrentIndex(model->index(0, 1));
 }
-
 void MainWindow::prepare_contracts_list_view()
 {   LOG_CALL;
     busycursor b;
@@ -1081,7 +1078,7 @@ void MainWindow::getDatesFromContractStates()
         getAllContractBookingDates( dates);
     }
     else
-        Q_ASSERT(! "never come here");
+        Q_ASSERT(not "never come here");
 }
 void MainWindow::fillStatisticsTableView()
 {   LOG_CALL_W(dates[currentDateIndex].date.toString(Qt::ISODate));
@@ -1093,7 +1090,7 @@ void MainWindow::fillStatisticsTableView()
     } else if (ui->rbAll->isChecked()) {
         sql =sqlStat_allContracts_byIMode_toDate;
     } else
-        Q_ASSERT (!"never reach this point");
+        Q_ASSERT (not "never reach this point");
     sql.replace(qsl(":date"), dates[currentDateIndex].date.toString(Qt::ISODate)).replace("\n", " ");
     // qDebug() << sql;
 
@@ -1215,7 +1212,6 @@ void MainWindow::on_action_about_DKV2_triggered()
     msg += qsl("Viel Spaß mit DKV2 !");
     QMessageBox::information(this, qsl("I n f o"), msg);
 }
-
 void MainWindow::on_actionTEST_triggered()
 {
     LOG_CALL;

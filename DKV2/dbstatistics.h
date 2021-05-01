@@ -134,7 +134,7 @@ private:
     {
         int current = credCount.value(id, -1);
         if( current == -1) {
-            Q_ASSERT(true);// remove creditor that not yet had a contract
+            Q_ASSERT(false);// remove creditor that not yet had a contract
         } else if( current == 1) {
             credCount.remove(id);
         } else {

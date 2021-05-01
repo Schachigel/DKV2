@@ -279,10 +279,12 @@ QVector<QVariant> executeSingleColumnSql( const dbfield& field, const QString& w
     sql = sql.arg(field.name(), field.tableName(), (where.isEmpty() ? qsl("") : (qsl(" WHERE ") + where)));
     QSqlQuery q;
     QVector<QVariant> result;
-    if( q.exec(sql))
+    if( q.exec(sql)){
+        qInfo() << "executed " << sql;
         while( q.next()) {
             result.push_back(adjustedType(q.record().field(0), field.type()).value());
         }
+    }
     else
         qCritical() << "SingleColumnSql failed " << q.lastError() << Qt::endl << q.lastQuery();
 

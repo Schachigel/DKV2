@@ -71,7 +71,7 @@ void activateContract(qlonglong cid)
     }
     if( not v.activate(wiz.field(qsl("date")).toDate(), wiz.field(qsl("amount")).toDouble())) {
         qCritical() << "activation failed";
-        Q_ASSERT(true);
+        Q_ASSERT(false);
     }
     return;
 }
@@ -80,7 +80,7 @@ void changeContractValue(qlonglong cid)
     contract con(cid);
     if( not con.isActive()) {
         qCritical() << "tried to changeContractValue of an inactive contract";
-        Q_ASSERT(true);
+        Q_ASSERT(false);
         return;
     }
 
@@ -165,7 +165,7 @@ void annualSettlement()
         return;
 
     QVector<QVariant> ids =executeSingleColumnSql(dkdbstructur[qsl("Vertraege")][qsl("id")]);
-
+    qDebug() << "contracts to try execute annual settlement for: " << ids;
     QVector<contract> changedContracts;
     QVector<QDate> startOfInterrestCalculation;
     QVector<booking>  asBookings;

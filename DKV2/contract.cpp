@@ -91,6 +91,7 @@ contract::contract(qlonglong contractId) : td(getTableDef())
     if( contractId <= 0) {
         init();
     } else {
+        qInfo() << "init contract from DB (id " << contractId << " )";
         QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), "id=" + QString::number(contractId));
         if( not td.setValues(rec))
             qCritical() << "contract from id could not be created";
@@ -133,14 +134,16 @@ double contract::interestBearingValue() const
         return investedValue();
     case interestModel::reinvest:
         return value();
+    case interestModel::zero:
+        return value();
     default:
-        Q_ASSERT(true);
+        Q_ASSERT(false);
         return 0.;
     }
 }
 
 const booking& contract::latestBooking()
-{
+{   LOG_CALL;
     if( latestB.type not_eq booking::Type::non or not isActive())
         return latestB;
     QSqlRecord rec = executeSingleRecordSql(dkdbstructur[qsl("Buchungen")].Fields(), qsl("VertragsId=") + id_aS(), qsl("Datum DESC LIMIT 1"));
@@ -150,6 +153,7 @@ const booking& contract::latestBooking()
         latestB.amount =euroFromCt(rec.value(qsl("Betrag")).toInt());
         latestB.contractId = id();
     }
+    qInfo() << booking::displayString(latestB.type) << ", " << latestB.date << ", " << latestB.amount << ", cId:" << latestB.contractId;
     return latestB;
 }
 // write to db
@@ -281,7 +285,8 @@ int contract::annualSettlement( int year)
                      //////////
         switch(iModel()) {
         case interestModel::reinvest:
-        case interestModel::fixed: {
+        case interestModel::fixed:
+        case interestModel::zero: {
             if( (bookingSuccess =booking::bookAnnualInterestDeposit(id(), nextAnnualSettlementDate, zins)))
                 latestB = { id(),  booking::Type::annualInterestDeposit, nextAnnualSettlementDate, zins };
             break;
@@ -294,7 +299,7 @@ int contract::annualSettlement( int year)
         }
         case interestModel::maxId:
         default: {
-            Q_ASSERT(true);
+            Q_ASSERT(false);
         } }
         if( bookingSuccess) {
             qInfo() << "Successfull annual settlement: contract id " << id_aS() << ": " << nextAnnualSettlementDate << " Zins: " << zins;

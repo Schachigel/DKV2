@@ -580,7 +580,7 @@ bool wpContractTimeframe::validatePage()
         //        wiz->termination =end;
         return true;
     }
-    Q_ASSERT(true);
+    Q_ASSERT(false);
     return true;
 }
 int wpContractTimeframe::nextId() const
@@ -791,7 +791,7 @@ bool wpConfirmContract::saveContract()
         }
     } else {
         qCritical() << "user did not confirm contract data";
-        Q_ASSERT(true);
+        Q_ASSERT(false);
         return false;
     };
 }
@@ -835,7 +835,7 @@ void wpConfirmContract::initializePage()
                                 (wiz->noticePeriod == -1) ?
                                     wiz->field(pnEDate).toDate().toString(qsl("dd.MM.yyyy")) :
                                     QString::number(wiz->noticePeriod) +qsl(" Monate nach Kündigung")));
-    } else Q_ASSERT(true);
+    } else Q_ASSERT(false);
 }
 bool wpConfirmContract::validatePage()
 {   LOG_CALL;

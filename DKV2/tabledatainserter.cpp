@@ -54,11 +54,12 @@ bool TableDataInserter::setValueNULL(const QString &n)
 }
 
 bool TableDataInserter::setValues(const QSqlRecord input)
-{   LOG_CALL;
+{
     if( input.count() not_eq record.count()) {
         qCritical() << "TableDataInserter setValues faild: wrong sqlRecord size (actual / expected): " << input.count() << " / " << record.count();
         return false;
     }
+    qInfo() << "Tdi: setting Values from QSqlRecord";
     for( int i=0; i< input.count(); i++) {
         if( setValue(input.fieldName(i), input.value(i)))
             continue;

@@ -45,7 +45,7 @@
         return qsl("Jahreszins");
     default:
         QString error{qsl("FEHLER: ungültiger Buchungstyp")};
-        Q_ASSERT(true);
+        Q_ASSERT(false);
         return error;
     }
 }
@@ -99,8 +99,9 @@
 
 /* static */ QDate bookings::dateOfnextSettlement()
 {   LOG_CALL;
-    // qDebug() << getSqls();
-    return  executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(sqlNextAnnualSettlement)).toDate();
+    QDate ret =executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(sqlNextAnnualSettlement)).toDate();
+    qInfo() << "Date of next Settlement was found as " << ret;
+    return ret;
 }
 /*static */ QVector<booking> bookings::bookingsFromSql(const QString& where, const QString& order)
 {

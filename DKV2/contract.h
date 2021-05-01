@@ -31,7 +31,7 @@ inline QString toString(const interestModel m) {
         return "zinslos";
     case interestModel::maxId:
     default:
-        Q_ASSERT(true);
+        Q_ASSERT(false);
     }
     return QString();
 }
@@ -40,7 +40,7 @@ inline int toInt(const interestModel m) {
 }
 inline interestModel fromInt(const int i) {
     if( i < 0 or i >=toInt(interestModel::maxId))
-        Q_ASSERT("Invalid interestModel");
+        Q_ASSERT(not "Invalid interestModel");
     return static_cast<interestModel>(i);
 }
 
