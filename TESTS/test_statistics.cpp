@@ -5,7 +5,8 @@
 
 #include "test_statistics.h"
 
-stats getStatsFromSql(QString sql, QDate date) {
+stats getStatsFromSql(QString sql, QDate date)
+{   LOG_CALL;
     stats retval;
     QSqlQuery q; q.prepare(sql.replace(qsl(":date"), date.toString(Qt::ISODate)));
     if( not q.exec()) {
@@ -21,6 +22,7 @@ stats getStatsFromSql(QString sql, QDate date) {
     int recordCount =0;
     while( q.next()) {
         QSqlRecord rec =q.record();
+        qDebug() << rec;
         recordCount++;
         interestModel key =rec.value(0).toString() == qsl("all") ? interestModel::maxId : fromInt(rec.value(0).toInt());
         statSet set;
@@ -33,6 +35,19 @@ stats getStatsFromSql(QString sql, QDate date) {
     }
     qInfo().noquote() << "read " << recordCount << qsl(" set(s) from the database");
     return retval;
+}
+
+stats getStatsActiveContracts(QDate date)
+{   LOG_CALL_W(date.toString(Qt::ISODate));
+    return getStatsFromSql(sqlStat_activeContracts_byIMode_toDate, date);
+}
+stats getStatsInactiveContracts(QDate date)
+{   LOG_CALL_W(date.toString(Qt::ISODate));
+    return getStatsFromSql(sqlStat_inactiveContracts_byIMode_toDate, date);
+}
+stats getStatsAllContracts(QDate date)
+{   LOG_CALL_W(date.toString(Qt::ISODate));
+    return getStatsFromSql(sqlStat_allContracts_byIMode_toDate, date);
 }
 
 void test_statistics::initTestCase()
@@ -57,7 +72,21 @@ void test_statistics::cleanup()
 
 void test_statistics::test_noContractsNoBookings()
 {
-    stats data =getStatsFromSql(sqlStat_activeContracts_byIMode_toDate, QDate::currentDate());
+    stats data =getStatsInactiveContracts( QDate::currentDate());
+    QVERIFY(data.value(interestModel::payout) == statSet(0, 0, 0., 0., 0.));
+    QVERIFY(data.value(interestModel::reinvest) == statSet(0, 0, 0., 0., 0.));
+    QVERIFY(data.value(interestModel::fixed) == statSet(0, 0, 0., 0., 0.));
+    QVERIFY(data.value(interestModel::zero) == statSet(0, 0, 0., 0., 0.));
+    QVERIFY(data.value(interestModel::allIModels) == statSet(0, 0, 0., 0., 0.));
+
+    data =getStatsActiveContracts( QDate::currentDate());
+    QVERIFY(data.value(interestModel::payout) == statSet(0, 0, 0., 0., 0.));
+    QVERIFY(data.value(interestModel::reinvest) == statSet(0, 0, 0., 0., 0.));
+    QVERIFY(data.value(interestModel::fixed) == statSet(0, 0, 0., 0., 0.));
+    QVERIFY(data.value(interestModel::zero) == statSet(0, 0, 0., 0., 0.));
+    QVERIFY(data.value(interestModel::allIModels) == statSet(0, 0, 0., 0., 0.));
+
+    data =getStatsAllContracts( QDate::currentDate());
     QVERIFY(data.value(interestModel::payout) == statSet(0, 0, 0., 0., 0.));
     QVERIFY(data.value(interestModel::reinvest) == statSet(0, 0, 0., 0., 0.));
     QVERIFY(data.value(interestModel::fixed) == statSet(0, 0, 0., 0., 0.));
@@ -71,35 +100,36 @@ void test_statistics::test_randomContracts_50pActivated()
     saveRandomContracts(8);
     activateRandomContracts(50/* % */);
 
-    QString activ_sql(sqlStat_activeContracts_byIMode_toDate);
-    stats active_data =getStatsFromSql(activ_sql, QDate::currentDate());
+    stats active_data =getStatsActiveContracts( QDate::currentDate());
     QCOMPARE(active_data.value(interestModel::allIModels).nbrContracts, 4);
 
-    QString inactive_sql(sqlStat_inactiveContracts_byIMode_toDate);
-    stats inactive_data =getStatsFromSql(inactive_sql, QDate::currentDate());
+    stats inactive_data =getStatsInactiveContracts( QDate::currentDate());
     QCOMPARE(inactive_data.value(interestModel::allIModels).nbrContracts, 4);
 
-    QString all_sql(sqlStat_allContracts_byIMode_toDate);
-    stats all_data =getStatsFromSql(all_sql, QDate::currentDate());
+    stats all_data =getStatsAllContracts( QDate::currentDate());
     QCOMPARE(all_data.value(interestModel::allIModels).nbrContracts, 8);
 }
 
 void test_statistics::test_oneContract()
 {
-    creditor creditor {saveRandomCreditor()};
-    contract cont;
-    cont.init(creditor.id());
-    cont.setInterestModel(interestModel::payout);
-    cont.setInterestRate(2.);
-    cont.setPlannedInvest(100.);
-    cont.saveNewContract();
-    QString activ_sql(sqlStat_activeContracts_byIMode_toDate);
-    stats active_data =getStatsFromSql(activ_sql, QDate::currentDate());
+    QDate date(2000, 5, 15);
+    creditor creditor1 {saveRandomCreditor()};
+    contract contPayout;
+    contPayout.init(creditor1.id());
+    contPayout.setInterestModel(interestModel::payout);
+    contPayout.setInterestRate(1.);
+    contPayout.setPlannedInvest(100.);
+    contPayout.setConclusionDate(date);
+    contPayout.saveNewContract();
+
+    /*
+     * one creditor, first contract, wPayout
+     */
+    stats active_data =getStatsActiveContracts( date);
     for( int i=0; i<=toInt(interestModel::allIModels); i++)
         QCOMPARE(active_data.value(fromInt(i)), statSet(0, 0, 0., 0., 0.));
 
-    QString inactive_sql(sqlStat_inactiveContracts_byIMode_toDate);
-    stats inactive_data =getStatsFromSql(inactive_sql, QDate::currentDate());
+    stats inactive_data =getStatsInactiveContracts( QDate::currentDate());
     QVERIFY2(inactive_data.value(interestModel::allIModels) == statSet(1, 1, 100., 1., 1.), "inctive, all interest models");
     QVERIFY2(inactive_data.value(interestModel::payout) ==     statSet(1, 1, 100., 1., 1.), "inctive, with payout");
     QVERIFY2(inactive_data.value(interestModel::reinvest) ==   statSet(0, 0,   0., 0., 0.), "inctive, reinvesting");
@@ -107,11 +137,42 @@ void test_statistics::test_oneContract()
     QVERIFY2(inactive_data.value(interestModel::zero) ==       statSet(0, 0,   0., 0., 0.), "inctive, no interest");
 
 
-    QString all_sql(sqlStat_allContracts_byIMode_toDate);
-    stats all_data =getStatsFromSql(all_sql, QDate::currentDate());
+    stats all_data =getStatsAllContracts( QDate::currentDate());
     QVERIFY2(all_data.value(interestModel::allIModels) == statSet(1, 1, 100., 1., 1.), "all, all interest models");
     QVERIFY2(all_data.value(interestModel::payout) ==     statSet(1, 1, 100., 1., 1.), "all, with payout");
     QVERIFY2(all_data.value(interestModel::reinvest) ==   statSet(0, 0,   0., 0., 0.), "all, reinvesting");
     QVERIFY2(all_data.value(interestModel::fixed) ==      statSet(0, 0,   0., 0., 0.), "all, fixed");
     QVERIFY2(all_data.value(interestModel::zero) ==       statSet(0, 0,   0., 0., 0.), "all, no interest");
+
+    /*
+     * same creditor, different iMode
+     */
+    date =date.addDays(15);
+    contract contReinvest;
+    contPayout.init(creditor1.id());
+    contPayout.setInterestModel(interestModel::reinvest);
+    contPayout.setInterestRate(2.);
+    contPayout.setPlannedInvest(100.);
+    contPayout.setConclusionDate(date);
+    contPayout.saveNewContract();
+
+    active_data =getStatsActiveContracts( date);
+    for( int i=0; i<=toInt(interestModel::allIModels); i++)
+        QCOMPARE(active_data.value(fromInt(i)), statSet(0, 0, 0., 0., 0.));
+
+    inactive_data =getStatsInactiveContracts( date);
+    QVERIFY2(inactive_data.value(interestModel::allIModels) == statSet(2, 1, 200., 3., 1.5), "inctive, all interest models");
+    QVERIFY2(inactive_data.value(interestModel::payout) ==     statSet(1, 1, 100., 1., 1.), "inctive, with payout");
+    QVERIFY2(inactive_data.value(interestModel::reinvest) ==   statSet(1, 1, 100., 2., 2.), "inctive, reinvesting");
+    QVERIFY2(inactive_data.value(interestModel::fixed) ==      statSet(0, 0,   0., 0., 0.), "inctive, fixed");
+    QVERIFY2(inactive_data.value(interestModel::zero) ==       statSet(0, 0,   0., 0., 0.), "inctive, no interest");
+
+
+    all_data =getStatsAllContracts( date);
+    QVERIFY2(all_data.value(interestModel::allIModels) == statSet(2, 1, 200., 3., 1.5), "all, all interest models");
+    QVERIFY2(all_data.value(interestModel::payout) ==     statSet(1, 1, 100., 1., 1.),  "all, with payout");
+    QVERIFY2(all_data.value(interestModel::reinvest) ==   statSet(1, 1, 100., 2., 2.), "all, reinvesting");
+    QVERIFY2(all_data.value(interestModel::fixed) ==      statSet(0, 0,   0., 0., 0.), "all, fixed");
+    QVERIFY2(all_data.value(interestModel::zero) ==       statSet(0, 0,   0., 0., 0.), "all, no interest");
+
 }

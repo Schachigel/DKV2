@@ -910,7 +910,7 @@ SELEcT * FROM tmpWertePassiverExVertraege
 
 SELEcT iMode
   , COUNT(vid) AS AnzahlVertraege
-  , COUNT(kid) AS AnzahlKreditoren
+  , COUNT(DISTINCT kid) AS AnzahlKreditoren
   , SUM(VertragsWert) AS totalVolume
   , SUM(jaehrlicherZins) AS totalInterest
   , ROUND(jaehrlicherZins/VerzinslGuthaben *100., 2) AS avgInterest
@@ -921,10 +921,10 @@ UNION
 
 SELECT 'all' AS iMode
   , COUNT(vid) AS AnzahlVertraege
-  , COUNT(kid) AS AnzahlKreditoren
+  , COUNT(DISTINCT kid) AS AnzahlKreditoren
   , SUM(VertragsWert) AS totalVolume
   , SUM(jaehrlicherZins) AS totalInterest
-  , ROUND(jaehrlicherZins/VerzinslGuthaben *100., 2) AS avgInterest
+  , ROUND(SUM(jaehrlicherZins)/SUM(VerzinslGuthaben) *100., 2) AS avgInterest
 FROM tmpWerteAllerVertraege
 )str")};
 
