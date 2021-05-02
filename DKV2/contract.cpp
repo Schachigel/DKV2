@@ -57,10 +57,10 @@
 }
 
 // construction
-void contract::init()
+void contract::init(const qlonglong creditorId /*=-1*/)
 {
     setId(-1);
-    setCreditorId(-1);
+    setCreditorId(creditorId);
     setNoticePeriod(6);
     //setPlannedEndDate(EndOfTheFuckingWorld); - implicit
     setInterestModel(interestModel::reinvest);

@@ -403,6 +403,7 @@ UNION ALL
     , Datum
   FROM exBuchungen
   GROUP BY Datum
+  ORDER BY Datum DESC
 )str")};
     return getBookingDateInfoBySql(sql, dates);
 }

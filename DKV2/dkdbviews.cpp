@@ -823,118 +823,109 @@ FROM filteredByDate
 
 const QString sqlStat_allContracts_byIMode_toDate {qsl(
 R"str(
-WITH tmp_exVid_NotYetTerminated AS (
-  SELECT VertragsId FROM (
-    SELECT VertragsId, SUM(Betrag) Summe
-    FROM exBuchungen
-    WHERE Datum <= date('2022-04-31')
-    GROUP BY VertragsId)
-  WHERE Summe >0
+WITH tmp_AktiveVertraege_IDs_zumDatum_date AS (
+  SELEcT DISTINCT VertragsId
+  FROM Buchungen
+  GROUP BY VertragsId
+  HAVING MIN(Datum) <= date(':date')
 )
-, tmp_exBuchungen_ofNotYetTerminatedContracts AS (
-  SELEcT *
+, tmpAktiveVertraege AS (
+  SELEcT * FROM Vertraege WHERE Vertraege.id IN tmp_AktiveVertraege_IDs_zumDatum_date
+)
+, tmpBuchungenAktiverVertraege AS (
+  SELEcT tmpAktiveVertraege.id      AS vid
+    , tmpAktiveVertraege.KreditorId AS kid
+    , tmpAktiveVertraege.ZSatz      AS Zinssatz
+    , tmpAktiveVertraege.thesaurierend AS iMode
+    , Buchungen.Betrag     AS Betrag
+    , IIF( tmpAktiveVertraege.thesaurierend = 2,
+          IIF( Buchungen.BuchungsArt = 8, 0, Buchungen.Betrag), Buchungen.Betrag) AS verzWert_for_fix_interest_contracts
+  FROM Buchungen JOIN tmpAktiveVertraege ON Buchungen.VertragsId = tmpAktiveVertraege.id
+  WHERE Buchungen.Datum <= date(':date')
+)
+, tmpWerteAktiverVertraege AS (
+  SELEcT vid
+    , kid
+    , iMode
+    , SUM(Betrag) /100. AS VertragsWert
+    , SUM(verzWert_for_fix_interest_contracts) /100. AS VerzinslGuthaben
+    , SUM(verzWert_for_fix_interest_contracts) *Zinssatz /100./100./100. AS jaehrlicherZins
+  FROM tmpBuchungenAktiverVertraege
+  GROUP BY vid
+)
+, tmpWertePassiverVertraege AS (
+  SELECT id AS vid
+    , KreditorId AS kid
+    , thesaurierend AS iMode
+    , Betrag /100. AS VertragsWert
+    , Betrag /100. AS VerzinslGuthaben
+    , Betrag * ZSatz /100./100./200. AS jaehrlicherZins
+  FROM Vertraege WHERE Vertragsdatum <= date(':date') AND vid NOT IN tmp_AktiveVertraege_IDs_zumDatum_date
+)
+, tmpId_Aktive_exVertrage_IDs_zumDatum_date AS (
+  SELEcT DISTINCT VertragsId
   FROM exBuchungen
-  WHERE VertragsId IN (SELECT * FROM tmp_exVid_NotYetTerminated)
-    AND Datum <= date('2022-04-31')
+  GROUP BY VertragsId
+  HAVING MIN(Datum) <= date(':date') AND MAX(Datum) > date(':date')
 )
-, tmpBookingsOpenContracts AS (
-  SELECT Vertraege.id        AS vid
-  , Vertraege.KreditorId     AS kid
-  , Vertraege.zSatz          AS Zinssatz
-  , Vertraege.thesaurierend  AS imode
-  , Buchungen.Datum          AS BDatum
-  , Buchungen.Betrag         AS Betrag
-  , IIF( Vertraege.thesaurierend = 2,
-          IIF( Buchungen.BuchungsArt = 8, 0, Buchungen.Betrag), 0) AS verzWert_for_fix_interest_contracts
-  FROM Buchungen JOIN Vertraege ON Vertraege.id = Buchungen.VertragsId
-  WHERE BDatum <= date('2022-04-31')
+, tmpBuchungenAktiveExVertraege AS (
+  SELECT exVertraege.id AS vid
+    , KreditorId AS kid
+    , thesaurierend AS iMode
+    , ZSatz as Zinssatz
+    , exVertraege.Betrag  AS Betrag
+    , IIF( thesaurierend = 2, IIF (exBuchungen.BuchungsArt = 8, 0, exBuchungen.Betrag), 0) AS verzWert_for_fix_interest_contracts
+  FrOM exBuchungen JOIN exVertraege ON exBuchungen.VertragsId = exVertraege.id
+  WHERE exBuchungen.Datum < date(':date') AND exVertraege.id IN tmpId_Aktive_exVertrage_IDs_zumDatum_date
 )
-, BookingsExContracts AS (
-  SELECT exVertraege.id        AS vid
-  , exVertraege.KreditorId     AS kid
-  , exVertraege.zSatz          AS Zinssatz
-  , exVertraege.thesaurierend  AS imode
-  , exBu.Datum          AS BDatum
-  , exBu.Betrag         AS Betrag
-  , IIF( exVertraege.thesaurierend = 2, IIF( exBu.BuchungsArt = 8, 0, exBu.Betrag), 0) AS verzWert_for_fix_interest_contracts
-  FROM tmp_exBuchungen_ofNotYetTerminatedContracts AS exBu JOIN exVertraege ON exVertraege.id = exBu.VertragsId
-)
-, bUndExB AS (
+, tmpWerteAktiverExVertraege AS (
   SELECT vid
-       , kid
-       , Zinssatz
-       , imode
-       , SUM(tmpBookingsOpenContracts.Betrag)          AS gesamtBetrag
-       , SUM(tmpBookingsOpenContracts.Betrag*tmpBookingsOpenContracts.Zinssatz)/100./100./100. AS ZinsAusGesamtBetrag
-       , SUM(tmpBookingsOpenContracts.verzWert_for_fix_interest_contracts)        AS BetragOhneJahresZins
-       , SUM(tmpBookingsOpenContracts.verzWert_for_fix_interest_contracts*tmpBookingsOpenContracts.Zinssatz)/100./100./100. AS ZinsOhneJahreszins
-  FROM tmpBookingsOpenContracts
+    , kid
+    , iMode
+    , SUM(Betrag) /100. AS VertragsWert
+    , SUM(verzWert_for_fix_interest_contracts)/100. AS VerzinslGuthaben
+    , IIF(iMode =2, SUM(verzWert_for_fix_interest_contracts) *Zinssatz /100./100./100., Betrag * Zinssatz /100./100./100.) AS jaehrlicherZins
+  FROM tmpBuchungenAktiveExVertraege
   GROUP BY vid
-
+)
+, tmpWertePassiverExVertraege AS (
+  SELEcT id AS vid
+    , KreditorId AS kid
+    , thesaurierend AS iMode
+    , Betrag /100. AS VertragsWert
+    , Betrag /100. AS VerzinslGuthaben
+    , Betrag * ZSatz /100. /100. /100. AS jaehrlicherZins
+  FROM exVertraege
+  WHERE Vertragsdatum <= date(':date') AND id NOT IN tmpId_Aktive_exVertrage_IDs_zumDatum_date
+)
+, tmpWerteAllerVertraege AS (
+SELEcT * FRom tmpWerteAktiverVertraege
   UNION
-
-  SELECT vid
-       , kid
-       , Zinssatz
-       , imode
-       , SUM(BookingsExContracts.Betrag)          AS gesamtBetrag
-       , SUM(BookingsExContracts.Betrag*BookingsExContracts.Zinssatz)/100./100./100. AS ZinsAusGesamtBetrag
-       , SUM(BookingsExContracts.verzWert_for_fix_interest_contracts)        AS BetragOhneJahresZins
-       , SUM(BookingsExContracts.verzWert_for_fix_interest_contracts*BookingsExContracts.Zinssatz)/100./100./100. AS ZinsOhneJahreszins
-  FROM BookingsExContracts
-  GROUP BY vid
-)
-, valueTableByIMode AS (
-SELEcT imode
-  , COUNT(*) AS AnzahlVertraege
-  , COUNT(DISTINCT kid) AS AnzahlKreditoren
-  , CASE WHEN imode = 2
-         THEN SUM(BetragOhneJahresZins) /100.
-         ELSE SUM(gesamtbetrag) /100.
-    END AS VerzinslGuthabenFIX
-  , CASE WHEN imode = 2
-         THEN SUM(ZinsOhneJahreszins)
-         ELSE SUM(ZinsAusGesamtBetrag)
-    END AS JahresZins
-
-FROM bUndExB
-WHERE gesamtBetrag > 0
-GROUP BY imode
-)
-, valueTableAll AS (
-SELEcT imode
-  , COUNT(*) AS AnzahlVertraege
-  , COUNT(DISTINCT kid) AS AnzahlKreditoren
-  , CASE WHEN imode = 2
-         THEN SUM(BetragOhneJahresZins) /100.
-         ELSE SUM(gesamtbetrag) /100.
-    END AS VerzinslGuthabenFIX
-  , CASE WHEN imode = 2
-         THEN SUM(ZinsOhneJahreszins)
-         ELSE SUM(ZinsAusGesamtBetrag)
-    END AS JahresZins
-
-FROM bUndExB
-WHERE gesamtBetrag > 0
+SELECT * FROM tmpWertePassiverVertraege
+  UNION
+SELECT * FROM tmpWerteAktiverExVertraege
+  UNION
+SELEcT * FROM tmpWertePassiverExVertraege
 )
 
-SELEcT imode
-  , AnzahlVertraege
-  , AnzahlKreditoren
-  , VerzinslGuthabenFIX  AS totalVolume
-  , ROUND(JahresZins, 2) AS  totalInterest
-  , ROUND(JahresZins/ VerzinslGuthabenFIX *100., 2) AS avgInterest
-FROM valueTableByIMode
+SELEcT iMode
+  , COUNT(vid) AS AnzahlVertraege
+  , COUNT(kid) AS AnzahlKreditoren
+  , SUM(VertragsWert) AS totalVolume
+  , SUM(jaehrlicherZins) AS totalInterest
+  , ROUND(jaehrlicherZins/VerzinslGuthaben *100., 2) AS avgInterest
+FROM tmpWerteAllerVertraege
+GROUP BY iMode
 
 UNION
 
-SELEcT 'all' as imode
-  , AnzahlVertraege
-  , AnzahlKreditoren
-  , VerzinslGuthabenFIX  AS totalVolume
-  , ROUND(JahresZins, 2) AS  totalInterest
-  , ROUND(JahresZins/ VerzinslGuthabenFIX *100., 2) AS avgInterest
-FROM valueTableAll
+SELECT 'all' AS iMode
+  , COUNT(vid) AS AnzahlVertraege
+  , COUNT(kid) AS AnzahlKreditoren
+  , SUM(VertragsWert) AS totalVolume
+  , SUM(jaehrlicherZins) AS totalInterest
+  , ROUND(jaehrlicherZins/VerzinslGuthaben *100., 2) AS avgInterest
+FROM tmpWerteAllerVertraege
 )str")};
 
 // {qsl(R"str()str")};

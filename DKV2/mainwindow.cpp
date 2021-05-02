@@ -1092,7 +1092,7 @@ void MainWindow::fillStatisticsTableView()
     } else
         Q_ASSERT (not "never reach this point");
     sql.replace(qsl(":date"), dates[currentDateIndex].date.toString(Qt::ISODate)).replace("\n", " ");
-    // qDebug() << sql;
+    qDebug() << sql;
 
     QSqlQueryModel *mod =new QSqlQueryModel();
     mod->setQuery(sql);

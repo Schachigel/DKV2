@@ -13,8 +13,10 @@ stats getStatsFromSql(QString sql, QDate date) {
         return retval;
     }
     // init
-    for (int i=0; i<=toInt(interestModel::maxId); i++)
+    int i{0};
+    for ( i=0; i<toInt(interestModel::maxId); i++)
         retval.insert(fromInt(i), statSet());
+    retval.insert(interestModel::maxId, statSet());
 
     int recordCount =0;
     while( q.next()) {
@@ -53,23 +55,63 @@ void test_statistics::cleanup()
     cleanupTestDb();
 }
 
-void test_statistics::test_start()
+void test_statistics::test_noContractsNoBookings()
 {
-    QString sql(sqlStat_activeContracts_byIMode_toDate);
-    stats data =getStatsFromSql(sql, QDate(2021,3,31));
-
+    stats data =getStatsFromSql(sqlStat_activeContracts_byIMode_toDate, QDate::currentDate());
     QVERIFY(data.value(interestModel::payout) == statSet(0, 0, 0., 0., 0.));
+    QVERIFY(data.value(interestModel::reinvest) == statSet(0, 0, 0., 0., 0.));
+    QVERIFY(data.value(interestModel::fixed) == statSet(0, 0, 0., 0., 0.));
+    QVERIFY(data.value(interestModel::zero) == statSet(0, 0, 0., 0., 0.));
+    QVERIFY(data.value(interestModel::allIModels) == statSet(0, 0, 0., 0., 0.));
 }
 
-void test_statistics::test_oneInactiveContract()
+void test_statistics::test_randomContracts_50pActivated()
 {
     saveRandomCreditors(10);
     saveRandomContracts(8);
     activateRandomContracts(50/* % */);
 
-    QString sql(sqlStat_activeContracts_byIMode_toDate);
-    stats data =getStatsFromSql(sql, QDate(2021,3,31));
+    QString activ_sql(sqlStat_activeContracts_byIMode_toDate);
+    stats active_data =getStatsFromSql(activ_sql, QDate::currentDate());
+    QCOMPARE(active_data.value(interestModel::allIModels).nbrContracts, 4);
 
-    QCOMPARE(data.value(interestModel::maxId).nbrContracts, 4);
+    QString inactive_sql(sqlStat_inactiveContracts_byIMode_toDate);
+    stats inactive_data =getStatsFromSql(inactive_sql, QDate::currentDate());
+    QCOMPARE(inactive_data.value(interestModel::allIModels).nbrContracts, 4);
 
+    QString all_sql(sqlStat_allContracts_byIMode_toDate);
+    stats all_data =getStatsFromSql(all_sql, QDate::currentDate());
+    QCOMPARE(all_data.value(interestModel::allIModels).nbrContracts, 8);
+}
+
+void test_statistics::test_oneContract()
+{
+    creditor creditor {saveRandomCreditor()};
+    contract cont;
+    cont.init(creditor.id());
+    cont.setInterestModel(interestModel::payout);
+    cont.setInterestRate(2.);
+    cont.setPlannedInvest(100.);
+    cont.saveNewContract();
+    QString activ_sql(sqlStat_activeContracts_byIMode_toDate);
+    stats active_data =getStatsFromSql(activ_sql, QDate::currentDate());
+    for( int i=0; i<=toInt(interestModel::allIModels); i++)
+        QCOMPARE(active_data.value(fromInt(i)), statSet(0, 0, 0., 0., 0.));
+
+    QString inactive_sql(sqlStat_inactiveContracts_byIMode_toDate);
+    stats inactive_data =getStatsFromSql(inactive_sql, QDate::currentDate());
+    QVERIFY2(inactive_data.value(interestModel::allIModels) == statSet(1, 1, 100., 1., 1.), "inctive, all interest models");
+    QVERIFY2(inactive_data.value(interestModel::payout) ==     statSet(1, 1, 100., 1., 1.), "inctive, with payout");
+    QVERIFY2(inactive_data.value(interestModel::reinvest) ==   statSet(0, 0,   0., 0., 0.), "inctive, reinvesting");
+    QVERIFY2(inactive_data.value(interestModel::fixed) ==      statSet(0, 0,   0., 0., 0.), "inctive, fixed");
+    QVERIFY2(inactive_data.value(interestModel::zero) ==       statSet(0, 0,   0., 0., 0.), "inctive, no interest");
+
+
+    QString all_sql(sqlStat_allContracts_byIMode_toDate);
+    stats all_data =getStatsFromSql(all_sql, QDate::currentDate());
+    QVERIFY2(all_data.value(interestModel::allIModels) == statSet(1, 1, 100., 1., 1.), "all, all interest models");
+    QVERIFY2(all_data.value(interestModel::payout) ==     statSet(1, 1, 100., 1., 1.), "all, with payout");
+    QVERIFY2(all_data.value(interestModel::reinvest) ==   statSet(0, 0,   0., 0., 0.), "all, reinvesting");
+    QVERIFY2(all_data.value(interestModel::fixed) ==      statSet(0, 0,   0., 0., 0.), "all, fixed");
+    QVERIFY2(all_data.value(interestModel::zero) ==       statSet(0, 0,   0., 0., 0.), "all, no interest");
 }

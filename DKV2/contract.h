@@ -17,7 +17,8 @@ enum class interestModel {
     reinvest =1,
     fixed    =2,
     zero     =3,
-    maxId
+    maxId    =4,
+    allIModels =maxId
 };
 inline QString toString(const interestModel m) {
     switch(m) {
@@ -29,7 +30,9 @@ inline QString toString(const interestModel m) {
         return " fest ";
     case interestModel::zero:
         return "zinslos";
-    case interestModel::maxId:
+    //case interestModel::maxId:
+    case interestModel::allIModels:
+        return "Alle";
     default:
         Q_ASSERT(false);
     }
@@ -39,7 +42,7 @@ inline int toInt(const interestModel m) {
     return static_cast<int>(m);
 }
 inline interestModel fromInt(const int i) {
-    if( i < 0 or i >=toInt(interestModel::maxId))
+    if( i < 0 or i >toInt(interestModel::maxId))
         Q_ASSERT(not "Invalid interestModel");
     return static_cast<interestModel>(i);
 }
@@ -78,7 +81,7 @@ struct contract
     }
     // construction
     contract(const qlonglong id =-1);
-    void init();
+    void init(const qlonglong creditorId =-1);
     void initRandom(const qlonglong creditorId =-1);
     // getter & setter
     void setId(qlonglong id) { td.setValue(qsl("id"), id);}
