@@ -859,7 +859,7 @@ WITH tmp_AktiveVertraege_IDs_zumDatum_date AS (
     , thesaurierend AS iMode
     , Betrag /100. AS VertragsWert
     , Betrag /100. AS VerzinslGuthaben
-    , Betrag * ZSatz /100./100./200. AS jaehrlicherZins
+    , Betrag * ZSatz /100./100./100. AS jaehrlicherZins
   FROM Vertraege WHERE Vertragsdatum <= date(':date') AND vid NOT IN tmp_AktiveVertraege_IDs_zumDatum_date
 )
 , tmpId_Aktive_exVertrage_IDs_zumDatum_date AS (
