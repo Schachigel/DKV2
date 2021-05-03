@@ -567,7 +567,7 @@ QDate activateRandomContracts(const int percent)
             amount = amount * rand->bounded(90, 110) / 100;
         }
         QDate activationDate(contractData[i].value(qsl("Vertragsdatum")).toDate());
-        activationDate = activationDate.addDays(rand->bounded(50));
+        activationDate = activationDate.addDays(rand->bounded(100));
         if( activationDate < minimumActivationDate)
             minimumActivationDate =activationDate;
         contract c(contractData[i].value(qsl("id")).toInt());

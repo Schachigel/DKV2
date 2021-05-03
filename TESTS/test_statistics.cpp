@@ -99,14 +99,15 @@ void test_statistics::test_randomContracts_50pActivated()
     saveRandomCreditors(10);
     saveRandomContracts(8);
     activateRandomContracts(50/* % */);
-
-    stats active_data =getStatsActiveContracts( QDate::currentDate());
+    // activation date can be ahead of today
+    QDate somefuturedate =QDate::currentDate().addYears(1);
+    stats active_data =getStatsActiveContracts( somefuturedate);
     QCOMPARE(active_data.value(interestModel::allIModels).nbrContracts, 4);
 
-    stats inactive_data =getStatsInactiveContracts( QDate::currentDate());
+    stats inactive_data =getStatsInactiveContracts( somefuturedate);
     QCOMPARE(inactive_data.value(interestModel::allIModels).nbrContracts, 4);
 
-    stats all_data =getStatsAllContracts( QDate::currentDate());
+    stats all_data =getStatsAllContracts( somefuturedate);
     QCOMPARE(all_data.value(interestModel::allIModels).nbrContracts, 8);
 }
 

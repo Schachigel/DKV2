@@ -45,27 +45,34 @@ int main(int argc, char *argv[])
     };
 
     std::vector<QObject*> tests;
-    tests.push_back(new test_statistics);
-    tests.push_back(new test_appConfig);
-    tests.push_back(new test_dkdbcopy);
-    tests.push_back(new test_booking);
-    tests.push_back(new test_contract);
-    tests.push_back(new test_views);
-    tests.push_back(new test_db);
-    tests.push_back(new test_creditor);
-    tests.push_back(new test_csv);
-    tests.push_back(new test_dkdbhelper);
-    tests.push_back(new test_letterTemplate);
-    tests.push_back(new test_finance);
-    tests.push_back(new test_properties);
-    tests.push_back(new test_sqlhelper);
-    tests.push_back(new test_tableDataInserter);
+
+    const int EXECUTIONS =1;
+
+    int execCounter =0;
+    do {
+        tests.push_back(new test_statistics);
+        tests.push_back(new test_appConfig);
+        tests.push_back(new test_dkdbcopy);
+        tests.push_back(new test_booking);
+        tests.push_back(new test_contract);
+        tests.push_back(new test_views);
+        tests.push_back(new test_db);
+        tests.push_back(new test_creditor);
+        tests.push_back(new test_csv);
+        tests.push_back(new test_dkdbhelper);
+        tests.push_back(new test_letterTemplate);
+        tests.push_back(new test_finance);
+        tests.push_back(new test_properties);
+        tests.push_back(new test_sqlhelper);
+        tests.push_back(new test_tableDataInserter);
+    } while(execCounter++ < EXECUTIONS);
 
     srand(time(0));
     std::random_shuffle(tests.begin(), tests.end());
 
-    for( auto test: tests)
+    for( auto test: tests){
         ASSERT_TEST(test);
+    }
 
     if( errCount == 1) qDebug() << "\n>>>   There was an error   <<< ";
     else if (errCount > 1) qDebug() << "\n>>>   There were " << errCount << " errors   <<<";
