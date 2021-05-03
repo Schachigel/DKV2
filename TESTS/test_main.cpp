@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 
     std::vector<QObject*> tests;
 
-    int executions =2;
+    int executions =1;
     do {
         tests.push_back(new test_statistics);
 //        tests.push_back(new test_appConfig);
