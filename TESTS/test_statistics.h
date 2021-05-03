@@ -58,7 +58,7 @@ private slots:
     // the actual tests
     void test_noContractsNoBookings();
     void test_randomContracts_50pActivated();
-    void test_oneContract();
+    void test_contracts_current_statistics();
 };
 
 #endif // TEST_STATISTICS_H

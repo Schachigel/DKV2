@@ -111,7 +111,7 @@ void test_statistics::test_randomContracts_50pActivated()
     QCOMPARE(all_data.value(interestModel::allIModels).nbrContracts, 8);
 }
 
-void test_statistics::test_oneContract()
+void test_statistics::test_contracts_current_statistics()
 {
     QDate date(2000, 5, 15);
     creditor creditor1 {saveRandomCreditor()};
@@ -168,12 +168,46 @@ void test_statistics::test_oneContract()
     QVERIFY2(inactive_data.value(interestModel::fixed) ==      statSet(0, 0,   0., 0., 0.), "inctive, fixed");
     QVERIFY2(inactive_data.value(interestModel::zero) ==       statSet(0, 0,   0., 0., 0.), "inctive, no interest");
 
-
     all_data =getStatsAllContracts( date);
     QVERIFY2(all_data.value(interestModel::allIModels) == statSet(2, 1, 200., 3., 1.5), "all, all interest models");
     QVERIFY2(all_data.value(interestModel::payout) ==     statSet(1, 1, 100., 1., 1.),  "all, with payout");
     QVERIFY2(all_data.value(interestModel::reinvest) ==   statSet(1, 1, 100., 2., 2.), "all, reinvesting");
     QVERIFY2(all_data.value(interestModel::fixed) ==      statSet(0, 0,   0., 0., 0.), "all, fixed");
     QVERIFY2(all_data.value(interestModel::zero) ==       statSet(0, 0,   0., 0., 0.), "all, no interest");
+
+    /*
+     * other creditor, different iMode
+     */
+    date =date.addDays(15);
+    creditor creditor2 {saveRandomCreditor()};
+    contract contFix;
+    contPayout.init(creditor2.id());
+    contPayout.setInterestModel(interestModel::fixed);
+    contPayout.setInterestRate(1.5);
+    contPayout.setPlannedInvest(100.);
+    contPayout.setConclusionDate(date);
+    contPayout.saveNewContract();
+
+    active_data =getStatsActiveContracts( date);
+    for( int i=0; i<=toInt(interestModel::allIModels); i++)
+        QCOMPARE(active_data.value(fromInt(i)), statSet(0, 0, 0., 0., 0.));
+
+    inactive_data =getStatsInactiveContracts( date);
+    QVERIFY2(inactive_data.value(interestModel::allIModels) == statSet(3, 2, 300., 4.5 , 1.5), "inctive, all interest models");
+    QVERIFY2(inactive_data.value(interestModel::payout) ==     statSet(1, 1, 100., 1. , 1.),  "inctive, with payout");
+    QVERIFY2(inactive_data.value(interestModel::reinvest) ==   statSet(1, 1, 100., 2. , 2.),  "inctive, reinvesting");
+    QVERIFY2(inactive_data.value(interestModel::fixed) ==      statSet(1, 1, 100., 1.5, 1.5), "inctive, fixed");
+    QVERIFY2(inactive_data.value(interestModel::zero) ==       statSet(0, 0,   0., 0. , 0.),  "inctive, no interest");
+
+    all_data =getStatsAllContracts( date);
+    QVERIFY2(all_data.value(interestModel::allIModels) == statSet(3, 2, 300., 4.5, 1.5), "all, all interest models");
+    QVERIFY2(all_data.value(interestModel::payout) ==     statSet(1, 1, 100., 1. , 1.),  "all, with payout");
+    QVERIFY2(all_data.value(interestModel::reinvest) ==   statSet(1, 1, 100., 2. , 2.),  "all, reinvesting");
+    QVERIFY2(all_data.value(interestModel::fixed) ==      statSet(1, 1, 100., 1.5, 1.5), "all, fixed");
+    QVERIFY2(all_data.value(interestModel::zero) ==       statSet(0, 0,   0., 0. , 0.),  "all, no interest");
+
+    /*
+     * third creditor, - no interest
+     */
 
 }
