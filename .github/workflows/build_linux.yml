@@ -1,0 +1,46 @@
+name: Linux build
+
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    # Run on an older Ubuntu to make flatpack happy
+    runs-on: ubuntu-16.04
+
+    steps:
+    - name: Check out
+      uses: actions/checkout@v2
+    - name: Install deps
+      run: sudo apt-get install icnsutils libxcb-icccm4-dev libxcb-icccm4 freetds-dev libsybdb5 libsybdb5 libxcb-image0 libxcb-image0-dev libgl1-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-keysyms1-dev libxcb-render-util0 libxcb-xinerama0 libzstd-dev libcurl4-openssl-dev
+    - name: Get linuxdeployqt
+      run:  wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+    - name: Make linuxdeployqt executable
+      run: chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        modules: 'qtcharts'
+    - name: Build and package for Linux
+      run: ./dist_linux.sh
+    - name: Save artificat
+      uses: actions/upload-artifact@v2
+      with:
+        name: Appimage
+        path: build-dist-linux/DKV2-*-x86_64.tar.gz
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          build-dist-linux/DKV2-*-x86_64.tar.gz
+          LICENSE
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
