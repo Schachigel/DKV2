@@ -237,6 +237,9 @@ void test_statistics::test_contracts_current_statistics()
     QVERIFY2(all_data.value(interestModel::fixed) ==      statSet(1, 1, 100., 1.5, 1.5),  "all, fixed");
     QVERIFY2(all_data.value(interestModel::zero) ==       statSet(1, 1, 200., 0. , 0.),   "all, no interest");
 
+    /*
+     * forth creditor, - reinvesting
+     */
     date =QDate(2000, 6, 30);
     contPayout.activate(date, contPayout.plannedInvest());
     contReinvest.activate(date, contReinvest.plannedInvest());
@@ -272,11 +275,10 @@ void test_statistics::test_contracts_current_statistics()
         QCOMPARE(inactive_data.value(fromInt(i)), statSet(0, 0, 0., 0., 0.));
 
     active_data =getStatsActiveContracts( date);
-    QVERIFY2(active_data.value(interestModel::allIModels) == statSet(4, 3, 501.75, 4.53 , 0.9),"inctive, all interest models");
-    // WHY 4,53 and not 4,52?
+    QVERIFY2(active_data.value(interestModel::allIModels) == statSet(4, 3, 501.75, 4.52 , 0.9),"inctive, all interest models");
     QVERIFY2(active_data.value(interestModel::payout) ==     statSet(1, 1, 100., 1. , 1.),  "inctive, with payout");
     QVERIFY2(active_data.value(interestModel::reinvest) ==   statSet(1, 1, 101., 2.02 , 2),  "inctive, reinvesting");
-    QVERIFY2(active_data.value(interestModel::fixed) ==      statSet(1, 1, 100., 1.5, 1.5), "inctive, fixed");
+    QVERIFY2(active_data.value(interestModel::fixed) ==      statSet(1, 1, 100.75, 1.5, 1.5), "inctive, fixed");
     QVERIFY2(active_data.value(interestModel::zero) ==       statSet(1, 1, 200., 0. , 0.),  "inctive, no interest");
 
 }
