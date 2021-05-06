@@ -1004,7 +1004,7 @@ QString descriptionFromType(QString bddType)
         return qsl("ZwischenZins für Ein- oder Auszahlung");
     if( bddType == qsl("8"))
         return qsl("Jahreszinsanrechnung");
-    return (qsl("unknown booking type ") +bddType);
+    return (qsl("unknown activity type ") +bddType);
 
 }
 QString bookingDateDesc( BookingDateData bdd)

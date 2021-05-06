@@ -100,7 +100,7 @@ void test_statistics::test_randomContracts_50pActivated()
     saveRandomContracts(8);
     activateRandomContracts(50/* % */);
     // activation date can be ahead of today
-    QDate somefuturedate =QDate::currentDate().addYears(1);
+    QDate somefuturedate =QDate::currentDate().addYears(2);
     stats active_data =getStatsActiveContracts( somefuturedate);
     QCOMPARE(active_data.value(interestModel::allIModels).nbrContracts, 4);
 
@@ -176,7 +176,7 @@ void test_statistics::test_contracts_current_statistics()
     QVERIFY2(all_data.value(interestModel::zero) ==       statSet(0, 0,   0., 0., 0.), "all, no interest");
 
     /*
-     * other creditor, different iMode
+     * other creditor, fixed interest payout
      */
     date =date.addDays(10);
     creditor creditor2 {saveRandomCreditor()};
@@ -263,6 +263,11 @@ void test_statistics::test_contracts_current_statistics()
     QVERIFY2(all_data.value(interestModel::reinvest) ==   statSet(1, 1, 100., 2. , 2.),   "all, reinvesting");
     QVERIFY2(all_data.value(interestModel::fixed) ==      statSet(1, 1, 100., 1.5, 1.5),  "all, fixed");
     QVERIFY2(all_data.value(interestModel::zero) ==       statSet(1, 1, 200., 0. , 0.),   "all, no interest");
+
+
+    /*
+     * Year end: everyone gets interest
+     */
 
     contPayout.annualSettlement(2000);
     contReinvest.annualSettlement(2000);

@@ -392,14 +392,14 @@ UNION ALL
 UNION ALL
   -- alle Buchungen laufender Verträge
   SELECT COUNT(*) AS Anzahl
-    , 'BD' AS Typ
+    , BuchungsArt AS Typ
     , Datum
   FROM Buchungen
   GROUP BY Datum
 UNION ALL
   -- alle Buchungen beendeter Verträge
   SELECT COUNT(*) AS Anzahl
-    , 'BDex' AS Typ
+    , BuchungsArt AS Typ
     , Datum
   FROM exBuchungen
   GROUP BY Datum
