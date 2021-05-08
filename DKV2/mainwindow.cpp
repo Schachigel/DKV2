@@ -85,6 +85,7 @@ QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
         case 2:
         case 4:
         case 6:
+        case 8:
             return Qt::AlignCenter;
         case 5:
         case 7:
@@ -92,7 +93,8 @@ QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
         case 3:
             return QVariant(Qt::AlignLeft|Qt::AlignVCenter);
         default:
-            Q_ASSERT(false);
+            qInfo() << "wrong column " << i.column();
+            return Qt::AlignCenter;
         }
 
     }
