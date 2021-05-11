@@ -871,6 +871,13 @@ WITH tmp_AktiveVertraege_IDs_zumDatum_date AS (
   FROM tmpBuchungenAktiveExVertraege
   GROUP BY vid
 )
+, tmpId_Passive_exVertrage_IDs_zumDatum_date AS (
+  SELEcT exBuchungen.VertragsId
+  FROM exBuchungen INNER JOIN exVertraege ON exBuchungen.VertragsId = exVertraege.id
+  GROUP BY exVertraege.id
+  HAVING exVertraege.Vertragsdatum <= date(':date') AND MIN(exBuchungen.datum) > date(':date')
+)
+
 , tmpWertePassiverExVertraege AS (
   SELEcT id AS vid
     , KreditorId AS kid
@@ -879,7 +886,7 @@ WITH tmp_AktiveVertraege_IDs_zumDatum_date AS (
     , Betrag /100. AS VerzinslGuthaben
     , Betrag * ZSatz /100. /100. /100. AS jaehrlicherZins
   FROM exVertraege
-  WHERE Vertragsdatum <= date(':date') AND id NOT IN tmpId_Aktive_exVertrage_IDs_zumDatum_date
+  WHERE Vertragsdatum <= date(':date') AND id IN tmpId_Passive_exVertrage_IDs_zumDatum_date
 )
 , tmpWerteAllerVertraege AS (
 SELEcT * FRom tmpWerteAktiverVertraege
