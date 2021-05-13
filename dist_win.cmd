@@ -11,7 +11,7 @@
 SET WINDEPLOY=C:\devtools\Qt\5.15.2\msvc2019_64\bin\windeployqt.exe
 :: use the release version of your binary
 SET binary=C:\Users\Public\Documents\dev\build-dkv2-Desktop_Qt_5_15_2_MSVC2019_64bit-Release\DKV2\release\DKV2.exe
-SET out=C:\temp\DKV2.distrib\DKV2
+SET out=C:\Users\HoM\OneDrive\Documents\Esperanza\DKV2-Entwicklung\DKV2.distrib\DKV2
 
 IF NOT EXIST %WINDEPLOY% (
     CALL :ERROR_OUT "Für die Ausführung wird 'WinDeployQt.exe' benötigt."
@@ -36,6 +36,7 @@ IF EXIST %out% (
 )
 mkdir %out%
 "%WINDEPLOY%" "%binary%" --dir "%out%"
+COPY "%binary%" "%out%"
 start explorer.exe root,"%out%"
 
 
