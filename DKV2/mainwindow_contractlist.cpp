@@ -92,7 +92,7 @@ void MainWindow::prepare_deleted_contracts_list_view()
     } else
         tv->setCurrentIndex(model->index(0, 1));
 }
-void MainWindow::prepare_valid_contraccts_list_view()
+void MainWindow::prepare_valid_contracts_list_view()
 { LOG_CALL;
     enum colmn_Pos {
         cp_vid,
@@ -158,6 +158,8 @@ void MainWindow::prepare_valid_contraccts_list_view()
 
 
     tv->resizeColumnsToContents();
+    tv->resizeRowsToContents();
+
     connect(ui->contractsTableView->selectionModel(),
                      SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
                      SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
@@ -174,7 +176,7 @@ void MainWindow::prepare_contracts_list_view()
     if( showDeletedContracts)
         prepare_deleted_contracts_list_view();
     else
-        prepare_valid_contraccts_list_view();
+        prepare_valid_contracts_list_view();
 }
 int  MainWindow::get_current_id_from_contracts_list()
 {   LOG_CALL;

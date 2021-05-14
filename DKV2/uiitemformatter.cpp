@@ -131,7 +131,3 @@ void interestModeFormatter::paint(QPainter *painter, const QStyleOptionViewItem 
     alignedOption.displayAlignment = Qt::AlignCenter;
     QStyledItemDelegate::paint(painter, alignedOption, index);
 }
-
-//////////////////////////////////////////
-/// support sorting by date in table views
-//////////////////////////////////////////
