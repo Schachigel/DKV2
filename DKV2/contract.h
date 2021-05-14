@@ -127,6 +127,7 @@ struct contract
     void setLatestBooking( const booking& b) { latestB=b;};
     // write to db
     int saveNewContract();
+    void updateComment(QString);
 /* not used?  int validateAndSaveNewContract(QString& meldung); */
     // contract activation
     bool activate(const QDate& aDate, const double& amount);

@@ -103,7 +103,7 @@ bool wpActivateContract_SummaryPage::validatePage()
 }
 void wpActivateContract_SummaryPage::onConfirmData_toggled(int )
 {
-    completeChanged();
+    emit completeChanged();
 }
 bool wpActivateContract_SummaryPage::isComplete() const
 {

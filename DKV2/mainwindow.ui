@@ -888,6 +888,11 @@ p, li { white-space: pre-wrap; }
     <string>&amp;Statistiken</string>
    </property>
   </action>
+  <action name="action_cmenu_Anmerkung_aendern">
+   <property name="text">
+    <string>Anmerkung ändern</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

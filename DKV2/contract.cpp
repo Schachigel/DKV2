@@ -169,6 +169,16 @@ int  contract::saveNewContract()
     return -1;
 }
 
+void contract::updateComment(QString c)
+{   LOG_CALL;
+    setComment(c);
+    int i =td.UpdateData();
+    if( i >= 0)
+        qInfo() << "Contract " << i << " was updated";
+    else
+        qCritical() << "Contract update failed";
+}
+
 // helper: only annual settlements should be on the last day of the year
 // other bookings should move to dec. 30th
 QDate avoidYearEndBookings(const QDate& d)

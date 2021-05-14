@@ -4,6 +4,7 @@
 #include "uiitemformatter.h"
 #include "dkdbviews.h"
 #include "transaktionen.h"
+#include "helper.h"
 
 
 // Contract List
@@ -247,6 +248,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &
         menu.addAction(ui->action_cmenu_activate_contract);
         menu.addAction(ui->action_cmenu_delete_inactive_contract); // passive Verträge können gelöscht werden
     }
+    menu.addAction(ui->action_cmenu_Anmerkung_aendern);
     menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
     return;
 }
@@ -277,6 +279,12 @@ void MainWindow::on_action_cmenu_change_contract_triggered()
     if( not mi.isValid()) return;
     qlonglong contractId = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toLongLong();
     changeContractValue(contractId);
+    updateListViews();
+}
+
+void MainWindow::on_action_cmenu_Anmerkung_aendern_triggered()
+{   LOG_CALL;
+    changeContractComment(get_current_id_from_contracts_list());
     updateListViews();
 }
 

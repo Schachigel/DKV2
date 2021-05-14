@@ -248,6 +248,21 @@ void newCreditorAndContract()
     return;
 }
 
+void changeContractComment(qlonglong id)
+{
+    contract c(id);
+    QInputDialog ipd(getMainWindow());
+    ipd.setInputMode(QInputDialog::TextInput);
+    ipd.setTextValue(c.comment());
+    ipd.setLabelText(qsl("Ändere den Kommentar zu dem Vertrag"));
+    ipd.setOption(QInputDialog::UsePlainTextEditForTextInput, true);
+    if( ipd.exec() not_eq QDialog::Accepted) {
+        qInfo() << "inpud dlg canceled";
+        return;
+    }
+    c.updateComment(ipd.textValue());
+}
+
 void createInvestment()
 {
     wizNewInvestment wiz;
