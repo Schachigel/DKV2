@@ -57,6 +57,7 @@
 #include <QTemporaryFile>
 #include <QStandardPaths>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QTextStream>
 
 #include <QString>

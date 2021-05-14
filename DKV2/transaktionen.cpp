@@ -1,7 +1,5 @@
 
-#include <QDate>
-#include <QString>
-#include <QMessageBox>
+#include "pch.h"
 
 #include "csvwriter.h"
 #include "appconfig.h"
