@@ -305,7 +305,7 @@ void getBookingDateInfoBySql(QString sql, QVector<BookingDateData>& dates)
         qInfo() << "getDatesBySql: no dates to found";
         return;
     }
-    for (auto rec : records) {
+    for (const auto &rec : qAsConst(records)) {
         dates.push_back({rec.value(0).toInt(), rec.value(1).toString(), rec.value(2).toDate()});
     }
     qInfo() << "getDatesBySql added " << dates.size() << " dates to the vector";

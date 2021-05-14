@@ -5,6 +5,25 @@
 #include "dbfield.h"
 #include "dbstatistics.h"
 
+double valueOfAllContracts()
+{   LOG_CALL;
+    QString sql =sqlStat_activeContracts_byIMode_toDate;
+    sql.replace(qsl(":date"), QDate::currentDate().toString(Qt::ISODate));
+    QSqlQuery q; q.prepare(sql);
+    if( not q.exec()) {
+        qInfo() << "query execution failed";
+        return 0.;
+    }
+    while(q.next()) {
+        QSqlRecord rec =q.record();
+        if(rec.value("iMode").toString() == "all")
+            return rec.value("totalVolume").toDouble();
+    }
+    qInfo() << "query execution did not deliver a 'all' result";
+    return 0.;
+}
+
+
 const bool dbStats::calculate =true;
 
 QString dbStats::dataset::toString() const

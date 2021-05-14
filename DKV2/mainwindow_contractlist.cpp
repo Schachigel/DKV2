@@ -279,6 +279,7 @@ void MainWindow::on_action_cmenu_change_contract_triggered()
     changeContractValue(contractId);
     updateListViews();
 }
+
 /////////////////////////////////////////////////
 // new creditor or contract from contract menu
 /////////////////////////////////////////////////

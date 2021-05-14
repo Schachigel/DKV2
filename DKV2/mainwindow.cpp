@@ -264,8 +264,8 @@ void MainWindow::prepare_startPage()
     busycursor b;
     QString messageHtml {qsl("<table width='100%'><tr><td><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></td></tr>")};
 
-    dbStats stats(dbStats::calculate);
-    double allContractsValue = stats.allContracts[dbStats::t_nt].value;
+    double allContractsValue =valueOfAllContracts();
+
     QString pName =dbConfig::readValue(projectConfiguration::GMBH_ADDRESS1).toString();
     if( not pName.isEmpty()) {
         messageHtml += qsl("<tr><td><h3>DK Verwaltung für <font color=blue>%1</font></h3></td></tr>").arg(pName);

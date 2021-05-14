@@ -7,6 +7,9 @@
 #include "helperfin.h"
 #include "contract.h"
 
+double valueOfAllContracts();
+
+
 inline bool icmp (QString s, int l, int r) {
     if( l not_eq r) {
         qInfo() << "comparison of stat.data failed. " << s + qsl(" (%1, %2)").arg(i2s(l), i2s(r));
@@ -31,33 +34,6 @@ inline bool dMaxDiff(QString s, double l, double r, double maxDiff) {
     }
     return true;
 }
-
-struct dataset
-{
-    dataset(QString n) :name(n) {}
-    QString name;
-    // int nbrCreditors =0;
-    QMap<int, int> credCount;
-    int nbrContracts =0;
-    double value =0.;
-    double avgInterestRate =0.;
-    double weightedAvgInterestRate =0.;
-    double annualInterest =0.;
-    inline friend bool operator==(const dataset& lhs, const dataset& rhs) {
-        bool ret =true;
-        ret &= icmp(lhs.name + qsl(" - nbr Creditors  "), lhs.credCount.size(), rhs.credCount.size());
-        ret &= icmp(lhs.name + qsl(" - nbr Contracts  "), lhs.nbrContracts, rhs.nbrContracts);
-        ret &= dcmp(lhs.name + qsl(" - Value  (euro)  "), lhs.value, rhs.value);
-        ret &= dcmp(lhs.name + qsl(" - annaul int. %  "), lhs.annualInterest, rhs.annualInterest);
-        ret &= dcmp(lhs.name + qsl(" - avg Interest % "), lhs.value, rhs.value);
-        ret &= dMaxDiff(lhs.name + qsl(" - wAvg Interest% "), lhs.weightedAvgInterestRate, rhs.weightedAvgInterestRate, 0.0002l);
-        return ret;
-    }
-    inline friend bool operator!=(const dataset& lhs, const dataset& rhs) {
-        return not (lhs == rhs);
-    }
-    QString toString() const;
-};
 
 struct dbStats
 {
@@ -117,10 +93,12 @@ struct dbStats
             fillall();
     }
     QString toString();
+    // for testing
     void addContract(double value, double interest, dbStats::payoutType kind, qlonglong creditorId);
     void activateContract(double value, double plannedInvest, double interestRate, dbStats::payoutType kind, qlonglong creditorId);
     void reinvest(double value, double interestRate, int days);
     void changeContract(double value, double interestRate, int days, dbStats::payoutType kind);
+    // EO for testing
 private:
     void countCred_addContract(QMap<int, int> &credCount, int id)
     {
@@ -145,12 +123,13 @@ private:
 
 
 };
-
+// for testing
 inline dbStats getStatistic() {
     dbStats dbs (true);
     qInfo().noquote() << dbs.toString();
     return dbs;
 }
+// EO for testing
 
 // all contract summary
 
