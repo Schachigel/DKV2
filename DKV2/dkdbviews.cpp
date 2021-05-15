@@ -80,83 +80,70 @@ const QString vnExContractView {qsl("vVertraege_geloescht")};
 const QString sqlExContractView {qsl(
 R"str(
 SELECT
-  V.id AS VertragsId,
-  K.id AS KreditorId,
-  K.Nachname || ', ' || K.Vorname AS KreditorIn,
-  V.Kennung AS Vertragskennung,
-  strftime('%d.%m.%Y',Aktivierungsdatum) AS Aktivierung,
-  strftime('%d.%m.%Y', Vertragsende) AS Vertragsende,
-  ifnull(AktivierungsWert, V.Betrag / 100.) AS Anfangswert,
-  CAST(V.Zsatz / 100. AS VARCHAR) || ' %'    AS Zinssatz,
-  CASE WHEN V.thesaurierend = 0
-  THEN 'Auszahlend'
-  ELSE CASE WHEN V.thesaurierend = 1
-       THEN 'Thesaur.'
-        ELSE CASE WHEN V.thesaurierend = 2
-             THEN 'Fester Zins'
-             ELSE 'ERROR'
-             END
-        END
-  END AS Zinsmodus,
-
-  CASE WHEN V.thesaurierend  = 0 THEN Zinsen_ausz
-  ELSE Zinsen_thesa
-  END AS Zinsen,
-  CASE WHEN V.thesaurierend  > 0
-  THEN -1* letzte_Auszahlung + sum_o_Zinsen
-  ELSE -1* letzte_Auszahlung + sum_mit_Zinsen
-  END AS Einlagen,
-
-  maxValue AS Endauszahlung
+  V.id AS VertragsId
+  , K.id AS KreditorId
+  , K.Nachname || ', ' || K.Vorname AS KreditorIn
+  , V.Kennung AS Vertragskennung
+  , strftime('%d.%m.%Y',Aktivierungsdatum) AS Aktivierung
+  , strftime('%d.%m.%Y', Vertragsende) AS Vertragsende
+  , ifnull(AktivierungsWert, V.Betrag / 100.) AS Anfangswert
+  , CAST(V.Zsatz / 100. AS VARCHAR) || ' %'    AS Zinssatz
+  , IIF(V.thesaurierend = 0, 'Auszahlend',
+       IIF( V.thesaurierend = 1, 'Thesaur.',
+          IIF( V.thesaurierend = 2, 'Fester Zins',
+             IIF( V.thesaurierend = 3, 'Zinslos', 'ERROR')))) AS Zinsmodus
+  , IIF( V.thesaurierend  = 0, Zinsen_ausz, Zinsen_thesa) AS Zinsen
+  , IIF( V.thesaurierend  > 0, -1* letzte_Auszahlung + sum_o_Zinsen, -1* letzte_Auszahlung + sum_mit_Zinsen) AS Einlagen
+  , maxValue AS Endauszahlung
 
 FROM exVertraege AS V  INNER JOIN Kreditoren AS K ON V.KreditorId = K.id
 
 LEFT JOIN (
      SELECT
-        B.VertragsId AS vid_min,
-    min(B.id) AS idErsteBuchung,
-    B.Datum AS Aktivierungsdatum,
-    B.Betrag / 100. AS AktivierungsWert,
-    sum(B.Betrag) / 100. AS GesamtWert
+        B.VertragsId AS vid_min
+        , min(B.id) AS idErsteBuchung
+        , B.Datum AS Aktivierungsdatum
+        , B.Betrag / 100. AS AktivierungsWert
+        , sum(B.Betrag) / 100. AS GesamtWert
      FROM exBuchungen AS B GROUP BY B.VertragsId )
 ON V.id = vid_min
 
 LEFT JOIN (SELECT
-         B.VertragsId AS vid_max,
-         max(B.id) as idLetzteBuchung,
-         B.Datum AS Vertragsende,
-         B.Betrag /100. AS maxValue
+         B.VertragsId AS vid_max
+         , max(B.id) as idLetzteBuchung
+         , B.Datum AS Vertragsende
+         , B.Betrag /100. AS maxValue
        FROM exBuchungen AS B GROUP BY B.VertragsId )
 ON V.id = vid_max
 
 LEFT JOIN (SELECT
-            B.VertragsId AS vidZinsThesa,
-            SUM(B.betrag) /100. AS Zinsen_thesa
+            B.VertragsId AS vidZinsThesa
+            , SUM(B.betrag) /100. AS Zinsen_thesa
           FROM exBuchungen AS B
           WHERE B.BuchungsArt = 4 OR B.BuchungsArt = 8
           GROUP BY B.VertragsId )
 ON V.id = vidZinsThesa
 
 LEFT JOIN ( SELECT
-              B.VertragsId AS vidZinsAus,
-              SUM(B.betrag) /-100. AS Zinsen_ausz
+              B.VertragsId AS vidZinsAus
+              , SUM(B.betrag) /-100. AS Zinsen_ausz
             FROM exBuchungen AS B
             WHERE B.BuchungsArt = 1 OR B.BuchungsArt = 2 OR B.BuchungsArt = 8 GROUP BY B.VertragsId )
 ON V.id = vidZinsAus
 
 LEFT JOIN ( SELECT
-                B.VertragsId as vid_o_Zinsen,
-                sum(B.Betrag) /100. AS sum_o_Zinsen
+                B.VertragsId as vid_o_Zinsen
+                , sum(B.Betrag) /100. AS sum_o_Zinsen
             FROM exBuchungen AS B
             WHERE B.BuchungsArt = 1 OR B.BuchungsArt = 2
             GROUP BY B.VertragsId  )
 ON V.id = vid_o_Zinsen
 
 LEFT JOIN ( SELECT
-              B.VertragsId as vid_mit_Zinsen,
-              sum(B.Betrag) /100. AS sum_mit_Zinsen,
-              max(B.Datum) AS letzte_buchung,
-              B.Betrag /100. AS letzte_Auszahlung
+              B.VertragsId as vid_mit_Zinsen
+              , sum(B.Betrag) /100. AS sum_mit_Zinsen
+              , max(B.Datum) AS letzte_buchung
+              , B.Betrag /100. AS letzte_Auszahlung
             FROM exBuchungen AS B
             WHERE B.BuchungsArt = 1 OR B.BuchungsArt = 2 OR B.BuchungsArt = 8
             GROUP BY B.VertragsId  )
