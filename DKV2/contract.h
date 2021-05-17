@@ -128,7 +128,7 @@ struct contract
     // write to db
     int saveNewContract();
     void updateComment(const QString&);
-    void updateTermination(QDate, int);
+    bool updateTerminationDate(QDate termination, int noticePeriod);
 /* not used?  int validateAndSaveNewContract(QString& meldung); */
     // contract activation
     bool activate(const QDate aDate, double amount);

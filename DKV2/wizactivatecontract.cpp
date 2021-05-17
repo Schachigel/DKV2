@@ -40,7 +40,6 @@ void wpActiateContract_DatePage::initializePage()
     minDate = wiz->minimalActivationDate;
 }
 
-
 bool wpActiateContract_DatePage::validatePage()
 {
     if( field(fnDate).toDate() < minDate) {

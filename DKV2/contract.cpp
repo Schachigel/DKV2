@@ -179,6 +179,14 @@ void contract::updateComment(const QString &c)
         qCritical() << "Contract update failed";
 }
 
+bool contract::updateTerminationDate(QDate termination, int noticePeriod)
+{
+    td.setValue(qsl("Kfrist"), noticePeriod);
+    td.setValue(qsl("LaufzeitEnde"), termination);
+    return  -1 not_eq td.UpdateData();
+}
+
+
 // helper: only annual settlements should be on the last day of the year
 // other bookings should move to dec. 30th
 QDate avoidYearEndBookings(const QDate d)

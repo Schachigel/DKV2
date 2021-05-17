@@ -14,6 +14,7 @@
 #include "wizcancelcontract.h"
 #include "wizannualsettlement.h"
 #include "wiznewinvestment.h"
+#include "wizEditContractTermination.h"
 #include "wiznew.h"
 #include "transaktionen.h"
 
@@ -264,21 +265,17 @@ void changeContractComment(qlonglong id)
     }
     c.updateComment(ipd.textValue().trimmed());
 }
-void changeContractTermination(qlonglong )
+void changeContractTermination(qlonglong id)
 {
-//    contract c(id);
-//    creditor cred(c.creditorId());
-//    wizChangeTermination wiz;
-//    if( c.noticePeriod() >0) {
-//        wiz.setField(pnCDate, EndOfTheFuckingWorld);
-//        wiz.setField(pnPeriod, c.noticePeriod());
-//    } else {
-//        wiz.setField(pnCDate, c.plannedEndDate());
-//        wiz.setField(pnPeriod, -1);
-//    }
-//    if( QDialog::Accepted == wiz.exec())
-//        c.updateTermination(wiz.field(pnCDate).toDate(), wiz.field(pnPeriod).toInt());
-//    return;
+    contract c(id);
+    creditor cred(c.creditorId());
+    wizEditContractTermination wiz;
+    wiz.minContractTermination =c.activationDate();
+    wiz.setField(pnNewEDate, c.plannedEndDate());
+    wiz.setField(pnNewPeriod, c.noticePeriod());
+    if( QDialog::Accepted == wiz.exec())
+        c.updateTerminationDate(wiz.field(pnCDate).toDate(), wiz.field(pnPeriod).toInt());
+    return;
 }
 void createInvestment()
 {

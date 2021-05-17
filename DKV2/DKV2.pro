@@ -75,6 +75,7 @@ SOURCES += \
         tabledatainserter.cpp \
         transaktionen.cpp \
         uiitemformatter.cpp \
+        wizEditContractTermination.cpp \
         wizactivatecontract.cpp \
         wizannualsettlement.cpp \
         wizcancelcontract.cpp \
@@ -116,6 +117,7 @@ HEADERS += pch.h\
         tabledatainserter.h \
         transaktionen.h \
         uiitemformatter.h \
+        wizEditContractTermination.h \
         wizactivatecontract.h \
         wizannualsettlement.h \
         wizcancelcontract.h \
