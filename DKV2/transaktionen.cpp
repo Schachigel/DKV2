@@ -60,14 +60,15 @@ void activateContract(qlonglong cid)
     wiz.label = v.label();
     wiz.creditorName = cred.firstname() + qsl(" ") + cred.lastname();
     wiz.expectedAmount = v.plannedInvest();
-    wiz.setField(qsl("amount"), v.plannedInvest());
-    wiz.setField(qsl("date"), v.conclusionDate().addDays(1));
+    wiz.setField(fnAmount, v.plannedInvest());
+    wiz.setField(fnDate, v.conclusionDate().addDays(1));
+    wiz.minimalActivationDate =v.conclusionDate().addDays(1);
     wiz.exec();
     if( not wiz.field(qsl("confirmed")).toBool()) {
         qInfo() << "contract activation cancled by the user";
         return;
     }
-    if( not v.activate(wiz.field(qsl("date")).toDate(), wiz.field(qsl("amount")).toDouble())) {
+    if( not v.activate(wiz.field(fnDate).toDate(), wiz.field(qsl("amount")).toDouble())) {
         qCritical() << "activation failed";
         Q_ASSERT(false);
     }

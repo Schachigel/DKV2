@@ -10,13 +10,17 @@ struct wpActivateContract_IntroPage : public QWizardPage {
     Q_OBJECT;
 };
 
+extern QString fnDate;
 struct wpActiateContract_DatePage : public QWizardPage {
     wpActiateContract_DatePage(QWidget* w=nullptr);
     void cleanupPage() override  {};
     void initializePage() override;
+    bool validatePage() override;
+    QDate minDate;
     Q_OBJECT;
 };
 
+extern QString fnAmount;
 struct wpActiateContract_AmountPage : public QWizardPage {
     wpActiateContract_AmountPage(QWidget* w=nullptr);
     void cleanupPage() override  {};
@@ -36,13 +40,16 @@ public slots:
 };
 
 
-struct wpActivateContract : public QWizard
+class wpActivateContract : public QWizard
 {
+    Q_OBJECT
+public:
     wpActivateContract(QWidget* p =nullptr);
     QString label;
     QString creditorName;
     double expectedAmount =0.;
-    Q_OBJECT;
+    //  the contract should not be activated before the contract date
+    QDate minimalActivationDate;
 };
 
 #endif // ACTIVATECONTRACTWIZ_H

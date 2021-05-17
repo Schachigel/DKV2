@@ -26,11 +26,12 @@ void wpActivateContract_IntroPage::initializePage()
     setSubTitle(subtitle.arg(wiz->label, wiz->creditorName));
 }
 
+QString fnDate {qsl("date")};
 wpActiateContract_DatePage::wpActiateContract_DatePage(QWidget* p) : QWizardPage(p)
 {
     QDateEdit* de = new QDateEdit;
     de->setDisplayFormat(qsl("dd.MM.yyyy"));
-    registerField(qsl("date"), de);
+    registerField(fnDate, de);
     QVBoxLayout*  layout = new QVBoxLayout;
     layout->addWidget(de);
     setLayout(layout);
@@ -40,8 +41,22 @@ void wpActiateContract_DatePage::initializePage()
 {
     setTitle(qsl("Aktivierungsdatum"));
     setSubTitle(qsl("Das Aktivierungsdatum entspricht dem Datum, zu dem das Geld auf unserem Konto eingegangen ist"));
+    wpActivateContract* wiz = qobject_cast<wpActivateContract*>(wizard());
+    minDate = wiz->minimalActivationDate;
 }
 
+
+bool wpActiateContract_DatePage::validatePage()
+{
+    if( field(fnDate).toDate() < minDate) {
+        QMessageBox::information(this, qsl("Fehlerhaftes Datum"), qsl("Das Datum muss nach dem Vertragsdatum liegen"));
+        setField(fnDate, minDate);
+        return false;
+    }
+    return true;
+}
+
+QString fnAmount {qsl("amount")};
 wpActiateContract_AmountPage::wpActiateContract_AmountPage(QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("Eingegangener Kreditbetrag"));
@@ -50,7 +65,7 @@ wpActiateContract_AmountPage::wpActiateContract_AmountPage(QWidget* p) : QWizard
     QVBoxLayout*  layout = new QVBoxLayout;
     QLabel* l = new QLabel(qsl("Betrag in Euro"));
     QLineEdit* le = new QLineEdit;
-    registerField(qsl("amount"), le);
+    registerField(fnAmount, le);
     le->setValidator(new QIntValidator(this));
     l->setBuddy(le);
     layout->addWidget(l);
@@ -61,10 +76,10 @@ wpActiateContract_AmountPage::wpActiateContract_AmountPage(QWidget* p) : QWizard
 bool wpActiateContract_AmountPage::validatePage()
 {
     wpActivateContract* wiz = qobject_cast<wpActivateContract*>(wizard());
-    double amount = field(qsl("amount")).toDouble();
+    double amount = field(fnAmount).toDouble();
     if( amount < dbConfig::readValue(MIN_AMOUNT).toDouble())
         return false;
-    setField(qsl("amount"), r2(amount));
+    setField(fnAmount, r2(amount));
     if( wiz->expectedAmount not_eq amount) {
         qInfo() << "activation with different amount";
     }
@@ -87,9 +102,9 @@ void wpActivateContract_SummaryPage::initializePage()
     QString subt =qsl("Der Vertrag <p><b>%1</b> von <b>%2</b><p> soll mit einem Betrag von <p>"
                   "<b>%3 </b><p> zum %4 aktiviert werden. <br>");
     wpActivateContract* wiz = qobject_cast<wpActivateContract*>(wizard());
-    double amount = field(qsl("amount")).toDouble();
+    double amount = field(fnAmount).toDouble();
     QLocale locale;
-    subt = subt.arg(wiz->label, wiz->creditorName, locale.toCurrencyString(amount), field(qsl("date")).toDate().toString(qsl("dd.MM.yyyy")));
+    subt = subt.arg(wiz->label, wiz->creditorName, locale.toCurrencyString(amount), field(fnDate).toDate().toString(qsl("dd.MM.yyyy")));
     if( amount not_eq wiz->expectedAmount)
         subt += qsl(" <b><small>Der Überweisungsbetrag stimmt nicht mit dem Kreditbetrag überein.</small></b>");
     setSubTitle(subt);
@@ -105,6 +120,7 @@ void wpActivateContract_SummaryPage::onConfirmData_toggled(int )
 {
     emit completeChanged();
 }
+
 bool wpActivateContract_SummaryPage::isComplete() const
 {
     return field(qsl("confirmed")).toBool();
