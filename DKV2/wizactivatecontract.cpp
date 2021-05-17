@@ -1,11 +1,6 @@
 #include <iso646.h>
 
-#include <QLabel>
-#include <QDateEdit>
-#include <QLineEdit>
-#include <QCheckBox>
-#include <QVBoxLayout>
-#include <QDebug>
+#include "pch.h"
 
 #include "appconfig.h"
 #include "helper.h"
