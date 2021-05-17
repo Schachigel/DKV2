@@ -10,7 +10,7 @@
 double valueOfAllContracts();
 
 
-inline bool icmp (QString s, int l, int r) {
+inline bool icmp (const QString& s, const int l, const int r) {
     if( l not_eq r) {
         qInfo() << "comparison of stat.data failed. " << s + qsl(" (%1, %2)").arg(i2s(l), i2s(r));
         return false;
@@ -18,7 +18,7 @@ inline bool icmp (QString s, int l, int r) {
     return true;
 }
 
-inline bool dcmp (QString s, double l, double r) {
+inline bool dcmp (const QString& s, const double l, const double r) {
     if( not qFuzzyCompare(1. +l, 1.+ r)) {
         qInfo() << "comparison of stat.data failed. " << s + qsl(" (%1, %2)").arg(d2s_4d(l), d2s_4d(r));
         return false;
@@ -26,7 +26,7 @@ inline bool dcmp (QString s, double l, double r) {
     return true;
 };
 
-inline bool dMaxDiff(QString s, double l, double r, double maxDiff) {
+inline bool dMaxDiff(const QString& s, const double l, const double r, const double maxDiff) {
     double diff = qAbs(l-r);
     if( diff > maxDiff) {
         qInfo() << "epsilon comparison failed: " << s +qsl(" (%1, %2)").arg(d2s_4d(l), d2s_4d(r));
@@ -45,7 +45,7 @@ struct dbStats
     };
     struct dataset
     {
-        dataset(QString n) { name = n; }
+        dataset(const QString& n) { name = n; }
         QString name;
         // int nbrCreditors =0;
         QMap<int, int> credCount;

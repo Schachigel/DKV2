@@ -11,7 +11,11 @@
 #include "contract.h"
 #include "helper.h"
 
-enum { page_new_or_existing, page_address, page_email, page_bankaccount, page_confirm_creditor,
+enum { page_new_or_existing,
+       page_address,
+       page_email,
+       page_bankaccount,
+       page_confirm_creditor,
        // contract related pages:
        page_label_and_amount,
        page_contract_timeframe,
@@ -237,5 +241,6 @@ private:
     Q_OBJECT;
     bool updateMode =false;
 };
+
 
 #endif // WIZNEW_H

@@ -25,7 +25,7 @@ bool TableDataInserter::setValue(const QString& n, const QVariant& v, treatNull 
         qCritical() << "wrong field name for insertion " << n;
         return false;
     }
-    if( allowNull and v.toString()=="") {
+    if( allowNull and v.toString()==qsl("")) {
         setValueNULL(n);
         return true;
     }
@@ -53,7 +53,7 @@ bool TableDataInserter::setValueNULL(const QString &n)
     return false;
 }
 
-bool TableDataInserter::setValues(const QSqlRecord input)
+bool TableDataInserter::setValues(const QSqlRecord &input)
 {
     if( input.count() not_eq record.count()) {
         qCritical() << "TableDataInserter setValues faild: wrong sqlRecord size (actual / expected): " << input.count() << " / " << record.count();
@@ -134,7 +134,7 @@ QString TableDataInserter::getInsert_noAuto_RecordSQL() const
         }
         fieldnames +=record.fieldName(i);
         if( record.field(i).isNull())
-            values += "NULL";
+            values += qsl("NULL");
         else
             values += DbInsertableString(record.field(i).value());
     }
@@ -166,7 +166,7 @@ QString TableDataInserter::getUpdateRecordSQL(qlonglong& autovalue) const
     return sql;
 }
 
-int TableDataInserter::InsertData(QSqlDatabase db) const
+int TableDataInserter::InsertData(const QSqlDatabase &db) const
 {   // LOG_CALL;
     if( record.isEmpty()) return false;
 
@@ -181,7 +181,7 @@ int TableDataInserter::InsertData(QSqlDatabase db) const
     return -1;
 }
 
-int TableDataInserter::InsertData_noAuto(QSqlDatabase db) const
+int TableDataInserter::InsertData_noAuto(const QSqlDatabase &db) const
 {
     if( record.isEmpty()) return false;
     QSqlQuery q(db);
@@ -195,7 +195,7 @@ int TableDataInserter::InsertData_noAuto(QSqlDatabase db) const
     return -1;
 }
 
-int TableDataInserter::InsertOrReplaceData(QSqlDatabase db) const
+int TableDataInserter::InsertOrReplaceData(const QSqlDatabase &db) const
 {   LOG_CALL;
     if( record.isEmpty()) return false;
     QSqlQuery q(db);

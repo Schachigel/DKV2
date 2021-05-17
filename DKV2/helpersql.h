@@ -14,11 +14,12 @@ extern const QString dbTypeName;
 
 struct dbCloser
 {   // RAII class for db connections
-    dbCloser(QString c) : conName (c){}
+    dbCloser(const QString& c) : conName (c){}
+    dbCloser(const dbCloser&) =delete;
     ~dbCloser(){
         if( QSqlDatabase::database(conName).isValid()){
             QList<QString> cl = QSqlDatabase::connectionNames();
-            for( auto con : cl) {
+            for( const auto& con : qAsConst(cl)) {
                 if( con == conName) {
                     QSqlDatabase::database(con).close();
                     QSqlDatabase::removeDatabase(con);
@@ -34,7 +35,7 @@ struct dbCloser
 
 struct autoDb{
     enum accessType { read_only =0, read_write};
-    autoDb(QString file, QString connect, accessType at=read_write) : closer(connect){
+    autoDb(const QString& file, const QString& connect, accessType at=read_write) : closer(connect){
         db =QSqlDatabase::addDatabase(dbTypeName, closer.conName);
         db.setDatabaseName(file);
         if(at == read_only) db.setConnectOptions(qsl("QSQLITE_OPEN_READONLY"));
@@ -51,9 +52,10 @@ struct autoDb{
 
 struct autoRollbackTransaction
 {   // RAII class for db connections
-    autoRollbackTransaction(QString con =QString()) : connection((con)) {
+    autoRollbackTransaction(const QString& con =QString()) : connection((con)) {
         QSqlDatabase::database(con).transaction();
     };
+    autoRollbackTransaction(const autoRollbackTransaction&) =delete;
     void commit() { LOG_CALL;
         if( not comitted) QSqlDatabase::database(connection).commit();
         comitted =true;
@@ -69,11 +71,12 @@ private:
 
 struct autoDetachDb
 {   // RAII class for db file attachment
-    autoDetachDb(QString a, QString conName)
+    autoDetachDb(const QString& a, const QString& conName)
         : _alias(a), _conname(conName)
     {
 
     }
+    autoDetachDb(const autoDetachDb&) =delete;
     bool attachDb(const QString &filename);
     ~autoDetachDb();
     const QString alias(){return _alias;}
@@ -99,9 +102,9 @@ bool ensureTable(const dbtable& table, const QSqlDatabase& db =QSqlDatabase::dat
 bool switchForeignKeyHandling(const QSqlDatabase& db, const QString& alias, bool OnOff =fkh_on);
 bool switchForeignKeyHandling(const QSqlDatabase& db =QSqlDatabase::database(), bool OnOff =fkh_on);
 
-QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db = QSqlDatabase::database());
-QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where =QString(), QSqlDatabase db = QSqlDatabase::database());
-QVariant executeSingleValueSql(const dbfield&, const QString& where, QSqlDatabase db=QSqlDatabase::database());
+QVariant executeSingleValueSql(const QString& sql, const QSqlDatabase& db = QSqlDatabase::database());
+QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where =QString(), const QSqlDatabase& db = QSqlDatabase::database());
+QVariant executeSingleValueSql(const dbfield&, const QString& where, const QSqlDatabase& db=QSqlDatabase::database());
 
 QString selectQueryFromFields(const QVector<dbfield>& fields,
                               const QVector<dbForeignKey>& keys =QVector<dbForeignKey>(),
@@ -125,7 +128,7 @@ struct dbViewDev{
     const QString name;
     const QString sql;
 };
-bool createView(const QString& name, const QString& sql, QSqlDatabase db = QSqlDatabase::database());
-bool createViews( const QMap<QString, QString>& views, QSqlDatabase db);
+bool createView(const QString& name, const QString& sql, const QSqlDatabase& db = QSqlDatabase::database());
+bool createViews( const QMap<QString, QString>& views, const QSqlDatabase& db);
 
 #endif // SQLHELPER_H

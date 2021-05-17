@@ -6,6 +6,7 @@
 #include "helper.h"
 #include "helperfin.h"
 #include "helpersql.h"
+#include "ibanvalidator.h"
 #include "creditor.h"
 
 QList<QString> Vornamen {qsl("Holger"), qsl("Volker"), qsl("Peter"), qsl("Hans"), qsl("Susi"), qsl("Roland"),
@@ -86,7 +87,7 @@ bool creditor::fromDb( const int id)
     for(int i=0; i<rec.count(); i++)
     {
         qDebug() << "reading Kreditor from db; Field:" << rec.field(i).name() << "-value:" << rec.field(i).value() << "(" << rec.field(i).value().type() << ")";
-        if( dkdbstructur["Kreditoren"][rec.field(i).name()].type() == QVariant::Type::String)
+        if( dkdbstructur[qsl("Kreditoren")][rec.field(i).name()].type() == QVariant::Type::String)
             ti.setValue(rec.field(i).name(), rec.field(i).value().toString());
         else if( dkdbstructur[qsl("Kreditoren")][rec.field(i).name()].type() == QVariant::Type::LongLong)
             ti.setValue(rec.field(i).name(), rec.field(i).value().toLongLong());
@@ -119,7 +120,7 @@ bool creditor::isValid( QString& errortext) const
     QString email = ti.getValue(qsl("Email")).toString();
     if( not email.isEmpty() or email == qsl("NULL_STRING"))
     {
-        QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b",
+        QRegularExpression rx(qsl("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b"),
                               QRegularExpression::CaseInsensitiveOption);
         if( not rx.match(email).hasMatch())
             errortext = "Das Format der e-mail Adresse ist ungültig: " + email;

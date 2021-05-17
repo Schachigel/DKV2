@@ -17,14 +17,14 @@ void MainWindow::on_action_menu_contracts_listview_triggered()
 
     ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
 }
-QString filterFromFilterphrase(QString fph)
+QString filterFromFilterphrase(const QString &fph)
 {
     if( fph.startsWith(qsl("kreditor:")))
     {
         bool conversionOK = true;
         qlonglong contractId = fph.rightRef(fph.length()-9).toInt(&conversionOK);
         if( not conversionOK)
-            return "";
+            return QString();
         else
             return qsl("KreditorId=") + QString::number(contractId);
     }
@@ -83,9 +83,8 @@ void MainWindow::prepare_deleted_contracts_list_view()
     tv->hideColumn(cp_Creditor_id);
 
     tv->resizeColumnsToContents();
-    connect(ui->contractsTableView->selectionModel(),
-                     SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
-                     SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
+
+    connect(ui->contractsTableView->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::currentChange_ctv);
 
     if( not model->rowCount()) {
         ui->bookingsTableView->setModel(new QSqlTableModel(this));
@@ -160,9 +159,7 @@ void MainWindow::prepare_valid_contracts_list_view()
     tv->resizeColumnsToContents();
     tv->resizeRowsToContents();
 
-    connect(ui->contractsTableView->selectionModel(),
-                     SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
-                     SLOT(currentChange_ctv(const QModelIndex & , const QModelIndex & )));
+    connect(ui->contractsTableView->selectionModel(), &QItemSelectionModel::currentChanged, this ,&MainWindow::currentChange_ctv);
 
     if( not model->rowCount()) {
         ui->bookingsTableView->setModel(new QSqlTableModel(this));
@@ -225,7 +222,7 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
 /////////////////////////////////////////////////
 // contract list context menu
 /////////////////////////////////////////////////
-void MainWindow::on_contractsTableView_customContextMenuRequested(const QPoint &pos)
+void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;
     if( showDeletedContracts)
         return;

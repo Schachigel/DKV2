@@ -167,7 +167,7 @@ void annualSettlement()
     QVector<contract> changedContracts;
     QVector<QDate> startOfInterrestCalculation;
     QVector<booking>  asBookings;
-    for( auto id: ids)
+    for( const auto &id: qAsConst(ids))
     {
         contract c(id.toLongLong());
         QDate startDate = c.latestBooking().date;
@@ -249,18 +249,36 @@ void newCreditorAndContract()
 void changeContractComment(qlonglong id)
 {
     contract c(id);
+    creditor cred(c.creditorId());
     QInputDialog ipd(getMainWindow());
     ipd.setInputMode(QInputDialog::TextInput);
+    ipd.setWindowTitle(qsl("Anmerkung zum Vertrag ändern"));
+    ipd.setStyleSheet(qsl("* { font-size: 10pt; }") );
     ipd.setTextValue(c.comment());
-    ipd.setLabelText(qsl("Ändere den Kommentar zu dem Vertrag"));
+    ipd.setLabelText(qsl("Ändere den Kommentar zum Vertrag von ") +cred.firstname() + qsl(" ") +cred.lastname());
     ipd.setOption(QInputDialog::UsePlainTextEditForTextInput, true);
     if( ipd.exec() not_eq QDialog::Accepted) {
         qInfo() << "inpud dlg canceled";
         return;
     }
-    c.updateComment(ipd.textValue());
+    c.updateComment(ipd.textValue().trimmed());
 }
-
+void changeContractTermination(qlonglong )
+{
+//    contract c(id);
+//    creditor cred(c.creditorId());
+//    wizChangeTermination wiz;
+//    if( c.noticePeriod() >0) {
+//        wiz.setField(pnCDate, EndOfTheFuckingWorld);
+//        wiz.setField(pnPeriod, c.noticePeriod());
+//    } else {
+//        wiz.setField(pnCDate, c.plannedEndDate());
+//        wiz.setField(pnPeriod, -1);
+//    }
+//    if( QDialog::Accepted == wiz.exec())
+//        c.updateTermination(wiz.field(pnCDate).toDate(), wiz.field(pnPeriod).toInt());
+//    return;
+}
 void createInvestment()
 {
     wizNewInvestment wiz;

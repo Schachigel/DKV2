@@ -100,7 +100,7 @@ contract::contract(qlonglong contractId) : td(getTableDef())
     }
 }
 // interface
-double contract::value(const QDate& d) const
+double contract::value(const QDate d) const
 {
     // what is the value of the contract at a given time?
     QString where {qsl("VertragsId=%1 AND Datum <='%2'")};
@@ -111,7 +111,7 @@ double contract::value(const QDate& d) const
     return 0.;
 }
 
-double contract::investedValue(const QDate& d) const
+double contract::investedValue(const QDate d) const
 {
     // how many money was put into the contract by the creditor?
     QString where{ qsl("VertragsId=%1 AND Datum <='%2' AND (Buchungsart=%3 OR Buchungsart=%4) ") };
@@ -169,7 +169,7 @@ int  contract::saveNewContract()
     return -1;
 }
 
-void contract::updateComment(QString c)
+void contract::updateComment(const QString &c)
 {   LOG_CALL;
     setComment(c);
     int i =td.UpdateData();
@@ -181,7 +181,7 @@ void contract::updateComment(QString c)
 
 // helper: only annual settlements should be on the last day of the year
 // other bookings should move to dec. 30th
-QDate avoidYearEndBookings(const QDate& d)
+QDate avoidYearEndBookings(const QDate d)
 {
     if( not d.isValid()) return d;
     if( d.month() == 12 and d.day() == 31) {
@@ -192,7 +192,7 @@ QDate avoidYearEndBookings(const QDate& d)
 }
 
 // contract activation
-bool contract::activate(const QDate &date, const double& amount)
+bool contract::activate(const QDate date, double amount)
 {   LOG_CALL;
     Q_ASSERT(id() >= 0);
     QString error;
@@ -258,7 +258,7 @@ QDate contract::nextDateForAnnualSettlement()
     return QDate(lastB.date.year(), 12, 31);
 }
 
-bool contract::needsAnnualSettlement(const QDate& intendedNextBooking)
+bool contract::needsAnnualSettlement(const QDate intendedNextBooking)
 {   LOG_CALL_W(intendedNextBooking.toString());
 
     if( not isActive()) return false;
@@ -283,7 +283,7 @@ int contract::annualSettlement( int year)
 
     if( not isActive()) return 0;
 
-    QSqlQuery AS_savepoint(qsl("SAVEPOINT as_savepoint"));
+    executeSql_wNoRecords(qsl("SAVEPOINT as_savepoint"));
     QDate requestedSettlementDate(year, 12, 31);
     QDate nextAnnualSettlementDate =nextDateForAnnualSettlement();
 
@@ -318,11 +318,11 @@ int contract::annualSettlement( int year)
             continue;
         } else {
             qDebug() << "Failed annual settlement: Vertrag " << id_aS() << ": " << nextAnnualSettlementDate << " Zins: " << zins;
-            QSqlQuery AS_rollback(qsl("ROLLBACK"));
+            executeSql_wNoRecords(qsl("ROLLBACK"));
             return 0;
         }
     }
-    QSqlQuery AS_release(qsl("RELEASE SAVEPOINT as_savepoint"));
+    executeSql_wNoRecords(qsl("RELEASE SAVEPOINT as_savepoint"));
     if( bookingSuccess)
         // there was a booking
         return year;
@@ -331,7 +331,7 @@ int contract::annualSettlement( int year)
 }
 
 // booking actions
-bool contract::bookInBetweenInterest(const QDate& nextBookingDate)
+bool contract::bookInBetweenInterest(const QDate nextBookingDate)
 {   LOG_CALL;
     // booking interest in case of deposits, payouts or finalization
     // performs annualSettlements if necesarry
@@ -362,7 +362,7 @@ bool contract::bookInBetweenInterest(const QDate& nextBookingDate)
     return false;
 }
 
-bool contract::deposit(const QDate& d, const double& amount)
+bool contract::deposit(const QDate d, double amount)
 {   LOG_CALL;
     double actualAmount = qFabs(amount);
     QString error;
@@ -393,7 +393,7 @@ bool contract::deposit(const QDate& d, const double& amount)
     return true;
 }
 
-bool contract::payout(const QDate& d, const double& amount)
+bool contract::payout(const QDate d, double amount)
 {   LOG_CALL;
     double actualAmount = qFabs(amount);
 
@@ -424,7 +424,7 @@ bool contract::payout(const QDate& d, const double& amount)
 
 }
 
-bool contract::cancel(const QDate& d)
+bool contract::cancel(const QDate d)
 {   LOG_CALL;
     if( not isActive()) {
         qInfo() << "an inactive contract can not be canceled. It should be deleted.";
@@ -441,7 +441,7 @@ bool contract::cancel(const QDate& d)
     return true;
 }
 
-bool contract::finalize(bool simulate, const QDate& finDate,
+bool contract::finalize(bool simulate, const QDate finDate,
                         double& finInterest, double& finPayout)
 {   LOG_CALL;
     if( not finDate.isValid() or finDate < latestBooking().date or id() == -1) {
@@ -494,7 +494,7 @@ bool contract::finalize(bool simulate, const QDate& finDate,
     }
 }
 
-QString contract::toString(QString title) const
+QString contract::toString(const QString &title) const
 {
     QString ret;
     QTextStream stream(&ret);
@@ -516,7 +516,7 @@ QString contract::toString(QString title) const
     return ret;
 }
 
-bool contract::storeTerminationDate(const QDate& d) const
+bool contract::storeTerminationDate(const QDate d) const
 {   LOG_CALL;
     QVector<QVariant> v {d, id()};
     return executeSql_wNoRecords(qsl("UPDATE Vertraege SET LaufzeitEnde=? WHERE id=?"), v);
@@ -571,7 +571,7 @@ QDate activateRandomContracts(const int percent)
 
     for (int i=0; i < activations; i++) {
         // contractData -> from database all amounts are in ct
-        double amount = euroFromCt(contractData[i].value("Betrag").toInt());
+        double amount = euroFromCt(contractData[i].value(qsl("Betrag")).toInt());
         if( rand->bounded(100)%10 == 0) {
             // some contracts get activated with a different amount
             amount = amount * rand->bounded(90, 110) / 100;

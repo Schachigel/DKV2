@@ -20,6 +20,7 @@ struct busycursor
     {
         QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     };
+    busycursor(const busycursor&) =delete;
     ~busycursor()
     {
         QGuiApplication::restoreOverrideCursor();
@@ -28,6 +29,7 @@ struct busycursor
 
 class InvestmentsTableModel : public QSqlTableModel
 {
+    Q_OBJECT
 public:
     InvestmentsTableModel(QWidget* w) : QSqlTableModel(w){};
 private:
@@ -71,11 +73,11 @@ private slots:
 
     void on_action_menu_contracts_listview_triggered();
 
-    void on_CreditorsTableView_customContextMenuRequested(const QPoint &pos);
+    void on_CreditorsTableView_customContextMenuRequested(QPoint pos);
 
     void on_action_cmenu_delete_creaditor_triggered();
 
-    void on_contractsTableView_customContextMenuRequested(const QPoint &pos);
+    void on_contractsTableView_customContextMenuRequested(QPoint pos);
 
     void on_action_cmenu_activate_contract_triggered();
 
@@ -142,7 +144,7 @@ private slots:
 
     void on_actionAnlagen_verwalten_triggered();
 
-    void on_InvestmentsTableView_customContextMenuRequested(const QPoint &pos);
+    void on_InvestmentsTableView_customContextMenuRequested(QPoint pos);
 
     void on_actionInvestmentLoeschen_triggered();
 
@@ -185,7 +187,7 @@ private:
     QString askUserForNextDb();
     QString findValidDatabaseToUse();
     bool useDb(const QString& dbfile);
-    void showDbInStatusbar(QString filename = "");
+    void showDbInStatusbar(const QString &filename = QString());
 
     enum stackedWidgedsPageIndex
     {

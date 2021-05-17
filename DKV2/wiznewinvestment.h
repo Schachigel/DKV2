@@ -12,8 +12,10 @@ extern const QString pnTyp /*=qsl("typ*")*/;
 extern const QString pnZSatz /*=qsl("zs*")*/;
 extern const QString pnKorrekt /*=qsl("OK*")*/;
 
-struct wpInvestmentSummary : public QWizardPage
+class wpInvestmentSummary : public QWizardPage
 {
+    Q_OBJECT
+public:
     wpInvestmentSummary(QWidget* w =nullptr);
     void initializePage() override;
 //    bool validatePage() override;
@@ -21,11 +23,11 @@ struct wpInvestmentSummary : public QWizardPage
 
 struct wpType : public QWizardPage
 {
+    Q_OBJECT
+public:
     wpType(QWidget* p =nullptr);
     void initializePage() override;
 //    bool validatePage() override;
-private:
-    Q_OBJECT;
 };
 
 class wpTimeFrame : public QWizardPage

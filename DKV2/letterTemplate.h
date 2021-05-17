@@ -80,7 +80,7 @@ private:
     templId tid;
     QMap<int, QString> html;
     QMap<int, double>  length;
-    QString fontFamily{"Verdana"};
+    QString fontFamily{qsl("Verdana")};
     double fontOutputFactor{0.65};
 };
 

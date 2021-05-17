@@ -19,18 +19,18 @@
 #include "dkdbcopy.h"
 #include "dbstructure.h"
 
-bool insert_views( QSqlDatabase db)
+bool insert_views( const QSqlDatabase &db)
 {   LOG_CALL;
     return createViews(getViews(), db);
 }// initial database tables and content
 
-void insert_DbProperties(QSqlDatabase db = QSqlDatabase::database())
+void insert_DbProperties(const QSqlDatabase &db = QSqlDatabase::database())
 {
     LOG_CALL;
     dbConfig::writeDefaults(db);
 }
 
-bool fill_DkDbDefaultContent(QSqlDatabase db, bool includeViews /*=true*/)
+bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/)
 {
     LOG_CALL;
     switchForeignKeyHandling(db, true);
@@ -49,7 +49,7 @@ bool fill_DkDbDefaultContent(QSqlDatabase db, bool includeViews /*=true*/)
     return ret;
 }
 
-version_check_result check_db_version(QString file)
+version_check_result check_db_version(const QString &file)
 {
     LOG_CALL_W(file);
     dbCloser closer(qsl("db_version_check"));
@@ -63,7 +63,7 @@ version_check_result check_db_version(QString file)
     }
 }
 
-version_check_result check_db_version(QSqlDatabase db)
+version_check_result check_db_version(const QSqlDatabase &db)
 {   /*LOG_CALL;*/
     QVariant vversion =dbConfig::read_DBVersion(db);
     if( not (vversion.isValid() and vversion.canConvert(QMetaType::Double)))
@@ -80,7 +80,7 @@ version_check_result check_db_version(QSqlDatabase db)
     return noVersion;
 }
 
-bool updateViews(QSqlDatabase db =QSqlDatabase::database())
+bool updateViews(const QSqlDatabase &db =QSqlDatabase::database())
 {   LOG_CALL;
     QString lastProgramVersion = dbConfig::readValue(DKV2_VERSION).toString();
     QString thisProgramVersion = QCoreApplication::applicationVersion();
@@ -105,7 +105,7 @@ void closeAllDatabaseConnections()
     if( cl.count())
         qInfo()<< "Found " << cl.count() << "connections open";
 
-    for( auto s : cl) {
+    for( const auto &s : qAsConst(cl)) {
         QSqlDatabase::database(s).close();
         QSqlDatabase::removeDatabase(s);
     }
@@ -116,12 +116,12 @@ void closeAllDatabaseConnections()
     qInfo() << "All Database connections were removed";
 }
 
-bool open_databaseForApplication( QString newDbFile)
+bool open_databaseForApplication( const QString &newDbFile)
 {   LOG_CALL_W(newDbFile);
     Q_ASSERT( not newDbFile.isEmpty());
 
     closeAllDatabaseConnections();
-    backupFile(newDbFile, "db-bak");
+    backupFile(newDbFile, qsl("db-bak"));
 
     // setting the default database for the application
     QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName);
@@ -157,12 +157,12 @@ bool isValidNewContractLabel(const QString& label)
 
 QString proposeContractLabel()
 {   LOG_CALL;
-    static int iMaxid = dbConfig::readValue(STARTINDEX).toInt() + getHighestRowId("Vertraege");
+    static int iMaxid = dbConfig::readValue(STARTINDEX).toInt() + getHighestRowId(qsl("Vertraege"));
     QString kennung;
     do {
         QString maxid = QString::number(iMaxid).rightJustified(6, '0');
-        QString PI = "DK-" + dbConfig::readValue(GMBH_INITIALS).toString();
-        kennung = PI + "-" + QString::number(QDate::currentDate().year()) + "-" + maxid;
+        QString PI = qsl("DK-") + dbConfig::readValue(GMBH_INITIALS).toString();
+        kennung = PI + qsl("-") + QString::number(QDate::currentDate().year()) + qsl("-") + maxid;
         if( isValidNewContractLabel(kennung))
             break;
         else
@@ -201,23 +201,23 @@ bool createCsvActiveContracts()
 {   LOG_CALL;
     QString filename(QDate::currentDate().toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
     dbtable t(sqlContractsActiveDetailsView);
-    t.append(dbfield("Id", QVariant::Type::Int));
-    t.append(dbfield("KreditorId", QVariant::Type::Int));
-    t.append(dbfield("Vorname"));
-    t.append(dbfield("Nachname"));
-    t.append(dbfield("Strasse"));
-    t.append(dbfield("Plz"));
-    t.append(dbfield("Stadt"));
-    t.append(dbfield("Email"));
-    t.append(dbfield("Iban"));
-    t.append(dbfield("Bic"));
-    t.append(dbfield("Strasse"));
-    t.append(dbfield("Zinssatz", QVariant::Type::Double));
-    t.append(dbfield("Wert", QVariant::Type::Double));
-    t.append(dbfield("Aktivierungsdatum", QVariant::Type::Date));
-    t.append(dbfield("Kuendigungsfrist", QVariant::Type::Int));
-    t.append(dbfield("Vertragsende", QVariant::Type::Date));
-    t.append(dbfield("thesa", QVariant::Type::Bool));
+    t.append(dbfield(qsl("Id"), QVariant::Type::Int));
+    t.append(dbfield(qsl("KreditorId"), QVariant::Type::Int));
+    t.append(dbfield(qsl("Vorname")));
+    t.append(dbfield(qsl("Nachname")));
+    t.append(dbfield(qsl("Strasse")));
+    t.append(dbfield(qsl("Plz")));
+    t.append(dbfield(qsl("Stadt")));
+    t.append(dbfield(qsl("Email")));
+    t.append(dbfield(qsl("Iban")));
+    t.append(dbfield(qsl("Bic")));
+    t.append(dbfield(qsl("Strasse")));
+    t.append(dbfield(qsl("Zinssatz"), QVariant::Type::Double));
+    t.append(dbfield(qsl("Wert"), QVariant::Type::Double));
+    t.append(dbfield(qsl("Aktivierungsdatum"), QVariant::Type::Date));
+    t.append(dbfield(qsl("Kuendigungsfrist"), QVariant::Type::Int));
+    t.append(dbfield(qsl("Vertragsende"), QVariant::Type::Date));
+    t.append(dbfield(qsl("thesa"), QVariant::Type::Bool));
 
     if( not table2csv( filename, t.Fields())) {
         qDebug() << "failed to print table";
@@ -240,9 +240,9 @@ QVector<rowData> contractRuntimeDistribution()
     }
 
     while( q.next()) {
-        double wert =   q.value("Wert").toReal();
-        QDate von = q.value("Datum").toDate();
-        QDate bis = q.value("Vertragsende").toDate();
+        double wert =   q.value(qsl("Wert")).toReal();
+        QDate von = q.value(qsl("Datum")).toDate();
+        QDate bis = q.value(qsl("Vertragsende")).toDate();
         if( not bis.isValid() or bis == EndOfTheFuckingWorld) {
             AnzahlUnbegrenzet++;
             SummeUnbegrenzet += wert;
@@ -298,7 +298,7 @@ void calc_annualInterestDistribution( QVector<YZV>& yzv)
     return;
 }
 
-void getBookingDateInfoBySql(QString sql, QVector<BookingDateData>& dates)
+void getBookingDateInfoBySql(const QString &sql, QVector<BookingDateData>& dates)
 {
     QVector<QSqlRecord> records;
     if( not executeSql(sql, QVector<QVariant>(), records)) {

@@ -33,7 +33,7 @@ bool copy_TableContent( const QString& srcTbl, const QString& dstTbl, const QSql
     LOG_CALL_W( srcTbl +qsl(", ") +dstTbl);
     // usually used from "table" to "targetScheema.table"
     QString sql(qsl("INSERT OR REPLACE INTO %1 SELECT * FROM %2"));
-    return executeSql_wNoRecords(sql.arg(dstTbl).arg(srcTbl), db);
+    return executeSql_wNoRecords(sql.arg(dstTbl, srcTbl), db);
 }
 
 bool replace_TableContent(const QString& srcTbl, const QString& destTbl, const QSqlDatabase& db =QSqlDatabase::database())
@@ -80,9 +80,7 @@ bool copycreate_views(const QSqlDatabase& db, const QString& alias)
          return false;
      }
      while( q.next()) {
-         QString name = q.record().value(qsl("name")).toString();
          QString viewSql  = q.record().value(qsl("sql")).toString(); //.replace(qsl("\n"), qsl(" "));
-
          if( not executeSql_wNoRecords(viewSql, db)) {
              return false;
          }
@@ -150,11 +148,11 @@ bool copy_mangledCreditors(const QSqlDatabase& db =QSqlDatabase::database())
     int recCount = 0;
     QSqlQuery q(db); // default database connection -> active database
     q.setForwardOnly(true);
-    if( not q.exec("SELECT * FROM Kreditoren")) {
+    if( not q.exec(qsl("SELECT * FROM Kreditoren"))) {
         qInfo() << "no data returned from creditor table";
         return false;
     }
-    TableDataInserter tdi(dkdbstructur["Kreditoren"]);
+    TableDataInserter tdi(dkdbstructur[qsl("Kreditoren")]);
     tdi.overrideTablename(qsl("targetDb.Kreditoren"));
     while( q.next()) {
         recCount++;
@@ -164,9 +162,9 @@ bool copy_mangledCreditors(const QSqlDatabase& db =QSqlDatabase::database())
         tdi.setValue(qsl("id"), rec.value(qsl("id")));
         tdi.setValue(qsl("Vorname"),  QVariant(vn + QString::number(recCount)));
         tdi.setValue(qsl("Nachname"), QVariant(nn + QString::number(recCount)));
-        tdi.setValue("Strasse", QString("Strasse"));
-        tdi.setValue("Plz", QString("D-xxxxx"));
-        tdi.setValue("Stadt", QString("Stadt"));
+        tdi.setValue(qsl("Strasse"), qsl("Strasse"));
+        tdi.setValue(qsl("Plz"), qsl("D-xxxxx"));
+        tdi.setValue(qsl("Stadt"), qsl("Stadt"));
 
         if( tdi.InsertData_noAuto() == -1) {
             qDebug() << "Error inserting Data into deperso.Copy Table" << q.lastError() << Qt::endl << q.record();

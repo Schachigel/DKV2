@@ -14,8 +14,8 @@
 #include "helpersql.h"
 
 
-bool insert_views( QSqlDatabase db =QSqlDatabase::database());
-bool fill_DkDbDefaultContent(QSqlDatabase db = QSqlDatabase::database(), bool includeViews =true);
+bool insert_views( const QSqlDatabase &db =QSqlDatabase::database());
+bool fill_DkDbDefaultContent(const QSqlDatabase &db = QSqlDatabase::database(), bool includeViews =true);
 
 enum version_check_result {
     noVersion =-1,
@@ -24,15 +24,15 @@ enum version_check_result {
     higherVersion =2
 };
 
-version_check_result check_db_version(QSqlDatabase db =QSqlDatabase::database());
-version_check_result check_db_version(QString filename);
+version_check_result check_db_version(const QSqlDatabase &db =QSqlDatabase::database());
+version_check_result check_db_version(const QString &filename);
 
 // bool createView(QString name, QString Sql, QSqlDatabase db = QSqlDatabase::database());
 // void updateViews(QSqlDatabase db =QSqlDatabase::database());
 // bool isValidDatabase(QSqlDatabase db =QSqlDatabase::database());
 
 void closeAllDatabaseConnections();
-bool open_databaseForApplication( QString newDbFile="");
+bool open_databaseForApplication( const QString &newDbFile=qsl(""));
 bool isExistingContractLabel( const QString& newLabel);
 bool isExistingExContractLabel( const QString& newLabel);
 bool isValidNewContractLabel( const QString& label);
@@ -49,6 +49,8 @@ struct ContractEnd
     int count;
     double value;
 };
+Q_DECLARE_TYPEINFO(ContractEnd, Q_PRIMITIVE_TYPE);
+
 void calc_contractEnd(QVector<ContractEnd>& ce);
 
 struct YZV
@@ -58,6 +60,8 @@ struct YZV
     int count;
     double sum;
 };
+Q_DECLARE_TYPEINFO(YZV, Q_PRIMITIVE_TYPE);
+
 void calc_annualInterestDistribution( QVector<YZV>& yzv);
 struct rowData
 {

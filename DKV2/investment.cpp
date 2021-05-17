@@ -37,7 +37,7 @@ const QString fnInvestmentState{qsl("Offen")};
     return investmentTable;
 }
 
-bool saveNewInvestment(int ZSatz, QDate start, QDate end, QString type)
+bool saveNewInvestment(int ZSatz, QDate start, QDate end, const QString &type)
 {   LOG_CALL;
     TableDataInserter tdi(investment::getTableDef());
     tdi.setValue(fnInvestmentInterest, ZSatz);
@@ -48,7 +48,7 @@ bool saveNewInvestment(int ZSatz, QDate start, QDate end, QString type)
     return tdi.InsertData();
 }
 
-bool createInvestmentFromContractIfNeeded(const int ZSatz, const QDate& vDate)
+bool createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
 {   LOG_CALL;
     QString sql{qsl("SELECT * FROM Geldanlagen WHERE ZSatz =%1 AND Anfang <= date('%2') AND Ende > date('%3')")};
     if( 0 < rowCount(sql.arg(QString::number(ZSatz), vDate.toString(Qt::ISODate), vDate.toString(Qt::ISODate)))) {
@@ -64,17 +64,17 @@ bool createInvestmentFromContractIfNeeded(const int ZSatz, const QDate& vDate)
     tdi.setValue(fnInvestmentState, true);
     return tdi.InsertData();
 }
+
 bool deleteInvestment(const int ZSatz, const QString& v, const QString& b, const QString& t)
 {   LOG_CALL;
     QString sql{qsl("DELETE FROM Geldanlagen WHERE ZSatz=%1 AND Anfang='%2' AND Ende='%3' AND Typ='%4'")};
     sql =sql.arg(QString::number(ZSatz),v, b, t);
     return executeSql_wNoRecords(sql);
 }
-bool deleteInvestment(const int ZSatz, const QDate& v, const QDate& b, const QString& t)
+bool deleteInvestment(const int ZSatz, const QDate v, const QDate b, const QString& t)
 {
     return deleteInvestment(ZSatz, v.toString(Qt::ISODate), b.toString(Qt::ISODate), t);
 }
-
 
 bool closeInvestment(const int ZSatz, const QString& v, const QString& b, const QString& t)
 {   LOG_CALL;
@@ -82,31 +82,31 @@ bool closeInvestment(const int ZSatz, const QString& v, const QString& b, const 
     sql =sql.arg(QString::number(ZSatz),v, b, t);
     return executeSql_wNoRecords(sql);
 }
-bool closeInvestment(const int ZSatz, const QDate& v, const QDate& b, const QString& t)
+bool closeInvestment(const int ZSatz, const QDate v, const QDate b, const QString& t)
 {
     return closeInvestment(ZSatz, v.toString(Qt::ISODate), b.toString(Qt::ISODate), t);
 }
 
-int nbrActiveInvestments(const QDate& cDate/*=EndOfTheFuckingWorld*/)
+int nbrActiveInvestments(const QDate cDate/*=EndOfTheFuckingWorld*/)
 {   LOG_CALL;
     QString field {qsl("count(*)")};
     QString tname {investment::getTableDef().Name()};
     QString where;
     if(cDate == EndOfTheFuckingWorld)
-        where ="Offen";
+        where =qsl("Offen");
     else {
         where =qsl("Offen AND Anfang <= date('%1') AND Ende > date('%1')").arg(cDate.toString(Qt::ISODate));
     }
     return executeSingleValueSql(field, tname, where).toInt();
 }
 
-QVector<QPair<qlonglong, QString>> activeInvestments(const QDate& cDate)
+QVector<QPair<qlonglong, QString>> activeInvestments(const QDate cDate)
 {   LOG_CALL_W(cDate.toString(qsl("yyyy.MM.dd")));
 
     QVector<QPair<qlonglong, QString>> investments;
     QString where;
     if(cDate == EndOfTheFuckingWorld)
-        where ="Offen";
+        where =qsl("Offen");
     else {
         where =qsl("Offen AND Anfang <= date('%1') AND Ende > date('%1')").arg(cDate.toString(Qt::ISODate));
     }
@@ -116,7 +116,7 @@ QVector<QPair<qlonglong, QString>> activeInvestments(const QDate& cDate)
     if( not executeSql(sql, QVariant(), result)) {
             return QVector<QPair<qlonglong, QString>>();
     }
-    for(auto rec : result) {
+    for(const auto& rec : qAsConst(result)) {
         investments.push_back({rec.value(qsl("rowid")).toLongLong(), rec.value(fnInvestmentTyp).toString()});
     }
     return investments;

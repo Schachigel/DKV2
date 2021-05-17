@@ -9,7 +9,7 @@ bool autoDetachDb::attachDb(const QString& filename)
 {
     LOG_CALL;
     QString sql {qsl("ATTACH DATABASE '%1' AS '%2'")};
-    return executeSql_wNoRecords(sql.arg(filename).arg(alias()), QSqlDatabase::database(conname()));
+    return executeSql_wNoRecords(sql.arg(filename, alias()), QSqlDatabase::database(conname()));
 }
 autoDetachDb::~autoDetachDb()
 {
@@ -48,7 +48,7 @@ QString DbInsertableString(const QVariant& v)
         break;
     case QVariant::String:
     case QVariant::Char:
-        s = v.toString().replace("'", "''");;
+        s = v.toString().replace(qsl("'"), qsl("''"));;
         break;
     default:
         qDebug() << "switch(v.type()) DEFAULTED " << v;
@@ -182,7 +182,7 @@ bool switchForeignKeyHandling(const QSqlDatabase& db /*def. DB*/, bool OnOff /*=
 }
 
 
-QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db)
+QVariant executeSingleValueSql(const QString& sql, const QSqlDatabase& db)
 {
     QSqlQuery q(db);
     if( not q.exec(sql)) {
@@ -201,12 +201,12 @@ QVariant executeSingleValueSql(const QString& sql, QSqlDatabase db)
     qInfo() << "sql " << sql << " returned " << q.value(0);
     return q.value(0);
 }
-QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where, QSqlDatabase db)
+QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where, const QSqlDatabase& db)
 {
     QString sql = qsl("SELECT ") + fieldName + qsl(" FROM ") + tableName + (where.isEmpty() ? qsl("") : (qsl(" WHERE ") + where));
     return executeSingleValueSql(sql, db);
 }
-QVariant executeSingleValueSql(const dbfield& field, const QString& where, QSqlDatabase db)
+QVariant executeSingleValueSql(const dbfield& field, const QString& where, const QSqlDatabase& db)
 {
     if( field.name().isEmpty() or field.tableName().isEmpty())
         return QVariant();
@@ -420,7 +420,7 @@ bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& v, const
     }
     if( q.exec()) {
         qInfo() << "Successfully executed query " << q.lastQuery() << " with "
-        << (q.numRowsAffected() ? QString::number(q.numRowsAffected()) : QString("no")) << " affected Rows";
+        << (q.numRowsAffected() ? QString::number(q.numRowsAffected()) : qsl("no")) << qsl(" affected Rows");
         return true;
     }
     qDebug() << "Failed to execute query. Error: " << q.lastQuery() << Qt::endl << q.lastError() ;
@@ -432,14 +432,12 @@ int getHighestRowId(const QString& tablename)
     return executeSingleValueSql(qsl("MAX(rowid)"), tablename).toInt();
 }
 
-bool createView(const QString& name, const QString& sql, QSqlDatabase db /*= QSqlDatabase::database()*/)
+bool createView(const QString& name, const QString& sql, const QSqlDatabase& db /*= QSqlDatabase::database()*/)
 {   LOG_CALL_W(name);
 
     autoRollbackTransaction art(db.connectionName());
-    QSqlQuery qDropView(qsl("DROP VIEW %1").arg(name), db);
-//    if( qDropView.lastError().type() != QSqlError::NoError)
-//    if( not executeSql_wNoRecords(qsl("DROP VIEW ") + name, db))
-//        qInfo() << "drop view returned false: " << name << qDropView.lastError();
+    if( not executeSql_wNoRecords(qsl("DROP VIEW %1").arg(name), db))
+        qInfo() << "drop view failed: " << name;
 
     QString createViewSql = "CREATE VIEW %1 AS " + sql;
     createViewSql = createViewSql.arg(name);
@@ -450,7 +448,7 @@ bool createView(const QString& name, const QString& sql, QSqlDatabase db /*= QSq
     qCritical() << "Faild to create view " << name;
     return false;
 }
-bool createViews( const QMap<QString, QString>& views, QSqlDatabase db)
+bool createViews( const QMap<QString, QString>& views, const QSqlDatabase& db)
 {
     foreach(QString view, views.keys()) {
         if( not createView(view, views[view], db))

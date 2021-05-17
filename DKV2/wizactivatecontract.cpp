@@ -14,7 +14,7 @@
 
 wpActivateContract_IntroPage::wpActivateContract_IntroPage(QWidget* p) : QWizardPage(p)
 {
-    setTitle("Aktivierung eines Vertrags");
+    setTitle(qsl("Aktivierung eines Vertrags"));
 }
 
 void wpActivateContract_IntroPage::initializePage()
@@ -79,7 +79,7 @@ wpActivateContract_SummaryPage::wpActivateContract_SummaryPage( QWidget* p) : QW
     QVBoxLayout* layout = new QVBoxLayout;
     layout-> addWidget(cb);
     setLayout(layout);
-    connect(cb, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
+    connect(cb, &QCheckBox::stateChanged, this, &wpActivateContract_SummaryPage::onConfirmData_toggled);
 }
 
 void wpActivateContract_SummaryPage::initializePage()
@@ -107,7 +107,7 @@ void wpActivateContract_SummaryPage::onConfirmData_toggled(int )
 }
 bool wpActivateContract_SummaryPage::isComplete() const
 {
-    return field("confirmed").toBool();
+    return field(qsl("confirmed")).toBool();
 }
 
 wpActivateContract::wpActivateContract(QWidget* p) : QWizard (p)

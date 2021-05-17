@@ -57,7 +57,7 @@ QString dbtable::createTableSql() const
     return sql;
 }
 
-bool dbtable::create(QSqlDatabase db) const
+bool dbtable::create(const QSqlDatabase& db) const
 {   // LOG_CALL_W(name);
     if( executeSql_wNoRecords( createTableSql(), db)) {
         qDebug() << "Successfully created Table " << name;

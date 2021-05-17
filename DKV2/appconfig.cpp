@@ -19,19 +19,19 @@ QString appConfig::keyLastDb = qsl("dbg-db/last");
 #endif
 
 // db config info in 'meta' table
-void initMetaInfo( const QString& name, const QString& initialValue, QSqlDatabase db)
+void initMetaInfo( const QString& name, const QString& initialValue, const QSqlDatabase& db)
 {   LOG_CALL;
     QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='") + name +qsl("'"), db);
     if( value.type() == QVariant::Type::Invalid)
         setMetaInfo(name, initialValue, db);
 }
-void initNumMetaInfo( const QString& name, const double& newValue, QSqlDatabase db)
+void initNumMetaInfo( const QString& name, const double newValue, const QSqlDatabase& db)
 {   LOG_CALL;
     QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='") + name +qsl("'"), db);
     if( value.type() == QVariant::Type::Invalid)
         setNumMetaInfo(name, newValue, db);
 }
-QString getMetaInfo(const QString& name, const QString& def, QSqlDatabase db)
+QString getMetaInfo(const QString& name, const QString& def, const QSqlDatabase& db)
 {   LOG_CALL_W(name);
     if( not db.isValid()){
         qInfo() << "getMetaInfo: No database ready (yet), defaulting";
@@ -45,7 +45,7 @@ QString getMetaInfo(const QString& name, const QString& def, QSqlDatabase db)
     qInfo() << "Property " << name << " : " << value;
     return value.toString();
 }
-double getNumMetaInfo(const QString& name, const double def, QSqlDatabase db)
+double getNumMetaInfo(const QString& name, const double def, const QSqlDatabase& db)
 {   LOG_CALL_W(name);
     if( not db.isValid()){
         qInfo() << "no database ready (yet), defaulting";
@@ -59,14 +59,14 @@ double getNumMetaInfo(const QString& name, const double def, QSqlDatabase db)
     qInfo() << "Property " << name << " : " << value.toDouble();
     return value.toDouble();
 }
-void setMetaInfo(const QString& name, const QString& value, QSqlDatabase db, const QString& tblAlias /*=QString()*/)
+void setMetaInfo(const QString& name, const QString& value, const QSqlDatabase& db, const QString& tblAlias /*=QString()*/)
 {   LOG_CALL_W(name);
     QString tname =qsl("Meta");
     if( not tblAlias.isEmpty()) tname =tblAlias +qsl(".") +tname;
     QString sql{qsl("INSERT OR REPLACE INTO %1 (Name, Wert) VALUES (:name, :value)")};
     executeSql_wNoRecords(sql.arg(tname), {name, value}, db);
 }
-void setNumMetaInfo(const QString& name, const double value, QSqlDatabase db, const QString& tblAlias /*=QString()*/)
+void setNumMetaInfo(const QString& name, const double value, const QSqlDatabase& db, const QString& tblAlias /*=QString()*/)
 {   LOG_CALL_W(name);
     QString tablename =qsl("Meta");
     if( not tblAlias.isEmpty()) tablename =tblAlias +qsl(".") +tablename;
@@ -202,7 +202,7 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
 }
 
 
-/*static*/ QVariant dbConfig::readValue(const projectConfiguration& pc, const QSqlDatabase& db)
+/*static*/ QVariant dbConfig::readValue(const projectConfiguration pc, const QSqlDatabase& db)
 {   LOG_CALL;
     if( isValidIndex(pc))
         return getMetaInfo(defaultParams.value(pc).first, defaultParams.value(pc).second.toString(), db);
@@ -212,7 +212,7 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
     }
 }
 
-/*static*/ void dbConfig::writeValue(const projectConfiguration& pc, const QVariant& value, const QSqlDatabase& db, const QString& tblAlias /*=QString()*/)
+/*static*/ void dbConfig::writeValue(projectConfiguration pc, const QVariant& value, const QSqlDatabase& db, const QString& tblAlias /*=QString()*/)
 {   LOG_CALL;
     if( not isValidIndex(pc)) {
         qCritical() << "invalid paramter to be set";

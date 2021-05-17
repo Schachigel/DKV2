@@ -55,7 +55,7 @@ wpTerminateContract_ConfirmationPage::wpTerminateContract_ConfirmationPage(QWidg
     layout->addWidget(cbPrint);
     layout->addWidget(cbConfirm);
     setLayout(layout);
-    connect(cbConfirm, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
+    connect(cbConfirm, &QCheckBox::stateChanged, this, &wpTerminateContract_ConfirmationPage::onConfirmData_toggled);
 }
 
 void wpTerminateContract_ConfirmationPage::initializePage()
@@ -75,11 +75,11 @@ void wpTerminateContract_ConfirmationPage::initializePage()
 }
 void wpTerminateContract_ConfirmationPage::onConfirmData_toggled(int)
 {
-    completeChanged();
+    emit completeChanged();
 }
 bool wpTerminateContract_ConfirmationPage::isComplete() const
 {
-    return field("confirm").toBool();
+    return field(qsl("confirm")).toBool();
 }
 
 wizTerminateContract::wizTerminateContract(QWidget* p, contract& c) : QWizard(p), cont(c)

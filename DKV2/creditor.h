@@ -40,7 +40,7 @@ struct creditor
     QString bic() const        {return getValue(qsl("BIC")).toString();}
     void setBic(const QString& b)      { ti.setValue(qsl("BIC"), b);}
     qlonglong id() const        {return getValue(qsl("id")).toLongLong();}
-    void setId(const qlonglong& i)     { ti.setValue(qsl("id"), i);}
+    void setId(const qlonglong i)     { ti.setValue(qsl("id"), i);}
     // interface
     bool fromDb(const int id);
     QVariant getValue(const QString& f) const { return ti.getValue(f);}

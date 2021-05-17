@@ -40,7 +40,7 @@ void wpCancelContract_DatePage::initializePage()
                          "Die letzte Buchung zu dem Vertrag war am <b>%2<b>.<br>"
                      "<p>Gib das geplante Vertragsende ein."));
     QDate latestB = wiz->c.latestBooking().date;
-    subTitle =subTitle.arg(wiz->contractualEnd.toString("dd.MM.yyyy"), latestB.toString("dd.MM.yyyy"));
+    subTitle =subTitle.arg(wiz->contractualEnd.toString(qsl("dd.MM.yyyy")), latestB.toString(qsl("dd.MM.yyyy")));
     setSubTitle(subTitle);
     setField(qsl("date"), std::max(wiz->contractualEnd, latestB).addDays(1));
 }
@@ -68,7 +68,7 @@ wpCancelContract_SummaryPage::wpCancelContract_SummaryPage(QWidget* p) : QWizard
     QVBoxLayout* layout = new QVBoxLayout;
     layout-> addWidget(cb);
     setLayout(layout);
-    connect(cb, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
+    connect(cb, &QCheckBox::stateChanged, this, &wpCancelContract_SummaryPage::onConfirmData_toggled);
 }
 void wpCancelContract_SummaryPage::initializePage()
 {
@@ -80,11 +80,11 @@ void wpCancelContract_SummaryPage::initializePage()
 }
 void wpCancelContract_SummaryPage::onConfirmData_toggled(int)
 {
-    completeChanged();
+    emit completeChanged();
 }
 bool wpCancelContract_SummaryPage::isComplete() const
 {
-    return field("confirmed").toBool();
+    return field(qsl("confirmed")).toBool();
 }
 
 wizCancelContract::wizCancelContract(QWidget* p) : QWizard(p)

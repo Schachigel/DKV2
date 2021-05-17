@@ -16,8 +16,8 @@ double valueOfAllContracts()
     }
     while(q.next()) {
         QSqlRecord rec =q.record();
-        if(rec.value("iMode").toString() == "all")
-            return rec.value("totalVolume").toDouble();
+        if(rec.value(qsl("iMode")).toString() == qsl("all"))
+            return rec.value(qsl("totalVolume")).toDouble();
     }
     qInfo() << "query execution did not deliver a 'all' result";
     return 0.;
@@ -43,7 +43,7 @@ QString dbStats::dataset::toString() const
     return all;
 }
 
-bool datasetFromViews(dbStats::dataset& ds, QString statsView, const QString& creditorNbrView)
+bool datasetFromViews(dbStats::dataset& ds, const QString& statsView, const QString& creditorNbrView)
 {   LOG_CALL_W(statsView);
 
     QString sql =statsView;

@@ -23,7 +23,8 @@ class dbgTimer
     QString fname;
 public:
     dbgTimer() {t.start();}
-    dbgTimer(QString fu) : fname(fu){t.start(); qInfo().noquote() << qsl("Debug Timer ") + fname << qsl(" start") << Qt::endl;}
+    dbgTimer(const dbgTimer&) = delete;
+    dbgTimer(const QString& fu) : fname(fu){t.start(); qInfo().noquote() << qsl("Debug Timer ") + fname << qsl(" start") << Qt::endl;}
     ~dbgTimer() {qInfo().noquote() << Qt::endl << (fname.isEmpty() ? qsl("") : fname+ qsl(" end") )
                                    << Qt::endl << qsl("Elapsed time: ")<< t.elapsed() << Qt::endl;}
 };
@@ -33,11 +34,12 @@ private:
     QString fname;
     static int depth;
 public:
-    functionlogging(QString x) :fname(x) {
+    functionlogging(const QString& x) :fname(x) {
         depth++;
         QString fill=QString(qsl(">")).repeated(depth);
         qInfo().noquote() << fill << fname;
     }
+    functionlogging(const functionlogging&) =delete;
     ~functionlogging(){
         QString fill=QString(qsl("<")).repeated(depth);
         depth--;

@@ -8,6 +8,7 @@
 
 #include "helperfin.h"
 #include "appconfig.h"
+#include "ibanvalidator.h"
 #include "creditor.h"
 
 #include "investment.h"
@@ -39,7 +40,7 @@ wpNewOrExisting::wpNewOrExisting(QWidget* p) : QWizardPage(p)
     l->addWidget(rbExisting);
     l->addWidget(cbCreditors);
     setLayout(l);
-    connect(rbExisting, SIGNAL(toggled(bool)), this, SLOT(onExistingCreditor_toggled(bool)));
+    connect(rbExisting, &QAbstractButton::toggled, this, &wpNewOrExisting::onExistingCreditor_toggled);
 }
 void wpNewOrExisting::initializePage()
 {   LOG_CALL;
@@ -234,7 +235,7 @@ bool wpEmail::validatePage()
     setField(pnEMail, email);
     if( not email.isEmpty())
     {
-        QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b",
+        QRegularExpression rx(qsl("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b"),
                               QRegularExpression::CaseInsensitiveOption);
         if( not rx.match(field(pnEMail).toString()).hasMatch()) {
             QMessageBox::information(this, qsl("Fehler"), qsl("Das Format der e-mail Adresse ist ungültig: ") + email);
@@ -283,7 +284,7 @@ bool wpBankAccount::validatePage()
     if( not iban.isEmpty()) {
         IbanValidator iv; int pos =0;
         if( iv.validate(iban, pos) not_eq IbanValidator::State::Acceptable) {
-            QMessageBox::information(this, "Fehler", "Die eingegebene Zeichenfolge ist keine gültige IBAN");
+            QMessageBox::information(this, qsl("Fehler"), qsl("Die eingegebene Zeichenfolge ist keine gültige IBAN"));
             return false;
         }
     }
@@ -319,7 +320,7 @@ wpConfirmCreditor::wpConfirmCreditor(QWidget* p) : QWizardPage(p)
     l->addWidget(cbConfirmCreditor);
     l->addWidget(cbCreateContract);
     setLayout(l);
-    connect(cbCreateContract, SIGNAL(stateChanged(int)), this, SLOT(onConfirmCreateContract_toggled(int)));
+    connect(cbCreateContract, &QCheckBox::stateChanged, this, &wpConfirmCreditor::onConfirmCreateContract_toggled);
     setCommitPage(true);
 }
 void wpConfirmCreditor::initializePage()
@@ -508,7 +509,7 @@ wpContractTimeframe::wpContractTimeframe(QWidget* p) : QWizardPage(p)
     setSubTitle(qsl("Für das Vertragsende kann eine Kündigungsfrist <b>oder</b> ein festes Vertragsende vereinbart werden."));
     QDateEdit* deCDate =new QDateEdit(QDate::currentDate());
     registerField(pnCDate, deCDate);
-    deCDate->setDisplayFormat("dd.MM.yyyy");
+    deCDate->setDisplayFormat(qsl("dd.MM.yyyy"));
     QLabel* l1 =new QLabel(qsl("Vertragsdatum"));
     l1->setBuddy(deCDate);
 
@@ -522,7 +523,9 @@ wpContractTimeframe::wpContractTimeframe(QWidget* p) : QWizardPage(p)
     for (int i=14; i<24; i++)
         cbNoticePeriod->addItem(qsl("1 Jahr und ") + QString::number( i-12) + qsl(" Monate"), QVariant(i));
     cbNoticePeriod->addItem(qsl("2 Jahre"), QVariant(24));
+
     connect(cbNoticePeriod, SIGNAL(currentIndexChanged(int)), this, SLOT(onNoticePeriod_currentIndexChanged(int)));
+
     cbNoticePeriod->setToolTip(qsl("Wird eine Kündigungsfrist vereinbart, "
                                    "so gibt es kein festes Vertragsende. "
                                    "Um ein festes Vertragsende einzugeben wähle "
@@ -532,7 +535,7 @@ wpContractTimeframe::wpContractTimeframe(QWidget* p) : QWizardPage(p)
 
     deTerminationDate =new QDateEdit;
     registerField(pnEDate, deTerminationDate);
-    deTerminationDate->setDisplayFormat("dd.MM.yyyy");
+    deTerminationDate->setDisplayFormat(qsl("dd.MM.yyyy"));
     QLabel* l3 =new QLabel(qsl("Vertragsende"));
     l3->setBuddy(deTerminationDate);
 
@@ -649,7 +652,7 @@ void wpInterestFromInvestment::initializePage()
 {
     QVector<QPair<qlonglong, QString>> investments =activeInvestments(field(pnCDate).toDate());
     cbInvestments->clear();
-    for( auto invest : qAsConst(investments)) {
+    for( const auto &invest : qAsConst(investments)) {
         cbInvestments->addItem(invest.second, invest.first);
     }
     registerField(pnI_CheckBoxIndex, cbInvestments);
@@ -734,15 +737,15 @@ wpInterestPayoutMode::wpInterestPayoutMode(QWidget* p) : QWizardPage(p)
     setSubTitle(qsl("Wähle den Zinsmodus für diesen Vertrag"));
 
     cbImode =new QComboBox();
-    cbImode->addItem("Zinsen werden ausgezahlt");
+    cbImode->addItem(qsl("Zinsen werden ausgezahlt"));
     cbImode->setItemData(0, toInt(interestModel::payout));
-    cbImode->addItem("Zinsen werden angespart und verzinst");
+    cbImode->addItem(qsl("Zinsen werden angespart und verzinst"));
     cbImode->setItemData(1, toInt(interestModel::reinvest));
-    cbImode->addItem("Zinsen werden angespart aber nicht verzinst");
+    cbImode->addItem(qsl("Zinsen werden angespart aber nicht verzinst"));
     cbImode->setItemData(2, toInt(interestModel::fixed));
 
-    cbImode->setToolTip("Bei thesaurierenden Verträgen erfolgt keine jährliche Auszahlung der Zinsen."
-                            " Die Zinsen werden dem Kreditbetrag hinzugerechnet und in Folgejahren mit verzinst.");
+    cbImode->setToolTip(qsl("Bei thesaurierenden Verträgen erfolgt keine jährliche Auszahlung der Zinsen."
+                            " Die Zinsen werden dem Kreditbetrag hinzugerechnet und in Folgejahren mit verzinst."));
     cbImode->setCurrentIndex(1);
     registerField(pnIMode, cbImode);
     QVBoxLayout* vbl =new QVBoxLayout();
@@ -782,8 +785,8 @@ bool wpConfirmContract::saveContract()
         c.setComment(field(pnContComment).toString());
         if( -1 == c.saveNewContract()) {
             qCritical() << "New contract could not be saved";
-            QMessageBox::critical(getMainWindow(), "Fehler", "Der Vertrag konnte nicht "
-                            "gespeichert werden. Details findest Du in der Log Datei");
+            QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Der Vertrag konnte nicht "
+                            "gespeichert werden. Details findest Du in der Log Datei"));
             return false;
         } else {
             qInfo() << "New contract successfully saved";
@@ -804,7 +807,6 @@ wpConfirmContract::wpConfirmContract(QWidget* p) : QWizardPage(p)
     QVBoxLayout* bl =new QVBoxLayout;
     bl->addWidget(cbConfirm);
     setLayout(bl);
-//    connect(cbConfirm, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
     setCommitPage(true);
 }
 void wpConfirmContract::initializePage()
@@ -843,15 +845,6 @@ bool wpConfirmContract::validatePage()
     // the checkbox. user can only cancel if checkbox not checked
     return saveContract();
 }
-//void wpConfirmContract::onConfirmData_toggled(int i)
-//{ LOG_CALL;
-//    completeChanged();
-//}
-//bool wpConfirmContract::isComplete() const
-//{
-//    return field(pnConfirmCreditor).toBool();
-//}
-
 
 /*
 * wizNew - the wizard containing the pages to create a cerditor and a contract

@@ -19,6 +19,7 @@ void editCreditor(qlonglong creditorId);
 void newCreditorAndContract();
 
 void changeContractComment(qlonglong id);
+void changeContractTermination(qlonglong id);
 
 void createInvestment();
 

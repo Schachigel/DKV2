@@ -14,8 +14,8 @@ struct booking
         reInvestInterest = 4,
         annualInterestDeposit = 8
     };
-    static QString displayString(const Type& t);
-    inline static int bookingTypeToInt(const booking::Type& t) {
+    static QString displayString(const Type t);
+    inline static int bookingTypeToInt(const booking::Type t) {
         return static_cast<int>(t);
     }
 
@@ -24,7 +24,7 @@ struct booking
     QDate date =EndOfTheFuckingWorld;
     double amount =0.;
     // construction
-    booking(const qlonglong cId, const booking::Type& t = Type::non, const QDate& d =EndOfTheFuckingWorld, const double a =0.) : contractId(cId), type(t), date(d), amount(a) {};
+    booking(const qlonglong cId, const booking::Type t = Type::non, const QDate d =EndOfTheFuckingWorld, const double a =0.) : contractId(cId), type(t), date(d), amount(a) {};
     // comparison for tests
     inline friend bool operator==(const booking& lhs, const booking& rhs)
     {
@@ -43,20 +43,21 @@ struct booking
     // statics
     static const dbtable& getTableDef();
     static const dbtable& getTableDef_deletedBookings();
-    static bool bookDeposit(   const qlonglong contractId, const QDate& date, const double amount);
-    static bool bookPayout(    const qlonglong contractId, const QDate& date, const double amount);
-    static bool bookReInvestInterest(const qlonglong contractId, const QDate& date, const double amount);
-    static bool bookAnnualInterestDeposit( const qlonglong contractId, const QDate& date, const double amount);
-    static QString typeName(const Type& t);
+    static bool bookDeposit(   const qlonglong contractId, QDate date, const double amount);
+    static bool bookPayout(    const qlonglong contractId, QDate date, const double amount);
+    static bool bookReInvestInterest(const qlonglong contractId, QDate date, const double amount);
+    static bool bookAnnualInterestDeposit( const qlonglong contractId, QDate date, const double amount);
+    static QString typeName(booking::Type t);
 private:
-    static bool doBooking( const booking::Type&, const qlonglong contractId, const QDate& date, const double amount);
+    static bool doBooking( booking::Type , const qlonglong contractId, QDate date, const double amount);
 };
+Q_DECLARE_TYPEINFO(booking, Q_PRIMITIVE_TYPE );
 
 struct bookings
 {
     static QDate dateOfnextSettlement();
     static QVector<booking> bookingsFromSql(const QString& where, const QString& order=QString());
-    static QVector<booking> getBookings(const qlonglong cid, const QDate& from =BeginingOfTime, const QDate& to =EndOfTheFuckingWorld);
+    static QVector<booking> getBookings(const qlonglong cid, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld);
     static QVector<booking> getAnnualSettelments(const int year);
 };
 

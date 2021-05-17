@@ -41,6 +41,7 @@ SOURCES +=  tst_db.cpp \
     ../DKV2/dkdbhelper.cpp \
     ../DKV2/dkdbviews.cpp \
     ../DKV2/helperfin.cpp \
+    ../DKV2/ibanvalidator.cpp \
     ../DKV2/investment.cpp \
     ../DKV2/letterTemplate.cpp \
     ../DKV2/helpersql.cpp \
@@ -73,6 +74,7 @@ SOURCES +=  tst_db.cpp \
 PRECOMPILED_HEADER  = ../DKV2/pch.h
 
 HEADERS += \
+    ../DKV2/ibanvalidator.h \
     financaltimespan.h \
     test_appconfig.h \
     test_booking.h \

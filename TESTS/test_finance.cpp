@@ -5,6 +5,7 @@
 #include <QDebug>
 
 #include "../DKV2/helperfin.h"
+#include "../DKV2/ibanvalidator.h"
 #include "test_finance.h"
 
 // https://stackoverflow.com/questions/30168056/what-is-the-exact-excel-days360-algorithm
@@ -109,11 +110,10 @@ double computeDkZinsenZeitraum(double Betrag, double Zinssatz, const QDate &date
     return r2(Zinsen);
 }
 
-int TageImZeitraum(const QDate &von, const QDate &bis)
+int TageImZeitraum(QDate von, QDate bis)
 {
     if( von.year() == bis.year())
     {
-        int TageZwischen(const QDate& von, const QDate& bis);
         return TageZwischen(von, bis);
     }
    int ret = 0;
@@ -136,7 +136,6 @@ int TageUndJahreImZeitraum(const QDate &von, const QDate &bis, int &TageImErsten
     TageImLetztenJahr = 0;
     if( von.year() == bis.year())
     {
-        int TageZwischen(const QDate& von, const QDate& bis);
         TageImErstenJahr = TageZwischen(von, bis);
         return 0;
     }

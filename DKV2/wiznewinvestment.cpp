@@ -91,7 +91,7 @@ wpTimeFrame::wpTimeFrame(QWidget* w) : QWizardPage(w)
     deBis->setToolTip(lBis->toolTip());
     registerField(pnBis, deBis/*, "date", "dateChanged(QDate)"*/);
 
-    connect(deVon, SIGNAL(dateChanged(const QDate&)), this, SLOT(onStartDate_changed()));
+    connect(deVon, &QDateTimeEdit::dateChanged, this, &wpTimeFrame::onStartDate_changed);
 
     QHBoxLayout* hlVon =new QHBoxLayout();
     hlVon->addWidget(lVon); hlVon->addWidget(deVon);

@@ -13,7 +13,7 @@
 #include "helper.h"
 #include "helperfile.h"
 
-QString getUniqueTempFilename(QString templateFileName)
+QString getUniqueTempFilename(const QString &templateFileName)
 {
     QTemporaryFile temp {templateFileName +qsl(".preconversion")};
     temp.open();
@@ -21,13 +21,13 @@ QString getUniqueTempFilename(QString templateFileName)
 }
 
 
-bool moveToBackup(QString fn)
+bool moveToBackup(const QString &fn)
 {
     if( not QFile(fn).exists())
         // no file, no backup
         return true;
 
-    backupFile(fn, "db-bak");
+    backupFile(fn, qsl("db-bak"));
     QFile(fn).remove();
     if( not QFile(fn).exists())
         return true;
@@ -83,7 +83,7 @@ void showFileInFolder(const QString &fullPath)
 #endif
 }
 
-void printHtmlToPdf( const QString html, const QString fn)
+void printHtmlToPdf( const QString &html, const QString &fn)
 {   LOG_CALL;
     QTextDocument td;
     td.setHtml(html);
@@ -109,7 +109,7 @@ void printHtmlToPdf( const QString html, const QString fn)
     td.drawContents(&painter);
 }
 
-QString absoluteCanonicalPath(const QString path)
+QString absoluteCanonicalPath(const QString &path)
 {
     QString newpath = QFileInfo(path).canonicalFilePath();
     return newpath.isEmpty() ? path : newpath;

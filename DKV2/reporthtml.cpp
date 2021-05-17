@@ -24,7 +24,7 @@ QString tableRow4(const QString& left, const QString& center, const QString& cen
     QString iCenter =tag(center,  qsl("td"), {qsl("style='text-align: center;'")});
     QString iCenter2=tag(center2, qsl("td"), {qsl("style='text-align: center;'")});
     QString iRight  =tag(right,   qsl("td"), {qsl("style='text-align: left;'")});
-    return tag( iLeft + iCenter + iCenter2 + iRight, "tr");
+    return tag( iLeft + iCenter + iCenter2 + iRight, qsl("tr"));
 }
 QString tableRow3( const QString& left, const QString& center, const QString& right)
 {
@@ -88,7 +88,7 @@ QString newLine(const QString& line)
     return qsl("<br>") + line;
 }
 
-QString htmlOverviewTableBlock(const QString& headline, dbStats::dataset ds)
+QString htmlOverviewTableBlock(const QString& headline, const dbStats::dataset &ds)
 {
     QString ret;
     ret += tableRow1(qsl("<b>") +headline +qsl("</b>"));
@@ -150,14 +150,13 @@ QString htmlPayedInterestByYearTable()
     ret += startTable();
     ret +=tableRow4(h2(qsl("Jahr")), h2(qsl("Zinstyp")), h2(qsl("Zinsmodus")), h2(qsl("Summe")));
     QVector<QSqlRecord> records;
-    QLocale local;
     if( not executeSql(qsl("SELECT * FROM (%1)").arg(sqlInterestByYearOverview), QVariant(), records)){
         ret += tableRow4(qsl("fehler bei der Datenabfrage"), QString(), QString(), QString());
         ret += endTable();
         return ret;
     }
     int lastYear =-1;
-    for( auto rec : records) {
+    for( const auto& rec : qAsConst(records)) {
         if( lastYear not_eq rec.value(0).toInt()) {
             ret += emptyRow(4);
         }
@@ -302,4 +301,3 @@ QString reportHtml(Uebersichten u)
     return QString();
     }
 }
-

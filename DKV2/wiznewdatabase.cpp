@@ -52,8 +52,8 @@ bool wpFileSelection_IntroPage::validatePage() {
     wizFileSelectionWiz* wiz = qobject_cast<wizFileSelectionWiz*>(wizard());
     QString file =field(qsl("selectedFile")).toString();
     QFileInfo fi(file);
-    if( fi.suffix() == "") file +=qsl(".dkdb");
-    if( fi.path() == ".") file =wiz->openInFolder + "/" +file;
+    if( fi.suffix() == qsl("")) file +=qsl(".dkdb");
+    if( fi.path() == qsl(".")) file =wiz->openInFolder + qsl("/") +file;
     setField(qsl("selectedFile"), file);
     if( wiz->existingFile) {
 
@@ -317,7 +317,7 @@ wpNewDatabase_SummaryPage::wpNewDatabase_SummaryPage(QWidget* p) : QWizardPage(p
     QVBoxLayout* layout = new QVBoxLayout;
     layout-> addWidget(cb);
     setLayout(layout);
-    connect(cb, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
+    connect(cb, &QCheckBox::stateChanged, this, &wpNewDatabase_SummaryPage::onConfirmData_toggled);
 }
 void wpNewDatabase_SummaryPage::initializePage()
 {
@@ -343,11 +343,11 @@ void wpNewDatabase_SummaryPage::initializePage()
 }
 void wpNewDatabase_SummaryPage::onConfirmData_toggled(int)
 {
-    completeChanged();
+    emit completeChanged();
 }
 bool wpNewDatabase_SummaryPage::isComplete() const
 {
-    return field("confirmed").toBool();
+    return field(qsl("confirmed")).toBool();
 }
 
 /*
@@ -363,7 +363,7 @@ wizConfigureNewDatabaseWiz::wizConfigureNewDatabaseWiz(QWidget* p) : QWizard(p) 
     QFont f = font(); f.setPointSize(10); setFont(f);
 }
 
-void wizConfigureNewDatabaseWiz::updateDbConfig(QString dbFile)
+void wizConfigureNewDatabaseWiz::updateDbConfig(const QString &dbFile)
 {
     LOG_CALL;
     dbCloser closer{ qsl("updateDbConfig") };
@@ -377,7 +377,7 @@ void wizConfigureNewDatabaseWiz::updateDbConfig(QString dbFile)
     return;
 }
 
-void wizConfigureNewDatabaseWiz::updateDbConfig(QSqlDatabase db)
+void wizConfigureNewDatabaseWiz::updateDbConfig(const QSqlDatabase &db)
 {   LOG_CALL;
     dbConfig::writeValue(GMBH_ADDRESS1,  field(dbConfig::paramName(GMBH_ADDRESS1)), db);
     dbConfig::writeValue(GMBH_ADDRESS2,  field(dbConfig::paramName(GMBH_ADDRESS2)), db);

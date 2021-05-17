@@ -17,16 +17,16 @@ struct TableDataInserter
     enum treatNull {allowNullValues, notAllowNullValues};
     bool setValue(const QString& field, const QVariant& v, treatNull allowNull =treatNull::notAllowNullValues);
     bool setValueNULL(const QString& field);
-    bool setValues(const QSqlRecord rec);
+    bool setValues(const QSqlRecord &rec);
     QVariant getValue(const QString& f) const { return record.field(f).value();}
     QSqlRecord getRecord() const {return record;}
     // interface
-    int InsertData(QSqlDatabase db = QSqlDatabase::database()) const;
-    int InsertOrReplaceData(QSqlDatabase db = QSqlDatabase::database()) const;
-    int InsertData_noAuto(QSqlDatabase db = QSqlDatabase::database()) const;
+    int InsertData(const QSqlDatabase &db = QSqlDatabase::database()) const;
+    int InsertOrReplaceData(const QSqlDatabase &db = QSqlDatabase::database()) const;
+    int InsertData_noAuto(const QSqlDatabase &db = QSqlDatabase::database()) const;
     int UpdateData() const;
     void reset() {tablename =QString(); record =QSqlRecord();}
-    void overrideTablename(QString tn) {tablename =tn;};
+    void overrideTablename(const QString& tn) {tablename =tn;};
 private:
     // data
     QString tablename;

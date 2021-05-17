@@ -114,8 +114,8 @@ bool wpNewDb::validatePage()
 {   LOG_CALL;
     QString folder =field(qsl("dbFolder")).toString();
     QFileInfo fiFolder (folder);
-    QString file =field("dbFilename").toString().trimmed();
-    if( not file.contains('.')) file += ".dkdb";
+    QString file =field(qsl("dbFilename")).toString().trimmed();
+    if( not file.contains('.')) file += qsl(".dkdb");
     QString path =folder +qsl("/") +file;
     bool allGood =false;
     do {

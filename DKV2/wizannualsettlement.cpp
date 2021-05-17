@@ -22,7 +22,7 @@ wpAnnualSettlement_IntroPage::wpAnnualSettlement_IntroPage(QWidget* p)  : QWizar
     bl->addWidget(csv);
     bl->addWidget(confirm);
     setLayout(bl);
-    connect(confirm, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
+    connect(confirm, &QCheckBox::stateChanged, this, &wpAnnualSettlement_IntroPage::onConfirmData_toggled);
 }
 
 void wpAnnualSettlement_IntroPage::initializePage()
@@ -32,11 +32,11 @@ void wpAnnualSettlement_IntroPage::initializePage()
 }
 bool wpAnnualSettlement_IntroPage::isComplete() const
 {
-    return field("confirm").toBool();
+    return field(qsl("confirm")).toBool();
 }
 void wpAnnualSettlement_IntroPage::onConfirmData_toggled(int)
 {
-    completeChanged();
+    emit completeChanged();
 }
 
 wizAnnualSettlement::wizAnnualSettlement(QWidget* p) : QWizard(p)

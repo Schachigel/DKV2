@@ -73,9 +73,9 @@ void init_DKDBStruct()
 
     dkdbstructur.appendTable(investment::getTableDef());
 
-    dbtable meta("Meta");
-    meta.append(dbfield("Name", QVariant::String).setPrimaryKey());
-    meta.append(dbfield("Wert", QVariant::String).setNotNull());
+    dbtable meta(qsl("Meta"));
+    meta.append(dbfield(qsl("Name"), QVariant::String).setPrimaryKey());
+    meta.append(dbfield(qsl("Wert"), QVariant::String).setNotNull());
     dkdbstructur.appendTable(meta);
 
     dkdbstructur.appendTable(letterTemplate::getTableDef_letterTypes());
@@ -143,7 +143,7 @@ bool validateDbSchema(const QString& filename, const dbstructure& dbs /*=dkdbstr
 {
     LOG_CALL_W(filename);
     QString msg;
-    if( filename == "")
+    if( filename == qsl(""))
         msg = qsl("no filename");
     else if( not QFile::exists(filename))
         msg = qsl("file not found");

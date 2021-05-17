@@ -120,7 +120,7 @@ QString interestModeFormatter::displayText(const QVariant &value, const QLocale 
         return qsl("Alle");
     int index =value.toInt();
     if( index <0 or index >= toInt(interestModel::maxId)){
-        qCritical() << !"invalid interest model index: " << index;
+        qCritical() << "invalid interest model index: " << index;
         return qsl("Fehler");
     } else
         return toString( fromInt(index));

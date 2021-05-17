@@ -19,7 +19,7 @@ wpChangeContract_IntroPage::wpChangeContract_IntroPage(QWidget* parent) : QWizar
     setTitle(qsl("Ein- / Auszahlung"));
     QRadioButton* rbDeposit = new QRadioButton(qsl("Einzahlung"));
     QRadioButton* rbPayout = new QRadioButton(qsl("Auszahlung"));
-    registerField("deposit_notPayment", rbDeposit);
+    registerField(qsl("deposit_notPayment"), rbDeposit);
     QVBoxLayout* layout = new QVBoxLayout;
     layout->addWidget(rbDeposit);
     layout->addWidget(rbPayout);
@@ -92,17 +92,17 @@ void wpChangeContract_AmountPage::initializePage()
 
 bool wpChangeContract_AmountPage::validatePage()
 {
-    bool deposit = field("deposit_notPayment").toBool();
-    double amount = r2(field("amount").toDouble());
+    bool deposit = field(qsl("deposit_notPayment")).toBool();
+    double amount = r2(field(qsl("amount")).toDouble());
     if( amount < 100)
         return false;
-    setField("amount", amount);
+    setField(qsl("amount"), amount);
 
     if( not deposit) {
         wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
         double currentAmount = wiz->currentAmount;
         // double minPayout = 100., minRemains = 500.
-        if( field("amount").toDouble() <100 or (currentAmount-amount) <500)
+        if( field(qsl("amount")).toDouble() <100 or (currentAmount-amount) <500)
             return false;
     }
     return true;
@@ -157,7 +157,7 @@ wpChangeContract_Summary::wpChangeContract_Summary(QWidget* p) : QWizardPage(p)
     QVBoxLayout* layout = new QVBoxLayout;
     layout-> addWidget(cb);
     setLayout(layout);
-    connect(cb, SIGNAL(stateChanged(int)), this, SLOT(onConfirmData_toggled(int)));
+    connect(cb, &QCheckBox::stateChanged, this, &wpChangeContract_Summary::onConfirmData_toggled);
 }
 void wpChangeContract_Summary::initializePage()
 {
@@ -186,11 +186,11 @@ void wpChangeContract_Summary::initializePage()
 }
 bool wpChangeContract_Summary::isComplete() const
 {
-    return field("confirmed").toBool();
+    return field(qsl("confirmed")).toBool();
 }
 void wpChangeContract_Summary::onConfirmData_toggled(int)
 {
-    completeChanged();
+    emit completeChanged();
 }
 
 

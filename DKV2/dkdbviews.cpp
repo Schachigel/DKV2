@@ -365,7 +365,7 @@ const QMap<QString, QString>& getViews() {
     return views;
 }
 
-QString getView(const QString vn) {
+QString getView(const QString &vn) {
     return views.value(vn);
 }
 
@@ -375,7 +375,7 @@ bool remove_all_views(const QSqlDatabase& db /*=QSqlDatabase::database()*/)
     if( not executeSql(qsl("SELECT name FROM sqlite_master WHERE type = ?"), QVariant(qsl("view")), views, db)) {
         return false;
     }
-    for( auto rec : views) {
+    for( const auto& rec : qAsConst(views)) {
         if( executeSql_wNoRecords(qsl("DROP view %1").arg(rec.value(0).toString()), db))
             continue;
         return false;

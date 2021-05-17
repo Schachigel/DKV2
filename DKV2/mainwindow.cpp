@@ -134,7 +134,7 @@ QString MainWindow::askUserForNextDb()
         // a new db should be created -> ask project details
         // closeAllDatabaseConnections();
         if( not createNewDatabaseFileWDefaultContent(selectedDbPath)) {
-            QMessageBox::critical(this, "Fehler", "Die neue Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen");
+            QMessageBox::critical(this, qsl("Fehler"), qsl("Die neue Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen"));
             return QString();
         }
     }// busycursor livetime
@@ -197,7 +197,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->fontComboBox->setFontFilters(QFontComboBox::ScalableFonts | QFontComboBox::ProportionalFonts);
     ui->spinFontSize->setMinimum(8);
     ui->spinFontSize->setMaximum(11);
-    connect(ui->wPreview, SIGNAL(paintRequested(QPrinter*)), SLOT(doPaint(QPrinter*)));
+    connect(ui->wPreview, &QPrintPreviewWidget::paintRequested, this, &MainWindow::doPaint);
 
     ui->stackedWidget->setCurrentIndex(startPageIndex);
 }
@@ -207,7 +207,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::showDbInStatusbar( QString filename)
+void MainWindow::showDbInStatusbar( const QString &filename)
 {   LOG_CALL_W (filename);
     Q_ASSERT( not filename.isEmpty());
     ui->statusLabel->setText( filename);
@@ -438,7 +438,7 @@ void MainWindow::on_action_menu_creditors_delete_triggered()
 }
 
 // Context Menue in Creditor Table
-void MainWindow::on_CreditorsTableView_customContextMenuRequested(const QPoint &pos)
+void MainWindow::on_CreditorsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;
     QModelIndex index = ui->CreditorsTableView->indexAt(pos).siblingAtColumn(0);
     if( index.isValid()) {
@@ -564,7 +564,7 @@ void MainWindow::on_btnNewInvestment_clicked()
     m->select();
     ui->InvestmentsTableView->resizeColumnsToContents();
 }
-void MainWindow::on_InvestmentsTableView_customContextMenuRequested(const QPoint &pos)
+void MainWindow::on_InvestmentsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;
     QTableView* tv =ui->InvestmentsTableView;
     QModelIndex index =tv->indexAt(pos);
@@ -676,7 +676,7 @@ void MainWindow::on_comboUebersicht_currentIndexChanged(int i)
 void MainWindow::on_pbPrint_clicked()
 {   LOG_CALL;
     QString filename = appConfig::Outdir();
-    filename += qsl("\\") + QDate::currentDate().toString("yyyy-MM-dd_");
+    filename += qsl("\\") + QDate::currentDate().toString(qsl("yyyy-MM-dd_"));
     filename += Statistics_Filenames[ui->comboUebersicht->currentIndex()];
     filename += qsl(".pdf");
     QPdfWriter write(filename);
@@ -689,7 +689,7 @@ void MainWindow::on_pbPrint_clicked()
 /////////////////////////////////////////////////
 QVector<BookingDateData> dates;
 
-QString descriptionFromType(QString bddType)
+QString descriptionFromType(const QString &bddType)
 {
     if( bddType == qsl("VD") || bddType == qsl("VDex"))
         return qsl("Vertragsabschluß");
@@ -706,7 +706,7 @@ QString descriptionFromType(QString bddType)
     return (qsl("unknown activity type ") +bddType);
 
 }
-QString bookingDateDesc( BookingDateData bdd)
+QString bookingDateDesc( const BookingDateData &bdd)
 {
     QString date =bdd.date.toString(qsl("  dd.MM.yyyy  "));
     if( bdd.count == 1) {
@@ -750,7 +750,7 @@ void MainWindow::on_pbNext_clicked()
     currentDateIndex = qMax(currentDateIndex -1, 0);
     ui->lblBookingDate->setText(bookingDateDesc(dates[currentDateIndex]));
     ui->pbBack->setEnabled(true);
-    ui->pbNext->setEnabled(currentDateIndex != 0);
+    ui->pbNext->setEnabled(currentDateIndex not_eq 0);
     fillStatisticsTableView();
 }
 void MainWindow::on_pbLetzter_clicked()
@@ -790,7 +790,7 @@ void MainWindow::fillStatisticsTableView()
         sql =sqlStat_allContracts_byIMode_toDate;
     } else
         Q_ASSERT (not "never reach this point");
-    sql.replace(qsl(":date"), dates[currentDateIndex].date.toString(Qt::ISODate)).replace("\n", " ");
+    sql.replace(qsl(":date"), dates[currentDateIndex].date.toString(Qt::ISODate)).replace(qsl("\n"), qsl(" "));
     qDebug() << sql;
 
     QSqlQueryModel *mod =new QSqlQueryModel();
@@ -872,7 +872,7 @@ void MainWindow::on_actionAktuelle_Auswahl_triggered()
             csv.appendToRow(recRows.value(j).toString());
         }
     }
-    csv.saveAndShowInExplorer(QDate::currentDate().toString("yyyy-MM-dd_Vertragsliste.csv"));
+    csv.saveAndShowInExplorer(QDate::currentDate().toString(qsl("yyyy-MM-dd_Vertragsliste.csv")));
 }
 
 /////////////////////////////////////////////////
@@ -914,22 +914,22 @@ void MainWindow::on_action_about_DKV2_triggered()
 void MainWindow::on_actionTEST_triggered()
 {
     LOG_CALL;
-    // input nec. to display the dialog: a Vector of bookings
-    toBePrinted.clear();
-    toBePrinted = bookings::getAnnualSettelments(2019);
-    if ( not toBePrinted.size()) {
-        qWarning() << "nothing to be printed";
-        return;
-    }
-    currentBooking = toBePrinted.begin();
+//    // input nec. to display the dialog: a Vector of bookings
+//    toBePrinted.clear();
+//    toBePrinted = bookings::getAnnualSettelments(2019);
+//    if ( not toBePrinted.size()) {
+//        qWarning() << "nothing to be printed";
+//        return;
+//    }
+//    currentBooking = toBePrinted.begin();
 
-    prepare_printPreview();
-    ui->stackedWidget->setCurrentIndex(printPreviewPageIndex);
+//    prepare_printPreview();
+//    ui->stackedWidget->setCurrentIndex(printPreviewPageIndex);
 }
 /////////////////////////////////////////////////
 //              PRINTING wprev.                //
 /////////////////////////////////////////////////
-QString letterName(booking b)
+QString letterName(const booking &b)
 {
     QString txt = qsl("<table width=100%><tr><td align=center style='padding-top:5px;padding-bottom:5px;'>%1, %2; %3<br><b>%4</b></td></tr></table>");
     contract cont(b.contractId);
@@ -957,7 +957,7 @@ void MainWindow::prepare_printPreview()
 void MainWindow::on_btnNextBooking_clicked()
 {
     LOG_CALL;
-    if ((currentBooking+1) == toBePrinted.end())
+    if ((currentBooking+1) == toBePrinted.cend())
         return;
     else
         currentBooking = currentBooking +1;
@@ -967,7 +967,7 @@ void MainWindow::on_btnNextBooking_clicked()
 void MainWindow::on_btnPrevBooking_clicked()
 {
     LOG_CALL;
-    if (currentBooking == toBePrinted.begin())
+    if (currentBooking == toBePrinted.cbegin())
         return;
     else
         currentBooking = currentBooking -1;
@@ -982,7 +982,7 @@ void MainWindow::on_btnUpdatePreview_clicked()
 void MainWindow::doPaint(QPrinter* pri)
 {
     QPainter p(dynamic_cast<QPaintDevice*>(pri));
-    p.drawText(QPoint(100, 100), "Hallo World");
+    p.drawText(QPoint(100, 100), qsl("Hallo World"));
 
     // Logo
     // Adresse
@@ -1002,4 +1002,3 @@ void MainWindow::closeEvent(QCloseEvent *event)
         event->ignore();
 }
 #endif
-

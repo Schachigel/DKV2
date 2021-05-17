@@ -64,6 +64,7 @@ SOURCES += \
         helperfile.cpp \
         helperfin.cpp \
         helpersql.cpp \
+        ibanvalidator.cpp \
         investment.cpp \
         letterTemplate.cpp \
         letters.cpp \
@@ -73,7 +74,6 @@ SOURCES += \
         reporthtml.cpp \
         tabledatainserter.cpp \
         transaktionen.cpp \
-        uicustomtoolbutton.cpp \
         uiitemformatter.cpp \
         wizactivatecontract.cpp \
         wizannualsettlement.cpp \
@@ -106,6 +106,7 @@ HEADERS += pch.h\
         helperfile.h \
         helperfin.h \
         helpersql.h \
+        ibanvalidator.h \
         investment.h \
         letterTemplate.h \
         letters.h \
@@ -114,7 +115,6 @@ HEADERS += pch.h\
         reporthtml.h \
         tabledatainserter.h \
         transaktionen.h \
-        uicustomtoolbutton.h \
         uiitemformatter.h \
         wizactivatecontract.h \
         wizannualsettlement.h \

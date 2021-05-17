@@ -16,14 +16,14 @@
 
 // db config info in 'meta' table
 // init = write only if not set
-void initMetaInfo( const QString& name, const QString& wert, QSqlDatabase db=QSqlDatabase::database());
-void initNumMetaInfo( const QString& name, const double& wert, QSqlDatabase db=QSqlDatabase::database());
+void initMetaInfo( const QString& name, const QString& wert, const QSqlDatabase& db=QSqlDatabase::database());
+void initNumMetaInfo( const QString& name, const double wert, const QSqlDatabase& db=QSqlDatabase::database());
 // reading
-QString getMetaInfo(const QString& name, const QString& def=QString(), QSqlDatabase db = QSqlDatabase::database());
-double getNumMetaInfo(const QString& name, const double def =0., QSqlDatabase db = QSqlDatabase::database());
+QString getMetaInfo(const QString& name, const QString& def=QString(), const QSqlDatabase& db = QSqlDatabase::database());
+double getNumMetaInfo(const QString& name, const double def =0., const QSqlDatabase& db = QSqlDatabase::database());
 // writing
-void setMetaInfo(const QString& name, const QString& value, QSqlDatabase db = QSqlDatabase::database(), const QString& tblAlias =QString());
-void setNumMetaInfo(const QString& name, const double Wert, QSqlDatabase db = QSqlDatabase::database(), const QString& tblAlias =QString());
+void setMetaInfo(const QString& name, const QString& value, const QSqlDatabase& db = QSqlDatabase::database(), const QString& tblAlias =QString());
+void setNumMetaInfo(const QString& name, const double Wert, const QSqlDatabase& db = QSqlDatabase::database(), const QString& tblAlias =QString());
 
 struct appConfig
 {
@@ -39,7 +39,7 @@ struct appConfig
 
     // dynamic config data stored in memory
     static void setRuntimeData( const QString& name, const QString& value);
-    static QString getRuntimeData( const QString& name, const QString& defaultvalue ="");
+    static QString getRuntimeData( const QString& name, const QString& defaultvalue =qsl(""));
 
     // for testing only
     static void deleteUserData(const QString& name);
@@ -50,7 +50,7 @@ private:
     static QString keyLastDb;
     static QString keyCurrentDb;
     static void setUserData(const QString& name, const QString& value);
-    static QString getUserData( const QString& name, const QString& defaultvalue ="");
+    static QString getUserData( const QString& name, const QString& defaultvalue =qsl(""));
     // QString getNumUserData(QString name);
 };
 enum projectConfiguration {
@@ -70,10 +70,10 @@ struct dbConfig
     dbConfig() =delete;
     static QVariant read_DBVersion(const QSqlDatabase& db =QSqlDatabase::database());
     static void write_DBVersion(const QSqlDatabase& db =QSqlDatabase::database(), const QString& tblAlias =QString());
-    static QVariant readValue(const projectConfiguration& pc, const QSqlDatabase& db =QSqlDatabase::database());
-    static void     writeValue(const projectConfiguration& pc, const QVariant& value, const QSqlDatabase& db =QSqlDatabase::database(), const QString& tblAlias =QString());
+    static QVariant readValue(const projectConfiguration pc, const QSqlDatabase& db =QSqlDatabase::database());
+    static void     writeValue(projectConfiguration pc, const QVariant& value, const QSqlDatabase& db =QSqlDatabase::database(), const QString& tblAlias =QString());
 
-    static QString paramName(const projectConfiguration& pc) {
+    static QString paramName(const projectConfiguration pc) {
         return defaultParams.value(pc).first;
     }
     static void writeDefaults(const QSqlDatabase& db =QSqlDatabase::database());

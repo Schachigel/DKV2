@@ -17,7 +17,7 @@ public: // types
     // constr. destr. & access fu
     explicit dbfield() : QSqlField(){}
     dbfield(const QString& name,
-            const QVariant::Type& type=QVariant::String,
+            const QVariant::Type type=QVariant::String,
             const QString& td=qsl(""))
      :  QSqlField(name), SqlTypeDetails(td)
     {
@@ -42,7 +42,7 @@ public: // types
     dbfield setUnique(const bool u=true){unique = u; return *this;}
     dbfield setPrimaryKey(const bool p=true){ primaryKey = p; return *this;}
     dbfield setNotNull(const bool nn=true){ setRequired(nn); return *this;}
-    dbfield setDefault(const QVariant d){ setDefaultValue(d); return *this;}
+    dbfield setDefault(const QVariant& d){ setDefaultValue(d); return *this;}
     dbfield setAutoInc(const bool a=true){ setAutoValue(a); return *this;}
     dbfield setDefaultNow() {timeStamp =true; return *this;}
     // somewhat a helper
