@@ -26,7 +26,7 @@ wpEditContractTermination::wpEditContractTermination(QWidget* p) : QWizardPage(p
         cbNoticePeriod->addItem(qsl("1 Jahr und ") + QString::number( i-12) + qsl(" Monate"), QVariant(i));
     cbNoticePeriod->addItem(qsl("2 Jahre"), QVariant(24));
 
-    connect(cbNoticePeriod, SIGNAL(currentIndexChanged(int)), this, SLOT(onNoticePeriod_currentIndexChanged(int)));
+    connect(cbNoticePeriod, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &wpEditContractTermination::onNoticePeriod_currentIndexChanged);
 
     cbNoticePeriod->setToolTip(qsl("Wird eine Kündigungsfrist vereinbart, "
                                    "so gibt es kein festes Vertragsende. "
@@ -41,30 +41,42 @@ wpEditContractTermination::wpEditContractTermination(QWidget* p) : QWizardPage(p
     QLabel* l3 =new QLabel(qsl("Neues Vertragsende"));
     l3->setBuddy(deTerminationDate);
 
-    chkAllowBoth = new QCheckBox(qsl("Vertragsende <i>und</i> Kündigungsfrist zulassen"));
+    chkAllowBoth = new QCheckBox(QString());
+    registerField(pnAllowBoth, chkAllowBoth);
+    QLabel* l4 =new QLabel(qsl("Kündigungsfrist <i>und</i> Vertragsende zulassen"));
+    l4->setBuddy(chkAllowBoth);
+
+    connect(chkAllowBoth, &QCheckBox::stateChanged, this, &wpEditContractTermination::onAllowBothChanged);
 
     QGridLayout* g =new QGridLayout;
     g->addWidget(l2, 1, 0);
     g->addWidget(cbNoticePeriod, 1, 1);
     g->addWidget(l3, 2, 0);
     g->addWidget(deTerminationDate, 2, 1);
-    g->addWidget(chkAllowBoth, 3, 2);
+    g->addWidget(chkAllowBoth, 3, 0, Qt::AlignRight);
+    g->addWidget(l4, 3, 1);
     g->setColumnStretch(0, 1);
     g->setColumnStretch(1, 4);
     setLayout(g);
 }
 void wpEditContractTermination::initializePage()
 {   LOG_CALL;
-    setField(pnNewPeriod, 4);
-    setField(pnNewEDate, EndOfTheFuckingWorld);
-    setField(pnAllowBoth, false);
-    deTerminationDate->setEnabled(false);
+    wizEditContractTermination* wiz =qobject_cast<wizEditContractTermination*> (wizard());
+    if( wiz->newNoticePeriod == -1) {
+        cbNoticePeriod->setCurrentIndex(0);
+        deTerminationDate->setEnabled(true);
+        // deTerminationDate value was set externally
+    } else {
+        cbNoticePeriod->setCurrentIndex(cbNoticePeriod->findData(wiz->newNoticePeriod));
+        deTerminationDate->setEnabled(false);
+    }
 }
 
 void wpEditContractTermination::onNoticePeriod_currentIndexChanged(int i)
 {   LOG_CALL;
-    if( field(pnAllowBoth).toBool())
+    if( field(pnAllowBoth).toBool()) {
         return;
+    }
     if( i == 0) {
         // deTerminationDate->setDate(QDate::currentDate().addYears(5));
         setField(pnNewEDate, QDate::currentDate().addYears(5));
@@ -75,13 +87,26 @@ void wpEditContractTermination::onNoticePeriod_currentIndexChanged(int i)
         deTerminationDate->setEnabled(false);
     }
 }
+
+void wpEditContractTermination::onAllowBothChanged(int i)
+{
+    if( i == Qt::Checked){
+        setField(pnAllowBoth, true);
+        deTerminationDate->setEnabled(true);
+    }
+    else {
+        onNoticePeriod_currentIndexChanged(cbNoticePeriod->currentIndex());
+    }
+}
+
 bool wpEditContractTermination::validatePage()
 {   LOG_CALL;
     wizEditContractTermination* wiz =qobject_cast<wizEditContractTermination*> (wizard());
     Q_ASSERT(wiz);
     QDate end   =field(pnNewEDate).toDate();
     if( wiz->minContractTermination >= end) {
-        qInfo() << "Enddate is before Startdate: " << wiz->minContractTermination.toString(Qt::ISODate) << "/" << field(pnNewEDate).toDate().toString(Qt::ISODate);
+        QMessageBox::information(this, qsl("Ungültiges Datum"), qsl("Das Vertragsende darf nicht vor der letzten Buchung bzw. dem Vertragsabschluß sein."));
+        qInfo() << "Enddate is before Startdate: " << field(pnNewEDate).toDate().toString(Qt::ISODate) << "/" << wiz->minContractTermination.toString(Qt::ISODate);
         return false;
     }
     wiz->newNoticePeriod =cbNoticePeriod->itemData(field(pnNewPeriod).toInt()).toInt();

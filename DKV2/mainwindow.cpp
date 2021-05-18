@@ -500,6 +500,8 @@ void MainWindow::updateListViews()
             temp->select();
         if( (temp =qobject_cast<QSqlTableModel*>(ui->bookingsTableView ->model())))
             temp->select();
+        ui->contractsTableView->resizeColumnsToContents();
+        ui->contractsTableView->resizeRowsToContents();
     }
     if( ui->stackedWidget->currentIndex() == overviewsPageIndex)
         on_action_menu_contracts_statistics_view_triggered();
@@ -1002,3 +1004,4 @@ void MainWindow::closeEvent(QCloseEvent *event)
         event->ignore();
 }
 #endif
+

@@ -2,7 +2,6 @@
 #define WIZEDITCONTRACTTERMINATION_H
 
 extern const QString pnNewEDate;
-extern const QString pnNewPeriod;
 
 class wpEditContractTermination : public QWizardPage
 {
@@ -13,6 +12,7 @@ public:
     bool validatePage() override;
 public slots:
     void onNoticePeriod_currentIndexChanged(int i);
+    void onAllowBothChanged(int i);
 private:
     bool init =true;
     QDateEdit* deTerminationDate;

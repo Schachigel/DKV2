@@ -30,7 +30,7 @@ QString DbInsertableString(const QVariant& v)
         break;
     }
     case QVariant::DateTime: {
-        s =v.toDateTime().toString(qsl("yyyy.MM.dd - hh:mm"));
+        s =v.toDateTime().toString(qsl("yyyy-MM-dd hh:mm:ss"));
         break;
     }
     case QVariant::Double: {

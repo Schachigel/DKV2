@@ -42,8 +42,10 @@ SELECT
   ,ifnull(LetzteBuchung, ' - ') AS LetzteBuchung
 
 -- kdFrist/VEnd
-  ,CASE WHEN V.Kfrist = -1 THEN strftime('%d.%m.%Y', V.LaufzeitEnde)
-     ELSE '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)' END AS KdgFristVertragsende
+  ,IIF( V.Kfrist = -1, strftime('%d.%m.%Y', V.LaufzeitEnde),
+     IIF( date(V.LaufzeitEnde) > date('5000-12-31'), '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)',
+          '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)' || char(10) || strftime('%d.%m.%Y', V.LaufzeitEnde)))
+     AS KdgFristVertragsende
 
 FROM Vertraege AS V  INNER JOIN Kreditoren AS K ON V.KreditorId = K.id
 

@@ -893,6 +893,11 @@ p, li { white-space: pre-wrap; }
     <string>Anmerkung ändern</string>
    </property>
   </action>
+  <action name="action_cmenu_changeContractTermination">
+   <property name="text">
+    <string>&amp;Kündigungsfrist und Vertragsende bearbeiten</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

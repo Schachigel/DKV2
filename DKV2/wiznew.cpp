@@ -833,7 +833,7 @@ void wpConfirmContract::initializePage()
                                 l.toCurrencyString(field(pnAmount).toDouble()),
                                 QString::number(wiz->interest/100., 'f', 2),
                                 interestMode,
-                                field(pnCDate).toDate().toString("dd.MM.yyyy"),
+                                field(pnCDate).toDate().toString(qsl("dd.MM.yyyy")),
                                 (wiz->noticePeriod == -1) ?
                                     wiz->field(pnEDate).toDate().toString(qsl("dd.MM.yyyy")) :
                                     QString::number(wiz->noticePeriod) +qsl(" Monate nach Kündigung")));

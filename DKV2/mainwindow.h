@@ -168,6 +168,8 @@ private slots:
 
     void on_action_cmenu_Anmerkung_aendern_triggered();
 
+    void on_action_cmenu_changeContractTermination_triggered();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();

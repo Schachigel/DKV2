@@ -247,6 +247,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
         menu.addAction(ui->action_cmenu_activate_contract);
         menu.addAction(ui->action_cmenu_delete_inactive_contract); // passive Verträge können gelöscht werden
     }
+    menu.addAction(ui->action_cmenu_changeContractTermination);
     menu.addAction(ui->action_cmenu_Anmerkung_aendern);
     menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
     return;
@@ -258,32 +259,28 @@ void MainWindow::on_action_cmenu_activate_contract_triggered()
 }
 void MainWindow::on_action_cmenu_terminate_contract_triggered()
 {   LOG_CALL;
-    QModelIndex mi(ui->contractsTableView->currentIndex());
-    if( not mi.isValid()) return;
-    int index = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toInt();
-    terminateContract(index);
+    terminateContract(get_current_id_from_contracts_list());
     updateListViews();
 }
 void MainWindow::on_action_cmenu_delete_inactive_contract_triggered()
 {   LOG_CALL;
-    QModelIndex mi(ui->contractsTableView->currentIndex());
-    if( not mi.isValid()) return;
-
-    deleteInactiveContract(ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toLongLong());
+    deleteInactiveContract(get_current_id_from_contracts_list());
     updateListViews();
 }
 void MainWindow::on_action_cmenu_change_contract_triggered()
-{   // deposit or payout...
-    QModelIndex mi(ui->contractsTableView->currentIndex());
-    if( not mi.isValid()) return;
-    qlonglong contractId = ui->contractsTableView->model()->data(mi.siblingAtColumn(0)).toLongLong();
-    changeContractValue(contractId);
+{   LOG_CALL;
+    changeContractValue(get_current_id_from_contracts_list());
     updateListViews();
 }
 
 void MainWindow::on_action_cmenu_Anmerkung_aendern_triggered()
 {   LOG_CALL;
     changeContractComment(get_current_id_from_contracts_list());
+    updateListViews();
+}
+void MainWindow::on_action_cmenu_changeContractTermination_triggered()
+{   LOG_CALL;
+    changeContractTermination(get_current_id_from_contracts_list());
     updateListViews();
 }
 

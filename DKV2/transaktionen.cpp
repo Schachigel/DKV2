@@ -268,13 +268,18 @@ void changeContractComment(qlonglong id)
 void changeContractTermination(qlonglong id)
 {
     contract c(id);
+    qDebug() << c.toString();
     creditor cred(c.creditorId());
     wizEditContractTermination wiz;
-    wiz.minContractTermination =c.activationDate();
+     if( c.isActive())
+        wiz.minContractTermination =c.latestBooking().date;
+    else
+        wiz.minContractTermination =c.conclusionDate().addDays(1);
+
     wiz.setField(pnNewEDate, c.plannedEndDate());
-    wiz.setField(pnNewPeriod, c.noticePeriod());
+    wiz.newNoticePeriod =c.noticePeriod();
     if( QDialog::Accepted == wiz.exec())
-        c.updateTerminationDate(wiz.field(pnCDate).toDate(), wiz.field(pnPeriod).toInt());
+        c.updateTerminationDate(wiz.field(pnNewEDate).toDate(), wiz.newNoticePeriod);
     return;
 }
 void createInvestment()
