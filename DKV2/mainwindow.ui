@@ -602,7 +602,6 @@ p, li { white-space: pre-wrap; }
     <addaction name="action_menu_creditors_listview"/>
     <addaction name="separator"/>
     <addaction name="actionNeu"/>
-    <addaction name="action_menu_creditors_delete"/>
    </widget>
    <widget class="QMenu" name="manu_contracts">
     <property name="title">

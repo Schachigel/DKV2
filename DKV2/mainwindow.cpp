@@ -408,6 +408,7 @@ void MainWindow::prepare_CreditorsListPage()
     ui->CreditorsTableView->setSortingEnabled(true);
     ui->CreditorsTableView->setModel(model);
     ui->CreditorsTableView->hideColumn(0);
+    ui->CreditorsTableView->hideColumn(11); // Zeitstempel
     ui->CreditorsTableView->resizeColumnsToContents();
 }
 void MainWindow::on_le_CreditorsFilter_editingFinished()

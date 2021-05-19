@@ -1,6 +1,8 @@
 #ifndef WIZEDITCONTRACTTERMINATION_H
 #define WIZEDITCONTRACTTERMINATION_H
 
+#include "pch.h"
+
 extern const QString pnNewEDate;
 
 class wpEditContractTermination : public QWizardPage
