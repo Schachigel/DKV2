@@ -64,32 +64,32 @@ void MainWindow::prepare_deleted_contracts_list_view()
     model->setHeaderData(cp_TotalDeposit, Qt::Horizontal, qsl("Summe aller Einzahlungen"), Qt::ToolTipRole);
     model->setHeaderData(cp_FinalPayout, Qt::Horizontal, qsl("Ausgezahltes finales Guthaben"), Qt::ToolTipRole);
 
-    QTableView*& tv = ui->contractsTableView;
-    tv->setModel(model);
+    QTableView*& contractsTV = ui->contractsTableView;
+    contractsTV->setModel(model);
     if ( not model->select()) {
         qCritical() << "Model selection failed" << model->lastError();
         return;
     }
-    tv->setEditTriggers(QTableView::NoEditTriggers);
-    tv->setSelectionMode(QAbstractItemView::SingleSelection);
-    tv->setSelectionBehavior(QAbstractItemView::SelectRows);
-    tv->setAlternatingRowColors(true);
-    tv->setSortingEnabled(true);
-    tv->setItemDelegateForColumn(cp_InitialValue, new CurrencyFormatter(tv));
-    tv->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(tv));
-    tv->setItemDelegateForColumn(cp_TotalDeposit, new CurrencyFormatter(tv));
-    tv->setItemDelegateForColumn(cp_FinalPayout, new CurrencyFormatter(tv));
-    tv->hideColumn(cp_vid);
-    tv->hideColumn(cp_Creditor_id);
+    contractsTV->setEditTriggers(QTableView::NoEditTriggers);
+    contractsTV->setSelectionMode(QAbstractItemView::SingleSelection);
+    contractsTV->setSelectionBehavior(QAbstractItemView::SelectRows);
+    contractsTV->setAlternatingRowColors(true);
+    contractsTV->setSortingEnabled(true);
+    contractsTV->setItemDelegateForColumn(cp_InitialValue, new CurrencyFormatter(contractsTV));
+    contractsTV->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(contractsTV));
+    contractsTV->setItemDelegateForColumn(cp_TotalDeposit, new CurrencyFormatter(contractsTV));
+    contractsTV->setItemDelegateForColumn(cp_FinalPayout, new CurrencyFormatter(contractsTV));
+    contractsTV->hideColumn(cp_vid);
+    contractsTV->hideColumn(cp_Creditor_id);
 
-    tv->resizeColumnsToContents();
+    contractsTV->resizeColumnsToContents();
 
     connect(ui->contractsTableView->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::currentChange_ctv);
 
     if( not model->rowCount()) {
         ui->bookingsTableView->setModel(new QSqlTableModel(this));
     } else
-        tv->setCurrentIndex(model->index(0, 1));
+        contractsTV->setCurrentIndex(model->index(0, 1));
 }
 void MainWindow::prepare_valid_contracts_list_view()
 { LOG_CALL;
@@ -211,12 +211,15 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
 
     ui->bookingsTableView->setModel(model);
     model->select();
+    ui->bookingsTableView->setEditTriggers(QTableView::NoEditTriggers);
     ui->bookingsTableView->setSortingEnabled(false);
     ui->bookingsTableView->hideColumn(0);
     ui->bookingsTableView->hideColumn(1);
     ui->bookingsTableView->setItemDelegateForColumn(2, new DateItemFormatter);
     ui->bookingsTableView->setItemDelegateForColumn(3, new bookingTypeFormatter);
     ui->bookingsTableView->setItemDelegateForColumn(4, new BookingAmountItemFormatter);
+    ui->bookingsTableView->hideColumn(5);
+    ui->bookingsTableView->resizeColumnsToContents();
 }
 
 /////////////////////////////////////////////////
@@ -272,7 +275,6 @@ void MainWindow::on_action_cmenu_change_contract_triggered()
     changeContractValue(get_current_id_from_contracts_list());
     updateListViews();
 }
-
 void MainWindow::on_action_cmenu_Anmerkung_aendern_triggered()
 {   LOG_CALL;
     changeContractComment(get_current_id_from_contracts_list());
