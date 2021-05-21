@@ -59,15 +59,6 @@ public:
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 
-class KFristItemFormatter : public QStyledItemDelegate
-{
-    Q_OBJECT
-public:
-    KFristItemFormatter(QObject *parent =nullptr) : QStyledItemDelegate(parent){}
-    QString displayText(const QVariant &value, const QLocale &locale) const override;
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
-};
-
 class bookingTypeFormatter : public QStyledItemDelegate
 {
     Q_OBJECT

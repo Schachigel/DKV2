@@ -51,6 +51,7 @@ SOURCES += \
         appconfig.cpp \
         booking.cpp \
         contract.cpp \
+        contracttablemodel.cpp \
         creditor.cpp \
         csvwriter.cpp \
         dbfield.cpp \
@@ -93,6 +94,7 @@ HEADERS += pch.h\
         appconfig.h \
         booking.h \
         contract.h \
+        contracttablemodel.h \
         creditor.h \
         csvwriter.h \
         dbfield.h \

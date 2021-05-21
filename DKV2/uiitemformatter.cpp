@@ -88,21 +88,6 @@ QString BookingAmountItemFormatter::displayText(const QVariant& value, const QLo
         return l.toCurrencyString(w)+ " ";
 };
 
-QString KFristItemFormatter::displayText(const QVariant &value, const QLocale &) const
-{
-    int v = value.toInt();
-    if( v == -1)
-        return qsl("(festes Vertragsende)");
-    else
-        return qsl("%L1 Monate").arg(v);
-}
-void KFristItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
-{
-    QStyleOptionViewItem alignedOption(option);
-    alignedOption.displayAlignment = Qt::AlignCenter;
-    QStyledItemDelegate::paint(painter, alignedOption, index);
-}
-
 QString bookingTypeFormatter::displayText(const QVariant &value, const QLocale &) const
 {
     return booking::displayString( (booking::Type) value.toInt());

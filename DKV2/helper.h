@@ -26,7 +26,7 @@ public:
     dbgTimer(const dbgTimer&) = delete;
     dbgTimer(const QString& fu) : fname(fu){t.start(); qInfo().noquote() << qsl("Debug Timer ") + fname << qsl(" start") << Qt::endl;}
     ~dbgTimer() {qInfo().noquote() << Qt::endl << (fname.isEmpty() ? qsl("") : fname+ qsl(" end") )
-                                   << Qt::endl << qsl("Elapsed time: ")<< t.elapsed() << Qt::endl;}
+                                   << Qt::endl << qsl("Elapsed time: ")<< t.elapsed() << "ms" << Qt::endl;}
 };
 
 class functionlogging {
@@ -55,6 +55,7 @@ public:
 #define LOG_CALL_W(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger( __func__ + QString(qsl("(\"")) + x + QString(qsl("\")")))
 
 extern const QDate EndOfTheFuckingWorld;
+extern const int daysUntilTheEndOfTheFuckingWorld;
 extern const QDate BeginingOfTime;
 
 extern QFile* outFile_p;

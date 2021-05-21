@@ -1,11 +1,11 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "contracttablemodel.h"
 #include "uiitemformatter.h"
 #include "dkdbviews.h"
 #include "transaktionen.h"
 #include "helper.h"
-
 
 // Contract List
 void MainWindow::on_action_menu_contracts_listview_triggered()
@@ -30,6 +30,81 @@ QString filterFromFilterphrase(const QString &fph)
     }
     return fph.isEmpty() ? QString() :
                            (qsl("Kreditorin LIKE '%") + fph + qsl("%' OR Vertragskennung LIKE '%") + fph + qsl("%'"));
+}
+void MainWindow::prepare_valid_contracts_list_view()
+{ LOG_CALL;
+    enum colmn_Pos {
+        cp_vid,
+        cp_Creditor_id,
+        cp_Creditor,
+        cp_ContractLabel,
+        cp_Comment,
+        cp_ContractDate,
+        cp_ActivationDate,
+        cp_ContractValue,
+        cp_InterestRate,
+        cp_InterestMode,
+        cp_InterestBearing,
+        cp_Interest,
+        cp_LastBooking,
+        cp_ContractEnd
+    };
+
+    QSqlTableModel* model = new ContractTableModel(this);
+    model->setTable(vnContractView);
+    model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
+    model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("KreditorIn"));
+    model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters"), Qt::ToolTipRole);
+    model->setHeaderData(cp_ContractLabel, Qt::Horizontal, qsl("Vertragskennung"));
+    model->setHeaderData(cp_ContractLabel, Qt::Horizontal, qsl("Die Vertragskennung identifiziert den Vertrag eindeutig"), Qt::ToolTipRole);
+    model->setHeaderData(cp_Comment, Qt::Horizontal, qsl("Anmerkung"));
+    model->setHeaderData(cp_Comment, Qt::Horizontal, qsl("Freitext zum Vertrag"), Qt::ToolTipRole);
+    model->setHeaderData(cp_ContractDate, Qt::Horizontal, qsl(""), Qt::ToolTipRole);
+    model->setHeaderData(cp_ContractValue, Qt::Horizontal, qsl("Bei aktiven Verträgen: Höhe der Ersteinlage, sonst der im Vertrag vereinbarte Kreditbetrag"), Qt::ToolTipRole);
+    model->setHeaderData(cp_InterestRate, Qt::Horizontal, qsl(""), Qt::ToolTipRole);
+    model->setHeaderData(cp_InterestMode, Qt::Horizontal, qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein"), Qt::ToolTipRole);
+    model->setHeaderData(cp_ActivationDate, Qt::Horizontal, qsl("Datum des ersten Geldeingangs und Beginn der Zinsberechnung"), Qt::ToolTipRole);
+    model->setHeaderData(cp_InterestBearing, Qt::Horizontal, qsl("Verzinsliches\nGuthaben"));
+    model->setHeaderData(cp_InterestBearing, Qt::Horizontal, qsl("Bei thesaurierenden Verträgen: Einlage und angesparte Zinsen"), Qt::ToolTipRole);
+    model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Angesparter\nZins"));
+    model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Nicht ausgezahlte Zinsen bei Verträgen mit fester Verzinsung und thesaurierenden Verträgen"), Qt::ToolTipRole);
+    model->setHeaderData(cp_LastBooking, Qt::Horizontal, qsl("Letztes\nBuchungsdatum"));
+    model->setHeaderData(cp_ContractEnd, Qt::Horizontal, qsl("Kündigungsfrist/ \nVertragsende"));
+
+    qDebug() << "contract list model filter: " << model->filter();
+
+    QTableView*& tv = ui->contractsTableView;
+    tv->setModel(model);
+    if ( not model->select()) {
+        qCritical() << "Model selection failed" << model->lastError();
+        return;
+    }
+
+    tv->setEditTriggers(QTableView::NoEditTriggers);
+    tv->setSelectionMode(QAbstractItemView::SingleSelection);
+    tv->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tv->setAlternatingRowColors(true);
+    tv->setSortingEnabled(true);
+    tv->setItemDelegateForColumn(cp_ActivationDate, new DateItemFormatter);
+    tv->setItemDelegateForColumn(cp_ContractDate, new DateItemFormatter);
+    tv->setItemDelegateForColumn(cp_LastBooking, new DateItemFormatter);
+    tv->setItemDelegateForColumn(cp_ContractValue, new CurrencyFormatter(tv));
+    tv->setItemDelegateForColumn(cp_InterestBearing, new CurrencyFormatter(tv));
+    tv->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(tv));
+    tv->setItemDelegateForColumn(cp_InterestMode, new interestModeFormatter(tv));
+    tv->hideColumn(cp_vid);
+    tv->hideColumn(cp_Creditor_id);
+
+
+    tv->resizeColumnsToContents();
+    tv->resizeRowsToContents();
+
+    connect(ui->contractsTableView->selectionModel(), &QItemSelectionModel::currentChanged, this ,&MainWindow::currentChange_ctv);
+
+    if( not model->rowCount()) {
+        ui->bookingsTableView->setModel(new QSqlTableModel(this));
+    } else
+        tv->setCurrentIndex(model->index(0, 1));
 }
 void MainWindow::prepare_deleted_contracts_list_view()
 { LOG_CALL;
@@ -91,81 +166,6 @@ void MainWindow::prepare_deleted_contracts_list_view()
     } else
         contractsTV->setCurrentIndex(model->index(0, 1));
 }
-void MainWindow::prepare_valid_contracts_list_view()
-{ LOG_CALL;
-    enum colmn_Pos {
-        cp_vid,
-        cp_Creditor_id,
-        cp_Creditor,
-        cp_ContractLabel,
-        cp_Comment,
-        cp_ContractDate,
-        cp_ActivationDate,
-        cp_ContractValue,
-        cp_InterestRate,
-        cp_InterestMode,
-        cp_InterestBearing,
-        cp_Interest,
-        cp_LastBooking,
-        cp_ContractEnd
-    };
-
-    QSqlTableModel* model = new QSqlTableModel(this);
-    model->setTable(vnContractView);
-    model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
-    model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("KreditorIn"));
-    model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters"), Qt::ToolTipRole);
-    model->setHeaderData(cp_ContractLabel, Qt::Horizontal, qsl("Vertragskennung"));
-    model->setHeaderData(cp_ContractLabel, Qt::Horizontal, qsl("Die Vertragskennung identifiziert den Vertrag eindeutig"), Qt::ToolTipRole);
-    model->setHeaderData(cp_Comment, Qt::Horizontal, qsl("Anmerkung"));
-    model->setHeaderData(cp_Comment, Qt::Horizontal, qsl("Freitext zum Vertrag"), Qt::ToolTipRole);
-    model->setHeaderData(cp_ContractDate, Qt::Horizontal, qsl(""), Qt::ToolTipRole);
-    model->setHeaderData(cp_ContractValue, Qt::Horizontal, qsl("Bei aktiven Verträgen: Höhe der Ersteinlage, sonst der im Vertrag vereinbarte Kreditbetrag"), Qt::ToolTipRole);
-    model->setHeaderData(cp_InterestRate, Qt::Horizontal, qsl(""), Qt::ToolTipRole);
-    model->setHeaderData(cp_InterestMode, Qt::Horizontal, qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein"), Qt::ToolTipRole);
-    model->setHeaderData(cp_ActivationDate, Qt::Horizontal, qsl("Datum des ersten Geldeingangs und Beginn der Zinsberechnung"), Qt::ToolTipRole);
-    model->setHeaderData(cp_InterestBearing, Qt::Horizontal, qsl("Verzinsliches\nGuthaben"));
-    model->setHeaderData(cp_InterestBearing, Qt::Horizontal, qsl("Bei thesaurierenden Verträgen: Einlage und angesparte Zinsen"), Qt::ToolTipRole);
-    model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Angesparter\nZins"));
-    model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Nicht ausgezahlte Zinsen bei Verträgen mit fester Verzinsung und thesaurierenden Verträgen"), Qt::ToolTipRole);
-    model->setHeaderData(cp_LastBooking, Qt::Horizontal, qsl("Letztes\nBuchungsdatum"));
-    model->setHeaderData(cp_ContractEnd, Qt::Horizontal, qsl("Kündigungsfrist/ \nVertragsende"));
-
-    qDebug() << "contract list model filter: " << model->filter();
-
-    QTableView*& tv = ui->contractsTableView;
-    tv->setModel(model);
-    if ( not model->select()) {
-        qCritical() << "Model selection failed" << model->lastError();
-        return;
-    }
-
-    tv->setEditTriggers(QTableView::NoEditTriggers);
-    tv->setSelectionMode(QAbstractItemView::SingleSelection);
-    tv->setSelectionBehavior(QAbstractItemView::SelectRows);
-    tv->setAlternatingRowColors(true);
-    tv->setSortingEnabled(true);
-    tv->setItemDelegateForColumn(cp_ActivationDate, new DateItemFormatter);
-    tv->setItemDelegateForColumn(cp_ContractDate, new DateItemFormatter);
-    tv->setItemDelegateForColumn(cp_LastBooking, new DateItemFormatter);
-    tv->setItemDelegateForColumn(cp_ContractValue, new CurrencyFormatter(tv));
-    tv->setItemDelegateForColumn(cp_InterestBearing, new CurrencyFormatter(tv));
-    tv->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(tv));
-    tv->setItemDelegateForColumn(cp_InterestMode, new interestModeFormatter(tv));
-    tv->hideColumn(cp_vid);
-    tv->hideColumn(cp_Creditor_id);
-
-
-    tv->resizeColumnsToContents();
-    tv->resizeRowsToContents();
-
-    connect(ui->contractsTableView->selectionModel(), &QItemSelectionModel::currentChanged, this ,&MainWindow::currentChange_ctv);
-
-    if( not model->rowCount()) {
-        ui->bookingsTableView->setModel(new QSqlTableModel(this));
-    } else
-        tv->setCurrentIndex(model->index(0, 1));
-}
 void MainWindow::prepare_contracts_list_view()
 {   LOG_CALL;
     busycursor b;
@@ -212,6 +212,9 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
     ui->bookingsTableView->setModel(model);
     model->select();
     ui->bookingsTableView->setEditTriggers(QTableView::NoEditTriggers);
+    ui->bookingsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->bookingsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->bookingsTableView->setAlternatingRowColors(true);
     ui->bookingsTableView->setSortingEnabled(false);
     ui->bookingsTableView->hideColumn(0);
     ui->bookingsTableView->hideColumn(1);
