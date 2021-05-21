@@ -33,23 +33,6 @@ QString filterFromFilterphrase(const QString &fph)
 }
 void MainWindow::prepare_valid_contracts_list_view()
 { LOG_CALL;
-    enum colmn_Pos {
-        cp_vid,
-        cp_Creditor_id,
-        cp_Creditor,
-        cp_ContractLabel,
-        cp_Comment,
-        cp_ContractDate,
-        cp_ActivationDate,
-        cp_ContractValue,
-        cp_InterestRate,
-        cp_InterestMode,
-        cp_InterestBearing,
-        cp_Interest,
-        cp_LastBooking,
-        cp_ContractEnd
-    };
-
     QSqlTableModel* model = new ContractTableModel(this);
     model->setTable(vnContractView);
     model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
@@ -78,6 +61,8 @@ void MainWindow::prepare_valid_contracts_list_view()
     if ( not model->select()) {
         qCritical() << "Model selection failed" << model->lastError();
         return;
+    } else {
+        qobject_cast<ContractTableModel*>(model)->setCol13ExtraData();
     }
 
     tv->setEditTriggers(QTableView::NoEditTriggers);
