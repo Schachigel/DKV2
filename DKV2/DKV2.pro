@@ -38,9 +38,21 @@ DEFINES += GIT_COMMIT='\\"$$system(git log --format="%h" -n 1)\\"'
 
 # macx:ICON = $${TARGET}.icns
 # macx:QMAKE_INFO_PLIST = Info.plist
+
+APP_TRANSLATIONS_FILES.files = $$[QT_INSTALL_TRANSLATIONS]/qtbase_de.qm
+APP_TRANSLATIONS_FILES.path = Contents/MacOS/translations
+QMAKE_BUNDLE_DATA += APP_TRANSLATIONS_FILES
+
+# macx:QMAKE_POST_LINK += set -x &&
+macx:QMAKE_POST_LINK += echo "starte post link steps..."
+# macx:QMAKE_POST_LINK += mkdir -p $${OUT_PWD}/$${TARGET}.app/Contents/MacOS/translations &&
+# macx:QMAKE_POST_LINK += cp $$[QT_INSTALL_TRANSLATIONS]/qtbase_de.qm $${OUT_PWD}/$${TARGET}.app/Contents/MacOS/translations/ &&
 CONFIG( release, debug|release ){
-   macx:QMAKE_POST_LINK += macdeployqt $${OUT_PWD}/$${TARGET}.app -dmg
+   macx:QMAKE_POST_LINK += rm $${OUT_PWD}/$${TARGET}.dmg || true &&
+   macx:QMAKE_POST_LINK += macdeployqt $${OUT_PWD}/$${TARGET}.app -dmg &&
 }
+macx:QMAKE_POST_LINK += echo "... beende post link steps"
+
 # RESOURCES += $${TARGET}.qrc
 RC_FILE += $${TARGET}.rc
 
