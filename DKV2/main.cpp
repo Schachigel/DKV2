@@ -58,7 +58,7 @@ void installTranslateFile(const QString& translationFile)
 void setGermanUi()
 {   LOG_CALL;
     QString translationFolder = QApplication::applicationDirPath() + qsl("/translations/%1");
-    installTranslateFile(translationFolder.arg(qsl("qt_de.qm")));
+    installTranslateFile(translationFolder.arg(qsl("qtbase_de.qm")));
 }
 
 int main(int argc, char *argv[])
