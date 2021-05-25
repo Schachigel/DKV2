@@ -13,6 +13,7 @@
 #include "reporthtml.h"
 #include <dkdbhelper.h>
 #include "contract.h"
+#include "contractsheadersortingadapter.h"
 
 struct busycursor
 {
@@ -213,6 +214,7 @@ private:
 
 private:
     bool showDeletedContracts =false;
+    contractsHeaderSortingAdapter* contractsSortingAdapter;
 };
 
 #endif // MAINWINDOW_H

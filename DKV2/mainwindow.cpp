@@ -4,9 +4,8 @@
 #else
 #include <stdlib.h>
 #endif
+// the qt header for preCompiled Header feature
 #include "pch.h"
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
 
 #include "wiznewdatabase.h"
 #include "investment.h"
@@ -21,6 +20,9 @@
 #include "dbstatistics.h"
 #include "letters.h"
 #include "transaktionen.h"
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
 
 // generell functions (used for contruction)
 
@@ -186,6 +188,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->CreditorsTableView->setStyleSheet(qsl("QTableView::item { padding-right: 10px; padding-left: 10px; }"));
     ui->contractsTableView->setStyleSheet(qsl("QTableView::item { padding-right: 10px; padding-left: 10px; }"));
+    // re-resize columns and rows after sorting
+    contractsSortingAdapter = new contractsHeaderSortingAdapter(ui->contractsTableView);
 
     ui->bookingsTableView->setItemDelegateForColumn(2, new bookingTypeFormatter);
 
@@ -205,6 +209,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {   LOG_CALL;
     delete ui;
+    delete contractsSortingAdapter;
 }
 
 void MainWindow::showDbInStatusbar( const QString &filename)
@@ -1005,4 +1010,3 @@ void MainWindow::closeEvent(QCloseEvent *event)
         event->ignore();
 }
 #endif
-

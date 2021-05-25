@@ -63,6 +63,7 @@ SOURCES += \
         appconfig.cpp \
         booking.cpp \
         contract.cpp \
+        contractsheadersortingadapter.cpp \
         contracttablemodel.cpp \
         creditor.cpp \
         csvwriter.cpp \
@@ -106,6 +107,7 @@ HEADERS += pch.h\
         appconfig.h \
         booking.h \
         contract.h \
+        contractsheadersortingadapter.h \
         contracttablemodel.h \
         creditor.h \
         csvwriter.h \
