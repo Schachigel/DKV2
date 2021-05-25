@@ -37,14 +37,34 @@ CONFIG += utf8_source
 DEFINES += GIT_COMMIT='\\"$$system(git log --format="%h" -n 1)\\"'
 
 # macx:ICON = $${TARGET}.icns
-# macx:QMAKE_INFO_PLIST = Info.plist
+macx:QMAKE_INFO_PLIST = Info.plist
 
 APP_TRANSLATIONS_FILES.files = $$[QT_INSTALL_TRANSLATIONS]/qtbase_de.qm
 APP_TRANSLATIONS_FILES.path = Contents/MacOS/translations
 QMAKE_BUNDLE_DATA += APP_TRANSLATIONS_FILES
 
+# macx:QMAKE_PRE_LINK += set -x &&
+macx:QMAKE_PRE_LINK += echo "starte pre link steps..."  &&
+!exists($${PWD}/$${TARGET}.icns) {
+   macx:QMAKE_PRE_LINK += mkdir -p $${OUT_PWD}/DKV2.iconset  &&
+   macx:QMAKE_PRE_LINK += sips -z 16 16  $${PWD}/res/logo256.png --out $${OUT_PWD}/DKV2.iconset/icon_16x16.png  &&
+   macx:QMAKE_PRE_LINK += sips -z 32 32  $${PWD}/res/logo256.png --out $${OUT_PWD}/DKV2.iconset/icon_16x16@2x.png  &&
+   macx:QMAKE_PRE_LINK += sips -z 32 32  $${PWD}/res/logo256.png --out $${OUT_PWD}/DKV2.iconset/icon_32x32.png  &&
+   macx:QMAKE_PRE_LINK += sips -z 64 64  $${PWD}/res/logo256.png --out $${OUT_PWD}/DKV2.iconset/icon_32x32@2x.png  &&
+   macx:QMAKE_PRE_LINK += sips -z 64 64  $${PWD}/res/logo256.png --out $${OUT_PWD}/DKV2.iconset/icon_64x64.png  &&
+   macx:QMAKE_PRE_LINK += sips -z 128 128  $${PWD}/res/logo256.png --out $${OUT_PWD}/DKV2.iconset/icon_64x64@2x.png  &&
+   macx:QMAKE_PRE_LINK += sips -z 128 128  $${PWD}/res/logo256.png --out $${OUT_PWD}/DKV2.iconset/icon_128x128.png  &&
+   macx:QMAKE_PRE_LINK += sips -z 128 128  $${PWD}/res/logo256.png --out $${OUT_PWD}/DKV2.iconset/icon_128x128@2x.png &&
+   macx:QMAKE_PRE_LINK += sips -z 256 256  $${PWD}/res/logo256.png --out $${OUT_PWD}/DKV2.iconset/icon_256x256.png  &&
+   macx:QMAKE_PRE_LINK += iconutil -c icns $${OUT_PWD}/DKV2.iconset  &&
+   macx:QMAKE_PRE_LINK += rm -R $${OUT_PWD}/DKV2.iconset &&
+   macx:QMAKE_PRE_LINK += cp $${OUT_PWD}/$${TARGET}.icns $${PWD}/ &&
+}
+macx:QMAKE_PRE_LINK += echo "... beende pre link steps"
+
 # macx:QMAKE_POST_LINK += set -x &&
-macx:QMAKE_POST_LINK += echo "starte post link steps..."
+macx:QMAKE_POST_LINK += echo "starte post link steps..." &&
+macx:QMAKE_POST_LINK += cp $${PWD}/$${TARGET}.icns $${OUT_PWD}/$${TARGET}.app/Contents/Resources &&
 # macx:QMAKE_POST_LINK += mkdir -p $${OUT_PWD}/$${TARGET}.app/Contents/MacOS/translations &&
 # macx:QMAKE_POST_LINK += cp $$[QT_INSTALL_TRANSLATIONS]/qtbase_de.qm $${OUT_PWD}/$${TARGET}.app/Contents/MacOS/translations/ &&
 CONFIG( release, debug|release ){
