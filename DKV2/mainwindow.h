@@ -48,16 +48,13 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
-    void closeEvent(QCloseEvent *event) override;
     bool dbLoadedSuccessfully =false;
 
     int id_SelectedCreditor();
     int get_current_id_from_contracts_list();
     void updateListViews();
-#ifndef QT_DEBUG
 protected:
     void closeEvent(QCloseEvent *event) override;
-#endif
 private slots:
 
     void currentChange_ctv(const QModelIndex & , const QModelIndex & );

@@ -211,13 +211,6 @@ MainWindow::MainWindow(QWidget *parent) :
     restoreState(settings.value(qsl("windowState")).toByteArray());
 }
 
-void MainWindow::closeEvent(QCloseEvent *event)
-{
-    QSettings settings;
-    settings.setValue(qsl("geometry"), saveGeometry());
-    settings.setValue(qsl("windowState"), saveState());
-    QMainWindow::closeEvent(event);
-}
 MainWindow::~MainWindow()
 {   LOG_CALL;
     delete ui;
@@ -1012,13 +1005,19 @@ void MainWindow::doPaint(QPrinter* pri)
     // text(e)
 }
 
-#ifndef QT_DEBUG
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+#ifndef QT_DEBUG
     QMessageBox::StandardButton mr = QMessageBox::question(this, qsl("Beenden?"), qsl("Möchtest Du DKV2 beenden?"));
     if (mr == QMessageBox::Yes)
         event->accept();
     else
         event->ignore();
-}
 #endif
+
+    QSettings settings;
+    settings.setValue(qsl("geometry"), saveGeometry());
+    settings.setValue(qsl("windowState"), saveState());
+    QMainWindow::closeEvent(event);
+
+}
