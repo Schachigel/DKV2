@@ -205,8 +205,19 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->wPreview, &QPrintPreviewWidget::paintRequested, this, &MainWindow::doPaint);
 
     ui->stackedWidget->setCurrentIndex(startPageIndex);
+
+    QSettings settings;
+    restoreGeometry(settings.value(qsl("geometry")).toByteArray());
+    restoreState(settings.value(qsl("windowState")).toByteArray());
 }
 
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    QSettings settings;
+    settings.setValue(qsl("geometry"), saveGeometry());
+    settings.setValue(qsl("windowState"), saveState());
+    QMainWindow::closeEvent(event);
+}
 MainWindow::~MainWindow()
 {   LOG_CALL;
     delete ui;

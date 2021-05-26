@@ -48,7 +48,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
-
+    void closeEvent(QCloseEvent *event) override;
     bool dbLoadedSuccessfully =false;
 
     int id_SelectedCreditor();
