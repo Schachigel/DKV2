@@ -89,8 +89,8 @@ bool wpCancelContract_SummaryPage::isComplete() const
 
 wizCancelContract::wizCancelContract(QWidget* p) : QWizard(p)
 {
+    QFont f = font(); f.setPointSize(10); setFont(f);
     addPage(new wpCancelContract_IntroPage);
     addPage(new wpCancelContract_DatePage);
     addPage(new wpCancelContract_SummaryPage);
-    QFont f = font(); f.setPointSize(10); setFont(f);
 }

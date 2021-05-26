@@ -88,4 +88,10 @@
 #include <QSqlError>
 #include <QSqlRecord>
 
+#include <QEvent>
+#include <QMouseEvent>
+
+#include <QHeaderView>
+#include <QTableView>
+
 #endif // PCH_H

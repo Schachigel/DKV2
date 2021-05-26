@@ -19,11 +19,7 @@ SOFTWARE.
 
 #include "contractsheadersortingadapter.h"
 
-#include <QApplication>
-#include <QEvent>
-#include <QHeaderView>
-#include <QMouseEvent>
-#include <QTableView>
+#include "pch.h"
 
 contractsHeaderSortingAdapter::contractsHeaderSortingAdapter(QObject *parent) : QObject(parent)
 {

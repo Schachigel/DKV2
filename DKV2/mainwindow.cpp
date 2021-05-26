@@ -185,16 +185,17 @@ MainWindow::MainWindow(QWidget *parent) :
     // WE ARE READY TO GO
     dbLoadedSuccessfully =true;
     // //////////////////
-
-    ui->CreditorsTableView->setStyleSheet(qsl("QTableView::item { padding-right: 10px; padding-left: 10px; }"));
-    ui->contractsTableView->setStyleSheet(qsl("QTableView::item { padding-right: 10px; padding-left: 10px; }"));
+    const QString tableCellStyle {qsl("QTableView::item { padding-top: 5px; padding-bottom: 5px; padding-right: 10px; padding-left: 10px; }")};
+    ui->CreditorsTableView->setStyleSheet(tableCellStyle);
+    ui->contractsTableView->setStyleSheet(tableCellStyle);
     // re-resize columns and rows after sorting
     contractsSortingAdapter = new contractsHeaderSortingAdapter(ui->contractsTableView);
 
     ui->bookingsTableView->setItemDelegateForColumn(2, new bookingTypeFormatter);
-
-    ui->InvestmentsTableView->setStyleSheet(qsl("QTableView::item { padding-right: 10px; padding-left: 10px; }"));
+    ui->bookingsTableView->setStyleSheet(tableCellStyle);
+    ui->InvestmentsTableView->setStyleSheet(tableCellStyle);
     ui->InvestmentsTableView->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+    ui->InvestmentsTableView->setStyleSheet(tableCellStyle);
 
     ui->fontComboBox->setEditable(false);
     ui->fontComboBox->setWritingSystem(QFontDatabase::Latin);

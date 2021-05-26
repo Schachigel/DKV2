@@ -11,6 +11,7 @@ wpAnnualSettlement_IntroPage::wpAnnualSettlement_IntroPage(QWidget* p)  : QWizar
 {
     setTitle(qsl("Jahresabrechnung"));
     setSubTitle(qsl("Die Abrechnung für das Folgende Jahr kann gemacht werden:"));
+    setButtonText(QWizard::FinishButton, qsl("Ausführen"));
     QLabel* l =new QLabel;
     registerField(qsl("year"), l, "text");
     QCheckBox* csv = new QCheckBox(qsl("Buchungen als csv Datei ausgeben."));

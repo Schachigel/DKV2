@@ -196,9 +196,9 @@ void wpChangeContract_Summary::onConfirmData_toggled(int)
 
 wizChangeContract::wizChangeContract(QWidget* p) : QWizard(p)
 {
+    QFont f = font(); f.setPointSize(10); setFont(f);
     addPage(new wpChangeContract_IntroPage);
     addPage(new wpChangeContract_AmountPage);
     addPage(new wpChangeContract_DatePage);
     addPage(new wpChangeContract_Summary);
-    QFont f = font(); f.setPointSize(10); setFont(f);
 }

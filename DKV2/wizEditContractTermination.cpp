@@ -12,7 +12,7 @@ wpEditContractTermination::wpEditContractTermination(QWidget* p) : QWizardPage(p
 {   LOG_CALL;
     setTitle(qsl("Verändern von Vertragsbeginn und -Ende"));
     setSubTitle(qsl("Für das Vertragsende kann eine Kündigungsfrist <b>und / oder</b> ein festes Vertragsende vereinbart werden."));
-
+    setButtonText( QWizard::FinishButton, qsl("&Speichern"));
     cbNoticePeriod =new QComboBox;
     registerField(pnNewPeriod, cbNoticePeriod);
     cbNoticePeriod->addItem(qsl("festes Vertragsende"), QVariant(-1));
@@ -113,5 +113,6 @@ bool wpEditContractTermination::validatePage()
 
 wizEditContractTermination::wizEditContractTermination(QWidget* p) : QWizard(p)
 {
+    QFont f = font(); f.setPointSize(10); setFont(f);
     addPage(new wpEditContractTermination);
 }

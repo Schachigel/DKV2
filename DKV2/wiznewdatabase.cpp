@@ -81,8 +81,8 @@ void wpFileSelection_IntroPage::setVisible(bool v) {
  * for copyDb or openDb
 */
 wizFileSelectionWiz::wizFileSelectionWiz(QWidget* p) : QWizard(p) {
-    addPage(new wpFileSelection_IntroPage);
     QFont f = font(); f.setPointSize(10); setFont(f);
+    addPage(new wpFileSelection_IntroPage);
 }
 
 /*
