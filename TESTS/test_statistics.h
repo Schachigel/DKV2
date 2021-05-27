@@ -41,7 +41,6 @@ struct statSet {
 };
 typedef QMap<interestModel, statSet> stats;
 
-
 class test_statistics : public QObject
 {
     Q_OBJECT
