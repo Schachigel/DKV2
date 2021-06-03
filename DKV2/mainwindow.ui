@@ -865,7 +865,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionInvestmentSchliessen">
    <property name="text">
-    <string>Investment schließen</string>
+    <string>Investment status umschalten</string>
    </property>
    <property name="toolTip">
     <string>Zu einer geschlossenen Geldanlage kann kein Vertrag mehr angelegt werden.</string>

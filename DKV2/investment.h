@@ -14,6 +14,7 @@ bool createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate);
 bool deleteInvestment(const int ZSatz, const QDate v, const QDate b, const QString& t);
 bool saveNewInvestment(int ZSatz, QDate start, QDate end, const QString &type);
 bool closeInvestment(const int ZSatz, const QDate v, const QDate b, const QString& t);
+bool openInvestment(const int ZSatz, const QDate v, const QDate b, const QString& t);
 
 int nbrActiveInvestments(const QDate contractDate=EndOfTheFuckingWorld);
 QVector<QPair<qlonglong, QString>> activeInvestments(const QDate contractDate=EndOfTheFuckingWorld);

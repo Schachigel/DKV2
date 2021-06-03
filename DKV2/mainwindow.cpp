@@ -587,6 +587,7 @@ void MainWindow::on_InvestmentsTableView_customContextMenuRequested(QPoint pos)
     cmenu.addAction(ui->actionInvestmentLoeschen);
     cmenu.addAction(ui->actionInvestmentSchliessen);
     cmenu.addAction(ui->actionTyp_Bezeichnung_aendern);
+
     cmenu.exec(ui->InvestmentsTableView->mapToGlobal(pos));
 }
 void MainWindow::on_actionInvestmentLoeschen_triggered()
@@ -619,20 +620,23 @@ void MainWindow::on_actionInvestmentSchliessen_triggered()
     QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
     QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
     QSqlRecord rec =tm->record(index.row());
+    bool currentStatus =rec.value(qsl("Offen")).toString() == qsl("Offen");
     QDate dAnfang =rec.value(qsl("Anfang")).toDate();
     QString anfang =dAnfang.toString(qsl("yyyy.MM.dd"));
     QDate dEnde =rec.value(qsl("Ende")).toDate();
     QString ende =dEnde.toString(qsl("yyyy.MM.dd"));
     int zinssatz =rec.value(qsl("ZSatz")).toInt();
     QString typ =rec.value(qsl("Typ")).toString();
-    QString msg{qsl("Soll die Anlage mit <b>%1%</b>, vom %2 zum %3 mit dem Typ <br>  > %4 <  <br> geschlossen werden?")};
+    QString msg{currentStatus
+                ? qsl("Zu einer geschlossenen Anlage können keine weiteren Verträge mehr hinzugefügt werden.<p>Soll die Anlage mit <b>%1%</b><br>im Zeitraum vom %2 zum %3 <br>mit dem Typ <br><i><&nbsp;><&nbsp;><&nbsp;>'%4'</i>  <br> geschlossen werden?")
+                : qsl("Wenn Du die Geldanlage wieder öffnest, dann könnn weitere Verträge hinzugefügt werden.<p>Soll die Anlage mit <b>%1%</b><br>im Zeitraum vom %2 zum %3 <br>mit dem Typ <br><i><&nbsp;><&nbsp;><&nbsp;>'%4'</i>  <br> geöffnet werden?")
+               };
     msg =msg.arg(QString::number(zinssatz/100., 'f', 2), anfang, ende, typ);
 
-    if( QMessageBox::Yes == QMessageBox::question(this, qsl("Schließen"), msg)) {
-        // delete the entry, update the view
-        if( closeInvestment(zinssatz, dAnfang, dEnde, typ)) {
-            qInfo() << "removed investment row " << index.row();
-            //tm->submitAll();
+    if( QMessageBox::Yes == QMessageBox::question(this, qsl("Status ändern"), msg)) {
+        bool result = currentStatus ? closeInvestment(zinssatz, dAnfang, dEnde, typ) : openInvestment(zinssatz, dAnfang, dEnde, typ);
+        if( result) {
+            qInfo() << "Investment status from investment " << index.row() << " was changed to " << (currentStatus ? "closed" : "open");
             tm->select();
         } else {
             qWarning() << tm->lastError();

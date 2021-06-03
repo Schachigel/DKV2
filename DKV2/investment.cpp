@@ -76,15 +76,20 @@ bool deleteInvestment(const int ZSatz, const QDate v, const QDate b, const QStri
     return deleteInvestment(ZSatz, v.toString(Qt::ISODate), b.toString(Qt::ISODate), t);
 }
 
-bool closeInvestment(const int ZSatz, const QString& v, const QString& b, const QString& t)
+bool setInvestment(const int ZSatz, const QString& v, const QString& b, const QString& t, bool state)
 {   LOG_CALL;
-    QString sql{qsl("UPDATE  Geldanlagen  SET Offen = 0 WHERE ZSatz=%1 AND Anfang='%2' AND Ende='%3' AND Typ='%4'")};
-    sql =sql.arg(QString::number(ZSatz),v, b, t);
+    QString sql{qsl("UPDATE  Geldanlagen  SET Offen = %1 WHERE ZSatz=%2 AND Anfang='%3' AND Ende='%4' AND Typ='%5'")};
+
+    sql =sql.arg(state?qsl("true"):qsl("false"),QString::number(ZSatz),v, b, t);
     return executeSql_wNoRecords(sql);
 }
 bool closeInvestment(const int ZSatz, const QDate v, const QDate b, const QString& t)
 {
-    return closeInvestment(ZSatz, v.toString(Qt::ISODate), b.toString(Qt::ISODate), t);
+    return setInvestment(ZSatz, v.toString(Qt::ISODate), b.toString(Qt::ISODate), t, false);
+}
+bool openInvestment(const int ZSatz, const QDate v, const QDate b, const QString& t)
+{
+    return setInvestment(ZSatz, v.toString(Qt::ISODate), b.toString(Qt::ISODate), t, true);
 }
 
 int nbrActiveInvestments(const QDate cDate/*=EndOfTheFuckingWorld*/)
