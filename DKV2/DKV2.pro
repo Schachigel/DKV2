@@ -105,6 +105,7 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         mainwindow_contractlist.cpp \
+        mainwindow_creditorlist.cpp \
         reporthtml.cpp \
         tabledatainserter.cpp \
         transaktionen.cpp \
