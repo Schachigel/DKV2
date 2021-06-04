@@ -26,6 +26,9 @@
         contractTable.append(dbfield(qsl("thesaurierend"), QVariant::Int).setNotNull().setDefault(1));
         contractTable.append(dbfield(qsl("Vertragsdatum"), QVariant::Date).setNotNull());
         contractTable.append(dbfield(qsl("Kfrist"), QVariant::Int).setNotNull().setDefault(6));
+        contractTable.append(dbfield(qsl("AnlagenId"), QVariant::Int).setDefault(0));
+        contractTable.append(dbForeignKey(contractTable[qsl("AnlagenId")],
+            qsl("Geldanlagen"), qsl("rowid"), qsl("ON DELETE SET NULL")));
         contractTable.append(dbfield(qsl("LaufzeitEnde"), QVariant::Date).setNotNull().setDefault(qsl("9999-12-31")));
         contractTable.append(dbfield(qsl("Zeitstempel"), QVariant::DateTime).setDefaultNow());
     }
