@@ -211,7 +211,7 @@ private:
 
 private:
     bool showDeletedContracts =false;
-    contractsHeaderSortingAdapter* contractsSortingAdapter;
+    contractsHeaderSortingAdapter* contractsSortingAdapter =nullptr;
 };
 
 #endif // MAINWINDOW_H

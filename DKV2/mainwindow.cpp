@@ -213,8 +213,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {   LOG_CALL;
-    delete ui;
-    delete contractsSortingAdapter;
+    if (ui) delete ui;
+    if (contractsSortingAdapter) delete contractsSortingAdapter;
 }
 
 void MainWindow::showDbInStatusbar( const QString &filename)
