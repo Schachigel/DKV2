@@ -19,7 +19,7 @@ bool openInvestment(const int ZSatz, const QDate v, const QDate b, const QString
 int nbrActiveInvestments(const QDate contractDate=EndOfTheFuckingWorld);
 QVector<QPair<qlonglong, QString>> activeInvestments(const QDate contractDate=EndOfTheFuckingWorld);
 int interestOfInvestmentByRowId(qlonglong rid);
-QString investmentInfoForContract(qlonglong rowId, double amount);
+QString investmentInfoForNewContract(qlonglong rowId, double amount);
 //bool deleteInvestment(const int ZSatz, const QString& v, const QString& b, const QString& t);
 
 

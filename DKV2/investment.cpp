@@ -15,7 +15,7 @@ investment::investment()
 const QString fnInvestmentInterest{qsl("ZSatz")};
 const QString fnInvestmentStart{qsl("Anfang")};
 const QString fnInvestmentEnd{qsl("Ende")};
-const QString fnInvestmentTyp{qsl("Typ")};
+const QString fnInvestmentType{qsl("Typ")};
 const QString fnInvestmentState{qsl("Offen")};
 
 /*static*/ const dbtable& investment::getTableDef()
@@ -23,15 +23,15 @@ const QString fnInvestmentState{qsl("Offen")};
     static dbtable investmentTable(qsl("Geldanlagen"));
     if( 0 == investmentTable.Fields().size()){
         investmentTable.append(dbfield(fnInvestmentInterest, QVariant::Int).setNotNull());
-        investmentTable.append(dbfield(fnInvestmentStart, QVariant::Date).setNotNull());
-        investmentTable.append(dbfield(fnInvestmentEnd, QVariant::Date).setNotNull());
-        investmentTable.append(dbfield(fnInvestmentTyp, QVariant::String).setNotNull());
-        investmentTable.append(dbfield(fnInvestmentState, QVariant::Bool).setNotNull());
+        investmentTable.append(dbfield(fnInvestmentStart,    QVariant::Date).setNotNull());
+        investmentTable.append(dbfield(fnInvestmentEnd,      QVariant::Date).setNotNull());
+        investmentTable.append(dbfield(fnInvestmentType,      QVariant::String).setNotNull());
+        investmentTable.append(dbfield(fnInvestmentState,    QVariant::Bool).setNotNull());
         QVector<dbfield> unique;
         unique.append(investmentTable[fnInvestmentInterest]);
         unique.append(investmentTable[fnInvestmentStart]);
         unique.append(investmentTable[fnInvestmentEnd]);
-        unique.append(investmentTable[fnInvestmentTyp]);
+        unique.append(investmentTable[fnInvestmentType]);
         investmentTable.setUnique(unique);
     }
     return investmentTable;
@@ -43,7 +43,7 @@ bool saveNewInvestment(int ZSatz, QDate start, QDate end, const QString &type)
     tdi.setValue(fnInvestmentInterest, ZSatz);
     tdi.setValue(fnInvestmentStart, start);
     tdi.setValue(fnInvestmentEnd, end);
-    tdi.setValue(fnInvestmentTyp, type);
+    tdi.setValue(fnInvestmentType, type);
     tdi.setValue(fnInvestmentState, 1);
     return tdi.InsertData();
 }
@@ -54,13 +54,13 @@ bool createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
     if( 0 < rowCount(sql.arg(QString::number(ZSatz), vDate.toString(Qt::ISODate), vDate.toString(Qt::ISODate)))) {
         return false;
     }
-    QDate endDate =vDate.addYears(1);
+    QDate endDate =vDate.addYears(1).addDays(-1);
     TableDataInserter tdi(investment::getTableDef());
     tdi.setValue(fnInvestmentInterest, ZSatz);
     tdi.setValue(fnInvestmentStart, vDate);
     tdi.setValue(fnInvestmentEnd, endDate);
     QString type { QString::number(ZSatz/100.) +qsl(" % - 100.000 Euro pa")};
-    tdi.setValue(fnInvestmentTyp, type);
+    tdi.setValue(fnInvestmentType, type);
     tdi.setValue(fnInvestmentState, true);
     return tdi.InsertData();
 }
@@ -100,7 +100,7 @@ int nbrActiveInvestments(const QDate cDate/*=EndOfTheFuckingWorld*/)
     if(cDate == EndOfTheFuckingWorld)
         where =qsl("Offen");
     else {
-        where =qsl("Offen AND Anfang <= date('%1') AND Ende > date('%1')").arg(cDate.toString(Qt::ISODate));
+        where =qsl("Offen AND Anfang <= date('%1') AND Ende >= date('%1')").arg(cDate.toString(Qt::ISODate));
     }
     return executeSingleValueSql(field, tname, where).toInt();
 }
@@ -113,7 +113,7 @@ QVector<QPair<qlonglong, QString>> activeInvestments(const QDate cDate)
     if(cDate == EndOfTheFuckingWorld)
         where =qsl("Offen");
     else {
-        where =qsl("Offen AND Anfang <= date('%1') AND Ende > date('%1')").arg(cDate.toString(Qt::ISODate));
+        where =qsl("Offen AND Anfang <= date('%1') AND Ende >= date('%1')").arg(cDate.toString(Qt::ISODate));
     }
 
     QString sql {(qsl("SELECT rowid, Typ FROM Geldanlagen WHERE %1 ORDER BY %2").arg(where, fnInvestmentInterest))};
@@ -122,7 +122,7 @@ QVector<QPair<qlonglong, QString>> activeInvestments(const QDate cDate)
             return QVector<QPair<qlonglong, QString>>();
     }
     for(const auto& rec : qAsConst(result)) {
-        investments.push_back({rec.value(qsl("rowid")).toLongLong(), rec.value(fnInvestmentTyp).toString()});
+        investments.push_back({rec.value(qsl("rowid")).toLongLong(), rec.value(fnInvestmentType).toString()});
     }
     return investments;
 }
@@ -145,13 +145,13 @@ QString redOrBlack(double d, double max)
     if( d >= max) return qsl("<div style=\"color:red\">") +l.toCurrencyString(d) +qsl("</div>");
     else return l.toCurrencyString(d);
 }
-QString investmentInfoForContract(qlonglong rowId, double amount)
+QString investmentInfoForNewContract(qlonglong ridInvestment, double amount)
 {   LOG_CALL;
 
     int maxNbr =dbConfig::readValue(MAX_INVESTMENT_NBR).toInt();
     double maxSum =dbConfig::readValue(MAX_INVESTMENT_SUM).toDouble();
 
-    QString sql {qsl("SELECT * FROM vInvestmentsOverview WHERE rowid=") +QString::number(rowId)};
+    QString sql {qsl("SELECT * FROM vInvestmentsOverview WHERE rowid=") +QString::number(ridInvestment)};
     QSqlRecord r =executeSingleRecordSql(sql);
     QString s_zSatz  = QString::number(r.value(qsl("ZSatz")).toInt()/100., 'g', 2) +qsl(" %");
     QString from =r.value(qsl("Anfang")).toDate().toString(qsl("dd.MM.yyyy"));

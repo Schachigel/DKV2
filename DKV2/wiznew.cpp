@@ -660,7 +660,7 @@ void wpInterestFromInvestment::initializePage()
 void wpInterestFromInvestment::onInvestments_currentIndexChanged(int ) {
     qlonglong rowId =cbInvestments->currentData().toLongLong();
     double amount =field(pnAmount).toDouble();
-    QString html =investmentInfoForContract(rowId, amount);
+    QString html =investmentInfoForNewContract(rowId, amount);
     lblInvestmentInfo->setText(html);
 }
 bool wpInterestFromInvestment::validatePage()
