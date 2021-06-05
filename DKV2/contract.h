@@ -81,7 +81,7 @@ struct contract
     }
     // construction
     contract(const qlonglong id =-1);
-    void init(const qlonglong creditorId =-1);
+    void initContractDefaults(const qlonglong creditorId =-1);
     void initRandom(const qlonglong creditorId =-1);
     // getter & setter
     void setId(qlonglong id) { td.setValue(qsl("id"), id);}
@@ -99,6 +99,8 @@ struct contract
         QVariant p(td.getValue(qsl("ZSatz"))); // stored as a int (100th percent)
         return r2(double(p.toInt())/100.);
     }
+    void setInvestment(qlonglong rId) { td.setValue(qsl("AnlagenId"), (rId>0?QVariant(rId):QVariant()));}
+    qlonglong investment() const { return td.getValue(qsl("AnlagenId")).toLongLong();}
     void setPlannedInvest(const double d) { td.setValue(qsl("Betrag"), ctFromEuro(d));}
     double plannedInvest() const { return euroFromCt( td.getValue(qsl("Betrag")).toInt());}
     void setInterestModel( const interestModel b =interestModel::reinvest) {
@@ -154,7 +156,7 @@ private:
     bool bookInBetweenInterest(const QDate d);
     bool storeTerminationDate(const QDate d) const;
     bool archive();
-    void reset() {init();}
+    void reset() {initContractDefaults();}
     mutable enum constract_activation_status
          { uninit =-1, passive =0, active =1 } activated=uninit;
     mutable QDate aDate = EndOfTheFuckingWorld;

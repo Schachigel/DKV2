@@ -26,7 +26,7 @@
         contractTable.append(dbfield(qsl("thesaurierend"), QVariant::Int).setNotNull().setDefault(1));
         contractTable.append(dbfield(qsl("Vertragsdatum"), QVariant::Date).setNotNull());
         contractTable.append(dbfield(qsl("Kfrist"), QVariant::Int).setNotNull().setDefault(6));
-        contractTable.append(dbfield(qsl("AnlagenId"), QVariant::Int).setDefault(0));
+        contractTable.append(dbfield(qsl("AnlagenId"), QVariant::Int).setDefault(NULL));
         contractTable.append(dbForeignKey(contractTable[qsl("AnlagenId")],
             qsl("Geldanlagen"), qsl("rowid"), qsl("ON DELETE SET NULL")));
         contractTable.append(dbfield(qsl("LaufzeitEnde"), QVariant::Date).setNotNull().setDefault(qsl("9999-12-31")));
@@ -60,7 +60,7 @@
 }
 
 // construction
-void contract::init(const qlonglong creditorId /*=-1*/)
+void contract::initContractDefaults(const qlonglong creditorId /*=-1*/)
 {
     setId(-1);
     setCreditorId(creditorId);
@@ -70,6 +70,7 @@ void contract::init(const qlonglong creditorId /*=-1*/)
     setConclusionDate(QDate::currentDate());
     setInterestRate(1.50);
     setPlannedInvest(1000000);
+    setInvestment(0);
 }
 void contract::initRandom(qlonglong creditorId)
 {   //LOG_CALL_W(QString::number(creditorId));
@@ -92,7 +93,7 @@ void contract::initRandom(qlonglong creditorId)
 contract::contract(qlonglong contractId) : td(getTableDef())
 {
     if( contractId <= 0) {
-        init();
+        initContractDefaults();
     } else {
         qInfo() << "init contract from DB (id " << contractId << " )";
         QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), "id=" + QString::number(contractId));

@@ -22,6 +22,7 @@ const QString fnInvestmentState{qsl("Offen")};
 {
     static dbtable investmentTable(qsl("Geldanlagen"));
     if( 0 == investmentTable.Fields().size()){
+        investmentTable.append(dbfield(qsl("rowid"), QVariant::Int).setPrimaryKey().setAutoInc());
         investmentTable.append(dbfield(fnInvestmentInterest, QVariant::Int).setNotNull());
         investmentTable.append(dbfield(fnInvestmentStart,    QVariant::Date).setNotNull());
         investmentTable.append(dbfield(fnInvestmentEnd,      QVariant::Date).setNotNull());

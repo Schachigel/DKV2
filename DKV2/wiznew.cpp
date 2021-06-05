@@ -668,6 +668,7 @@ bool wpInterestFromInvestment::validatePage()
     rowid_investment = cbInvestments->currentData().toLongLong();
     wizNew* wiz =qobject_cast<wizNew*>(wizard());
     wiz->interest =interestOfInvestmentByRowId(rowid_investment);
+    wiz->investmentId =rowid_investment;
     if( wiz->interest == 0){
         // without interest -> interest payout mode "zero"
         wiz->iPaymentMode =interestModel::zero;
@@ -777,6 +778,7 @@ bool wpConfirmContract::saveContract()
         c.setCreditorId(wiz->creditorId);
         c.setPlannedInvest(field(pnAmount).toDouble());
         c.setInterestRate(wiz->interest/100.);
+        c.setInvestment(wiz->investmentId);
         c.setLabel(field(pnLabel).toString());
         c.setConclusionDate(field(pnCDate).toDate());
         c.setNoticePeriod(wiz->noticePeriod);
