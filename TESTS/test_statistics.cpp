@@ -119,7 +119,7 @@ void test_statistics::test_contracts_current_statistics()
      */
     creditor creditor1 {saveRandomCreditor()};
     contract contPayout;
-    contPayout.init(creditor1.id());
+    contPayout.initContractDefaults(creditor1.id());
     contPayout.setInterestModel(interestModel::payout);
     contPayout.setInterestRate(1.);
     contPayout.setPlannedInvest(100.);
@@ -152,7 +152,7 @@ void test_statistics::test_contracts_current_statistics()
      */
     QDate dateSecondContract =dateFirstContract.addDays(10);
     contract contReinvest;
-    contReinvest.init(creditor1.id());
+    contReinvest.initContractDefaults(creditor1.id());
     contReinvest.setInterestModel(interestModel::reinvest);
     contReinvest.setInterestRate(2.);
     contReinvest.setPlannedInvest(100.);
@@ -182,7 +182,7 @@ void test_statistics::test_contracts_current_statistics()
     QDate dateThirdContract =dateSecondContract.addDays(10);
     creditor creditor2 {saveRandomCreditor()};
     contract contFix;
-    contFix.init(creditor2.id());
+    contFix.initContractDefaults(creditor2.id());
     contFix.setInterestModel(interestModel::fixed);
     contFix.setInterestRate(1.5);
     contFix.setPlannedInvest(100.);
@@ -212,7 +212,7 @@ void test_statistics::test_contracts_current_statistics()
     QDate dateForthContract =dateThirdContract.addDays(5);
     creditor creditor3 {saveRandomCreditor()};
     contract contZero;
-    contZero.init(creditor3.id());
+    contZero.initContractDefaults(creditor3.id());
     contZero.setInterestModel(interestModel::zero);
     //contPayout.setInterestRate(2);
     contZero.setPlannedInvest(200.);

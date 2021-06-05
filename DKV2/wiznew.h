@@ -232,6 +232,7 @@ struct wizNew : public QWizard
     wizNew(QWidget* p =nullptr);
     qlonglong creditorId =-1;
     int interest =-1;
+    qlonglong investmentId =0;
     int noticePeriod =-1;
     interestModel iPaymentMode =interestModel::maxId;
     void setUpdateMode(bool b=true){ updateMode =b;}
