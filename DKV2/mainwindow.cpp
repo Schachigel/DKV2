@@ -516,20 +516,33 @@ void MainWindow::on_actionInvestmentSchliessen_triggered()
 void MainWindow::on_actionTyp_Bezeichnung_aendern_triggered()
 {
     QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
-    QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
-    QSqlRecord rec =tm->record(index.row());
-    QString typ =rec.value(qsl("Typ")).toString();
+    QSqlTableModel* model {qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model())};
+    QString typ =ui->InvestmentsTableView->model()->data(index.siblingAtColumn(3)).toString();;
+//    QString zinssatz =ui->InvestmentsTableView->model()->data(index.siblingAtColumn(0)).toString();
+    QString zinssatz =qobject_cast<PercentFrom100sItemFormatter*>(ui->InvestmentsTableView->itemDelegate(index.siblingAtColumn(0)))
+            ->displayText(model->data(index.siblingAtColumn(0)), QLocale());
+
+    QString von =doFormatDateItem(model->data(index.siblingAtColumn(1)));
+    QString bis =doFormatDateItem(model->data(index.siblingAtColumn(2)));
+
+    QString msg {qsl("<table><tr><th>Neue Bezeichnung für den Anlage </th></tr><tr><td style=\"align:center\">mit %1 Zins</td></tr>"
+                     "<tr><td>von %2 bis %3.</tr>"
+                     "<tr><td>alter Wert: <i>'%4'</i></td></tr></table>")};
 
     QInputDialog id(this);
     QFont f =id.font(); f.setPointSize(10); id.setFont(f);
     id.setInputMode(QInputDialog::InputMode::TextInput);
-    id.setWindowTitle(qsl("Geldanlagen Bezeichner"));
-    id.setLabelText(qsl("Bezeichner für den Anlage Typ"));
+    id.setWindowTitle(qsl("Geldanlagen"));
+    id.setLabelText(msg.arg(zinssatz, von, bis, typ));
     id.setTextValue(typ);
+
     int idOk =id.exec();
     QString txt = id.textValue().trimmed();
     if( not idOk or txt.isEmpty())
         return;
+
+    QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
+    QSqlRecord rec =tm->record(index.row());
     QString sql(qsl("UPDATE Geldanlagen SET Typ =? WHERE rowid =%1").arg(rec.value(qsl("rowid")).toString()));
     if( executeSql_wNoRecords(sql, {QVariant(txt)}))
         tm->select();
