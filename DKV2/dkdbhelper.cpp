@@ -18,6 +18,7 @@
 #include "dkdbviews.h"
 #include "dkdbcopy.h"
 #include "dbstructure.h"
+#include "investment.h"
 
 bool insert_views( const QSqlDatabase &db)
 {   LOG_CALL;
@@ -188,6 +189,30 @@ int createNewInvestmentsFromContracts()
             ret++;
     }
     return ret;
+}
+
+int automatchInvestmentsToContracts()
+{   LOG_CALL;
+    QString sql{qsl("SELEcT id, ZSatz, Vertragsdatum, AnlagenId FROM Vertraege WHERE AnlagenId =0 OR AnlagenId IS NULL")};
+    QSqlQuery q;
+    if( not q.exec(sql)) {
+        qDebug() << "failed to exec query";
+        return -1;
+    }
+    int successcount =0;
+    while(q.next()) {
+        int interestRate   =q.record().value(qsl("ZSatz")).toInt();
+        QDate contractDate =q.record().value(qsl("Vertragsdatum")).toDate();
+        QVector<investment> suitableInvestments =investments(interestRate, contractDate);
+        if( suitableInvestments.length() != 1)
+            continue;
+        contract c(q.record().value(qsl("id")).toLongLong());
+        if( c.updateInvestment(suitableInvestments[0].rowid))
+            successcount++;
+        else
+            qDebug() << "contract update failed";
+    }
+    return successcount;
 }
 
 void create_sampleData(int datensaetze)

@@ -168,6 +168,8 @@ private slots:
 
     void on_action_cmenu_changeContractTermination_triggered();
 
+    void on_btnAutoMatch_clicked();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();

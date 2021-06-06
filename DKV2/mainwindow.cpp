@@ -446,6 +446,14 @@ void MainWindow::on_btnNewInvestment_clicked()
     m->select();
     ui->InvestmentsTableView->resizeColumnsToContents();
 }
+void MainWindow::on_btnAutoMatch_clicked()
+{
+    busycursor b;
+    int i =automatchInvestmentsToContracts();
+    QMessageBox::information(this, qsl("Zugeordnete Verträge"),
+                             qsl("Es wurden %i Verträge passenden Geldanlagen zugeordnet.").arg(QString::number(i)));
+
+}
 void MainWindow::on_InvestmentsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;
     QTableView* tv =ui->InvestmentsTableView;
@@ -535,6 +543,8 @@ void MainWindow::on_actionTyp_Bezeichnung_aendern_triggered()
     id.setWindowTitle(qsl("Geldanlagen"));
     id.setLabelText(msg.arg(zinssatz, von, bis, typ));
     id.setTextValue(typ);
+    QLineEdit* leText =id.findChild<QLineEdit*>();
+    if(leText) leText->setMaxLength(25);
 
     int idOk =id.exec();
     QString txt = id.textValue().trimmed();
