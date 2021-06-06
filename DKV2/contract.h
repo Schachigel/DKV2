@@ -131,6 +131,7 @@ struct contract
     int saveNewContract();
     void updateComment(const QString&);
     bool updateTerminationDate(QDate termination, int noticePeriod);
+    bool updateInvestment(qlonglong id);
 /* not used?  int validateAndSaveNewContract(QString& meldung); */
     // contract activation
     bool activate(const QDate aDate, double amount);

@@ -190,7 +190,13 @@ bool contract::updateTerminationDate(QDate termination, int noticePeriod)
     return  -1 not_eq td.UpdateData();
 }
 
-
+bool contract::updateInvestment(qlonglong id)
+{
+    setInvestment( id);
+    if( -1 == td.UpdateData())
+        return false;
+    return true;
+}
 // helper: only annual settlements should be on the last day of the year
 // other bookings should move to dec. 30th
 QDate avoidYearEndBookings(const QDate d)

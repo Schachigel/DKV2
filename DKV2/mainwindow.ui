@@ -31,7 +31,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -315,10 +315,20 @@ p, li { white-space: pre-wrap; }
           <item>
            <widget class="QPushButton" name="btnCreateFromContracts">
             <property name="toolTip">
-             <string>Mit dieser Funktion wird zu jedem Vertrag, der zu keiner Geldanlage gehört, eine Geldanlage angelegt.</string>
+             <string>Zu jedem Vertrag, zu dem es keine passende Geldanlage gibt, wird eine angelegt.</string>
             </property>
             <property name="text">
              <string>Aus &amp;Verträgen erstellen</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnAutoMatch">
+            <property name="toolTip">
+             <string>Verträge, für die es nur eine passende Geldanlage gibt, werden dieser zugeordnet</string>
+            </property>
+            <property name="text">
+             <string>Vertr. autom. zuordnen</string>
             </property>
            </widget>
           </item>

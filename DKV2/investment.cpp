@@ -7,7 +7,8 @@
 #include "tabledatainserter.h"
 #include "investment.h"
 
-investment::investment()
+investment::investment(qlonglong id /*=-1*/, int interest /*=0*/, QDate start /*=EndOfTheFuckingWorld*/, QDate end /*=EndOfTheFuckingWorld*/, const QString& type /*=qsl("")*/)
+    : rowid(id), interest(interest), start (start), end (end), type(type)
 {
 
 }
@@ -51,7 +52,7 @@ bool saveNewInvestment(int ZSatz, QDate start, QDate end, const QString &type)
 
 bool createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
 {   LOG_CALL;
-    QString sql{qsl("SELECT * FROM Geldanlagen WHERE ZSatz =%1 AND Anfang <= date('%2') AND Ende > date('%3')")};
+    QString sql{qsl("SELECT * FROM Geldanlagen WHERE ZSatz =%1 AND Anfang <= date('%2') AND Ende >= date('%3')")};
     if( 0 < rowCount(sql.arg(QString::number(ZSatz), vDate.toString(Qt::ISODate), vDate.toString(Qt::ISODate)))) {
         return false;
     }
@@ -60,7 +61,7 @@ bool createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
     tdi.setValue(fnInvestmentInterest, ZSatz);
     tdi.setValue(fnInvestmentStart, vDate);
     tdi.setValue(fnInvestmentEnd, endDate);
-    QString type { QString::number(ZSatz/100.) +qsl(" % - 100.000 Euro pa")};
+    QString type { qsl("100.tEuro pa /max 20")};
     tdi.setValue(fnInvestmentType, type);
     tdi.setValue(fnInvestmentState, true);
     return tdi.InsertData();
@@ -108,7 +109,7 @@ int nbrActiveInvestments(const QDate cDate/*=EndOfTheFuckingWorld*/)
 
 QVector<QPair<qlonglong, QString>> activeInvestments(const QDate cDate)
 {   LOG_CALL_W(cDate.toString(qsl("yyyy.MM.dd")));
-
+// fill combo box to select investment / interest for new contract
     QVector<QPair<qlonglong, QString>> investments;
     QString where;
     if(cDate == EndOfTheFuckingWorld)
@@ -180,4 +181,23 @@ QString investmentInfoForNewContract(qlonglong ridInvestment, double amount)
     QString ret =qsl("<table width=100% style=\"border-width:0px\">%1 %2</table>").arg(html1, html2);
     qDebug() << ret;
     return ret;
+}
+
+QVector<investment> investments(int rate, QDate conclusionDate)
+{
+    LOG_CALL;
+    QString sql{qsl("SELeCT * FROM Geldanlagen WHERE Offen AND ZSatz = %1 AND Anfang <= date('%2')  AND Ende >= date('%2')")};
+    QVector<QSqlRecord> records;
+    if( not executeSql(sql.arg(QString::number(rate), conclusionDate.toString(Qt::ISODate)), QVector<QVariant>(), records))
+        return QVector<investment>();
+
+    QVector<investment> result;
+    for (const auto &record : qAsConst(records)) {
+        result.push_back(investment(record.value(qsl("rowid")).toLongLong(),
+                                    record.value(qsl("ZSatz")).toInt(),
+                                    record.value(qsl("Start")).toDate(),
+                                    record.value(qsl("Ende")).toDate(),
+                                    record.value(qsl("Typ")).toString()));
+    }
+    return result;
 }

@@ -40,7 +40,7 @@ QString proposeContractLabel();
 void create_sampleData(int datensaetze =20);
 
 int createNewInvestmentsFromContracts();
-
+int automatchInvestmentsToContracts();
 bool createCsvActiveContracts();
 
 struct ContractEnd
