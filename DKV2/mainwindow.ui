@@ -873,7 +873,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionTyp_Bezeichnung_aendern">
    <property name="text">
-    <string>Typ &amp;Bezeichnung ändern</string>
+    <string>&amp;Bezeichnung der Anlage ändern</string>
    </property>
    <property name="toolTip">
     <string>Mit dieser Option kannst Du den Typ ändern</string>

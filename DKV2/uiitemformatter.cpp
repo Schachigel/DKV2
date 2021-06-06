@@ -14,13 +14,17 @@ void centralAlignedTextFormatter::paint(QPainter *p, const QStyleOptionViewItem 
     QStyledItemDelegate::paint(p, alignedOption, i);
 }
 
-QString DateItemFormatter::displayText(const QVariant& value, const QLocale& )const
+QString doFormatDateItem(const QVariant& value)
 {
     QDate date= value.toDate();
     if( date == QDate() or date > QDate(9990, 12, 31))
         return value.toString();
     else
         return date.toString(qsl("dd.MM.yyyy"));
+}
+QString DateItemFormatter::displayText(const QVariant& value, const QLocale& )const
+{
+    return doFormatDateItem(value);
 };
 void DateItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
@@ -29,11 +33,15 @@ void DateItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &opt
     QStyledItemDelegate::paint(painter, alignedOption, index);
 }
 
-QString PercentItemFormatter::displayText(const QVariant& value, const QLocale& )const
+QString doFormatPercentItem(const QVariant& value)
 {
     double percent = value.toDouble();
     // data is stored as 100th percent but the query compensatates that
     return qsl("%1%").arg(percent, 2, 'f', 2);
+}
+QString PercentItemFormatter::displayText(const QVariant& value, const QLocale& )const
+{
+    return doFormatPercentItem(value);
 };
 void PercentItemFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
