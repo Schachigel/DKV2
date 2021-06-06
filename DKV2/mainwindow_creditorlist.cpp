@@ -3,6 +3,7 @@
 
 #include "pch.h"
 
+#include "contracttablemodel.h"
 #include "transaktionen.h"
 
 
@@ -127,6 +128,7 @@ void MainWindow::updateListViews()
             temp->select();
         ui->contractsTableView->resizeColumnsToContents();
         ui->contractsTableView->resizeRowsToContents();
+        qobject_cast<ContractTableModel*>(ui->contractsTableView->model())->setCol13ExtraData();
     }
     if( ui->stackedWidget->currentIndex() == overviewsPageIndex)
         on_action_menu_contracts_statistics_view_triggered();
