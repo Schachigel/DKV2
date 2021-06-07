@@ -54,14 +54,12 @@ QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
     if (role == Qt::ForegroundRole) {
         int col =i.column();
         if( col == 4 or col == 6) {
-            int iMax =dbConfig::readValue(MAX_INVESTMENT_NBR).toInt();
             int nbr =i.data().toInt();
             if(nbr >= iMax){
                 qInfo() << "nbr: " << nbr << " row: " << col;
                 return QColor(Qt::red);
             }
         } else if (col == 5 or col == 7) {
-            double dMax =dbConfig::readValue(MAX_INVESTMENT_SUM).toDouble();
             double sum =i.data().toDouble();
             if( sum >= dMax){
                 qInfo() << "sum: " << sum << " row: " << col;
@@ -398,6 +396,7 @@ void MainWindow::on_action_menu_database_program_exit_triggered()
 void MainWindow::prepare_investmentsListView()
 {
     InvestmentsTableModel* model = new InvestmentsTableModel(this);
+
     model->setTable(vnInvestmentsView);
     //model->setSort(0, Qt::SortOrder::DescendingOrder);
 

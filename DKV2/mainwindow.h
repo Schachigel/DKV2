@@ -11,7 +11,8 @@
 #include <QPrinter>
 
 #include "reporthtml.h"
-#include <dkdbhelper.h>
+#include "dkdbhelper.h"
+#include "appconfig.h"
 #include "contract.h"
 #include "contractsheadersortingadapter.h"
 
@@ -32,9 +33,14 @@ class InvestmentsTableModel : public QSqlTableModel
 {
     Q_OBJECT
 public:
-    InvestmentsTableModel(QWidget* w) : QSqlTableModel(w){};
+    InvestmentsTableModel(QWidget* w) : QSqlTableModel(w){
+        iMax =dbConfig::readValue(MAX_INVESTMENT_NBR).toInt();
+        dMax =dbConfig::readValue(MAX_INVESTMENT_SUM).toDouble();
+    };
 private:
     QVariant data(const QModelIndex& i, int role) const;
+    int iMax =0;
+    double dMax =0.;
 };
 
 namespace Ui {
@@ -169,6 +175,8 @@ private slots:
     void on_action_cmenu_changeContractTermination_triggered();
 
     void on_btnAutoMatch_clicked();
+
+    void on_action_cmenu_assoc_investment_triggered();
 
 private:
     Ui::MainWindow *ui;

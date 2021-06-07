@@ -13,6 +13,7 @@ public:
     QDate start;
     QDate end;
     QString type;
+    QString toString() const;
 };
 
 bool createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate);

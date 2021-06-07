@@ -907,6 +907,11 @@ p, li { white-space: pre-wrap; }
     <string>&amp;Kündigungsfrist und Vertragsende bearbeiten</string>
    </property>
   </action>
+  <action name="action_cmenu_assoc_investment">
+   <property name="text">
+    <string>Geldanlage zuordnen</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

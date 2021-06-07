@@ -13,6 +13,11 @@ investment::investment(qlonglong id /*=-1*/, int interest /*=0*/, QDate start /*
 
 }
 
+QString investment::toString() const
+{
+    return d2percent_str(interest) + qsl(" : ") + start.toString() + qsl(" - ") + end.toString() + " - " + type;
+}
+
 const QString fnInvestmentInterest{qsl("ZSatz")};
 const QString fnInvestmentStart{qsl("Anfang")};
 const QString fnInvestmentEnd{qsl("Ende")};

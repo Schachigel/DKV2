@@ -4,6 +4,7 @@
 #include "contracttablemodel.h"
 #include "uiitemformatter.h"
 #include "dkdbviews.h"
+#include "investment.h"
 #include "transaktionen.h"
 #include "helper.h"
 
@@ -240,6 +241,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
     }
     menu.addAction(ui->action_cmenu_changeContractTermination);
     menu.addAction(ui->action_cmenu_Anmerkung_aendern);
+    menu.addAction(ui->action_cmenu_assoc_investment);
     menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
     return;
 }
@@ -272,6 +274,43 @@ void MainWindow::on_action_cmenu_changeContractTermination_triggered()
 {   LOG_CALL;
     changeContractTermination(get_current_id_from_contracts_list());
     updateListViews();
+}
+void MainWindow::on_action_cmenu_assoc_investment_triggered()
+{
+    contract c(get_current_id_from_contracts_list());
+    QVector<investment> invests =investments(d2percent(c.interestRate()), c.conclusionDate());
+    switch (invests.size())
+    {
+    case 0:
+        QMessageBox::information(this, qsl("Fehler"), qsl("Keine Geldanlage passt zu Zins und Vertragsdatum dieses Vertrags"));
+        break;
+    case 1:
+        if( c.updateInvestment(invests[0].rowid))
+            QMessageBox::information(this, qsl("Erfolg"), qsl("Die Geldanlage mit dem passenden Zins und Vertragsdatum wurde zugewiesen"));
+        else
+            QMessageBox::information(this, qsl("Fehler"), qsl("Die einzige Geldanlage konnte nicht zugewiesen werden. Schau bitte in die Log Datei."));
+        break;
+    default:
+        QInputDialog id(this);
+        QFont f=id.font(); f.setPointSize(10); id.setFont(f);
+        id.setComboBoxEditable(false);
+        QStringList iList;
+        for( const auto& inv: qAsConst(invests)) {
+            iList.push_back(inv.toString());
+        }
+        id.setComboBoxItems(iList);
+        QComboBox* cb =id.findChild<QComboBox*>();
+        int i=0;
+        for( const auto& inv: qAsConst(invests)) {
+            cb->setItemData(i++, inv.rowid);
+        }
+        if( id.exec() not_eq QDialog::Accepted) {
+            qInfo() << "selection of investment aborted";
+            return;
+        }
+        break;
+    };
+
 }
 
 /////////////////////////////////////////////////
