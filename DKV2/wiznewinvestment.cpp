@@ -61,9 +61,8 @@ wpType::wpType(QWidget* w) : QWizardPage(w)
 }
 void wpType::initializePage()
 {   LOG_CALL_W(qsl("wpType"));
-    QString prop {qsl("%1 % - ab %2 - 100.000 Euro pa")};
-    QString zs =QString::number(field(pnZSatz).toInt()/100., 'f', 2);
-    setField(pnTyp, prop.arg(zs, field(pnVon).toDate().toString(qsl("dd.MM.yyyy"))));
+    QString prop {qsl("ab %1; max. 100.000")};
+    setField(pnTyp, prop.arg(field(pnVon).toDate().toString(qsl("dd.MM.yyyy"))));
 }
 
 /* ////////////////////////////

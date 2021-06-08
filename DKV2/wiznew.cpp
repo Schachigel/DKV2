@@ -699,7 +699,8 @@ wpInterestSelection::wpInterestSelection(QWidget* w) : QWizardPage(w)
     QComboBox* cbInterest =new QComboBox;
     lZ->setBuddy(cbInterest);
     cbInterest->addItem(qsl("Zinslos"), QVariant(0));
-    for( int i =1; i <= dbConfig::readValue(MAX_INTEREST).toInt(); i++)
+    const int max_interest =dbConfig::readValue(MAX_INTEREST).toInt();
+    for( int i =1; i <= max_interest; i++)
         cbInterest->addItem(QString::number(double(i)/100., 'f', 2), QVariant(i));
     cbInterest->setCurrentIndex(qMin(90, cbInterest->count()));
     registerField(pnInterestIndex, cbInterest);

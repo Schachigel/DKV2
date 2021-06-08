@@ -56,13 +56,13 @@ QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
         if( col == 4 or col == 6) {
             int nbr =i.data().toInt();
             if(nbr >= iMax){
-                qInfo() << "nbr: " << nbr << " row: " << col;
+                //qInfo() << "nbr: " << nbr << " row: " << col;
                 return QColor(Qt::red);
             }
         } else if (col == 5 or col == 7) {
             double sum =i.data().toDouble();
             if( sum >= dMax){
-                qInfo() << "sum: " << sum << " row: " << col;
+                //qInfo() << "sum: " << sum << " row: " << col;
                 return QColor(Qt::red);
             }
         }
