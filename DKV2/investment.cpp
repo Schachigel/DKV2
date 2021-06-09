@@ -7,15 +7,17 @@
 #include "tabledatainserter.h"
 #include "investment.h"
 
-investment::investment(qlonglong id /*=-1*/, int interest /*=0*/, QDate start /*=EndOfTheFuckingWorld*/, QDate end /*=EndOfTheFuckingWorld*/, const QString& type /*=qsl("")*/)
-    : rowid(id), interest(interest), start (start), end (end), type(type)
+investment::investment(qlonglong id /*=-1*/, int interest /*=0*/,
+                       QDate start /*=EndOfTheFuckingWorld*/, QDate end /*=EndOfTheFuckingWorld*/,
+                       const QString& type /*=qsl("")*/, bool state)
+    : rowid(id), interest(interest), start (start), end (end), type(type), state(state)
 {
 
 }
 
 QString investment::toString() const
 {
-    return d2percent_str(interest) + qsl(" : ") + start.toString() + qsl(" - ") + end.toString() + " - " + type;
+    return d2percent_str(interest) + qsl(" (") + start.toString() + qsl(" - ") + end.toString() + ") " + type;
 }
 
 const QString fnInvestmentInterest{qsl("ZSatz")};
@@ -188,7 +190,7 @@ QString investmentInfoForNewContract(qlonglong ridInvestment, double amount)
     return ret;
 }
 
-QVector<investment> investments(int rate, QDate conclusionDate)
+QVector<investment> openInvestments(int rate, QDate conclusionDate)
 {
     LOG_CALL;
     QString sql{qsl("SELeCT * FROM Geldanlagen WHERE Offen AND ZSatz = %1 AND Anfang <= date('%2')  AND Ende >= date('%2')")};
@@ -199,10 +201,11 @@ QVector<investment> investments(int rate, QDate conclusionDate)
     QVector<investment> result;
     for (const auto &record : qAsConst(records)) {
         result.push_back(investment(record.value(qsl("rowid")).toLongLong(),
-                                    record.value(qsl("ZSatz")).toInt(),
-                                    record.value(qsl("Start")).toDate(),
-                                    record.value(qsl("Ende")).toDate(),
-                                    record.value(qsl("Typ")).toString()));
+                                    record.value(fnInvestmentInterest).toInt(),
+                                    record.value(fnInvestmentStart).toDate(),
+                                    record.value(fnInvestmentEnd).toDate(),
+                                    record.value(fnInvestmentType).toString(),
+                                    record.value(fnInvestmentState).toBool()));
     }
     return result;
 }

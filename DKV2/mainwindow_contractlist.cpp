@@ -30,7 +30,9 @@ QString filterFromFilterphrase(const QString &fph)
             return qsl("KreditorId=") + QString::number(contractId);
     }
     return fph.isEmpty() ? QString() :
-                           (qsl("Kreditorin LIKE '%") + fph + qsl("%' OR Vertragskennung LIKE '%") + fph + qsl("%'"));
+                           (qsl("Kreditorin LIKE '%") + fph
+                            + qsl("%' OR Vertragskennung LIKE '%") + fph
+                            + qsl("%' OR Zinssatz LIKE '%") +fph +"%'");
 }
 void MainWindow::prepare_valid_contracts_list_view()
 { LOG_CALL;
@@ -276,9 +278,9 @@ void MainWindow::on_action_cmenu_changeContractTermination_triggered()
     updateListViews();
 }
 void MainWindow::on_action_cmenu_assoc_investment_triggered()
-{
+{   LOG_CALL;
     contract c(get_current_id_from_contracts_list());
-    QVector<investment> invests =investments(d2percent(c.interestRate()), c.conclusionDate());
+    QVector<investment> invests =openInvestments(d2percent(c.interestRate()), c.conclusionDate());
     switch (invests.size())
     {
     case 0:
@@ -300,17 +302,22 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
         }
         id.setComboBoxItems(iList);
         QComboBox* cb =id.findChild<QComboBox*>();
-        int i=0;
+        int i =0;
         for( const auto& inv: qAsConst(invests)) {
             cb->setItemData(i++, inv.rowid);
         }
+        qInfo() << cb;
         if( id.exec() not_eq QDialog::Accepted) {
             qInfo() << "selection of investment aborted";
             return;
         }
+        int rowId =cb->itemData(cb->currentIndex()).toInt();
+        if( not c.updateInvestment(rowId)) {
+            qDebug() << "failed to save investment to contract" << c.toString() << "\n" << rowId;
+        }
         break;
     };
-
+    updateListViews();
 }
 
 /////////////////////////////////////////////////

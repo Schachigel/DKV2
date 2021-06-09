@@ -231,7 +231,6 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
     switch(arg1)
     {
     case startPageIndex:
-        prepare_startPage();
         ui->action_menu_creditors_delete->setEnabled(false);
         ui->menu_contracts_subm_print_lists->setEnabled(false);
         break;
@@ -256,7 +255,6 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
         ui->menu_contracts_subm_print_lists->setEnabled(false);
         break;
     case investmentsPageIndex:
-        prepare_investmentsListView();
         ui->action_menu_creditors_delete->setEnabled(false);
         ui->menu_contracts_subm_print_lists->setEnabled(false);
         break;

@@ -184,14 +184,14 @@ void contract::updateComment(const QString &c)
 }
 
 bool contract::updateTerminationDate(QDate termination, int noticePeriod)
-{
+{   LOG_CALL;
     td.setValue(qsl("Kfrist"), noticePeriod);
     td.setValue(qsl("LaufzeitEnde"), termination);
     return  -1 not_eq td.UpdateData();
 }
 
 bool contract::updateInvestment(qlonglong id)
-{
+{   LOG_CALL;
     setInvestment( id);
     if( -1 == td.UpdateData())
         return false;
@@ -200,7 +200,7 @@ bool contract::updateInvestment(qlonglong id)
 // helper: only annual settlements should be on the last day of the year
 // other bookings should move to dec. 30th
 QDate avoidYearEndBookings(const QDate d)
-{
+{   LOG_CALL;
     if( not d.isValid()) return d;
     if( d.month() == 12 and d.day() == 31) {
         qInfo() << "no deposit possible on dec. 31st -> switching to 30th";

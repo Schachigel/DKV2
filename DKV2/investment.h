@@ -6,13 +6,14 @@
 class investment
 {
 public:
-    investment(qlonglong id =-1, int interest =0, QDate start =EndOfTheFuckingWorld, QDate end =EndOfTheFuckingWorld, const QString& type =qsl(""));
+    investment(qlonglong id =-1, int interest =0, QDate start =EndOfTheFuckingWorld, QDate end =EndOfTheFuckingWorld, const QString& type =qsl(""), bool state =true);
     static const dbtable& getTableDef();
     qlonglong rowid;
     int interest;
     QDate start;
     QDate end;
     QString type;
+    bool state;
     QString toString() const;
 };
 
@@ -27,7 +28,7 @@ QVector<QPair<qlonglong, QString>> activeInvestments(const QDate contractDate=En
 int interestOfInvestmentByRowId(qlonglong rid);
 QString investmentInfoForNewContract(qlonglong rowId, double amount);
 //bool deleteInvestment(const int ZSatz, const QString& v, const QString& b, const QString& t);
-QVector<investment> investments(int rate, QDate concluseionDate);
+QVector<investment> openInvestments(int rate, QDate concluseionDate);
 
 
 #endif // INVESTMENT_H
