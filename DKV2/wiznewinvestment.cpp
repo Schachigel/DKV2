@@ -129,7 +129,8 @@ wpNewInvestInterest::wpNewInvestInterest(QWidget* p) : QWizardPage(p)
     QComboBox* cbInterest =new QComboBox;
     lZinssatz->setBuddy(cbInterest);
     registerField(pnZSatz, cbInterest/*, "currentText", "currentTextChanged"*/);
-    for( int i =0; i <= dbConfig::readValue(MAX_INTEREST).toInt(); i++)
+    const int mI =dbConfig::readValue(MAX_INTEREST).toInt();
+    for( int i =0; i <= mI; i++)
         cbInterest->addItem(QString::number(i/100., 'f', 2), QVariant(i));
     cbInterest->setCurrentIndex(std::min(90, cbInterest->count()));
     cbInterest->setToolTip(qsl("Verträge mit diesem Zinssatz werden zu dieser Geldanlage gehören."));
