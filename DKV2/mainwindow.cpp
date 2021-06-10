@@ -448,8 +448,8 @@ void MainWindow::on_btnAutoMatch_clicked()
     busycursor b;
     int i =automatchInvestmentsToContracts();
     QMessageBox::information(this, qsl("Zugeordnete Verträge"),
-                             qsl("Es wurden %i Verträge passenden Geldanlagen zugeordnet.").arg(QString::number(i)));
-
+                             qsl("Es wurden %1 Verträge passenden Geldanlagen zugeordnet.").arg(QString::number(i)));
+    prepare_investmentsListView();
 }
 void MainWindow::on_InvestmentsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;
