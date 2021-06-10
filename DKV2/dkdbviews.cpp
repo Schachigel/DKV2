@@ -160,33 +160,25 @@ SELECT ga.ZSatz
   , ga.Typ
   , (SELECT count(*)
      FROM Vertraege
-     WHERE Vertragsdatum >= ga.Anfang
-       AND Vertragsdatum < ga.Ende
-       AND ZSatz = ga.ZSatz
+     WHERE Vertraege.AnlagenId == ga.rowid
   ) AS Anzahl
   , (SELECT SUM(Betrag) /100.
      FROM Vertraege
-     WHERE Vertragsdatum >= ga.Anfang
-       AND Vertragsdatum < ga.Ende
-       AND ZSatz = ga.ZSatz
+     WHERE Vertraege.AnlagenId == ga.rowid
   ) AS Summe
   , (SELECT count(*)
      FROM Vertraege AS v
-     WHERE Vertragsdatum >= ga.Anfang
-       AND Vertragsdatum < ga.Ende
-       AND ZSatz = ga.ZSatz
+     WHERE v.AnlagenId == ga.rowid
        AND (SELECT count(*)
             FROM Buchungen AS B
-            WHERE B.VertragsId=v.id)>0
+            WHERE B.VertragsId == v.id)>0
   ) AS AnzahlAktive
   , (SELECT SUM(Betrag) /100.
      FROM Vertraege AS v
-     WHERE Vertragsdatum >= ga.Anfang
-       AND Vertragsdatum < ga.Ende
-       AND ZSatz = ga.ZSatz
+     WHERE v.AnlagenId == ga.rowid
        AND (SELECT count(*)
             FROM Buchungen AS B
-            WHERE B.VertragsId=v.id)>0
+            WHERE B.VertragsId == v.id)>0
   ) AS SummeAktive
   , CASE WHEN ga.Offen THEN 'Offen' ELSE 'Abgeschlossen' END AS Offen
   , ga.rowid
