@@ -174,18 +174,19 @@ QString proposeContractLabel()
 }
 
 int createNewInvestmentsFromContracts()
-{
-    QString sql{qsl("SELECT ZSatz, Vertragsdatum FROM Vertraege ORDER BY Vertragsdatum ASC")};
+{   LOG_CALL;
+    QString sql{qsl("SELECT ZSatz, Vertragsdatum FROM Vertraege WHERE AnlagenId IS NULL OR AnlagenId <= 0 ORDER BY Vertragsdatum ASC ")};
     QSqlQuery q; q.setForwardOnly(true);
     if( not q.exec(sql)) {
-        qCritical() << "query execute faild in " << __func__;
-        return 0;
+        qCritical() << "query execute faild with error " << q.lastError();
+        qDebug() << q.lastQuery();
+        return -1;
     }
     int ret =0;
     while(q.next()) {
         int ZSatz =q.record().value(qsl("ZSatz")).toInt();
         QDate vDate =q.record().value(qsl("Vertragsdatum")).toDate();
-        if( createInvestmentFromContractIfNeeded(ZSatz, vDate))
+        if( 0 < createInvestmentFromContractIfNeeded(ZSatz, vDate))
             ret++;
     }
     return ret;

@@ -81,6 +81,7 @@ RC_FILE += $${TARGET}.rc
 
 SOURCES += \
         appconfig.cpp \
+        askdatedlg.cpp \
         booking.cpp \
         contract.cpp \
         contractsheadersortingadapter.cpp \
@@ -126,6 +127,7 @@ PRECOMPILED_HEADER  = pch.h
 
 HEADERS += pch.h\
         appconfig.h \
+        askdatedlg.h \
         booking.h \
         contract.h \
         contractsheadersortingadapter.h \
@@ -166,6 +168,7 @@ HEADERS += pch.h\
         wizterminatecontract.h
 
 FORMS += \
+        askdatedlg.ui \
         mainwindow.ui
 
 #TRANSLATIONS += \

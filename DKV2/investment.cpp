@@ -46,7 +46,24 @@ const QString fnInvestmentState{qsl("Offen")};
     return investmentTable;
 }
 
-bool saveNewInvestment(int ZSatz, QDate start, QDate end, const QString &type)
+bool investment::matchesContract(const contract& c)
+{   LOG_CALL;
+    QString msg;
+    if( d2percent(c.interestRate()) not_eq interest)
+        msg +=qsl("Interest missmatch:") +QString::number(interest) +qsl("vs.") +QString::number(d2percent(c.investment()));
+    if( c.conclusionDate() < start)
+        msg +=qsl("start date missmatch;");
+    if( c.conclusionDate() > end)
+        msg += qsl("end date missmatch:");
+    if( msg.isEmpty())
+        return true;
+    qInfo() << "investment  -contract mismatch: \n" << msg;
+    qInfo() << toString();
+    qInfo() << c.toString();
+    return false;
+}
+
+qlonglong saveNewInvestment(int ZSatz, QDate start, QDate end, const QString &type)
 {   LOG_CALL;
     TableDataInserter tdi(investment::getTableDef());
     tdi.setValue(fnInvestmentInterest, ZSatz);
@@ -57,11 +74,11 @@ bool saveNewInvestment(int ZSatz, QDate start, QDate end, const QString &type)
     return tdi.InsertData();
 }
 
-bool createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
+qlonglong createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
 {   LOG_CALL;
     QString sql{qsl("SELECT * FROM Geldanlagen WHERE ZSatz =%1 AND Anfang <= date('%2') AND Ende >= date('%3')")};
     if( 0 < rowCount(sql.arg(QString::number(ZSatz), vDate.toString(Qt::ISODate), vDate.toString(Qt::ISODate)))) {
-        return false;
+        return -1;
     }
     QDate endDate =vDate.addYears(1).addDays(-1);
     TableDataInserter tdi(investment::getTableDef());
@@ -191,8 +208,8 @@ QString investmentInfoForNewContract(qlonglong ridInvestment, double amount)
 }
 
 QVector<investment> openInvestments(int rate, QDate conclusionDate)
-{
-    LOG_CALL;
+{   LOG_CALL;
+
     QString sql{qsl("SELeCT * FROM Geldanlagen WHERE Offen AND ZSatz = %1 AND Anfang <= date('%2')  AND Ende >= date('%2')")};
     QVector<QSqlRecord> records;
     if( not executeSql(sql.arg(QString::number(rate), conclusionDate.toString(Qt::ISODate)), QVector<QVariant>(), records))
@@ -208,4 +225,15 @@ QVector<investment> openInvestments(int rate, QDate conclusionDate)
                                     record.value(fnInvestmentState).toBool()));
     }
     return result;
+}
+
+int closeInvestmentsPriorTo(QDate d)
+{   LOG_CALL_W(d.toString());
+    QString sql{qsl("UPDATE Geldanlagen SET Offen = false WHERE Offen AND Ende < date('%1')")};
+    QSqlQuery q;
+    if( not q.exec(sql.arg(d.toString(Qt::ISODate)))) {
+        qDebug() << "failed to update investments " << q.lastError() << "\n" << q.lastQuery();
+        return -1;
+    }
+    return q.numRowsAffected();
 }

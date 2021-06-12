@@ -10,6 +10,7 @@
 #include "wiznewdatabase.h"
 #include "investment.h"
 #include "wizopenornewdatabase.h"
+#include "askdatedlg.h"
 #include "appconfig.h"
 #include "csvwriter.h"
 #include "uiitemformatter.h"
@@ -421,17 +422,22 @@ void MainWindow::prepare_investmentsListView()
     tv->setAlternatingRowColors(true);
 }
 void MainWindow::on_actionAnlagen_verwalten_triggered()
-{
+{   LOG_CALL;
     prepare_investmentsListView();
     ui->stackedWidget->setCurrentIndex(investmentsPageIndex);
 }
 void MainWindow::on_btnCreateFromContracts_clicked()
 {   LOG_CALL;
     int newInvestments =createNewInvestmentsFromContracts();
+    if( newInvestments == -1) {
+        QMessageBox::critical(this, qsl("Fehler"), qsl("Beim Anlegen der Geldanlagen ist ein Fehler aufgetreten"));
+        return;
+    }
     if( newInvestments) {
         QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden ") +QString::number(newInvestments) +qsl(" Anlage(n) angelegt."));
-        qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model())->select();
-        ui->InvestmentsTableView->resizeColumnsToContents();
+        prepare_investmentsListView();
+//        qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model())->select();
+//        ui->InvestmentsTableView->resizeColumnsToContents();
     }
     else
         QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden keine neuen Anlageformen angelegt."));
@@ -442,6 +448,20 @@ void MainWindow::on_btnNewInvestment_clicked()
     QSqlTableModel* m =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
     m->select();
     ui->InvestmentsTableView->resizeColumnsToContents();
+}
+void MainWindow::on_btnAutoClose_clicked()
+{
+    AskDateDlg ad;
+    ad.setDate(QDate::currentDate());
+    if( ad.exec() not_eq QDialog::Accepted) {
+        qInfo() << "auto close was cancled";
+        return;
+    }
+    int changedSets =closeInvestmentsPriorTo(ad.date());
+    if( 0 <= changedSets)
+        QMessageBox::information(this, qsl("Änderung durchgeführt"), qsl("Es wurden %1 Geldanlagen geschlossen").arg(changedSets));
+    else
+        QMessageBox::information(this, qsl("Änderung nicht durchgeführt"), qsl("Es ist ein Fehler aufgetreten"));
 }
 void MainWindow::on_btnAutoMatch_clicked()
 {

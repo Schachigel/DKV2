@@ -178,6 +178,8 @@ private slots:
 
     void on_action_cmenu_assoc_investment_triggered();
 
+    void on_btnAutoClose_clicked();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();

@@ -21,6 +21,7 @@ void newCreditorAndContract();
 void changeContractComment(qlonglong id);
 void changeContractTermination(qlonglong id);
 
+qlonglong createInvestment(int& interest/*inout*/, QDate& from /*inout*/, QDate& to /*out*/);
 void createInvestment();
 
 #endif // TRANSAKTIONEN_H

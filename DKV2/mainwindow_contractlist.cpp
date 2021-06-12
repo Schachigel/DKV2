@@ -284,15 +284,32 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
     switch (invests.size())
     {
     case 0:
-        QMessageBox::information(this, qsl("Fehler"), qsl("Keine Geldanlage passt zu Zins und Vertragsdatum dieses Vertrags"));
+    {
+        if( QMessageBox::Yes not_eq
+            QMessageBox::question(this, qsl("Fehler"), qsl("Keine Geldanlage passt zu Zins und Vertragsdatum dieses Vertrags. Möchtest Du eine Anlage anlegen?")))
+            return;
+        int interest{d2percent(c.interestRate())};
+        QDate from (c.conclusionDate());
+        QDate to;
+        qlonglong newIId =createInvestment(interest, from, to);
+        if(newIId <= 0) break;
+        if( investment(-1, interest, from, to).matchesContract(c)) {
+            if( not c.updateInvestment(newIId))
+                QMessageBox::information(this, qsl("Fehler"), qsl("Die Geldanlage konnte dem Vertrag nicht zugewiesen werden! \n Weiterführende Info können in der LoG Datei gefunden werden."));
+        } else
+            QMessageBox::information(this, qsl("Fehler"), qsl("Die angelegte Geldanlage passt nicht zu dem ausgewählten Vertrag \n Weiterführende Info können in der LoG Datei gefunden werden."));
         break;
+    }
     case 1:
+    {
         if( c.updateInvestment(invests[0].rowid))
             QMessageBox::information(this, qsl("Erfolg"), qsl("Die Geldanlage mit dem passenden Zins und Vertragsdatum wurde zugewiesen"));
         else
             QMessageBox::information(this, qsl("Fehler"), qsl("Die einzige Geldanlage konnte nicht zugewiesen werden. Schau bitte in die Log Datei."));
         break;
+    }
     default:
+    {
         QInputDialog id(this);
         QFont f=id.font(); f.setPointSize(10); id.setFont(f);
         id.setComboBoxEditable(false);
@@ -316,7 +333,8 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
             qDebug() << "failed to save investment to contract" << c.toString() << "\n" << rowId;
         }
         break;
-    };
+    }
+    }; // Eo switch
     updateListViews();
 }
 
