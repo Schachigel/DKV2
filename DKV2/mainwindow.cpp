@@ -52,6 +52,8 @@ bool getValidDatabaseFromCommandline(QString& path)
 QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
 {
     // change font color for number of contracts (3,5) and sum of contract (4,6) columns
+    // change font color for outdated investments
+    static QDate today =QDate::currentDate();
     if (role == Qt::ForegroundRole) {
         int col =i.column();
         if( col == 4 or col == 6) {
@@ -65,6 +67,13 @@ QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
             if( sum >= dMax){
                 //qInfo() << "sum: " << sum << " row: " << col;
                 return QColor(Qt::red);
+            }
+        } else if (col == 2)  {
+            // end date should be bigger than current date
+            if( i.siblingAtColumn(8).data().toString() == qsl("Offen")) {
+                QDate enddate =i.data().toDate();
+                if(enddate <= today)
+                    return QColor(Qt::red);
             }
         }
     }
@@ -86,7 +95,6 @@ QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
             qInfo() << "wrong column " << i.column();
             return Qt::AlignCenter;
         }
-
     }
     return QSqlTableModel::data(i, role); // forward everthing else to the base class
 }
@@ -378,6 +386,7 @@ void MainWindow::on_actionProjektkonfiguration_ndern_triggered()
     wizConfigureProjectWiz wiz(getMainWindow());
     if(wiz.exec() == QDialog::Accepted)
         wiz.updateDbConfig();
+    updateListViews();
 }
 void MainWindow::on_action_menu_database_configure_outdir_triggered()
 {   LOG_CALL;
@@ -395,9 +404,7 @@ void MainWindow::on_action_menu_database_program_exit_triggered()
 void MainWindow::prepare_investmentsListView()
 {
     InvestmentsTableModel* model = new InvestmentsTableModel(this);
-
     model->setTable(vnInvestmentsView);
-    //model->setSort(0, Qt::SortOrder::DescendingOrder);
 
     QTableView* tv =ui->InvestmentsTableView;
     tv->setModel(model);
@@ -434,10 +441,12 @@ void MainWindow::on_btnCreateFromContracts_clicked()
         return;
     }
     if( newInvestments) {
+        int i =automatchInvestmentsToContracts();
+        if( i not_eq newInvestments)
+            qCritical() << qsl("nicht alle Verträgen (%1) konnten Anlagen (%2) zugeordnet werden").arg(QString::number(i), QString::number(newInvestments));
+
         QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden ") +QString::number(newInvestments) +qsl(" Anlage(n) angelegt."));
         prepare_investmentsListView();
-//        qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model())->select();
-//        ui->InvestmentsTableView->resizeColumnsToContents();
     }
     else
         QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden keine neuen Anlageformen angelegt."));

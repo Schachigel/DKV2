@@ -18,7 +18,7 @@ SELECT
   ,IFNULL(AktivierungsWert, V.Betrag /100.) AS Nominalwert
 
   ,IIF(IFNULL(AnlagenId, 0) == 0
-    , CAST(V.Zsatz / 100. AS VARCHAR) || ' %'
+    , CAST(V.Zsatz / 100. AS VARCHAR) || ' % (ohne Anlage)'
     , CAST(V.Zsatz / 100. AS VARCHAR) || ' % - ' || GA.Typ) AS Zinssatz
 
 -- Zinsmodus
