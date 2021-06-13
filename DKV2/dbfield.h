@@ -67,6 +67,15 @@ struct dbForeignKey
         refTable = parent.tableName();
         refField = parent.name();
     }
+    dbForeignKey(const dbfield& local, const QString& parentTable, const QString& parentField, const QString& onDelete =QString(), const QString& onUpdate=QString())
+        : onDelete(onDelete), onUpdate( onUpdate)
+    {
+        table = local.tableName();
+        field = local.name();
+        refTable = parentTable;
+        refField = parentField;
+    }
+
     // interface
     QString get_CreateSqlSnippet();
     QString get_SelectSqpSnippet();

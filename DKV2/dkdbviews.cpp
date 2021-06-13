@@ -14,40 +14,39 @@ SELECT
   ,V.Anmerkung AS Anmerkung
   ,V.Vertragsdatum     AS Vertragsdatum
 
-  ,ifnull(Aktivierungsdatum, '(offen)') AS Aktivierungsdatum
-  ,CASE WHEN AktivierungsWert IS NULL THEN V.Betrag /100.
-      ELSE AktivierungsWert
-      END AS Nominalwert
+  ,IFNULL(Aktivierungsdatum, '(offen)') AS Aktivierungsdatum
+  ,IFNULL(AktivierungsWert, V.Betrag /100.) AS Nominalwert
 
-  ,CAST(V.Zsatz / 100. AS VARCHAR) || ' %'    AS Zinssatz
+  ,IIF(IFNULL(AnlagenId, 0) == 0
+    , CAST(V.Zsatz / 100. AS VARCHAR) || ' % (ohne Anlage)'
+    , CAST(V.Zsatz / 100. AS VARCHAR) || ' % - ' || GA.Typ) AS Zinssatz
 
 -- Zinsmodus
-  ,V.thesaurierend AS Zinsmodus
+  , V.thesaurierend AS Zinsmodus
 
 -- VerzinslGuthaben
-  ,CASE WHEN V.thesaurierend = 0 THEN ifnull(summeAllerBuchungen, ' (inaktiv) ')
-       ELSE CASE WHEN V.thesaurierend = 1 THEN ifnull(summeAllerBuchungen, ' (inaktiv) ')
-       ELSE CASE WHEN V.thesaurierend = 2 THEN ifnull(summeEinUndAuszahlungen, ' (inaktiv) ')
-       ELSE CASE WHEN V.thesaurierend = 3 THEN ' ohne Verzinsung '
-       ELSE 'ERROR' END END END END   AS VerzinslGuthaben
+  ,IIF(V.thesaurierend == 0, IFNULL(summeAllerBuchungen, ' (inaktiv) ')
+       , IIF(V.thesaurierend == 1, IFNULL(summeAllerBuchungen, ' (inaktiv) ')
+       , IIF(V.thesaurierend == 2, IFNULL(summeEinUndAuszahlungen, ' (inaktiv) ')
+       , IIF(V.thesaurierend == 3, ' ohne Verzinsung ', 'ERROR')))) AS VerzinslGuthaben
 
 -- angesparter Zins
-  ,CASE WHEN V.thesaurierend = 0 THEN ifnull(summeAllerZinsZwBuchungen, '(noch 0) ')
-       ELSE CASE WHEN V.thesaurierend = 1 THEN ifnull(summeAllerZinsBuchungen, '(noch 0) ')
-       ELSE CASE WHEN V.thesaurierend = 2 THEN ifnull(summeAllerZinsBuchungen, '(noch 0) ')
-       ELSE CASE WHEN V.thesaurierend = 3 THEN '(zinslos)   '
-       ELSE 'ERROR' END END END END    AS angespZins
+  ,IIF(V.thesaurierend == 0, IFNULL(summeAllerZinsZwBuchungen, '(noch 0) ')
+       ,IIF(V.thesaurierend == 1, IFNULL(summeAllerZinsBuchungen, '(noch 0) ')
+       ,IIF(V.thesaurierend == 2, IFNULL(summeAllerZinsBuchungen, '(noch 0) ')
+       ,IIF(V.thesaurierend == 3, '(zinslos)   ', 'ERROR')))) AS angespZins
 
 -- letzte Buchungen
   ,ifnull(LetzteBuchung, ' - ') AS LetzteBuchung
 
 -- kdFrist/VEnd
-  ,IIF( V.Kfrist = -1, strftime('%d.%m.%Y', V.LaufzeitEnde),
-     IIF( date(V.LaufzeitEnde) > date('5000-12-31'), '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)',
-          '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)' || char(10) || strftime('%d.%m.%Y', V.LaufzeitEnde)))
-     AS KdgFristVertragsende
+  ,IIF( V.Kfrist == -1, strftime('%d.%m.%Y', V.LaufzeitEnde),
+      IIF( date(V.LaufzeitEnde) > date('5000-12-31'), '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)',
+          '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)' || char(10) || strftime('%d.%m.%Y', V.LaufzeitEnde))) AS KdgFristVertragsende
 
-FROM Vertraege AS V  INNER JOIN Kreditoren AS K ON V.KreditorId = K.id
+FROM Vertraege AS V
+INNER JOIN Kreditoren AS K ON V.KreditorId = K.id
+LEFT JOIN Geldanlagen AS GA ON V.AnlagenId = GA.rowid
 
 -- aktivierungsdatum und Betrag
 LEFT JOIN
@@ -74,7 +73,6 @@ LEFT JOIN
 -- VerzinslGuthaben FestZins: Summe aller ein und auszahlungen
 LEFT JOIN
     (SELECT VertragsId AS B5VertragsId, SUM(Betrag) /100. AS summeEinUndAuszahlungen FROM Buchungen AS B5 WHERE B5.BuchungsArt = 1 /*deposit*/ OR B5.BuchungsArt = 2 /*payout*/ GROUP BY B5.VertragsId) ON V.id = B5VertragsId
-
 )str"
 )};
 
@@ -162,33 +160,25 @@ SELECT ga.ZSatz
   , ga.Typ
   , (SELECT count(*)
      FROM Vertraege
-     WHERE Vertragsdatum >= ga.Anfang
-       AND Vertragsdatum < ga.Ende
-       AND ZSatz = ga.ZSatz
+     WHERE Vertraege.AnlagenId == ga.rowid
   ) AS Anzahl
   , (SELECT SUM(Betrag) /100.
      FROM Vertraege
-     WHERE Vertragsdatum >= ga.Anfang
-       AND Vertragsdatum < ga.Ende
-       AND ZSatz = ga.ZSatz
+     WHERE Vertraege.AnlagenId == ga.rowid
   ) AS Summe
   , (SELECT count(*)
      FROM Vertraege AS v
-     WHERE Vertragsdatum >= ga.Anfang
-       AND Vertragsdatum < ga.Ende
-       AND ZSatz = ga.ZSatz
+     WHERE v.AnlagenId == ga.rowid
        AND (SELECT count(*)
             FROM Buchungen AS B
-            WHERE B.VertragsId=v.id)>0
+            WHERE B.VertragsId == v.id)>0
   ) AS AnzahlAktive
   , (SELECT SUM(Betrag) /100.
      FROM Vertraege AS v
-     WHERE Vertragsdatum >= ga.Anfang
-       AND Vertragsdatum < ga.Ende
-       AND ZSatz = ga.ZSatz
+     WHERE v.AnlagenId == ga.rowid
        AND (SELECT count(*)
             FROM Buchungen AS B
-            WHERE B.VertragsId=v.id)>0
+            WHERE B.VertragsId == v.id)>0
   ) AS SummeAktive
   , CASE WHEN ga.Offen THEN 'Offen' ELSE 'Abgeschlossen' END AS Offen
   , ga.rowid

@@ -10,6 +10,7 @@
 #include "wiznewdatabase.h"
 #include "investment.h"
 #include "wizopenornewdatabase.h"
+#include "askdatedlg.h"
 #include "appconfig.h"
 #include "csvwriter.h"
 #include "uiitemformatter.h"
@@ -51,21 +52,28 @@ bool getValidDatabaseFromCommandline(QString& path)
 QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
 {
     // change font color for number of contracts (3,5) and sum of contract (4,6) columns
+    // change font color for outdated investments
+    static QDate today =QDate::currentDate();
     if (role == Qt::ForegroundRole) {
         int col =i.column();
         if( col == 4 or col == 6) {
-            int iMax =dbConfig::readValue(MAX_INVESTMENT_NBR).toInt();
             int nbr =i.data().toInt();
             if(nbr >= iMax){
-                qInfo() << "nbr: " << nbr << " row: " << col;
+                //qInfo() << "nbr: " << nbr << " row: " << col;
                 return QColor(Qt::red);
             }
         } else if (col == 5 or col == 7) {
-            double dMax =dbConfig::readValue(MAX_INVESTMENT_SUM).toDouble();
             double sum =i.data().toDouble();
             if( sum >= dMax){
-                qInfo() << "sum: " << sum << " row: " << col;
+                //qInfo() << "sum: " << sum << " row: " << col;
                 return QColor(Qt::red);
+            }
+        } else if (col == 2)  {
+            // end date should be bigger than current date
+            if( i.siblingAtColumn(8).data().toString() == qsl("Offen")) {
+                QDate enddate =i.data().toDate();
+                if(enddate <= today)
+                    return QColor(Qt::red);
             }
         }
     }
@@ -87,7 +95,6 @@ QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
             qInfo() << "wrong column " << i.column();
             return Qt::AlignCenter;
         }
-
     }
     return QSqlTableModel::data(i, role); // forward everthing else to the base class
 }
@@ -213,8 +220,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {   LOG_CALL;
-    delete ui;
-    delete contractsSortingAdapter;
+    if (ui) delete ui;
+    if (contractsSortingAdapter) delete contractsSortingAdapter;
 }
 
 void MainWindow::showDbInStatusbar( const QString &filename)
@@ -233,7 +240,6 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
     switch(arg1)
     {
     case startPageIndex:
-        prepare_startPage();
         ui->action_menu_creditors_delete->setEnabled(false);
         ui->menu_contracts_subm_print_lists->setEnabled(false);
         break;
@@ -258,7 +264,6 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
         ui->menu_contracts_subm_print_lists->setEnabled(false);
         break;
     case investmentsPageIndex:
-        prepare_investmentsListView();
         ui->action_menu_creditors_delete->setEnabled(false);
         ui->menu_contracts_subm_print_lists->setEnabled(false);
         break;
@@ -381,6 +386,7 @@ void MainWindow::on_actionProjektkonfiguration_ndern_triggered()
     wizConfigureProjectWiz wiz(getMainWindow());
     if(wiz.exec() == QDialog::Accepted)
         wiz.updateDbConfig();
+    updateListViews();
 }
 void MainWindow::on_action_menu_database_configure_outdir_triggered()
 {   LOG_CALL;
@@ -399,7 +405,6 @@ void MainWindow::prepare_investmentsListView()
 {
     InvestmentsTableModel* model = new InvestmentsTableModel(this);
     model->setTable(vnInvestmentsView);
-    //model->setSort(0, Qt::SortOrder::DescendingOrder);
 
     QTableView* tv =ui->InvestmentsTableView;
     tv->setModel(model);
@@ -424,17 +429,24 @@ void MainWindow::prepare_investmentsListView()
     tv->setAlternatingRowColors(true);
 }
 void MainWindow::on_actionAnlagen_verwalten_triggered()
-{
+{   LOG_CALL;
     prepare_investmentsListView();
     ui->stackedWidget->setCurrentIndex(investmentsPageIndex);
 }
 void MainWindow::on_btnCreateFromContracts_clicked()
 {   LOG_CALL;
     int newInvestments =createNewInvestmentsFromContracts();
+    if( newInvestments == -1) {
+        QMessageBox::critical(this, qsl("Fehler"), qsl("Beim Anlegen der Geldanlagen ist ein Fehler aufgetreten"));
+        return;
+    }
     if( newInvestments) {
+        int i =automatchInvestmentsToContracts();
+        if( i not_eq newInvestments)
+            qCritical() << qsl("nicht alle Verträgen (%1) konnten Anlagen (%2) zugeordnet werden").arg(QString::number(i), QString::number(newInvestments));
+
         QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden ") +QString::number(newInvestments) +qsl(" Anlage(n) angelegt."));
-        qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model())->select();
-        ui->InvestmentsTableView->resizeColumnsToContents();
+        prepare_investmentsListView();
     }
     else
         QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden keine neuen Anlageformen angelegt."));
@@ -445,6 +457,28 @@ void MainWindow::on_btnNewInvestment_clicked()
     QSqlTableModel* m =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
     m->select();
     ui->InvestmentsTableView->resizeColumnsToContents();
+}
+void MainWindow::on_btnAutoClose_clicked()
+{
+    AskDateDlg ad;
+    ad.setDate(QDate::currentDate());
+    if( ad.exec() not_eq QDialog::Accepted) {
+        qInfo() << "auto close was cancled";
+        return;
+    }
+    int changedSets =closeInvestmentsPriorTo(ad.date());
+    if( 0 <= changedSets)
+        QMessageBox::information(this, qsl("Änderung durchgeführt"), qsl("Es wurden %1 Geldanlagen geschlossen").arg(changedSets));
+    else
+        QMessageBox::information(this, qsl("Änderung nicht durchgeführt"), qsl("Es ist ein Fehler aufgetreten"));
+}
+void MainWindow::on_btnAutoMatch_clicked()
+{
+    busycursor b;
+    int i =automatchInvestmentsToContracts();
+    QMessageBox::information(this, qsl("Zugeordnete Verträge"),
+                             qsl("Es wurden %1 Verträge passenden Geldanlagen zugeordnet.").arg(QString::number(i)));
+    prepare_investmentsListView();
 }
 void MainWindow::on_InvestmentsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;
@@ -516,20 +550,35 @@ void MainWindow::on_actionInvestmentSchliessen_triggered()
 void MainWindow::on_actionTyp_Bezeichnung_aendern_triggered()
 {
     QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
-    QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
-    QSqlRecord rec =tm->record(index.row());
-    QString typ =rec.value(qsl("Typ")).toString();
+    QSqlTableModel* model {qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model())};
+    QString typ =ui->InvestmentsTableView->model()->data(index.siblingAtColumn(3)).toString();;
+//    QString zinssatz =ui->InvestmentsTableView->model()->data(index.siblingAtColumn(0)).toString();
+    QString zinssatz =qobject_cast<PercentFrom100sItemFormatter*>(ui->InvestmentsTableView->itemDelegate(index.siblingAtColumn(0)))
+            ->displayText(model->data(index.siblingAtColumn(0)), QLocale());
+
+    QString von =doFormatDateItem(model->data(index.siblingAtColumn(1)));
+    QString bis =doFormatDateItem(model->data(index.siblingAtColumn(2)));
+
+    QString msg {qsl("<table><tr><th>Neue Bezeichnung für den Anlage </th></tr><tr><td style=\"align:center\">mit %1 Zins</td></tr>"
+                     "<tr><td>von %2 bis %3.</tr>"
+                     "<tr><td>alter Wert: <i>'%4'</i></td></tr></table>")};
 
     QInputDialog id(this);
     QFont f =id.font(); f.setPointSize(10); id.setFont(f);
     id.setInputMode(QInputDialog::InputMode::TextInput);
-    id.setWindowTitle(qsl("Geldanlagen Bezeichner"));
-    id.setLabelText(qsl("Bezeichner für den Anlage Typ"));
+    id.setWindowTitle(qsl("Geldanlagen"));
+    id.setLabelText(msg.arg(zinssatz, von, bis, typ));
     id.setTextValue(typ);
+    QLineEdit* leText =id.findChild<QLineEdit*>();
+    if(leText) leText->setMaxLength(25);
+
     int idOk =id.exec();
     QString txt = id.textValue().trimmed();
     if( not idOk or txt.isEmpty())
         return;
+
+    QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
+    QSqlRecord rec =tm->record(index.row());
     QString sql(qsl("UPDATE Geldanlagen SET Typ =? WHERE rowid =%1").arg(rec.value(qsl("rowid")).toString()));
     if( executeSql_wNoRecords(sql, {QVariant(txt)}))
         tm->select();

@@ -26,6 +26,9 @@
         contractTable.append(dbfield(qsl("thesaurierend"), QVariant::Int).setNotNull().setDefault(1));
         contractTable.append(dbfield(qsl("Vertragsdatum"), QVariant::Date).setNotNull());
         contractTable.append(dbfield(qsl("Kfrist"), QVariant::Int).setNotNull().setDefault(6));
+        contractTable.append(dbfield(qsl("AnlagenId"), QVariant::Int));
+        contractTable.append(dbForeignKey(contractTable[qsl("AnlagenId")],
+            qsl("Geldanlagen"), qsl("rowid"), qsl("ON DELETE SET NULL")));
         contractTable.append(dbfield(qsl("LaufzeitEnde"), QVariant::Date).setNotNull().setDefault(qsl("9999-12-31")));
         contractTable.append(dbfield(qsl("Zeitstempel"), QVariant::DateTime).setDefaultNow());
     }
@@ -57,7 +60,7 @@
 }
 
 // construction
-void contract::init(const qlonglong creditorId /*=-1*/)
+void contract::initContractDefaults(const qlonglong creditorId /*=-1*/)
 {
     setId(-1);
     setCreditorId(creditorId);
@@ -67,6 +70,7 @@ void contract::init(const qlonglong creditorId /*=-1*/)
     setConclusionDate(QDate::currentDate());
     setInterestRate(1.50);
     setPlannedInvest(1000000);
+    setInvestment(0);
 }
 void contract::initRandom(qlonglong creditorId)
 {   //LOG_CALL_W(QString::number(creditorId));
@@ -89,7 +93,7 @@ void contract::initRandom(qlonglong creditorId)
 contract::contract(qlonglong contractId) : td(getTableDef())
 {
     if( contractId <= 0) {
-        init();
+        initContractDefaults();
     } else {
         qInfo() << "init contract from DB (id " << contractId << " )";
         QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), "id=" + QString::number(contractId));
@@ -180,17 +184,23 @@ void contract::updateComment(const QString &c)
 }
 
 bool contract::updateTerminationDate(QDate termination, int noticePeriod)
-{
+{   LOG_CALL;
     td.setValue(qsl("Kfrist"), noticePeriod);
     td.setValue(qsl("LaufzeitEnde"), termination);
     return  -1 not_eq td.UpdateData();
 }
 
-
+bool contract::updateInvestment(qlonglong id)
+{   LOG_CALL;
+    setInvestment( id);
+    if( -1 == td.UpdateData())
+        return false;
+    return true;
+}
 // helper: only annual settlements should be on the last day of the year
 // other bookings should move to dec. 30th
 QDate avoidYearEndBookings(const QDate d)
-{
+{   LOG_CALL;
     if( not d.isValid()) return d;
     if( d.month() == 12 and d.day() == 31) {
         qInfo() << "no deposit possible on dec. 31st -> switching to 30th";

@@ -65,13 +65,14 @@ void init_DKDBStruct()
 
     dkdbstructur.appendTable(creditor::getTableDef());
 
+    dkdbstructur.appendTable(investment::getTableDef());
+
     dkdbstructur.appendTable(contract::getTableDef());
     dkdbstructur.appendTable(contract::getTableDef_deletedContracts());
 
     dkdbstructur.appendTable(booking::getTableDef());
     dkdbstructur.appendTable(booking::getTableDef_deletedBookings());
 
-    dkdbstructur.appendTable(investment::getTableDef());
 
     dbtable meta(qsl("Meta"));
     meta.append(dbfield(qsl("Name"), QVariant::String).setPrimaryKey());

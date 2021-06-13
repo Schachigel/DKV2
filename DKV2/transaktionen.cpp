@@ -282,15 +282,44 @@ void changeContractTermination(qlonglong id)
         c.updateTerminationDate(wiz.field(pnNewEDate).toDate(), wiz.newNoticePeriod);
     return;
 }
+
+qlonglong createInvestment(int& interest, QDate& from, QDate& to)
+{   LOG_CALL;
+    // give the user a UI to create a investment which will match a certain set of contract data
+    wizNewInvestment wiz;
+    wiz.setField(pnZSatz, QVariant(interest));
+    wiz.setField(pnVon, QVariant(from));
+    wiz.setField(pnBis, QVariant(from.addYears(1).addDays(-1)));
+    wiz.exec();
+    if( not wiz.field(pnKorrekt).toBool()) {
+        qInfo() << "investment wiz was canceled";
+        return 0;
+    }
+    qlonglong newId =saveNewInvestment( wiz.field(pnZSatz).toInt(),
+                                        wiz.field(pnVon).toDate(),
+                                        wiz.field(pnBis).toDate(),
+                                        wiz.field(pnTyp).toString());
+    if( 0 >= newId) {
+        qCritical() << "Investment could not be saved";
+        QMessageBox::warning(nullptr, qsl("Fehler"), qsl("Die Geldanlage konnte nicht gespeichert werden"));
+        return 0;
+    }
+    // in-out parameter
+    interest =wiz.field(pnZSatz).toInt();
+    from =wiz.field(pnVon).toDate();
+    to =wiz.field(pnBis).toDate();
+
+    return newId;
+}
 void createInvestment()
-{
+{   LOG_CALL;
     wizNewInvestment wiz;
     wiz.exec();
     if( not wiz.field(pnKorrekt).toBool()) {
         qInfo() << "investment wiz was canceled";
         return;
     }
-    if( not saveNewInvestment( wiz.field(pnZSatz).toInt(),
+    if( 0 >= saveNewInvestment( wiz.field(pnZSatz).toInt(),
                           wiz.field(pnVon).toDate(),
                           wiz.field(pnBis).toDate(),
                           wiz.field(pnTyp).toString())) {

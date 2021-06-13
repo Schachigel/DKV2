@@ -14,6 +14,7 @@ public:
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 
+QString doFormatDateItem(const QVariant& v);
 class DateItemFormatter : public QStyledItemDelegate
 {
     Q_OBJECT
@@ -23,6 +24,7 @@ public:
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 
+QString doFormatPercentItem(const QVariant& v);
 class PercentItemFormatter : public QStyledItemDelegate
 {
     Q_OBJECT

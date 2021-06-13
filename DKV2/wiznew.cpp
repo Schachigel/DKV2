@@ -660,7 +660,7 @@ void wpInterestFromInvestment::initializePage()
 void wpInterestFromInvestment::onInvestments_currentIndexChanged(int ) {
     qlonglong rowId =cbInvestments->currentData().toLongLong();
     double amount =field(pnAmount).toDouble();
-    QString html =investmentInfoForContract(rowId, amount);
+    QString html =investmentInfoForNewContract(rowId, amount);
     lblInvestmentInfo->setText(html);
 }
 bool wpInterestFromInvestment::validatePage()
@@ -668,6 +668,7 @@ bool wpInterestFromInvestment::validatePage()
     rowid_investment = cbInvestments->currentData().toLongLong();
     wizNew* wiz =qobject_cast<wizNew*>(wizard());
     wiz->interest =interestOfInvestmentByRowId(rowid_investment);
+    wiz->investmentId =rowid_investment;
     if( wiz->interest == 0){
         // without interest -> interest payout mode "zero"
         wiz->iPaymentMode =interestModel::zero;
@@ -698,7 +699,8 @@ wpInterestSelection::wpInterestSelection(QWidget* w) : QWizardPage(w)
     QComboBox* cbInterest =new QComboBox;
     lZ->setBuddy(cbInterest);
     cbInterest->addItem(qsl("Zinslos"), QVariant(0));
-    for( int i =1; i <= dbConfig::readValue(MAX_INTEREST).toInt(); i++)
+    const int max_interest =dbConfig::readValue(MAX_INTEREST).toInt();
+    for( int i =1; i <= max_interest; i++)
         cbInterest->addItem(QString::number(double(i)/100., 'f', 2), QVariant(i));
     cbInterest->setCurrentIndex(qMin(90, cbInterest->count()));
     registerField(pnInterestIndex, cbInterest);
@@ -777,6 +779,7 @@ bool wpConfirmContract::saveContract()
         c.setCreditorId(wiz->creditorId);
         c.setPlannedInvest(field(pnAmount).toDouble());
         c.setInterestRate(wiz->interest/100.);
+        c.setInvestment(wiz->investmentId);
         c.setLabel(field(pnLabel).toString());
         c.setConclusionDate(field(pnCDate).toDate());
         c.setNoticePeriod(wiz->noticePeriod);

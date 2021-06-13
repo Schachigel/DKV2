@@ -130,6 +130,9 @@ void MainWindow::updateListViews()
         ui->contractsTableView->resizeRowsToContents();
         qobject_cast<ContractTableModel*>(ui->contractsTableView->model())->setCol13ExtraData();
     }
+    if( ui->stackedWidget->currentIndex() == investmentsPageIndex) {
+        prepare_investmentsListView();
+    }
     if( ui->stackedWidget->currentIndex() == overviewsPageIndex)
         on_action_menu_contracts_statistics_view_triggered();
 }

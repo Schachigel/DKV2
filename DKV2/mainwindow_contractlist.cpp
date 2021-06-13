@@ -4,6 +4,7 @@
 #include "contracttablemodel.h"
 #include "uiitemformatter.h"
 #include "dkdbviews.h"
+#include "investment.h"
 #include "transaktionen.h"
 #include "helper.h"
 
@@ -29,7 +30,9 @@ QString filterFromFilterphrase(const QString &fph)
             return qsl("KreditorId=") + QString::number(contractId);
     }
     return fph.isEmpty() ? QString() :
-                           (qsl("Kreditorin LIKE '%") + fph + qsl("%' OR Vertragskennung LIKE '%") + fph + qsl("%'"));
+                           (qsl("Kreditorin LIKE '%") + fph
+                            + qsl("%' OR Vertragskennung LIKE '%") + fph
+                            + qsl("%' OR Zinssatz LIKE '%") +fph +"%'");
 }
 void MainWindow::prepare_valid_contracts_list_view()
 { LOG_CALL;
@@ -240,6 +243,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
     }
     menu.addAction(ui->action_cmenu_changeContractTermination);
     menu.addAction(ui->action_cmenu_Anmerkung_aendern);
+    menu.addAction(ui->action_cmenu_assoc_investment);
     menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
     return;
 }
@@ -271,6 +275,66 @@ void MainWindow::on_action_cmenu_Anmerkung_aendern_triggered()
 void MainWindow::on_action_cmenu_changeContractTermination_triggered()
 {   LOG_CALL;
     changeContractTermination(get_current_id_from_contracts_list());
+    updateListViews();
+}
+void MainWindow::on_action_cmenu_assoc_investment_triggered()
+{   LOG_CALL;
+    contract c(get_current_id_from_contracts_list());
+    QVector<investment> invests =openInvestments(d2percent(c.interestRate()), c.conclusionDate());
+    switch (invests.size())
+    {
+    case 0:
+    {
+        if( QMessageBox::Yes not_eq
+            QMessageBox::question(this, qsl("Fehler"), qsl("Keine Geldanlage passt zu Zins und Vertragsdatum dieses Vertrags. Möchtest Du eine Anlage anlegen?")))
+            return;
+        int interest{d2percent(c.interestRate())};
+        QDate from (c.conclusionDate());
+        QDate to;
+        qlonglong newIId =createInvestment(interest, from, to);
+        if(newIId <= 0) break;
+        if( investment(-1, interest, from, to).matchesContract(c)) {
+            if( not c.updateInvestment(newIId))
+                QMessageBox::information(this, qsl("Fehler"), qsl("Die Geldanlage konnte dem Vertrag nicht zugewiesen werden! \n Weiterführende Info können in der LoG Datei gefunden werden."));
+        } else
+            QMessageBox::information(this, qsl("Fehler"), qsl("Die angelegte Geldanlage passt nicht zu dem ausgewählten Vertrag \n Weiterführende Info können in der LoG Datei gefunden werden."));
+        break;
+    }
+    case 1:
+    {
+        if( c.updateInvestment(invests[0].rowid))
+            QMessageBox::information(this, qsl("Erfolg"), qsl("Die Geldanlage mit dem passenden Zins und Vertragsdatum wurde zugewiesen"));
+        else
+            QMessageBox::information(this, qsl("Fehler"), qsl("Die einzige Geldanlage konnte nicht zugewiesen werden. Schau bitte in die Log Datei."));
+        break;
+    }
+    default:
+    {
+        QInputDialog id(this);
+        QFont f=id.font(); f.setPointSize(10); id.setFont(f);
+        id.setComboBoxEditable(false);
+        QStringList iList;
+        for( const auto& inv: qAsConst(invests)) {
+            iList.push_back(inv.toString());
+        }
+        id.setComboBoxItems(iList);
+        QComboBox* cb =id.findChild<QComboBox*>();
+        int i =0;
+        for( const auto& inv: qAsConst(invests)) {
+            cb->setItemData(i++, inv.rowid);
+        }
+        qInfo() << cb;
+        if( id.exec() not_eq QDialog::Accepted) {
+            qInfo() << "selection of investment aborted";
+            return;
+        }
+        int rowId =cb->itemData(cb->currentIndex()).toInt();
+        if( not c.updateInvestment(rowId)) {
+            qDebug() << "failed to save investment to contract" << c.toString() << "\n" << rowId;
+        }
+        break;
+    }
+    }; // Eo switch
     updateListViews();
 }
 

@@ -61,9 +61,8 @@ wpType::wpType(QWidget* w) : QWizardPage(w)
 }
 void wpType::initializePage()
 {   LOG_CALL_W(qsl("wpType"));
-    QString prop {qsl("%1 % - ab %2 - 100.000 Euro pa")};
-    QString zs =QString::number(field(pnZSatz).toInt()/100., 'f', 2);
-    setField(pnTyp, prop.arg(zs, field(pnVon).toDate().toString(qsl("dd.MM.yyyy"))));
+    QString prop {qsl("ab %1; max. 100.000")};
+    setField(pnTyp, prop.arg(field(pnVon).toDate().toString(qsl("dd.MM.yyyy"))));
 }
 
 /* ////////////////////////////
@@ -130,7 +129,8 @@ wpNewInvestInterest::wpNewInvestInterest(QWidget* p) : QWizardPage(p)
     QComboBox* cbInterest =new QComboBox;
     lZinssatz->setBuddy(cbInterest);
     registerField(pnZSatz, cbInterest/*, "currentText", "currentTextChanged"*/);
-    for( int i =0; i <= dbConfig::readValue(MAX_INTEREST).toInt(); i++)
+    const int mI =dbConfig::readValue(MAX_INTEREST).toInt();
+    for( int i =0; i <= mI; i++)
         cbInterest->addItem(QString::number(i/100., 'f', 2), QVariant(i));
     cbInterest->setCurrentIndex(std::min(90, cbInterest->count()));
     cbInterest->setToolTip(qsl("Verträge mit diesem Zinssatz werden zu dieser Geldanlage gehören."));

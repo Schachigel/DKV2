@@ -96,9 +96,9 @@ QString htmlOverviewTableBlock(const QString& headline, const dbStats::dataset &
     ret += tableRow2(qsl("Anzahl Verträge  "),     i2s(ds.nbrContracts));
     ret += tableRow2(qsl("Gesamtwert "),           d2euro(ds.value)
         + qsl("<br><small>(Ø ") + d2euro(ds.value / ds.nbrContracts) + qsl(")</small>"));
-    ret += tableRow2(qsl("Durchschnittlicher Zinssatz:<br><small>(Gewichtet mit Vertragswert)</small>"), d2percent(ds.weightedAvgInterestRate));
+    ret += tableRow2(qsl("Durchschnittlicher Zinssatz:<br><small>(Gewichtet mit Vertragswert)</small>"), d2percent_str(ds.weightedAvgInterestRate));
     ret += tableRow2(qsl("Jährliche Zinskosten:"), d2euro(ds.annualInterest));
-    ret += tableRow2(qsl("Mittlerer Zinssatz:"), d2percent(ds.avgInterestRate));
+    ret += tableRow2(qsl("Mittlerer Zinssatz:"), d2percent_str(ds.avgInterestRate));
     ret += emptyRow();
 
     return ret;

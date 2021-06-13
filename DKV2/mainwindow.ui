@@ -31,7 +31,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -313,22 +313,39 @@ p, li { white-space: pre-wrap; }
         <item>
          <layout class="QHBoxLayout" name="horicontalLayout">
           <item>
-           <widget class="QPushButton" name="btnCreateFromContracts">
-            <property name="toolTip">
-             <string>Mit dieser Funktion wird zu jedem Vertrag, der zu keiner Geldanlage gehört, eine Geldanlage angelegt.</string>
-            </property>
-            <property name="text">
-             <string>Aus &amp;Verträgen erstellen</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QPushButton" name="btnNewInvestment">
             <property name="toolTip">
              <string>Mit dieser Funktion wird eine neue Geldanlage angelegt</string>
             </property>
             <property name="text">
              <string>Ne&amp;u </string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnCreateFromContracts">
+            <property name="toolTip">
+             <string>Zu jedem Vertrag, zu dem es keine passende Geldanlage gibt, wird eine angelegt.</string>
+            </property>
+            <property name="text">
+             <string>Aus Verträgen &amp;erstellen</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnAutoMatch">
+            <property name="toolTip">
+             <string>Verträge, für die es nur eine passende Geldanlage gibt, werden dieser zugeordnet</string>
+            </property>
+            <property name="text">
+             <string>Vertr. autom. &amp;zuordnen</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnAutoClose">
+            <property name="text">
+             <string>Abgelaufene &amp;schließen</string>
             </property>
            </widget>
           </item>
@@ -873,7 +890,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionTyp_Bezeichnung_aendern">
    <property name="text">
-    <string>Typ &amp;Bezeichnung ändern</string>
+    <string>&amp;Bezeichnung der Anlage ändern</string>
    </property>
    <property name="toolTip">
     <string>Mit dieser Option kannst Du den Typ ändern</string>
@@ -895,6 +912,11 @@ p, li { white-space: pre-wrap; }
   <action name="action_cmenu_changeContractTermination">
    <property name="text">
     <string>&amp;Kündigungsfrist und Vertragsende bearbeiten</string>
+   </property>
+  </action>
+  <action name="action_cmenu_assoc_investment">
+   <property name="text">
+    <string>Geldanlage zuordnen</string>
    </property>
   </action>
  </widget>
