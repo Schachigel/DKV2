@@ -1,7 +1,8 @@
 #ifndef ASKDATEDLG_H
 #define ASKDATEDLG_H
 
-#include <QDialog>
+#include <pch.h>
+//#include <QDialog>
 
 namespace Ui {
 class AskDateDlg;
