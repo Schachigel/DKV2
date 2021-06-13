@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "pch.h"
+
 #include "contracttablemodel.h"
 #include "uiitemformatter.h"
 #include "dkdbviews.h"
