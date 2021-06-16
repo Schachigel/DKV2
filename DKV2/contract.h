@@ -81,6 +81,7 @@ struct contract
     }
     // construction
     contract(const qlonglong id =-1);
+    void loadFromDb(const qlonglong id);
     void initContractDefaults(const qlonglong creditorId =-1);
     void initRandom(const qlonglong creditorId =-1);
     // getter & setter

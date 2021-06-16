@@ -72,6 +72,22 @@ void contract::initContractDefaults(const qlonglong creditorId /*=-1*/)
     setPlannedInvest(1000000);
     setInvestment(0);
 }
+void contract::loadFromDb(qlonglong id)
+{   LOG_CALL_W(QString::number(id));
+    QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), "id=" + QString::number(id));
+    if( not td.setValues(rec))
+        qCritical() << "contract from id could not be created";
+    aDate = activationDate();
+    latestB.type =booking::Type::non;
+    latestB = latestBooking();
+}
+contract::contract(qlonglong contractId) : td(getTableDef())
+{
+    if( contractId <= 0)
+        initContractDefaults();
+    else
+        loadFromDb(contractId);
+}
 void contract::initRandom(qlonglong creditorId)
 {   //LOG_CALL_W(QString::number(creditorId));
 
@@ -90,19 +106,7 @@ void contract::initRandom(qlonglong creditorId)
     else
         setPlannedEndDate(conclusionDate().addYears(rand->bounded(3)).addMonths(rand->bounded(12)));
 }
-contract::contract(qlonglong contractId) : td(getTableDef())
-{
-    if( contractId <= 0) {
-        initContractDefaults();
-    } else {
-        qInfo() << "init contract from DB (id " << contractId << " )";
-        QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), "id=" + QString::number(contractId));
-        if( not td.setValues(rec))
-            qCritical() << "contract from id could not be created";
-        aDate = activationDate();
-        latestB = latestBooking();
-    }
-}
+
 // interface
 double contract::value(const QDate d) const
 {
@@ -280,17 +284,22 @@ bool contract::needsAnnualSettlement(const QDate intendedNextBooking)
 {   LOG_CALL_W(intendedNextBooking.toString());
 
     if( not isActive()) return false;
-    if( latestBooking().date >= intendedNextBooking) {
-        qInfo() << "Latest booking date too young for this settlement";
+    const QDate& lb =latestBooking().date;
+    if(  lb >= intendedNextBooking) {
+        qInfo() << "Latest booking date too young for this settlement " << lb;
         return false;
     }
     // annualInvestments are at the last day of the year
     // we need a settlement if the latest booking was in the last year
     // or it was the settlement of the last year
-    if( latestBooking().date.year() == intendedNextBooking.year())
+    if( lb.year() == intendedNextBooking.year()) {
+        qInfo() << "intended Next booking is not in the same year as next booking " << lb << " / " << intendedNextBooking;
         return false;
-    if( latestBooking().date.addDays(1).year() == intendedNextBooking.year())
+    }
+    if( lb.addDays(1).year() == intendedNextBooking.year()) {
+        qInfo() << "intended Next booking is on jan 1st of next year after latest booking " << lb << " / " << intendedNextBooking;
         return false;
+    }
     return true;
 }
 
@@ -485,7 +494,9 @@ bool contract::finalize(bool simulate, const QDate finDate,
     finInterest = ZinsesZins(interestRate(), preFinValue, latestBooking().date, finDate);
     finPayout = preFinValue +finInterest;
     if( simulate) {
+        qInfo() << "sumulation will stop here";
         executeSql_wNoRecords(qsl("ROLLBACK"));
+        loadFromDb(id());
         return  true;
     }
     bool allGood =false;
