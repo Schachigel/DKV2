@@ -630,6 +630,8 @@ QString descriptionFromType(const QString &bddType)
         return qsl("Vertragsabschluß");
     if( bddType == qsl("AD") || bddType == qsl("ADex"))
         return qsl("Vertragsaktivierung");
+    if( bddType == qsl("CT"))
+        return qsl("Vertragsbeendigung");
     if( bddType == qsl("1"))
         return qsl("Einzahlung");
     if( bddType == qsl("2"))
@@ -662,6 +664,10 @@ void MainWindow::on_rbActive_toggled(bool checked)
     if( checked) prepare_statisticsPage();
 }
 void MainWindow::on_rbInactive_toggled(bool checked)
+{
+    if( checked) prepare_statisticsPage();
+}
+void MainWindow::on_rbFinished_toggled(bool checked)
 {
     if( checked) prepare_statisticsPage();
 }
@@ -707,6 +713,10 @@ void MainWindow::getDatesFromContractStates()
         qInfo() << "init dates for INactive contracts";
         getInactiveContractBookingDates( dates);
     }
+    else if( ui->rbFinished->isChecked()) {
+        qInfo() << "init dates for finished contracts";
+        getFinishedContractBookingDates( dates);
+    }
     else if (ui->rbAll->isChecked()){
         qInfo() << "init dates for ALL contracts";
         getAllContractBookingDates( dates);
@@ -721,7 +731,9 @@ void MainWindow::fillStatisticsTableView()
         sql =sqlStat_activeContracts_byIMode_toDate;
     } else if (ui->rbInactive->isChecked()){
         sql =sqlStat_inactiveContracts_byIMode_toDate;
-    } else if (ui->rbAll->isChecked()) {
+    } else if (ui->rbFinished->isChecked()) {
+        sql =sqlStat_finishedContracts_toDate;
+    }    else if (ui->rbAll->isChecked()) {
         sql =sqlStat_allContracts_byIMode_toDate;
     } else
         Q_ASSERT (not "never reach this point");

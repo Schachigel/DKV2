@@ -164,6 +164,8 @@ private slots:
 
     void on_rbAll_toggled(bool checked);
 
+    void on_rbFinished_toggled(bool checked);
+
     void on_pbBack_clicked();
 
     void on_pbNext_clicked();
@@ -179,6 +181,7 @@ private slots:
     void on_action_cmenu_assoc_investment_triggered();
 
     void on_btnAutoClose_clicked();
+
 
 private:
     Ui::MainWindow *ui;

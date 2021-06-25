@@ -48,6 +48,7 @@ extern const QString sqlStat_passiverVertraege_ausz;
 // new, time dep. statistics
 extern const QString sqlStat_activeContracts_byIMode_toDate;
 extern const QString sqlStat_inactiveContracts_byIMode_toDate;
+extern const QString sqlStat_finishedContracts_toDate;
 extern const QString sqlStat_allContracts_byIMode_toDate;
 
 

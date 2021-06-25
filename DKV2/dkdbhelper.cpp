@@ -398,6 +398,24 @@ ORDER BY Datum DESC
     return getBookingDateInfoBySql(sql, dates);
 }
 
+void getFinishedContractBookingDates( QVector<BookingDateData>& dates) {
+    // dates at which a contract was finished
+    QString sql{qsl(R"str(
+    SELECT COUNT(VertragsId) AS Anzahl
+      , 'CT'
+      , Datum
+    FROM (
+    SELECT VertragsId
+      , MAX(exBuchungen.Datum) AS Datum
+    FROM exBuchungen
+    GROUP BY VertragsId
+    )
+    GROUP BY Datum
+    ORDER BY Datum DESC
+    )str")};
+    return getBookingDateInfoBySql(sql, dates);
+}
+
 void getAllContractBookingDates( QVector<BookingDateData>& dates)
 {
     // statistics of all contracts changes by

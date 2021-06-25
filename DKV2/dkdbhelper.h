@@ -78,6 +78,7 @@ struct BookingDateData {
 
 void getActiveContracsBookingDates( QVector<BookingDateData>& dates);
 void getInactiveContractBookingDates( QVector<BookingDateData>& dates);
+void getFinishedContractBookingDates( QVector<BookingDateData>& dates);
 void getAllContractBookingDates( QVector<BookingDateData>& dates);
 
 #endif // DKDBHELPER_H

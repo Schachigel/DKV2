@@ -783,6 +783,23 @@ FROM filteredByDate
 )str"
 )};
 
+const QString sqlStat_finishedContracts_toDate {qsl(
+/* imode, AnzahlVertraege, AnzahlKreditoren, totalVolume, totalInterest, AvgInterest */
+R"str(
+SELECT 'all'
+  , COUNT(*) AS AnzahVertraege
+  , COUNT( DISTINCT(KreditorId)) AS AnzahlKreditoren
+  , SUM(Betrag) /100. AS totalVolume
+  , SUM(Betrag * ZSatz /100. /100. /100.) AS totalInterest
+  , AVG(Betrag * ZSatz /100. /100. /100.) AS AvgInterest
+FROM exVertraege
+WHERE id in (  SELECT VertragsId
+  FROM exBuchungen
+  GROUP BY VertragsId
+  HAVING MAX(exBuchungen.Datum) <= date(':date'))
+)str"
+)};
+
 const QString sqlStat_allContracts_byIMode_toDate {qsl(
 R"str(
 WITH tmp_AktiveVertraege_IDs_zumDatum_date AS (
