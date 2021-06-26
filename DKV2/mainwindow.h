@@ -4,7 +4,6 @@
 #include <QStringLiteral>
 #include <QGuiApplication>
 #include <QItemSelection>
-#include <QSplashScreen>
 #include <QSqlTableModel>
 #include <QSqlQueryModel>
 #include <QMainWindow>
@@ -18,13 +17,11 @@
 
 struct busycursor
 {
-    busycursor()
-    {
+    busycursor() {
         QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     };
     busycursor(const busycursor&) =delete;
-    ~busycursor()
-    {
+    ~busycursor() {
         QGuiApplication::restoreOverrideCursor();
     }
 };
