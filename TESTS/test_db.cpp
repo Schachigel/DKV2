@@ -13,7 +13,7 @@
 #include "../DKV2/helper.h"
 
 #include "testhelper.h"
-#include "tst_db.h"
+#include "test_db.h"
 // add necessary includes here
 
 void test_db::initTestCase()

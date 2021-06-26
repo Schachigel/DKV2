@@ -1,5 +1,5 @@
-#ifndef TST_DB_H
-#define TST_DB_H
+#ifndef TEST_DB_H
+#define TEST_DB_H
 //
 #include <qobject.h>
 
@@ -29,4 +29,4 @@ private slots:
     void test_deleteRecord_wDep();
     void newDbIsValid();
 };
-#endif // TST_DB_H
+#endif // TEST_DB_H

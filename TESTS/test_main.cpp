@@ -9,7 +9,7 @@
 #include "test_properties.h"
 #include "test_lettertemplate.h"
 #include "test_csv.h"
-#include "tst_db.h"
+#include "test_db.h"
 #include "test_dkdbhelper.h"
 #include "test_finance.h"
 #include "test_sqlhelper.h"

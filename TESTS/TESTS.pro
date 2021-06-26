@@ -31,7 +31,7 @@ CONFIG += utf8_source
 
 DEFINES += GIT_COMMIT='\\"$$system(git log --format="%h" -n 1)\\"'
 
-SOURCES +=  tst_db.cpp \
+SOURCES +=  \
     ../DKV2/appconfig.cpp \
     ../DKV2/booking.cpp \
     ../DKV2/contract.cpp \
@@ -58,6 +58,7 @@ SOURCES +=  tst_db.cpp \
     test_contract.cpp \
     test_creditor.cpp \
     test_csv.cpp \
+    test_db.cpp \
     test_dkdbcopy.cpp \
     test_dkdbhelper.cpp \
     test_finance.cpp \
@@ -81,6 +82,7 @@ HEADERS += \
     test_contract.h \
     test_creditor.h \
     test_csv.h \
+    test_db.h \
     test_dkdbcopy.h \
     test_dkdbhelper.h \
     test_finance.h \
@@ -90,8 +92,7 @@ HEADERS += \
     test_statistics.h \
     test_tabledatainserter.h \
     test_views.h \
-    testhelper.h \
-    tst_db.h
+    testhelper.h
 
 RESOURCES += \
     resource.qrc
