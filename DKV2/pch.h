@@ -15,6 +15,8 @@
 #include <QRandomGenerator>
 
 #include <QItemSelection>
+#include <QPushButton>
+#include <QDialogButtonBox>
 #include <QRadioButton>
 #include <QDateEdit>
 #include <QLineEdit>

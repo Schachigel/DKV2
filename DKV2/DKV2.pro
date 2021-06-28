@@ -81,7 +81,6 @@ RC_FILE += $${TARGET}.rc
 
 SOURCES += \
         appconfig.cpp \
-        askdatedlg.cpp \
         booking.cpp \
         contract.cpp \
         contractsheadersortingadapter.cpp \
@@ -95,6 +94,7 @@ SOURCES += \
         dkdbcopy.cpp \
         dkdbhelper.cpp \
         dkdbviews.cpp \
+        dlgaskdata.cpp \
         helper.cpp \
         helperfile.cpp \
         helperfin.cpp \
@@ -127,7 +127,6 @@ PRECOMPILED_HEADER  = pch.h
 
 HEADERS += pch.h\
         appconfig.h \
-        askdatedlg.h \
         booking.h \
         contract.h \
         contractsheadersortingadapter.h \
@@ -142,6 +141,7 @@ HEADERS += pch.h\
         dkdbhelper.h \
         dkdbviews.h \
         dkv2version.h \
+        dlgaskdata.h \
         helper.h \
         helperfile.h \
         helperfin.h \
@@ -168,7 +168,6 @@ HEADERS += pch.h\
         wizterminatecontract.h
 
 FORMS += \
-        askdatedlg.ui \
         mainwindow.ui
 
 #TRANSLATIONS += \

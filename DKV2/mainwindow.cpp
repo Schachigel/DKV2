@@ -10,7 +10,8 @@
 #include "wiznewdatabase.h"
 #include "investment.h"
 #include "wizopenornewdatabase.h"
-#include "askdatedlg.h"
+//#include "askdatedlg.h"
+#include "dlgaskdata.h"
 #include "appconfig.h"
 #include "csvwriter.h"
 #include "uiitemformatter.h"
@@ -460,7 +461,7 @@ void MainWindow::on_btnNewInvestment_clicked()
 }
 void MainWindow::on_btnAutoClose_clicked()
 {
-    AskDateDlg ad;
+    dlgAskDate ad(this);
     ad.setDate(QDate::currentDate());
     if( ad.exec() not_eq QDialog::Accepted) {
         qInfo() << "auto close was cancled";
