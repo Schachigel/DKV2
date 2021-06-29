@@ -1,12 +1,7 @@
 #ifndef DLGASKDATA_H
 #define DLGASKDATA_H
 
-#include <QDialog>
-class QWidget;
-class QLabel;
-class QDateEdit;
-class QDialogButtonBox;
-class QDate;
+#include "pch.h"
 
 class dlgAskDate : public QDialog
 {

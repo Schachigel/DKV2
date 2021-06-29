@@ -1,10 +1,7 @@
 #ifndef DLGCHANGECONTRACTTERMINATION_H
 #define DLGCHANGECONTRACTTERMINATION_H
 
-#include <QDialog>
-class QWidget;
-class QDialgoButtonBox;
-
+#include "pch.h"
 
 class dlgChangeContractTermination : public QDialog
 {
