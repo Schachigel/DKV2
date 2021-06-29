@@ -14,7 +14,7 @@
 #include "wizcancelcontract.h"
 #include "wizannualsettlement.h"
 #include "wiznewinvestment.h"
-#include "wizEditContractTermination.h"
+#include "dlgchangecontracttermination.h"
 #include "wiznew.h"
 #include "transaktionen.h"
 
@@ -270,16 +270,18 @@ void changeContractTermination(qlonglong id)
     contract c(id);
     qDebug() << c.toString();
     creditor cred(c.creditorId());
-    wizEditContractTermination wiz;
-     if( c.isActive())
-        wiz.minContractTermination =c.latestBooking().date;
-    else
-        wiz.minContractTermination =c.conclusionDate().addDays(1);
+    dlgChangeContractTermination dlg;
 
-    wiz.setField(pnNewEDate, c.plannedEndDate());
-    wiz.newNoticePeriod =c.noticePeriod();
-    if( QDialog::Accepted == wiz.exec())
-        c.updateTerminationDate(wiz.field(pnNewEDate).toDate(), wiz.newNoticePeriod);
+    if( c.isActive())
+        dlg.setMinContractTerminationDate(c.latestBooking().date);
+    else
+        dlg.setMinContractTerminationDate(c.conclusionDate().addDays(1));
+
+    dlg.setEndDate(c.plannedEndDate());
+    dlg.setNoticePeriod(c.noticePeriod());
+
+    if( QDialog::Accepted == dlg.exec())
+        c.updateTerminationDate(dlg.endDate(), dlg.noticePeriod());
     return;
 }
 

@@ -16,6 +16,12 @@ const QDate EndOfTheFuckingWorld =QDate(9999, 12, 31);
 const QDate BeginingOfTime =QDate(1900, 1, 1);
 const int daysUntilTheEndOfTheFuckingWorld =2916000;
 
+void setFontPs(QWidget* w, int ps)
+{
+    QFont f =w->font();
+    f.setPointSize(ps);
+    w->setFont(f);
+}
 
 #ifdef QT_DEBUG
 void logger(QtMsgType type, const QMessageLogContext &context, const QString &msg)

@@ -13,6 +13,7 @@ wpEditContractTermination::wpEditContractTermination(QWidget* p) : QWizardPage(p
     setTitle(qsl("Verändern von Vertragsbeginn und -Ende"));
     setSubTitle(qsl("Für das Vertragsende kann eine Kündigungsfrist <b>und / oder</b> ein festes Vertragsende vereinbart werden."));
     setButtonText( QWizard::FinishButton, qsl("&Speichern"));
+
     cbNoticePeriod =new QComboBox;
     registerField(pnNewPeriod, cbNoticePeriod);
     cbNoticePeriod->addItem(qsl("festes Vertragsende"), QVariant(-1));
@@ -24,7 +25,8 @@ wpEditContractTermination::wpEditContractTermination(QWidget* p) : QWizardPage(p
         cbNoticePeriod->addItem(qsl("1 Jahr und ") + QString::number( i-12) + qsl(" Monate"), QVariant(i));
     cbNoticePeriod->addItem(qsl("2 Jahre"), QVariant(24));
 
-    connect(cbNoticePeriod, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &wpEditContractTermination::onNoticePeriod_currentIndexChanged);
+    connect(cbNoticePeriod, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &wpEditContractTermination::onNoticePeriod_currentIndexChanged);
 
     cbNoticePeriod->setToolTip(qsl("Wird eine Kündigungsfrist vereinbart, "
                                    "so gibt es kein festes Vertragsende. "

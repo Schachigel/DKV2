@@ -17,6 +17,8 @@
 
 #define qsl(x) QStringLiteral(x)
 
+void setFontPs(QWidget* w, int ps);
+
 class dbgTimer
 {
     QElapsedTimer t;
@@ -40,7 +42,7 @@ public:
         qInfo().noquote() << fill << fname;
     }
     functionlogging(const functionlogging&) =delete;
-    ~functionlogging(){
+    ~functionlogging() {
         QString fill=QString(qsl("<")).repeated(depth);
         depth--;
         qInfo().noquote() << fill << fname << Qt::endl;

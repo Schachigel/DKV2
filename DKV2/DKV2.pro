@@ -95,6 +95,7 @@ SOURCES += \
         dkdbhelper.cpp \
         dkdbviews.cpp \
         dlgaskdata.cpp \
+        dlgchangecontracttermination.cpp \
         helper.cpp \
         helperfile.cpp \
         helperfin.cpp \
@@ -142,6 +143,7 @@ HEADERS += pch.h\
         dkdbviews.h \
         dkv2version.h \
         dlgaskdata.h \
+        dlgchangecontracttermination.h \
         helper.h \
         helperfile.h \
         helperfin.h \
