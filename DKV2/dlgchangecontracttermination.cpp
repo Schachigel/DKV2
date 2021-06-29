@@ -1,5 +1,5 @@
 
-#include "pch.h"
+
 #include "helper.h"
 #include "dlgchangecontracttermination.h"
 
