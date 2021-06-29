@@ -3,7 +3,10 @@
 
 #include <QDialog>
 class QWidget;
+class QLabel;
+class QDateEdit;
 class QDialogButtonBox;
+class QDate;
 
 class dlgAskDate : public QDialog
 {
