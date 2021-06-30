@@ -52,22 +52,26 @@ dlgChangeContractTermination::dlgChangeContractTermination(QWidget *parent) : QD
     connect(allowBoth, &QCheckBox::stateChanged, this, &dlgChangeContractTermination::onAllowBothChanged);
 
     QGridLayout* g =new QGridLayout(this);
-    g->addWidget(title, 1,0, 1, 2);
-    g->addWidget(subTitle, 2, 0, 1, 2);
+    g->setColumnMinimumWidth(0, 30);
+    g->setColumnMinimumWidth(3, 30);
+    g->setRowMinimumHeight(0, 20);
+    g->addWidget(title, 1,1, 1, 2);
+    g->addWidget(subTitle, 2, 1, 1, 2);
 
     QHBoxLayout* hl =new QHBoxLayout();
     hl->addWidget(allowBoth);
     hl->addWidget(lBoth);
-    g->addLayout(hl, 3, 0);
+    g->addLayout(hl, 3, 1);
 
-    g->addWidget(lKfrist, 4, 0);
-    g->addWidget(notPeriod, 4, 1);
-    g->addWidget(lContractEnd, 5, 0);
-    g->addWidget(terminationDate, 5, 1);
-    g->addWidget(buttons, 6, 1);
+    g->addWidget(lKfrist, 4, 1);
+    g->addWidget(notPeriod, 4, 2);
+    g->addWidget(lContractEnd, 5, 1);
+    g->addWidget(terminationDate, 5, 2);
+    g->setRowMinimumHeight(6, 20);
+    g->addWidget(buttons, 7, 2);
 
-    g->setColumnStretch(0,1);
-    g->setColumnStretch(1,4);
+    g->setColumnStretch(1,1);
+    g->setColumnStretch(2,4);
     setLayout(g);
 }
 
