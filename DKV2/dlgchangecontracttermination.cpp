@@ -68,7 +68,7 @@ dlgChangeContractTermination::dlgChangeContractTermination(QWidget *parent) : QD
     g->addWidget(lContractEnd, 5, 1);
     g->addWidget(terminationDate, 5, 2);
     g->setRowMinimumHeight(6, 20);
-    g->addWidget(buttons, 7, 2);
+    g->addWidget(buttons, 7, 2, 1, 2);
 
     g->setColumnStretch(1,1);
     g->setColumnStretch(2,4);
