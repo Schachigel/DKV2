@@ -23,6 +23,18 @@ void setFontPs(QWidget* w, int ps)
     w->setFont(f);
 }
 
+void centerDlg(QWidget* parent, QWidget* child, int minWidth /*=300*/, int minHeight /*=400*/)
+{
+    int nWidth =qMax(child->width(), minWidth), nHeight =qMax(child->height(), minHeight);
+    if (parent not_eq NULL) {
+        QPoint parentPos = parent->mapToGlobal(parent->pos());
+        QPoint newPos(parentPos.x()+parent->width()/2 - nWidth/2, parentPos.y() + parent->height()/2 -nHeight/2);
+        newPos= parent->mapFromGlobal(newPos);
+        child->setGeometry(newPos.x(), newPos.y(),
+                    nWidth, nHeight);
+    }
+}
+
 #ifdef QT_DEBUG
 void logger(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 #else

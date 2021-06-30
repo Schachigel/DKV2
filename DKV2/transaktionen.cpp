@@ -270,7 +270,7 @@ void changeContractTermination(qlonglong id)
     contract c(id);
     qDebug() << c.toString();
     creditor cred(c.creditorId());
-    dlgChangeContractTermination dlg;
+    dlgChangeContractTermination dlg(getMainWindow());
 
     if( c.isActive())
         dlg.setMinContractTerminationDate(c.latestBooking().date);

@@ -1,9 +1,8 @@
 
-
 #include "helper.h"
 #include "dlgchangecontracttermination.h"
 
-dlgChangeContractTermination::dlgChangeContractTermination(QWidget *p) : QDialog(p)
+dlgChangeContractTermination::dlgChangeContractTermination(QWidget *parent) : QDialog(parent)
 {
     title =new QLabel(qsl("Verändern von Vertragsende und Kündigungsfrist<p>"));
     setFontPs(title, 14);
@@ -65,11 +64,18 @@ dlgChangeContractTermination::dlgChangeContractTermination(QWidget *p) : QDialog
     g->addWidget(notPeriod, 4, 1);
     g->addWidget(lContractEnd, 5, 0);
     g->addWidget(terminationDate, 5, 1);
-    g->addWidget(buttons, 6, 0);
+    g->addWidget(buttons, 6, 1);
 
     g->setColumnStretch(0,1);
     g->setColumnStretch(1,4);
     setLayout(g);
+}
+
+void dlgChangeContractTermination::showEvent(QShowEvent* se)
+{   LOG_CALL;
+    if( se->spontaneous())
+        return;
+    centerDlg(qobject_cast<QWidget*>(parent()), this);
 }
 
 void dlgChangeContractTermination::setNoticePeriod(int i)

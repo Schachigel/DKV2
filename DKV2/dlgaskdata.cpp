@@ -28,16 +28,11 @@ dlgAskDate::dlgAskDate(QWidget *parent) : QDialog(parent)
     layout->addStretch(1);
     layout->addWidget(buttons);
     setLayout(layout);
+}
 
-    int nWidth =250, nHeight =400;
-    if (parent != NULL) {
-        QPoint parentPos = parent->mapToGlobal(parent->pos());
-        parentPos.setX(parentPos.x()+parent->width()/2 - nWidth/2);
-        parentPos.setY(parentPos.y() + parent->height()/2 -nHeight/2);
-        parentPos= parent->mapFromGlobal(parentPos);
-
-        setGeometry(parentPos.x(),
-                    parentPos.y(),
-                    nWidth, nHeight);
-    }
+void dlgAskDate::showEvent(QShowEvent* se)
+{   LOG_CALL;
+    if( se->spontaneous())
+        return;
+    centerDlg(qobject_cast<QWidget*>(parent()), this);
 }

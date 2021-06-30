@@ -14,9 +14,10 @@ public:
     int noticePeriod() { return notPeriod->currentData().toInt();}
     QDate endDate() { return terminationDate->date();}
 private slots:
+    void showEvent(QShowEvent*) override;
     void onNoticePeriod_currentIndexChanged(int i);
     void onAllowBothChanged(int i);
-    void accept();
+    void accept() override;
 private:
     QDate minContractTerminationDate;
     QLabel* title;

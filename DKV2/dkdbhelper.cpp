@@ -205,7 +205,7 @@ int automatchInvestmentsToContracts()
         int interestRate   =q.record().value(qsl("ZSatz")).toInt();
         QDate contractDate =q.record().value(qsl("Vertragsdatum")).toDate();
         QVector<investment> suitableInvestments =openInvestments(interestRate, contractDate);
-        if( suitableInvestments.length() != 1)
+        if( suitableInvestments.length() not_eq 1)
             continue;
         contract c(q.record().value(qsl("id")).toLongLong());
         if( c.updateInvestment(suitableInvestments[0].rowid))

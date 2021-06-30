@@ -13,7 +13,8 @@ public:
     void setHeader(const QString &s) {header->setText(s);}
     void setMsg(const QString &s) {msg->setText(s);}
 // signals:
-// private slots:
+private slots:
+    void showEvent(QShowEvent*) override;
 private:
     QLabel* header;
     QLabel* msg;

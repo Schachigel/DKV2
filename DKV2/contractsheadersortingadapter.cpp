@@ -18,7 +18,7 @@ SOFTWARE.
 */
 
 #include "contractsheadersortingadapter.h"
-
+#include <iso646.h>
 #include "pch.h"
 
 contractsHeaderSortingAdapter::contractsHeaderSortingAdapter(QObject *parent) : QObject(parent)
@@ -44,7 +44,7 @@ bool contractsHeaderSortingAdapter::eventFilter(QObject * /*watched*/, QEvent *e
 
     switch (event->type()) {
     case QEvent::MouseButtonPress:
-        if (mouseEvent()->button() != Qt::LeftButton)
+        if (mouseEvent()->button() not_eq Qt::LeftButton)
             return false;
         m_pressPos = mouseEvent()->pos();
         break;
@@ -57,7 +57,7 @@ bool contractsHeaderSortingAdapter::eventFilter(QObject * /*watched*/, QEvent *e
         break;
 
     case QEvent::MouseButtonRelease: {
-        if (mouseEvent()->button() != Qt::LeftButton)
+        if (mouseEvent()->button() not_eq Qt::LeftButton)
             return false;
 
         // If we were dragging a section, then pass the event on.
@@ -71,7 +71,7 @@ bool contractsHeaderSortingAdapter::eventFilter(QObject * /*watched*/, QEvent *e
 qInfo() << "index: " << indexAtCursor;
         if (indexAtCursor == -1)
             ; // Do nothing, we clicked outside the headers
-        else if (header->sortIndicatorSection() != indexAtCursor) {
+        else if (header->sortIndicatorSection() not_eq indexAtCursor) {
             header->setSortIndicator(indexAtCursor, Qt::AscendingOrder);
             header->setSortIndicatorShown(true);
         } else if (header->sortIndicatorOrder() == Qt::AscendingOrder) {
