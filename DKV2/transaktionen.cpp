@@ -12,9 +12,10 @@
 #include "wizactivatecontract.h"
 #include "wizterminatecontract.h"
 #include "wizcancelcontract.h"
-#include "wizannualsettlement.h"
+//#include "wizannualsettlement.h"
 #include "wiznewinvestment.h"
 #include "dlgchangecontracttermination.h"
+#include "dlgannualsettlement.h"
 #include "wiznew.h"
 #include "transaktionen.h"
 
@@ -158,10 +159,11 @@ void annualSettlement()
         return;
     }
     int yearOfSettlement =bookingDate.year();
-    wizAnnualSettlement wiz(getMainWindow());
-    wiz.setField(qsl("year"), yearOfSettlement);
-    wiz.exec();
-    if( not wiz.field(qsl("confirm")).toBool())
+//    wizAnnualSettlement wiz(getMainWindow());
+    dlgAnnualsettlement dlg(getMainWindow(), yearOfSettlement);
+
+    dlg.exec();
+    if( not dlg.confirmed())
         return;
 
     QVector<QVariant> ids =executeSingleColumnSql(dkdbstructur[qsl("Vertraege")][qsl("id")]);
@@ -180,7 +182,7 @@ void annualSettlement()
         }
     }
 
-    if( not wiz.field(qsl("printCsv")).toBool())
+    if( not dlg.print_csv())
         return;
     csvwriter csv(qsl(";"));
     csv.addColumns(contract::booking_csv_header());

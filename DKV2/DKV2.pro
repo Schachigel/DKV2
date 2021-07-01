@@ -94,6 +94,7 @@ SOURCES += \
         dkdbcopy.cpp \
         dkdbhelper.cpp \
         dkdbviews.cpp \
+        dlgannualsettlement.cpp \
         dlgaskdata.cpp \
         dlgchangecontracttermination.cpp \
         helper.cpp \
@@ -112,7 +113,6 @@ SOURCES += \
         tabledatainserter.cpp \
         transaktionen.cpp \
         uiitemformatter.cpp \
-        wizEditContractTermination.cpp \
         wizactivatecontract.cpp \
         wizannualsettlement.cpp \
         wizcancelcontract.cpp \
@@ -142,6 +142,7 @@ HEADERS += pch.h\
         dkdbhelper.h \
         dkdbviews.h \
         dkv2version.h \
+        dlgannualsettlement.h \
         dlgaskdata.h \
         dlgchangecontracttermination.h \
         helper.h \
@@ -158,7 +159,6 @@ HEADERS += pch.h\
         tabledatainserter.h \
         transaktionen.h \
         uiitemformatter.h \
-        wizEditContractTermination.h \
         wizactivatecontract.h \
         wizannualsettlement.h \
         wizcancelcontract.h \
