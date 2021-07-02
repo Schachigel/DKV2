@@ -114,7 +114,6 @@ SOURCES += \
         transaktionen.cpp \
         uiitemformatter.cpp \
         wizactivatecontract.cpp \
-        wizannualsettlement.cpp \
         wizcancelcontract.cpp \
         wizchangecontractvalue.cpp \
         wiznew.cpp \
@@ -160,7 +159,6 @@ HEADERS += pch.h\
         transaktionen.h \
         uiitemformatter.h \
         wizactivatecontract.h \
-        wizannualsettlement.h \
         wizcancelcontract.h \
         wizchangecontractvalue.h \
         wiznew.h \
