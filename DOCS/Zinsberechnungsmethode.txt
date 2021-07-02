@@ -6,7 +6,7 @@ DKV2 verwendet die 30/360 Methode
 - Für einen Tag wird 1/360 des Jahreszinses berechnet.
 - Der 31. Tag eines Monats ist kein Zinstag.
 - Beginnt oder endet der Zinszeitraum am 31. so wird er wie der vorangehende 30. gewertet.
-- Läuft der Zinszeitraum über den Februar vollständig hinaus wird er mit 1/12 des Jahreszinses berechnet
+- Läuft der Zinszeitraum über den Februar hinaus wird er mit 30 Tagen bzw. 1/12 des Jahreszinses berechnet
 - Endet der Zinszeitraum am Monatsende des Februar, so wird der Februar mit 28/360 bzw. in Schaltjahren mit 29/360 berechnet.
 - Der erste Tag eines Zinszeitraums wird nicht verzinst.
 - Der Auszahlungstag wird verzinst.
@@ -17,15 +17,15 @@ Januar nicht komplett (1.1. ist zinsfrei)
 1 Tag im Februar.
 0 Monate aber 29 +1 = 30 Tage
 
-31.1.2019 - 1.3.2020
+31.1.2019 - 1.3.2019
 Feb komplett -> 1M
 1 Tag im März
 1Monat und 1Tag = 30 +1 = 31 Tage
 
-29.2.2019 - 1.4.2019
+28.2.2019 - 1.4.2019
 März komplett
-1 Tag im Feb, 1 Tag im April
-1Monat und 2Tage = 32 Tage
+2(!) Tage im Feb, 1 Tag im April
+1Monat und 2Tage = 33 Tage
 
 nach: https://www.zinsen-berechnen.de/zinsmethoden/deutsche-zinsmethode.php
 
