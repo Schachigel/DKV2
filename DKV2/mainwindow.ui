@@ -627,7 +627,6 @@ p, li { white-space: pre-wrap; }
      <string>&amp;Kreditgeber</string>
     </property>
     <addaction name="action_menu_creditors_listview"/>
-    <addaction name="separator"/>
     <addaction name="actionNeu"/>
    </widget>
    <widget class="QMenu" name="manu_contracts">
@@ -636,7 +635,7 @@ p, li { white-space: pre-wrap; }
     </property>
     <widget class="QMenu" name="menu_contracts_subm_print_lists">
      <property name="title">
-      <string>Listen drucken</string>
+      <string>&amp;Listen drucken</string>
      </property>
      <addaction name="action_menu_contracts_print_lists"/>
      <addaction name="actionAktuelle_Auswahl"/>
@@ -673,7 +672,7 @@ p, li { white-space: pre-wrap; }
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_menu_database_new">
    <property name="text">
-    <string>&amp;Datenbank wechseln</string>
+    <string>&amp;Wechseln</string>
    </property>
    <property name="toolTip">
     <string>Legen Sie hiermit eine leere DK Datenbank an</string>
@@ -698,7 +697,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="action_menu_creditors_listview">
    <property name="text">
-    <string>&amp;Liste der DK Geber</string>
+    <string>&amp;Liste </string>
    </property>
    <property name="toolTip">
     <string>Zeigt eine Liste aller DK Geber an</string>
@@ -711,7 +710,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="action_menu_contracts_listview">
    <property name="text">
-    <string>Liste der Verträge anzeigen</string>
+    <string>&amp;Liste </string>
    </property>
   </action>
   <action name="action_menu_debug_create_sample_data">
@@ -768,7 +767,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="action_menu_contracts_statistics_view">
    <property name="text">
-    <string>Ü&amp;bersichten</string>
+    <string>Übe&amp;rsichten</string>
    </property>
    <property name="toolTip">
     <string>Übersicht über Vertragsdaten anzeigen</string>
@@ -792,7 +791,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="action_menu_contracts_annual_interest_settlement">
    <property name="text">
-    <string>Jahreszinsabrechnung</string>
+    <string>&amp;Jahreszinsabrechnung</string>
    </property>
   </action>
   <action name="action_menu_database_configure_outdir">
@@ -846,7 +845,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionBeendete_Vertr_ge_anzeigen">
    <property name="text">
-    <string>&amp;Beendete Verträge anzeigen</string>
+    <string>&amp;Beendete</string>
    </property>
   </action>
   <action name="actionProjektkonfiguration_ndern">
@@ -856,7 +855,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionNeu">
    <property name="text">
-    <string>&amp;Neu</string>
+    <string>&amp;Neu anlegen</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
@@ -864,7 +863,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="action_Neu">
    <property name="text">
-    <string>&amp;Neuen Vertrag anlegen</string>
+    <string>&amp;Neu anlegen</string>
    </property>
   </action>
   <action name="actionAktuelle_Auswahl">
@@ -911,7 +910,7 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Statistiken</string>
+    <string>V&amp;erlauf</string>
    </property>
   </action>
   <action name="action_cmenu_Anmerkung_aendern">
