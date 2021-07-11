@@ -9,7 +9,6 @@
 #include <QMainWindow>
 #include <QPrinter>
 
-#include "reporthtml.h"
 #include "dkdbhelper.h"
 #include "appconfig.h"
 #include "contract.h"

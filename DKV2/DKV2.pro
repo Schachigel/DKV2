@@ -88,7 +88,6 @@ SOURCES += \
         creditor.cpp \
         csvwriter.cpp \
         dbfield.cpp \
-        dbstatistics.cpp \
         dbstructure.cpp \
         dbtable.cpp \
         dkdbcopy.cpp \
@@ -109,9 +108,9 @@ SOURCES += \
         mainwindow.cpp \
         mainwindow_contractlist.cpp \
         mainwindow_creditorlist.cpp \
-        reporthtml.cpp \
         tabledatainserter.cpp \
         transaktionen.cpp \
+        uebersichten.cpp \
         uiitemformatter.cpp \
         wizactivatecontract.cpp \
         wizcancelcontract.cpp \
@@ -134,7 +133,6 @@ HEADERS += pch.h\
         creditor.h \
         csvwriter.h \
         dbfield.h \
-        dbstatistics.h \
         dbstructure.h \
         dbtable.h \
         dkdbcopy.h \
@@ -154,9 +152,9 @@ HEADERS += pch.h\
         letters.h \
         mainwindow.h \
         pch.h \
-        reporthtml.h \
         tabledatainserter.h \
         transaktionen.h \
+        uebersichten.h \
         uiitemformatter.h \
         wizactivatecontract.h \
         wizcancelcontract.h \

@@ -36,7 +36,6 @@ SOURCES +=  \
     ../DKV2/booking.cpp \
     ../DKV2/contract.cpp \
     ../DKV2/creditor.cpp \
-    ../DKV2/dbstatistics.cpp \
     ../DKV2/dkdbcopy.cpp \
     ../DKV2/dkdbhelper.cpp \
     ../DKV2/dkdbviews.cpp \

@@ -452,4 +452,29 @@ UNION ALL
     return getBookingDateInfoBySql(sql, dates);
 }
 
+// calculate data for Uebersichten
+double valueOfAllContracts()
+{
+    QString sqlInactive {qsl(R"str(
+SELECT SUM(Betrag)/100. AS Gesamtbetrag
+FROM Vertraege
+WHERE id NOT IN (SELECT DISTINCT VertragsId FROM Buchungen)
+)str")};
+    double inactiveSum =executeSingleValueSql(sqlInactive).toDouble();
+    QString sqlActive {qsl(R"str(
+SELEcT SUM(Buchungen.Betrag) /100. as Gesamtbetrag
+FROM Vertraege INNER JOIN Buchungen
+)str")};
+    double activeSum =executeSingleValueSql(sqlActive).toDouble();
+    return inactiveSum + activeSum;
+}
 
+QVector<QStringList> overviewActiveContracts()
+{
+    QVector<QStringList> ret;
+    QString sql {sqlStat_activeContracts_byIMode_toDate};
+    sql.replace(qsl(":data"), QDate::currentDate().toString(Qt::ISODate));
+    QSqlRecord record =executeSingleRecordSql(sql);
+    ret.push_back(QStringList({qsl("Anzahl DK Geber*innen"), record.value(qsl("AnzahlKreditoren")).toString()}));
+    return ret;
+}

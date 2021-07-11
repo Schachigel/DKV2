@@ -76,9 +76,13 @@ struct BookingDateData {
     QDate date;
 };
 
+// calculations for time series statistics
 void getActiveContracsBookingDates( QVector<BookingDateData>& dates);
 void getInactiveContractBookingDates( QVector<BookingDateData>& dates);
 void getFinishedContractBookingDates( QVector<BookingDateData>& dates);
 void getAllContractBookingDates( QVector<BookingDateData>& dates);
 
+// calculations for Uebersichten
+double valueOfAllContracts();
+QVector<QStringList> overviewActiveContracts();
 #endif // DKDBHELPER_H
