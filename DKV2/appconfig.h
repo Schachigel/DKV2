@@ -71,6 +71,7 @@ struct dbConfig
     static QVariant read_DBVersion(const QSqlDatabase& db =QSqlDatabase::database());
     static void write_DBVersion(const QSqlDatabase& db =QSqlDatabase::database(), const QString& tblAlias =QString());
     static QVariant readValue(const projectConfiguration pc, const QSqlDatabase& db =QSqlDatabase::database());
+    static QString readString(const projectConfiguration pc, const QSqlDatabase& db =QSqlDatabase::database());
     static void     writeValue(projectConfiguration pc, const QVariant& value, const QSqlDatabase& db =QSqlDatabase::database(), const QString& tblAlias =QString());
 
     static QString paramName(const projectConfiguration pc) {

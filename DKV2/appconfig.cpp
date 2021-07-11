@@ -212,6 +212,11 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
     }
 }
 
+/*static*/ QString dbConfig::readString(const projectConfiguration pc, const QSqlDatabase &db)
+{
+    return readValue(pc, db).toString();
+}
+
 /*static*/ void dbConfig::writeValue(projectConfiguration pc, const QVariant& value, const QSqlDatabase& db, const QString& tblAlias /*=QString()*/)
 {   LOG_CALL;
     if( not isValidIndex(pc)) {
