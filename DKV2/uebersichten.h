@@ -20,13 +20,19 @@ struct tablelayout
     QVector<section> sections;
 private:
     int colCount();
-    int _colCount =-1;
     int rowCount();
-    int _rowCount =-1;
     int insertColHeader(QTextTable* tt);
     int fillSectionHeader(QTextTable* tt, const int secIndex, const int row);
     int fillSectionData(QTextTable* tt, const int secIndex, const int row);
     int fillEmptyRow(QTextTable* tt, const int row);
+private: // data
+    int _colCount =-1;
+    int _rowCount =-1;
+    // font sizes in pt
+    const int fontSize_colHeader =20;
+    const int fontSize_secHeader =14;
+    const int fontSize_data      =12;
+    const int fontSize_emptyRow  =6;
 };
 
 struct uebersichten

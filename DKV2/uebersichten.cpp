@@ -2,15 +2,44 @@
 #include "dkdbhelper.h"
 #include "uebersichten.h"
 
+const bool bold =true;
+const bool regular =false;
+
+void setTextTableCellFontPointSize(QTextTableCell& cell, int pointsize, bool bold)
+{
+    QFont f =cell.format().font();
+    f.setPointSize(pointsize);
+    f.setBold(bold);
+    QTextCharFormat format =cell.format();
+    format.setFont(f);
+    cell.setFormat(format);
+}
+
+void setTextTableCellAlignment(QTextTableCell& cell, Qt::Alignment a)
+{
+    QTextBlockFormat bf =cell.firstCursorPosition().blockFormat();
+    bf.setAlignment(a);
+    cell.firstCursorPosition().setBlockFormat(bf);
+}
+
+void setTextTableCellBackColor(QTextTableCell& cell, QColor color)
+{
+    auto format =cell.format();
+    format.setBackground(color);
+    cell.setFormat(format);
+}
+
 int tablelayout::colCount()
 {
     if( _colCount not_eq -1)
         return _colCount;
     _colCount =cols.count();
-    for(int i =0; i < sections.count(); i++) {
-        int nbrOfDataColumns =sections[i].data.count();
-        if( nbrOfDataColumns > _colCount)
-            _colCount =nbrOfDataColumns;
+    for( auto const & sec : qAsConst(sections)) {
+        for( auto const & dataset : qAsConst(sec.data)) {
+            int nbrOfDataCols =dataset.count();
+            if( nbrOfDataCols > _colCount)
+                _colCount =nbrOfDataCols;
+        }
     }
     return _colCount;
 }
@@ -44,10 +73,16 @@ int tablelayout::insertColHeader(QTextTable* table)
     QTextTableFormat ttf =table->format();
     ttf.setHeaderRowCount(1);
     for( int colIndex =0; colIndex < cols.count(); colIndex++) {
-        auto cp =table->cellAt(0, colIndex).firstCursorPosition();
-        cp.insertHtml(qsl("<b>%1<b>").arg(cols[colIndex]));
+        QTextTableCell cell =table->cellAt(0, colIndex);
+        setTextTableCellFontPointSize(cell, fontSize_colHeader, bold);
+        setTextTableCellAlignment(cell, Qt::AlignCenter);
+        setTextTableCellBackColor(cell, QColor(200, 200, 240));
+        auto cp =cell.firstCursorPosition();
+        cp.insertText(cols[colIndex]);
     }
-    return 1;
+    fillEmptyRow(table, 1);
+
+    return 2;
 }
 
 int tablelayout::fillSectionHeader(QTextTable* table, const int secIndex, const int row)
@@ -55,10 +90,22 @@ int tablelayout::fillSectionHeader(QTextTable* table, const int secIndex, const 
     section& sec =sections[secIndex];
     if( 0 == sec.header.count())
         return 0;
-
-    table->mergeCells(row, 0, 1, table->columns()-1);
-    table->cellAt(row, 0).firstCursorPosition().insertHtml(qsl("<b>%1<b>").arg(sec.header));
+    table->mergeCells(row, 0, 1, table->columns());
+    QTextTableCell cell =table->cellAt(row, 0);
+    setTextTableCellFontPointSize(cell, fontSize_secHeader, bold);
+    setTextTableCellAlignment(cell, Qt::AlignLeft);
+    setTextTableCellBackColor(cell, QColor(240, 210, 210));
+    cell.firstCursorPosition().insertText(sec.header);
     return 1;
+}
+
+Qt::Alignment alignmentByCol(int col, int max)
+{
+    if( col == 0)
+        return Qt::AlignLeft;
+    if( col == max)
+        return Qt::AlignRight;
+    return Qt::AlignCenter;
 }
 
 int tablelayout::fillSectionData(QTextTable* table, const int secIndex, const int row)
@@ -67,8 +114,15 @@ int tablelayout::fillSectionData(QTextTable* table, const int secIndex, const in
     for( int rowInData =0; rowInData < sec.data.count(); rowInData++) {
         QStringList& rowData =sec.data[rowInData];
         for( int colInData =0; colInData < rowData.count(); colInData++) {
-            auto cp =table->cellAt(row + rowInData, colInData).firstCursorPosition();
-            cp.insertHtml(qsl("%1").arg(sec.data[rowInData][colInData]));
+            QTextTableCell cell =table->cellAt(row + rowInData, colInData);
+            setTextTableCellFontPointSize(cell, fontSize_data, regular);
+            setTextTableCellAlignment(cell, alignmentByCol(colInData, _colCount -1));
+            if( rowInData%2)
+                setTextTableCellBackColor(cell, QColor(230, 230, 230));
+            else
+                setTextTableCellBackColor(cell, QColor(245, 245, 245));
+            auto cp =cell.firstCursorPosition();
+            cp.insertText(sec.data[rowInData][colInData]);
         }
     }
     return sec.data.count();
@@ -77,6 +131,8 @@ int tablelayout::fillSectionData(QTextTable* table, const int secIndex, const in
 int tablelayout::fillEmptyRow(QTextTable* table, const int row)
 {
     table->mergeCells(row, 0, 1, table->columns());
+    QTextTableCell cell =table->cellAt(row, 0);
+    setTextTableCellFontPointSize(cell, fontSize_emptyRow, regular);
     return 1;
 }
 
@@ -86,6 +142,18 @@ bool tablelayout::renderTable( QTextDocument* td)
     tc.movePosition(QTextCursor::End);
     QTextTable* table =tc.insertTable(rowCount(), colCount());
     qDebug() << table->rows() << " / " << table->columns();
+
+    QTextTableFormat format =table->format();
+    format.setBorderCollapse(true);
+    format.setCellPadding(5);
+    format.setAlignment(Qt::AlignLeft);
+    table->setFormat(format);
+
+    QTextFrameFormat frameFormat =table->frameFormat();
+    frameFormat.setWidth(400);
+    table->setFrameFormat(frameFormat);
+
+    // format and insert column header
     int currentRow =insertColHeader(table);
 
     // format section(s) header and data
@@ -110,8 +178,14 @@ QString uebersichten::titles[]
 
 void uebersichten::prep( uebersichten::uetype t)
 {
-    // add Title, project info and current date
     td->clear();
+    // set document defaults
+    QFont f =td->defaultFont();
+    f.setFamily(qsl("Verdana"));
+    f.setPixelSize(12);
+    td->setDefaultFont(f);
+
+    // add Title, project info and current date
     QTextCursor tc(td);
     tc.insertHtml(qsl("<h1>%1</h1><p>").arg(titles[t]));
     QString headerline =qsl("<big>%1</big> - Stand: %2<p>");
@@ -148,13 +222,14 @@ void uebersichten::renderDocument( uebersichten::uetype t)
 void uebersichten::renderShortInfo()
 {   LOG_CALL;
     tablelayout tl;
+
 //    tl.sections.push_back({qsl("Aktive Verträge"), overviewActiveContracts()});
 //    tl.sections.push_back({qsl("Noch nicht aktive Verträge"), QVector<QStringList>()});
 
     tl.cols << qsl("col1") << qsl("col2") << qsl("col3");
     tablelayout::section sec1 {qsl("Abschnitt 1"), {{qsl("Data11"), qsl("Data12"), qsl("Data13")}, {qsl("Data21"), qsl("Data22"), qsl("Data23")}}};
     tl.sections.push_back(sec1);
-    tablelayout::section sec2 {qsl("Abschnitt 2"), {{qsl("Data11"), qsl("Data12"), qsl("Data13")}, {qsl("Data21"), qsl("Data22"), qsl("Data23")}, {qsl("Data31"), qsl("Data32"), qsl("Data33")}}};
+    tablelayout::section sec2 {qsl("Abschnitt 2"), {{qsl("Data11"), qsl("Data12"), qsl("Data13")}, {qsl("Data21"), qsl("Data22"), qsl("Data13")}, {qsl("Data31"), qsl("Data32"), qsl("Data13")}}};
     tl.sections.push_back(sec2);
 
     tl.renderTable(td);
