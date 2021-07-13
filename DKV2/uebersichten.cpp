@@ -223,15 +223,7 @@ void uebersichten::renderShortInfo()
 {   LOG_CALL;
     tablelayout tl;
 
-//    tl.sections.push_back({qsl("Aktive Verträge"), overviewActiveContracts()});
-//    tl.sections.push_back({qsl("Noch nicht aktive Verträge"), QVector<QStringList>()});
-
-    tl.cols << qsl("col1") << qsl("col2") << qsl("col3");
-    tablelayout::section sec1 {qsl("Abschnitt 1"), {{qsl("Data11"), qsl("Data12"), qsl("Data13")}, {qsl("Data21"), qsl("Data22"), qsl("Data23")}}};
-    tl.sections.push_back(sec1);
-    tablelayout::section sec2 {qsl("Abschnitt 2"), {{qsl("Data11"), qsl("Data12"), qsl("Data13")}, {qsl("Data21"), qsl("Data22"), qsl("Data13")}, {qsl("Data31"), qsl("Data32"), qsl("Data13")}}};
-    tl.sections.push_back(sec2);
-
+    tl.sections.push_back({qsl("Aktive Verträge"), overviewActiveContracts()});
     tl.renderTable(td);
 }
 
