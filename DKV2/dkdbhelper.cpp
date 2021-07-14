@@ -452,7 +452,7 @@ UNION ALL
     return getBookingDateInfoBySql(sql, dates);
 }
 
-// calculate data for Uebersichten
+// calculate data for start page
 double valueOfAllContracts()
 {
     QString sqlInactive {qsl(R"str(
@@ -469,45 +469,10 @@ FROM Vertraege INNER JOIN Buchungen
     return inactiveSum + activeSum;
 }
 
-QVector<QStringList> overviewActiveContracts()
+QVector<QStringList> overviewContracts(const QString& sql)
 {
     QVector<QStringList> ret;
-    QString sql {qsl(
-R"str(WITH Bookings AS (
-  SELECT Vertraege.id        AS vid
-  , KreditorId               AS kid
-  , zSatz                    AS Zinssatz
-  , Buchungen.Betrag         AS Betrag
-  , IIF( Vertraege.thesaurierend = 2, IIF( Buchungen.BuchungsArt = 8, 0, Buchungen.Betrag), Buchungen.Betrag)
-                             AS VerzinslGuthaben
-  FROM Buchungen JOIN Vertraege ON Vertraege.id = Buchungen.VertragsId
-)
-, counts AS (
-  SELEcT COUNT(DISTINCT vid) AS AnzahlVertraege
-     , COUNT(DISTINCT kid) AS AnzahlKreditoren
-  FROM
-    Bookings
-)
-, mittlererZins AS (
-  SELEcT avg(ZSatz) /100. AS MittelZins
-  FROM Vertraege
-)
-, sums AS (
-  SELEcT SUM(Betrag) /100. AS GesamtVolumen
-    , SUM(VerzinslGuthaben *Zinssatz)/100. /100. /100. AS Jahreszins
-  FROM Bookings
-)
-
-SELECT AnzahlVertraege
-  , AnzahlKreditoren
-  , GesamtVolumen
-  , GesamtVolumen / AnzahlVertraege AS MittlererVertragswert
-  , Jahreszins
-  , Jahreszins / GesamtVolumen * 100. AS ZinsRate
-  , MittelZins
-FROM counts INNER JOIN sums INNER JOIN mittlererZins
-)str")
-    };
+//    QString sql {sqlOverviewActiveContracts};
     QLocale locale;
     QSqlRecord record =executeSingleRecordSql(sql);
     ret.push_back(QStringList({qsl("Anzahl DK Geber*innen"), record.value(qsl("AnzahlKreditoren")).toString()}));

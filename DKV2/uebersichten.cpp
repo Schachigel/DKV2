@@ -1,4 +1,5 @@
 #include "appconfig.h"
+#include "dkdbviews.h"
 #include "dkdbhelper.h"
 #include "uebersichten.h"
 
@@ -222,14 +223,13 @@ void uebersichten::renderDocument( uebersichten::uetype t)
 void uebersichten::renderShortInfo()
 {   LOG_CALL;
     tablelayout tl;
-
-    tl.sections.push_back({qsl("Aktive Verträge"), overviewActiveContracts()});
+    tl.sections.push_back({qsl("Aktive Verträge"), overviewContracts(sqlOverviewActiveContracts)});
+    tl.sections.push_back({qsl("InAktive Verträge"), overviewContracts(sqlOverviewInActiveContracts)});
     tl.renderTable(td);
 }
 
 void uebersichten::renderInterestByYear()
-{
-
+{   LOG_CALL;
 }
 
 void uebersichten::renderContractsByContractEnd()

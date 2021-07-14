@@ -84,5 +84,5 @@ void getAllContractBookingDates( QVector<BookingDateData>& dates);
 
 // calculations for Uebersichten
 double valueOfAllContracts();
-QVector<QStringList> overviewActiveContracts();
+QVector<QStringList> overviewContracts(const QString& sql);
 #endif // DKDBHELPER_H

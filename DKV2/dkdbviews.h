@@ -19,33 +19,13 @@ const QMap<QString, QString>& getViews();
 bool remove_all_views(const QSqlDatabase& db =QSqlDatabase::database());
 
 extern const QString sqlContractsActiveDetailsView;
-extern const QString sqlVertraege_aktiv;
-extern const QString sqlContractsInactiveView;
 extern const QString sqlContractsActiveView;
-extern const QString sqlContractsAllView;
 extern const QString sqlNextAnnualSettlement;
 extern const QString sqlContractsByYearByInterest;
-extern const QString sqlNbrAllCreditors;
-extern const QString sqlNbrAllCreditors_thesa;
-extern const QString sqlNbrAllCreditors_payout;
-extern const QString sqlNbrActiveCreditors;
-extern const QString sqlNbrActiveCreditors_thesa;
-extern const QString sqlNbrActiveCreditors_payout;
-extern const QString sqlInactiveCreditors;
-extern const QString sqlInactiveCreditors_thesa;
-extern const QString sqlInactiveCreditors_payout;
-extern const QString sqlInterestByYearOverview;
-extern const QString sqlStat_allerVertraege;
-extern const QString sqlStat_allerVertraege_thesa;
-extern const QString sqlStat_allerVertraege_ausz;
-extern const QString sqlStat_aktiverVertraege;
-extern const QString sqlStat_aktiverVertraege_thesa;
-extern const QString sqlStat_aktiverVertraege_ausz;
-extern const QString sqlStat_passiverVertraege;
-extern const QString sqlStat_passiverVertraege_thesa;
-extern const QString sqlStat_passiverVertraege_ausz;
+extern const QString sqlOverviewActiveContracts;
+extern const QString sqlOverviewInActiveContracts;
 
-// new, time dep. statistics
+//// new, time dep. statistics
 extern const QString sqlStat_activeContracts_byIMode_toDate;
 extern const QString sqlStat_inactiveContracts_byIMode_toDate;
 extern const QString sqlStat_finishedContracts_toDate;
