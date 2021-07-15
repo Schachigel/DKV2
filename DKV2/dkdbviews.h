@@ -24,7 +24,7 @@ extern const QString sqlNextAnnualSettlement;
 extern const QString sqlContractsByYearByInterest;
 extern const QString sqlOverviewActiveContracts;
 extern const QString sqlOverviewInActiveContracts;
-
+extern const QString sqlOverviewAllContracts;
 //// new, time dep. statistics
 extern const QString sqlStat_activeContracts_byIMode_toDate;
 extern const QString sqlStat_inactiveContracts_byIMode_toDate;

@@ -151,7 +151,7 @@ bool tablelayout::renderTable( QTextDocument* td)
     table->setFormat(format);
 
     QTextFrameFormat frameFormat =table->frameFormat();
-    frameFormat.setWidth(400);
+    frameFormat.setWidth(600);
     table->setFrameFormat(frameFormat);
 
     // format and insert column header
@@ -225,6 +225,7 @@ void uebersichten::renderShortInfo()
     tablelayout tl;
     tl.sections.push_back({qsl("Aktive Verträge"), overviewContracts(sqlOverviewActiveContracts)});
     tl.sections.push_back({qsl("InAktive Verträge"), overviewContracts(sqlOverviewInActiveContracts)});
+    tl.sections.push_back({qsl("Aktive und Inaktive Verträge"), overviewContracts(sqlOverviewAllContracts)});
     tl.renderTable(td);
 }
 

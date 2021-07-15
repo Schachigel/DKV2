@@ -374,8 +374,8 @@ GROUP BY Year
 ORDER BY YEAR DESC, Thesa DESC
 )str"
 )};
-const QString sqlOverviewActiveContracts{qsl(
-                R"str(WITH Bookings AS (
+const QString sqlOverviewActiveContracts{qsl(R"str(
+                WITH Bookings AS (
                   SELECT Vertraege.id        AS vid
                   , KreditorId               AS kid
                   , zSatz                    AS Zinssatz
@@ -392,7 +392,7 @@ const QString sqlOverviewActiveContracts{qsl(
                 )
                 , mittlererZins AS (
                   SELEcT avg(ZSatz) /100. AS MittelZins
-                  FROM Vertraege
+                  FROM Vertraege WHERE id IN (SELEcT DISTINCT VertragsId FROM Buchungen)
                 )
                 , sums AS (
                   SELEcT SUM(Betrag) /100. AS GesamtVolumen
@@ -421,6 +421,55 @@ SELEcT COUNT( DISTINCT KreditorId)     AS AnzahlKreditoren
 FROM Vertraege
 WHERE id NOT IN (SELEcT DISTINCT VertragsId FROM Buchungen)
 )str")};
+const QString sqlOverviewAllContracts {qsl(R"str(
+WITH all_counts AS (
+  SELEcT COUNT(DISTINCT id)          AS AnzahlVertraege
+    , COUNT(DISTINCT KreditorId)     AS AnzahlKreditoren
+    , AVG(ZSatz) /100.               AS MittelZins
+  FROM Vertraege
+)
+, all_mittlererZins AS (
+  SELECT AVG(ZSatz) /100.             AS MittelZins
+  FROM Vertraege
+)
+, active_bookings AS (
+  SELECT ZSatz /100.                 AS Zinssatz
+    , Buchungen.Betrag               AS Betrag
+    , IIF( Vertraege.thesaurierend = 2, IIF( Buchungen.BuchungsArt = 8, 0, Buchungen.Betrag), Buchungen.Betrag)
+                                     AS VerzinslGuthaben
+    FROM Buchungen JOIN Vertraege ON Vertraege.id = Buchungen.VertragsId
+)
+, active_sums AS (
+  SELEcT SUM(Betrag) /100.            AS GesamtVolumen
+    , SUM(Betrag) /100. /COUNT(*)     AS MittlererVertragswert
+    , SUM(VerzinslGuthaben *Zinssatz) /100. /100.
+                                      AS Jahreszins
+    , SUM(VerzinslGuthaben *Zinssatz) /100. /100. / SUM(Betrag) *100.
+                                      AS ZinsRate
+    FROM active_bookings
+)
+, inactive_sums AS (
+  SELEcT SUM(Betrag) /100.             AS GesamtVolumen
+  , SUM(Betrag) /100. /COUNT(*)        AS MittlererVertragswert
+  , SUM(Betrag*ZSatz) /100. /100. /100.  AS JahresZins
+  , SUM(Betrag*ZSatz) /100. /SUM(Betrag) AS ZinsRate
+
+  FROM Vertraege
+  WHERE id NOT IN (SELEcT DISTINCT VertragsId FROM Buchungen)
+)
+
+SELEcT all_counts.AnzahlVertraege
+  , all_counts.AnzahlKreditoren
+  , active_sums.GesamtVolumen + inactive_sums.GesamtVolumen AS GesamtVolumen
+  , (active_sums.GesamtVolumen + inactive_sums.GesamtVolumen) /all_counts.AnzahlVertraege
+                                                            AS MittlererVertragswert
+  , (active_sums.Jahreszins + inactive_sums.Jahreszins)     AS Jahreszins
+  , 100.* ((active_sums.Jahreszins + inactive_sums.Jahreszins))/(active_sums.GesamtVolumen + inactive_sums.GesamtVolumen)
+                                                            AS ZinsRate
+  , all_counts.MittelZins                                   AS MittelZins
+FROM all_counts JOIN active_sums JOIN inactive_sums
+)str")};
+
 // used for time series statistics
 const QString sqlStat_activeContracts_byIMode_toDate {qsl(
 R"str(
