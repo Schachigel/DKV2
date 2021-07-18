@@ -6,12 +6,9 @@
 
 
 void tablelayout::setCellFormat(QTextTableCell& cell, cellType ct) {
-dbgTimer t (QStringLiteral("setFormat"));
     if(tableformats[ct].charFormatIndex) {
-//        qDebug() << "using cf index: " << tableformats[ct].charFormatIndex;
         QTextCharFormat tcf =td->allFormats().at(tableformats[ct].charFormatIndex).toCharFormat();
         cell.setFormat(tcf);
-        t.lab("cf from index");
     } else {
         QTextCharFormat tcf =cell.format();
         tcf.setFontPointSize(tableformats[ct].pointSize);
@@ -19,22 +16,16 @@ dbgTimer t (QStringLiteral("setFormat"));
         tcf.setForeground(tableformats[ct].fColor);
         tcf.setBackground(tableformats[ct].bColor);
         cell.setFormat(tcf);
-//        qDebug() << "writing cf index: " << cell.tableCellFormatIndex();
         tableformats[ct].charFormatIndex = cell.tableCellFormatIndex();
-        t.lab("new cf");
     }
     if(tableformats[ct].blockFormatIndex) {
-//        qDebug() << "using bf index: " << tableformats[ct].blockFormatIndex;
         QTextBlockFormat tbf =td->allFormats().at(tableformats[ct].blockFormatIndex).toBlockFormat();
         cell.firstCursorPosition().setBlockFormat(tbf);
-        t.lab("bf from index");
     } else {
         QTextBlockFormat bf =cell.firstCursorPosition().blockFormat();
         bf.setAlignment(tableformats[ct].alignment);
         cell.firstCursorPosition().setBlockFormat(bf);
-//        qDebug() << "writing bf index: " << cell.firstCursorPosition().block().blockFormatIndex();
         tableformats[ct].blockFormatIndex =cell.firstCursorPosition().block().blockFormatIndex();
-        t.lab("new bf");
     }
 }
 
@@ -85,7 +76,7 @@ int tablelayout::insertColHeader(QTextTable* table)
 
     for( int colIndex =0; colIndex < cols.count(); colIndex++) {
         QTextTableCell cell =table->cellAt(0, colIndex);
-        setCellFormat( cell, collHeader);
+        setCellFormat( cell, colHeader);
         cell.firstCursorPosition().insertText(cols[colIndex]);
     }
 
@@ -116,14 +107,14 @@ int tablelayout::fillSectionData(QTextTable* table, const int secIndex, const in
                 // odd rows
                 if(  colInData == 0)
                     setCellFormat( cell,dataFirstColOdd);
-                else if( colInData == table->columns())
+                else if( colInData == table->columns()-1)
                     setCellFormat( cell, dataLastColOdd);
                 else setCellFormat( cell, dataMiddleColOdd);
             } else {
                 // even rows
                 if(  colInData == 0)
                     setCellFormat( cell,dataFirstColEven);
-                else if( colInData == table->columns())
+                else if( colInData == table->columns()-1)
                     setCellFormat( cell, dataLastColEven);
                 else setCellFormat( cell, dataMiddleColEven);
             }
@@ -143,14 +134,10 @@ int tablelayout::fillEmptyRow(QTextTable* table, const int row)
 
 bool tablelayout::renderTable( )
 {   // LOG_CALL;
-//    dbgTimer t(QStringLiteral("render table"));
     QTextCursor tc (td);
     tc.movePosition(QTextCursor::End);
     QTextTable* table =tc.insertTable(rowCount(), colCount());
-    qDebug() << table->rows() << " / " << table->columns();
-//    t.lab(QStringLiteral("table inserted"));
     int currentRow =insertColHeader(table);
-//    t.lab(QStringLiteral("col header"));
     QTextTableFormat format =table->format();
     format.setCellSpacing(0);
     format.setCellPadding(5);
@@ -162,10 +149,7 @@ bool tablelayout::renderTable( )
             currentRow += fillEmptyRow(table, currentRow);
         currentRow += fillSectionHeader(table, sectionIndex, currentRow);
         currentRow += fillSectionData(table, sectionIndex, currentRow);
-//        t.lab("section filled");
     }
-
-    qDebug() << table->format().columnWidthConstraints();
     return true;
 }
 
@@ -177,10 +161,11 @@ bool tablelayout::renderTable( )
 QString uebersichten::titles[]
 {
     qsl("Übersicht"),
-    qsl("Vertragsabschlüsse nach Jahr und Zinssatz"),
+    qsl("Ausgezahlte Zinsen pro Jahr"),
     qsl("Auslaufende Verträge"),
     qsl("Verteilung der Zinssätze pro Jahr"),
     qsl("Laufzeiten")
+//    qsl("Vertragsabschlüsse nach Jahr und Zinssatz"),
 };
 
 
@@ -209,7 +194,7 @@ void uebersichten::renderDocument( uebersichten::uetype t)
         renderShortInfo();
         break;
     case uetype::PAYED_INTEREST_BY_YEAR:
-        renderInterestByYear();
+        renderPayedInterestByYear();
         break;
     case uetype::BY_CONTRACT_END:
         renderContractsByContractEnd();
@@ -217,9 +202,12 @@ void uebersichten::renderDocument( uebersichten::uetype t)
     case uetype::INTEREST_DISTRIBUTION:
         renderInterestDistribution();
         break;
-    case uetype::CONTRACT_TERMS:
-        renderContractTerminations();
+    case uetype::CONTRACT_RUNTIME_DISTRIB:
+        renderContractRuntimeDistrib();
         break;
+//    case uetype::CONTRACT_by_interest_By_Year
+//        renderContractsByInterestByYear();
+//        break
     default:
         Q_ASSERT(not "one shoule never come here");
         break;
@@ -229,37 +217,37 @@ void uebersichten::renderDocument( uebersichten::uetype t)
 void uebersichten::renderShortInfo()
 {   LOG_CALL;
     tablelayout tl(td);
-    tl.sections.push_back({qsl("Aktive Verträge"), overviewContracts(sqlOverviewActiveContracts)});
-    tl.sections.push_back({qsl("InAktive Verträge"), overviewContracts(sqlOverviewInActiveContracts)});
-    tl.sections.push_back({qsl("Aktive und Inaktive Verträge"), overviewContracts(sqlOverviewAllContracts)});
+    tl.sections.push_back({qsl("Aktive Verträge"), overviewShortInfo(sqlOverviewActiveContracts)});
+    tl.sections.push_back({qsl("InAktive Verträge"), overviewShortInfo(sqlOverviewInActiveContracts)});
+    tl.sections.push_back({qsl("Aktive und Inaktive Verträge"), overviewShortInfo(sqlOverviewAllContracts)});
     tl.renderTable();
 }
 
-void uebersichten::renderInterestByYear()
-{   //LOG_CALL;
+void uebersichten::renderPayedInterestByYear()
+{   LOG_CALL;
     QVector<QSqlRecord> records;
-    if( not executeSql(sqlContractsByYearByInterest, QVariant(), records))
+    if( not executeSql( sqlInterestByYearOverview, QVariant(), records)) {
         return;
+    }
     tablelayout tl(td);
-    tl.cols =QStringList({qsl("Zinssatz"), qsl("Summe"), qsl("Anzahl")});
+    // tl.cols = QStringList...)
 
     tablelayout::section currentSec;
-    for( int i=0; i<records.count(); i++) {
+    QLocale locale;
+    for( int i=0; i <records.count(); i++) {
         QString year =records[i].value(qsl("Year")).toString();
         if( currentSec.header not_eq year) {
-            // store filled SECTION only for i>0
+            // save complte section
             if( i not_eq 0) tl.sections.push_back(currentSec);
             // start new section
             currentSec.header =year;
             currentSec.data.clear();
         }
-        currentSec.data.push_back({
-            prozent2prozent_str(records[i].value(qsl("Zinssatz")).toDouble()),
-            d2euro(records[i].value(qsl("Summe")).toDouble()),
-            records[i].value(qsl("Anzahl")).toString()});
+        currentSec.data.push_back({ locale.toCurrencyString(records[i].value(qsl("Summe")).toDouble()),
+                                    records[i].value(qsl("BA")).toString(),
+                                    records[i].value(qsl("Thesa")).toString(),
+                                  });
     }
-    if( not currentSec.header.isEmpty())
-        tl.sections.push_back(currentSec);
     tl.renderTable();
 }
 
@@ -277,7 +265,44 @@ void uebersichten::renderInterestDistribution()
 
 }
 
-void uebersichten::renderContractTerminations()
+void uebersichten::renderContractRuntimeDistrib()
 {
-
+    QVector<rowData> data =contractRuntimeDistribution();
+    tablelayout tl(td);
+    tl.cols =QStringList({qsl(""), qsl("Anzahl"), qsl("Volumen")});
+    tablelayout::section sec;
+    for (int i=0; i< data.size(); i++) {
+        sec.data.push_back(QStringList({data[i].text, data[i].number, data[i].value}));
+    }
+    tl.sections.push_back(sec);
+    tl.renderTable();
 }
+
+//void uebersichten::renderContractsByInterestByYear()
+//{   //LOG_CALL;
+//    QVector<QSqlRecord> records;
+//    if( not executeSql(sqlContractsByYearByInterest, QVariant(), records))
+//        return;
+//    tablelayout tl(td);
+//    tl.cols =QStringList({qsl("Zinssatz"), qsl("Summe"), qsl("Anzahl")});
+
+//    tablelayout::section currentSec;
+//    for( int i=0; i<records.count(); i++) {
+//        QString year =records[i].value(qsl("Year")).toString();
+//        if( currentSec.header not_eq year) {
+//            // store filled SECTION only for i>0
+//            if( i not_eq 0) tl.sections.push_back(currentSec);
+//            // start new section
+//            currentSec.header =year;
+//            currentSec.data.clear();
+//        }
+//        currentSec.data.push_back({
+//            prozent2prozent_str(records[i].value(qsl("Zinssatz")).toDouble()),
+//            d2euro(records[i].value(qsl("Summe")).toDouble()),
+//            records[i].value(qsl("Anzahl")).toString()});
+//    }
+//    if( not currentSec.header.isEmpty())
+//        tl.sections.push_back(currentSec);
+//    tl.renderTable();
+//}
+

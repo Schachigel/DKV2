@@ -12,7 +12,7 @@ struct tablelayout
         QVector<QStringList> data;
     };
     enum cellType {
-        collHeader,
+        colHeader,
         emptyLine,
         sectionHeader,
         dataFirstColOdd,
@@ -90,7 +90,7 @@ struct uebersichten
         PAYED_INTEREST_BY_YEAR,
         BY_CONTRACT_END,
         INTEREST_DISTRIBUTION,
-        CONTRACT_TERMS
+        CONTRACT_RUNTIME_DISTRIB
     };
     static int fromUeType(uetype t) { return static_cast<int>(t);}
     static uetype fromInt(int i) { return static_cast<uetype>(i);}
@@ -99,10 +99,11 @@ private:
     QTextDocument* td;
     void prep(uetype);
     void renderShortInfo();
-    void renderInterestByYear();
+    void renderPayedInterestByYear();
     void renderContractsByContractEnd();
     void renderInterestDistribution();
-    void renderContractTerminations();
+    void renderContractRuntimeDistrib();
+//    void renderContractsByInterestByYear();
 private: /*static*/
     static QString titles[];
 };

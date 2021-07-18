@@ -11,20 +11,27 @@ extern const QString vnExContractView;
 extern const QString vnInvestmentsView;
 // a nice view to check bookings, not used in the app
 extern const QString vnBookingsOverview;
+
 // statistics w/o time dep. saved as views
-extern const QString vnStat_activeContracts_byIMode;
-extern const QString vnStat_inactiveContracts_byIMode;
 const QMap<QString, QString>& getViews();
 
 bool remove_all_views(const QSqlDatabase& db =QSqlDatabase::database());
 
+// annual interest calculation
+extern const QString sqlNextAnnualSettlement;
+// printing lists
 extern const QString sqlContractsActiveDetailsView;
 extern const QString sqlContractsActiveView;
-extern const QString sqlNextAnnualSettlement;
-extern const QString sqlContractsByYearByInterest;
+
+// uebersichten
+// Uebersichten Kurzinfo
 extern const QString sqlOverviewActiveContracts;
 extern const QString sqlOverviewInActiveContracts;
 extern const QString sqlOverviewAllContracts;
+// uebersichten Zinsauszahlungen pro Jahr
+extern const QString sqlInterestByYearOverview;
+
+extern const QString sqlContractsByYearByInterest;
 //// new, time dep. statistics
 extern const QString sqlStat_activeContracts_byIMode_toDate;
 extern const QString sqlStat_inactiveContracts_byIMode_toDate;

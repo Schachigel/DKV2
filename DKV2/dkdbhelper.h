@@ -62,10 +62,11 @@ struct YZV
 };
 Q_DECLARE_TYPEINFO(YZV, Q_PRIMITIVE_TYPE);
 
-void calc_annualInterestDistribution( QVector<YZV>& yzv);
 struct rowData
 {
-    QString text; QString number; QString value;
+    QString text;
+    QString number;
+    QString value;
 };
 
 QVector<rowData> contractRuntimeDistribution();
@@ -84,5 +85,5 @@ void getAllContractBookingDates( QVector<BookingDateData>& dates);
 
 // calculations for Uebersichten
 double valueOfAllContracts();
-QVector<QStringList> overviewContracts(const QString& sql);
+QVector<QStringList> overviewShortInfo(const QString& sql);
 #endif // DKDBHELPER_H

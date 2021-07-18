@@ -252,7 +252,41 @@ bool createCsvActiveContracts()
     return true;
 }
 
+// calculate data for start page
+double valueOfAllContracts()
+{
+    QString sqlInactive {qsl(R"str(
+SELECT SUM(Betrag)/100. AS Gesamtbetrag
+FROM Vertraege
+WHERE id NOT IN (SELECT DISTINCT VertragsId FROM Buchungen)
+)str")};
+    double inactiveSum =executeSingleValueSql(sqlInactive).toDouble();
+    QString sqlActive {qsl(R"str(
+SELEcT SUM(Buchungen.Betrag) /100. as Gesamtbetrag
+FROM Vertraege INNER JOIN Buchungen
+)str")};
+    double activeSum =executeSingleValueSql(sqlActive).toDouble();
+    return inactiveSum + activeSum;
+}
+
 // statistics, overviews
+// format data for Uebersicht -> kurzinfo
+QVector<QStringList> overviewShortInfo(const QString& sql)
+{
+    QVector<QStringList> ret;
+    QLocale locale;
+    QSqlRecord record =executeSingleRecordSql(sql);
+    ret.push_back(QStringList({qsl("Anzahl DK Geber*innen"), record.value(qsl("AnzahlKreditoren")).toString()}));
+    ret.push_back(QStringList({qsl("Anzahl der Verträge"), record.value(qsl("AnzahlVertraege")).toString()}));
+    ret.push_back(QStringList({qsl("Gesamtvolumen"), locale.toCurrencyString(record.value(qsl("GesamtVolumen")).toDouble())}));
+    ret.push_back(QStringList({qsl("Mittlerer Vertragswert"), locale.toCurrencyString(record.value(qsl("MittlererVertragswert")).toDouble())}));
+    ret.push_back(QStringList({qsl("Jahreszins"), locale.toCurrencyString(record.value(qsl("JahresZins")).toDouble())}));
+    ret.push_back(QStringList({qsl("Durchschn. Zins (gew. Mittel)"), qsl("%1 %").arg(r2(record.value(qsl("ZinsRate")).toDouble()))}));
+    ret.push_back(QStringList({qsl("Mittlerer Zins"), qsl("%1 %").arg(r2(record.value(qsl("MittelZins")).toDouble()))}));
+
+    return ret;
+}
+// calc runtime of contracts for bookkeeper
 QVector<rowData> contractRuntimeDistribution()
 {   LOG_CALL;
     int AnzahlBisEinJahr=0, AnzahlBisFuenfJahre=0, AnzahlLaenger=0, AnzahlUnbegrenzet = 0;
@@ -285,14 +319,14 @@ QVector<rowData> contractRuntimeDistribution()
     }
     QLocale locale;
     QVector<rowData> ret;
-    ret.push_back({"Zeitraum", "Anzahl", "Wert"});
+    // .ret.push_back({"Zeitraum", "Anzahl", "Wert"});
     ret.push_back({"Bis ein Jahr ", QString::number(AnzahlBisEinJahr), locale.toCurrencyString(SummeBisEinJahr)});
     ret.push_back({"Ein bis fünf Jahre ", QString::number(AnzahlBisFuenfJahre), locale.toCurrencyString(SummeBisFuenfJahre)});
     ret.push_back({"Länger als fünf Jahre ", QString::number(AnzahlLaenger), locale.toCurrencyString(SummeLaenger) });
     ret.push_back({"Unbegrenzte Verträge ", QString::number(AnzahlUnbegrenzet), locale.toCurrencyString(SummeUnbegrenzet) });
     return ret;
 }
-
+// calc how many contracts end each year
 void calc_contractEnd( QVector<ContractEnd>& ces)
 {   LOG_CALL;
     QString sql {qsl("SELECT count(*) AS Anzahl, sum(Wert) AS Wert, strftime('%Y',Vertragsende) AS Jahr "
@@ -305,22 +339,6 @@ void calc_contractEnd( QVector<ContractEnd>& ces)
         }
     } else
         qCritical() << "sql exec failed";
-    return;
-}
-void calc_annualInterestDistribution( QVector<YZV>& yzv)
-{   LOG_CALL;
-    QString sql =qsl("SELECT * FROM (%1) ORDER BY Year").arg(sqlContractsByYearByInterest);
-
-    QSqlQuery query; query.setForwardOnly(true);
-    if( not query.exec(sql)) {
-        qCritical() << "execute query failed";
-        return;
-    }
-    while( query.next()) {
-        QSqlRecord r =query.record();
-        yzv.push_back({r.value("Year").toInt(), r.value("Zinssatz").toReal(),
-                       r.value("Anzahl").toInt(), r.value("Summe").toReal()});
-    }
     return;
 }
 
@@ -452,36 +470,3 @@ UNION ALL
     return getBookingDateInfoBySql(sql, dates);
 }
 
-// calculate data for start page
-double valueOfAllContracts()
-{
-    QString sqlInactive {qsl(R"str(
-SELECT SUM(Betrag)/100. AS Gesamtbetrag
-FROM Vertraege
-WHERE id NOT IN (SELECT DISTINCT VertragsId FROM Buchungen)
-)str")};
-    double inactiveSum =executeSingleValueSql(sqlInactive).toDouble();
-    QString sqlActive {qsl(R"str(
-SELEcT SUM(Buchungen.Betrag) /100. as Gesamtbetrag
-FROM Vertraege INNER JOIN Buchungen
-)str")};
-    double activeSum =executeSingleValueSql(sqlActive).toDouble();
-    return inactiveSum + activeSum;
-}
-
-QVector<QStringList> overviewContracts(const QString& sql)
-{
-    QVector<QStringList> ret;
-//    QString sql {sqlOverviewActiveContracts};
-    QLocale locale;
-    QSqlRecord record =executeSingleRecordSql(sql);
-    ret.push_back(QStringList({qsl("Anzahl DK Geber*innen"), record.value(qsl("AnzahlKreditoren")).toString()}));
-    ret.push_back(QStringList({qsl("Anzahl der Verträge"), record.value(qsl("AnzahlVertraege")).toString()}));
-    ret.push_back(QStringList({qsl("Gesamtvolumen"), locale.toCurrencyString(record.value(qsl("GesamtVolumen")).toDouble())}));
-    ret.push_back(QStringList({qsl("Mittlerer Vertragswert"), locale.toCurrencyString(record.value(qsl("MittlererVertragswert")).toDouble())}));
-    ret.push_back(QStringList({qsl("Jahreszins"), locale.toCurrencyString(record.value(qsl("JahresZins")).toDouble())}));
-    ret.push_back(QStringList({qsl("Durchschn. Zins (gew. Mittel)"), qsl("%1 %").arg(r2(record.value(qsl("ZinsRate")).toDouble()))}));
-    ret.push_back(QStringList({qsl("Mittlerer Zins"), qsl("%1 %").arg(r2(record.value(qsl("MittelZins")).toDouble()))}));
-
-    return ret;
-}

@@ -250,50 +250,6 @@ bool remove_all_views(const QSqlDatabase& db /*=QSqlDatabase::database()*/)
 // SQL Statemends (stored here to not clutter the source code with long constant strings)
 //////////////////////////////////////
 
-// Listenausdruck createCsvActiveContracts
-const QString sqlContractsActiveDetailsView{ qsl(
-R"str(
-SELECT
-  Vertraege.id          AS id,
-  Vertraege.Kennung     AS Vertragskennung,
-  Vertraege.ZSatz /100. AS Zinssatz,
-  SUM(Buchungen.Betrag) /100. AS Wert,
-  MIN(Buchungen.Datum)  AS Aktivierungsdatum,
-  Vertraege.Kfrist      AS Kuendigungsfrist,
-  Vertraege.LaufzeitEnde  AS Vertragsende,
-  Vertraege.thesaurierend AS thesa,
-  Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin,
-  Kreditoren.id         AS KreditorId,
-  Kreditoren.Nachname   AS Nachname,
-  Kreditoren.Vorname    AS Vorname,
-  Kreditoren.Strasse    AS Strasse,
-  Kreditoren.Plz        AS Plz,
-  Kreditoren.Stadt      AS Stadt,
-  Kreditoren.Email      AS Email,
-  Kreditoren.IBAN       AS Iban,
-  Kreditoren.BIC        AS Bic
-FROM Vertraege
-    INNER JOIN Buchungen  ON Buchungen.VertragsId = Vertraege.id
-    INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId
-GROUP BY Vertraege.id
-)str"
-)};
-// Übersicht: contractRuntimeDistribution, used in sqlContractsAllView
-const QString sqlContractsActiveView { qsl(
-R"str(
-SELECT id
-  ,Kreditorin
-  ,Vertragskennung
-  ,Zinssatz
-  ,Wert
-  ,Aktivierungsdatum
-  ,Kuendigungsfrist
-  ,Vertragsende
-  ,thesa
-  ,KreditorId
-FROM (%1)
-)str").arg(sqlContractsActiveDetailsView)};
-
 // interest calculation
 const QString sqlNextAnnualSettlement_firstAS {qsl(
 R"str(
@@ -327,7 +283,52 @@ FROM
   SELECT nextInterestDate FROM (%2))
 )str").arg(sqlNextAnnualSettlement_firstAS, sqlNextAnnualSettlement_nextAS)};
 
+// Listenausdruck createCsvActiveContracts
+const QString sqlContractsActiveDetailsView{ qsl(
+R"str(
+SELECT
+  Vertraege.id          AS id,
+  Vertraege.Kennung     AS Vertragskennung,
+  Vertraege.ZSatz /100. AS Zinssatz,
+  SUM(Buchungen.Betrag) /100. AS Wert,
+  MIN(Buchungen.Datum)  AS Aktivierungsdatum,
+  Vertraege.Kfrist      AS Kuendigungsfrist,
+  Vertraege.LaufzeitEnde  AS Vertragsende,
+  Vertraege.thesaurierend AS thesa,
+  Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin,
+  Kreditoren.id         AS KreditorId,
+  Kreditoren.Nachname   AS Nachname,
+  Kreditoren.Vorname    AS Vorname,
+  Kreditoren.Strasse    AS Strasse,
+  Kreditoren.Plz        AS Plz,
+  Kreditoren.Stadt      AS Stadt,
+  Kreditoren.Email      AS Email,
+  Kreditoren.IBAN       AS Iban,
+  Kreditoren.BIC        AS Bic
+FROM Vertraege
+    INNER JOIN Buchungen  ON Buchungen.VertragsId = Vertraege.id
+    INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId
+GROUP BY Vertraege.id
+)str"
+)};
+
 // Übersichten
+// Übersicht: contractRuntimeDistribution, used in sqlContractsAllView
+const QString sqlContractsActiveView { qsl(
+R"str(
+SELECT id
+  ,Kreditorin
+  ,Vertragskennung
+  ,Zinssatz
+  ,Wert
+  ,Aktivierungsdatum
+  ,Kuendigungsfrist
+  ,Vertragsende
+  ,thesa
+  ,KreditorId
+FROM (%1)
+)str").arg(sqlContractsActiveDetailsView)};
+// Übersicht: abgeschl. Vertr. nach Zinssatz
 const QString sqlContractsByYearByInterest {qsl(R"str(
 SELECT SUBSTR(Vertraege.Vertragsdatum, 0, 5) as Year
   ,Vertraege.ZSatz /100. AS Zinssatz
@@ -336,6 +337,7 @@ SELECT SUBSTR(Vertraege.Vertragsdatum, 0, 5) as Year
 FROM Vertraege
 GROUP BY Year, Zinssatz
 )str")};
+// Übersicht ausgezahlte Zinsen
 const QString sqlInterestByYearOverview {qsl(R"str(
 SELECT
   STRFTIME('%Y', Datum) as Year,
