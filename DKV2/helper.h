@@ -23,12 +23,22 @@ class dbgTimer
 {
     QElapsedTimer t;
     QString fname;
+    int labcount =0;
+    int lastLab =0;
 public:
     dbgTimer() {t.start();}
     dbgTimer(const dbgTimer&) = delete;
     dbgTimer(const QString& fu) : fname(fu){t.start(); qInfo().noquote() << qsl("Debug Timer ") + fname << qsl(" start") << Qt::endl;}
     ~dbgTimer() {qInfo().noquote() << Qt::endl << (fname.isEmpty() ? qsl("") : fname+ qsl(" end") )
                                    << Qt::endl << qsl("Elapsed time: ")<< t.elapsed() << "ms" << Qt::endl;}
+    void lab(const QString& msg =QString()) {
+        int now =t.elapsed();
+        qInfo().noquote() << (fname.isEmpty() ? qsl("") : fname) <<  qsl(" Lab time ")
+                          << (msg.isEmpty() ? QString::number(labcount++) : msg)
+                          << now
+                          << "ms (delta: " << now-lastLab << ")";
+        lastLab =now;
+    }
 };
 
 class functionlogging {

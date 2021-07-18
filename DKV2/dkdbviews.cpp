@@ -375,40 +375,40 @@ ORDER BY YEAR DESC, Thesa DESC
 )str"
 )};
 const QString sqlOverviewActiveContracts{qsl(R"str(
-                WITH Bookings AS (
-                  SELECT Vertraege.id        AS vid
-                  , KreditorId               AS kid
-                  , zSatz                    AS Zinssatz
-                  , Buchungen.Betrag         AS Betrag
-                  , IIF( Vertraege.thesaurierend = 2, IIF( Buchungen.BuchungsArt = 8, 0, Buchungen.Betrag), Buchungen.Betrag)
-                                             AS VerzinslGuthaben
-                  FROM Buchungen JOIN Vertraege ON Vertraege.id = Buchungen.VertragsId
-                )
-                , counts AS (
-                  SELEcT COUNT(DISTINCT vid) AS AnzahlVertraege
-                     , COUNT(DISTINCT kid) AS AnzahlKreditoren
-                  FROM
-                    Bookings
-                )
-                , mittlererZins AS (
-                  SELEcT avg(ZSatz) /100. AS MittelZins
-                  FROM Vertraege WHERE id IN (SELEcT DISTINCT VertragsId FROM Buchungen)
-                )
-                , sums AS (
-                  SELEcT SUM(Betrag) /100. AS GesamtVolumen
-                    , SUM(VerzinslGuthaben *Zinssatz)/100. /100. /100. AS Jahreszins
-                  FROM Bookings
-                )
+WITH Bookings AS (
+  SELECT Vertraege.id        AS vid
+  , KreditorId               AS kid
+  , zSatz                    AS Zinssatz
+  , Buchungen.Betrag         AS Betrag
+  , IIF( Vertraege.thesaurierend = 2, IIF( Buchungen.BuchungsArt = 8, 0, Buchungen.Betrag), Buchungen.Betrag)
+                             AS VerzinslGuthaben
+  FROM Buchungen JOIN Vertraege ON Vertraege.id = Buchungen.VertragsId
+)
+, counts AS (
+  SELEcT COUNT(DISTINCT vid) AS AnzahlVertraege
+     , COUNT(DISTINCT kid) AS AnzahlKreditoren
+  FROM
+    Bookings
+)
+, mittlererZins AS (
+  SELEcT avg(ZSatz) /100. AS MittelZins
+  FROM Vertraege WHERE id IN (SELEcT DISTINCT VertragsId FROM Buchungen)
+)
+, sums AS (
+  SELEcT SUM(Betrag) /100. AS GesamtVolumen
+    , SUM(VerzinslGuthaben *Zinssatz)/100. /100. /100. AS Jahreszins
+  FROM Bookings
+)
 
-                SELECT AnzahlVertraege
-                  , AnzahlKreditoren
-                  , GesamtVolumen
-                  , GesamtVolumen / AnzahlVertraege AS MittlererVertragswert
-                  , Jahreszins
-                  , Jahreszins / GesamtVolumen * 100. AS ZinsRate
-                  , MittelZins
-                FROM counts INNER JOIN sums INNER JOIN mittlererZins
-                )str")
+SELECT AnzahlVertraege
+  , AnzahlKreditoren
+  , GesamtVolumen
+  , GesamtVolumen / AnzahlVertraege AS MittlererVertragswert
+  , Jahreszins
+  , Jahreszins / GesamtVolumen * 100. AS ZinsRate
+  , MittelZins
+FROM counts INNER JOIN sums INNER JOIN mittlererZins
+)str")
                     };
 const QString sqlOverviewInActiveContracts{qsl(R"str(
 SELEcT COUNT( DISTINCT KreditorId)     AS AnzahlKreditoren
@@ -419,17 +419,13 @@ SELEcT COUNT( DISTINCT KreditorId)     AS AnzahlKreditoren
   , SUM(Betrag*ZSatz) /100. /SUM(Betrag) AS ZinsRate
   , AVG(ZSatz) /100.                     AS MittelZins
 FROM Vertraege
-WHERE id NOT IN (SELEcT DISTINCT VertragsId FROM Buchungen)
+WHERE Id NOT IN (SELEcT DISTINCT VertragsId FROM Buchungen)
 )str")};
 const QString sqlOverviewAllContracts {qsl(R"str(
 WITH all_counts AS (
   SELEcT COUNT(DISTINCT id)          AS AnzahlVertraege
     , COUNT(DISTINCT KreditorId)     AS AnzahlKreditoren
     , AVG(ZSatz) /100.               AS MittelZins
-  FROM Vertraege
-)
-, all_mittlererZins AS (
-  SELECT AVG(ZSatz) /100.             AS MittelZins
   FROM Vertraege
 )
 , active_bookings AS (

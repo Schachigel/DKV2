@@ -1,33 +1,41 @@
 #include "appconfig.h"
+#include "helperfin.h"
 #include "dkdbviews.h"
 #include "dkdbhelper.h"
 #include "uebersichten.h"
 
-const bool bold =true;
-const bool regular =false;
 
-void setTextTableCellFontPointSize(QTextTableCell& cell, int pointsize, bool bold)
-{
-    QFont f =cell.format().font();
-    f.setPointSize(pointsize);
-    f.setBold(bold);
-    QTextCharFormat format =cell.format();
-    format.setFont(f);
-    cell.setFormat(format);
-}
-
-void setTextTableCellAlignment(QTextTableCell& cell, Qt::Alignment a)
-{
-    QTextBlockFormat bf =cell.firstCursorPosition().blockFormat();
-    bf.setAlignment(a);
-    cell.firstCursorPosition().setBlockFormat(bf);
-}
-
-void setTextTableCellBackColor(QTextTableCell& cell, QColor color)
-{
-    auto format =cell.format();
-    format.setBackground(color);
-    cell.setFormat(format);
+void tablelayout::setCellFormat(QTextTableCell& cell, cellType ct) {
+dbgTimer t (QStringLiteral("setFormat"));
+    if(tableformats[ct].charFormatIndex) {
+//        qDebug() << "using cf index: " << tableformats[ct].charFormatIndex;
+        QTextCharFormat tcf =td->allFormats().at(tableformats[ct].charFormatIndex).toCharFormat();
+        cell.setFormat(tcf);
+        t.lab("cf from index");
+    } else {
+        QTextCharFormat tcf =cell.format();
+        tcf.setFontPointSize(tableformats[ct].pointSize);
+        tcf.setFontWeight(tableformats[ct].bold ? QFont::Bold : QFont::Normal);
+        tcf.setForeground(tableformats[ct].fColor);
+        tcf.setBackground(tableformats[ct].bColor);
+        cell.setFormat(tcf);
+//        qDebug() << "writing cf index: " << cell.tableCellFormatIndex();
+        tableformats[ct].charFormatIndex = cell.tableCellFormatIndex();
+        t.lab("new cf");
+    }
+    if(tableformats[ct].blockFormatIndex) {
+//        qDebug() << "using bf index: " << tableformats[ct].blockFormatIndex;
+        QTextBlockFormat tbf =td->allFormats().at(tableformats[ct].blockFormatIndex).toBlockFormat();
+        cell.firstCursorPosition().setBlockFormat(tbf);
+        t.lab("bf from index");
+    } else {
+        QTextBlockFormat bf =cell.firstCursorPosition().blockFormat();
+        bf.setAlignment(tableformats[ct].alignment);
+        cell.firstCursorPosition().setBlockFormat(bf);
+//        qDebug() << "writing bf index: " << cell.firstCursorPosition().block().blockFormatIndex();
+        tableformats[ct].blockFormatIndex =cell.firstCursorPosition().block().blockFormatIndex();
+        t.lab("new bf");
+    }
 }
 
 int tablelayout::colCount()
@@ -62,115 +70,114 @@ int tablelayout::rowCount()
         _rowCount += sec.data.count();
     }
     // section spacing: no empty line for the last setction
-    _rowCount += sections.count() -1;
+    _rowCount += (sections.count() > 1) ? sections.count()-1 : 0;
     return _rowCount;
 }
 
 int tablelayout::insertColHeader(QTextTable* table)
-{
+{   LOG_CALL;
     if( 0 == cols.count())
         return 0;
 
     QTextTableFormat ttf =table->format();
     ttf.setHeaderRowCount(1);
+    table->setFormat(ttf);
+
     for( int colIndex =0; colIndex < cols.count(); colIndex++) {
         QTextTableCell cell =table->cellAt(0, colIndex);
-        setTextTableCellFontPointSize(cell, fontSize_colHeader, bold);
-        setTextTableCellAlignment(cell, Qt::AlignCenter);
-        setTextTableCellBackColor(cell, QColor(200, 200, 240));
-        auto cp =cell.firstCursorPosition();
-        cp.insertText(cols[colIndex]);
+        setCellFormat( cell, collHeader);
+        cell.firstCursorPosition().insertText(cols[colIndex]);
     }
-    fillEmptyRow(table, 1);
 
+    fillEmptyRow(table, 1);
     return 2;
 }
 
 int tablelayout::fillSectionHeader(QTextTable* table, const int secIndex, const int row)
-{
+{   LOG_CALL;
     section& sec =sections[secIndex];
     if( 0 == sec.header.count())
         return 0;
     table->mergeCells(row, 0, 1, table->columns());
     QTextTableCell cell =table->cellAt(row, 0);
-    setTextTableCellFontPointSize(cell, fontSize_secHeader, bold);
-    setTextTableCellAlignment(cell, Qt::AlignLeft);
-    setTextTableCellBackColor(cell, QColor(240, 210, 210));
+    setCellFormat( cell, sectionHeader);
     cell.firstCursorPosition().insertText(sec.header);
     return 1;
 }
 
-Qt::Alignment alignmentByCol(int col, int max)
-{
-    if( col == 0)
-        return Qt::AlignLeft;
-    if( col == max)
-        return Qt::AlignRight;
-    return Qt::AlignCenter;
-}
-
 int tablelayout::fillSectionData(QTextTable* table, const int secIndex, const int row)
-{
+{   LOG_CALL;
     section& sec =sections[secIndex];
     for( int rowInData =0; rowInData < sec.data.count(); rowInData++) {
         QStringList& rowData =sec.data[rowInData];
         for( int colInData =0; colInData < rowData.count(); colInData++) {
             QTextTableCell cell =table->cellAt(row + rowInData, colInData);
-            setTextTableCellFontPointSize(cell, fontSize_data, regular);
-            setTextTableCellAlignment(cell, alignmentByCol(colInData, _colCount -1));
-            if( rowInData%2)
-                setTextTableCellBackColor(cell, QColor(230, 230, 230));
-            else
-                setTextTableCellBackColor(cell, QColor(245, 245, 245));
-            auto cp =cell.firstCursorPosition();
-            cp.insertText(sec.data[rowInData][colInData]);
+            if( rowInData%2) {
+                // odd rows
+                if(  colInData == 0)
+                    setCellFormat( cell,dataFirstColOdd);
+                else if( colInData == table->columns())
+                    setCellFormat( cell, dataLastColOdd);
+                else setCellFormat( cell, dataMiddleColOdd);
+            } else {
+                // even rows
+                if(  colInData == 0)
+                    setCellFormat( cell,dataFirstColEven);
+                else if( colInData == table->columns())
+                    setCellFormat( cell, dataLastColEven);
+                else setCellFormat( cell, dataMiddleColEven);
+            }
+            cell.firstCursorPosition().insertText(sec.data[rowInData][colInData]);
         }
     }
     return sec.data.count();
 }
 
 int tablelayout::fillEmptyRow(QTextTable* table, const int row)
-{
-    table->mergeCells(row, 0, 1, table->columns());
+{   LOG_CALL_W(QString::number(row));
     QTextTableCell cell =table->cellAt(row, 0);
-    setTextTableCellFontPointSize(cell, fontSize_emptyRow, regular);
+    setCellFormat( cell, emptyLine);
+    table->mergeCells(row, 0, 1, table->columns());
     return 1;
 }
 
-bool tablelayout::renderTable( QTextDocument* td)
-{
+bool tablelayout::renderTable( )
+{   // LOG_CALL;
+//    dbgTimer t(QStringLiteral("render table"));
     QTextCursor tc (td);
     tc.movePosition(QTextCursor::End);
     QTextTable* table =tc.insertTable(rowCount(), colCount());
     qDebug() << table->rows() << " / " << table->columns();
-
+//    t.lab(QStringLiteral("table inserted"));
+    int currentRow =insertColHeader(table);
+//    t.lab(QStringLiteral("col header"));
     QTextTableFormat format =table->format();
-    format.setBorderCollapse(true);
+    format.setCellSpacing(0);
     format.setCellPadding(5);
     format.setAlignment(Qt::AlignLeft);
     table->setFormat(format);
-
-    QTextFrameFormat frameFormat =table->frameFormat();
-    frameFormat.setWidth(600);
-    table->setFrameFormat(frameFormat);
-
-    // format and insert column header
-    int currentRow =insertColHeader(table);
-
     // format section(s) header and data
     for (int sectionIndex =0; sectionIndex < sections.count(); sectionIndex++) {
         if( sectionIndex > 0)
             currentRow += fillEmptyRow(table, currentRow);
         currentRow += fillSectionHeader(table, sectionIndex, currentRow);
         currentRow += fillSectionData(table, sectionIndex, currentRow);
+//        t.lab("section filled");
     }
+
+    qDebug() << table->format().columnWidthConstraints();
     return true;
 }
+
+
+///////////////////////////////////////////
+// class uebersichten
+///////////////////////////////////////////
 
 QString uebersichten::titles[]
 {
     qsl("Übersicht"),
-    qsl("Ausgezahlte / Angerechnete Zinsen nach Jahr"),
+    qsl("Vertragsabschlüsse nach Jahr und Zinssatz"),
     qsl("Auslaufende Verträge"),
     qsl("Verteilung der Zinssätze pro Jahr"),
     qsl("Laufzeiten")
@@ -178,12 +185,11 @@ QString uebersichten::titles[]
 
 
 void uebersichten::prep( uebersichten::uetype t)
-{
-    td->clear();
+{   LOG_CALL_W(QString::number(t));
     // set document defaults
     QFont f =td->defaultFont();
     f.setFamily(qsl("Verdana"));
-    f.setPixelSize(12);
+    f.setPointSize(12);
     td->setDefaultFont(f);
 
     // add Title, project info and current date
@@ -195,7 +201,7 @@ void uebersichten::prep( uebersichten::uetype t)
 }
 
 void uebersichten::renderDocument( uebersichten::uetype t)
-{
+{   LOG_CALL_W(QString::number(t));
     prep(t);
 
     switch (t){
@@ -222,20 +228,48 @@ void uebersichten::renderDocument( uebersichten::uetype t)
 
 void uebersichten::renderShortInfo()
 {   LOG_CALL;
-    tablelayout tl;
+    tablelayout tl(td);
     tl.sections.push_back({qsl("Aktive Verträge"), overviewContracts(sqlOverviewActiveContracts)});
     tl.sections.push_back({qsl("InAktive Verträge"), overviewContracts(sqlOverviewInActiveContracts)});
     tl.sections.push_back({qsl("Aktive und Inaktive Verträge"), overviewContracts(sqlOverviewAllContracts)});
-    tl.renderTable(td);
+    tl.renderTable();
 }
 
 void uebersichten::renderInterestByYear()
-{   LOG_CALL;
+{   //LOG_CALL;
+    QVector<QSqlRecord> records;
+    if( not executeSql(sqlContractsByYearByInterest, QVariant(), records))
+        return;
+    tablelayout tl(td);
+    tl.cols =QStringList({qsl("Zinssatz"), qsl("Summe"), qsl("Anzahl")});
+
+    tablelayout::section currentSec;
+    for( int i=0; i<records.count(); i++) {
+        QString year =records[i].value(qsl("Year")).toString();
+        if( currentSec.header not_eq year) {
+            // store filled SECTION only for i>0
+            if( i not_eq 0) tl.sections.push_back(currentSec);
+            // start new section
+            currentSec.header =year;
+            currentSec.data.clear();
+        }
+        currentSec.data.push_back({
+            prozent2prozent_str(records[i].value(qsl("Zinssatz")).toDouble()),
+            d2euro(records[i].value(qsl("Summe")).toDouble()),
+            records[i].value(qsl("Anzahl")).toString()});
+    }
+    if( not currentSec.header.isEmpty())
+        tl.sections.push_back(currentSec);
+    tl.renderTable();
 }
 
 void uebersichten::renderContractsByContractEnd()
 {
-
+    tablelayout tl (td);
+    tl.cols =QStringList({"column!", "column 223", "another column"});
+    tl.sections.push_back(tablelayout::section({qsl("Sec head"), {{qsl("Hallo"), qsl("Welt"), qsl("!")}}}));
+    tl.sections.push_back(tablelayout::section({qsl("Sec sec Head"), {{qsl("Hallo"), qsl("Welt"), qsl("!")}}}));
+    tl.renderTable();
 }
 
 void uebersichten::renderInterestDistribution()

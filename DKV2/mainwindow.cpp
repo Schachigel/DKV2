@@ -597,18 +597,17 @@ void MainWindow::on_action_menu_contracts_statistics_view_triggered()
         combo->addItem(qsl("Anzahl auslaufender Verträge nach Jahr"),QVariant(uebersichten::uetype::BY_CONTRACT_END));
         combo->addItem(qsl("Anzahl Verträge nach Zinssatz und Jahr"),QVariant(uebersichten::uetype::INTEREST_DISTRIBUTION));
         combo->addItem(qsl("Anzahl Verträge nach Laufzeiten"),       QVariant(uebersichten::uetype::CONTRACT_TERMS));
-        combo->setCurrentIndex(0);
     }
 
-    on_comboUebersicht_currentIndexChanged(combo->currentIndex());
     ui->stackedWidget->setCurrentIndex(overviewsPageIndex);
 }
 void MainWindow::on_comboUebersicht_currentIndexChanged(int i)
 {   LOG_CALL;
-    QTextDocument* td =ui->txtOverview->document();
+    busycursor b;
+    QTextDocument* td =new QTextDocument(); // ui->txtOverview->document();
     uebersichten ue(td);
     ue.renderDocument(uebersichten::fromInt(i));
-    //ui->txtOverview->setText( uebersichten::renderDocument());
+    ui->txtOverview->setDocument(td);
 }
 void MainWindow::on_pbPrint_clicked()
 {   LOG_CALL;
