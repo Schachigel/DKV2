@@ -250,7 +250,7 @@ bool remove_all_views(const QSqlDatabase& db /*=QSqlDatabase::database()*/)
 // SQL Statemends (stored here to not clutter the source code with long constant strings)
 //////////////////////////////////////
 
-// interest calculation
+// annual interest calculation
 const QString sqlNextAnnualSettlement_firstAS {qsl(
 R"str(
 SELECT
@@ -311,9 +311,7 @@ FROM Vertraege
 GROUP BY Vertraege.id
 )str"
 )};
-
-// Übersichten
-// Übersicht: contractRuntimeDistribution, used in sqlContractsAllView
+// uebersicht contract use and other uses
 const QString sqlContractsActiveView { qsl(
 R"str(
 SELECT id
@@ -328,6 +326,10 @@ SELECT id
   ,KreditorId
 FROM (%1)
 )str").arg(sqlContractsActiveDetailsView)};
+
+// Übersichten
+// Übersicht: contractRuntimeDistribution, used in sqlContractsAllView
+
 // Übersicht: abgeschl. Vertr. nach Zinssatz
 const QString sqlContractsByYearByInterest {qsl(R"str(
 SELECT SUBSTR(Vertraege.Vertragsdatum, 0, 5) as Year
@@ -377,6 +379,7 @@ GROUP BY Year
 ORDER BY YEAR DESC, Thesa DESC
 )str"
 )};
+// Übersichten "Kurz info"
 const QString sqlOverviewActiveContracts{qsl(R"str(
 WITH Bookings AS (
   SELECT Vertraege.id        AS vid

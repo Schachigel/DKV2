@@ -255,7 +255,7 @@ void uebersichten::renderContractsByContractEnd()
     tablelayout tl (td);
     tl.cols =QStringList({qsl("Jahr"), qsl("Anzahl"), qsl("Summe")});
 
-    QVector<ContractEnd> data;
+    QVector<contractEnd_rowData> data;
     calc_contractEnd(data);
     tablelayout::section sec;
     for( int i =0; i < data.count(); i++) {
@@ -305,7 +305,7 @@ void uebersichten::renderContractRuntimeDistrib()
     QString head {qsl("Laufzeitenverteilung")};
     QString desc{qsl("Anzahl und Wert der Verträge nach ihrer Laufzeit")};
     prep( head, desc);
-    QVector<rowData> data =contractRuntimeDistribution();
+    QVector<contractRuntimeDistrib_rowData> data =contractRuntimeDistribution();
     tablelayout tl(td);
     tl.cols =QStringList({qsl(""), qsl("Anzahl"), qsl("Volumen")});
     tablelayout::section sec;

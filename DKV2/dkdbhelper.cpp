@@ -287,7 +287,7 @@ QVector<QStringList> overviewShortInfo(const QString& sql)
     return ret;
 }
 // calc runtime of contracts for bookkeeper
-QVector<rowData> contractRuntimeDistribution()
+QVector<contractRuntimeDistrib_rowData> contractRuntimeDistribution()
 {   LOG_CALL;
     int AnzahlBisEinJahr=0, AnzahlBisFuenfJahre=0, AnzahlLaenger=0, AnzahlUnbegrenzet = 0;
     double SummeBisEinJahr=0., SummeBisFuenfJahre=0., SummeLaenger=0., SummeUnbegrenzet = 0.;
@@ -296,7 +296,7 @@ QVector<rowData> contractRuntimeDistribution()
     QSqlQuery q; q.setForwardOnly(true);
     if( not q.exec(sql)) {
         qCritical() << "calculation of runtime distribution failed: " << q.lastError() << Qt::endl << q.lastQuery();
-        return QVector<rowData>();
+        return QVector<contractRuntimeDistrib_rowData>();
     }
 
     while( q.next()) {
@@ -318,7 +318,7 @@ QVector<rowData> contractRuntimeDistribution()
         }
     }
     QLocale locale;
-    QVector<rowData> ret;
+    QVector<contractRuntimeDistrib_rowData> ret;
     // .ret.push_back({"Zeitraum", "Anzahl", "Wert"});
     ret.push_back({"Bis ein Jahr ", QString::number(AnzahlBisEinJahr), locale.toCurrencyString(SummeBisEinJahr)});
     ret.push_back({"Ein bis fünf Jahre ", QString::number(AnzahlBisFuenfJahre), locale.toCurrencyString(SummeBisFuenfJahre)});
@@ -327,7 +327,7 @@ QVector<rowData> contractRuntimeDistribution()
     return ret;
 }
 // calc how many contracts end each year
-void calc_contractEnd( QVector<ContractEnd>& ces)
+void calc_contractEnd( QVector<contractEnd_rowData>& ces)
 {   LOG_CALL;
     QString sql {qsl("SELECT count(*) AS Anzahl, sum(Wert) AS Wert, strftime('%Y',Vertragsende) AS Jahr "
              "FROM (%1) "

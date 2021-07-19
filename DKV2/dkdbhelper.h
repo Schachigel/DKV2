@@ -43,29 +43,21 @@ int createNewInvestmentsFromContracts();
 int automatchInvestmentsToContracts();
 bool createCsvActiveContracts();
 
-struct YZV
-{
-    int year;
-    double intrest;
-    int count;
-    double sum;
-};
-Q_DECLARE_TYPEINFO(YZV, Q_PRIMITIVE_TYPE);
-
-struct rowData
+struct contractRuntimeDistrib_rowData
 {
     QString text;
     QString number;
     QString value;
 };
-
-QVector<rowData> contractRuntimeDistribution();
+Q_DECLARE_TYPEINFO(contractRuntimeDistrib_rowData, Q_PRIMITIVE_TYPE);
+QVector<contractRuntimeDistrib_rowData> contractRuntimeDistribution();
 
 struct BookingDateData {
     int count;
     QString type;
     QDate date;
 };
+Q_DECLARE_TYPEINFO(BookingDateData, Q_PRIMITIVE_TYPE);
 
 // calculations for time series statistics
 void getActiveContracsBookingDates( QVector<BookingDateData>& dates);
@@ -77,14 +69,14 @@ void getAllContractBookingDates( QVector<BookingDateData>& dates);
 double valueOfAllContracts();
 QVector<QStringList> overviewShortInfo(const QString& sql);
 
-struct ContractEnd
+struct contractEnd_rowData
 {
     int year;
     int count;
     double value;
 };
-Q_DECLARE_TYPEINFO(ContractEnd, Q_PRIMITIVE_TYPE);
-void calc_contractEnd(QVector<ContractEnd>& ce);
+Q_DECLARE_TYPEINFO(contractEnd_rowData, Q_PRIMITIVE_TYPE);
+void calc_contractEnd(QVector<contractEnd_rowData>& ce);
 
 
 #endif // DKDBHELPER_H
