@@ -336,6 +336,7 @@ SELECT SUBSTR(Vertraege.Vertragsdatum, 0, 5) as Year
   ,sum(Vertraege.Betrag) /100. AS Summe
 FROM Vertraege
 GROUP BY Year, Zinssatz
+ORDER BY Year DESC
 )str")};
 // Übersicht ausgezahlte Zinsen
 const QString sqlInterestByYearOverview {qsl(R"str(

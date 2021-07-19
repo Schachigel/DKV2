@@ -157,20 +157,8 @@ bool tablelayout::renderTable( )
 ///////////////////////////////////////////
 // class uebersichten
 ///////////////////////////////////////////
-
-QString uebersichten::titles[]
-{
-    qsl("Übersicht"),
-    qsl("Ausgezahlte Zinsen pro Jahr"),
-    qsl("Auslaufende Verträge"),
-    qsl("Verteilung der Zinssätze pro Jahr"),
-    qsl("Laufzeiten")
-//    qsl("Vertragsabschlüsse nach Jahr und Zinssatz"),
-};
-
-
-void uebersichten::prep( uebersichten::uetype t)
-{   LOG_CALL_W(QString::number(t));
+void uebersichten::prep( const QString& head, const QString& desc)
+{   LOG_CALL;
     // set document defaults
     QFont f =td->defaultFont();
     f.setFamily(qsl("Verdana"));
@@ -179,16 +167,15 @@ void uebersichten::prep( uebersichten::uetype t)
 
     // add Title, project info and current date
     QTextCursor tc(td);
-    tc.insertHtml(qsl("<h1>%1</h1><p>").arg(titles[t]));
+    tc.insertHtml(qsl("<h1>%1</h1><p>").arg(head));
     QString headerline =qsl("<big>%1</big> - Stand: %2<p>");
     //qsl("<div style=\"text-align:left; float:left\">%1</div> <div style=\"text-align:right;\">Stand: %2</div>");
     tc.insertHtml(headerline.arg( dbConfig::readString(GMBH_ADDRESS1), QDate::currentDate().toString(Qt::ISODate)));
+    tc.insertHtml(qsl("<br>%1<br>").arg(desc));
 }
 
 void uebersichten::renderDocument( uebersichten::uetype t)
 {   LOG_CALL_W(QString::number(t));
-    prep(t);
-
     switch (t){
     case uetype::SHORTINFO:
         renderShortInfo();
@@ -196,7 +183,7 @@ void uebersichten::renderDocument( uebersichten::uetype t)
     case uetype::PAYED_INTEREST_BY_YEAR:
         renderPayedInterestByYear();
         break;
-    case uetype::BY_CONTRACT_END:
+    case uetype::BY_CONTRACT_ENDING:
         renderContractsByContractEnd();
         break;
     case uetype::INTEREST_DISTRIBUTION:
@@ -216,6 +203,13 @@ void uebersichten::renderDocument( uebersichten::uetype t)
 
 void uebersichten::renderShortInfo()
 {   LOG_CALL;
+    QString head (qsl("Übersicht"));
+    QString describe(qsl(R"str(
+Die Kurzinfo gibt einen Überblick über grundlegende Informationen zu den Direktkrediten.
+Für <i>aktive<i> Verträge läuft bereits die Verzinsung. Bei <i>inaktiven</i> Verträgen
+steht die Einzahlung durch die Kreditgeber*in noch aus.
+)str"));
+    prep(head, describe);
     tablelayout tl(td);
     tl.sections.push_back({qsl("Aktive Verträge"), overviewShortInfo(sqlOverviewActiveContracts)});
     tl.sections.push_back({qsl("InAktive Verträge"), overviewShortInfo(sqlOverviewInActiveContracts)});
@@ -225,13 +219,15 @@ void uebersichten::renderShortInfo()
 
 void uebersichten::renderPayedInterestByYear()
 {   LOG_CALL;
+    QString head {qsl("Ausgezahlte Zinsen pro Jahr")};
+    QString desc {qsl("Die Liste zeigt für jedes Jahr, welche Zinsen ausbezahlt oder, für thesaurierende Verträge und Verträge ohne Zinsauszahlung, angerechent wurden.")};
+    prep(head, desc);
     QVector<QSqlRecord> records;
     if( not executeSql( sqlInterestByYearOverview, QVariant(), records)) {
         return;
     }
     tablelayout tl(td);
     // tl.cols = QStringList...)
-
     tablelayout::section currentSec;
     QLocale locale;
     for( int i=0; i <records.count(); i++) {
@@ -245,28 +241,70 @@ void uebersichten::renderPayedInterestByYear()
         }
         currentSec.data.push_back({ locale.toCurrencyString(records[i].value(qsl("Summe")).toDouble()),
                                     records[i].value(qsl("BA")).toString(),
-                                    records[i].value(qsl("Thesa")).toString(),
-                                  });
+                                    records[i].value(qsl("Thesa")).toString(),});
     }
     tl.renderTable();
 }
 
 void uebersichten::renderContractsByContractEnd()
 {
+    QString head {qsl("Auslaufende Verträge")};
+    QString desc {qsl("Anzahl und Wert der Verträge, die in den kommenden Jahren enden.")};
+    prep(head, desc);
+
     tablelayout tl (td);
-    tl.cols =QStringList({"column!", "column 223", "another column"});
-    tl.sections.push_back(tablelayout::section({qsl("Sec head"), {{qsl("Hallo"), qsl("Welt"), qsl("!")}}}));
-    tl.sections.push_back(tablelayout::section({qsl("Sec sec Head"), {{qsl("Hallo"), qsl("Welt"), qsl("!")}}}));
+    tl.cols =QStringList({qsl("Jahr"), qsl("Anzahl"), qsl("Summe")});
+
+    QVector<ContractEnd> data;
+    calc_contractEnd(data);
+    tablelayout::section sec;
+    for( int i =0; i < data.count(); i++) {
+        sec.data.push_back(QStringList({QString::number(data[i].year),
+                                        QString::number(data[i].count),
+                                       d2euro(data[i].value)}));
+    }
+    tl.sections.push_back(sec);
     tl.renderTable();
 }
 
 void uebersichten::renderInterestDistribution()
-{
+{   //LOG_CALL;
+    QString head(qsl("Anzahl Verträge nach Zinssatz und Jahr"));
+    QString desc(qsl("Anahl und Wert der abgeschlossene Verträge nach Kalenderjahren."));
+    prep( head, desc);
 
+    QVector<QSqlRecord> records;
+    if( not executeSql(sqlContractsByYearByInterest, QVariant(), records))
+        return;
+    tablelayout tl(td);
+    tl.cols =QStringList({qsl("Zinssatz"), qsl("Summe"), qsl("Anzahl")});
+
+    tablelayout::section currentSec;
+    for( int i=0; i<records.count(); i++) {
+        QString year =records[i].value(qsl("Year")).toString();
+        if( currentSec.header not_eq year) {
+            // store filled SECTION only for i>0
+            if( i not_eq 0) tl.sections.push_back(currentSec);
+            // start new section
+            currentSec.header =year;
+            currentSec.data.clear();
+        }
+        currentSec.data.push_back({
+                                      prozent2prozent_str(records[i].value(qsl("Zinssatz")).toDouble()),
+                                      d2euro(records[i].value(qsl("Summe")).toDouble()),
+                                      records[i].value(qsl("Anzahl")).toString()});
+    }
+    if( not currentSec.header.isEmpty())
+        tl.sections.push_back(currentSec);
+    tl.renderTable();
 }
+
 
 void uebersichten::renderContractRuntimeDistrib()
 {
+    QString head {qsl("Laufzeitenverteilung")};
+    QString desc{qsl("Anzahl und Wert der Verträge nach ihrer Laufzeit")};
+    prep( head, desc);
     QVector<rowData> data =contractRuntimeDistribution();
     tablelayout tl(td);
     tl.cols =QStringList({qsl(""), qsl("Anzahl"), qsl("Volumen")});
@@ -279,30 +317,4 @@ void uebersichten::renderContractRuntimeDistrib()
 }
 
 //void uebersichten::renderContractsByInterestByYear()
-//{   //LOG_CALL;
-//    QVector<QSqlRecord> records;
-//    if( not executeSql(sqlContractsByYearByInterest, QVariant(), records))
-//        return;
-//    tablelayout tl(td);
-//    tl.cols =QStringList({qsl("Zinssatz"), qsl("Summe"), qsl("Anzahl")});
-
-//    tablelayout::section currentSec;
-//    for( int i=0; i<records.count(); i++) {
-//        QString year =records[i].value(qsl("Year")).toString();
-//        if( currentSec.header not_eq year) {
-//            // store filled SECTION only for i>0
-//            if( i not_eq 0) tl.sections.push_back(currentSec);
-//            // start new section
-//            currentSec.header =year;
-//            currentSec.data.clear();
-//        }
-//        currentSec.data.push_back({
-//            prozent2prozent_str(records[i].value(qsl("Zinssatz")).toDouble()),
-//            d2euro(records[i].value(qsl("Summe")).toDouble()),
-//            records[i].value(qsl("Anzahl")).toString()});
-//    }
-//    if( not currentSec.header.isEmpty())
-//        tl.sections.push_back(currentSec);
-//    tl.renderTable();
-//}
 

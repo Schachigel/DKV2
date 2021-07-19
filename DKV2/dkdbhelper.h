@@ -43,16 +43,6 @@ int createNewInvestmentsFromContracts();
 int automatchInvestmentsToContracts();
 bool createCsvActiveContracts();
 
-struct ContractEnd
-{
-    int year;
-    int count;
-    double value;
-};
-Q_DECLARE_TYPEINFO(ContractEnd, Q_PRIMITIVE_TYPE);
-
-void calc_contractEnd(QVector<ContractEnd>& ce);
-
 struct YZV
 {
     int year;
@@ -86,4 +76,15 @@ void getAllContractBookingDates( QVector<BookingDateData>& dates);
 // calculations for Uebersichten
 double valueOfAllContracts();
 QVector<QStringList> overviewShortInfo(const QString& sql);
+
+struct ContractEnd
+{
+    int year;
+    int count;
+    double value;
+};
+Q_DECLARE_TYPEINFO(ContractEnd, Q_PRIMITIVE_TYPE);
+void calc_contractEnd(QVector<ContractEnd>& ce);
+
+
 #endif // DKDBHELPER_H

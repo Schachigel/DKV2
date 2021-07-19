@@ -594,7 +594,7 @@ void MainWindow::on_action_menu_contracts_statistics_view_triggered()
     if(combo->count() == 0) {
         combo->addItem(qsl("Kurzinfo"),                              QVariant(uebersichten::uetype::SHORTINFO));
         combo->addItem(qsl("Ausgezahlte Zinsen pro Jahr"),           QVariant(uebersichten::uetype::PAYED_INTEREST_BY_YEAR));
-        combo->addItem(qsl("Anzahl auslaufender Verträge nach Jahr"),QVariant(uebersichten::uetype::BY_CONTRACT_END));
+        combo->addItem(qsl("Anzahl auslaufender Verträge nach Jahr"),QVariant(uebersichten::uetype::BY_CONTRACT_ENDING));
         combo->addItem(qsl("Anzahl Verträge nach Zinssatz und Jahr"),QVariant(uebersichten::uetype::INTEREST_DISTRIBUTION));
         combo->addItem(qsl("Anzahl Verträge nach Laufzeiten"),       QVariant(uebersichten::uetype::CONTRACT_RUNTIME_DISTRIB));
     }

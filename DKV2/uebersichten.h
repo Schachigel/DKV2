@@ -88,16 +88,16 @@ struct uebersichten
     enum uetype {
         SHORTINFO =0,
         PAYED_INTEREST_BY_YEAR,
-        BY_CONTRACT_END,
+        BY_CONTRACT_ENDING,
         INTEREST_DISTRIBUTION,
         CONTRACT_RUNTIME_DISTRIB
     };
-    static int fromUeType(uetype t) { return static_cast<int>(t);}
+    //static int fromUeType(uetype t) { return static_cast<int>(t);}
     static uetype fromInt(int i) { return static_cast<uetype>(i);}
-    void renderDocument(uetype t);
+    void renderDocument( uetype t);
 private:
     QTextDocument* td;
-    void prep(uetype);
+    void prep(const QString& head, const QString& desc);
     void renderShortInfo();
     void renderPayedInterestByYear();
     void renderContractsByContractEnd();
