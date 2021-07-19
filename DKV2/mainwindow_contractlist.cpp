@@ -346,6 +346,7 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
 void MainWindow::on_action_Neu_triggered()
 {
     on_actionNeu_triggered();
+    updateListViews();
 }
 
 /////////////////////////////////////////////////
