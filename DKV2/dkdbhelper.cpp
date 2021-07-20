@@ -83,7 +83,8 @@ version_check_result check_db_version(const QSqlDatabase &db)
 
 bool updateViews(const QSqlDatabase &db =QSqlDatabase::database())
 {   LOG_CALL;
-    QString lastProgramVersion = dbConfig::readValue(DKV2_VERSION).toString();
+//    QString lastProgramVersion = dbConfig::readValue(DKV2_VERSION).toString();
+    QString lastProgramVersion = dbConfig::read_DKV2_Version(db);
     QString thisProgramVersion = QCoreApplication::applicationVersion();
     if( lastProgramVersion not_eq thisProgramVersion) {
         qInfo() << "Program versions used differ -> views will be updated";

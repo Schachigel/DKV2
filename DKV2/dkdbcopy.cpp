@@ -76,12 +76,13 @@ bool copycreate_views(const QSqlDatabase& db, const QString& alias)
      QSqlQuery q(db); q.setForwardOnly(true);
      QString sql {qsl("SELECT name, sql FROM %1.sqlite_master WHERE type='view'").arg(alias)};
      if( not q.exec(sql)) {
-         qCritical() << "query execute failed";
+         qCritical() << "could not read views from database";
          return false;
      }
      while( q.next()) {
          QString viewSql  = q.record().value(qsl("sql")).toString(); //.replace(qsl("\n"), qsl(" "));
          if( not executeSql_wNoRecords(viewSql, db)) {
+             qCritical() << "could not create view using " << viewSql;
              return false;
          }
      }

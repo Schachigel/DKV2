@@ -188,6 +188,16 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
         return ret;
 }
 
+/*static*/ QString dbConfig::read_DKV2_Version(const QSqlDatabase& db)
+{
+    QString invalid(qsl("invalid"));
+    QString ret =getMetaInfo(defaultParams.value(DKV2_VERSION).first, invalid, db);
+    if( ret == invalid)
+        return QString();
+    else
+        return ret;
+}
+
 /*static*/ void dbConfig::write_DBVersion(const QSqlDatabase& db, const QString& tblAlias)
 {
     writeValue(DB_VERSION, defaultParams.value(DB_VERSION).second, db, tblAlias);

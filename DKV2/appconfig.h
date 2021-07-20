@@ -69,6 +69,7 @@ struct dbConfig
 {
     dbConfig() =delete;
     static QVariant read_DBVersion(const QSqlDatabase& db =QSqlDatabase::database());
+    static QString read_DKV2_Version(const QSqlDatabase& db);
     static void write_DBVersion(const QSqlDatabase& db =QSqlDatabase::database(), const QString& tblAlias =QString());
     static QVariant readValue(const projectConfiguration pc, const QSqlDatabase& db =QSqlDatabase::database());
     static QString readString(const projectConfiguration pc, const QSqlDatabase& db =QSqlDatabase::database());
