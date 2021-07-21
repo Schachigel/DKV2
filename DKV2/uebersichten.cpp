@@ -248,6 +248,8 @@ void uebersichten::renderPayedInterestByYear()
                                     records[i].value(qsl("BA")).toString(),
                                     records[i].value(qsl("Thesa")).toString(),});
     }
+    if( currentSec.data.count() or currentSec.header.count())
+        tl.sections.push_back(currentSec);
     tl.renderTable();
 }
 

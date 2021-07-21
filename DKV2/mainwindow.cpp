@@ -768,6 +768,7 @@ void MainWindow::prepare_statisticsPage()
         ui->tvData->reset(); ui->tvData->setModel(new QSqlTableModel());
         ui->pbNext->setEnabled(false);
         ui->pbBack->setEnabled(false);
+        ui->pbLetzter->setEnabled(false);
         ui->lblBookingDate->setText(qsl("&nbr;-   <i>  Keine Daten  </i>   -&nbr;"));
         return;
     }
@@ -775,6 +776,7 @@ void MainWindow::prepare_statisticsPage()
     ui->lblBookingDate->setText(bookingDateDesc(dates[currentDateIndex]));
     ui->pbNext->setEnabled(false);
     ui->pbBack->setEnabled(dates.size()>1);
+    ui->pbLetzter->setEnabled(true);
     fillStatisticsTableView();
     ui->tvData->resizeColumnsToContents();
     ui->tvData->setItemDelegateForColumn(0/*iMode*/, new interestModeFormatter);
