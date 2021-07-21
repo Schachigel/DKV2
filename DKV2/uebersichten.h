@@ -26,7 +26,7 @@ struct tablelayout
 
     tablelayout(QTextDocument* td) : td (td) {};
 // interface
-    bool renderTable();
+    void renderTable();
 
 // data
     QStringList cols;

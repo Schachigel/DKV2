@@ -132,10 +132,15 @@ int tablelayout::fillEmptyRow(QTextTable* table, const int row)
     return 1;
 }
 
-bool tablelayout::renderTable( )
+void tablelayout::renderTable( )
 {   // LOG_CALL;
     QTextCursor tc (td);
     tc.movePosition(QTextCursor::End);
+    if( (not (rowCount() and colCount()))
+            or (0 == sections.count())){
+        qInfo() << "not rendering empty table";
+        return;
+    }
     QTextTable* table =tc.insertTable(rowCount(), colCount());
     int currentRow =insertColHeader(table);
     QTextTableFormat format =table->format();
@@ -150,7 +155,7 @@ bool tablelayout::renderTable( )
         currentRow += fillSectionHeader(table, sectionIndex, currentRow);
         currentRow += fillSectionData(table, sectionIndex, currentRow);
     }
-    return true;
+    return;
 }
 
 
@@ -263,7 +268,8 @@ void uebersichten::renderContractsByContractEnd()
                                         QString::number(data[i].count),
                                        d2euro(data[i].value)}));
     }
-    tl.sections.push_back(sec);
+    if( sec.data.count())
+        tl.sections.push_back(sec);
     tl.renderTable();
 }
 
