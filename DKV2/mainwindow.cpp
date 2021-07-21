@@ -212,11 +212,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->spinFontSize->setMaximum(11);
     connect(ui->wPreview, &QPrintPreviewWidget::paintRequested, this, &MainWindow::doPaint);
 
-    ui->stackedWidget->setCurrentIndex(startPageIndex);
 
     QSettings settings;
     restoreGeometry(settings.value(qsl("geometry")).toByteArray());
     restoreState(settings.value(qsl("windowState")).toByteArray());
+
+    prepare_startPage();
+    ui->stackedWidget->setCurrentIndex(startPageIndex);
 }
 
 MainWindow::~MainWindow()
@@ -278,25 +280,27 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
 void MainWindow::prepare_startPage()
 {   LOG_CALL;
     busycursor b;
-    QString messageHtml {qsl("<table width='100%'><tr><td><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></td></tr>")};
+    QString messageHtml {qsl("<table width='100%'><tr></tr><tr><td><center><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></center></td></tr>")};
 
     double allContractsValue =valueOfAllContracts();
 
     QString pName =dbConfig::readValue(projectConfiguration::GMBH_ADDRESS1).toString();
     if( not pName.isEmpty()) {
-        messageHtml += qsl("<tr><td><h3>DK Verwaltung für <font color=blue>%1</font></h3></td></tr>").arg(pName);
+        messageHtml += qsl("<tr></tr><tr><td>DK Verwaltung für <font color=blue>%1</font></td></tr>").arg(pName);
     }
     if( allContractsValue > 0) {
         QLocale l;
-        QString valueRow = qsl("<tr><td>Die Summer aller DK beträgt <big><font color=red>") + l.toCurrencyString(allContractsValue) + qsl("</font></big></td></tr>");
+        QString valueRow = qsl("<tr><td>Die Summer aller Direktkredite und Zinsen beträgt <big><font color=red>")
+                + l.toCurrencyString(allContractsValue) + qsl("</font></big></td></tr>");
         messageHtml += valueRow;
     }
-    messageHtml += qsl("<tr><td><img src=\":/res/splash.png\"/></td></tr></table>");
+    messageHtml += qsl("</table>");
     qDebug() <<"welcome Screen html: " << Qt::endl << messageHtml << Qt::endl;
-    ui->teWelcome->setText(messageHtml);
+    ui->lblInfo->setText(messageHtml);
 }
 void MainWindow::on_action_menu_database_start_triggered()
 {   LOG_CALL;
+    prepare_startPage();
     ui->stackedWidget->setCurrentIndex(startPageIndex);
 }
 

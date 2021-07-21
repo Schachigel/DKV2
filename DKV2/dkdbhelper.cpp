@@ -263,8 +263,8 @@ WHERE id NOT IN (SELECT DISTINCT VertragsId FROM Buchungen)
 )str")};
     double inactiveSum =executeSingleValueSql(sqlInactive).toDouble();
     QString sqlActive {qsl(R"str(
-SELEcT SUM(Buchungen.Betrag) /100. as Gesamtbetrag
-FROM Vertraege INNER JOIN Buchungen
+SELEcT SUM(Betrag) /100. as Gesamtbetrag
+FROM Buchungen
 )str")};
     double activeSum =executeSingleValueSql(sqlActive).toDouble();
     return inactiveSum + activeSum;
