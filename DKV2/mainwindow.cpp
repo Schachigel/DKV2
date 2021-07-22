@@ -476,6 +476,8 @@ void MainWindow::on_btnAutoClose_clicked()
         QMessageBox::information(this, qsl("Änderung durchgeführt"), qsl("Es wurden %1 Geldanlagen geschlossen").arg(changedSets));
     else
         QMessageBox::information(this, qsl("Änderung nicht durchgeführt"), qsl("Es ist ein Fehler aufgetreten"));
+
+    prepare_investmentsListView();
 }
 void MainWindow::on_btnAutoMatch_clicked()
 {
