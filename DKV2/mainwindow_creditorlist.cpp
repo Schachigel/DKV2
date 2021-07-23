@@ -82,7 +82,7 @@ void MainWindow::on_action_cmenu_edit_creditor_triggered()
     QVariant index = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(0));
 
     editCreditor(index.toInt());
-    updateListViews();
+    updateViews();
 }
 void MainWindow::on_action_cmenu_delete_creaditor_triggered()
 {   LOG_CALL;
@@ -113,7 +113,7 @@ void MainWindow::on_action_cmenu_go_contracts_triggered()
 }
 
 // new creditor and contract Wiz
-void MainWindow::updateListViews()
+void MainWindow::updateViews()
 {
     QSqlTableModel* temp;
 
@@ -135,10 +135,12 @@ void MainWindow::updateListViews()
     }
     if( ui->stackedWidget->currentIndex() == overviewsPageIndex)
         on_action_menu_contracts_statistics_view_triggered();
+    if( ui->stackedWidget->currentIndex() == overviewsPageIndex)
+        updateUebersichtView(ui->comboUebersicht->currentIndex());
 }
 void MainWindow::on_actionNeu_triggered()
 {
     newCreditorAndContract();
-    updateListViews();
+    updateViews();
 }
 

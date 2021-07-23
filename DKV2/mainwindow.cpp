@@ -391,7 +391,7 @@ void MainWindow::on_actionProjektkonfiguration_ndern_triggered()
     wizConfigureProjectWiz wiz(getMainWindow());
     if(wiz.exec() == QDialog::Accepted)
         wiz.updateDbConfig();
-    updateListViews();
+    updateViews();
 }
 void MainWindow::on_action_menu_database_configure_outdir_triggered()
 {   LOG_CALL;
@@ -598,22 +598,32 @@ void MainWindow::on_action_menu_contracts_statistics_view_triggered()
 {   LOG_CALL;
     QComboBox* combo =ui->comboUebersicht;
     if(combo->count() == 0) {
-        combo->addItem(qsl("Kurzinfo"),                              QVariant(uebersichten::uetype::SHORTINFO));
-        combo->addItem(qsl("Ausgezahlte Zinsen pro Jahr"),           QVariant(uebersichten::uetype::PAYED_INTEREST_BY_YEAR));
-        combo->addItem(qsl("Anzahl auslaufender Verträge nach Jahr"),QVariant(uebersichten::uetype::BY_CONTRACT_ENDING));
-        combo->addItem(qsl("Anzahl Verträge nach Zinssatz und Jahr"),QVariant(uebersichten::uetype::INTEREST_DISTRIBUTION));
-        combo->addItem(qsl("Anzahl Verträge nach Laufzeiten"),       QVariant(uebersichten::uetype::CONTRACT_RUNTIME_DISTRIB));
+
+        combo->addItems(QStringList({qsl("Kurzinfo"),
+                                     qsl("Ausgezahlte Zinsen pro Jahr"),
+                                     qsl("Anzahl auslaufender Verträge nach Jahr"),
+                                     qsl("Anzahl Verträge nach Zinssatz und Jahr"),
+                                     qsl("Anzahl Verträge nach Laufzeiten")}));
+    } else {
+        updateUebersichtView(combo->currentIndex());
     }
 
     ui->stackedWidget->setCurrentIndex(overviewsPageIndex);
 }
-void MainWindow::on_comboUebersicht_currentIndexChanged(int i)
-{   LOG_CALL;
-    busycursor b;
+void MainWindow::updateUebersichtView(int uebersichtIndex)
+{
     QTextDocument* td =new QTextDocument(); // ui->txtOverview->document();
     uebersichten ue(td);
-    ue.renderDocument(uebersichten::fromInt(i));
+    ue.renderDocument(uebersichten::fromInt(uebersichtIndex));
     ui->txtOverview->setDocument(td);
+}
+
+void MainWindow::on_comboUebersicht_currentIndexChanged(int i)
+{   LOG_CALL_W(QString::number(i));
+    if(i == -1)
+        return;
+    busycursor b;
+    updateUebersichtView(i);
 }
 void MainWindow::on_pbPrint_clicked()
 {   LOG_CALL;
@@ -801,7 +811,7 @@ void MainWindow::on_actionStatistik_triggered()
 void MainWindow::on_action_menu_contracts_annual_interest_settlement_triggered()
 {   LOG_CALL;
     annualSettlement();
-    updateListViews();
+    updateViews();
 }
 
 /////////////////////////////////////////////////

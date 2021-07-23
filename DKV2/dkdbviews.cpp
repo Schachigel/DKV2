@@ -442,19 +442,19 @@ WITH all_counts AS (
     FROM Buchungen JOIN Vertraege ON Vertraege.id = Buchungen.VertragsId
 )
 , active_sums AS (
-  SELEcT SUM(Betrag) /100.            AS GesamtVolumen
-    , SUM(Betrag) /100. /COUNT(*)     AS MittlererVertragswert
-    , SUM(VerzinslGuthaben *Zinssatz) /100. /100.
+  SELEcT IFNULL( SUM(Betrag) /100., 0)            AS GesamtVolumen
+    , IFNULL( SUM(Betrag) /100. /COUNT(*), 0)     AS MittlererVertragswert
+    , IFNULL( SUM(VerzinslGuthaben *Zinssatz) /100. /100., 0)
                                       AS Jahreszins
-    , SUM(VerzinslGuthaben *Zinssatz) /100. /100. / SUM(Betrag) *100.
+    , IFNULL( SUM(VerzinslGuthaben *Zinssatz) /100. /100. / SUM(Betrag) *100., 0)
                                       AS ZinsRate
     FROM active_bookings
 )
 , inactive_sums AS (
-  SELEcT SUM(Betrag) /100.             AS GesamtVolumen
-  , SUM(Betrag) /100. /COUNT(*)        AS MittlererVertragswert
-  , SUM(Betrag*ZSatz) /100. /100. /100.  AS JahresZins
-  , SUM(Betrag*ZSatz) /100. /SUM(Betrag) AS ZinsRate
+  SELEcT IFNULL(SUM(Betrag) /100., 0)             AS GesamtVolumen
+  , IFNULL(SUM(Betrag) /100. /COUNT(*), 0)        AS MittlererVertragswert
+  , IFNULL(SUM(Betrag*ZSatz) /100. /100. /100., 0)  AS JahresZins
+  , IFNULL(SUM(Betrag*ZSatz) /100. /SUM(Betrag), 0) AS ZinsRate
 
   FROM Vertraege
   WHERE id NOT IN (SELEcT DISTINCT VertragsId FROM Buchungen)

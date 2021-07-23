@@ -252,32 +252,32 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
 void MainWindow::on_action_cmenu_activate_contract_triggered()
 {   LOG_CALL;
     activateContract(get_current_id_from_contracts_list());
-    updateListViews();
+    updateViews();
 }
 void MainWindow::on_action_cmenu_terminate_contract_triggered()
 {   LOG_CALL;
     terminateContract(get_current_id_from_contracts_list());
-    updateListViews();
+    updateViews();
 }
 void MainWindow::on_action_cmenu_delete_inactive_contract_triggered()
 {   LOG_CALL;
     deleteInactiveContract(get_current_id_from_contracts_list());
-    updateListViews();
+    updateViews();
 }
 void MainWindow::on_action_cmenu_change_contract_triggered()
 {   LOG_CALL;
     changeContractValue(get_current_id_from_contracts_list());
-    updateListViews();
+    updateViews();
 }
 void MainWindow::on_action_cmenu_Anmerkung_aendern_triggered()
 {   LOG_CALL;
     changeContractComment(get_current_id_from_contracts_list());
-    updateListViews();
+    updateViews();
 }
 void MainWindow::on_action_cmenu_changeContractTermination_triggered()
 {   LOG_CALL;
     changeContractTermination(get_current_id_from_contracts_list());
-    updateListViews();
+    updateViews();
 }
 void MainWindow::on_action_cmenu_assoc_investment_triggered()
 {   LOG_CALL;
@@ -337,7 +337,7 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
         break;
     }
     }; // Eo switch
-    updateListViews();
+    updateViews();
 }
 
 /////////////////////////////////////////////////
@@ -346,7 +346,7 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
 void MainWindow::on_action_Neu_triggered()
 {
     on_actionNeu_triggered();
-    updateListViews();
+    updateViews();
 }
 
 /////////////////////////////////////////////////

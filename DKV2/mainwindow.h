@@ -54,7 +54,9 @@ public:
 
     int id_SelectedCreditor();
     int get_current_id_from_contracts_list();
-    void updateListViews();
+    void updateViews();
+    void updateUebersichtView(int uebersichtIndex);
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 private slots:
