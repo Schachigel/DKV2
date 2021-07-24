@@ -962,15 +962,20 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
 #ifndef QT_DEBUG
     QMessageBox::StandardButton mr = QMessageBox::question(this, qsl("Beenden?"), qsl("Möchtest Du DKV2 beenden?"));
-    if (mr == QMessageBox::Yes)
+    if (mr == QMessageBox::Yes) {
+        QSettings settings;
+        settings.setValue(qsl("geometry"), saveGeometry());
+        settings.setValue(qsl("windowState"), saveState());
         event->accept();
-    else
+        return;
+    } else {
         event->ignore();
+        return;
+    }
 #endif
 
     QSettings settings;
     settings.setValue(qsl("geometry"), saveGeometry());
     settings.setValue(qsl("windowState"), saveState());
-    QMainWindow::closeEvent(event);
-
+    event->accept();
 }
