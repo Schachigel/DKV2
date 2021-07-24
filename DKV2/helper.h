@@ -43,19 +43,20 @@ public:
 
 class functionlogging {
 private:
-    QString fname;
+    QString fuName;
+    QString fiName;
     static int depth;
 public:
-    functionlogging(const QString& x) :fname(x) {
+    functionlogging(const QString& fu, const QString& fi) :fuName(fu), fiName( fi) {
         depth++;
         QString fill=QString(qsl(">")).repeated(depth);
-        qInfo().noquote() << fill << fname;
+        qInfo().noquote() << fill << fuName << " (" << fiName << ")";
     }
     functionlogging(const functionlogging&) =delete;
     ~functionlogging() {
         QString fill=QString(qsl("<")).repeated(depth);
         depth--;
-        qInfo().noquote() << fill << fname << Qt::endl;
+        qInfo().noquote() << fill << fuName << Qt::endl;
     }
 };
 
@@ -63,8 +64,8 @@ public:
 
 //#define LOG_ENTRY_EXIT_FOR(x) // ;functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
 //#define LOG_ENTRY_EXIT_FOR(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
-#define LOG_CALL functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(__func__)
-#define LOG_CALL_W(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger( __func__ + QString(qsl("(\"")) + x + QString(qsl("\")")))
+#define LOG_CALL functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(__func__, __FILE__)
+#define LOG_CALL_W(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger( __func__ + qsl("(\"") + x + qsl("\")"), __FILE__)
 
 extern const QDate EndOfTheFuckingWorld;
 extern const int daysUntilTheEndOfTheFuckingWorld;

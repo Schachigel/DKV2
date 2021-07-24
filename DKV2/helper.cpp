@@ -62,9 +62,9 @@ void logger(QtMsgType type, const QMessageLogContext &, const QString &msg)
 
     QTextStream ts(outFile_p);
     ts << QTime::currentTime().toString(qsl("hh:mm:ss.zzz")) << " " << msgLevelHash[type] << " : " << endlCorrectedMsg;
-#ifdef QT_DEBUG
-    ts << " (" << context.file << ")";
-#endif
+//#ifdef QT_DEBUG
+//    ts << " (" << context.file << ")";
+//#endif
     while(lfCount-->=0) ts << Qt::endl;
 
     if (type == QtFatalMsg)
