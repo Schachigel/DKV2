@@ -135,7 +135,7 @@ struct contract
     bool updateInvestment(qlonglong id);
 /* not used?  int validateAndSaveNewContract(QString& meldung); */
     // contract activation
-    bool activate(const QDate aDate, double amount);
+    bool activate(const QDate aDate, double amount, bool iActive);
     bool isActive() const;
     QDate activationDate() const;
     void setActivationDate( const QDate d) {aDate=d; activated=active;}

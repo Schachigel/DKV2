@@ -11,6 +11,7 @@ struct wpActivateContract_IntroPage : public QWizardPage {
 };
 
 extern QString fnDate;
+extern QString fnActivateNow;
 struct wpActiateContract_DatePage : public QWizardPage {
     wpActiateContract_DatePage(QWidget* w=nullptr);
     void cleanupPage() override  {};

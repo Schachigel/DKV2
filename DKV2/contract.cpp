@@ -30,6 +30,7 @@
         contractTable.append(dbForeignKey(contractTable[qsl("AnlagenId")],
             qsl("Geldanlagen"), qsl("rowid"), qsl("ON DELETE SET NULL")));
         contractTable.append(dbfield(qsl("LaufzeitEnde"), QVariant::Date).setNotNull().setDefault(qsl("9999-12-31")));
+        contractTable.append(dbfield(qsl("zAktiv"),       QVariant::Int) .setDefault(1));
         contractTable.append(dbfield(qsl("Zeitstempel"), QVariant::DateTime).setDefaultNow());
     }
     return contractTable;
@@ -214,7 +215,7 @@ QDate avoidYearEndBookings(const QDate d)
 }
 
 // contract activation
-bool contract::activate(const QDate date, double amount)
+bool contract::activate(const QDate date, double amount, bool zActive)
 {   LOG_CALL;
     Q_ASSERT(id() >= 0);
     QString error;
@@ -226,12 +227,29 @@ bool contract::activate(const QDate date, double amount)
         error = qsl("Invalid Date");
     } else if( amount < 0) {
         error =qsl("Invalid amount");
-    } else if ( not booking::bookDeposit(id(), actualDate, amount)) {
-        error = "Failed to execut activation on contract " + id_aS() + qsl(" [") + actualDate.toString() + qsl(", ") + QString::number(amount) + qsl("]");
     }
     if ( not error.isEmpty()) {
         qCritical() << error;
         return false;
+    }
+    autoRollbackTransaction tr;
+
+    if ( booking::bookDeposit(id(), actualDate, amount))
+    {
+        if( zActive) {
+            tr.commit();
+        } else {
+            QString sql {qsl("UPDATE Vertraege SET zAktiv = 0 WHERE id = %1")};
+            if( executeSql_wNoRecords(sql.arg(id()))) {
+                tr.commit();
+            } else {
+                qInfo() << "failed to write zAktiv Flag to contract w id " << id_aS();
+                return false; // rollback
+            }
+        }
+    } else {
+        qInfo() << "Failed to execut activation on contract " << id_aS() << qsl(" [") << actualDate.toString() << qsl(", ") << QString::number(amount) << qsl("]");
+        return false; // rollback
     }
     setLatestBooking({id(), booking::Type::deposit, actualDate, amount});
     setActivationDate(actualDate);

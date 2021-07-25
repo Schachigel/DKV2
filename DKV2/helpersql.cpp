@@ -181,7 +181,6 @@ bool switchForeignKeyHandling(const QSqlDatabase& db /*def. DB*/, bool OnOff /*=
         return executeSql_wNoRecords(qsl("PRAGMA FOREIGN_KEYS = OFF"), db);
 }
 
-
 QVariant executeSingleValueSql(const QString& sql, const QSqlDatabase& db)
 {
     QSqlQuery q(db);

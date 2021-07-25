@@ -15,20 +15,27 @@ wpActivateContract_IntroPage::wpActivateContract_IntroPage(QWidget* p) : QWizard
 void wpActivateContract_IntroPage::initializePage()
 {
     wpActivateContract* wiz = qobject_cast<wpActivateContract*>(wizard());
-    QString subtitle = qsl("Mit dieser Dialogfolge kannst Du den Vertrag <p><b>%1</b> von <b>%2</b> <p>aktivieren, "
-                       "so dass die Zinsberechnung beginnt.<br>"
-                       "Die Aktivierung muss nach dem Geldeingang durchgeführt werden.<br>");
+    QString subtitle = qsl("Mit dieser Dialogfolge kannst Du den Geldeingang zu Vertrag <p><b>%1</b> von <b>%2</b> <p>verbuchen. "
+                       "Ab dann kannst Du die Zinsberechnung beginnt. Sie kann aber auch verzögert aktiviert werden.<br>");
     setSubTitle(subtitle.arg(wiz->label, wiz->creditorName));
 }
 
 QString fnDate {qsl("date")};
+QString fnActivateNow {qsl("activateNow")};
 wpActiateContract_DatePage::wpActiateContract_DatePage(QWidget* p) : QWizardPage(p)
 {
     QDateEdit* de = new QDateEdit;
     de->setDisplayFormat(qsl("dd.MM.yyyy"));
     registerField(fnDate, de);
+    QRadioButton* rbNow =new QRadioButton(qsl("Die Zinszahlung beginnt mit der Aktivierung"));
+    QRadioButton* rbLater =new QRadioButton(qsl("Die Zinszahlung wird nachträglich begonnen"));
+    rbNow->setChecked(true);
+    registerField(fnActivateNow, rbNow);
+
     QVBoxLayout*  layout = new QVBoxLayout;
     layout->addWidget(de);
+    layout->addWidget(rbNow);
+    layout->addWidget(rbLater);
     setLayout(layout);
 }
 

@@ -70,7 +70,7 @@ void activateContract(qlonglong cid)
         qInfo() << "contract activation cancled by the user";
         return;
     }
-    if( not v.activate(wiz.field(fnDate).toDate(), wiz.field(qsl("amount")).toDouble())) {
+    if( not v.activate(wiz.field(fnDate).toDate(), wiz.field(fnAmount).toDouble()), wiz.field(fnActivateNow).toBool()) {
         qCritical() << "activation failed";
         Q_ASSERT(false);
     }

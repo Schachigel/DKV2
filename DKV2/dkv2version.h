@@ -17,7 +17,7 @@
 
 #define CURRENT_DKV2_VERSION    DKV2_VERSION_STRING
 
-#define CURRENT_DB_VERSION      5
+#define CURRENT_DB_VERSION      6
 
 #define TARGET_COMPANY "HoMSoft"
 #define TARGET_DESCRIPTION "DK Verwaltung f. MHS Projekte"
