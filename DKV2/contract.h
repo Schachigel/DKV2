@@ -97,8 +97,10 @@ struct contract
         if( percent == 0) td.setValue(qsl("thesaurierend"), toInt(interestModel::zero));
     }
     double interestRate() const {
-        QVariant p(td.getValue(qsl("ZSatz"))); // stored as a int (100th percent)
-        return r2(double(p.toInt())/100.);
+        QVariant p=td.getValue(qsl("ZSatz")); // stored as a int (100th percent)
+
+        double iRate = r2(double(p.toInt())/100.);
+        return (interestPaymentActive() ? 1 : 0) * iRate;
     }
     void setInvestment(qlonglong rId) { td.setValue(qsl("AnlagenId"), (rId>0?QVariant(rId):QVariant()));}
     qlonglong investment() const { return td.getValue(qsl("AnlagenId")).toLongLong();}
@@ -116,6 +118,12 @@ struct contract
     QDate plannedEndDate() const { return td.getValue(qsl("LaufzeitEnde")).toDate();}
     void setConclusionDate(const QDate d) { td.setValue(qsl("Vertragsdatum"), d);}
     QDate conclusionDate() const { return td.getValue(qsl("Vertragsdatum")).toDate();}
+    bool interestPaymentActive() const {
+        QVariant v= td.getValue(qsl("zAktiv"));
+        if (v.isNull() or (not v.isValid())) return 1;
+        return v.toBool();
+    }
+    void setInterestPaymentActive(bool ia) { td.setValue(qsl("zAktiv"), ia);}
     void setComment(const QString& q) {td.setValue(qsl("Anmerkung"), q);}
     QString comment() const {return td.getValue(qsl("Anmerkung")).toString();}
     // interface
@@ -135,10 +143,10 @@ struct contract
     bool updateInvestment(qlonglong id);
 /* not used?  int validateAndSaveNewContract(QString& meldung); */
     // contract activation
-    bool activate(const QDate aDate, double amount, bool iActive);
-    bool isActive() const;
-    QDate activationDate() const;
-    void setActivationDate( const QDate d) {aDate=d; activated=active;}
+    bool bookInitialPayment(const QDate aDate, double amount, bool iActive);
+    bool initialBookingReceived() const;
+    QDate initialBookingDate() const;
+    void setInitialBookingDate( const QDate d) {aDate=d; activated=active;}
     // other booking actions
     QDate nextDateForAnnualSettlement();
     bool needsAnnualSettlement( const QDate d);

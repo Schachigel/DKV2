@@ -21,7 +21,7 @@ struct TableDataInserter
     QVariant getValue(const QString& f) const { return record.field(f).value();}
     QSqlRecord getRecord() const {return record;}
     // interface
-    int InsertData(const QSqlDatabase &db = QSqlDatabase::database()) const;
+    int WriteData(const QSqlDatabase &db = QSqlDatabase::database()) const;
     int InsertOrReplaceData(const QSqlDatabase &db = QSqlDatabase::database()) const;
     int InsertData_noAuto(const QSqlDatabase &db = QSqlDatabase::database()) const;
     int UpdateData() const;

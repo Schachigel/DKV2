@@ -57,7 +57,7 @@ void test_dkdbhelper::test_querySingleValue()
     TableDataInserter tdi(s["t"]);
     tdi.setValue("id", 1);
     tdi.setValue("f", "Hallo");
-    tdi.InsertData();
+    tdi.WriteData();
     QVariant hallo = executeSingleValueSql("SELECT [f] FROM [t] WHERE id=1");
     QVERIFY2(hallo.toString() == "Hallo", "ExecuteSingleValueSql failed");
 }
@@ -72,10 +72,10 @@ void test_dkdbhelper::test_querySingleValue_multipleResults()
     TableDataInserter tdi(s["t"]);
     tdi.setValue("id", 1);
     tdi.setValue("f", "Hallo");
-    tdi.InsertData();
+    tdi.WriteData();
     tdi.setValue("id", 1);
     tdi.setValue("f", "Hallo1");
-    tdi.InsertData();
+    tdi.WriteData();
     QVariant hallo = executeSingleValueSql("SELECT [f] FROM [t] WHERE id=1");
     QVERIFY2(hallo.type() == QVariant::Invalid , "ExecuteSingleValueSql failed");
 }

@@ -91,7 +91,7 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
     for (auto i : all_templates.keys()) {
         tdi.setValue(qsl("id"), QVariant(int(i)));
         tdi.setValue(qsl("Brieftyp"), QVariant(all_templates[i]));
-        if (-1 == tdi.InsertData(db))
+        if (-1 == tdi.WriteData(db))
             return false;
     }
     return true;
@@ -118,7 +118,7 @@ bool insertLetterElementFromMap(qlonglong kreditor, letterTemplate::templId brie
     for( auto i : map.keys()) {
         tdi.setValue(qsl("BriefElementTypenId"), QVariant(int(i)));
         tdi.setValue(qsl("Texte"), QVariant(map[i]));
-        if( -1 == tdi.InsertData(db)) {
+        if( -1 == tdi.WriteData(db)) {
             qDebug() << "Failded to insert generic letter Element " << map[i];
             res = false;
         }

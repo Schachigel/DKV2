@@ -45,7 +45,7 @@ void test_tableDataInserter::test_insert_and_retreive()
     tdi.setValue("type_string", type_string);
     tdi.setValue("type_bool", type_bool);
     tdi.setValue("type_date", type_date);
-    QVERIFY(-1 not_eq tdi.InsertData());
+    QVERIFY(-1 not_eq tdi.WriteData());
     QSqlRecord r = executeSingleRecordSql( t.Fields());
     qDebug() << r;
     QVERIFY( r.value("id").type() == QVariant::LongLong

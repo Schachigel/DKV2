@@ -229,7 +229,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
     bool gotTerminationDate = c.noticePeriod() == -1;
 
     QMenu menu( qsl("ContractContextMenu"), this);
-    if(c.isActive())
+    if(c.initialBookingReceived())
     {
         if( gotTerminationDate)
             ui->action_cmenu_terminate_contract->setText(qsl("Vertrag beenden"));

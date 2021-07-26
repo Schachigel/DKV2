@@ -71,7 +71,7 @@ qlonglong saveNewInvestment(int ZSatz, QDate start, QDate end, const QString &ty
     tdi.setValue(fnInvestmentEnd, end);
     tdi.setValue(fnInvestmentType, type);
     tdi.setValue(fnInvestmentState, 1);
-    return tdi.InsertData();
+    return tdi.WriteData();
 }
 
 qlonglong createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
@@ -88,7 +88,7 @@ qlonglong createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
     QString type { qsl("100.tEuro pa /max 20")};
     tdi.setValue(fnInvestmentType, type);
     tdi.setValue(fnInvestmentState, true);
-    return tdi.InsertData();
+    return tdi.WriteData();
 }
 
 bool deleteInvestment(const int ZSatz, const QString& v, const QString& b, const QString& t)

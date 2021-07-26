@@ -70,7 +70,7 @@ void activateContract(qlonglong cid)
         qInfo() << "contract activation cancled by the user";
         return;
     }
-    if( not v.activate(wiz.field(fnDate).toDate(), wiz.field(fnAmount).toDouble()), wiz.field(fnActivateNow).toBool()) {
+    if( not v.bookInitialPayment(wiz.field(fnDate).toDate(), wiz.field(fnAmount).toDouble(), wiz.field(fnActivateNow).toBool())) {
         qCritical() << "activation failed";
         Q_ASSERT(false);
     }
@@ -79,7 +79,7 @@ void activateContract(qlonglong cid)
 void changeContractValue(qlonglong cid)
 {   LOG_CALL;
     contract con(cid);
-    if( not con.isActive()) {
+    if( not con.initialBookingReceived()) {
         qCritical() << "tried to changeContractValue of an inactive contract";
         Q_ASSERT(false);
         return;
@@ -274,7 +274,7 @@ void changeContractTermination(qlonglong id)
     creditor cred(c.creditorId());
     dlgChangeContractTermination dlg(getMainWindow());
 
-    if( c.isActive())
+    if( c.initialBookingReceived())
         dlg.setMinContractTerminationDate(c.latestBooking().date);
     else
         dlg.setMinContractTerminationDate(c.conclusionDate().addDays(1));

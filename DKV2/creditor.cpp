@@ -144,7 +144,7 @@ int creditor::save()
 {   LOG_CALL;
     if( ti.getRecord().isEmpty() )
         return -1;
-    setId(ti.InsertData());
+    setId(ti.WriteData());
     return id();
 }
 

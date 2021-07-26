@@ -103,7 +103,7 @@ void test_creditor::test_hasActiveContracts_hasActContract()
 {
     creditor c = saveRandomCreditor();
     contract co = saveRandomContract(c.id());
-    co.activate(QDate::currentDate(), 1000.0);
+    co.bookInitialPayment(QDate::currentDate(), 1000.0, true);
     QCOMPARE(c.hasActiveContracts(), true);
 }
 void test_creditor::test_deleteCreditor_woContract()
@@ -123,7 +123,7 @@ void test_creditor::test_deleteCredtior_wActiveContractFails()
 {
     creditor c = saveRandomCreditor();
     contract co = saveRandomContract(c.id());
-    co.activate(QDate::currentDate(), 1000.0);
+    co.bookInitialPayment(QDate::currentDate(), 1000.0, true);
     QCOMPARE(c.remove(), false);
 }
 
@@ -131,7 +131,7 @@ void test_creditor::test_deleteCreditor_wTerminatedContractFails()
 {
     creditor c = saveRandomCreditor();
     contract co = saveRandomContract(c.id());
-    co.activate(QDate(2000, 6, 1), 1000);
+    co.bookInitialPayment(QDate(2000, 6, 1), 1000, true);
     double interestPayout =0, payout =0.;
     co.finalize(false, QDate(2020, 5, 31), interestPayout, payout);
     QCOMPARE(c.remove(), false);

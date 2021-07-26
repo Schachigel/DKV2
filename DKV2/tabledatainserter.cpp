@@ -169,7 +169,7 @@ QString TableDataInserter::getUpdateRecordSQL(qlonglong& autovalue) const
     return sql;
 }
 
-int TableDataInserter::InsertData(const QSqlDatabase &db) const
+int TableDataInserter::WriteData(const QSqlDatabase &db) const
 {   // LOG_CALL;
     if( record.isEmpty()) return false;
 

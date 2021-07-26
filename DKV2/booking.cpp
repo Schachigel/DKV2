@@ -69,7 +69,7 @@
     tdi.setValue(qsl("Betrag"), ctFromEuro(amount));
     tdi.setValue(qsl("Datum"), date);
 //    "Zeitstempel" will be created by default
-    if( -1 not_eq tdi.InsertData()) {
+    if( -1 not_eq tdi.WriteData()) {
         qInfo() << "successful booking: " << typeName(t) << " contract#: " << contractId << " Amount: " << ctFromEuro(amount) << " date: " << date;
         return true;
     }
