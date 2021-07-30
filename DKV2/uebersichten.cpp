@@ -55,7 +55,7 @@ int tablelayout::rowCount()
     // Sektionen
     for(int i =0; i < sections.count(); i++) {
         section& sec =sections[i];
-        if( not sec.header.isEmpty())
+        if( sec.header.size())
             _rowCount += 1;
         // data per section
         _rowCount += sec.data.count();
@@ -302,7 +302,7 @@ void uebersichten::renderInterestDistribution()
                                       d2euro(records[i].value(qsl("Summe")).toDouble()),
                                       records[i].value(qsl("Anzahl")).toString()});
     }
-    if( not currentSec.header.isEmpty())
+    if( currentSec.header.size())
         tl.sections.push_back(currentSec);
     tl.renderTable();
 }

@@ -62,14 +62,14 @@ double getNumMetaInfo(const QString& name, const double def, const QSqlDatabase&
 void setMetaInfo(const QString& name, const QString& value, const QSqlDatabase& db, const QString& tblAlias /*=QString()*/)
 {   LOG_CALL_W(name);
     QString tname =qsl("Meta");
-    if( not tblAlias.isEmpty()) tname =tblAlias +qsl(".") +tname;
+    if( tblAlias.size()) tname =tblAlias +qsl(".") +tname;
     QString sql{qsl("INSERT OR REPLACE INTO %1 (Name, Wert) VALUES (:name, :value)")};
     executeSql_wNoRecords(sql.arg(tname), {name, value}, db);
 }
 void setNumMetaInfo(const QString& name, const double value, const QSqlDatabase& db, const QString& tblAlias /*=QString()*/)
 {   LOG_CALL_W(name);
     QString tablename =qsl("Meta");
-    if( not tblAlias.isEmpty()) tablename =tblAlias +qsl(".") +tablename;
+    if( tblAlias.size()) tablename =tblAlias +qsl(".") +tablename;
     QString sql {qsl("INSERT OR REPLACE INTO %1 (Name, Wert) VALUES (:name, :value)")};
     executeSql_wNoRecords(sql.arg(tablename), {name, value}, db);
 }

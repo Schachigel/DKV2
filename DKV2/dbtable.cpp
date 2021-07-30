@@ -33,7 +33,7 @@ void dbtable::setUnique( const QVector<dbfield>& fs)
     QString tmp;
     for( auto& f : qAsConst(fs))
     {
-        if( not tmp.isEmpty()) tmp = tmp + qsl(", ");
+        if( tmp.size()) tmp = tmp + qsl(", ");
         tmp =tmp + f.name();
     }
     unique = qsl(", UNIQUE (") +tmp +qsl(")");
@@ -50,7 +50,7 @@ QString dbtable::createTableSql() const
         sql.append(", ");
         sql.append(fk.get_CreateSqlSnippet());
     }
-    if( not unique.isEmpty())
+    if( unique.size())
         sql.append(unique);
     sql.append(")");
 

@@ -118,7 +118,7 @@ bool creditor::isValid( QString& errortext) const
         errortext = qsl("Die Adressdaten sind unvollständig");
 
     QString email = ti.getValue(qsl("Email")).toString();
-    if( not email.isEmpty() or email == qsl("NULL_STRING"))
+    if( email.size() or email == qsl("NULL_STRING"))
     {
         QRegularExpression rx(qsl("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b"),
                               QRegularExpression::CaseInsensitiveOption);
@@ -128,7 +128,7 @@ bool creditor::isValid( QString& errortext) const
 
     IbanValidator iv;
     QString iban = ti.getValue(qsl("IBAN")).toString();
-    if( not iban.isEmpty()){
+    if( iban.size()){
         int pos =0;
         if( iv.validate(iban, pos) not_eq IbanValidator::State::Acceptable)
             errortext = qsl("Das Format der IBAN ist nicht korrekt: ") + iban;

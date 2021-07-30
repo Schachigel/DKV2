@@ -28,7 +28,7 @@ void test_dkdbcopy::test_moveToPreconversionBackup()
 {
     createEmptyFile(testDbFilename);
     QString result =createPreConversionCopy(testDbFilename, tempFileName);
-    QVERIFY( not result.isEmpty());
+    QVERIFY( result.size());
     QVERIFY( not QFile::exists(testDbFilename));
     QVERIFY( QFile::exists(result));
 }
@@ -37,7 +37,7 @@ void test_dkdbcopy::test_moveToPreconversionBackup_tmpfn()
 {
     createEmptyFile(testDbFilename);
     QString result =createPreConversionCopy(testDbFilename);
-    QVERIFY( not result.isEmpty());
+    QVERIFY( result.size());
     QVERIFY( not QFile::exists(testDbFilename));
     QVERIFY( QFile::exists(result));
     QVERIFY( QFile::remove(result));
@@ -212,7 +212,7 @@ void test_dkdbcopy::test_convertDatabaseInplace_wNewColumn()
     newDbStructure.appendTable(t2);
     // Code under TEST:
     // convert the old file into a file with the new datastructure
-    QVERIFY( not convert_database_inplace(dbfn1, dbfn2, newDbStructure).isEmpty());
+    QVERIFY( convert_database_inplace(dbfn1, dbfn2, newDbStructure).size());
     // VERIFICATION
     dbCloser closer {qsl("closeVerifiy")};
     QSqlDatabase verifyDb =QSqlDatabase::addDatabase(dbTypeName, closer.conName);

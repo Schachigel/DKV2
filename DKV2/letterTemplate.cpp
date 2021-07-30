@@ -5,6 +5,7 @@
 #include <QTextTable>
 #include <QImage>
 
+#include "contract.h"
 #include "helper.h"
 #include "appconfig.h"
 #include "dkdbhelper.h"
@@ -62,8 +63,8 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
 {
     static dbtable letterTable("BriefElemente");
     if (0 == letterTable.Fields().size()) {
-        letterTable.append(dbfield(qsl("KreditorId"), QVariant::LongLong)); // NOT setNotNull !!
-        letterTable.append(dbForeignKey(letterTable[qsl("KreditorId")],
+        letterTable.append(dbfield(contract::fnKreditorId, QVariant::LongLong)); // NOT setNotNull !!
+        letterTable.append(dbForeignKey(letterTable[contract::fnKreditorId],
                                         dkdbstructur[qsl("Kreditoren")][qsl("id")], qsl("ON DELETE CASCADE")));
 
         letterTable.append(dbfield(qsl("BriefTypenId"), QVariant::Int).setNotNull());
@@ -77,7 +78,7 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
         letterTable.append(dbfield(qsl("Texte"), QVariant::String));
 
         QVector<dbfield> unique;
-        unique.append(letterTable[qsl("KreditorId")]);
+        unique.append(letterTable[contract::fnKreditorId]);
         unique.append(letterTable[qsl("BriefTypenId")]);
         unique.append(letterTable[qsl("BriefElementTypenId")]);
         letterTable.setUnique(unique);
@@ -112,10 +113,10 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
 bool insertLetterElementFromMap(qlonglong kreditor, letterTemplate::templId briefTyp, QMap<letterTemplate::elementType, QString> map, QSqlDatabase db)
 { LOG_CALL;
     TableDataInserter tdi(dkdbstructur[qsl("BriefElemente")]);
-    kreditor<=0 ? tdi.setValueNULL(qsl("KreditorId")) : tdi.setValue(qsl("KreditorId"), kreditor);
+    kreditor<=0 ? tdi.setValueNULL(contract::fnKreditorId) : tdi.setValue(contract::fnKreditorId, kreditor);
     tdi.setValue(qsl("BriefTypenId"), QVariant(int(briefTyp)));
     bool res =true;
-    for( auto i : map.keys()) {
+    for( const auto i : map.keys()) {
         tdi.setValue(qsl("BriefElementTypenId"), QVariant(int(i)));
         tdi.setValue(qsl("Texte"), QVariant(map[i]));
         if( -1 == tdi.WriteData(db)) {

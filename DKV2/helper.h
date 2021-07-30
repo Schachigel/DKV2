@@ -68,6 +68,7 @@ public:
 #define LOG_CALL_W(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger( __func__ + qsl("(\"") + x + qsl("\")"), __FILE__)
 
 extern const QDate EndOfTheFuckingWorld;
+extern const QString EndOfTheFuckingWorld_str;
 extern const int daysUntilTheEndOfTheFuckingWorld;
 extern const QDate BeginingOfTime;
 

@@ -82,7 +82,7 @@ QString TableDataInserter::getInsertRecordSQL() const
             // skip this value so that the defaults from table def will be used
             continue;
         }
-        if( not FieldList.isEmpty()) {
+        if( FieldList.size()) {
             FieldList +=qsl(", ");
             ValueList +=qsl(", ");
         }
@@ -108,7 +108,7 @@ QString TableDataInserter::getInsertOrReplaceRecordSQL() const
     QString fieldnames, values;
 
     for( int i=0; i<record.count(); i++) {
-        if( not fieldnames.isEmpty()) {
+        if( fieldnames.size()) {
             fieldnames += qsl(", ");
             values += qsl(", ");
         }
@@ -128,7 +128,7 @@ QString TableDataInserter::getInsert_noAuto_RecordSQL() const
     if( record.isEmpty()) return QString();
     QString fieldnames, values;
     for( int i=0; i<record.count(); i++) {
-        if( not fieldnames.isEmpty()) {
+        if( fieldnames.size()) {
             fieldnames += qsl(", ");
             values += qsl(", ");
         }

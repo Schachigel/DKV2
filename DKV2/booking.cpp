@@ -10,8 +10,8 @@
     if( 0 == bookingsTable.Fields().size()) {
         bookingsTable.append(dbfield(qsl("id"),          QVariant::LongLong).setPrimaryKey().setAutoInc());
         bookingsTable.append(dbfield(qsl("VertragsId"),  QVariant::LongLong).setNotNull());
-        bookingsTable.append(dbForeignKey(bookingsTable[qsl("VertragsId")], dkdbstructur[qsl("Vertraege")][qsl("id")], qsl("ON DELETE RESTRICT")));
-        bookingsTable.append(dbfield(qsl("Datum"),       QVariant::Date).setDefault(qsl("9999-12-31")).setNotNull());
+        bookingsTable.append(dbForeignKey(bookingsTable[qsl("VertragsId")], dkdbstructur[contract::tnContracts][contract::fnId], qsl("ON DELETE RESTRICT")));
+        bookingsTable.append(dbfield(qsl("Datum"),       QVariant::Date).setDefault(EndOfTheFuckingWorld_str).setNotNull());
         bookingsTable.append(dbfield(qsl("BuchungsArt"), QVariant::Int).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
         bookingsTable.append(dbfield(qsl("Betrag"),      QVariant::Int).setNotNull()); // in cent
         bookingsTable.append(dbfield(qsl("Zeitstempel"),  QVariant::DateTime).setDefaultNow());
@@ -27,7 +27,7 @@
             deletedBookings.append(getTableDef().Fields()[i]);
         }
         deletedBookings.append(dbForeignKey(deletedBookings[qsl("VertragsId")],
-                               dkdbstructur[qsl("exVertraege")][qsl("id")], qsl("ON DELETE RESTRICT")));
+                               dkdbstructur[contract::tnExContracts][contract::fnId], qsl("ON DELETE RESTRICT")));
     }
     return deletedBookings;
 }

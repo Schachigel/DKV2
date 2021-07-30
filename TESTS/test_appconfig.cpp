@@ -8,9 +8,9 @@
 void test_appConfig::initTestCase()
 {
     appConfig::setLastDb("c:/temp/data.dkdb");
-    QVERIFY( not appConfig::LastDb().isEmpty());
+    QVERIFY( appConfig::LastDb().size());
     appConfig::setOutDir("C:/temp/output");
-    QVERIFY( not appConfig::Outdir().isEmpty());
+    QVERIFY( appConfig::Outdir().size());
     init_DKDBStruct();
     initTestDb();
     fill_DkDbDefaultContent(QSqlDatabase::database(), false);

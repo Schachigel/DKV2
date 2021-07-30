@@ -13,6 +13,7 @@
 QFile* outFile_p{nullptr};
 int functionlogging::depth =0;
 const QDate EndOfTheFuckingWorld =QDate(9999, 12, 31);
+const QString EndOfTheFuckingWorld_str {qsl("9999-12-31")};
 const QDate BeginingOfTime =QDate(1900, 1, 1);
 const int daysUntilTheEndOfTheFuckingWorld =2916000;
 
@@ -36,7 +37,7 @@ void centerDlg(QWidget* parent, QWidget* child, int minWidth /*=300*/, int minHe
 }
 
 #ifdef QT_DEBUG
-void logger(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+void logger(QtMsgType type, const QMessageLogContext &, const QString &msg)
 #else
 void logger(QtMsgType type, const QMessageLogContext &, const QString &msg)
 #endif

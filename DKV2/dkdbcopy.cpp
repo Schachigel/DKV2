@@ -49,7 +49,7 @@ bool copy_TableContent_byRecord( const QString& srcTbl, const QString& dstTbl, c
     QString copyableFields;
     QSqlRecord rec =db.record(srcTbl);
     for( int i =0; i < rec.count(); i++) {
-        if( not copyableFields.isEmpty()) copyableFields +=qsl(", ");
+        if( copyableFields.size()) copyableFields +=qsl(", ");
         copyableFields += rec.field(i).name();
     }
     QSqlQuery q(db); q.setForwardOnly(true);

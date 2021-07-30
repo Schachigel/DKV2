@@ -43,7 +43,7 @@ bool backupFile(const QString&  fn, const QString& subfolder)
     QFileInfo fi{fn};
     QString suffix = fi.completeSuffix();
     QString path = fi.path();
-    if( not subfolder.isEmpty())
+    if( subfolder.size())
     {
         QDir d(path); d.mkdir(subfolder);
         backupname =d.path() + qsl("/") + subfolder + qsl("/") + fi.fileName();

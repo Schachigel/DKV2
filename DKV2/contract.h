@@ -49,6 +49,22 @@ inline interestModel fromInt(const int i) {
 
 struct contract
 {
+    // field names
+    static const QString tnContracts;
+    static const QString tnExContracts;
+    static const QString fnId;
+    static const QString fnKreditorId;
+    static const QString fnKennung;
+    static const QString fnAnmerkung;
+    static const QString fnZSatz;
+    static const QString fnBetrag;
+    static const QString fnThesaurierend;
+    static const QString fnVertragsDatum;
+    static const QString fnKFrist;
+    static const QString fnAnlagenId;
+    static const QString fnLaufzeitEnde;
+    static const QString fnZBegin;
+    static const QString fnZeitstempel;
     // static & friends
     static const dbtable& getTableDef();
     static const dbtable& getTableDef_deletedContracts();
@@ -79,53 +95,66 @@ struct contract
     {
         return not (lhs==rhs);
     }
+
     // construction
     contract(const qlonglong id =-1);
     void loadFromDb(const qlonglong id);
     void initContractDefaults(const qlonglong creditorId =-1);
     void initRandom(const qlonglong creditorId =-1);
+
     // getter & setter
     void setId(qlonglong id) { td.setValue(qsl("id"), id);}
     qlonglong id() const { return td.getValue(qsl("id")).toLongLong();}
     QString id_aS()   const { return QString::number(id());}
-    void setCreditorId(qlonglong kid) {td.setValue(qsl("kreditorId"), kid);}
-    qlonglong creditorId() const{ return td.getValue(qsl("KreditorId")).toLongLong();}
-    void setLabel(const QString& l) { td.setValue(qsl("Kennung"), l);}
-    QString label() const { return td.getValue(qsl("Kennung")).toString();};
+
+    void setCreditorId(qlonglong kid) {td.setValue(fnKreditorId, kid);}
+    qlonglong creditorId() const{ return td.getValue(fnKreditorId).toLongLong();}
+
+    void setLabel(const QString& l) { td.setValue(fnKennung, l);}
+    QString label() const { return td.getValue(fnKennung).toString();};
+
     void setInterestRate( const double percent) {
-        td.setValue(qsl("ZSatz"), QVariant (qRound(percent * 100.)));
-        if( percent == 0) td.setValue(qsl("thesaurierend"), toInt(interestModel::zero));
+        td.setValue(fnZSatz, QVariant (qRound(percent * 100.)));
+        if( percent == 0) td.setValue(fnThesaurierend, toInt(interestModel::zero));
     }
     double interestRate() const {
-        QVariant p=td.getValue(qsl("ZSatz")); // stored as a int (100th percent)
+        QVariant p=td.getValue(fnZSatz); // stored as a int (100th percent)
 
         double iRate = r2(double(p.toInt())/100.);
         return (interestPaymentActive() ? 1 : 0) * iRate;
     }
-    void setInvestment(qlonglong rId) { td.setValue(qsl("AnlagenId"), (rId>0?QVariant(rId):QVariant()));}
-    qlonglong investment() const { return td.getValue(qsl("AnlagenId")).toLongLong();}
-    void setPlannedInvest(const double d) { td.setValue(qsl("Betrag"), ctFromEuro(d));}
-    double plannedInvest() const { return euroFromCt( td.getValue(qsl("Betrag")).toInt());}
+
+    void setInvestment(qlonglong rId) { td.setValue(fnAnlagenId, (rId>0?QVariant(rId):QVariant()));}
+    qlonglong investment() const { return td.getValue(fnAnlagenId).toLongLong();}
+
+    void setPlannedInvest(const double d) { td.setValue(fnBetrag, ctFromEuro(d));}
+    double plannedInvest() const { return euroFromCt( td.getValue(fnBetrag).toInt());}
+
     void setInterestModel( const interestModel b =interestModel::reinvest) {
-        td.setValue(qsl("thesaurierend"), toInt(b));
-        if( b == interestModel::zero) td.setValue(qsl("ZSatz"), 0);
+        td.setValue(fnThesaurierend, toInt(b));
+        if( b == interestModel::zero) td.setValue(fnZSatz, 0);
     }
-    interestModel iModel() const { return fromInt(td.getValue(qsl("thesaurierend")).toInt());}
-    void setNoticePeriod(const int m) { td.setValue(qsl("Kfrist"), m); if( -1 not_eq m) setPlannedEndDate( EndOfTheFuckingWorld);}
-    int noticePeriod() const { return td.getValue(qsl("Kfrist")).toInt();}
-    bool hasEndDate() const {return -1 == td.getValue(qsl("Kfrist"));}
-    void setPlannedEndDate( const QDate d) { td.setValue(qsl("LaufzeitEnde"), d); if( d not_eq EndOfTheFuckingWorld) setNoticePeriod(-1);}
-    QDate plannedEndDate() const { return td.getValue(qsl("LaufzeitEnde")).toDate();}
-    void setConclusionDate(const QDate d) { td.setValue(qsl("Vertragsdatum"), d);}
-    QDate conclusionDate() const { return td.getValue(qsl("Vertragsdatum")).toDate();}
+    interestModel iModel() const { return fromInt(td.getValue(fnThesaurierend).toInt());}
+
+    void setNoticePeriod(const int m) { td.setValue(fnKFrist, m); if( -1 not_eq m) setPlannedEndDate( EndOfTheFuckingWorld);}
+    int noticePeriod() const { return td.getValue(fnKFrist).toInt();}
+
+    bool hasEndDate() const {return -1 == td.getValue(fnKFrist);}
+    void setPlannedEndDate( const QDate d) { td.setValue(fnLaufzeitEnde, d); if( d not_eq EndOfTheFuckingWorld) setNoticePeriod(-1);}
+    QDate plannedEndDate() const { return td.getValue(fnLaufzeitEnde).toDate();}
+    void setConclusionDate(const QDate d) { td.setValue(fnVertragsDatum, d);}
+    QDate conclusionDate() const { return td.getValue(fnVertragsDatum).toDate();}
+
     bool interestPaymentActive() const {
-        QVariant v= td.getValue(qsl("zAktiv"));
-        if (v.isNull() or (not v.isValid())) return 1;
-        return v.toBool();
+        QVariant v= td.getValue(fnZBegin);
+        if (v.isNull() or (not v.isValid())) {
+            qCritical() << "invalid zBeginn Vaue";
+            return false;
+        }
+        return v.toDate() < EndOfTheFuckingWorld;
     }
-    void setInterestPaymentActive(bool ia) { td.setValue(qsl("zAktiv"), ia);}
-    void setComment(const QString& q) {td.setValue(qsl("Anmerkung"), q);}
-    QString comment() const {return td.getValue(qsl("Anmerkung")).toString();}
+    void setComment(const QString& q) {td.setValue(fnAnmerkung, q);}
+    QString comment() const {return td.getValue(fnAnmerkung).toString();}
     // interface
     // value -> sum of all bookings to a contract
     double value(const QDate d =EndOfTheFuckingWorld) const;

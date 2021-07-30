@@ -233,7 +233,7 @@ bool wpEmail::validatePage()
 {   LOG_CALL;
     QString email =field(pnEMail).toString().trimmed().toLower();
     setField(pnEMail, email);
-    if( not email.isEmpty())
+    if( email.size())
     {
         QRegularExpression rx(qsl("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b"),
                               QRegularExpression::CaseInsensitiveOption);
@@ -281,7 +281,7 @@ bool wpBankAccount::validatePage()
 {   LOG_CALL;
     QString formatedIban =field(pnIban).toString().trimmed();
     QString iban =formatedIban.remove(' ');
-    if( not iban.isEmpty()) {
+    if( iban.size()) {
         IbanValidator iv; int pos =0;
         if( iv.validate(iban, pos) not_eq IbanValidator::State::Acceptable) {
             QMessageBox::information(this, qsl("Fehler"), qsl("Die eingegebene Zeichenfolge ist keine gültige IBAN"));
@@ -485,7 +485,7 @@ bool wpLableAndAmount::validatePage()
     else if( field(pnAmount).toInt() < minContractValue)
         msg =qsl("Der Wert des Vertrags muss größer sein als der konfigurierte Minimalwert "
                  "eines Vertrages von ") +dbConfig::readValue(MIN_AMOUNT).toString() +qsl(" Euro");
-    if( not msg.isEmpty()) {
+    if( msg.size()) {
         QMessageBox::critical(this, qsl("Fehler"), msg);
         return false;
     }

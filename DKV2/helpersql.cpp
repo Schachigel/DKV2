@@ -168,7 +168,7 @@ bool ensureTable( const dbtable& table,const QSqlDatabase& db)
 
 bool switchForeignKeyHandling(const QSqlDatabase& db, const QString& alias, bool OnOff)
 {
-    Q_ASSERT( not alias.isEmpty());
+    Q_ASSERT( alias.size());
     QString sql {qsl("PRAGMA %1.FOREIGN_KEYS = %2")};
     sql =sql.arg(alias, OnOff?qsl("ON"):qsl("OFF"));
     return executeSql_wNoRecords(sql, db);
@@ -234,19 +234,19 @@ QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbFo
     for( auto& f : qAsConst(fields)) {
         if( f.tableName().isEmpty() or f.name().isEmpty())
             qCritical() << "selectQueryFromFields: missing table or field name";
-        if( not FieldList.isEmpty())
+        if( FieldList.size())
             FieldList +=qsl(", ");
         FieldList +=f.tableName() +qsl(".") +f.name();
 
         if( not usedTables.contains(f.tableName())) {
             usedTables.insert(f.tableName());
-            if( not TableList.isEmpty())
+            if( TableList.size())
                 TableList +=qsl(", ");
             TableList += f.tableName();
         }
     }
     for( auto key: keys) {
-        if( not calculatedWhere.isEmpty()) calculatedWhere += qsl(" AND ");
+        if( calculatedWhere.size()) calculatedWhere += qsl(" AND ");
         calculatedWhere += key.get_SelectSqpSnippet();
     }
     QString Where =qsl("%1 AND %2");
@@ -254,7 +254,7 @@ QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbFo
 
     QString Query =qsl("SELECT %1 FROM %2 WHERE %3");
     Query = Query.arg(FieldList, TableList, Where);
-    if( not order.isEmpty())
+    if( order.size())
         Query = Query +qsl(" ORDER BY ") +order;
     qInfo() << "selectQueryFromFields created Query: " << Query;
     return Query;
