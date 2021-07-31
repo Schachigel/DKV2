@@ -19,38 +19,54 @@
 #include "wiznew.h"
 #include "transaktionen.h"
 
+bool postUpgradeActions(int sourceVersion, QString dbName)
+{
+    autoDb db(dbName, qsl("postUpgradeActions"));
+    bool ret =true;
+    if( sourceVersion <= 5) {
+        // with version 6 the field zBegin was introduced in the Vertraege table
+        // it has to be initialized with the former "aktivierung" which is the date
+        // at which the dk payment reached our bank account
+        QString sql {qsl(R"str(UPDATE Vertraege SET zBeginn = bookings.minBDate
+                       FROM ( SELEcT Vertraege.id AS VertragsId, MIN(Datum) AS minBDate
+                       FRoM Buchungen Join Vertraege on Vertraege.id = Buchungen.VertragsId
+                       GROUP BY VertragsId) AS bookings
+                       WHERE Vertraege.id = bookings.VertragsId)str")};
+        ret &= executeSql_wNoRecords(sql, db);
+    }
+    return ret;
+}
+
 bool checkSchema_ConvertIfneeded(const QString& origDbFile)
 {   LOG_CALL;
 
-    switch(check_db_version(origDbFile)){
-    case lowVersion:
-    {
+    int version_of_original_file =get_db_version(origDbFile);
+    if(version_of_original_file < CURRENT_DB_VERSION) {
         qInfo() << "lower version -> converting";
-        if( QMessageBox::Yes not_eq QMessageBox::question(nullptr, qsl("Achtung"), qsl("Das Format der Datenbank ist veraltet. Soll die Datenbank konvertiert werden?"))) {
-                qInfo() << "conversion rejected by user";
-                return false;
+        if( QMessageBox::Yes not_eq QMessageBox::question(getMainWindow(), qsl("Achtung"), qsl("Das Format der Datenbank ist veraltet. Soll die Datenbank konvertiert werden?"))) {
+            qInfo() << "conversion rejected by user";
+            return false;
         }
         QString backup =convert_database_inplace(origDbFile);
-        if ( not backup.isEmpty()) {
-            QMessageBox::information(nullptr, qsl("Erfolgsmeldung"), qsl("Die Konvertierung ware erfolgreich. Eine Kopie der ursprünglichen Datei liegt unter \n") +backup);
-            return true;
-        }
-        else {
+        if ( backup.isEmpty()) {
+            QMessageBox::critical( getMainWindow(), qsl("Fehler"), qsl("Bei der Konvertierung ist ein Fehler aufgetreten. Die Ausführung muss beendet werden."));
             qCritical() << "db converstion of older DB failed";
             return false;
         }
-        break;
-    }
-    case sameVersion:
+        // actions which depend on the source version of the db
+        if( not postUpgradeActions(version_of_original_file, origDbFile)) {
+            QMessageBox::critical( getMainWindow(), qsl("Fehler"), qsl("Bei der Konvertierung ist ein Fehler aufgetreten. Die Ausführung muss beendet werden."));
+            qCritical() << "db converstion of older DB failed";
+            return false;
+        }
+        QMessageBox::information(nullptr, qsl("Erfolgsmeldung"), qsl("Die Konvertierung ware erfolgreich. Eine Kopie der ursprünglichen Datei liegt unter \n") +backup);
+        return true;
+    } else if( version_of_original_file == CURRENT_DB_VERSION) {
         return validateDbSchema(origDbFile, dkdbstructur);
-        break;
-    case noVersion:
-    case higherVersion:
-    default:
+    } else {
+        qInfo() << "higher version ? there is no way back";
         return false;
-        break;
     }
-//    return false;
 }
 
 void activateContract(qlonglong cid)
@@ -166,7 +182,7 @@ void annualSettlement()
     if( not dlg.confirmed())
         return;
 
-    QVector<QVariant> ids =executeSingleColumnSql(dkdbstructur[qsl("Vertraege")][qsl("id")]);
+    QVector<QVariant> ids =executeSingleColumnSql(dkdbstructur[contract::tnContracts][contract::fnId]);
     qDebug() << "contracts to try execute annual settlement for: " << ids;
     QVector<contract> changedContracts;
     QVector<QDate> startOfInterrestCalculation;

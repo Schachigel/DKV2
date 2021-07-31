@@ -8,45 +8,63 @@
 #include "booking.h"
 
 // statics & friends
+/*static*/ const QString contract::tnContracts{qsl("Vertraege")};
+/*static*/ const QString contract::tnExContracts{qsl("exVertraege")};
+/*static*/ const QString contract::fnId {qsl("id")};
+/*static*/ const QString contract::fnKreditorId{qsl("KreditorId")};
+/*static*/ const QString contract::fnKennung{qsl("Kennung")};
+/*static*/ const QString contract::fnAnmerkung{qsl("Anmerkung")};
+/*static*/ const QString contract::fnZSatz{qsl("ZSatz")};
+/*static*/ const QString contract::fnBetrag{qsl("Betrag")};
+/*static*/ const QString contract::fnThesaurierend{qsl("thesaurierend")};
+/*static*/ const QString contract::fnVertragsDatum{qsl("Vertragsdatum")};
+/*static*/ const QString contract::fnKFrist{qsl("Kfrist")};
+/*static*/ const QString contract::fnAnlagenId{qsl("AnlagenId")};
+/*static*/ const QString contract::fnLaufzeitEnde{qsl("LaufzeitEnde")};
+/*static*/ const QString contract::fnZBegin{qsl("zBeginn")};
+/*static*/ const QString contract::fnZeitstempel{qsl("Zeitstempel")};
+
+
+
 /*static*/ const dbtable& contract::getTableDef()
 {
-    static dbtable contractTable(qsl("Vertraege"));
+    static dbtable contractTable(tnContracts);
     if (0 == contractTable.Fields().size())
     {
-        contractTable.append(dbfield(qsl("id"), QVariant::LongLong).setPrimaryKey().setAutoInc());
-        contractTable.append(dbfield(qsl("KreditorId"), QVariant::LongLong).setNotNull());
-        contractTable.append(dbForeignKey(contractTable[qsl("KreditorId")],
-            dkdbstructur[qsl("Kreditoren")][qsl("id")], qsl("ON DELETE CASCADE")));
+        contractTable.append(dbfield(fnId, QVariant::LongLong).setPrimaryKey().setAutoInc());
+        contractTable.append(dbfield(fnKreditorId, QVariant::LongLong).setNotNull());
+        contractTable.append(dbForeignKey(contractTable[fnKreditorId],
+            dkdbstructur[qsl("Kreditoren")][fnId], qsl("ON DELETE CASCADE")));
         // deleting a creditor will delete inactive contracts but not
         // contracts with existing bookings (=active or terminated contracts)
-        contractTable.append(dbfield(qsl("Kennung"), QVariant::String, qsl("UNIQUE")));
-        contractTable.append(dbfield(qsl("Anmerkung"), QVariant::String).setDefault(""));
-        contractTable.append(dbfield(qsl("ZSatz"), QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
-        contractTable.append(dbfield(qsl("Betrag"), QVariant::Int).setNotNull().setDefault(0)); // ct
-        contractTable.append(dbfield(qsl("thesaurierend"), QVariant::Int).setNotNull().setDefault(1));
-        contractTable.append(dbfield(qsl("Vertragsdatum"), QVariant::Date).setNotNull());
-        contractTable.append(dbfield(qsl("Kfrist"), QVariant::Int).setNotNull().setDefault(6));
-        contractTable.append(dbfield(qsl("AnlagenId"), QVariant::Int));
-        contractTable.append(dbForeignKey(contractTable[qsl("AnlagenId")],
+        contractTable.append(dbfield(fnKennung, QVariant::String, qsl("UNIQUE")));
+        contractTable.append(dbfield(fnAnmerkung, QVariant::String).setDefault(""));
+        contractTable.append(dbfield(fnZSatz, QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
+        contractTable.append(dbfield(fnBetrag, QVariant::Int).setNotNull().setDefault(0)); // ct
+        contractTable.append(dbfield(fnThesaurierend, QVariant::Int).setNotNull().setDefault(1));
+        contractTable.append(dbfield(fnVertragsDatum, QVariant::Date).setNotNull());
+        contractTable.append(dbfield(fnKFrist, QVariant::Int).setNotNull().setDefault(6));
+        contractTable.append(dbfield(fnAnlagenId, QVariant::Int));
+        contractTable.append(dbForeignKey(contractTable[fnAnlagenId],
             qsl("Geldanlagen"), qsl("rowid"), qsl("ON DELETE SET NULL")));
-        contractTable.append(dbfield(qsl("LaufzeitEnde"), QVariant::Date).setNotNull().setDefault(qsl("9999-12-31")));
-        contractTable.append(dbfield(qsl("zAktiv"),       QVariant::Bool) .setDefault(true));
-        contractTable.append(dbfield(qsl("Zeitstempel"), QVariant::DateTime).setDefaultNow());
+        contractTable.append(dbfield(fnLaufzeitEnde, QVariant::Date).setNotNull().setDefault(EndOfTheFuckingWorld_str));
+        contractTable.append(dbfield(fnZBegin,       QVariant::Date) .setDefault(EndOfTheFuckingWorld_str));
+        contractTable.append(dbfield(fnZeitstempel, QVariant::DateTime).setDefaultNow());
     }
     return contractTable;
 }
 /*static*/const dbtable& contract::getTableDef_deletedContracts()
 {
-    static dbtable exContractTable(qsl("exVertraege"));
+    static dbtable exContractTable(tnExContracts);
     if( 0 not_eq exContractTable.Fields().size())
         return exContractTable;
 
-    exContractTable.append(dbfield(qsl("id"), QVariant::LongLong).setPrimaryKey());
+    exContractTable.append(dbfield(fnId, QVariant::LongLong).setPrimaryKey());
     for(int i= 1 /* not 0 */; i < getTableDef().Fields().count(); i++) {
         exContractTable.append(getTableDef().Fields()[i]);
     }
-    exContractTable.append(dbForeignKey(exContractTable[qsl("KreditorId")],
-                         dkdbstructur[qsl("Kreditoren")][qsl("id")], qsl("ON DELETE CASCADE")));
+    exContractTable.append(dbForeignKey(exContractTable[fnKreditorId],
+                         dkdbstructur[qsl("Kreditoren")][fnId], qsl("ON DELETE CASCADE")));
     return exContractTable;
 }
 /*static*/ bool contract::remove(qlonglong id)
@@ -72,7 +90,6 @@ void contract::initContractDefaults(const qlonglong creditorId /*=-1*/)
     setInterestRate(1.50);
     setPlannedInvest(1000000);
     setInvestment(0);
-    setInterestPaymentActive(true);
 }
 void contract::loadFromDb(qlonglong id)
 {   LOG_CALL_W(QString::number(id));
@@ -106,7 +123,6 @@ void contract::initRandom(qlonglong creditorId)
         setNoticePeriod(3 + rand->bounded(21));
     else
         setPlannedEndDate(conclusionDate().addYears(rand->bounded(3)).addMonths(rand->bounded(12)));
-    setInterestPaymentActive(rand->bounded(100)%10 ==0);
 }
 
 // interface
@@ -157,7 +173,7 @@ const booking& contract::latestBooking()
     if( latestB.type not_eq booking::Type::non or not initialBookingReceived())
         return latestB;
     QSqlRecord rec = executeSingleRecordSql(dkdbstructur[qsl("Buchungen")].Fields(), qsl("VertragsId=") + id_aS(), qsl("Datum DESC LIMIT 1"));
-    if( not rec.isEmpty()) {
+    if( rec.count()) {
         latestB.type   =booking::Type(rec.value(qsl("BuchungsArt")).toInt());
         latestB.date   =rec.value(qsl("Datum")).toDate();
         latestB.amount =euroFromCt(rec.value(qsl("Betrag")).toInt());
@@ -191,8 +207,8 @@ void contract::updateComment(const QString &c)
 
 bool contract::updateTerminationDate(QDate termination, int noticePeriod)
 {   LOG_CALL;
-    td.setValue(qsl("Kfrist"), noticePeriod);
-    td.setValue(qsl("LaufzeitEnde"), termination);
+    td.setValue(fnKFrist, noticePeriod);
+    td.setValue(fnLaufzeitEnde, termination);
     return  -1 not_eq td.UpdateData();
 }
 
@@ -229,7 +245,7 @@ bool contract::bookInitialPayment(const QDate date, double amount, bool zActive)
     } else if( amount < 0) {
         error =qsl("Invalid amount");
     }
-    if ( not error.isEmpty()) {
+    if ( error.size()) {
         qCritical() << error;
         return false;
     }
@@ -386,7 +402,7 @@ bool contract::bookInBetweenInterest(const QDate nextBookingDate)
     if( not initialBookingReceived()) error =qsl("interest booking on inactive contract not possible");
     else if( not nextBookingDate.isValid())  error =qsl("Invalid Date for interest booking");
     else if( latestBooking().date > nextBookingDate) error =qsl("could not book interest because there are already more recent bookings");
-    if( not error.isEmpty()) {
+    if( error.size()) {
         qCritical() << error;
         return false;
     }
@@ -419,7 +435,7 @@ bool contract::deposit(const QDate d, double amount)
     else if ( latestBooking().date >= d)
         error = qsl("bookings have to be in a consecutive order. Last booking: ")
                 + latestBooking().date.toString() + qsl(" this booking: ") + d.toString();
-    if( not error.isEmpty()) {
+    if( error.size()) {
         qCritical() << error;
         return false;
     }
@@ -448,7 +464,7 @@ bool contract::payout(const QDate d, double amount)
     else if( not d.isValid()) error =qsl("Invalid Date in payout");
     else if(  latestBooking().date >= d) error = qsl("Bookings have to be in a consecutive order. Last booking: ")
                 + latestBooking().date.toString() + qsl(" this booking: ") + d.toString();
-    if( not error.isEmpty()) {
+    if( error.size()) {
         qCritical() << error;
         return false;
     }
@@ -602,7 +618,7 @@ contract saveRandomContract(qlonglong creditorId)
 void saveRandomContracts(int count)
 {   LOG_CALL;
     Q_ASSERT(count>0);
-    QVector<QVariant> creditorIds = executeSingleColumnSql(dkdbstructur[qsl("Kreditoren")][qsl("id")]);
+    QVector<QVariant> creditorIds = executeSingleColumnSql(dkdbstructur[qsl("Kreditoren")][contract::fnId]);
     if( creditorIds.size() == 0)
         qDebug() << "No Creditors to create contracts for";
 
@@ -622,16 +638,16 @@ QDate activateRandomContracts(const int percent)
 
     for (int i=0; i < activations; i++) {
         // contractData -> from database all amounts are in ct
-        double amount = euroFromCt(contractData[i].value(qsl("Betrag")).toInt());
+        double amount = euroFromCt(contractData[i].value(contract::fnBetrag).toInt());
         if( rand->bounded(100)%10 == 0) {
             // some contracts get activated with a different amount
             amount = amount * rand->bounded(90, 110) / 100;
         }
-        QDate activationDate(contractData[i].value(qsl("Vertragsdatum")).toDate());
+        QDate activationDate(contractData[i].value(contract::fnVertragsDatum).toDate());
         activationDate = activationDate.addDays(rand->bounded(100));
         if( activationDate < minimumActivationDate)
             minimumActivationDate =activationDate;
-        contract c(contractData[i].value(qsl("id")).toInt());
+        contract c(contractData[i].value(contract::fnId).toInt());
         c.bookInitialPayment(activationDate, amount, (rand->bounded(100)%10 == 0) ? 0 : 1);
     }
     return minimumActivationDate;

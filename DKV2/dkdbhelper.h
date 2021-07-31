@@ -24,8 +24,8 @@ enum version_check_result {
     higherVersion =2
 };
 
-version_check_result check_db_version(const QSqlDatabase &db =QSqlDatabase::database());
-version_check_result check_db_version(const QString &filename);
+int get_db_version(const QSqlDatabase &db =QSqlDatabase::database());
+int get_db_version(const QString &filename);
 
 // bool createView(QString name, QString Sql, QSqlDatabase db = QSqlDatabase::database());
 // void updateViews(QSqlDatabase db =QSqlDatabase::database());

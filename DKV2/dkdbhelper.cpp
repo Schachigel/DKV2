@@ -50,7 +50,7 @@ bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/
     return ret;
 }
 
-version_check_result check_db_version(const QString &file)
+int get_db_version(const QString &file)
 {
     LOG_CALL_W(file);
     dbCloser closer(qsl("db_version_check"));
@@ -60,25 +60,18 @@ version_check_result check_db_version(const QString &file)
         qCritical() << "could not open db " << file << " for version check ";
         return noVersion;
     } else {
-        return check_db_version(db);
+        return get_db_version(db);
     }
 }
 
-version_check_result check_db_version(const QSqlDatabase &db)
+int get_db_version(const QSqlDatabase &db)
 {   /*LOG_CALL;*/
     QVariant vversion =dbConfig::read_DBVersion(db);
     if( not (vversion.isValid() and vversion.canConvert(QMetaType::Double)))
         return noVersion; // big problem: no db
-    double d =vversion.toDouble();
+    int d =vversion.toInt();
     qInfo() << "DB Version Comparison: expected / found: " << CURRENT_DB_VERSION << " / " << d;
-    if( d  < CURRENT_DB_VERSION)
-        return lowVersion; // the database is old -> conversion?
-    if( d == CURRENT_DB_VERSION)
-        return sameVersion; // all good
-    if( d >  CURRENT_DB_VERSION)
-        return higherVersion; // the database is too young -> don't touch!
-    Q_ASSERT( not "one should never come here");
-    return noVersion;
+    return d;
 }
 
 bool updateViews(const QSqlDatabase &db =QSqlDatabase::database())
@@ -120,7 +113,7 @@ void closeAllDatabaseConnections()
 
 bool open_databaseForApplication( const QString &newDbFile)
 {   LOG_CALL_W(newDbFile);
-    Q_ASSERT( not newDbFile.isEmpty());
+    Q_ASSERT( newDbFile.size());
 
     closeAllDatabaseConnections();
     backupFile(newDbFile, qsl("db-bak"));
@@ -142,13 +135,13 @@ bool open_databaseForApplication( const QString &newDbFile)
 // general stuff
 bool isExistingContractLabel( const QString& newLabel)
 {
-    QVariant existingLabel =executeSingleValueSql(qsl("Kennung"), qsl("Vertraege"), qsl("Kennung = '") +newLabel +qsl("'"));
+    QVariant existingLabel =executeSingleValueSql(contract::fnKennung, contract::tnContracts, qsl("Kennung = '") +newLabel +qsl("'"));
     return existingLabel.isValid();
 }
 
 bool isExistingExContractLabel( const QString& newLabel)
 {
-    QVariant existingLabel =executeSingleValueSql(qsl("Kennung"), qsl("exVertraege"), qsl("Kennung = '") +newLabel +qsl("'"));
+    QVariant existingLabel =executeSingleValueSql(contract::fnKennung, contract::tnExContracts, qsl("Kennung = '") +newLabel +qsl("'"));
     return existingLabel.isValid();
 }
 
@@ -159,7 +152,7 @@ bool isValidNewContractLabel(const QString& label)
 
 QString proposeContractLabel()
 {   LOG_CALL;
-    static int iMaxid = dbConfig::readValue(STARTINDEX).toInt() + getHighestRowId(qsl("Vertraege"));
+    static int iMaxid = dbConfig::readValue(STARTINDEX).toInt() + getHighestRowId(contract::tnContracts);
     QString kennung;
     do {
         QString maxid = QString::number(iMaxid).rightJustified(6, '0');
@@ -229,7 +222,7 @@ bool createCsvActiveContracts()
     QString filename(QDate::currentDate().toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
     dbtable t(sqlContractsActiveDetailsView);
     t.append(dbfield(qsl("Id"), QVariant::Type::Int));
-    t.append(dbfield(qsl("KreditorId"), QVariant::Type::Int));
+    t.append(dbfield(contract::fnKreditorId, QVariant::Type::Int));
     t.append(dbfield(qsl("Vorname")));
     t.append(dbfield(qsl("Nachname")));
     t.append(dbfield(qsl("Strasse")));

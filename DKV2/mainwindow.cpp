@@ -39,12 +39,11 @@ bool getValidDatabaseFromCommandline(QString& path)
     qInfo() << "Path from CmdLine " << dbPath;
     QFileInfo fi{dbPath};
     dbPath = fi.canonicalFilePath();
-    if(checkSchema_ConvertIfneeded(dbPath)) {
+    if( checkSchema_ConvertIfneeded(dbPath)) {
         path =dbPath;
     } else {
-        QMessageBox::critical(nullptr, qsl("FEHLER"), qsl("Die angegebene Datenbank existiert nicht oder ist keine valide Datenbank. DKV2 wird beendet"));
+        // execution will not reach here: conversation error will lead to a soft crash
         // do not continue if a db was given on the cmd line but is not valid
-        path =QString();
     }
     // db was given on the commandline -> no alternate file search
     return true;
@@ -229,7 +228,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::showDbInStatusbar( const QString &filename)
 {   LOG_CALL_W (filename);
-    Q_ASSERT( not filename.isEmpty());
+    Q_ASSERT( filename.size());
     ui->statusLabel->setText( filename);
 }
 
@@ -285,7 +284,7 @@ void MainWindow::prepare_startPage()
     double allContractsValue =valueOfAllContracts();
 
     QString pName =dbConfig::readValue(projectConfiguration::GMBH_ADDRESS1).toString();
-    if( not pName.isEmpty()) {
+    if( pName.size()) {
         messageHtml += qsl("<tr></tr><tr><td>DK Verwaltung für <font color=blue>%1</font></td></tr>").arg(pName);
     }
     if( allContractsValue > 0) {

@@ -51,8 +51,11 @@ void MainWindow::prepare_valid_contracts_list_view()
     model->setHeaderData(cp_ContractValue, Qt::Horizontal, qsl("Bei aktiven Verträgen: Höhe der Ersteinlage, sonst der im Vertrag vereinbarte Kreditbetrag"), Qt::ToolTipRole);
     model->setHeaderData(cp_InterestRate, Qt::Horizontal, qsl(""), Qt::ToolTipRole);
     model->setHeaderData(cp_InterestMode, Qt::Horizontal, qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein"), Qt::ToolTipRole);
-    model->setHeaderData(cp_ActivationDate, Qt::Horizontal, qsl("Datum des ersten Geldeingangs und Beginn der Zinsberechnung"), Qt::ToolTipRole);
+    model->setHeaderData(cp_InitialBooking, Qt::Horizontal, qsl("Datum des initialen Geldeingangs"), Qt::ToolTipRole);
+    model->setHeaderData(cp_InitialBooking, Qt::Horizontal, qsl("Geldeingang"));
+    model->setHeaderData(cp_ActivationDate, Qt::Horizontal, qsl("Beginn der Zinsanrechnung"), Qt::ToolTipRole);
     model->setHeaderData(cp_InterestBearing, Qt::Horizontal, qsl("Verzinsliches\nGuthaben"));
+    model->setHeaderData(cp_ActivationDate, Qt::Horizontal, qsl("Verzinsungsbeginn"));
     model->setHeaderData(cp_InterestBearing, Qt::Horizontal, qsl("Bei thesaurierenden Verträgen: Einlage und angesparte Zinsen"), Qt::ToolTipRole);
     model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Angesparter\nZins"));
     model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Nicht ausgezahlte Zinsen bei Verträgen mit fester Verzinsung und thesaurierenden Verträgen"), Qt::ToolTipRole);
@@ -75,6 +78,7 @@ void MainWindow::prepare_valid_contracts_list_view()
     tv->setSelectionBehavior(QAbstractItemView::SelectRows);
     tv->setAlternatingRowColors(true);
     tv->setSortingEnabled(true);
+    tv->setItemDelegateForColumn(cp_InitialBooking, new DateItemFormatter);
     tv->setItemDelegateForColumn(cp_ActivationDate, new DateItemFormatter);
     tv->setItemDelegateForColumn(cp_ContractDate, new DateItemFormatter);
     tv->setItemDelegateForColumn(cp_LastBooking, new DateItemFormatter);

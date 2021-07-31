@@ -14,12 +14,14 @@ SELECT
   ,V.Anmerkung AS Anmerkung
   ,V.Vertragsdatum     AS Vertragsdatum
 
-  ,IFNULL(Aktivierungsdatum, '(offen)') AS Aktivierungsdatum
+  ,IFNULL(Eingangsbuchung, '(offen)') AS Geldeingang
+  ,IIF(V.zBeginn = '9999-12-31', '(ruht)',
+    IIF(V.zBeginn = Eingangsbuchung, 'm. Geldeingang', zBeginn)) AS Verzinsungsbeginn
   ,IFNULL(AktivierungsWert, V.Betrag /100.) AS Nominalwert
 
-  ,IIF(IFNULL(AnlagenId, 0) == 0
-    , CAST(V.Zsatz / 100. AS VARCHAR) || ' % (ohne Anlage)'
-    , CAST(V.Zsatz / 100. AS VARCHAR) || ' % - ' || GA.Typ) AS Zinssatz
+  , IIF(IFNULL(AnlagenId, 0) == 0
+      , CAST(V.Zsatz / 100. AS VARCHAR) || ' % (ohne Anlage)'
+      , CAST(V.Zsatz / 100. AS VARCHAR) || ' % - ' || GA.Typ ) AS Zinssatz
 
 -- Zinsmodus
   , V.thesaurierend AS Zinsmodus
@@ -48,9 +50,9 @@ FROM Vertraege AS V
 INNER JOIN Kreditoren AS K ON V.KreditorId = K.id
 LEFT JOIN Geldanlagen AS GA ON V.AnlagenId = GA.rowid
 
--- aktivierungsdatum und Betrag
+-- Geldeingang und Betrag
 LEFT JOIN
-    (SELECT vid_min, minB_Datum AS Aktivierungsdatum, Erstbuchungswert AS AktivierungsWert
+    (SELECT vid_min, minB_Datum AS Eingangsbuchung, Erstbuchungswert AS AktivierungsWert
          FROM   (SELECT B.VertragsId AS vid_min, min(B.Datum) AS minB_Datum, B.Betrag / 100. AS Erstbuchungswert, sum(B.Betrag) / 100. AS GesamtWert
             FROM Buchungen AS B GROUP BY B.VertragsId) ) ON V.id = vid_min
 

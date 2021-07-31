@@ -11,6 +11,7 @@ enum colmn_Pos {
     cp_ContractLabel,
     cp_Comment,
     cp_ContractDate,
+    cp_InitialBooking,
     cp_ActivationDate,
     cp_ContractValue,
     cp_InterestRate,
