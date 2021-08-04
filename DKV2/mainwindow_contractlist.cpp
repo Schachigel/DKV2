@@ -169,15 +169,15 @@ void MainWindow::prepare_contracts_list_view()
     else
         prepare_valid_contracts_list_view();
 }
-int  MainWindow::get_current_id_from_contracts_list()
-{   LOG_CALL;
-    QModelIndex mi(ui->contractsTableView->currentIndex().siblingAtColumn(0));
-    if( mi.isValid()) {
-        QVariant data(ui->contractsTableView->model()->data(mi));
-        return data.toInt();
-    }
-    return -1;
-}
+//int  MainWindow::get_current_id_from_contracts_list()
+//{   LOG_CALL;
+//    QModelIndex mi(ui->contractsTableView->currentIndex().siblingAtColumn(0));
+//    if( mi.isValid()) {
+//        QVariant data(ui->contractsTableView->model()->data(mi));
+//        return data.toInt();
+//    }
+//    return -1;
+//}
 void MainWindow::on_le_ContractsFilter_editingFinished()
 {   LOG_CALL;
     prepare_contracts_list_view();
@@ -222,6 +222,7 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
 /////////////////////////////////////////////////
 // contract list context menu
 /////////////////////////////////////////////////
+contract* contractUnderMouseMenu =nullptr;
 void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;
     if( showDeletedContracts)
@@ -230,6 +231,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
     QModelIndex index = tv->indexAt(pos).siblingAtColumn(0);
 
     contract c(index.data().toInt());
+    contractUnderMouseMenu =&c;
     bool gotTerminationDate = c.noticePeriod() == -1;
 
     QMenu menu( qsl("ContractContextMenu"), this);
@@ -251,42 +253,42 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
     menu.addAction(ui->action_cmenu_Anmerkung_aendern);
     menu.addAction(ui->action_cmenu_assoc_investment);
     menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
+    contractUnderMouseMenu =nullptr;
     return;
 }
 void MainWindow::on_action_cmenu_activate_contract_triggered()
 {   LOG_CALL;
-    activateContract(get_current_id_from_contracts_list());
+    activateContract(contractUnderMouseMenu);
     updateViews();
 }
 void MainWindow::on_action_cmenu_terminate_contract_triggered()
 {   LOG_CALL;
-    terminateContract(get_current_id_from_contracts_list());
+    terminateContract(contractUnderMouseMenu);
     updateViews();
 }
 void MainWindow::on_action_cmenu_delete_inactive_contract_triggered()
 {   LOG_CALL;
-    deleteInactiveContract(get_current_id_from_contracts_list());
+    deleteInactiveContract(contractUnderMouseMenu);
     updateViews();
 }
 void MainWindow::on_action_cmenu_change_contract_triggered()
 {   LOG_CALL;
-    changeContractValue(get_current_id_from_contracts_list());
+    changeContractValue(contractUnderMouseMenu);
     updateViews();
 }
 void MainWindow::on_action_cmenu_Anmerkung_aendern_triggered()
 {   LOG_CALL;
-    changeContractComment(get_current_id_from_contracts_list());
+    changeContractComment(contractUnderMouseMenu);
     updateViews();
 }
 void MainWindow::on_action_cmenu_changeContractTermination_triggered()
 {   LOG_CALL;
-    changeContractTermination(get_current_id_from_contracts_list());
+    changeContractTermination(contractUnderMouseMenu);
     updateViews();
 }
 void MainWindow::on_action_cmenu_assoc_investment_triggered()
 {   LOG_CALL;
-    contract c(get_current_id_from_contracts_list());
-    QVector<investment> invests =openInvestments(d2percent(c.interestRate()), c.conclusionDate());
+    QVector<investment> invests =openInvestments(d2percent(contractUnderMouseMenu->interestRate()), contractUnderMouseMenu->conclusionDate());
     switch (invests.size())
     {
     case 0:
@@ -294,13 +296,13 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
         if( QMessageBox::Yes not_eq
             QMessageBox::question(this, qsl("Fehler"), qsl("Keine Geldanlage passt zu Zins und Vertragsdatum dieses Vertrags. Möchtest Du eine Anlage anlegen?")))
             return;
-        int interest{d2percent(c.interestRate())};
-        QDate from (c.conclusionDate());
+        int interest{d2percent(contractUnderMouseMenu->interestRate())};
+        QDate from (contractUnderMouseMenu->conclusionDate());
         QDate to;
         qlonglong newIId =createInvestment(interest, from, to);
         if(newIId <= 0) break;
-        if( investment(-1, interest, from, to).matchesContract(c)) {
-            if( not c.updateInvestment(newIId))
+        if( investment(-1, interest, from, to).matchesContract(*contractUnderMouseMenu)) {
+            if( not contractUnderMouseMenu->updateInvestment(newIId))
                 QMessageBox::information(this, qsl("Fehler"), qsl("Die Geldanlage konnte dem Vertrag nicht zugewiesen werden! \n Weiterführende Info können in der LoG Datei gefunden werden."));
         } else
             QMessageBox::information(this, qsl("Fehler"), qsl("Die angelegte Geldanlage passt nicht zu dem ausgewählten Vertrag \n Weiterführende Info können in der LoG Datei gefunden werden."));
@@ -308,7 +310,7 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
     }
     case 1:
     {
-        if( c.updateInvestment(invests[0].rowid))
+        if( contractUnderMouseMenu->updateInvestment(invests[0].rowid))
             QMessageBox::information(this, qsl("Erfolg"), qsl("Die Geldanlage mit dem passenden Zins und Vertragsdatum wurde zugewiesen"));
         else
             QMessageBox::information(this, qsl("Fehler"), qsl("Die einzige Geldanlage konnte nicht zugewiesen werden. Schau bitte in die Log Datei."));
@@ -335,8 +337,8 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
             return;
         }
         int rowId =cb->itemData(cb->currentIndex()).toInt();
-        if( not c.updateInvestment(rowId)) {
-            qDebug() << "failed to save investment to contract" << c.toString() << "\n" << rowId;
+        if( not contractUnderMouseMenu->updateInvestment(rowId)) {
+            qDebug() << "failed to save investment to contract" << contractUnderMouseMenu->toString() << "\n" << rowId;
         }
         break;
     }

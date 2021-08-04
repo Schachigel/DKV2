@@ -791,7 +791,7 @@
   </action>
   <action name="action_cmenu_activate_contract">
    <property name="text">
-    <string>Vertrag aktivieren</string>
+    <string>&amp;Geldeingang verbuchen</string>
    </property>
    <property name="toolTip">
     <string>Zinszahlung des Vertrags aktivieren</string>

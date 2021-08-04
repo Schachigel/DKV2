@@ -196,6 +196,7 @@ private:
 /*
  * wpInterestPayoutMode select payout mode for the interest
  */
+extern const QString pnIPaymentDelayed;
 struct wpInterestPayoutMode : public QWizardPage {
     wpInterestPayoutMode(QWidget* p);
     bool validatePage() override;

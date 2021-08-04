@@ -4,16 +4,16 @@
 #include <QDate>
 #include <QWizard>
 
-struct wpActivateContract_IntroPage : public QWizardPage {
-    wpActivateContract_IntroPage(QWidget* w =nullptr);
+struct wpInitialPayment_IntroPage : public QWizardPage {
+    wpInitialPayment_IntroPage(QWidget* w =nullptr);
     void initializePage() override;
     Q_OBJECT;
 };
 
 extern QString fnDate;
 extern QString fnActivateNow;
-struct wpActiateContract_DatePage : public QWizardPage {
-    wpActiateContract_DatePage(QWidget* w=nullptr);
+struct wpInitialPayment_DatePage : public QWizardPage {
+    wpInitialPayment_DatePage(QWidget* w=nullptr);
     void cleanupPage() override  {};
     void initializePage() override;
     bool validatePage() override;
@@ -22,17 +22,17 @@ struct wpActiateContract_DatePage : public QWizardPage {
 };
 
 extern QString fnAmount;
-struct wpActiateContract_AmountPage : public QWizardPage {
-    wpActiateContract_AmountPage(QWidget* w=nullptr);
+struct wpInitialPayment_AmountPage : public QWizardPage {
+    wpInitialPayment_AmountPage(QWidget* w=nullptr);
     void cleanupPage() override  {};
     bool validatePage() override;
     Q_OBJECT;
 };
 
-class wpActivateContract_SummaryPage : public QWizardPage {
+class wpInitialPayment_SummaryPage : public QWizardPage {
     Q_OBJECT;
 public:
-    wpActivateContract_SummaryPage(QWidget* w=nullptr);
+    wpInitialPayment_SummaryPage(QWidget* w=nullptr);
     void initializePage() override;
     bool validatePage() override;
     bool isComplete() const override;
@@ -41,11 +41,11 @@ public slots:
 };
 
 
-class wpActivateContract : public QWizard
+class wizInitialPayment : public QWizard
 {
     Q_OBJECT
 public:
-    wpActivateContract(QWidget* p =nullptr);
+    wizInitialPayment(QWidget* p =nullptr);
     QString label;
     QString creditorName;
     double expectedAmount =0.;

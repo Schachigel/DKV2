@@ -121,7 +121,11 @@ struct contract
         QVariant p=td.getValue(fnZSatz); // stored as a int (100th percent)
 
         double iRate = r2(double(p.toInt())/100.);
-        return (interestPaymentActive() ? 1 : 0) * iRate;
+        return iRate;
+    }
+    double actualInterestRate(QDate d) const {
+        if( interestPaymentActive(d)) return interestRate();
+        else return 0.;
     }
 
     void setInvestment(qlonglong rId) { td.setValue(fnAnlagenId, (rId>0?QVariant(rId):QVariant()));}
@@ -145,14 +149,8 @@ struct contract
     void setConclusionDate(const QDate d) { td.setValue(fnVertragsDatum, d);}
     QDate conclusionDate() const { return td.getValue(fnVertragsDatum).toDate();}
 
-    bool interestPaymentActive() const {
-        QVariant v= td.getValue(fnZBegin);
-        if (v.isNull() or (not v.isValid())) {
-            qCritical() << "invalid zBeginn Vaue";
-            return false;
-        }
-        return v.toDate() < EndOfTheFuckingWorld;
-    }
+    bool interestPaymentActive(QDate d) const;
+
     void setComment(const QString& q) {td.setValue(fnAnmerkung, q);}
     QString comment() const {return td.getValue(fnAnmerkung).toString();}
     // interface
@@ -176,6 +174,8 @@ struct contract
     bool initialBookingReceived() const;
     QDate initialBookingDate() const;
     void setInitialBookingDate( const QDate d) {aDate=d; activated=active;}
+    void setInterestDelayed(bool delayed);
+    void setDelayedInterestDate(QDate d);
     // other booking actions
     QDate nextDateForAnnualSettlement();
     bool needsAnnualSettlement( const QDate d);

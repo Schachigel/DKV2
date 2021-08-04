@@ -53,7 +53,7 @@ public:
     bool dbLoadedSuccessfully =false;
 
     int id_SelectedCreditor();
-    int get_current_id_from_contracts_list();
+//    int get_current_id_from_contracts_list();
     void updateViews();
     void updateUebersichtView(int uebersichtIndex);
 

@@ -733,6 +733,7 @@ int wpInterestSelection::nextId() const
  * wpInterestMode - kein Zins? thesaurierend? Auszahlend? Fix?
 */
 const QString pnIMode {qsl("imode")};
+const QString pnIPaymentDelayed {qsl("ipnd")};
 wpInterestPayoutMode::wpInterestPayoutMode(QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("Zinsmodus"));
@@ -750,8 +751,18 @@ wpInterestPayoutMode::wpInterestPayoutMode(QWidget* p) : QWizardPage(p)
                             " Die Zinsen werden dem Kreditbetrag hinzugerechnet und in Folgejahren mit verzinst."));
     cbImode->setCurrentIndex(1);
     registerField(pnIMode, cbImode);
+
+    QRadioButton* rbSync =new QRadioButton(qsl("Die Zinszahlung beginnt mit dem Geldeingang"));
+    rbSync->setToolTip(qsl("Meist beginnt die Zinanrechnung mit dem Geldeingang auf dem Konto des Projektes."));
+    QRadioButton* rbDelayed =new QRadioButton(qsl("Die Zinszahlung beginnt später"));
+    rbDelayed->setToolTip(qsl("Es kann auch vereinbart werden, dass die Zinsanrechnung verzögert - z.B. mit dem Baubeginn - beginnt."));
+    rbSync->setChecked(true);
+    registerField(pnIPaymentDelayed, rbDelayed);
+
     QVBoxLayout* vbl =new QVBoxLayout();
     vbl->addWidget(cbImode);
+    vbl->addWidget(rbSync);
+    vbl->addWidget(rbDelayed);
     setLayout(vbl);
 }
 bool wpInterestPayoutMode::validatePage()
@@ -786,6 +797,7 @@ bool wpConfirmContract::saveContract()
         c.setPlannedEndDate(field(pnEDate).toDate());
         c.setInterestModel(wiz->iPaymentMode);
         c.setComment(field(pnContComment).toString());
+        c.setInterestDelayed(field(pnIPaymentDelayed).toBool());
         if( -1 == c.saveNewContract()) {
             qCritical() << "New contract could not be saved";
             QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Der Vertrag konnte nicht "
@@ -822,6 +834,7 @@ void wpConfirmContract::initializePage()
                          "<tr><td>Zinsanrechnung: </td><td><b>%6<p></b></td></tr>"
                          "<tr><td>Abschlußdatum: </td><td><b>%7</b></td></tr>"
                          "<tr><td>Vertragsende: </td><td><b>%8</b></td></tr>"
+                         "<tr><td>Verzinsungsbeginn: </td><td>%9</b></td></tr>"
                          "</table>")};
     QLocale l;
 
@@ -831,15 +844,16 @@ void wpConfirmContract::initializePage()
     {
         interestModel iMode{wiz->iPaymentMode};
         QString interestMode =toString(iMode);
-        setSubTitle(summary.arg(field(pnFName).toString(), field(pnLName).toString(),
-                                field(pnLabel).toString(),
-                                l.toCurrencyString(field(pnAmount).toDouble()),
-                                QString::number(wiz->interest/100., 'f', 2),
-                                interestMode,
-                                field(pnCDate).toDate().toString(qsl("dd.MM.yyyy")),
-                                (wiz->noticePeriod == -1) ?
+        setSubTitle(summary.arg(field(pnFName).toString(), field(pnLName).toString()
+                                , field(pnLabel).toString()
+                                , l.toCurrencyString(field(pnAmount).toDouble())
+                                , QString::number(wiz->interest/100., 'f', 2)
+                                , interestMode
+                                , field(pnCDate).toDate().toString(qsl("dd.MM.yyyy"))
+                                , (wiz->noticePeriod == -1) ?
                                     wiz->field(pnEDate).toDate().toString(qsl("dd.MM.yyyy")) :
-                                    QString::number(wiz->noticePeriod) +qsl(" Monate nach Kündigung")));
+                                    QString::number(wiz->noticePeriod) +qsl(" Monate nach Kündigung")
+                                , field(pnIPaymentDelayed).toBool() ? qsl("Zinszahlung nicht ab Geldeingang") : qsl("Verzinsung ab Geldeingang")));
     } else Q_ASSERT(false);
 }
 bool wpConfirmContract::validatePage()

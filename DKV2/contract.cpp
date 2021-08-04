@@ -291,6 +291,69 @@ QDate contract::initialBookingDate() const
     QString where = qsl("Buchungen.VertragsId=%1");
     return aDate =executeSingleValueSql(qsl("MIN(Datum)"), qsl("Buchungen"), where.arg(id())).toDate();
 }
+void contract::setInterestDelayed(bool delayed)
+{
+    if( initialBookingReceived()) {
+        // this is for new contracts only
+        Q_ASSERT(not "one can not change the delayed interest status of an activated contract");
+        return;
+    }
+    if( delayed)
+        /* if delayed is true: This contract should be considered to have a "delayed interest payment" - this is the interest
+            calculation starts not with the initial booking ("Geldeingang") but later (like: "with start of
+            construction")
+            */
+            td.setValue(fnZBegin, EndOfTheFuckingWorld);
+    else
+        /* if delayed is false: The interest payment of this contract starts with the initial deposit
+        */
+            td.setValue(fnZBegin, BeginingOfTime);
+}
+void contract::setDelayedInterestDate(QDate d)
+{
+    /* this should be used for contracts
+        !! with delayed intrest payment
+        and AFTER initial booking
+        to set the start date of the interest payment
+    */
+    if( not initialBookingReceived()) {
+        Q_ASSERT(not "one can not set the delayed interest date of contract w/o init. booking");
+        return;
+    }
+    if( d < initialBookingDate()) {
+        Q_ASSERT(not "one can not set the delayed interest date before the initial booking");
+        return;
+    }
+// TODO
+/*one should not be able to set the date smaller than the youngest booking*/
+    td.setValue(fnZBegin, d);
+}
+bool contract::interestPaymentActive(QDate d) const
+{
+    QVariant v= td.getValue(fnZBegin);
+    if (v.isNull() or (not v.isValid())) {
+        qCritical() << "invalid zBeginn Vaue";
+        return false;
+    }
+    QDate zBegin =v.toDate();
+    if( not initialBookingReceived() or d <= initialBookingDate())
+        return false; // no interest before payment
+    // we have a initial booking ...
+    if( zBegin == EndOfTheFuckingWorld) {
+        // this contract has a delayed interest payment but no date is set yet
+        // by definition there should not be a interest payment
+        return false;
+    }
+    if( zBegin == BeginingOfTime) {
+        // this contract does not have a delayed interest payment but was not initialized?!
+        qCritical() << "contract has invalid interest begin time";
+        return false;
+    }
+    return zBegin < d;
+
+}
+
+
 // booking actions
 QDate contract::nextDateForAnnualSettlement()
 {

@@ -14,9 +14,11 @@ SELECT
   ,V.Anmerkung AS Anmerkung
   ,V.Vertragsdatum     AS Vertragsdatum
 
-  ,IFNULL(Eingangsbuchung, '(offen)') AS Geldeingang
-  ,IIF(V.zBeginn = '9999-12-31', '(ruht)',
-    IIF(V.zBeginn = Eingangsbuchung, 'm. Geldeingang', zBeginn)) AS Verzinsungsbeginn
+  ,IFNULL(Eingangsbuchung, '(steht aus)') AS Geldeingang
+  ,IIF(V.zBeginn = '9999-12-31', '(verzögert)'
+    ,IIF(V.zBeginn = '1900-01-01', 'bei Geldeingang'
+      , zBeginn)) AS Verzinsungsbeginn
+
   ,IFNULL(AktivierungsWert, V.Betrag /100.) AS Nominalwert
 
   , IIF(IFNULL(AnlagenId, 0) == 0
