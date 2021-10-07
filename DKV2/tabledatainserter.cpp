@@ -153,8 +153,11 @@ QString TableDataInserter::getUpdateRecordSQL(qlonglong& autovalue) const
     bool firstField = true;
     for( int i=0; i<record.count(); i++) {
         if( not firstField) sql += qsl(", ");
+        if( record.field(i).isNull()) {
+            sql += record.field(i).name() +qsl("=NULL");
+        }
         // WARN ! THIS will work with exactly 1 AutoValue. if it is missing ...
-        if( record.field(i).isAutoValue()) {
+        else if( record.field(i).isAutoValue()) {
             where += record.field(i).name() + qsl("=") + record.field(i).value().toString();
             autovalue =record.field(i).value().toLongLong();
         } else {
