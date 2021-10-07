@@ -61,8 +61,10 @@ bool TableDataInserter::setValues(const QSqlRecord &input)
     }
     qInfo() << "Tdi: setting Values from QSqlRecord";
     for( int i=0; i< input.count(); i++) {
-        if( setValue(input.fieldName(i), input.value(i)))
+        if( setValue(input.fieldName(i), input.value(i))){
+            qInfo() << "value set: " << input.fieldName(i) << " : " << input.value(i);
             continue;
+        }
         else {
             qDebug() << "setValues failed in " << input.fieldName(i);
             return false;

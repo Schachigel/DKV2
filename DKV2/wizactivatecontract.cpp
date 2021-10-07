@@ -15,28 +15,23 @@ wpInitialPayment_IntroPage::wpInitialPayment_IntroPage(QWidget* p) : QWizardPage
 void wpInitialPayment_IntroPage::initializePage()
 {
     wizInitialPayment* wiz = qobject_cast<wizInitialPayment*>(wizard());
-    QString subtitle = qsl("Mit dieser Dialogfolge kannst Du den Geldeingang zu Vertrag <p><b>%1</b> von <b>%2</b> <p>verbuchen. "
-                       "Wenn keine verzögerte Zinsanrechnung vereinbart wurde beginnt damit die Zinsanrechnung. Anderenfalls muss "
-                       "das Datum für den Beginn der Zinsanrechnung nachträglich eingegeben werden.<br>");
+    QString subtitle = qsl("Mit dieser Dialogfolge kannst Du den Geldeingang zu Vertrag <p><b>%1</b> von <b>%2</b> <p>verbuchen. ");
+    if( wiz->delayedInterest)
+        subtitle += qsl("Da für diesen Vertrag der Verzinsungsbeginn verzögert ist, muss dieser später eingegeben werden<br>");
+    else
+        subtitle += qsl("Die Verzinsung für diesen Vertrag beginnt nach dem Geldeingang<br>");
     setSubTitle(subtitle.arg(wiz->label, wiz->creditorName));
 }
 
 QString fnDate {qsl("date")};
-QString fnActivateNow {qsl("activateNow")};
 wpInitialPayment_DatePage::wpInitialPayment_DatePage(QWidget* p) : QWizardPage(p)
 {
     QDateEdit* de = new QDateEdit;
     de->setDisplayFormat(qsl("dd.MM.yyyy"));
     registerField(fnDate, de);
-    QRadioButton* rbNow =new QRadioButton(qsl("Die Zinszahlung beginnt mit der Aktivierung"));
-    QRadioButton* rbLater =new QRadioButton(qsl("Die Zinszahlung wird nachträglich begonnen"));
-    rbNow->setChecked(true);
-    registerField(fnActivateNow, rbNow);
 
     QVBoxLayout*  layout = new QVBoxLayout;
     layout->addWidget(de);
-    layout->addWidget(rbNow);
-    layout->addWidget(rbLater);
     setLayout(layout);
 }
 
@@ -101,8 +96,8 @@ wpInitialPayment_SummaryPage::wpInitialPayment_SummaryPage( QWidget* p) : QWizar
 
 void wpInitialPayment_SummaryPage::initializePage()
 {
-    QString subt =qsl("Der Vertrag <p><b>%1</b> von <b>%2</b><p> soll mit einem Betrag von <p>"
-                  "<b>%3 </b><p> zum %4 aktiviert werden. <br>");
+    QString subt =qsl("Der Geldeingang für den Vertrag <p><b>%1</b> von <b>%2</b><p> soll mit einem Betrag von <p>"
+                  "<b>%3 </b><p> zum %4 gebucht werden. <br>");
     wizInitialPayment* wiz = qobject_cast<wizInitialPayment*>(wizard());
     double amount = field(fnAmount).toDouble();
     QLocale locale;

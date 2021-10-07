@@ -79,10 +79,11 @@
 }
 
 // construction
-void contract::initContractDefaults(const qlonglong creditorId /*=-1*/)
+void contract::initContractDefaults(const qlonglong CREDITORid /*=-1*/)
 {
     setId(-1);
-    setCreditorId(creditorId);
+    setCreditorId(CREDITORid);
+    activated =uninit;
     setNoticePeriod(6);
     //setPlannedEndDate(EndOfTheFuckingWorld); - implicit
     setInterestModel(interestModel::reinvest);
@@ -90,6 +91,7 @@ void contract::initContractDefaults(const qlonglong creditorId /*=-1*/)
     setInterestRate(1.50);
     setPlannedInvest(1000000);
     setInvestment(0);
+    setNewContractInterestDelayed(false);
 }
 void contract::loadFromDb(qlonglong id)
 {   LOG_CALL_W(QString::number(id));
@@ -103,12 +105,11 @@ void contract::loadFromDb(qlonglong id)
 contract::contract(qlonglong contractId) : td(getTableDef())
 {
     initContractDefaults();
-    if( contractId > 0)
+    if( contractId >= SQLITE_minimalRowId)
         loadFromDb(contractId);
 }
 void contract::initRandom(qlonglong creditorId)
 {   //LOG_CALL_W(QString::number(creditorId));
-
     static QRandomGenerator *rand = QRandomGenerator::system();
     setLabel(proposeContractLabel());
     setCreditorId(creditorId);
@@ -195,14 +196,10 @@ int  contract::saveNewContract()
     return -1;
 }
 
-void contract::updateComment(const QString &c)
+bool contract::updateComment(const QString &c)
 {   LOG_CALL;
     setComment(c);
-    int i =td.UpdateData();
-    if( i >= 0)
-        qInfo() << "Contract " << i << " was updated";
-    else
-        qCritical() << "Contract update failed";
+    return  -1 not_eq td.UpdateData();
 }
 
 bool contract::updateTerminationDate(QDate termination, int noticePeriod)
@@ -215,9 +212,13 @@ bool contract::updateTerminationDate(QDate termination, int noticePeriod)
 bool contract::updateInvestment(qlonglong id)
 {   LOG_CALL;
     setInvestment( id);
-    if( -1 == td.UpdateData())
-        return false;
-    return true;
+    return  -1 not_eq td.UpdateData();
+}
+
+bool contract::updateInterestDate(QDate d)
+{
+    setDelayedInterestDate( d);
+    return  -1 not_eq td.UpdateData();
 }
 // helper: only annual settlements should be on the last day of the year
 // other bookings should move to dec. 30th
@@ -231,16 +232,16 @@ QDate avoidYearEndBookings(const QDate d)
     return d;
 }
 
-// contract activation
-bool contract::bookInitialPayment(const QDate date, double amount, bool zActive)
+// First payment may or may not start interest payment
+bool contract::bookInitialPayment(const QDate date, double amount)
 {   LOG_CALL;
     Q_ASSERT(id() >= 0);
     QString error;
-    QDate actualDate =avoidYearEndBookings(date);
+    QDate actualBookingDate =avoidYearEndBookings(date);
 
     if (initialBookingReceived()) {
         error = qsl("Already active contract can not be activated");
-    } else if ( not actualDate.isValid()) {
+    } else if ( not actualBookingDate.isValid()) {
         error = qsl("Invalid Date");
     } else if( amount < 0) {
         error =qsl("Invalid amount");
@@ -251,36 +252,32 @@ bool contract::bookInitialPayment(const QDate date, double amount, bool zActive)
     }
 
     autoRollbackTransaction tr;
-    if ( booking::bookDeposit(id(), actualDate, amount))
-    {
-        if( zActive) { // db default
-            tr.commit();
-        } else {
-            QString sql {qsl("UPDATE Vertraege SET zAktiv = 0 WHERE id = %1")};
-            if( executeSql_wNoRecords(sql.arg(id()))) {
-                tr.commit();
-            } else {
-                qInfo() << "failed to write zAktiv Flag to contract w id " << id_aS();
-                return false; // rollback
-            }
-        }
-    } else {
-        qInfo() << "Failed to execut activation on contract " << id_aS() << qsl(" [") << actualDate.toString() << qsl(", ") << QString::number(amount) << qsl("]");
-        return false; // rollback
+    if ( not booking::bookDeposit(id(), actualBookingDate, amount)) {
+            qCritical() << "Failed to execut activation on contract " << id_aS() << qsl(" [") << actualBookingDate.toString() << qsl(", ") << QString::number(amount) << qsl("]");
+            return false; // rollback
     }
-    setLatestBooking({id(), booking::Type::deposit, actualDate, amount});
-    setInitialBookingDate(actualDate);
+    setLatestBooking({id(), booking::Type::deposit, actualBookingDate, amount});
+    setInitialBookingDate(actualBookingDate);
 
-    qInfo() << "Successfully activated contract " << id_aS() << "[" << actualDate << ", " << amount
-            << " Euro]";
+    if( not interestDelayed()) {
+        /* if interest payment is not delayed, zBegin should be set from BoT to booking date */
+        if( not updateInterestDate(actualBookingDate)) {
+            qCritical() << "could not write zBegin";
+            return false; // rollback
+        }
+    }
+
+    tr.commit();
+    qInfo() << "Successfully activated contract " << id_aS() << "[" << actualBookingDate << ", " << amount << " Euro]";
     return true;
 }
 bool contract::initialBookingReceived() const
-{   if( activated == uninit) {
+{
+    if( activated == uninit) {
         QString sql = qsl("SELECT count(*) FROM Buchungen WHERE VertragsId=") + QString::number(id());
         activated = (0 < executeSingleValueSql(sql).toInt()) ? active : passive;
     }
-    return activated==active;
+    return activated == active;
 }
 QDate contract::initialBookingDate() const
 {
@@ -291,7 +288,7 @@ QDate contract::initialBookingDate() const
     QString where = qsl("Buchungen.VertragsId=%1");
     return aDate =executeSingleValueSql(qsl("MIN(Datum)"), qsl("Buchungen"), where.arg(id())).toDate();
 }
-void contract::setInterestDelayed(bool delayed)
+void contract::setNewContractInterestDelayed(bool delayed)
 {
     if( initialBookingReceived()) {
         // this is for new contracts only
@@ -309,46 +306,62 @@ void contract::setInterestDelayed(bool delayed)
         */
             td.setValue(fnZBegin, BeginingOfTime);
 }
-void contract::setDelayedInterestDate(QDate d)
+bool contract::interestDelayed()
 {
-    /* this should be used for contracts
-        !! with delayed intrest payment
-        and AFTER initial booking
-        to set the start date of the interest payment
+    QDate iDate =interestDate();
+    qDebug() << "interestDelayed(): Delayed Interest Date is " << iDate;
+    if(  iDate == EndOfTheFuckingWorld)
+        return true;
+    else if( iDate == BeginingOfTime)
+        return false;
+
+    QDate ibd =initialBookingDate();
+    qDebug() << "interestDelayed(): First BookingDate is " << ibd;
+    if( ibd == iDate )
+        return false;
+    else
+        return true;
+
+    Q_ASSERT(not "error while testing if interest date is delayed");
+    return true;
+}
+
+void contract::setDelayedInterestDate(QDate d)
+{   LOG_CALL_W(d.toString());
+    /* if used *with* delayed intrest payment:
+     * init booking: no change (EotfW)
+     * AFTER initial booking -> change to d
+     * 2nd booking and later: if latest booking date > d -> no more change
+     *
+     * if used *w/o* delayed interest payment:
+     * init booking: set to init booking
+     * AFTER initial booking -> no change (ASSERT)
     */
-    if( not initialBookingReceived()) {
-        Q_ASSERT(not "one can not set the delayed interest date of contract w/o init. booking");
-        return;
-    }
-    if( d < initialBookingDate()) {
-        Q_ASSERT(not "one can not set the delayed interest date before the initial booking");
-        return;
-    }
-// TODO
-/*one should not be able to set the date smaller than the youngest booking*/
     td.setValue(fnZBegin, d);
 }
 bool contract::interestPaymentActive(QDate d) const
-{
+{   LOG_CALL_W(d.toString());
     QVariant v= td.getValue(fnZBegin);
     if (v.isNull() or (not v.isValid())) {
-        qCritical() << "invalid zBeginn Vaue";
+        qCritical() << "invalid zBeginn Value";
         return false;
     }
     QDate zBegin =v.toDate();
-    if( not initialBookingReceived() or d <= initialBookingDate())
+    if( not initialBookingReceived() or d <= initialBookingDate()){
+        qInfo() << "w/o initial payment interest payment is not active";
         return false; // no interest before payment
-    // we have a initial booking ...
+    }
+    // we have an initial booking ...
     if( zBegin == EndOfTheFuckingWorld) {
         // this contract has a delayed interest payment but no date is set yet
         // by definition there should not be a interest payment
         return false;
-    }
+    } else
     if( zBegin == BeginingOfTime) {
         // this contract does not have a delayed interest payment but was not initialized?!
         qCritical() << "contract has invalid interest begin time";
         return false;
-    }
+    } else
     return zBegin < d;
 
 }
@@ -416,7 +429,9 @@ int contract::annualSettlement( int year)
     while(nextAnnualSettlementDate <= requestedSettlementDate) {
         double baseValue =interestBearingValue();
                      //////////
-        double zins =ZinsesZins(interestRate(), baseValue, latestBooking().date, nextAnnualSettlementDate);
+//        double zins =ZinsesZins(interestRate(), baseValue, latestBooking().date, nextAnnualSettlementDate);
+        double zins =ZinsesZins(actualInterestRate(nextAnnualSettlementDate),
+                                baseValue, latestBooking().date, nextAnnualSettlementDate);
                      //////////
         switch(iModel()) {
         case interestModel::reinvest:
@@ -711,7 +726,7 @@ QDate activateRandomContracts(const int percent)
         if( activationDate < minimumActivationDate)
             minimumActivationDate =activationDate;
         contract c(contractData[i].value(contract::fnId).toInt());
-        c.bookInitialPayment(activationDate, amount, (rand->bounded(100)%10 == 0) ? 0 : 1);
+        c.bookInitialPayment(activationDate, amount);
     }
     return minimumActivationDate;
 }

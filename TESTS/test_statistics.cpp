@@ -240,10 +240,10 @@ void test_statistics::test_contracts_current_statistics()
      * forth creditor, - reinvesting
      */
     QDate dateFifthContract =dateForthContract =QDate(2000, 6, 30);
-    contPayout.bookInitialPayment(dateFifthContract, contPayout.plannedInvest(), true);
-    contReinvest.bookInitialPayment(dateFifthContract, contReinvest.plannedInvest(), true);
-    contFix.bookInitialPayment(dateFifthContract, contFix.plannedInvest(), true);
-    contZero.bookInitialPayment(dateFifthContract, contZero.plannedInvest(), true);
+    contPayout.bookInitialPayment(dateFifthContract, contPayout.plannedInvest());
+    contReinvest.bookInitialPayment(dateFifthContract, contReinvest.plannedInvest());
+    contFix.bookInitialPayment(dateFifthContract, contFix.plannedInvest());
+    contZero.bookInitialPayment(dateFifthContract, contZero.plannedInvest());
 
     stats expected_dateFifthContract_active{{interestModel::allIModels,     statSet(4, 3, 500., 4.5 , 0.9)}
                                             ,{interestModel::payout,        statSet(1, 1, 100., 1. , 1.)  }

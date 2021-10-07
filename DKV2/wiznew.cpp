@@ -797,7 +797,7 @@ bool wpConfirmContract::saveContract()
         c.setPlannedEndDate(field(pnEDate).toDate());
         c.setInterestModel(wiz->iPaymentMode);
         c.setComment(field(pnContComment).toString());
-        c.setInterestDelayed(field(pnIPaymentDelayed).toBool());
+        c.setNewContractInterestDelayed(field(pnIPaymentDelayed).toBool());
         if( -1 == c.saveNewContract()) {
             qCritical() << "New contract could not be saved";
             QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Der Vertrag konnte nicht "

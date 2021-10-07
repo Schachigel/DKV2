@@ -16,7 +16,7 @@ SELECT
 
   ,IFNULL(Eingangsbuchung, '(steht aus)') AS Geldeingang
   ,IIF(V.zBeginn = '9999-12-31', '(verzögert)'
-    ,IIF(V.zBeginn = '1900-01-01', 'bei Geldeingang'
+    ,IIF(V.zBeginn = '1900-01-01', 'wie Geldeingang'
       , zBeginn)) AS Verzinsungsbeginn
 
   ,IFNULL(AktivierungsWert, V.Betrag /100.) AS Nominalwert

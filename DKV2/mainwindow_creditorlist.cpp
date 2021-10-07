@@ -128,6 +128,7 @@ void MainWindow::updateViews()
             temp->select();
         ui->contractsTableView->resizeColumnsToContents();
         ui->contractsTableView->resizeRowsToContents();
+        ui->bookingsTableView->resizeColumnsToContents();
         qobject_cast<ContractTableModel*>(ui->contractsTableView->model())->setCol13ExtraData();
     }
     if( ui->stackedWidget->currentIndex() == investmentsPageIndex) {

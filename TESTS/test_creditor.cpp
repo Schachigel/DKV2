@@ -56,25 +56,35 @@ void test_creditor::test_invalidCreditor()
 {   LOG_CALL;
     creditor c;
     QString errortext;
+dbgTimer timer(qsl("invalidCreditor"));
     QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
-    c.setFirstname("Holger");
+    c.setFirstname(qsl("Holger"));
     QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
-    c.setLastname("Mairon");
+timer.lab(qsl("firstname"));
+    c.setLastname(qsl("Mairon"));
     QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
-    c.setStreet("Sesamstrasse");
+timer.lab(qsl("lastname"));
+    c.setStreet(qsl("Sesamstrasse"));
     QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
-    c.setPostalCode("49534");
+timer.lab(qsl("street"));
+    c.setPostalCode(qsl("49534"));
     QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
-    c.setCity("braunschweig"); // now all mandatory values are set
+timer.lab(qsl("pc"));
+    c.setCity(qsl("braunschweig")); // now all mandatory values are set
     QVERIFY2( c.isValid(errortext), errortext.toUtf8());
-    c.setEmail("invalid_email");
+timer.lab(qsl("city"));
+    c.setEmail(qsl("invalid_email"));
     QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
-    c.setEmail("holger@mairon.esp");
+timer.lab(qsl("invalid e-mail"));
+    c.setEmail(qsl("holger@mairon.esp"));
     QVERIFY2( c.isValid(errortext), errortext.toUtf8());
-    c.setIban("invalid_iban");
+timer.lab(qsl("e-mail"));
+    c.setIban(qsl("invalid_iban"));
     QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
-    c.setIban("DE07123412341234123412");
+timer.lab(qsl("inv. iban"));
+    c.setIban(qsl("DE07123412341234123412"));
     QVERIFY2( c.isValid(errortext), errortext.toUtf8());
+timer.lab(qsl("iban"));
 }
 
 void test_creditor::test_saveManyRandomCreditors()
@@ -103,7 +113,7 @@ void test_creditor::test_hasActiveContracts_hasActContract()
 {
     creditor c = saveRandomCreditor();
     contract co = saveRandomContract(c.id());
-    co.bookInitialPayment(QDate::currentDate(), 1000.0, true);
+    co.bookInitialPayment(QDate::currentDate(), 1000.0);
     QCOMPARE(c.hasActiveContracts(), true);
 }
 void test_creditor::test_deleteCreditor_woContract()
@@ -123,7 +133,7 @@ void test_creditor::test_deleteCredtior_wActiveContractFails()
 {
     creditor c = saveRandomCreditor();
     contract co = saveRandomContract(c.id());
-    co.bookInitialPayment(QDate::currentDate(), 1000.0, true);
+    co.bookInitialPayment(QDate::currentDate(), 1000.0);
     QCOMPARE(c.remove(), false);
 }
 
@@ -131,7 +141,7 @@ void test_creditor::test_deleteCreditor_wTerminatedContractFails()
 {
     creditor c = saveRandomCreditor();
     contract co = saveRandomContract(c.id());
-    co.bookInitialPayment(QDate(2000, 6, 1), 1000, true);
+    co.bookInitialPayment(QDate(2000, 6, 1), 1000);
     double interestPayout =0, payout =0.;
     co.finalize(false, QDate(2020, 5, 31), interestPayout, payout);
     QCOMPARE(c.remove(), false);

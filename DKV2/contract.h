@@ -97,7 +97,7 @@ struct contract
     }
 
     // construction
-    contract(const qlonglong id =-1);
+    contract(const qlonglong CONTRACTid =-1);
     void loadFromDb(const qlonglong id);
     void initContractDefaults(const qlonglong creditorId =-1);
     void initRandom(const qlonglong creditorId =-1);
@@ -165,17 +165,20 @@ struct contract
     void setLatestBooking( const booking& b) { latestB=b;};
     // write to db
     int saveNewContract();
-    void updateComment(const QString&);
+    bool updateComment(const QString&);
     bool updateTerminationDate(QDate termination, int noticePeriod);
     bool updateInvestment(qlonglong id);
 /* not used?  int validateAndSaveNewContract(QString& meldung); */
     // contract activation
-    bool bookInitialPayment(const QDate aDate, double amount, bool iActive);
+    bool bookInitialPayment(const QDate aDate, double amount);
     bool initialBookingReceived() const;
     QDate initialBookingDate() const;
     void setInitialBookingDate( const QDate d) {aDate=d; activated=active;}
-    void setInterestDelayed(bool delayed);
+    void setNewContractInterestDelayed(bool delayed);
+    bool interestDelayed();
     void setDelayedInterestDate(QDate d);
+    bool updateInterestDate(QDate d);
+    QDate interestDate(){ return td.getValue(fnZBegin).toDate();}
     // other booking actions
     QDate nextDateForAnnualSettlement();
     bool needsAnnualSettlement( const QDate d);

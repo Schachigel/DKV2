@@ -4,6 +4,7 @@
 #include "helpersql.h"
 
 const QString dbTypeName {qsl("QSQLITE")};
+const int SQLITE_minimalRowId =1;
 
 bool autoDetachDb::attachDb(const QString& filename)
 {

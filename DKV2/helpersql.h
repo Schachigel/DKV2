@@ -11,6 +11,7 @@
 #include "dbstructure.h"
 
 extern const QString dbTypeName;
+extern const int SQLITE_minimalRowId;
 
 struct dbCloser
 {   // RAII class for db connections

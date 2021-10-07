@@ -89,12 +89,13 @@ void activateContract(contract* v)
     wiz.setField(fnAmount, v->plannedInvest());
     wiz.setField(fnDate, v->conclusionDate().addDays(1));
     wiz.minimalActivationDate =v->conclusionDate().addDays(1);
+    wiz.delayedInterest =v->interestDelayed();
     wiz.exec();
     if( not wiz.field(qsl("confirmed")).toBool()) {
         qInfo() << "contract activation cancled by the user";
         return;
     }
-    if( not v->bookInitialPayment(wiz.field(fnDate).toDate(), wiz.field(fnAmount).toDouble(), wiz.field(fnActivateNow).toBool())) {
+    if( not v->bookInitialPayment(wiz.field(fnDate).toDate(), wiz.field(fnAmount).toDouble())) {
         qCritical() << "activation failed";
         Q_ASSERT(false);
     }
@@ -286,7 +287,9 @@ void changeContractComment(contract* pc)
         qInfo() << "inpud dlg canceled";
         return;
     }
-    pc->updateComment(ipd.textValue().trimmed());
+    if( pc->updateComment(ipd.textValue().trimmed())) {
+        qCritical() << "update comment failed";
+    }
 }
 void changeContractTermination(contract* pc)
 {

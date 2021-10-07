@@ -11,7 +11,6 @@ struct wpInitialPayment_IntroPage : public QWizardPage {
 };
 
 extern QString fnDate;
-extern QString fnActivateNow;
 struct wpInitialPayment_DatePage : public QWizardPage {
     wpInitialPayment_DatePage(QWidget* w=nullptr);
     void cleanupPage() override  {};
@@ -51,6 +50,7 @@ public:
     double expectedAmount =0.;
     //  the contract should not be activated before the contract date
     QDate minimalActivationDate;
+    bool delayedInterest =false;
 };
 
 #endif // ACTIVATECONTRACTWIZ_H
