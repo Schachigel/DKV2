@@ -103,7 +103,6 @@ wpTimeFrame::wpTimeFrame(QWidget* w) : QWizardPage(w)
 }
 void wpTimeFrame::initializePage()
 {   LOG_CALL_W(qsl("wpTimeFrame"));
-    setField(pnVon, QDate::currentDate());
 }
 bool wpTimeFrame::validatePage()
 {   LOG_CALL_W("wpTimeFrame");

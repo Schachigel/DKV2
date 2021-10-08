@@ -341,6 +341,7 @@ qlonglong createInvestment(int& interest, QDate& from, QDate& to)
 void createInvestment()
 {   LOG_CALL;
     wizNewInvestment wiz;
+    wiz.setField(pnVon, QDate::currentDate());
     wiz.exec();
     if( not wiz.field(pnKorrekt).toBool()) {
         qInfo() << "investment wiz was canceled";

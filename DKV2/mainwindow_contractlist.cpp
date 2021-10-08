@@ -297,7 +297,7 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
             QMessageBox::question(this, qsl("Fehler"), qsl("Keine Geldanlage passt zu Zins und Vertragsdatum dieses Vertrags. Möchtest Du eine Anlage anlegen?")))
             return;
         int interest{d2percent(contractUnderMouseMenu->interestRate())};
-        QDate from (contractUnderMouseMenu->conclusionDate());
+        QDate from (contractUnderMouseMenu->conclusionDate().addDays(-1));
         QDate to;
         qlonglong newIId =createInvestment(interest, from, to);
         if(newIId <= 0) break;
