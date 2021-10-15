@@ -1,5 +1,5 @@
-#ifndef DLGASKDATA_H
-#define DLGASKDATA_H
+#ifndef DLGASKDATE_H
+#define DLGASKDATE_H
 
 #include "pch.h"
 
@@ -22,4 +22,4 @@ private:
     QDialogButtonBox* buttons;
 };
 
-#endif // DLGASKDATA_H
+#endif // DLGASKDATE_H

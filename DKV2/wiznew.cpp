@@ -413,7 +413,7 @@ void wpConfirmCreditor::onConfirmCreateContract_toggled(int state)
 */
 const QString pnLabel  {qsl("label")};
 const QString pnAmount {qsl("amount")};
-const QString pnContComment {qsl("contractComment")};
+const QString pnContractComment {qsl("contractComment")};
 
 wpLableAndAmount::wpLableAndAmount(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
@@ -434,7 +434,7 @@ wpLableAndAmount::wpLableAndAmount(QWidget* p) : QWizardPage(p)
 
     QLabel* l3 =new QLabel(qsl("Anmerkung"));
     QPlainTextEdit* eComment =new QPlainTextEdit;
-    registerField(pnContComment, eComment, "plainText", "textChanged");
+    registerField(pnContractComment, eComment, "plainText", "textChanged");
     eComment->setToolTip(qsl("Diese Anmerkung wird mit dem Vertrag gespeichert"));
 
     QGridLayout* g =new QGridLayout;
@@ -781,38 +781,6 @@ int wpInterestPayoutMode::nextId() const
 */
 const QString pnConfirmContract {qsl("confirmContract")};
 
-bool wpConfirmContract::saveContract()
-{
-    wizNew* wiz =qobject_cast<wizNew*>(wizard());
-    if( not wiz)  return false;
-    if( wiz->field(pnConfirmContract).toBool()) {
-        contract c;
-        c.setCreditorId(wiz->creditorId);
-        c.setPlannedInvest(field(pnAmount).toDouble());
-        c.setInterestRate(wiz->interest/100.);
-        c.setInvestment(wiz->investmentId);
-        c.setLabel(field(pnLabel).toString());
-        c.setConclusionDate(field(pnCDate).toDate());
-        c.setNoticePeriod(wiz->noticePeriod);
-        c.setPlannedEndDate(field(pnEDate).toDate());
-        c.setInterestModel(wiz->iPaymentMode);
-        c.setComment(field(pnContComment).toString());
-        c.setNewContractInterestDelayed(field(pnIPaymentDelayed).toBool());
-        if( -1 == c.saveNewContract()) {
-            qCritical() << "New contract could not be saved";
-            QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Der Vertrag konnte nicht "
-                            "gespeichert werden. Details findest Du in der Log Datei"));
-            return false;
-        } else {
-            qInfo() << "New contract successfully saved";
-            return true;
-        }
-    } else {
-        qCritical() << "user did not confirm contract data";
-        Q_ASSERT(false);
-        return false;
-    };
-}
 wpConfirmContract::wpConfirmContract(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Bestätige die Vertragsdaten"));
@@ -855,12 +823,6 @@ void wpConfirmContract::initializePage()
                                     QString::number(wiz->noticePeriod) +qsl(" Monate nach Kündigung")
                                 , field(pnIPaymentDelayed).toBool() ? qsl("Zinszahlung nicht ab Geldeingang") : qsl("Verzinsung ab Geldeingang")));
     } else Q_ASSERT(false);
-}
-bool wpConfirmContract::validatePage()
-{   LOG_CALL;
-    // we only get here, if finish was enabled -> we do not have to check
-    // the checkbox. user can only cancel if checkbox not checked
-    return saveContract();
 }
 
 /*

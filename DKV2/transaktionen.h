@@ -5,21 +5,21 @@
 
 bool checkSchema_ConvertIfneeded(const QString& origDbFile);
 
+void newCreditorAndContract();
+
+void editCreditor(qlonglong creditorId);
+void changeContractComment(contract* c);
+void changeContractTermination(contract* c);
+
 void activateContract(contract* v);
+void activateInterest(contract* v);
 void changeContractValue(contract* v);
+void annualSettlement();
 
 void deleteInactiveContract(contract* c);
 void terminateContract(contract* c);
 void terminateContract_Final( contract& v);
 void cancelContract( contract& v);
-
-void annualSettlement();
-
-void editCreditor(qlonglong creditorId);
-void newCreditorAndContract();
-
-void changeContractComment(contract* c);
-void changeContractTermination(contract* c);
 
 qlonglong createInvestment(int& interest/*inout*/, QDate& from /*inout*/, QDate& to /*out*/);
 void createInvestment();

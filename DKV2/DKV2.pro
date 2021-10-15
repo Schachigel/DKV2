@@ -94,7 +94,7 @@ SOURCES += \
         dkdbhelper.cpp \
         dkdbviews.cpp \
         dlgannualsettlement.cpp \
-        dlgaskdata.cpp \
+        dlgaskdate.cpp \
         dlgchangecontracttermination.cpp \
         helper.cpp \
         helperfile.cpp \
@@ -140,7 +140,7 @@ HEADERS += pch.h\
         dkdbviews.h \
         dkv2version.h \
         dlgannualsettlement.h \
-        dlgaskdata.h \
+        dlgaskdate.h \
         dlgchangecontracttermination.h \
         helper.h \
         helperfile.h \

@@ -72,7 +72,7 @@ void test_contract::test_readContractFromDb()
     contract cont_fixed;
     cont_fixed.initRandom(c.id());
     cont_fixed.setInterestModel(interestModel::fixed);
-    cont_fixed.setNewContractInterestDelayed(true);
+    cont_fixed.setInterestActive(true);
     cont_fixed.saveNewContract();
     cont_fixed.bookInitialPayment(QDate::currentDate(), cont_fixed.plannedInvest());
     contract newC_fixed(cont_fixed.id());
@@ -81,7 +81,7 @@ void test_contract::test_readContractFromDb()
     contract cont_reinv;
     cont_reinv.initRandom(c.id());
     cont_reinv.setInterestModel(interestModel::reinvest);
-    cont_reinv.setNewContractInterestDelayed(true);
+    cont_reinv.setInterestActive(true);
     cont_reinv.saveNewContract();
     cont_reinv.bookInitialPayment(QDate::currentDate(), cont_reinv.plannedInvest());
     contract newC_reinv(cont_reinv.id());
@@ -90,7 +90,7 @@ void test_contract::test_readContractFromDb()
     contract cont_payout;
     cont_payout.initRandom(c.id());
     cont_payout.setInterestModel(interestModel::fixed);
-    cont_payout.setNewContractInterestDelayed(true);
+    cont_payout.setInterestActive(true);
     cont_payout.saveNewContract();
     cont_payout.bookInitialPayment(QDate::currentDate(), cont_payout.plannedInvest());
     contract newC_payout(cont_payout.id());

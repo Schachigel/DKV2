@@ -12,13 +12,12 @@ enum colmn_Pos {
     cp_Comment,
     cp_ContractDate,
     cp_InitialBooking,
-    cp_ActivationDate,
+    cp_InterestActive,
     cp_ContractValue,
     cp_InterestRate,
     cp_InterestMode,
     cp_InterestBearing,
     cp_Interest,
-    cp_LastBooking,
     cp_ContractEnd
 };
 

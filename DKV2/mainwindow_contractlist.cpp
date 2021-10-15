@@ -53,13 +53,12 @@ void MainWindow::prepare_valid_contracts_list_view()
     model->setHeaderData(cp_InterestMode, Qt::Horizontal, qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein"), Qt::ToolTipRole);
     model->setHeaderData(cp_InitialBooking, Qt::Horizontal, qsl("Datum des initialen Geldeingangs"), Qt::ToolTipRole);
     model->setHeaderData(cp_InitialBooking, Qt::Horizontal, qsl("Geldeingang"));
-    model->setHeaderData(cp_ActivationDate, Qt::Horizontal, qsl("Beginn der Zinsanrechnung"), Qt::ToolTipRole);
+    model->setHeaderData(cp_InterestActive, Qt::Horizontal, qsl("Ist die Zinsanrechnung aktiv?"), Qt::ToolTipRole);
     model->setHeaderData(cp_InterestBearing, Qt::Horizontal, qsl("Verzinsliches\nGuthaben"));
-    model->setHeaderData(cp_ActivationDate, Qt::Horizontal, qsl("Verzinsungsbeginn"));
+    model->setHeaderData(cp_InterestActive, Qt::Horizontal, qsl("Zins Status"));
     model->setHeaderData(cp_InterestBearing, Qt::Horizontal, qsl("Bei thesaurierenden Verträgen: Einlage und angesparte Zinsen"), Qt::ToolTipRole);
     model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Angesparter\nZins"));
     model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Nicht ausgezahlte Zinsen bei Verträgen mit fester Verzinsung und thesaurierenden Verträgen"), Qt::ToolTipRole);
-    model->setHeaderData(cp_LastBooking, Qt::Horizontal, qsl("Letztes\nBuchungsdatum"));
     model->setHeaderData(cp_ContractEnd, Qt::Horizontal, qsl("Kündigungsfrist/ \nVertragsende"));
 
     qDebug() << "contract list model filter: " << model->filter();
@@ -79,9 +78,8 @@ void MainWindow::prepare_valid_contracts_list_view()
     tv->setAlternatingRowColors(true);
     tv->setSortingEnabled(true);
     tv->setItemDelegateForColumn(cp_InitialBooking, new DateItemFormatter);
-    tv->setItemDelegateForColumn(cp_ActivationDate, new DateItemFormatter);
+    tv->setItemDelegateForColumn(cp_InterestActive, new DateItemFormatter);
     tv->setItemDelegateForColumn(cp_ContractDate, new DateItemFormatter);
-    tv->setItemDelegateForColumn(cp_LastBooking, new DateItemFormatter);
     tv->setItemDelegateForColumn(cp_ContractValue, new CurrencyFormatter(tv));
     tv->setItemDelegateForColumn(cp_InterestBearing, new CurrencyFormatter(tv));
     tv->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(tv));
@@ -243,6 +241,8 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
             ui->action_cmenu_terminate_contract->setText(qsl("Vertrag kündigen"));
         menu.addAction(ui->action_cmenu_terminate_contract);
         menu.addAction(ui->action_cmenu_change_contract);
+        if( not c.interestActive())
+            menu.addAction(ui->action_cmenu_activate_interest_payment);
     }
     else
     {
@@ -252,6 +252,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
     menu.addAction(ui->action_cmenu_changeContractTermination);
     menu.addAction(ui->action_cmenu_Anmerkung_aendern);
     menu.addAction(ui->action_cmenu_assoc_investment);
+
     menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
     contractUnderMouseMenu =nullptr;
     return;
@@ -274,6 +275,11 @@ void MainWindow::on_action_cmenu_delete_inactive_contract_triggered()
 void MainWindow::on_action_cmenu_change_contract_triggered()
 {   LOG_CALL;
     changeContractValue(contractUnderMouseMenu);
+    updateViews();
+}
+void MainWindow::on_action_cmenu_activate_interest_payment_triggered()
+{   LOG_CALL;
+    activateInterest(contractUnderMouseMenu);
     updateViews();
 }
 void MainWindow::on_action_cmenu_Anmerkung_aendern_triggered()

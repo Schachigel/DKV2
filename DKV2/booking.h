@@ -12,7 +12,8 @@ struct booking
         non, // means all
         deposit = 1, payout  = 2,
         reInvestInterest = 4,
-        annualInterestDeposit = 8
+        annualInterestDeposit = 8,
+        setInterestActive = 16
     };
     static QString displayString(const Type t);
     inline static int bookingTypeToInt(const booking::Type t) {
@@ -24,7 +25,8 @@ struct booking
     QDate date =EndOfTheFuckingWorld;
     double amount =0.;
     // construction
-    booking(const qlonglong cId, const booking::Type t = Type::non, const QDate d =EndOfTheFuckingWorld, const double a =0.) : contractId(cId), type(t), date(d), amount(a) {};
+    booking(const qlonglong cId, const booking::Type t = Type::non, const QDate d =EndOfTheFuckingWorld, const double a =0.)
+        : contractId(cId), type(t), date(d), amount(a) {};
     // comparison for tests
     inline friend bool operator==(const booking& lhs, const booking& rhs)
     {
@@ -47,6 +49,7 @@ struct booking
     static bool bookPayout(    const qlonglong contractId, QDate date, const double amount);
     static bool bookReInvestInterest(const qlonglong contractId, QDate date, const double amount);
     static bool bookAnnualInterestDeposit( const qlonglong contractId, QDate date, const double amount);
+    static bool bookInterestActive(const qlonglong contractId, QDate date);
     static QString typeName(booking::Type t);
 private:
     static bool doBooking( booking::Type , const qlonglong contractId, QDate date, const double amount);

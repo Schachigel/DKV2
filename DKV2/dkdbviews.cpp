@@ -15,10 +15,7 @@ SELECT
   ,V.Vertragsdatum     AS Vertragsdatum
 
   ,IFNULL(Eingangsbuchung, '(steht aus)') AS Geldeingang
-  ,IIF(V.zBeginn = '9999-12-31', '(verzögert)'
-    ,IIF(V.zBeginn = '1900-01-01', 'wie Geldeingang'
-      , zBeginn)) AS Verzinsungsbeginn
-
+  ,IIF(V.zActive, ' aktiv ', ' ausgesetzt ') AS VerzinsungsStatus
   ,IFNULL(AktivierungsWert, V.Betrag /100.) AS Nominalwert
 
   , IIF(IFNULL(AnlagenId, 0) == 0
@@ -40,9 +37,6 @@ SELECT
        ,IIF(V.thesaurierend == 2, IFNULL(summeAllerZinsBuchungen, '(noch 0) ')
        ,IIF(V.thesaurierend == 3, '(zinslos)   ', 'ERROR')))) AS angespZins
 
--- letzte Buchungen
-  ,ifnull(LetzteBuchung, ' - ') AS LetzteBuchung
-
 -- kdFrist/VEnd
   ,IIF( V.Kfrist == -1, strftime('%d.%m.%Y', V.LaufzeitEnde),
       IIF( date(V.LaufzeitEnde) > date('5000-12-31'), '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)',
@@ -57,10 +51,6 @@ LEFT JOIN
     (SELECT vid_min, minB_Datum AS Eingangsbuchung, Erstbuchungswert AS AktivierungsWert
          FROM   (SELECT B.VertragsId AS vid_min, min(B.Datum) AS minB_Datum, B.Betrag / 100. AS Erstbuchungswert, sum(B.Betrag) / 100. AS GesamtWert
             FROM Buchungen AS B GROUP BY B.VertragsId) ) ON V.id = vid_min
-
--- letzte Buchungen
-LEFT JOIN
-     (SELECT VertragsId AS B3VertragsId, MAX(Datum) AS LetzteBuchung FROM Buchungen AS B3 GROUP BY VertragsId) on v.id = B3VertragsId
 
 -- VerzinslGuthaben f auszahlende
 LEFT JOIN

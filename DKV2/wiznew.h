@@ -135,6 +135,7 @@ private:
 extern const QString pnCDate;
 extern const QString pnEDate;
 extern const QString pnPeriod;
+extern const QString pnContractComment;
 
 class wpContractTimeframe : public QWizardPage{
     Q_OBJECT
@@ -214,12 +215,9 @@ extern const QString pnConfirmContract;
 class wpConfirmContract : public QWizardPage
 {
     Q_OBJECT;
-    bool saveContract();
 public:
     wpConfirmContract(QWidget*);
     void initializePage() override;
-    bool validatePage()   override;
-public slots:
 };
 
 /*

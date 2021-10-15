@@ -978,6 +978,11 @@
     <string>Geldanlage zuordnen</string>
    </property>
   </action>
+  <action name="action_cmenu_activate_interest_payment">
+   <property name="text">
+    <string>Zinszahlung aktivieren</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

@@ -73,6 +73,31 @@ bool TableDataInserter::setValues(const QSqlRecord &input)
     return true;
 }
 
+bool TableDataInserter::updateValue(const QString& n, const QVariant& v, qlonglong index)
+{   LOG_CALL_W(n);
+    if( not v.isValid() || v.isNull()) {
+        setValueNULL(n);
+    } else {
+        setValue(n, DbInsertableString(v));
+    }
+    QString sql{qsl("UPDATE %1 SET %2=%3 ").arg( tablename, n, record.field(n).value().toString())};
+
+    QString where {qsl(" WHERE %4=%5")};
+    bool whereDone =false;
+    for( int i=0; i<record.count(); i++) {
+        if( record.field(i).isAutoValue()) {
+            where =where.arg(record.field(i).name(), QString::number(index));
+            whereDone =true;
+            break;
+        }
+    }
+    if( not whereDone) {
+        qWarning() << "could not update value w/o index; trying 'id'";
+        where =where.arg(qsl("id"), index);
+    }
+    return executeSql_wNoRecords(sql + where);
+}
+
 QString TableDataInserter::getInsertRecordSQL() const
 {//   LOG_CALL;
     if( record.isEmpty()) return QString();

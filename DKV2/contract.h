@@ -63,7 +63,7 @@ struct contract
     static const QString fnKFrist;
     static const QString fnAnlagenId;
     static const QString fnLaufzeitEnde;
-    static const QString fnZBegin;
+    static const QString fnZAktiv;
     static const QString fnZeitstempel;
     // static & friends
     static const dbtable& getTableDef();
@@ -123,8 +123,8 @@ struct contract
         double iRate = r2(double(p.toInt())/100.);
         return iRate;
     }
-    double actualInterestRate(QDate d) const {
-        if( interestPaymentActive(d)) return interestRate();
+    double actualInterestRate() const {
+        if( interestActive()) return interestRate();
         else return 0.;
     }
 
@@ -149,7 +149,9 @@ struct contract
     void setConclusionDate(const QDate d) { td.setValue(fnVertragsDatum, d);}
     QDate conclusionDate() const { return td.getValue(fnVertragsDatum).toDate();}
 
-    bool interestPaymentActive(QDate d) const;
+    void setInterestActive(bool active){ td.setValue(fnZAktiv, active);}
+    bool updateInterestActive(bool a);
+    bool interestActive() const { return td.getValue(fnZAktiv).toBool();}
 
     void setComment(const QString& q) {td.setValue(fnAnmerkung, q);}
     QString comment() const {return td.getValue(fnAnmerkung).toString();}
@@ -174,11 +176,9 @@ struct contract
     bool initialBookingReceived() const;
     QDate initialBookingDate() const;
     void setInitialBookingDate( const QDate d) {aDate=d; activated=active;}
-    void setNewContractInterestDelayed(bool delayed);
-    bool interestDelayed();
-    void setDelayedInterestDate(QDate d);
-    bool updateInterestDate(QDate d);
-    QDate interestDate(){ return td.getValue(fnZBegin).toDate();}
+
+    bool bookActivateInterest(QDate d);
+
     // other booking actions
     QDate nextDateForAnnualSettlement();
     bool needsAnnualSettlement( const QDate d);

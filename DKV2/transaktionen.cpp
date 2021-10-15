@@ -16,36 +16,20 @@
 #include "wiznewinvestment.h"
 #include "dlgchangecontracttermination.h"
 #include "dlgannualsettlement.h"
+#include "dlgaskdate.h"
 #include "wiznew.h"
 #include "transaktionen.h"
 
-bool postUpgradeActions(int sourceVersion, const QString& dbName)
+namespace
 {
-    autoDb db(dbName, qsl("postUpgradeActions"));
+bool postUpgradeActions(int /*sourceVersion*/, const QString& /*dbName*/)
+{
+    //    autoDb db(dbName, qsl("postUpgradeActions"));
     bool ret =true;
-    if( sourceVersion <= 5) {
-        // with version 6 the field zBegin was introduced in the Vertraege table
-        // it has to be initialized with the former "aktivierung" which is the date
-        // at which the dk payment reached our bank account
-        /* Step 1: handle already activated contracts */
-        const QString sqlSetZBeginnActiveContracts {qsl(R"str(
-UPDATE Vertraege SET zBeginn = bookings.minBDate
-FROM ( SELEcT Vertraege.id AS VertragsId, MIN(Datum) AS minBDate
-FRoM Buchungen Join Vertraege on Vertraege.id = Buchungen.VertragsId
-GROUP BY VertragsId) AS bookings
-WHERE Vertraege.id = bookings.VertragsId
-)str")};
-        ret &= executeSql_wNoRecords(sqlSetZBeginnActiveContracts, db);
-        /* Step 2: handle contracts w/o initial booking */
-        const QString sqlSetZBeginnInActiveContracts {qsl(R"str(
-UPDATE Vertraege SET zBeginn = '1900-01-01'
-WHERE id NOT IN (SELECT DiSTINCT VertragsId FROM Buchungen)
-            )str")};
-        ret &= executeSql_wNoRecords(sqlSetZBeginnInActiveContracts, db);
-    }
+    //  do stuff to adapt to new db depending on the source version
     return ret;
 }
-
+}
 bool checkSchema_ConvertIfneeded(const QString& origDbFile)
 {   LOG_CALL;
 
@@ -78,6 +62,106 @@ bool checkSchema_ConvertIfneeded(const QString& origDbFile)
     }
 }
 
+void newCreditorAndContract()
+{   LOG_CALL;
+    wizNew wiz(getMainWindow());
+    wiz.setField(pnNew, true);
+    wiz.setField(pnConfirmContract, false);
+    if( QDialog::Accepted == wiz.exec()) {
+        if( wiz.field(pnConfirmContract).toBool()) {
+            contract c;
+            c.setCreditorId(wiz.creditorId);
+            c.setPlannedInvest(wiz.field(pnAmount).toDouble());
+            c.setInterestRate(wiz.interest/100.);
+            c.setInvestment(wiz.investmentId);
+            c.setLabel(wiz.field(pnLabel).toString());
+            c.setConclusionDate(wiz.field(pnCDate).toDate());
+            c.setNoticePeriod(wiz.noticePeriod);
+            c.setPlannedEndDate(wiz.field(pnEDate).toDate());
+            c.setInterestModel(wiz.iPaymentMode);
+            c.setComment(wiz.field(pnContractComment).toString());
+            c.setInterestActive(not wiz.field(pnIPaymentDelayed).toBool());
+            if( -1 == c.saveNewContract()) {
+                qCritical() << "New contract could not be saved";
+                QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Der Vertrag konnte nicht "
+                                "gespeichert werden. Details findest Du in der Log Datei"));
+                return;
+            } else {
+                qInfo() << "New contract successfully saved";
+                return;
+            }
+        } else { // confirm was not selected
+            qCritical() << "User did not confirm contract data, but wizard was accepted?!";
+            QMessageBox::critical(getMainWindow(), qsl("Programm Fehler"), qsl("Der Vertrag konnte nicht "
+                            "gespeichert werden. Details findest Du in der Log Datei"));
+            return;
+        }
+    } else {
+        qInfo() << "User canceled creditor / contract creation";
+        return;
+    }
+}
+
+void editCreditor(qlonglong creditorId)
+{   LOG_CALL;
+    wizNew wiz(getMainWindow());
+    creditor cred(creditorId);
+    wiz.setField(pnFName, cred.firstname());
+    wiz.setField(pnLName, cred.lastname());
+    wiz.setField(pnStreet, cred.street());
+    wiz.setField(pnPcode, cred.postalCode());
+    wiz.setField(pnCity, cred.city());
+    wiz.setField(pnEMail, cred.email());
+    wiz.setField(pnComment, cred.comment());
+    wiz.setField(pnIban, cred.iban());
+    wiz.setField(pnBic, cred.bic());
+    wiz.selectCreateContract =false;
+    //wiz.setField(pnConfirmContract, false);
+    wiz.creditorId = creditorId;
+    wiz.setUpdateMode(true);
+    wiz.setStartId(page_address);
+
+    if( QDialog::Accepted == wiz.exec()) {
+        qInfo() << "successfully updated creditor";
+    }
+}
+void changeContractComment(contract* pc)
+{   LOG_CALL;
+    creditor cred(pc->creditorId());
+    QInputDialog ipd(getMainWindow());
+    ipd.setInputMode(QInputDialog::TextInput);
+    ipd.setWindowTitle(qsl("Anmerkung zum Vertrag ändern"));
+    ipd.setStyleSheet(qsl("* { font-size: 10pt; }") );
+    ipd.setTextValue(pc->comment());
+    ipd.setLabelText(qsl("Ändere den Kommentar zum Vertrag von ") +cred.firstname() + qsl(" ") +cred.lastname());
+    ipd.setOption(QInputDialog::UsePlainTextEditForTextInput, true);
+    if( ipd.exec() not_eq QDialog::Accepted) {
+        qInfo() << "inpud dlg canceled";
+        return;
+    }
+    if( pc->updateComment(ipd.textValue().trimmed())) {
+        qCritical() << "update comment failed";
+    }
+}
+void changeContractTermination(contract* pc)
+{   LOG_CALL;
+    qDebug() << pc->toString();
+    creditor cred(pc->creditorId());
+    dlgChangeContractTermination dlg(getMainWindow());
+
+    if( pc->initialBookingReceived())
+        dlg.setMinContractTerminationDate(pc->latestBooking().date);
+    else
+        dlg.setMinContractTerminationDate(pc->conclusionDate().addDays(1));
+
+    dlg.setEndDate(pc->plannedEndDate());
+    dlg.setNoticePeriod(pc->noticePeriod());
+
+    if( QDialog::Accepted == dlg.exec())
+        pc->updateTerminationDate(dlg.endDate(), dlg.noticePeriod());
+    return;
+}
+
 void activateContract(contract* v)
 {   LOG_CALL;
     creditor cred(v->creditorId());
@@ -89,10 +173,10 @@ void activateContract(contract* v)
     wiz.setField(fnAmount, v->plannedInvest());
     wiz.setField(fnDate, v->conclusionDate().addDays(1));
     wiz.minimalActivationDate =v->conclusionDate().addDays(1);
-    wiz.delayedInterest =v->interestDelayed();
+    wiz.delayedInterest =not v->interestActive();
     wiz.exec();
     if( not wiz.field(qsl("confirmed")).toBool()) {
-        qInfo() << "contract activation cancled by the user";
+        qInfo() << "contract activation canceled by the user";
         return;
     }
     if( not v->bookInitialPayment(wiz.field(fnDate).toDate(), wiz.field(fnAmount).toDouble())) {
@@ -101,6 +185,32 @@ void activateContract(contract* v)
     }
     return;
 }
+void activateInterest(contract* v)
+{   LOG_CALL;
+    Q_ASSERT(v->latestBooking().type != booking::Type::non);
+    QDate earlierstActivation =v->latestBooking().date;
+    dlgAskDate dlg(getMainWindow());
+    dlg.setDate(earlierstActivation);
+    dlg.setHeader(qsl("Aktivierung der Zinszahlung"));
+    dlg.setMsg(qsl("Gib das Datum an, zu dem die Zinszahlung des Vertrags aktiviert werden soll"));
+    do {
+        if( QDialog::Rejected == dlg.exec()) {
+            qInfo() << "interest activation was canceled by the user";
+            return;
+        }
+        if( dlg.date() < earlierstActivation) {
+            QString msg {qsl("Das Datum kann nicht vor dem letzten Buchungsdatum (%1) sein!").arg(earlierstActivation.toString(Qt::ISODate))};
+            QMessageBox::information(getMainWindow(), qsl("Ungültiges Datum"), msg);
+            continue;
+        }
+        break;
+    } while(true);
+    if( not v->bookActivateInterest(dlg.date())) {
+        QString msg {qsl("Beim der Buchung ist ein Fehler eingetreten - bitte schaue in die LOG Datei für weitere Informationen")};
+        QMessageBox::warning(getMainWindow(), qsl("Buchungsfehler"), msg);
+    }
+}
+
 void changeContractValue(contract* pc)
 {   LOG_CALL;
     if( not pc->initialBookingReceived()) {
@@ -130,48 +240,6 @@ void changeContractValue(contract* pc)
     } else
         qInfo() << "contract change was cancled by the user";
 }
-void deleteInactiveContract(contract* c)
-{   LOG_CALL;
-// contracts w/o bookings can be deleted
-// todo: wiz ui with confirmation?
-// if creditor has no other contracts: delete creditor
-    contract::remove(c->id());
-}
-
-void terminateContract(contract* pc)
-{   LOG_CALL;
-    if( pc->hasEndDate()) {
-        terminateContract_Final(*pc);
-    } else {
-        cancelContract(*pc);
-    }
- }
-void terminateContract_Final( contract& c)
-{   LOG_CALL;
-    wizTerminateContract wiz(getMainWindow(), c);
-    wiz.exec();
-    if( not wiz.field(qsl("confirm")).toBool())
-        return;
-    double interest =0., finalValue =0.;
-    if( not c.finalize(false, wiz.field(qsl("date")).toDate(), interest, finalValue)) {
-        qDebug() << "failed to terminate contract";
-    }
-    return;
-}
-void cancelContract( contract& c)
-{   LOG_CALL;
-    wizCancelContract wiz(getMainWindow());
-    wiz.c = c;
-    wiz.creditorName = executeSingleValueSql(qsl("Vorname || ' ' || Nachname"), qsl("Kreditoren"), qsl("id=") + QString::number(c.creditorId())).toString();
-    wiz.contractualEnd =QDate::currentDate().addMonths(c.noticePeriod());
-    wiz.exec();
-    if( not wiz.field(qsl("confirmed")).toBool()) {
-        qInfo() << "cancel wizard canceled by user";
-        return;
-    }
-    c.cancel(wiz.field(qsl("date")).toDate());
-}
-
 void annualSettlement()
 {   LOG_CALL;
     QDate bookingDate=bookings::dateOfnextSettlement();
@@ -241,73 +309,45 @@ void annualSettlement()
     return;
 }
 
-void editCreditor(qlonglong creditorId)
+void deleteInactiveContract(contract* c)
 {   LOG_CALL;
-    wizNew wiz(getMainWindow());
-    creditor cred(creditorId);
-    wiz.setField(pnFName, cred.firstname());
-    wiz.setField(pnLName, cred.lastname());
-    wiz.setField(pnStreet, cred.street());
-    wiz.setField(pnPcode, cred.postalCode());
-    wiz.setField(pnCity, cred.city());
-    wiz.setField(pnEMail, cred.email());
-    wiz.setField(pnComment, cred.comment());
-    wiz.setField(pnIban, cred.iban());
-    wiz.setField(pnBic, cred.bic());
-    wiz.selectCreateContract =false;
-    //wiz.setField(pnConfirmContract, false);
-    wiz.creditorId = creditorId;
-    wiz.setUpdateMode(true);
-    wiz.setStartId(page_address);
-
-    if( QDialog::Accepted == wiz.exec()) {
-        qInfo() << "successfully updated creditor";
-    }
+// contracts w/o bookings can be deleted
+// todo: wiz ui with confirmation?
+// if creditor has no other contracts: delete creditor
+    contract::remove(c->id());
 }
-void newCreditorAndContract()
+void terminateContract(contract* pc)
 {   LOG_CALL;
-    wizNew wiz(getMainWindow());
-    wiz.setField(pnNew, true);
-    wiz.setField(pnConfirmContract, false);
+    if( pc->hasEndDate()) {
+        terminateContract_Final(*pc);
+    } else {
+        cancelContract(*pc);
+    }
+ }
+void terminateContract_Final( contract& c)
+{   LOG_CALL;
+    wizTerminateContract wiz(getMainWindow(), c);
     wiz.exec();
+    if( not wiz.field(qsl("confirm")).toBool())
+        return;
+    double interest =0., finalValue =0.;
+    if( not c.finalize(false, wiz.field(qsl("date")).toDate(), interest, finalValue)) {
+        qDebug() << "failed to terminate contract";
+    }
     return;
 }
-
-void changeContractComment(contract* pc)
-{
-    creditor cred(pc->creditorId());
-    QInputDialog ipd(getMainWindow());
-    ipd.setInputMode(QInputDialog::TextInput);
-    ipd.setWindowTitle(qsl("Anmerkung zum Vertrag ändern"));
-    ipd.setStyleSheet(qsl("* { font-size: 10pt; }") );
-    ipd.setTextValue(pc->comment());
-    ipd.setLabelText(qsl("Ändere den Kommentar zum Vertrag von ") +cred.firstname() + qsl(" ") +cred.lastname());
-    ipd.setOption(QInputDialog::UsePlainTextEditForTextInput, true);
-    if( ipd.exec() not_eq QDialog::Accepted) {
-        qInfo() << "inpud dlg canceled";
+void cancelContract( contract& c)
+{   LOG_CALL;
+    wizCancelContract wiz(getMainWindow());
+    wiz.c = c;
+    wiz.creditorName = executeSingleValueSql(qsl("Vorname || ' ' || Nachname"), qsl("Kreditoren"), qsl("id=") + QString::number(c.creditorId())).toString();
+    wiz.contractualEnd =QDate::currentDate().addMonths(c.noticePeriod());
+    wiz.exec();
+    if( not wiz.field(qsl("confirmed")).toBool()) {
+        qInfo() << "cancel wizard canceled by user";
         return;
     }
-    if( pc->updateComment(ipd.textValue().trimmed())) {
-        qCritical() << "update comment failed";
-    }
-}
-void changeContractTermination(contract* pc)
-{
-    qDebug() << pc->toString();
-    creditor cred(pc->creditorId());
-    dlgChangeContractTermination dlg(getMainWindow());
-
-    if( pc->initialBookingReceived())
-        dlg.setMinContractTerminationDate(pc->latestBooking().date);
-    else
-        dlg.setMinContractTerminationDate(pc->conclusionDate().addDays(1));
-
-    dlg.setEndDate(pc->plannedEndDate());
-    dlg.setNoticePeriod(pc->noticePeriod());
-
-    if( QDialog::Accepted == dlg.exec())
-        pc->updateTerminationDate(dlg.endDate(), dlg.noticePeriod());
-    return;
+    c.cancel(wiz.field(qsl("date")).toDate());
 }
 
 qlonglong createInvestment(int& interest, QDate& from, QDate& to)

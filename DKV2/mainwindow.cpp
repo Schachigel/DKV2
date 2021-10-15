@@ -10,7 +10,7 @@
 #include "wiznewdatabase.h"
 #include "investment.h"
 #include "wizopenornewdatabase.h"
-#include "dlgaskdata.h"
+#include "dlgaskdate.h"
 #include "appconfig.h"
 #include "csvwriter.h"
 #include "uiitemformatter.h"
@@ -107,9 +107,11 @@ QString MainWindow::findValidDatabaseToUse()
         return dbPath;
     // NO db given on the commandline - use LastDb if available
     dbPath =appConfig::LastDb();
-    if(checkSchema_ConvertIfneeded(dbPath)){
-        qInfo() << "last db will be reopened " << dbPath;
-        return dbPath;
+    if(QFile(dbPath).exists()) {
+        if(checkSchema_ConvertIfneeded(dbPath)) {
+            qInfo() << "last db will be reopened " << dbPath;
+            return dbPath;
+        }
     }
     // last used db is not valid -> ask for another one
     qInfo() << dbPath << " aus der Konfiguration ist keine valide Datenbank";
@@ -978,3 +980,4 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settings.setValue(qsl("windowState"), saveState());
     event->accept();
 }
+

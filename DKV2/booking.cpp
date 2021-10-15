@@ -35,14 +35,11 @@
 {
     switch(t)
     {
-    case booking::Type::deposit :
-        return qsl("Einzahlung");
-    case booking::Type::payout :
-        return qsl("Auszahlung");
-    case booking::Type::reInvestInterest:
-        return qsl("Zinsanrechnung");
-    case booking::Type::annualInterestDeposit:
-        return qsl("Jahreszins");
+    case booking::Type::deposit : return qsl("Einzahlung");
+    case booking::Type::payout : return qsl("Auszahlung");
+    case booking::Type::reInvestInterest: return qsl("Zinsanrechnung");
+    case booking::Type::annualInterestDeposit: return qsl("Jahreszins");
+    case booking::Type::setInterestActive: return qsl("Aktivierung d. Zinszahlung");
     default:
         QString error{qsl("FEHLER: ungültiger Buchungstyp")};
         Q_ASSERT(false);
@@ -56,7 +53,8 @@
     case booking::Type::deposit: return qsl("deposit");
     case booking::Type::payout: return qsl("payout");
     case booking::Type::reInvestInterest: return qsl("reinvest interest");
-    case booking::Type::annualInterestDeposit: return qsl("annual Interest");
+    case booking::Type::annualInterestDeposit: return qsl("annual interest");
+    case booking::Type::setInterestActive: return qsl("interest activation");
     default: return qsl("ERROR");
     }
 }
@@ -95,6 +93,11 @@
 {
     Q_ASSERT( amount >= 0.);
     return doBooking(Type::annualInterestDeposit, contractId, date, amount);
+}
+
+/* static */ bool booking::bookInterestActive(const qlonglong contractId, QDate date)
+{
+    return doBooking(Type::setInterestActive, contractId, date, 0.);
 }
 
 /* static */ QDate bookings::dateOfnextSettlement()

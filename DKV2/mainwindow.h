@@ -180,6 +180,7 @@ private slots:
 
     void on_btnAutoClose_clicked();
 
+    void on_action_cmenu_activate_interest_payment_triggered();
 
 private:
     Ui::MainWindow *ui;
