@@ -24,8 +24,6 @@
 /*static*/ const QString contract::fnZAktiv{qsl("zActive")};
 /*static*/ const QString contract::fnZeitstempel{qsl("Zeitstempel")};
 
-
-
 /*static*/ const dbtable& contract::getTableDef()
 {
     static dbtable contractTable(tnContracts);
@@ -255,12 +253,15 @@ bool contract::bookInitialPayment(const QDate date, double amount)
         return false;
     }
 
-    if ( not booking::bookDeposit(id(), actualBookingDate, amount)) {
-            qCritical() << "Failed to execut activation on contract " << id_aS() << qsl(" [") << actualBookingDate.toString() << qsl(", ") << QString::number(amount) << qsl("]");
-            return false;
+    if ( booking::bookDeposit(id(), actualBookingDate, amount)) {
+        setLatestBooking({id(), booking::Type::deposit, actualBookingDate, amount});
+        setInitialBookingDate(actualBookingDate);
+        qInfo() << "Successfully activated contract " << id_aS() << "[" << actualBookingDate << ", " << amount << " Euro]";
+        return true;
+    } else {
+        qCritical() << "Failed to execut activation on contract " << id_aS() << qsl(" [") << actualBookingDate.toString() << qsl(", ") << QString::number(amount) << qsl("]");
+        return false;
     }
-    qInfo() << "Successfully activated contract " << id_aS() << "[" << actualBookingDate << ", " << amount << " Euro]";
-    return true;
 }
 bool contract::initialBookingReceived() const
 {
