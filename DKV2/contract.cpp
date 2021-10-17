@@ -285,6 +285,16 @@ bool contract::bookActivateInterest(QDate d)
 {   LOG_CALL_W(d.toString());
 
     autoRollbackTransaction art;
+
+    QDate actualDate =avoidYearEndBookings(d);
+    if ( latestBooking().date >= d) {
+        qCritical() << "could not activate interest on same data as last booking";
+        return false;
+    }
+    if( not bookInBetweenInterest(actualDate)) {
+        qCritical() << "could not book inbetween interest on ";
+        return false;
+    }
     if( updateInterestActive(true)
             &&
         booking::bookInterestActive(id(), d))

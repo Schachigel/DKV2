@@ -188,7 +188,7 @@ void activateContract(contract* v)
 void activateInterest(contract* v)
 {   LOG_CALL;
     Q_ASSERT(v->latestBooking().type != booking::Type::non);
-    QDate earlierstActivation =v->latestBooking().date;
+    QDate earlierstActivation =v->latestBooking().date.addDays(1);
     dlgAskDate dlg(getMainWindow());
     dlg.setDate(earlierstActivation);
     dlg.setHeader(qsl("Aktivierung der Zinszahlung"));
