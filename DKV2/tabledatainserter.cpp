@@ -78,9 +78,9 @@ bool TableDataInserter::updateValue(const QString& n, const QVariant& v, qlonglo
     if( not v.isValid() || v.isNull()) {
         setValueNULL(n);
     } else {
-        setValue(n, DbInsertableString(v));
+        setValue(n, v);
     }
-    QString sql{qsl("UPDATE %1 SET %2=%3 ").arg( tablename, n, record.field(n).value().toString())};
+    QString sql{qsl("UPDATE %1 SET %2=%3 ").arg( tablename, n, DbInsertableString(record.field(n).value()))};
 
     QString where {qsl(" WHERE %4=%5")};
     bool whereDone =false;
