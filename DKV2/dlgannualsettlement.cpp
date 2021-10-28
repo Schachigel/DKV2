@@ -19,7 +19,7 @@ dlgAnnualsettlement::dlgAnnualsettlement(QWidget *parent, int year) : QDialog(pa
     g->addWidget(title, row++, 1);
 
     Q_ASSERT(year);
-    QString msgtxt =qsl("Die Abrechnung für das Folgende Jahr kann gemacht werden:<p><b>%1<b>");
+    QString msgtxt =qsl("Die Abrechnung für das folgende Jahr kann gemacht werden:<p><b>%1<b>");
     QLabel* msg =new QLabel(msgtxt.arg(QString::number(year)));
     msg->setWordWrap(true);
     g->addWidget(msg, row++, 1);
