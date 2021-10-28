@@ -357,8 +357,7 @@ bool contract::needsAnnualSettlement(const QDate intendedNextBooking)
 int contract::annualSettlement( int year)
 {   LOG_CALL_W(QString::number(year));
     // perform annualSettlement, recursive until 'year'
-    // or only once if year is 0
-
+    Q_ASSERT(year);
     if( not initialBookingReceived()) return 0;
 
     executeSql_wNoRecords(qsl("SAVEPOINT as_savepoint"));
@@ -368,11 +367,10 @@ int contract::annualSettlement( int year)
     bool bookingSuccess =false;
     while(nextAnnualSettlementDate <= requestedSettlementDate) {
         double baseValue =interestBearingValue();
-                     //////////
-//        double zins =ZinsesZins(interestRate(), baseValue, latestBooking().date, nextAnnualSettlementDate);
+          //////////
         double zins =ZinsesZins(actualInterestRate(),
                                 baseValue, latestBooking().date, nextAnnualSettlementDate);
-                     //////////
+        //////////
         switch(iModel()) {
         case interestModel::reinvest:
         case interestModel::fixed:

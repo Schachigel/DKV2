@@ -60,7 +60,7 @@ void MainWindow::on_btn_reset_filter_creditors_clicked()
 }
 void MainWindow::on_action_menu_creditors_delete_triggered()
 {
-    on_action_cmenu_delete_creaditor_triggered();
+    on_action_cmenu_delete_creditor_triggered();
 }
 
 // Context Menue in Creditor Table
@@ -68,36 +68,37 @@ void MainWindow::on_CreditorsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;
     QModelIndex index = ui->CreditorsTableView->indexAt(pos).siblingAtColumn(0);
     if( index.isValid()) {
-        int credIndex =ui->CreditorsTableView->model()->data(index.siblingAtColumn(0)).toInt();
-        int nbrOfContracts =executeSingleValueSql(qsl("SELECT count(*) FROM Vertraege WHERE KreditorId=%1").arg(credIndex)).toInt();
+        int nbrOfContracts =executeSingleValueSql(qsl("SELECT count(*) FROM Vertraege WHERE KreditorId=%1").arg(id_SelectedCreditor())).toInt();
 
         QMenu menu( qsl("PersonContextMenu"), this);
         menu.addAction(ui->action_cmenu_edit_creditor);
         if( nbrOfContracts > 0)
             menu.addAction(ui->action_cmenu_go_contracts);
         else
-            menu.addAction(ui->action_cmenu_delete_creaditor);
+            menu.addAction(ui->action_cmenu_delete_creditor);
         menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
         return;
     }
 }
 void MainWindow::on_action_cmenu_edit_creditor_triggered()
 {   LOG_CALL;
-    QModelIndex mi(ui->CreditorsTableView->currentIndex());
-    QVariant index = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(0));
-
-    editCreditor(index.toInt());
+    editCreditor(id_SelectedCreditor());
     updateViews();
 }
-void MainWindow::on_action_cmenu_delete_creaditor_triggered()
+void MainWindow::on_action_cmenu_delete_creditor_triggered()
 {   LOG_CALL;
-    const QTableView * const tv = ui->CreditorsTableView;
-    QModelIndex mi(tv->currentIndex());
-    qlonglong index = tv->model()->data(mi.siblingAtColumn(0)).toLongLong();
-    creditor c (index);
+//    const QTableView * const tv = ui->CreditorsTableView;
+//    QModelIndex mi(tv->currentIndex());
+//    qlonglong index = tv->model()->data(mi.siblingAtColumn(0)).toLongLong();
+    int creditorId =id_SelectedCreditor();
+    if( creditorId <=0 ) {
+        QMessageBox::critical(this, qsl("Fehler"), qsl("Beim Löschen ist ein Fehler aufgetreten. Details findest Du im der LOG Datei"));
+        return;
+    }
 
+    creditor c (id_SelectedCreditor());
     QString msg( qsl("Soll der Kreditgeber %1 %2 (id %3) gelöscht werden?"));
-    msg =msg.arg(c.getValue(qsl("Vorname")).toString(), c.getValue(qsl("Nachname")).toString(), QString::number(index));
+    msg =msg.arg(c.getValue(qsl("Vorname")).toString(), c.getValue(qsl("Nachname")).toString(), QString::number(id_SelectedCreditor()));
 
     if( QMessageBox::Yes not_eq QMessageBox::question(this, qsl("Kreditgeber löschen?"), msg))
         return;
@@ -111,39 +112,11 @@ void MainWindow::on_action_cmenu_delete_creaditor_triggered()
 void MainWindow::on_action_cmenu_go_contracts_triggered()
 {   LOG_CALL;
     busycursor b;
-    QModelIndex mi(ui->CreditorsTableView->currentIndex());
-    QString index = ui->CreditorsTableView->model()->data(mi.siblingAtColumn(0)).toString();
-    ui->le_ContractsFilter->setText(qsl("kreditor:") +index);
+    ui->le_ContractsFilter->setText(qsl("kreditor:") +QString::number(id_SelectedCreditor()));
     on_action_menu_contracts_listview_triggered();
 }
 
 // new creditor and contract Wiz
-void MainWindow::updateViews()
-{
-    QSqlTableModel* temp;
-
-    if( ui->stackedWidget->currentIndex() == creditorsListPageIndex) {
-        if( (temp =qobject_cast<QSqlTableModel*>(ui->CreditorsTableView->model())))
-            temp->select();
-    }
-    if( ui->stackedWidget->currentIndex() == contractsListPageIndex) {
-        if( (temp =qobject_cast<QSqlTableModel*>(ui->contractsTableView->model())))
-            temp->select();
-        if( (temp =qobject_cast<QSqlTableModel*>(ui->bookingsTableView ->model())))
-            temp->select();
-        ui->contractsTableView->resizeColumnsToContents();
-        ui->contractsTableView->resizeRowsToContents();
-        ui->bookingsTableView->resizeColumnsToContents();
-        qobject_cast<ContractTableModel*>(ui->contractsTableView->model())->setCol13ExtraData();
-    }
-    if( ui->stackedWidget->currentIndex() == investmentsPageIndex) {
-        prepare_investmentsListView();
-    }
-    if( ui->stackedWidget->currentIndex() == overviewsPageIndex)
-        on_action_menu_contracts_statistics_view_triggered();
-    if( ui->stackedWidget->currentIndex() == overviewsPageIndex)
-        updateUebersichtView(ui->comboUebersicht->currentIndex());
-}
 void MainWindow::on_actionNeu_triggered()
 {
     newCreditorAndContract();

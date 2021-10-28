@@ -77,7 +77,7 @@ private slots:
 
     void on_CreditorsTableView_customContextMenuRequested(QPoint pos);
 
-    void on_action_cmenu_delete_creaditor_triggered();
+    void on_action_cmenu_delete_creditor_triggered();
 
     void on_contractsTableView_customContextMenuRequested(QPoint pos);
 

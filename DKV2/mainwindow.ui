@@ -776,7 +776,7 @@
     <string>Löschen</string>
    </property>
   </action>
-  <action name="action_cmenu_delete_creaditor">
+  <action name="action_cmenu_delete_creditor">
    <property name="text">
     <string>Löschen</string>
    </property>

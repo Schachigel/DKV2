@@ -19,6 +19,7 @@
 #include "dkdbcopy.h"
 #include "dkdbviews.h"
 #include "letters.h"
+#include "contracttablemodel.h"
 #include "transaktionen.h"
 #include "uebersichten.h"
 
@@ -275,6 +276,34 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
         qWarning() << "stackedWidget current change not implemented for this index " << arg1;
     }// e.o. switch
     return;
+}
+
+// when data was changed in a wizzard and the view has to be updated
+void MainWindow::updateViews()
+{
+    QSqlTableModel* temp;
+
+    if( ui->stackedWidget->currentIndex() == creditorsListPageIndex) {
+        if( (temp =qobject_cast<QSqlTableModel*>(ui->CreditorsTableView->model())))
+            temp->select();
+    }
+    if( ui->stackedWidget->currentIndex() == contractsListPageIndex) {
+        if( (temp =qobject_cast<QSqlTableModel*>(ui->contractsTableView->model())))
+            temp->select();
+        if( (temp =qobject_cast<QSqlTableModel*>(ui->bookingsTableView ->model())))
+            temp->select();
+        ui->contractsTableView->resizeColumnsToContents();
+        ui->contractsTableView->resizeRowsToContents();
+        ui->bookingsTableView->resizeColumnsToContents();
+        qobject_cast<ContractTableModel*>(ui->contractsTableView->model())->setCol13ExtraData();
+    }
+    if( ui->stackedWidget->currentIndex() == investmentsPageIndex) {
+        prepare_investmentsListView();
+    }
+    if( ui->stackedWidget->currentIndex() == overviewsPageIndex)
+        on_action_menu_contracts_statistics_view_triggered();
+    if( ui->stackedWidget->currentIndex() == overviewsPageIndex)
+        updateUebersichtView(ui->comboUebersicht->currentIndex());
 }
 
 // the empty "welcome" page
