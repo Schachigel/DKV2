@@ -68,10 +68,15 @@ void MainWindow::on_CreditorsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;
     QModelIndex index = ui->CreditorsTableView->indexAt(pos).siblingAtColumn(0);
     if( index.isValid()) {
+        int credIndex =ui->CreditorsTableView->model()->data(index.siblingAtColumn(0)).toInt();
+        int nbrOfContracts =executeSingleValueSql(qsl("SELECT count(*) FROM Vertraege WHERE KreditorId=%1").arg(credIndex)).toInt();
+
         QMenu menu( qsl("PersonContextMenu"), this);
         menu.addAction(ui->action_cmenu_edit_creditor);
-        menu.addAction(ui->action_cmenu_delete_creaditor);
-        menu.addAction(ui->action_cmenu_go_contracts);
+        if( nbrOfContracts > 0)
+            menu.addAction(ui->action_cmenu_go_contracts);
+        else
+            menu.addAction(ui->action_cmenu_delete_creaditor);
         menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
         return;
     }
