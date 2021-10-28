@@ -722,7 +722,7 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_menu_database_new">
    <property name="text">
-    <string>&amp;Wechseln</string>
+    <string>&amp;Wechseln...</string>
    </property>
    <property name="toolTip">
     <string>Legen Sie hiermit eine leere DK Datenbank an</string>
@@ -760,7 +760,7 @@
   </action>
   <action name="action_menu_contracts_listview">
    <property name="text">
-    <string>&amp;Liste </string>
+    <string>&amp;Liste anzeigen</string>
    </property>
   </action>
   <action name="action_menu_debug_create_sample_data">
@@ -841,7 +841,7 @@
   </action>
   <action name="action_menu_contracts_annual_interest_settlement">
    <property name="text">
-    <string>&amp;Jahreszinsabrechnung</string>
+    <string>&amp;Jahreszinsabrechnung...</string>
    </property>
   </action>
   <action name="action_menu_database_configure_outdir">
@@ -852,7 +852,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Ausgabeverzeichnis festlegen</string>
+    <string>Ausgabeverzeichnis festlegen...</string>
    </property>
   </action>
   <action name="action_menu_contracts_print_lists">
@@ -867,12 +867,12 @@
   </action>
   <action name="action_menu_database_anonymous_copy">
    <property name="text">
-    <string>Anonymisierte &amp;Kopie</string>
+    <string>Anonymisierte &amp;Kopie...</string>
    </property>
   </action>
   <action name="action_menu_database_copy">
    <property name="text">
-    <string>Kopie anlegen</string>
+    <string>Kopie anlegen...</string>
    </property>
   </action>
   <action name="action_about_DKV2">
@@ -895,17 +895,17 @@
   </action>
   <action name="actionBeendete_Vertr_ge_anzeigen">
    <property name="text">
-    <string>&amp;Beendete</string>
+    <string>&amp;Beendete V. anzeigen</string>
    </property>
   </action>
   <action name="actionProjektkonfiguration_ndern">
    <property name="text">
-    <string>Projektkonfiguration ändern</string>
+    <string>Projektkonfiguration ändern...</string>
    </property>
   </action>
   <action name="actionNeu">
    <property name="text">
-    <string>&amp;Neu anlegen</string>
+    <string>&amp;Neu anlegen...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
@@ -913,7 +913,7 @@
   </action>
   <action name="action_Neu">
    <property name="text">
-    <string>&amp;Neu anlegen</string>
+    <string>&amp;Neu anlegen...</string>
    </property>
   </action>
   <action name="actionAktuelle_Auswahl">
