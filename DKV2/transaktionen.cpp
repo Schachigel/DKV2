@@ -75,13 +75,13 @@ void newCreditorAndContract()
         return;
     }
     // one can only come here, if the users accepted the creation of the creditor
-    if( not wiz.creditor.isValid()) {
+    if( not wiz.c_tor.isValid()) {
         // the user was checked during validation of the wizard -> very wrong
         qCritical() << "invalid creditor data -> we have to fail";
         return;
     }
     if( wiz.inUpdateMode()) {
-        if( wiz.creditor.update() >0) {
+        if( wiz.c_tor.update() >0) {
             qInfo() << "creditor updated successfully";
         } else {
             QMessageBox::critical(getMainWindow(), qsl("Programm Fehler"), qsl("Die Kundeninfo konnte nicht "
@@ -89,7 +89,7 @@ void newCreditorAndContract()
             return;
         }
     } else {
-        if( wiz.creditor.save() >= 0)
+        if( wiz.c_tor.save() >= 0)
             qInfo() << "creditor created successfully";
         else {
             QMessageBox::critical(getMainWindow(), qsl("Programm Fehler"), qsl("Die Kundeninfo konnte nicht "
@@ -103,7 +103,7 @@ void newCreditorAndContract()
         return;
     }
     contract cont;
-    cont.setCreditorId(wiz.creditor.id());
+    cont.setCreditorId(wiz.c_tor.id());
     cont.setPlannedInvest(wiz.field(pnAmount).toDouble());
     cont.setInterestRate(wiz.interest/100.);
     cont.setInvestment(wiz.investmentId);

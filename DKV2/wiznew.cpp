@@ -359,16 +359,16 @@ bool wpConfirmCreditor::validatePage()
     wizNew* wiz =qobject_cast<wizNew*> (wizard());
     wiz->createCreditor =field(pnConfirmCreditor).toBool();
 
-    wiz->creditor.setFirstname( wiz->field(pnFName).toString());
-    wiz->creditor.setLastname(  wiz->field(pnLName).toString());
-    wiz->creditor.setStreet(    wiz->field(pnStreet).toString());
-    wiz->creditor.setPostalCode(wiz->field(pnPcode).toString());
-    wiz->creditor.setCity(      wiz->field(pnCity).toString());
-    wiz->creditor.setCountry(   wiz->field(pnCountry).toString());
-    wiz->creditor.setEmail(     wiz->field(pnEMail).toString());
-    wiz->creditor.setComment(   wiz->field(pnComment).toString());
-    wiz->creditor.setIban(      wiz->field(pnIban).toString());
-    wiz->creditor.setBic(       wiz->field(pnBic).toString());
+    wiz->c_tor.setFirstname( wiz->field(pnFName).toString());
+    wiz->c_tor.setLastname(  wiz->field(pnLName).toString());
+    wiz->c_tor.setStreet(    wiz->field(pnStreet).toString());
+    wiz->c_tor.setPostalCode(wiz->field(pnPcode).toString());
+    wiz->c_tor.setCity(      wiz->field(pnCity).toString());
+    wiz->c_tor.setCountry(   wiz->field(pnCountry).toString());
+    wiz->c_tor.setEmail(     wiz->field(pnEMail).toString());
+    wiz->c_tor.setComment(   wiz->field(pnComment).toString());
+    wiz->c_tor.setIban(      wiz->field(pnIban).toString());
+    wiz->c_tor.setBic(       wiz->field(pnBic).toString());
 
     return true;
 }

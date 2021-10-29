@@ -237,7 +237,7 @@ struct wizNew : public QWizard
     void setUpdateMode(bool b=true){ updateMode =b;}
     bool inUpdateMode() {return updateMode;}
     bool createCreditor =false; // the corresponding field becomes false on cancel during contract dialog
-    creditor creditor;
+    creditor c_tor;
     bool selectCreateContract =true; // for edit creditor this should be false
 private:
     Q_OBJECT;
