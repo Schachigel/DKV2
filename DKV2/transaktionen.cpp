@@ -22,7 +22,7 @@
 
 namespace
 {
-bool postUpgradeActions(int /*sourceVersion*/, const QString& /*dbName*/)
+bool postDB_UpgradeActions(int /*sourceVersion*/, const QString& /*dbName*/)
 {
     //    autoDb db(dbName, qsl("postUpgradeActions"));
     bool ret =true;
@@ -47,7 +47,7 @@ bool checkSchema_ConvertIfneeded(const QString& origDbFile)
             return false;
         }
         // actions which depend on the source version of the db
-        if( not postUpgradeActions(version_of_original_file, origDbFile)) {
+        if( not postDB_UpgradeActions(version_of_original_file, origDbFile)) {
             QMessageBox::critical( getMainWindow(), qsl("Fehler"), qsl("Bei der Konvertierung ist ein Fehler aufgetreten. Die Ausführung muss beendet werden."));
             qCritical() << "db converstion of older DB failed";
             return false;
@@ -67,39 +67,61 @@ void newCreditorAndContract()
     wizNew wiz(getMainWindow());
     wiz.setField(pnNew, true);
     wiz.setField(pnConfirmContract, false);
-    if( QDialog::Accepted == wiz.exec()) {
-        if( wiz.field(pnConfirmContract).toBool()) {
-            contract c;
-            c.setCreditorId(wiz.creditorId);
-            c.setPlannedInvest(wiz.field(pnAmount).toDouble());
-            c.setInterestRate(wiz.interest/100.);
-            c.setInvestment(wiz.investmentId);
-            c.setLabel(wiz.field(pnLabel).toString());
-            c.setConclusionDate(wiz.field(pnCDate).toDate());
-            c.setNoticePeriod(wiz.noticePeriod);
-            c.setPlannedEndDate(wiz.field(pnEDate).toDate());
-            c.setInterestModel(wiz.iPaymentMode);
-            c.setComment(wiz.field(pnContractComment).toString());
-            c.setInterestActive(not wiz.field(pnIPaymentDelayed).toBool());
-            if( -1 == c.saveNewContract()) {
-                qCritical() << "New contract could not be saved";
-                QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Der Vertrag konnte nicht "
-                                "gespeichert werden. Details findest Du in der Log Datei"));
-                return;
-            } else {
-                qInfo() << "New contract successfully saved";
-                return;
-            }
-        } else { // confirm was not selected
-            qCritical() << "User did not confirm contract data, but wizard was accepted?!";
-            QMessageBox::critical(getMainWindow(), qsl("Programm Fehler"), qsl("Der Vertrag konnte nicht "
-                            "gespeichert werden. Details findest Du in der Log Datei"));
+
+    /*auto wizRes =*/ wiz.exec();
+
+    if( not wiz.createCreditor) {
+        qInfo() << "User decided against creditor creation";
+        return;
+    }
+    // one can only come here, if the users accepted the creation of the creditor
+    if( not wiz.creditor.isValid()) {
+        // the user was checked during validation of the wizard -> very wrong
+        qCritical() << "invalid creditor data -> we have to fail";
+        return;
+    }
+    if( wiz.inUpdateMode()) {
+        if( wiz.creditor.update() >0) {
+            qInfo() << "creditor updated successfully";
+        } else {
+            QMessageBox::critical(getMainWindow(), qsl("Programm Fehler"), qsl("Die Kundeninfo konnte nicht "
+                            "geändert werden. Details findest Du in der Log Datei."));
             return;
         }
     } else {
-        qInfo() << "User canceled creditor / contract creation";
+        if( wiz.creditor.save() >= 0)
+            qInfo() << "creditor created successfully";
+        else {
+            QMessageBox::critical(getMainWindow(), qsl("Programm Fehler"), qsl("Die Kundeninfo konnte nicht "
+                            "gespeichert werden. Details findest Du in der Log Datei."));
+            return;
+        }
+    }
+
+    if( not wiz.field(pnConfirmContract).toBool()) {
+        qInfo() << "user decided not to save the creditor";
         return;
     }
+    contract cont;
+    cont.setCreditorId(wiz.creditor.id());
+    cont.setPlannedInvest(wiz.field(pnAmount).toDouble());
+    cont.setInterestRate(wiz.interest/100.);
+    cont.setInvestment(wiz.investmentId);
+    cont.setLabel(wiz.field(pnLabel).toString());
+    cont.setConclusionDate(wiz.field(pnCDate).toDate());
+    cont.setNoticePeriod(wiz.noticePeriod);
+    cont.setPlannedEndDate(wiz.field(pnEDate).toDate());
+    cont.setInterestModel(wiz.iPaymentMode);
+    cont.setComment(wiz.field(pnContractComment).toString());
+    cont.setInterestActive(not wiz.field(pnIPaymentDelayed).toBool());
+    if( -1 == cont.saveNewContract()) {
+        qCritical() << "New contract could not be saved";
+        QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Der Vertrag konnte nicht "
+                            "gespeichert werden. Details findest Du in der Log Datei"));
+    } else {
+        qInfo() << "New contract successfully saved";
+    }
+    return;
 }
 
 void editCreditor(qlonglong creditorId)

@@ -356,45 +356,25 @@ void wpConfirmCreditor::initializePage()
 }
 bool wpConfirmCreditor::validatePage()
 {   LOG_CALL;
-    creditor c;
-    if( field(pnConfirmCreditor).toBool()) {
-        c.setFirstname( field(pnFName).toString());
-        c.setLastname(  field(pnLName).toString());
-        c.setStreet(    field(pnStreet).toString());
-        c.setPostalCode(field(pnPcode).toString());
-        c.setCity(      field(pnCity).toString());
-        c.setCountry(   field(pnCountry).toString());
-        c.setEmail(     field(pnEMail).toString());
-        c.setComment(   field(pnComment).toString());
-        c.setIban(      field(pnIban).toString());
-        c.setBic(       field(pnBic).toString());
-    } else {
-        QMessageBox::information(this, qsl("Bestätigung fehlt"), qsl("Du kannst die Richtigkeit der Daten bestätigen oder die Dialogfolge abbrechen."));
-        return false;
-    }
     wizNew* wiz =qobject_cast<wizNew*> (wizard());
-    if( wiz->inUpdateMode()){
-        if( wiz) {
-            c.setId(wiz->creditorId);
-            return (c.update() >0);
-        }
-    } else {
-        QString errorText;
-        if( c.isValid(errorText))
-            wiz->creditorId =c.save();
-        if( wiz->creditorId == -1) {
-            QMessageBox::critical(this, qsl("Fehler"), qsl("Der Kreditor konnte nicht gespeichert werden. ") + errorText);
-            return false;
-        } else {
-            qInfo() << "successfully created creditor " << c.id();
-            return true;
-        }
-    }
-    Q_ASSERT("one should never come here");
-    return false;
+    wiz->createCreditor =field(pnConfirmCreditor).toBool();
+
+    wiz->creditor.setFirstname( wiz->field(pnFName).toString());
+    wiz->creditor.setLastname(  wiz->field(pnLName).toString());
+    wiz->creditor.setStreet(    wiz->field(pnStreet).toString());
+    wiz->creditor.setPostalCode(wiz->field(pnPcode).toString());
+    wiz->creditor.setCity(      wiz->field(pnCity).toString());
+    wiz->creditor.setCountry(   wiz->field(pnCountry).toString());
+    wiz->creditor.setEmail(     wiz->field(pnEMail).toString());
+    wiz->creditor.setComment(   wiz->field(pnComment).toString());
+    wiz->creditor.setIban(      wiz->field(pnIban).toString());
+    wiz->creditor.setBic(       wiz->field(pnBic).toString());
+
+    return true;
 }
 int wpConfirmCreditor::nextId() const
 {   LOG_CALL;
+
     if( field(pnCreateContract).toBool())
         return page_label_and_amount;
     else
