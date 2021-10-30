@@ -80,22 +80,13 @@ void newCreditorAndContract()
         qCritical() << "invalid creditor data -> we have to fail";
         return;
     }
-    if( wiz.inUpdateMode()) {
-        if( wiz.c_tor.update() >0) {
-            qInfo() << "creditor updated successfully";
-        } else {
-            QMessageBox::critical(getMainWindow(), qsl("Programm Fehler"), qsl("Die Kundeninfo konnte nicht "
-                            "geändert werden. Details findest Du in der Log Datei."));
-            return;
-        }
-    } else {
-        if( wiz.c_tor.save() >= 0)
-            qInfo() << "creditor created successfully";
-        else {
-            QMessageBox::critical(getMainWindow(), qsl("Programm Fehler"), qsl("Die Kundeninfo konnte nicht "
+
+    if( wiz.c_tor.save() >= 0)
+        qInfo() << "creditor created successfully";
+    else {
+        QMessageBox::critical(getMainWindow(), qsl("Programm Fehler"), qsl("Die Kundeninfo konnte nicht "
                             "gespeichert werden. Details findest Du in der Log Datei."));
-            return;
-        }
+        return;
     }
 
     if( not wiz.field(pnConfirmContract).toBool()) {
@@ -140,11 +131,17 @@ void editCreditor(qlonglong creditorId)
     wiz.selectCreateContract =false;
     //wiz.setField(pnConfirmContract, false);
     wiz.creditorId = creditorId;
-    wiz.setUpdateMode(true);
     wiz.setStartId(page_address);
 
     if( QDialog::Accepted == wiz.exec()) {
-        qInfo() << "successfully updated creditor";
+        wiz.c_tor.setId(creditorId);
+        if(wiz.c_tor.update())
+            qInfo() << "successfully updated creditor";
+        else {
+            QMessageBox::critical(getMainWindow(), qsl("Programm Fehler"), qsl("Die Kundeninfo konnte nicht "
+                            "geändert werden. Details findest Du in der Log Datei."));
+            return;
+        }
     }
 }
 void changeContractComment(contract* pc)
