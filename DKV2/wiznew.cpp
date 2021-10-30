@@ -159,18 +159,6 @@ wpNewCreditorAddress::wpNewCreditorAddress(QWidget* p) : QWizardPage(p)
 
     setLayout(grid);
 }
-void wpNewCreditorAddress::initializePage()
-{
-    //    wizNew* wiz =qobject_cast<wizNew*> (wizard());
-    //    if( not wiz->inUpdateMode()) {
-    //        setField(pnFName, QString());
-    //        setField(pnLName, QString());
-    //        setField(pnStreet, QString());
-    //        setField(pnPcode, QString());
-    //        setField(pnCity, QString());
-    //        setField(pnCountry, QString());
-    //    }
-}
 bool wpNewCreditorAddress::validatePage()
 {   LOG_CALL;
     setField(pnFName,     field(pnFName).toString().trimmed());

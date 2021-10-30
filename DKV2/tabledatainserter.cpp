@@ -182,6 +182,7 @@ QString TableDataInserter::getUpdateRecordSQL(qlonglong& autovalue) const
         if( not firstField) sql += qsl(", ");
         if( record.field(i).isNull()) {
             sql += record.field(i).name() +qsl("=NULL");
+            firstField = false;
         }
         // WARN ! THIS will work with exactly 1 AutoValue. if it is missing ...
         else if( record.field(i).isAutoValue()) {

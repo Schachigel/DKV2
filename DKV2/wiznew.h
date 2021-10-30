@@ -60,7 +60,6 @@ extern const QString pnCountry;
 
 struct wpNewCreditorAddress : public QWizardPage{
     wpNewCreditorAddress(QWidget* p);
-    void initializePage() override;
     void cleanupPage() override {};
     bool validatePage()   override;
     int nextId() const    override;
@@ -234,8 +233,6 @@ struct wizNew : public QWizard
     qlonglong investmentId =0;
     int noticePeriod =-1;
     interestModel iPaymentMode =interestModel::maxId;
-    void setUpdateMode(bool b=true){ updateMode =b;}
-    bool inUpdateMode() {return updateMode;}
     bool createCreditor =false; // the corresponding field becomes false on cancel during contract dialog
     creditor c_tor;
     bool selectCreateContract =true; // for edit creditor this should be false
