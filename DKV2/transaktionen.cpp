@@ -69,24 +69,28 @@ void newCreditorAndContract()
     wiz.setField(pnConfirmContract, false);
 
     /*auto wizRes =*/ wiz.exec();
+    if( wiz.field(pnNew).toBool()) {
+        if( not wiz.createCreditor) {
+            qInfo() << "User decided against creditor creation";
+            return;
+        }
+        // one can only come here, if the users accepted the creation of the creditor
+        if( not wiz.c_tor.isValid()) {
+            // the user was checked during validation of the wizard -> very wrong
+            qCritical() << "invalid creditor data -> we have to fail";
+            return;
+        }
 
-    if( not wiz.createCreditor) {
-        qInfo() << "User decided against creditor creation";
-        return;
-    }
-    // one can only come here, if the users accepted the creation of the creditor
-    if( not wiz.c_tor.isValid()) {
-        // the user was checked during validation of the wizard -> very wrong
-        qCritical() << "invalid creditor data -> we have to fail";
-        return;
-    }
-
-    if( wiz.c_tor.save() >= 0)
-        qInfo() << "creditor created successfully";
-    else {
-        QMessageBox::critical(getMainWindow(), qsl("Programm Fehler"), qsl("Die Kundeninfo konnte nicht "
+        if( wiz.c_tor.save() >= 0)
+            qInfo() << "creditor created successfully";
+        else {
+            QMessageBox::critical(getMainWindow(), qsl("Programm Fehler"), qsl("Die Kundeninfo konnte nicht "
                             "gespeichert werden. Details findest Du in der Log Datei."));
-        return;
+            return;
+        }
+    } else {
+        wiz.c_tor.setId(wiz.creditorId);
+        qInfo() << "contract for existing creditor will be created";
     }
 
     if( not wiz.field(pnConfirmContract).toBool()) {
