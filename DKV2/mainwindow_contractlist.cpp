@@ -20,27 +20,58 @@ void MainWindow::on_action_menu_contracts_listview_triggered()
 
     ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
 }
+namespace {
+qlonglong intFromRight(const QString& input, const QString& flag)
+{
+    auto convOk =false;
+    QStringRef argument =input.rightRef(input.length()-flag.length());
+    qlonglong nbr =argument.toInt(&convOk);
+    if( convOk)
+        return nbr;
+    else
+        return 0;
+}
+
+QString nbrFromRight(const QString& input, const QString& flag)
+{
+    auto nbr =intFromRight(input, flag);
+    if( 0)
+        return QString();
+    else
+        return QString::number(nbr);
+}
+
 QString filterFromFilterphrase(const QString &fph)
 {
-    if( fph.startsWith(qsl("kreditor:")))
-    {
-        bool conversionOK = true;
-        qlonglong contractId = fph.rightRef(fph.length()-9).toInt(&conversionOK);
-        if( not conversionOK)
-            return QString();
-        else
-            return qsl("KreditorId=") + QString::number(contractId);
+    const QString filterKreditor {qsl("kreditor:")};
+    if( fph.startsWith(filterKreditor, Qt::CaseSensitivity::CaseInsensitive)) {
+        return qsl("KreditorId=%1").arg(nbrFromRight(fph, filterKreditor));
+    }
+    const QString filterValueGt {qsl("vwert:>")};
+    if( fph.startsWith(filterValueGt, Qt::CaseSensitivity::CaseInsensitive)) {
+        return qsl("Nominalwert>=%1").arg(nbrFromRight(fph, filterValueGt));
+    }
+    const QString filterValueLt {qsl("vwert:<")};
+    if( fph.startsWith(filterValueLt, Qt::CaseSensitivity::CaseInsensitive)) {
+        return qsl("Nominalwert<%1").arg(nbrFromRight(fph, filterValueLt));
     }
     return fph.isEmpty() ? QString() :
                            (qsl("Kreditorin LIKE '%") + fph
                             + qsl("%' OR Vertragskennung LIKE '%") + fph
                             + qsl("%' OR Zinssatz LIKE '%") +fph +"%'");
 }
+}
 void MainWindow::prepare_valid_contracts_list_view()
 { LOG_CALL;
     QSqlTableModel* model = new ContractTableModel(this);
     model->setTable(vnContractView);
-    model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
+    static QString lastFilter =qsl("init");
+    if( lastFilter not_eq  ui->le_ContractsFilter->text()){
+        model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
+        lastFilter =ui->le_ContractsFilter->text();
+        qDebug() << "new contract list model filter: " << model->filter();
+    } else
+        return;
     model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("KreditorIn"));
     model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters"), Qt::ToolTipRole);
     model->setHeaderData(cp_ContractLabel, Qt::Horizontal, qsl("Vertragskennung"));
@@ -60,8 +91,6 @@ void MainWindow::prepare_valid_contracts_list_view()
     model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Angesparter\nZins"));
     model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Nicht ausgezahlte Zinsen bei Verträgen mit fester Verzinsung und thesaurierenden Verträgen"), Qt::ToolTipRole);
     model->setHeaderData(cp_ContractEnd, Qt::Horizontal, qsl("Kündigungsfrist/ \nVertragsende"));
-
-    qDebug() << "contract list model filter: " << model->filter();
 
     QTableView*& tv = ui->contractsTableView;
     tv->setModel(model);
