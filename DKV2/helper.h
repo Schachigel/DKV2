@@ -65,14 +65,12 @@ public:
 //#define LOG_ENTRY_EXIT_FOR(x) // ;functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
 //#define LOG_ENTRY_EXIT_FOR(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
 #define LOG_CALL functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(__func__, __FILE__)
-#define LOG_CALL_W(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger( __func__ + qsl("(\"") + x + qsl("\")"), __FILE__)
+#define LOG_CALL_W(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger( __func__ + qsl("(\"") + (x) + qsl("\")"), __FILE__)
 
 extern const QDate EndOfTheFuckingWorld;
 extern const QString EndOfTheFuckingWorld_str;
 extern const int daysUntilTheEndOfTheFuckingWorld;
 extern const QDate BeginingOfTime;
-
-extern QFile* outFile_p;
 
 void logger(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 QString logFilePath();

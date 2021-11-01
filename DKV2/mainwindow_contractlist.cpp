@@ -10,16 +10,35 @@
 #include "transaktionen.h"
 #include "helper.h"
 
+/////////////////////////////////////////////////
 // Contract List
+/////////////////////////////////////////////////
 void MainWindow::on_action_menu_contracts_listview_triggered()
 {   LOG_CALL;
     showDeletedContracts =false;
     prepare_contracts_list_view();
-    if( not ui->contractsTableView->currentIndex().isValid())
-        ui->contractsTableView->selectRow(0);
+}
+/////////////////////////////////////////////////
+// terminated contracts list
+/////////////////////////////////////////////////
+void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
+{
+    showDeletedContracts =true;
+    prepare_contracts_list_view();
+}
 
+void MainWindow::prepare_contracts_list_view()
+{   LOG_CALL;
+    busycursor b;
+
+    if( showDeletedContracts)
+        prepare_deleted_contracts_list_view();
+    else
+        prepare_valid_contracts_list_view();
+    ui->contractsTableView->selectRow(0);
     ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
 }
+
 namespace {
 qlonglong intFromRight(const QString& input, const QString& flag)
 {
@@ -60,18 +79,16 @@ QString filterFromFilterphrase(const QString &fph)
                             + qsl("%' OR Vertragskennung LIKE '%") + fph
                             + qsl("%' OR Zinssatz LIKE '%") +fph +"%'");
 }
+void applyFilterToModel( QSqlTableModel* model, const QString filter)
+{   LOG_CALL_W (filter);
+    model->setFilter( filterFromFilterphrase(filter));
 }
+}
+
 void MainWindow::prepare_valid_contracts_list_view()
 { LOG_CALL;
     QSqlTableModel* model = new ContractTableModel(this);
     model->setTable(vnContractView);
-    static QString lastFilter =qsl("init");
-    if( lastFilter not_eq  ui->le_ContractsFilter->text()){
-        model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
-        lastFilter =ui->le_ContractsFilter->text();
-        qDebug() << "new contract list model filter: " << model->filter();
-    } else
-        return;
     model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("KreditorIn"));
     model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters"), Qt::ToolTipRole);
     model->setHeaderData(cp_ContractLabel, Qt::Horizontal, qsl("Vertragskennung"));
@@ -94,12 +111,16 @@ void MainWindow::prepare_valid_contracts_list_view()
 
     QTableView*& tv = ui->contractsTableView;
     tv->setModel(model);
+
     if ( not model->select()) {
         qCritical() << "Model selection failed" << model->lastError();
         return;
     } else {
         qobject_cast<ContractTableModel*>(model)->setCol13ExtraData();
     }
+    applyFilterToModel(model,
+                       ui->le_ContractsFilter->text());
+
 
     tv->setEditTriggers(QTableView::NoEditTriggers);
     tv->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -120,7 +141,8 @@ void MainWindow::prepare_valid_contracts_list_view()
     tv->resizeColumnsToContents();
     tv->resizeRowsToContents();
 
-    connect(ui->contractsTableView->selectionModel(), &QItemSelectionModel::currentChanged, this ,&MainWindow::currentChange_ctv);
+    connect(ui->contractsTableView->selectionModel(),
+            &QItemSelectionModel::currentChanged, this ,&MainWindow::currentChange_ctv);
 
     if( not model->rowCount()) {
         ui->bookingsTableView->setModel(new QSqlTableModel(this));
@@ -129,36 +151,19 @@ void MainWindow::prepare_valid_contracts_list_view()
 }
 void MainWindow::prepare_deleted_contracts_list_view()
 { LOG_CALL;
-    enum column_pos_del {
-        cp_vid,
-        cp_Creditor_id,
-        cp_Creditor,
-        cp_ContractLabel,
-        cp_ContractActivation,
-        cp_ContractTermination,
-        cp_InitialValue,
-        cp_InterestRate,
-        cp_InterestMode,
-        cp_Interest,
-        cp_TotalDeposit,
-        cp_FinalPayout
-    };
-
     QSqlTableModel* model = new QSqlTableModel(this);
     model->setTable(qsl("vVertraege_geloescht"));
-    model->setFilter( filterFromFilterphrase(ui->le_ContractsFilter->text()));
-    qDebug() << "contract list model filter: " << model->filter();
 
-    model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters"), Qt::ToolTipRole);
-    model->setHeaderData(cp_ContractLabel, Qt::Horizontal, qsl("Eindeutige Identifizierung des Vertrags"), Qt::ToolTipRole);
-    model->setHeaderData(cp_ContractActivation, Qt::Horizontal, qsl("Datum der Vertragsaktivierung / Beginn der Zinsberechnung"), Qt::ToolTipRole);
-    model->setHeaderData(cp_ContractTermination, Qt::Horizontal, qsl("Datum des Vertragsende"), Qt::ToolTipRole);
-    model->setHeaderData(cp_InitialValue, Qt::Horizontal, qsl("Höhe der Ersteinlage"), Qt::ToolTipRole);
-    model->setHeaderData(cp_InterestRate, Qt::Horizontal, qsl("Zinsfuss"), Qt::ToolTipRole);
-    model->setHeaderData(cp_InterestMode, Qt::Horizontal, qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein"), Qt::ToolTipRole);
-    model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Angefallene, nicht bereits zur Laufzeit ausgezahlte Zinsen"), Qt::ToolTipRole);
-    model->setHeaderData(cp_TotalDeposit, Qt::Horizontal, qsl("Summe aller Einzahlungen"), Qt::ToolTipRole);
-    model->setHeaderData(cp_FinalPayout, Qt::Horizontal, qsl("Ausgezahltes finales Guthaben"), Qt::ToolTipRole);
+    model->setHeaderData(cp_d_Creditor, Qt::Horizontal, qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters"), Qt::ToolTipRole);
+    model->setHeaderData(cp_d_ContractLabel, Qt::Horizontal, qsl("Eindeutige Identifizierung des Vertrags"), Qt::ToolTipRole);
+    model->setHeaderData(cp_d_ContractActivation, Qt::Horizontal, qsl("Datum der Vertragsaktivierung / Beginn der Zinsberechnung"), Qt::ToolTipRole);
+    model->setHeaderData(cp_d_ContractTermination, Qt::Horizontal, qsl("Datum des Vertragsende"), Qt::ToolTipRole);
+    model->setHeaderData(cp_d_InitialValue, Qt::Horizontal, qsl("Höhe der Ersteinlage"), Qt::ToolTipRole);
+    model->setHeaderData(cp_d_InterestRate, Qt::Horizontal, qsl("Zinsfuss"), Qt::ToolTipRole);
+    model->setHeaderData(cp_d_InterestMode, Qt::Horizontal, qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein"), Qt::ToolTipRole);
+    model->setHeaderData(cp_d_Interest, Qt::Horizontal, qsl("Angefallene, nicht bereits zur Laufzeit ausgezahlte Zinsen"), Qt::ToolTipRole);
+    model->setHeaderData(cp_d_TotalDeposit, Qt::Horizontal, qsl("Summe aller Einzahlungen"), Qt::ToolTipRole);
+    model->setHeaderData(cp_d_FinalPayout, Qt::Horizontal, qsl("Ausgezahltes finales Guthaben"), Qt::ToolTipRole);
 
     QTableView*& contractsTV = ui->contractsTableView;
     contractsTV->setModel(model);
@@ -166,53 +171,45 @@ void MainWindow::prepare_deleted_contracts_list_view()
         qCritical() << "Model selection failed" << model->lastError();
         return;
     }
+    applyFilterToModel(model,
+                       ui->le_ContractsFilter->text());
+
     contractsTV->setEditTriggers(QTableView::NoEditTriggers);
     contractsTV->setSelectionMode(QAbstractItemView::SingleSelection);
     contractsTV->setSelectionBehavior(QAbstractItemView::SelectRows);
     contractsTV->setAlternatingRowColors(true);
     contractsTV->setSortingEnabled(true);
-    contractsTV->setItemDelegateForColumn(cp_InitialValue, new CurrencyFormatter(contractsTV));
-    contractsTV->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(contractsTV));
-    contractsTV->setItemDelegateForColumn(cp_TotalDeposit, new CurrencyFormatter(contractsTV));
-    contractsTV->setItemDelegateForColumn(cp_FinalPayout, new CurrencyFormatter(contractsTV));
-    contractsTV->hideColumn(cp_vid);
-    contractsTV->hideColumn(cp_Creditor_id);
+    contractsTV->setItemDelegateForColumn(cp_d_InitialValue, new CurrencyFormatter(contractsTV));
+    contractsTV->setItemDelegateForColumn(cp_d_Interest, new CurrencyFormatter(contractsTV));
+    contractsTV->setItemDelegateForColumn(cp_d_TotalDeposit, new CurrencyFormatter(contractsTV));
+    contractsTV->setItemDelegateForColumn(cp_d_FinalPayout, new CurrencyFormatter(contractsTV));
+    contractsTV->hideColumn(cp_d_vid);
+    contractsTV->hideColumn(cp_d_Creditor_id);
 
     contractsTV->resizeColumnsToContents();
 
     connect(ui->contractsTableView->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::currentChange_ctv);
 
-    if( not model->rowCount()) {
+    if( model->rowCount() == 0) {
         ui->bookingsTableView->setModel(new QSqlTableModel(this));
     } else
         contractsTV->setCurrentIndex(model->index(0, 1));
 }
-void MainWindow::prepare_contracts_list_view()
-{   LOG_CALL;
-    busycursor b;
 
-    if( showDeletedContracts)
-        prepare_deleted_contracts_list_view();
-    else
-        prepare_valid_contracts_list_view();
-}
-//int  MainWindow::get_current_id_from_contracts_list()
-//{   LOG_CALL;
-//    QModelIndex mi(ui->contractsTableView->currentIndex().siblingAtColumn(0));
-//    if( mi.isValid()) {
-//        QVariant data(ui->contractsTableView->model()->data(mi));
-//        return data.toInt();
-//    }
-//    return -1;
-//}
 void MainWindow::on_le_ContractsFilter_editingFinished()
 {   LOG_CALL;
-    prepare_contracts_list_view();
+    static QString lastFilter {qsl("init")};
+    if( lastFilter == ui->le_ContractsFilter->text())
+        return;
+
+    lastFilter =ui->le_ContractsFilter->text();
+
+    prepare_contracts_list_view ();
 }
 void MainWindow::on_reset_contracts_filter_clicked()
 {   LOG_CALL;
     ui->le_ContractsFilter->setText(QString());
-    prepare_contracts_list_view();
+    on_le_ContractsFilter_editingFinished ();
 }
 void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex & )
 {
@@ -388,16 +385,4 @@ void MainWindow::on_action_Neu_triggered()
 {
     on_actionNeu_triggered();
     updateViews();
-}
-
-/////////////////////////////////////////////////
-// terminated contracts list
-/////////////////////////////////////////////////
-void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
-{
-    showDeletedContracts =true;
-    prepare_contracts_list_view();
-    if( not ui->contractsTableView->currentIndex().isValid())
-        ui->contractsTableView->selectRow(0);
-    ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
 }

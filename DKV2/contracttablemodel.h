@@ -21,6 +21,21 @@ enum colmn_Pos {
     cp_ContractEnd
 };
 
+enum column_pos_del {
+    cp_d_vid,
+    cp_d_Creditor_id,
+    cp_d_Creditor,
+    cp_d_ContractLabel,
+    cp_d_ContractActivation,
+    cp_d_ContractTermination,
+    cp_d_InitialValue,
+    cp_d_InterestRate,
+    cp_d_InterestMode,
+    cp_d_Interest,
+    cp_d_TotalDeposit,
+    cp_d_FinalPayout
+};
+
 class ContractTableModel : public QSqlTableModel
 {
     Q_OBJECT
