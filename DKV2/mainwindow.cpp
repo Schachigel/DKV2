@@ -527,9 +527,11 @@ void MainWindow::on_InvestmentsTableView_customContextMenuRequested(QPoint pos)
     cmenu.addAction(ui->actionInvestmentLoeschen);
     cmenu.addAction(ui->actionInvestmentSchliessen);
     cmenu.addAction(ui->actionTyp_Bezeichnung_aendern);
+    cmenu.addAction (ui->action_cmenu_Vertraege_anzeigen);
 
     cmenu.exec(ui->InvestmentsTableView->mapToGlobal(pos));
 }
+
 void MainWindow::on_actionInvestmentLoeschen_triggered()
 {
     QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
@@ -619,6 +621,15 @@ void MainWindow::on_actionTyp_Bezeichnung_aendern_triggered()
     QString sql(qsl("UPDATE Geldanlagen SET Typ =? WHERE rowid =%1").arg(rec.value(qsl("rowid")).toString()));
     if( executeSql_wNoRecords(sql, {QVariant(txt)}))
         tm->select();
+}
+void MainWindow::on_action_cmenu_Vertraege_anzeigen_triggered()
+{
+    QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
+    QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
+    QSqlRecord rec =tm->record(index.row());
+    qlonglong id =rec.value(qsl("rowid")).toLongLong ();
+    ui->le_ContractsFilter->setText (qsl("Anlage:%1").arg(id));
+    on_action_menu_contracts_listview_triggered();
 }
 
 /////////////////////////////////////////////////
@@ -1009,4 +1020,3 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settings.setValue(qsl("windowState"), saveState());
     event->accept();
 }
-
