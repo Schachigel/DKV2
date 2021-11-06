@@ -7,6 +7,7 @@
 enum colmn_Pos {
     cp_vid,
     cp_Creditor_id,
+    cp_Investment_id,
     cp_Creditor,
     cp_ContractLabel,
     cp_Comment,

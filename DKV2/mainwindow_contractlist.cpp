@@ -74,6 +74,10 @@ QString filterFromFilterphrase(const QString &fph)
     if( fph.startsWith(filterValueLt, Qt::CaseSensitivity::CaseInsensitive)) {
         return qsl("Nominalwert<%1").arg(nbrFromRight(fph, filterValueLt));
     }
+    const QString filterInvestment {qsl("Anlage:")};
+    if( fph.startsWith(filterInvestment, Qt::CaseSensitivity::CaseInsensitive)) {
+        return qsl("AnlagenId=%1").arg(nbrFromRight(fph, filterValueLt));
+    }
     return fph.isEmpty() ? QString() :
                            (qsl("Kreditorin LIKE '%") + fph
                             + qsl("%' OR Vertragskennung LIKE '%") + fph
@@ -136,7 +140,7 @@ void MainWindow::prepare_valid_contracts_list_view()
     tv->setItemDelegateForColumn(cp_InterestMode, new interestModeFormatter(tv));
     tv->hideColumn(cp_vid);
     tv->hideColumn(cp_Creditor_id);
-
+    tv->hideColumn(cp_Investment_id);
 
     tv->resizeColumnsToContents();
     tv->resizeRowsToContents();

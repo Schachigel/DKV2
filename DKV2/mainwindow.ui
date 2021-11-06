@@ -983,6 +983,14 @@
     <string>Zinszahlung aktivieren</string>
    </property>
   </action>
+  <action name="action_cmenu_Vertraege_anzeigen">
+   <property name="text">
+    <string>Verträge anzeigen</string>
+   </property>
+   <property name="toolTip">
+    <string>Zeigt alle Verträge, die zu dieser Anlage abgeschlossen wurden</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

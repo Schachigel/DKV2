@@ -182,6 +182,8 @@ private slots:
 
     void on_action_cmenu_activate_interest_payment_triggered();
 
+    void on_action_cmenu_Vertraege_anzeigen_triggered();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();

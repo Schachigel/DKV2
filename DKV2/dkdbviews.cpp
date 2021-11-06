@@ -9,6 +9,7 @@ R"str(
 SELECT
   V.id AS VertragsId
   ,K.id AS KreditorId
+  ,V.AnlagenId AS AnlagenId
   ,K.Nachname || ', ' || K.Vorname          AS KreditorIn
   ,V.Kennung AS Vertragskennung
   ,V.Anmerkung AS Anmerkung
