@@ -1,7 +1,7 @@
 #include <QLocale>
 
 #include"helper.h"
-#include "letters.h"
+#include "letters-old.h"
 
 void printThankyouLetter( const contract& )
 {   LOG_CALL;

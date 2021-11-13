@@ -4,7 +4,6 @@
 #include "../DKV2/helper.h"
 #include "../DKV2/helpersql.h"
 #include "../DKV2/dkdbhelper.h"
-#include "../DKV2/letterTemplate.h"
 
 #include "testhelper.h"
 

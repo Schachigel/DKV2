@@ -10,7 +10,7 @@
 #include "appconfig.h"
 #include "dkdbhelper.h"
 #include "tabledatainserter.h"
-#include "letterTemplate.h"
+#include "letterTemplate-old.h"
 
 QMap<letterTemplate::elementType, QString> letterTemplate::all_elementTypes
 {   { elementType::Adresse,            qsl("Adresse")},

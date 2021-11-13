@@ -4,7 +4,6 @@
 #include "contract.h"
 #include "booking.h"
 #include "investment.h"
-#include "letterTemplate.h"
 
 
 #include "helper.h"
@@ -79,9 +78,9 @@ void init_DKDBStruct()
     meta.append(dbfield(qsl("Wert"), QVariant::String).setNotNull());
     dkdbstructur.appendTable(meta);
 
-    dkdbstructur.appendTable(letterTemplate::getTableDef_letterTypes());
-    dkdbstructur.appendTable(letterTemplate::getTabelDef_elementTypes());
-    dkdbstructur.appendTable(letterTemplate::getTableDef_letterElements());
+//    dkdbstructur.appendTable(letterTemplate::getTableDef_letterTypes());
+//    dkdbstructur.appendTable(letterTemplate::getTabelDef_elementTypes());
+//    dkdbstructur.appendTable(letterTemplate::getTableDef_letterElements());
 
     done = true;
 }
@@ -168,5 +167,3 @@ bool validateDbSchema(const QString& filename, const dbstructure& dbs /*=dkdbstr
     qCritical() << msg;
     return false;
 }
-
-
