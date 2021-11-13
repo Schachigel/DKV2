@@ -1,7 +1,3 @@
-#include <QVector>
-#include <QRandomGenerator>
-#include <QTextStream>
-#include <QtMath>
 
 #include "helper.h"
 #include "appconfig.h"

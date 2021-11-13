@@ -203,11 +203,8 @@ bool creditor::remove()
         creditortable.append(dbfield(qsl("IBAN"),     QVariant::String).setDefault(""));
         creditortable.append(dbfield(qsl("BIC"),      QVariant::String).setDefault(""));
         creditortable.append(dbfield(qsl("Zeitstempel"), QVariant::DateTime).setDefaultNow());
-        QVector<dbfield> unique;
-        unique.append(creditortable[qsl("Vorname")]);
-        unique.append(creditortable[qsl("Nachname")]);
-        unique.append(creditortable[qsl("Strasse")]);
-        unique.append(creditortable[qsl("Stadt")]);
+        QVector<dbfield> unique {creditortable[qsl("Vorname")], creditortable[qsl("Nachname")],
+                    creditortable[qsl("Strasse")], creditortable[qsl("Stadt")]};
         creditortable.setUnique(unique);
     }
     return creditortable;

@@ -14,7 +14,6 @@
 #include "contract.h"
 #include "booking.h"
 #include "investment.h"
-#include "letterTemplate.h"
 #include "dkdbviews.h"
 #include "dkdbcopy.h"
 #include "dbstructure.h"
@@ -40,9 +39,6 @@ bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/
     do {
         if( includeViews) if ( not insert_views(db)) break;
         insert_DbProperties(db);
-        if ( not letterTemplate::insert_letterTypes(db)) break;
-        if ( not letterTemplate::insert_elementTypes(db)) break;
-        if ( not letterTemplate::insert_letterElements(db)) break;
         ret = true;
     } while (false);
     dbConfig::writeValue (ZINSUSANCE, (sz==zs30360) ? qsl("30/360"):qsl ("act/act"), db);
@@ -464,4 +460,3 @@ UNION ALL
 )str")};
     return getBookingDateInfoBySql(sql, dates);
 }
-

@@ -42,7 +42,6 @@ SOURCES +=  \
     ../DKV2/helperfin.cpp \
     ../DKV2/ibanvalidator.cpp \
     ../DKV2/investment.cpp \
-    ../DKV2/letterTemplate.cpp \
     ../DKV2/helpersql.cpp \
     ../DKV2/csvwriter.cpp \
     ../DKV2/dbfield.cpp \

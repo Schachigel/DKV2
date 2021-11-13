@@ -18,7 +18,6 @@
 #include "dkdbviews.h"
 #include "dkdbcopy.h"
 #include "dkdbviews.h"
-#include "letters.h"
 #include "contracttablemodel.h"
 #include "transaktionen.h"
 #include "uebersichten.h"
