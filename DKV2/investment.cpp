@@ -212,7 +212,7 @@ QVector<investment> openInvestments(int rate, QDate conclusionDate)
 
     QString sql{qsl("SELeCT * FROM Geldanlagen WHERE Offen AND ZSatz = %1 AND Anfang <= date('%2')  AND Ende >= date('%2')")};
     QVector<QSqlRecord> records;
-    if( not executeSql(sql.arg(QString::number(rate), conclusionDate.toString(Qt::ISODate)), QVector<QVariant>(), records))
+    if( not executeSql(sql.arg(QString::number(rate), conclusionDate.toString(Qt::ISODate)), /*QVector<QVariant>(),*/ records))
         return QVector<investment>();
 
     QVector<investment> result;

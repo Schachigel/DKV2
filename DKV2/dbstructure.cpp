@@ -3,6 +3,7 @@
 #include "creditor.h"
 #include "contract.h"
 #include "booking.h"
+#include "lettersnippets.h"
 #include "investment.h"
 
 
@@ -52,6 +53,9 @@ bool dbstructure::createDb(const QSqlDatabase& db) const
             return false;
         }
     }
+    for(const auto& index : qAsConst( IndexDefs)) {
+        executeSql_wNoRecords (index, db);
+    }
     return true;
 }
 
@@ -77,6 +81,9 @@ void init_DKDBStruct()
     meta.append(dbfield(qsl("Name"), QVariant::String).setPrimaryKey());
     meta.append(dbfield(qsl("Wert"), QVariant::String).setNotNull());
     dkdbstructur.appendTable(meta);
+
+    dkdbstructur.appendTable (snippet::getTableDef());
+    dkdbstructur.addIndexes (snippet::getIndexes());
 
 //    dkdbstructur.appendTable(letterTemplate::getTableDef_letterTypes());
 //    dkdbstructur.appendTable(letterTemplate::getTabelDef_elementTypes());

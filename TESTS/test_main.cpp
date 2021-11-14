@@ -7,7 +7,7 @@
 #include "../DKV2/helper.h"
 #include "test_dkdbcopy.h"
 #include "test_properties.h"
-#include "test_lettertemplate.h"
+#include "test_lettersnippet.h"
 #include "test_csv.h"
 #include "test_db.h"
 #include "test_dkdbhelper.h"
@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
 
     int executions =1;
     do {
+        tests.push_back(new test_letterSnippet);
         tests.push_back(new test_statistics);
         tests.push_back(new test_appConfig);
         tests.push_back(new test_dkdbcopy);
@@ -58,11 +59,7 @@ int main(int argc, char *argv[])
         tests.push_back(new test_views);
         tests.push_back(new test_db);
         tests.push_back(new test_dkdbhelper);
-        tests.push_back(new test_letterTemplate);
-        tests.push_back(new test_finance);
-        tests.push_back(new test_properties);
-        tests.push_back(new test_sqlhelper);
-        tests.push_back(new test_tableDataInserter);
+
     } while(--executions);
 
     srand(time(0));
