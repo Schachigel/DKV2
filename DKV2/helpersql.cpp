@@ -195,7 +195,7 @@ QVariant executeSingleValueSql(const QString& sql, const QSqlDatabase& db)
         return QVariant();
     }
     if(q.at() < 0) {
-        // qDebug() << "SingleValueSql returned no value\n" << q.lastQuery() << Qt::endl;;
+        qDebug() << "SingleValueSql returned no value\n" << q.lastQuery() << Qt::endl;;
         return QVariant();
     }
     qInfo() << "sql " << sql << " returned " << q.value(0);
@@ -207,13 +207,15 @@ QVariant executeSingleValueSql(const QString& fieldName, const QString& tableNam
     return executeSingleValueSql(sql, db);
 }
 QVariant executeSingleValueSql(const dbfield& field, const QString& where, const QSqlDatabase& db)
-{
-    if( field.name().isEmpty() or field.tableName().isEmpty())
+{   LOG_CALL;
+    if( field.name().isEmpty() or field.tableName().isEmpty()) {
+        qDebug() << "empty field or fieldtable " << field.name () << " / " << field.tableName ();
         return QVariant();
+    }
     QVariant result = executeSingleValueSql(field.name(), field.tableName(), where, db);
 
     if( not result.isValid()) {
-//        qDebug() << "executeSingleValueSql found no value";
+        qDebug() << "executeSingleValueSql found no value ";
         return result;
     }
     if(result.convert(field.type()))
@@ -370,16 +372,16 @@ bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& resu
         return false;
     }
 }
-bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlRecord>& result)
+bool executeSql(const QString& sql, /*const QVector<QVariant>& v,*/ QVector<QSqlRecord>& result)
 {
     QSqlQuery q; q.setForwardOnly(true);
     if( not q.prepare(sql)) {
         qDebug() << "Faild to prep Query. Error:" << q.lastError();
         return false;
     }
-    for( int i =0; i<v.size(); i++) {
-        q.bindValue(i, v[i]);
-    }
+//    for( int i =0; i<v.size(); i++) {
+//        q.bindValue(i, v[i]);
+//    }
     if( q.exec()) {
         while(q.next()) {
             result.push_back(q.record());

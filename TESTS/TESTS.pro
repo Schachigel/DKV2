@@ -49,6 +49,7 @@ SOURCES +=  \
     ../DKV2/dbtable.cpp \
     ../DKV2/helperfile.cpp \
     ../DKV2/helper.cpp \
+    ../DKV2/lettersnippets.cpp \
     ../DKV2/tabledatainserter.cpp \
     financaltimespan.cpp \
     test_appconfig.cpp \
@@ -60,7 +61,7 @@ SOURCES +=  \
     test_dkdbcopy.cpp \
     test_dkdbhelper.cpp \
     test_finance.cpp \
-    test_lettertemplate.cpp \
+    test_lettersnippet.cpp \
     test_main.cpp \
     test_properties.cpp \
     test_sqlhelper.cpp \
@@ -84,7 +85,7 @@ HEADERS += \
     test_dkdbcopy.h \
     test_dkdbhelper.h \
     test_finance.h \
-    test_lettertemplate.h \
+    test_lettersnippet.h \
     test_properties.h \
     test_sqlhelper.h \
     test_statistics.h \

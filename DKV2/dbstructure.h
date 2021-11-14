@@ -19,9 +19,13 @@ public:
     dbstructure appendTable(const dbtable& t);
     bool createDb(const QString& dbFileName) const;
     bool createDb(const QSqlDatabase& db= QSqlDatabase::database()) const;
+    void addIndexes(QVector<QString> v) {
+        IndexDefs.append (v);
+    }
 
 private:
     QVector<dbtable> Tables;
+    QVector<QString> IndexDefs;
 };
 
 // THE structure of our database the single source of truth
