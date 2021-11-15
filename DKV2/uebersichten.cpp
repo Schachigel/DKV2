@@ -216,9 +216,9 @@ steht die Einzahlung durch die Kreditgeber*in noch aus.
 )str"));
     prep(head, describe);
     tablelayout tl(td);
+    tl.sections.push_back({qsl("Aktive und Inaktive Verträge"), overviewShortInfo(sqlOverviewAllContracts)});
     tl.sections.push_back({qsl("Aktive Verträge"), overviewShortInfo(sqlOverviewActiveContracts)});
     tl.sections.push_back({qsl("InAktive Verträge"), overviewShortInfo(sqlOverviewInActiveContracts)});
-    tl.sections.push_back({qsl("Aktive und Inaktive Verträge"), overviewShortInfo(sqlOverviewAllContracts)});
     tl.renderTable();
 }
 

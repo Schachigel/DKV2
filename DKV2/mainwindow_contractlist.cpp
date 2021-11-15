@@ -199,7 +199,6 @@ void MainWindow::prepare_deleted_contracts_list_view()
     } else
         contractsTV->setCurrentIndex(model->index(0, 1));
 }
-
 void MainWindow::on_le_ContractsFilter_editingFinished()
 {   LOG_CALL;
     static QString lastFilter {qsl("init")};
