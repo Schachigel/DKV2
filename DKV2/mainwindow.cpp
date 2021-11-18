@@ -232,7 +232,8 @@ MainWindow::~MainWindow()
 void MainWindow::showDbInStatusbar( const QString &filename)
 {   LOG_CALL_W (filename);
     Q_ASSERT( filename.size());
-    ui->statusLabel->setText( filename);
+    QString statusstring ={qsl("%1 (%2)").arg(filename, dbConfig::readString(ZINSUSANCE))};
+    ui->statusLabel->setText( statusstring);
 }
 
 // whenever the stackedWidget changes ...
