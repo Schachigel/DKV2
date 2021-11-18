@@ -114,7 +114,7 @@ int TageImZeitraum(QDate von, QDate bis)
 {
     if( von.year() == bis.year())
     {
-        return TageZwischen(von, bis);
+        return TageZwischen_30_360(von, bis);
     }
    int ret = 0;
    int TageImErstenJahr = TageBisJahresende_lookup(von); // first day no intrest
@@ -136,7 +136,7 @@ int TageUndJahreImZeitraum(const QDate &von, const QDate &bis, int &TageImErsten
     TageImLetztenJahr = 0;
     if( von.year() == bis.year())
     {
-        TageImErstenJahr = TageZwischen(von, bis);
+        TageImErstenJahr = TageZwischen_30_360(von, bis);
         return 0;
     }
    TageImErstenJahr = TageBisJahresende_lookup(von); // first day no intrest
@@ -177,7 +177,7 @@ void test_finance::test_TageBisJahresende()
     QFETCH(QDate, date);
     QFETCH(int, tageBisJe_excel);
     // compare our calculation with the result from excel
-    QCOMPARE( TageBisJahresende(date), tageBisJe_excel);
+    QCOMPARE( TageBisJahresende_30_360(date), tageBisJe_excel);
 }
 
 void test_finance::test_TageSeitJahresanfang_data()
@@ -208,7 +208,7 @@ void test_finance::test_TageSeitJahresanfang()
     QFETCH(QDate, date);
     QFETCH(int, tageSeitJa_excel);
     // compare our calculation with the result from excel
-    QCOMPARE( TageSeitJahresAnfang(date), tageSeitJa_excel);
+    QCOMPARE( TageSeitJahresAnfang_30_360(date), tageSeitJa_excel);
 
 }
 
@@ -305,8 +305,8 @@ void test_finance::test_ZinsesZins()
     msg = msg.arg(von.toString("dd.MM.yyyy"), bis.toString("dd.MM.yyyy"), QString::number(zinssatz), QString::number(wert));
     qDebug().noquote() <<  msg;
     // compare our calculation with the result from excel
-    QCOMPARE(ZinsesZins(zinssatz, wert, von, bis, true ), ZinsThesauriert);
-    QCOMPARE(ZinsesZins(zinssatz, wert, von, bis, false), Zins);
+    QCOMPARE(ZinsesZins_30_360(zinssatz, wert, von, bis, true ), ZinsThesauriert);
+    QCOMPARE(ZinsesZins_30_360(zinssatz, wert, von, bis, false), Zins);
     QCOMPARE(lookupAnzTageZeitraum(von, bis), TageImZeitraum(von, bis));
     int TageImErstenJahr=0;
     int JahreZwischen=0;
@@ -323,6 +323,37 @@ void test_finance::test_ZinsesZins()
     QCOMPARE(computeDkZinsenZeitraum(wert, zinssatz, von, bis ), ZinsThesauriert);
     qInfo()<< "\n------------------------------------------------------------------------------\n";
 }
+
+void test_finance::test_act_act_data()
+{
+    QTest::addColumn<QDate>("von");
+    QTest::addColumn<QDate>("bis");
+    QTest::addColumn<double>("expected");
+    QTest::addColumn<bool>("thesa");
+
+    QTest::newRow ("first month thesa") << QDate(2010, 1, 1) << QDate(2010, 1,31) << r2(100000./100./365.*30) << true;
+    QTest::newRow ("first month") << QDate(2010, 1, 1) << QDate(2010, 1,31) << r2(100000./100./365.*30) << false;
+    QTest::newRow ("first month ly thesa") << QDate(2016, 1, 1) << QDate(2016, 1,31) << r2(100000./100./366.*30) << true;
+    QTest::newRow ("first month ly") << QDate(2016, 1, 1) << QDate(2016, 1,31) << r2(100000./100./366.*30) << false;
+    QTest::newRow ("non ly 2 ly thesa") << QDate(2015, 7, 1) << QDate(2016, 6,30) << r2(100000./100./365.*183 + 100501.37/100./366.*182) << true;
+    QTest::newRow ("non ly 2 ly") << QDate(2015, 7, 1) << QDate(2016, 6,30) << r2(100000./100./365.*183 + 100000./100./366.*182) << false;
+    QTest::newRow ("ly 2 non ly thesa") << QDate(2016, 7, 1) << QDate(2017, 6,30) << r2(100000./100./366.*183 + 100500./100./365.*181) << true;
+    QTest::newRow ("ly 2 non ly") << QDate(2016, 7, 1) << QDate(2017, 6,30) << r2(100000./100./366.*183 + 100000./100./365.*181) << false;
+}
+
+void test_finance::test_act_act()
+{
+    QFETCH (QDate, von);
+    QFETCH (QDate, bis);
+    QFETCH (double, expected);
+    QFETCH (bool, thesa);
+    double inter =1.;
+    double amount =100000.;
+    double interest =ZinsesZins_act_act (inter, amount, von, bis, thesa);
+
+    QCOMPARE (interest, expected);
+}
+
 
 void test_finance::test_IsValidIban_data()
 {
