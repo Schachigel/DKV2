@@ -31,7 +31,7 @@ void insert_DbProperties(const QSqlDatabase &db = QSqlDatabase::database())
     dbConfig::writeDefaults(db);
 }
 
-bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/)
+bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/, zinssusance sz /*=zs30360*/)
 {
     LOG_CALL;
     switchForeignKeyHandling(db, true);
@@ -45,6 +45,7 @@ bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/
         if ( not letterTemplate::insert_letterElements(db)) break;
         ret = true;
     } while (false);
+    dbConfig::writeValue (ZINSUSANCE, (sz==zs30360) ? qsl("30/360"):qsl ("act/act"), db);
     if (ret)
         art.commit();
     return ret;

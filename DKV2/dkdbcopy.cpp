@@ -238,7 +238,7 @@ QString convert_database_inplace( const QString& targetFilename, const QString& 
     }
     const QString& sourceFileName =backupFileName;
     // create a new db file with the current database structure
-    if( not createNewDatabaseFileWDefaultContent(targetFilename, dbs)) {
+    if( not createNewDatabaseFileWDefaultContent(targetFilename, zs30360, dbs)) {
         qCritical() << "db creation faild for database conversion -> abort";
         return QString();
     }

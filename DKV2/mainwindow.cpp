@@ -145,7 +145,7 @@ QString MainWindow::askUserForNextDb()
         }
         // a new db should be created -> ask project details
         // closeAllDatabaseConnections();
-        if( not createNewDatabaseFileWDefaultContent(selectedDbPath)) {
+        if( not createNewDatabaseFileWDefaultContent(selectedDbPath, (wizOpenOrNew.field(qsl("Zinssusance")).toBool() ? zs30360 : zs_actact))) {
             QMessageBox::critical(this, qsl("Fehler"), qsl("Die neue Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen"));
             return QString();
         }

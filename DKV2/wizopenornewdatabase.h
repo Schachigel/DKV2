@@ -4,7 +4,7 @@
 #include <QWizard>
 #include <QRadioButton>
 
-enum { NewOrOpen, selectNewFile, selectExistingFile};
+enum { NewOrOpen, selectNewFile, Zinssusance, selectExistingFile};
 
 
 struct wpOpenOrNew : public QWizardPage
@@ -32,6 +32,13 @@ private:
     Q_OBJECT
 private slots:
     void browseButtonClicked();
+};
+
+struct wpICalcMode : public QWizardPage
+{
+    wpICalcMode(QWidget* p);
+    void initializePage() override;
+    int nextId() const override;
 };
 
 struct wpExistingDb : public QWizardPage
