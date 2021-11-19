@@ -27,7 +27,7 @@ snippetType snippetTypeFromInt( int i);
 #define SNIPPETS \
     X(date,     "date",     snippetType::allLettersAllKreditors) \
     X(greeting, "greeting", snippetType::allLettersAllKreditors)  \
-    X(food,     "food",     snippetType::allLettersAllKreditors)   \
+    X(foot,     "foot",     snippetType::allLettersAllKreditors)   \
     X(table,    "table",    snippetType::allKreditors) \
     X(about,    "about",    snippetType::allKreditors)            \
     X(text1,    "text1",    snippetType::individual)               \
@@ -58,10 +58,13 @@ const QMap<letterSnippet, snippetType> snippet_type {
 
 struct snippet
 {
-    snippet(letterSnippet ls, letterType lType =letterType::all, qlonglong creditor =0) : ls(ls), lType (lType), cId(creditor) {};
-    QString read(QSqlDatabase db=QSqlDatabase::database ());
-    bool write(const QString& t, QSqlDatabase db=QSqlDatabase::database ());
-    QString name() { return snippetNames[int(ls)]; };
+    snippet(letterSnippet ls, letterType lType =letterType::all, qlonglong creditor =0);
+
+    QString name()     const { return snippetNames[int(ls)]; };
+    snippetType type() const { return snippet_type[ls]; };
+
+    std::pair<QString, bool> read(QSqlDatabase db=QSqlDatabase::database ()) const;
+    bool write(const QString& t, QSqlDatabase db=QSqlDatabase::database ()) const;
 
     static const QString tableName;
     static const QString fnSnippet;
@@ -71,11 +74,15 @@ struct snippet
     static const dbtable& getTableDef();
     static const QVector<QString> getIndexes();
 private:
-    static QString read  (const letterType lId, const letterSnippet sId, const qlonglong kId, QSqlDatabase db=QSqlDatabase::database ());
-    static bool    write (const letterType lId, const letterSnippet sId, const qlonglong kId, const QString text, QSqlDatabase db=QSqlDatabase::database ());
+    static std::pair<QString, bool> read  (const letterSnippet sId, const letterType lId, const qlonglong kId, QSqlDatabase db=QSqlDatabase::database ());
+    static bool    write (const QString text, const letterSnippet sId, const letterType lId, const qlonglong kId, QSqlDatabase db=QSqlDatabase::database ());
+    static bool    wInit (const QString text, const letterSnippet sId, const letterType lId, const qlonglong kId, QSqlDatabase db=QSqlDatabase::database ());
     const letterSnippet ls;
-    const letterType lType;
-    const qlonglong cId;
+    letterType lType;
+    qlonglong cId;
 };
+
+// for testing
+QVector<snippet> randomSnippets(int count);
 
 #endif // LETTERSNIPPETS_H
