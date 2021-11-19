@@ -50,22 +50,53 @@ void test_letterSnippet::test_overwrite_snippet()
 
 void test_letterSnippet::test_many_snippet_read_writes()
 {
-    QRandomGenerator* rand =QRandomGenerator::system ();
-    const int nbrCreditors =10;
+    const int nbrCreditors =100;
     saveRandomCreditors (nbrCreditors);
     const int iter =100;
 
-    dbgTimer timer(qsl("test_many_snippet_read_writes"));
-    for(int i=0; i<iter; i++)
     {
-        const letterType lid =letterTypeFromInt(rand->bounded (100)%int(letterType::maxValue));
-        const letterSnippet sid =letterSnippetFromInt(rand->bounded (200)%int(letterSnippet::maxValue));
-        const qlonglong kid =rand->bounded (nbrCreditors);
-        QUuid uuid =QUuid::createUuid ();
-        const QString text =uuid.toString ();
-        snippet snip(sid, lid, kid);
+    dbgTimer timer(qsl("timer_test_many_snippet_read_writes"));
+    QVector<snippet> v =randomSnippets (iter);
+    int count =0;
+    for(const auto& snip : qAsConst(v))
+    {
+        count++;
+        QString text =qsl("test ") + QString::number(count);
         snip.write (text);
         QCOMPARE(text, snip.read());
     }
+    }
 }
 
+void test_letterSnippet::test_snippet_type_dep_read()
+{
+    saveRandomCreditor ();
+    const QString expected {qsl("expected")};
+    snippet s1(letterSnippet::date);
+    s1.write (expected);
+    snippet s2(letterSnippet::date);
+    QCOMPARE(expected, s2.read());
+
+    snippet s3(letterSnippet::table);
+    s3.write(expected);
+    snippet s4(letterSnippet::table, letterType::annInterestInfoL);
+    QCOMPARE(expected, s3.read());
+
+    snippet s5(letterSnippet::address, letterType::all, 1);
+    s5.write(expected);
+    snippet s6(letterSnippet::address, letterType::annInterestInfoL, 1);
+    QCOMPARE(expected, s6.read());
+}
+
+void test_letterSnippet::test_fallback()
+{
+    saveRandomCreditor ();
+//    const QString expected {qsl("expceted")};
+
+//   // not writing a default
+    snippet s2(letterSnippet::address, letterType::annPayoutL, 1);
+    QCOMPARE(qsl(""), s2.read ());
+
+
+
+}

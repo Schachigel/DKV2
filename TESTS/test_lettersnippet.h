@@ -22,6 +22,8 @@ private slots:
     void test_write_read_snippet();
     void test_overwrite_snippet();
     void test_many_snippet_read_writes();
+    void test_snippet_type_dep_read();
+    void test_fallback();
 };
 
 #endif // TEST_LETTERSNIPPET_H
