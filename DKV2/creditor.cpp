@@ -263,3 +263,15 @@ void saveRandomCreditors(const int count)
     for( int i = 0; i< count; i++)
         saveRandomCreditor();
 }
+
+void saveRandomCreditors_q(const int count)
+{
+    Q_ASSERT(count>9);
+    for( int i=0; i<count; i++)
+    {
+        creditor c;
+        c.setFirstname (QString::number(i));
+        c.setLastname (QString::number (i));
+        c.save ();
+    }
+}

@@ -62,7 +62,7 @@ void initTestDbFromTemplate()
 void createTestDb_withRandomData()
 {   LOG_CALL;
     createTestDb();
-    saveRandomCreditors(10);
+    saveRandomCreditors_q(10);
     saveRandomContracts(8);
     activateRandomContracts(100 /* % */);
 }
