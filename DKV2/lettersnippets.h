@@ -5,6 +5,8 @@
 #include "contract.h"
 
 
+static const qlonglong allKreditors =0;
+
 enum class letterType {
     all =0,
     annPayoutL        =int(interestModel::payout)   +1,
@@ -65,24 +67,24 @@ struct snippet
 
     std::pair<QString, bool> read(QSqlDatabase db=QSqlDatabase::database ()) const;
     bool write(const QString& t, QSqlDatabase db=QSqlDatabase::database ()) const;
+    bool wInitDb (const QString text, QSqlDatabase db=QSqlDatabase::database ()) const;
 
-    static const QString tableName;
-    static const QString fnSnippet;
-    static const QString fnLetter;
-    static const QString fnCreditor;
-    static const QString fnText;
+    static const QString tableName, fnSnippet, fnLetter, fnCreditor, fnText;
     static const dbtable& getTableDef();
     static const QVector<QString> getIndexes();
 private:
     static std::pair<QString, bool> read  (const letterSnippet sId, const letterType lId, const qlonglong kId, QSqlDatabase db=QSqlDatabase::database ());
     static bool    write (const QString text, const letterSnippet sId, const letterType lId, const qlonglong kId, QSqlDatabase db=QSqlDatabase::database ());
-    static bool    wInit (const QString text, const letterSnippet sId, const letterType lId, const qlonglong kId, QSqlDatabase db=QSqlDatabase::database ());
     const letterSnippet ls;
     letterType lType;
     qlonglong cId;
 };
 
+/// init for new db
+int writeDefaultSnippets(QSqlDatabase db =QSqlDatabase::database ());
+
 // for testing
 QVector<snippet> randomSnippets(int count);
+
 
 #endif // LETTERSNIPPETS_H

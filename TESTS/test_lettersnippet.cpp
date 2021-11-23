@@ -15,14 +15,17 @@ test_letterSnippet::test_letterSnippet(QObject *p) : QObject(p)
 }
 
 void test_letterSnippet::initTestCase()
+{   LOG_CALL;
+    createTestDbTemplate();
+}
+void test_letterSnippet::cleanupTestCase()
 {
-    init_DKDBStruct();
+    cleanupTestDbTemplate();
 }
 
 void test_letterSnippet::init()
 {   LOG_CALL;
-    initTestDb();
-    fill_DkDbDefaultContent(QSqlDatabase::database(), false);
+    initTestDbFromTemplate();
 }
 
 void test_letterSnippet::cleanup()
@@ -35,7 +38,7 @@ void test_letterSnippet::test_write_read_snippet()
     const QString expected {qsl("20.Januar 2021")};
     snippet snip(letterSnippet::date);
     QVERIFY(snip.write(expected));
-    QCOMPARE(snip.read (), expected);
+    QCOMPARE(snip.read ().first, expected);
 }
 
 void test_letterSnippet::test_overwrite_snippet()
@@ -45,13 +48,14 @@ void test_letterSnippet::test_overwrite_snippet()
     QVERIFY(snip.write(qsl("firstString")));
     const QString expected {qsl("expected")};
     QVERIFY(snip.write(expected));
-    QCOMPARE(snip.read(), expected);
+    QCOMPARE(snip.read().first, expected);
 }
 
 void test_letterSnippet::test_many_snippet_read_writes()
 {
     const int nbrCreditors =100;
-    saveRandomCreditors (nbrCreditors);
+    saveRandomCreditors_q(nbrCreditors);
+
     const int iter =100;
 
     {
@@ -63,7 +67,7 @@ void test_letterSnippet::test_many_snippet_read_writes()
         count++;
         QString text =qsl("test ") + QString::number(count);
         snip.write (text);
-        QCOMPARE(text, snip.read());
+        QCOMPARE(text, snip.read().first);
     }
     }
 }
@@ -75,28 +79,69 @@ void test_letterSnippet::test_snippet_type_dep_read()
     snippet s1(letterSnippet::date);
     s1.write (expected);
     snippet s2(letterSnippet::date);
-    QCOMPARE(expected, s2.read());
+    QCOMPARE(expected, s2.read().first);
 
     snippet s3(letterSnippet::table);
     s3.write(expected);
     snippet s4(letterSnippet::table, letterType::annInterestInfoL);
-    QCOMPARE(expected, s3.read());
+    QCOMPARE(expected, s3.read().first);
 
     snippet s5(letterSnippet::address, letterType::all, 1);
     s5.write(expected);
     snippet s6(letterSnippet::address, letterType::annInterestInfoL, 1);
-    QCOMPARE(expected, s6.read());
+    QCOMPARE(expected, s6.read().first);
 }
 
 void test_letterSnippet::test_fallback()
 {
     saveRandomCreditor ();
-//    const QString expected {qsl("expceted")};
+    const QString expected {qsl("expceted")};
 
-//   // not writing a default
-    snippet s2(letterSnippet::address, letterType::annPayoutL, 1);
-    QCOMPARE(qsl(""), s2.read ());
+    {
+        snippet s2(letterSnippet::address, letterType::annPayoutL, allKreditors);
+        s2.write (expected);
+        // address is "allLetters", should fall through to "allKreditors"
+        snippet s1(letterSnippet::address, letterType::annPayoutL, 1);
+        QCOMPARE(expected, s1.read ().first);
+        QCOMPARE(expected, s2.read ().first);
+        // ... and from all letters
+        snippet s3(letterSnippet::address, letterType::all, 1);
+        QCOMPARE(expected, s3.read ().first);
+    }
+    {
+        snippet s1(letterSnippet::date, letterType::annInterestInfoL, 2);
+        s1.write(expected);
+        QCOMPARE (expected, s1.read().first);
+        // date is "all...all..", should fall through to all Kcreditors and from all letters
+        snippet s2(letterSnippet::date, letterType::all, 0);
+        QCOMPARE (expected, s2.read().first);
+        snippet s3(letterSnippet::date, letterType::annInfoL, 0);
+        QCOMPARE (expected, s2.read().first);
+    }
+    {
+        // "about" is allKreditors, should fall through from any creditor
+        snippet s1(letterSnippet::about, letterType::annPayoutL, 1);
+        s1.write (expected);
+        snippet s2(letterSnippet::about, letterType::annPayoutL, 0);
+        QCOMPARE( expected, s2.read ().first);
+        // faile for other letter
+        snippet s3(letterSnippet::about, letterType::annInfoL, 1);
+        QVERIFY (not s3.read().second);
+    }
+}
 
+void test_letterSnippet::test_writeDefaultSnippets()
+{
+    int written =writeDefaultSnippets ();
+    QCOMPARE (written, rowCount(snippet::tableName));
+}
 
+void test_letterSnippet::test_re_writeDefaultSnippetHasNoEffect()
+{
+    QString res {qsl("notexpected")};
+    writeDefaultSnippets ();
+    snippet s1(letterSnippet::greeting, letterType::all, 0);
+    s1.wInitDb (res);
+    QVERIFY(s1.read ().first not_eq res);
 
 }

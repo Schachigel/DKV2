@@ -45,89 +45,93 @@ letterType letterTypeFromInt( int i) {
     return static_cast<letterType>(i);
 }
 
-const qlonglong allKreditors =0;
-
 snippet::snippet(letterSnippet ls, letterType lT /*=letterType::all*/, qlonglong creditor /*=0*/)
     : ls(ls), lType (lT), cId(creditor)
 {
     // ensure consistency
     switch(type()){
     case snippetType::allLettersAllKreditors:
-        lType = letterType::all;
-        cId = 0;
+        if( lType not_eq letterType::all || cId not_eq 0) {
+            qDebug() << "resetting snippet attributes" << snippetNames[int(ls)];
+            lType = letterType::all;
+            cId = 0;
+        }
         break;
     case snippetType::allKreditors:
-        cId = 0;
+        if( cId not_eq 0) {
+            qDebug() << "resetting snippet attributes" << snippetNames[int(ls)];
+            cId = 0;
+        }
+        if(lT == letterType::all) // there is no generic "Betreff" for all letters ...
+            qCritical() << "wrong letter type for this snippetType" << snippetNames[int(ls)];
         break;
     case snippetType::allLetters:
-        lType = letterType::all;
+        if( lType not_eq letterType::all) {
+            qDebug() << "resetting snippet attributes" << snippetNames[int(ls)];
+            lType = letterType::all;
+        }
     case snippetType::individual:
     case snippetType::maxValue:
         break;
     }
 }
 
-
 std::pair<QString, bool> snippet::read(const letterSnippet sId, const letterType lId, const qlonglong kId, QSqlDatabase db/*=QSqlDatabase::database ()*/)
 {
+    // generic read function for the db stuff
     QString where {qsl("%1=%4 AND %2=%5 AND %3%6").arg(fnSnippet, fnLetter, fnCreditor)};
     where =where.arg (QString::number(int(sId)), QString::number(int(lId)));
     where =where.arg(kId ? (qsl(" =") + QString::number(kId)) : qsl(" IS NULL"));
 
-    QVariant result =executeSingleValueSql (getTableDef ()[fnText], where, db).toString ();
+    QVariant result =executeSingleValueSql (getTableDef ()[fnText], where, db);
     bool success =result.isValid ();
-    if( success)
-        return {result.toString (), success};
-
-    switch(snippetType()) {
-    case snippetType::allKreditors:
-        std::tie(result, success) = read(sId, lId, 0, db);
-        break;
-    case snippetType::allLetters:
-        std::tie(result, success) =read(sId, letterType::all, kId, db);
-        break;
-    case snippetType::allLettersAllKreditors:
-        std::tie(result, success) =read(sId, letterType::all, 0, db);
-        break;
-    default:
-        result =QVariant();
-    }
-    if( not result.isValid ())
+    if( not success)
         qDebug() << "snippet not found";
     return std::make_pair(result.toString (), success);
 }
 
-bool    snippet::write (const QString text, const letterSnippet sId, const letterType lId, const qlonglong kId, QSqlDatabase db/*=QSqlDatabase::database ()*/)
+bool snippet::write (const QString text, const letterSnippet sId, const letterType lId, const qlonglong kId, QSqlDatabase db/*=QSqlDatabase::database ()*/)
 {
+    // generic write function for the db stuff
     QString sql {qsl("REPLACE INTO %1 VALUES (?, ?, ?, ?) ").arg(tableName)};
     QVariant sKid = kId ? QVariant(kId) : QVariant(QVariant::LongLong);
     QVector<QVariant> vars {int(sId), int(lId), sKid, text};
     return executeSql_wNoRecords (sql, vars, db);
 }
 
-bool    snippet::wInit (const QString text, const letterSnippet sId, const letterType lId, const qlonglong kId, QSqlDatabase db/*=QSqlDatabase::database ()*/)
+bool snippet::wInitDb (const QString text, QSqlDatabase db/*=QSqlDatabase::database ()*/) const
 {
     QString sql {qsl("INSERT OR IGNORE INTO %1 VALUES (?, ?, ?, ?) ").arg(tableName)};
-    QVariant sKid = kId ? QVariant(kId) : QVariant(QVariant::LongLong);
-    QVector<QVariant> vars {int(sId), int(lId), sKid, text};
+    QVariant sKid = cId ? QVariant(cId) : QVariant(QVariant::LongLong);
+    QVector<QVariant> vars {int(ls), int(lType), sKid, text};
     return executeSql_wNoRecords (sql, vars, db);
 }
 
 std::pair<QString, bool> snippet::read(QSqlDatabase db) const
 {
+    QString text;
+    bool result =false;
     switch( type()) {
     case snippetType::allLettersAllKreditors:
         // date, greeting, food
         return read(ls, letterType::all, allKreditors, db);
     case snippetType::allKreditors:
-        // table, about: different for each letter
+        // table, about: different for each letter, same for each creditor
         return read(ls, lType, allKreditors, db);
     case snippetType::allLetters:
-        // address, salut: different for each kreditor
-        return read(ls, letterType::all, cId, db);
+        // address, salut: different for each kreditor, fallback o cId =0  possible
+        std::tie(text, result) =read(ls, letterType::all, cId, db);
+        if( result)
+            return {text, result};
+        else
+            return read(ls, letterType::all, allKreditors, db);
     case snippetType::individual:
         // text1, text2: different for each letter and kreditor
-        return read(ls, lType, cId, db);
+        std::tie(text, result) =read(ls, lType, cId, db);
+        if( result)
+            return {text, result};
+        else
+            return read(ls, lType, allKreditors, db);
     default:
         Q_ASSERT(not "invalid snippet Type");
         return {QString(), false};
@@ -155,14 +159,14 @@ bool snippet::write(const QString& text, QSqlDatabase db) const
     }
 }
 
-////////// ////////////////////
+////////// //////////////////////
 //////// ///////////////////////
-////// ///////////////////////////////
-//// ////////////////////////////
-bool writeDefaultSnippets(QSqlDatabase db)
+////// ////////////////////////
+//// /////////////////////////
+int writeDefaultSnippets(QSqlDatabase db)
 {
     QVector<QPair<snippet, QString>> defaultSnippets = {
-         { snippet(letterSnippet::date), qsl("Mannheim, den {{datum}}")}
+         { snippet(letterSnippet::date), qsl("{{gmbh.adresse1}} den {{datum}}")}
         ,{ snippet(letterSnippet::greeting), qsl("Mit freundlichen Grüßen")}
         ,{ snippet(letterSnippet::foot), qsl("<table width=100%><tr><td width=33%><small>Geschäftsführer*innen:<br>{{gmbh.gefue1}}<br>{{gmbh.gefue2}}<br>{{gmbh.gefue3}}</small></td><td width=33%></td><td width=33%></td></tr></table>")}
         ,{ snippet(letterSnippet::about, letterType::annPayoutL), qsl("Jahreszinsinformation {{Jahr}}")}
@@ -197,12 +201,12 @@ bool writeDefaultSnippets(QSqlDatabase db)
            "{{kreditoren.vorname}} {{kreditoren.nachname}} <p> {{kreditoren.strasse}} <br><b> {{kreditoren.plz}} </b> {{kreditoren.stadt}} <br><small> {{kreditoren.email}} </small>")}
         ,{ snippet(letterSnippet::salut, letterType::all), qsl("Mit freundlichen Grüßen")}
     };
-
+    int ret =0;
     for (const auto& pair: qAsConst(defaultSnippets)) {
-        if( not pair.first.write(pair.second, db))
-            return false;
+        if( pair.first.wInitDb(pair.second, db))
+            ret++;;
     }
-    return true;
+    return ret;
 }
 
 

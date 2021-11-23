@@ -17,6 +17,7 @@ private:
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
     void init();
     void cleanup();
     void test_write_read_snippet();
@@ -24,6 +25,8 @@ private slots:
     void test_many_snippet_read_writes();
     void test_snippet_type_dep_read();
     void test_fallback();
+    void test_writeDefaultSnippets();
+    void test_re_writeDefaultSnippetHasNoEffect();
 };
 
 #endif // TEST_LETTERSNIPPET_H
