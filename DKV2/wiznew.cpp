@@ -303,8 +303,9 @@ wpConfirmCreditor::wpConfirmCreditor(QWidget* p) : QWizardPage(p)
     cbCreateContract->setToolTip(qsl("Selektiere dieses Feld, um gleich einen neuen Vertrag anzulegen"));
     registerField(pnCreateContract, cbCreateContract);
     cbCreateContract->setChecked(true);
-
+    cbCreditorLabel = new QLabel(qsl("Keine Daten"));
     QVBoxLayout* l =new QVBoxLayout;
+    l->addWidget(cbCreditorLabel); //
     l->addWidget(cbConfirmCreditor);
     l->addWidget(cbCreateContract);
     setLayout(l);
@@ -313,12 +314,12 @@ wpConfirmCreditor::wpConfirmCreditor(QWidget* p) : QWizardPage(p)
 }
 void wpConfirmCreditor::initializePage()
 {   LOG_CALL;
-    QString creditorSummary {qsl("<table><tr><td>Name:</td><td><b>%1 %2</b><br></td></tr>"
-                                 "<tr><td>Straße:</td><td>%3</td></tr>"
-                                 "<tr><td>Plz/Ort:</td><td>%4</td></tr>"
-                                 "<tr><td>E-Mail:</td><td>%5<br></td></tr>"
-                                 "<tr><td>Kommentar:</td><td><small>%6<small></td></tr>"
-                                 "<tr><td>Bankdaten:</td><td><table><tr><td>IBAN:</td><td>%7</td></tr><tr><td>BIC:</td><td>%8<td></tr></table></td></tr></table>")};
+    QString creditorSummary{qsl("<table><tr><td>Name:</td><td><b>%1 %2</b><br></td></tr>"
+                                "<tr><td>Straße:</td><td>%3</td></tr>"
+                                "<tr><td>Plz/Ort:</td><td>%4</td></tr>"
+                                "<tr><td>E-Mail:</td><td>%5<br></td></tr>"
+                                "<tr><td>Kommentar:</td><td><small>%6<small></td></tr>"
+                                "<tr><td>Bankdaten:</td><td><table><tr><td>IBAN:</td><td>%7</td></tr><tr><td>BIC:</td><td>%8<td></tr></table></td></tr></table>")};
     QString firstn =field(pnFName).toString().isEmpty() ? qsl("(kein Vorname)")  : field(pnFName).toString();
     QString lastn  =field(pnLName).toString().isEmpty()  ? qsl("(kein Nachname)") : field(pnLName).toString();
     QString street =field(pnStreet).toString().isEmpty()    ? qsl("(keine Strasse)") : field(pnStreet).toString();
@@ -334,7 +335,7 @@ void wpConfirmCreditor::initializePage()
     QString iban   =field(pnIban).toString().isEmpty()      ? qsl("(keine IBAN)")     : field(pnIban).toString();
     QString bic    =field(pnBic).toString().isEmpty()       ? qsl("(keine BIC)")      : field(pnBic).toString();
 
-    setSubTitle(creditorSummary.arg(firstn, lastn, street, xxx,
+    cbCreditorLabel->setText(creditorSummary.arg(firstn, lastn, street, xxx,
                                     email, comment, iban, bic));
     wizNew* wiz =qobject_cast<wizNew*> (wizard());
     if( wiz->selectCreateContract)
@@ -405,13 +406,17 @@ wpLableAndAmount::wpLableAndAmount(QWidget* p) : QWizardPage(p)
     registerField(pnContractComment, eComment, "plainText", "textChanged");
     eComment->setToolTip(qsl("Diese Anmerkung wird mit dem Vertrag gespeichert"));
 
+    contractLabel = new QLabel(qsl("Keine Daten!"));
+
     QGridLayout* g =new QGridLayout;
-    g->addWidget(l1, 0, 0);
-    g->addWidget(leKennung, 0, 1);
-    g->addWidget(l2, 1, 0);
-    g->addWidget(leAmount, 1, 1);
-    g->addWidget(l3, 2, 0);
-    g->addWidget(eComment, 2, 1);
+    g->addWidget(contractLabel, 0, 0, 2, 2);
+    g->addWidget(l1, 2, 0);
+    g->addWidget(leKennung, 2, 1);
+    g->addWidget(l2, 3, 0);
+    g->addWidget(leAmount, 3, 1);
+    g->addWidget(l3, 4, 0);
+    g->addWidget(eComment, 4, 1);
+    
     g->setColumnStretch(0, 1);
     g->setColumnStretch(1, 4);
 
@@ -419,8 +424,8 @@ wpLableAndAmount::wpLableAndAmount(QWidget* p) : QWizardPage(p)
 }
 void wpLableAndAmount::initializePage()
 {   LOG_CALL;
-    QString creditorInfo { qsl("%1, %2<p><small>%3 %4 %5</small>")};
-    setSubTitle(creditorInfo.arg(field(pnLName).toString(),
+    QString creditorInfo { qsl("<b>%1, %2</b><p><small>%3, %4 %5</small>")};
+    contractLabel->setText(creditorInfo.arg(field(pnLName).toString(),
                                  field(pnFName).toString(), field(pnStreet).toString(),
                                  field(pnPcode).toString(), field(pnCity).toString()));
     setField(pnLabel, proposeContractLabel());
@@ -756,6 +761,8 @@ wpConfirmContract::wpConfirmContract(QWidget* p) : QWizardPage(p)
     cbConfirm->setCheckState(Qt::CheckState::Unchecked);
     registerField(pnConfirmContract +qsl("*"), cbConfirm);
     QVBoxLayout* bl =new QVBoxLayout;
+    cbContractLabel = new QLabel("Keine Daten!");
+    bl->addWidget(cbContractLabel);
     bl->addWidget(cbConfirm);
     setLayout(bl);
     setCommitPage(true);
@@ -780,7 +787,8 @@ void wpConfirmContract::initializePage()
     {
         interestModel iMode{wiz->iPaymentMode};
         QString interestMode =toString(iMode);
-        setSubTitle(summary.arg(field(pnFName).toString(), field(pnLName).toString()
+        cbContractLabel->setText(
+                    summary.arg(field(pnFName).toString(), field(pnLName).toString()
                                 , field(pnLabel).toString()
                                 , l.toCurrencyString(field(pnAmount).toDouble())
                                 , QString::number(wiz->interest/100., 'f', 2)

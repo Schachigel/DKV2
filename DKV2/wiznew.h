@@ -103,7 +103,8 @@ public:
 public slots:
     void onConfirmCreateContract_toggled(int state);
 private:
-    QCheckBox* cbCreateContract =nullptr;
+    QCheckBox*  cbCreateContract =nullptr;
+    QLabel*     cbCreditorLabel = nullptr;
 };
 
 /********************************
@@ -125,6 +126,7 @@ struct wpLableAndAmount : public QWizardPage{
     int nextId() const    override;
 private:
     Q_OBJECT;
+    QLabel* contractLabel = nullptr;
 };
 
 /*
@@ -217,6 +219,8 @@ class wpConfirmContract : public QWizardPage
 public:
     wpConfirmContract(QWidget*);
     void initializePage() override;
+private:
+    QLabel* cbContractLabel = nullptr;
 };
 
 /*

@@ -669,7 +669,7 @@ void MainWindow::on_comboUebersicht_currentIndexChanged(int i)
 void MainWindow::on_pbPrint_clicked()
 {   LOG_CALL;
     QString filename = appConfig::Outdir();
-    filename += qsl("\\") + QDate::currentDate().toString(qsl("yyyy-MM-dd_"));
+    filename += qsl("/") + QDate::currentDate().toString(qsl("yyyy-MM-dd_"));
     filename += Statistics_Filenames[ui->comboUebersicht->currentIndex()];
     filename += qsl(".pdf");
     QPdfWriter write(filename);
