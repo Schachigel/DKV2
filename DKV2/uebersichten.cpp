@@ -225,7 +225,7 @@ steht die Einzahlung durch die Kreditgeber*in noch aus.
 void uebersichten::renderPayedInterestByYear()
 {   LOG_CALL;
     QString head {qsl("Ausgezahlte Zinsen pro Jahr")};
-    QString desc {qsl("Die Liste zeigt für jedes Jahr, welche Zinsen ausbezahlt oder, für thesaurierende Verträge und Verträge ohne Zinsauszahlung, angerechent wurden.")};
+    QString desc {qsl("Die Liste zeigt für jedes Jahr, welche Zinsen ausbezahlt oder, für thesaurierende Verträge und Verträge ohne Zinsauszahlung, angerechnet wurden.")};
     prep(head, desc);
     QVector<QSqlRecord> records;
     if( not executeSql( sqlInterestByYearOverview, QVariant(), records)) {
@@ -236,7 +236,7 @@ void uebersichten::renderPayedInterestByYear()
     tablelayout::section currentSec;
     QLocale locale;
     for( int i=0; i <records.count(); i++) {
-        QString year =records[i].value(qsl("Year")).toString();
+        QString year = records[i].value(qsl("Year")).toString();
         if( currentSec.header not_eq year) {
             // save complte section
             if( i not_eq 0) tl.sections.push_back(currentSec);
@@ -244,9 +244,16 @@ void uebersichten::renderPayedInterestByYear()
             currentSec.header =year;
             currentSec.data.clear();
         }
-        currentSec.data.push_back({ locale.toCurrencyString(records[i].value(qsl("Summe")).toDouble()),
-                                    records[i].value(qsl("BA")).toString(),
-                                    records[i].value(qsl("Thesa")).toString(),});
+
+        if (records[i].value(qsl("Summe")).toDouble() != 0.0) {
+            currentSec.data.push_back(
+                {
+                    qsl("    "),
+                    records[i].value(qsl("BA")).toString(),
+                        records[i].value(qsl("Thesa")).toString(),
+                        locale.toCurrencyString(records[i].value(qsl("Summe")).toDouble())
+                });
+        }
     }
     if( currentSec.data.count() or currentSec.header.count())
         tl.sections.push_back(currentSec);
