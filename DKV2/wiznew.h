@@ -46,6 +46,7 @@ private:
     QRadioButton* rbNew;
     QRadioButton* rbExisting;
     QComboBox*    cbCreditors;
+    QLabel*       subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
 /*
@@ -65,6 +66,7 @@ struct wpNewCreditorAddress : public QWizardPage{
     int nextId() const    override;
 private:
     Q_OBJECT;
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
 extern const QString pnEMail;
@@ -77,6 +79,7 @@ struct wpEmail : public QWizardPage {
     int nextId() const    override;
 private:
     Q_OBJECT;
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
 extern const QString pnIban;
@@ -89,6 +92,7 @@ struct wpBankAccount : public QWizardPage{
     int nextId() const    override;
 private:
     Q_OBJECT;
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
 extern const QString pnConfirmCreditor;
@@ -104,7 +108,7 @@ public slots:
     void onConfirmCreateContract_toggled(int state);
 private:
     QCheckBox*  cbCreateContract =nullptr;
-    QLabel*     cbCreditorLabel = nullptr;
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
 /********************************
@@ -127,6 +131,7 @@ struct wpLableAndAmount : public QWizardPage{
 private:
     Q_OBJECT;
     QLabel* contractLabel = nullptr;
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
 /*
@@ -152,6 +157,7 @@ private:
     bool init =true;
     QDateEdit* deTerminationDate; // to enable / disable we need the pointer to the cBox
     QComboBox* cbNoticePeriod;    // to access the itemData
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
 /*
@@ -164,6 +170,7 @@ struct wpInterestSelectionMode : public QWizardPage {
     int nextId() const override;
 private:
     Q_OBJECT;
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
 /*
@@ -182,6 +189,7 @@ private:
     QComboBox* cbInvestments =nullptr; // to read itemData on validation
     QLabel* lblInvestmentInfo =nullptr;
     qlonglong rowid_investment =-1;
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
 /*
@@ -193,6 +201,7 @@ struct wpInterestSelection : public QWizardPage {
     int nextId() const    override;
 private:
     Q_OBJECT;
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
 /*
@@ -206,6 +215,7 @@ struct wpInterestPayoutMode : public QWizardPage {
 private:
     Q_OBJECT;
     QComboBox* cbImode =nullptr;
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
 /*
@@ -220,7 +230,7 @@ public:
     wpConfirmContract(QWidget*);
     void initializePage() override;
 private:
-    QLabel* cbContractLabel = nullptr;
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
 /*

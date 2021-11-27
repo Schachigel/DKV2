@@ -10,11 +10,14 @@
 wpTerminateContract_DatePage::wpTerminateContract_DatePage(QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("Vertrag beenden"));
-    QDateEdit* de = new QDateEdit;
+    subTitleLabel->setWordWrap(true);
+
+    QDateEdit *de = new QDateEdit;
     de->setDisplayFormat(qsl("dd.MM.yyyy"));
     registerField(qsl("date"), de);
     de->setToolTip(qsl("Rückerstattungsdatum"));
     QVBoxLayout* layout = new QVBoxLayout;
+    layout->addWidget(subTitleLabel);
     layout->addWidget(de);
     setLayout(layout);
 }
@@ -27,7 +30,7 @@ void wpTerminateContract_DatePage::initializePage()
     QString subt {qsl("Mit dieser Dialogfolge kannst Du den Vertrag <p><b>%1</b> von <b>%2</b><p> beenden.<p>"
                 "Gib das Datum an, zu dem der Vertrag ausgezahlt wird. "
                 "Bis zu diesem Datum werden die Zinsen berechnet. ")};
-    setSubTitle(subt.arg(Kennung, creditorName));
+    subTitleLabel->setText(subt.arg(Kennung, creditorName));
     setField(qsl("date"), wiz->cont.plannedEndDate());
 }
 
@@ -45,13 +48,15 @@ bool wpTerminateContract_DatePage::validatePage()
 wpTerminateContract_ConfirmationPage::wpTerminateContract_ConfirmationPage(QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("Vertrag beenden"));
-    QCheckBox* cbPrint = new QCheckBox(qsl("Beleg als CSV Datei speichern"));
+    subTitleLabel->setWordWrap(true);
+    QCheckBox *cbPrint = new QCheckBox(qsl("Beleg als CSV Datei speichern"));
     registerField(qsl("print"), cbPrint);
     cbPrint->setToolTip(qsl("Die Datei wird in dem konfigurierten Ausgabeordner gespeichert"));
     QCheckBox* cbConfirm = new QCheckBox(qsl("Die Engaben sind korrekt"));
     registerField(qsl("confirm"), cbConfirm);
     cbConfirm->setToolTip(qsl("Bestätige, dass die Eingaben richtig sind!"));
     QVBoxLayout* layout = new QVBoxLayout;
+    layout->addWidget(subTitleLabel);
     layout->addWidget(cbPrint);
     layout->addWidget(cbConfirm);
     setLayout(layout);
@@ -71,7 +76,7 @@ void wpTerminateContract_ConfirmationPage::initializePage()
                        "</table>");
     QLocale locale;
     subtitle = subtitle.arg(locale.toCurrencyString(wiz->cont.value()), locale.toCurrencyString(interest), locale.toCurrencyString(finalValue));
-    setSubTitle(subtitle);
+    subTitleLabel->setText(subtitle);
 }
 void wpTerminateContract_ConfirmationPage::onConfirmData_toggled(int)
 {

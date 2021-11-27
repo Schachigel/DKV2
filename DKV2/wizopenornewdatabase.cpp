@@ -14,14 +14,17 @@
 wpOpenOrNew::wpOpenOrNew(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Datenbank Auswahl"));
-    setSubTitle(qsl("Mit dieser Dialogfolge kann die Datenbank zum Speichern der Kreditdaten gewählt werden."));
+    subTitleLabel->setWordWrap(true);
+    subTitleLabel->setText(qsl("Mit dieser Dialogfolge kann die Datenbank zum Speichern der Kreditdaten gewählt werden."));
     QRadioButton* rbNew  = new QRadioButton(qsl("Neue Datenbank anlegen"));
     registerField(qsl("createNewDb"), rbNew);
     QRadioButton* rbOpen = new QRadioButton(qsl("Eine existierende Datenbank öffnen"));
-    QVBoxLayout* l =new QVBoxLayout();
-    l->addWidget(rbNew);
-    l->addWidget(rbOpen);
-    setLayout(l);
+    QVBoxLayout* lv =new QVBoxLayout();
+    lv->addWidget(subTitleLabel);
+    lv->addWidget(rbNew);
+    lv->addWidget(rbOpen);
+
+    setLayout(lv);
 }
 
 //void wizOpenOrNewDatabase::initializePage()
@@ -60,7 +63,8 @@ QString defaultDKDB_Filename() {
 wpNewDb::wpNewDb(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Angaben zur neuen Datenbank"));
-    setSubTitle(qsl("Wähle ein Verzeichnis aus und gib den Namen für die neue Datenbank an"));
+    subTitleLabel->setWordWrap(true);
+    subTitleLabel->setText(qsl("Wähle ein Verzeichnis aus und gib den Namen für die neue Datenbank an"));
 
     QLabel* lVerzeichnis =new QLabel(qsl("&Verzeichnis"));
     QLineEdit* verzeichnis =new QLineEdit();
@@ -79,6 +83,7 @@ wpNewDb::wpNewDb(QWidget* p) : QWizardPage(p)
     layoutFilename->addWidget(dateiname);
 
     QVBoxLayout* l =new QVBoxLayout();
+    l->addWidget(subTitleLabel);
     l->addLayout(layoutFolder);
     l->addLayout(layoutFilename);
     setLayout(l);
@@ -147,7 +152,8 @@ int wpNewDb::nextId() const
 wpExistingDb::wpExistingDb(QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("DK Datenbank auswählen"));
-    setSubTitle(qsl("Wähle eine existierende DK Datenbank (*.dkdb) aus"));
+    subTitleLabel->setWordWrap(true);
+    subTitleLabel->setText(qsl("Wähle eine existierende DK Datenbank (*.dkdb) aus"));
     QLabel* lAuswahl =new QLabel(qsl("&Ausgewählte Datei"));
     QLineEdit* leFullfile =new QLineEdit();
     leFullfile->setReadOnly(true);
@@ -156,7 +162,10 @@ wpExistingDb::wpExistingDb(QWidget* p) : QWizardPage(p)
     QHBoxLayout* hbl =new QHBoxLayout();
     hbl->addWidget(lAuswahl);
     hbl->addWidget(leFullfile);
-    setLayout(hbl);
+    QVBoxLayout *lv = new QVBoxLayout();
+    lv->addWidget(subTitleLabel);
+    lv->addLayout(hbl);
+    setLayout(lv);
 }
 
 void wpExistingDb::initializePage()

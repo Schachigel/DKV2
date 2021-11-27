@@ -2,7 +2,10 @@
 #define WIZOPENORNEWDATABASE_H
 
 #include <QWizard>
+#include <QObject>
 #include <QRadioButton>
+#include <QLabel>
+#include <QString>
 
 enum { NewOrOpen, selectNewFile, selectExistingFile};
 
@@ -15,10 +18,11 @@ struct wpOpenOrNew : public QWizardPage
 //    bool validatePage() override;
 
 private:
-    Q_OBJECT
+    Q_OBJECT;
     bool init =true;
     QRadioButton* rbNew =nullptr;
     QRadioButton* rbExisting =nullptr;
+    QLabel *subTitleLabel = new QLabel();
 };
 
 struct wpNewDb : public QWizardPage
@@ -29,7 +33,9 @@ struct wpNewDb : public QWizardPage
     void setVisible(bool v) override;
     int nextId() const override;
 private:
-    Q_OBJECT
+    Q_OBJECT;
+    QLabel *subTitleLabel = new QLabel();
+
 private slots:
     void browseButtonClicked();
 };
@@ -42,7 +48,8 @@ struct wpExistingDb : public QWizardPage
     void setVisible(bool v) override;
     int nextId() const override;
 private:
-    Q_OBJECT
+    Q_OBJECT;
+    QLabel *subTitleLabel = new QLabel();
 private slots:
     void browseButtonClicked();
 };
