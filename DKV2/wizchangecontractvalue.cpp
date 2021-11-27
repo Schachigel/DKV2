@@ -17,10 +17,14 @@
 wpChangeContract_IntroPage::wpChangeContract_IntroPage(QWidget* parent) : QWizardPage(parent)
 {
     setTitle(qsl("Ein- / Auszahlung"));
-    QRadioButton* rbDeposit = new QRadioButton(qsl("Einzahlung"));
+    subTitleLabel = new QLabel(qsl("Keine Daten!"));
+    subTitleLabel->setWordWrap(true);
+
+    QRadioButton *rbDeposit = new QRadioButton(qsl("Einzahlung"));
     QRadioButton* rbPayout = new QRadioButton(qsl("Auszahlung"));
     registerField(qsl("deposit_notPayment"), rbDeposit);
     QVBoxLayout* layout = new QVBoxLayout;
+    layout->addWidget(subTitleLabel);
     layout->addWidget(rbDeposit);
     layout->addWidget(rbPayout);
     setLayout(layout);
@@ -31,7 +35,7 @@ void wpChangeContract_IntroPage::initializePage()
     QString subtitle =qsl("In dieser Dialogfolge kannst Du Ein- oder Auszahlungen zum Vertrag <b>%1</b> von <b>%2</b> verbuchen.");
     wizChangeContract* wiz= qobject_cast<wizChangeContract*>(wizard());
     subtitle = subtitle.arg(wiz->contractLabel, wiz->creditorName);
-    setSubTitle(subtitle);
+    subTitleLabel->setText(subtitle);
 }
 
 bool wpChangeContract_IntroPage::validatePage()
@@ -55,10 +59,14 @@ bool wpChangeContract_IntroPage::validatePage()
 
 wpChangeContract_AmountPage::wpChangeContract_AmountPage(QWidget* parent) : QWizardPage(parent)
 {
-    QVBoxLayout*  layout = new QVBoxLayout;
+    subTitleLabel = new QLabel("Keine Daten!");
+    subTitleLabel->setWordWrap(true);
+
+    QVBoxLayout *layout = new QVBoxLayout;
     QLineEdit* le = new QLineEdit;
     registerField(qsl("amount"), le);
     le->setValidator(new QIntValidator(this));
+    layout->addWidget(subTitleLabel);
     layout->addWidget(le);
     setLayout(layout);
 }
@@ -73,7 +81,7 @@ void wpChangeContract_AmountPage::initializePage()
         setTitle(qsl("Einzahlungsbetrag"));
         QString subt =qsl("Gib den eingezahlten Betrag in ganzen Euro an. Der Betrag muss größer als %1 sein.");
         subt =subt.arg(l.toCurrencyString(minPayout));
-        setSubTitle(subt);
+        subTitleLabel->setText(subt);
 
         setField(qsl("amount"), 1000.);
     } else {
@@ -85,7 +93,7 @@ void wpChangeContract_AmountPage::initializePage()
         QLocale locale;
         QString subtitle =qsl("Der Auszahlungsbetrag kann zwischen %1 und %2 liegen.");
         subtitle = subtitle.arg(locale.toCurrencyString(minPayout), locale.toCurrencyString(maxPayout));
-        setSubTitle(subtitle);
+        subTitleLabel->setText(subtitle);
         setField(qsl("amount"), minPayout);
     }
 }
@@ -110,11 +118,15 @@ bool wpChangeContract_AmountPage::validatePage()
 
 wpChangeContract_DatePage::wpChangeContract_DatePage(QWidget* parent) : QWizardPage(parent)
 {
-    QDateEdit* de = new QDateEdit;
+    subTitleLabel = new QLabel(qsl("Keine Daten!"));
+    subTitleLabel->setWordWrap(true);
+
+    QDateEdit *de = new QDateEdit;
     de->setDisplayFormat(qsl("dd.MM.yyyy"));
     registerField(qsl("date"), de);
 
     QVBoxLayout*  layout = new QVBoxLayout;
+    layout->addWidget(subTitleLabel);
     layout->addWidget(de);
     setLayout(layout);
 }
@@ -127,10 +139,10 @@ void wpChangeContract_DatePage::initializePage()
     bool deposit = field(qsl("deposit_notPayment")).toBool();
     if( deposit) {
         setTitle(qsl("Datum des Geldeingangs"));
-        setSubTitle(subt + qsl("<p>Gib das Datum an, an dem das Geld auf unserem Konto gutgeschrieben wurde."));
+        subTitleLabel->setText(subt + qsl("<p>Gib das Datum an, an dem das Geld auf unserem Konto gutgeschrieben wurde."));
     } else {
         setTitle(qsl("Überweisungsdatum"));
-        setSubTitle(subt + qsl("<p>Gib das Datum ein, zu dem die Überweisung durchgeführt wird."));
+        subTitleLabel->setText(subt + qsl("<p>Gib das Datum ein, zu dem die Überweisung durchgeführt wird."));
     }
     setField(qsl("date"), wiz->earlierstDate);
 }
@@ -152,10 +164,14 @@ bool wpChangeContract_DatePage::validatePage()
 wpChangeContract_Summary::wpChangeContract_Summary(QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("Zusammenfassung"));
+    subTitleLabel = new QLabel("Keine Daten!");
+    subTitleLabel->setWordWrap(true);
+
     QCheckBox* cb = new QCheckBox(qsl("Die Eingaben sind korrekt!"));
     registerField(qsl("confirmed"), cb);
     QVBoxLayout* layout = new QVBoxLayout;
-    layout-> addWidget(cb);
+    layout->addWidget(subTitleLabel);
+    layout->addWidget(cb);
     setLayout(layout);
     connect(cb, &QCheckBox::stateChanged, this, &wpChangeContract_Summary::onConfirmData_toggled);
 }
@@ -180,7 +196,7 @@ void wpChangeContract_Summary::initializePage()
         newValue = wiz->currentAmount - change;
     }
     QLocale locale;
-    setSubTitle(subtitle.arg(wiz->contractLabel, wiz->creditorName, locale.toCurrencyString(oldValue),
+    subTitleLabel->setText(subtitle.arg(wiz->contractLabel, wiz->creditorName, locale.toCurrencyString(oldValue),
                    deposit? qsl("+") : qsl("-"), locale.toCurrencyString(change),
                    locale.toCurrencyString(newValue), field(qsl("date")).toDate().toString(qsl("dd.MM.yyyy"))));
 }

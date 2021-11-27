@@ -3,6 +3,7 @@
 
 #include <QWizard>
 #include <QComboBox>
+#include <QLabel>
 
 #include "investment.h"
 
@@ -19,6 +20,8 @@ public:
     wpInvestmentSummary(QWidget* w =nullptr);
     void initializePage() override;
 //    bool validatePage() override;
+private:
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
 struct wpType : public QWizardPage
@@ -28,6 +31,8 @@ public:
     wpType(QWidget* p =nullptr);
     void initializePage() override;
 //    bool validatePage() override;
+private:
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
 class wpTimeFrame : public QWizardPage
@@ -39,6 +44,9 @@ public:
     bool validatePage() override;
 private slots:
     void onStartDate_changed();
+
+private:
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
 struct wpNewInvestInterest : public QWizardPage
@@ -48,6 +56,7 @@ struct wpNewInvestInterest : public QWizardPage
     // bool validatePage() override;
 private:
     Q_OBJECT;
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
 struct wizNewInvestment : public QWizard

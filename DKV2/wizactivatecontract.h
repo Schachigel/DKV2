@@ -3,11 +3,15 @@
 
 #include <QDate>
 #include <QWizard>
+#include <QLabel>
 
 struct wpInitialPayment_IntroPage : public QWizardPage {
     wpInitialPayment_IntroPage(QWidget* w =nullptr);
     void initializePage() override;
     Q_OBJECT;
+
+private:
+    QLabel *subTitleLabel = nullptr;
 };
 
 extern QString fnDate;
@@ -18,6 +22,9 @@ struct wpInitialPayment_DatePage : public QWizardPage {
     bool validatePage() override;
     QDate minDate;
     Q_OBJECT;
+
+private:
+    QLabel *subTitleLabel = nullptr;
 };
 
 extern QString fnAmount;
@@ -37,8 +44,10 @@ public:
     bool isComplete() const override;
 public slots:
     void onConfirmData_toggled(int );
-};
 
+private:
+    QLabel *subTitleLabel = nullptr;
+};
 
 class wizInitialPayment : public QWizard
 {
