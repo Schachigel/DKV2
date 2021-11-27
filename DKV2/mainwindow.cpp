@@ -145,7 +145,7 @@ QString MainWindow::askUserForNextDb()
         }
         // a new db should be created -> ask project details
         // closeAllDatabaseConnections();
-        if( not createNewDatabaseFileWDefaultContent(selectedDbPath)) {
+        if( not createNewDatabaseFileWDefaultContent(selectedDbPath, (wizOpenOrNew.field(qsl("Zinssusance")).toBool() ? zs30360 : zs_actact))) {
             QMessageBox::critical(this, qsl("Fehler"), qsl("Die neue Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen"));
             return QString();
         }
@@ -232,7 +232,8 @@ MainWindow::~MainWindow()
 void MainWindow::showDbInStatusbar( const QString &filename)
 {   LOG_CALL_W (filename);
     Q_ASSERT( filename.size());
-    ui->statusLabel->setText( filename);
+    QString statusstring ={qsl("%1 (%2)").arg(filename, dbConfig::readString(ZINSUSANCE))};
+    ui->statusLabel->setText( statusstring);
 }
 
 // whenever the stackedWidget changes ...

@@ -25,6 +25,10 @@ private slots:
     void test_TageSeitJahresanfang();
     void test_ZinsesZins_data();
     void test_ZinsesZins();
+
+    void test_act_act_data();
+    void test_act_act();
+
     void test_IsValidIban_data();
     void test_IsValidIban();
 };

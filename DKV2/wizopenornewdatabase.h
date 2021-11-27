@@ -7,7 +7,7 @@
 #include <QLabel>
 #include <QString>
 
-enum { NewOrOpen, selectNewFile, selectExistingFile};
+enum { NewOrOpen, selectNewFile, Zinssusance, selectExistingFile};
 
 
 struct wpOpenOrNew : public QWizardPage
@@ -38,6 +38,13 @@ private:
 
 private slots:
     void browseButtonClicked();
+};
+
+struct wpICalcMode : public QWizardPage
+{
+    wpICalcMode(QWidget* p);
+    void initializePage() override;
+    int nextId() const override;
 };
 
 struct wpExistingDb : public QWizardPage

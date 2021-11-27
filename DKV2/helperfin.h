@@ -44,13 +44,14 @@ inline int d2percent(const double d)
 
 
 
-int TageZwischen(QDate von, QDate bis);
+int TageZwischen_30_360(QDate von, QDate bis);
 
-int TageBisJahresende(QDate d);
+int TageBisJahresende_30_360(QDate d);
 int TageBisJahresende_lookup(const QDate& d);
-int TageSeitJahresAnfang(QDate d);
+int TageSeitJahresAnfang_30_360(QDate d);
 int TageSeitJahresAnfang_lookup(const QDate& d);
 
-double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa=true);
+double ZinsesZins_30_360(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa=true);
+double ZinsesZins_act_act(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa=true);
 
 #endif // FINHELPER_H

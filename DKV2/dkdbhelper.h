@@ -15,7 +15,7 @@
 
 
 bool insert_views( const QSqlDatabase &db =QSqlDatabase::database());
-bool fill_DkDbDefaultContent(const QSqlDatabase &db = QSqlDatabase::database(), bool includeViews =true);
+bool fill_DkDbDefaultContent(const QSqlDatabase &db = QSqlDatabase::database(), bool includeViews =true, zinssusance sz =zs30360);
 
 enum version_check_result {
     noVersion =-1,

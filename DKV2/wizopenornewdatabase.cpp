@@ -143,6 +143,41 @@ bool wpNewDb::validatePage()
 
 int wpNewDb::nextId() const
 {
+    return Zinssusance;
+}
+
+/*
+ * wizard Pages: wpICalcMode
+ */
+wpICalcMode::wpICalcMode(QWidget* p) : QWizardPage (p)
+{
+    setTitle(qsl("Angaben zu Zinsmethode (Zinssusance)"));
+    setSubTitle (qsl("DKV2 unterstütz die Methoden <i>(30/360)</i> und <i>(act/act)</i> der Zinsberechnung"));
+    QLabel* lbl =new QLabel("Die Unterschiede sind geringfügig und treten nur in Jahren auf, "
+                    "die nicht vollständig im Zinszeitraum liegen. <br>Sie stellen "
+                   "keinen besonderen Vor- oder Nachteil für Projekt oder DK Geber*innen dar.");
+
+    QRadioButton* rb30360 =new QRadioButton(qsl("30 / 360"));
+    rb30360->setToolTip (qsl("Für jeden Tag gibt es 1/360-tel des Jahreszins. Es werden 30 Tage pro Monat berechnet.<br>"
+                             "Schaltjahre und normale Jahre werden gleich bewertet."));
+
+    QRadioButton* rbactact=new QRadioButton(qsl("act / act"));
+    rbactact->setToolTip (qsl("In Schaltjahren wird ein Tag mit 1/366-tel des Jahreszins berechnet, <br>in anderen Jahren mit einem 1/365-tel."));
+    registerField (qsl("Zinssusance"), rb30360);
+    QVBoxLayout* l =new QVBoxLayout();
+    l->addWidget (lbl);
+    l->addWidget (rb30360);
+    l->addWidget (rbactact);
+    setLayout (l);
+}
+
+void wpICalcMode::initializePage()
+{
+    setField (qsl("Zinssusance"), true);
+}
+
+int wpICalcMode::nextId () const
+{
     return -1;
 }
 
@@ -218,6 +253,7 @@ wizOpenOrNewDb::wizOpenOrNewDb(QWidget* p) : QWizard(p)
 {   LOG_CALL;
     setPage(NewOrOpen, new wpOpenOrNew(this));
     setPage(selectNewFile, new wpNewDb(this));
+    setPage (Zinssusance, new wpICalcMode(this));
     setPage(selectExistingFile, new wpExistingDb(this));
     QFont f = font(); f.setPointSize(10); setFont(f);
 }
