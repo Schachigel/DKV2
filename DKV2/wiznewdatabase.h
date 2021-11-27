@@ -58,10 +58,7 @@ public:
     wpProjectAddress_Page(QWidget* p=nullptr);
     void initializePage() override;
     void cleanupPage() override  {};
-//    void setVisible(bool v) override;
-//    bool validatePage() override;
 private:
-    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 /* project Details Page */
 struct wpProjectDetails_Page : public QWizardPage
@@ -83,10 +80,8 @@ public:
     void cleanupPage() override  {};
     void initializePage() override;
     bool validatePage() override;
-//    void disableStartIndex() { leStartIndex->setDisabled(true);};
+
 private:
-    QLineEdit* leStartIndex;
-    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 /* min values Page */
 class wpContractMinValues_Page : public QWizardPage
@@ -103,7 +98,6 @@ private:
     QLineEdit* leMi =nullptr;
     QLineEdit* leMaxINbr =nullptr;
     QLineEdit* leMaxISum =nullptr;
-    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 /* new db summary Page */
 class wpNewDatabase_SummaryPage : public QWizardPage{

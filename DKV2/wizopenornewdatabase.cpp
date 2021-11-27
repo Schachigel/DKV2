@@ -109,10 +109,12 @@ void wpNewDb::setVisible(bool v)
 
 void wpNewDb::browseButtonClicked()
 {   LOG_CALL;
-     setField( qsl("dbFolder"),
-               QFileDialog::getExistingDirectory(this, qsl("Datenbank Verzeichnis"),
-                                                 field(qsl("dbFolder")).toString(),
-                                                 QFileDialog::ShowDirsOnly ));
+    QString folder =QFileDialog::getExistingDirectory(this, qsl("Datenbank Verzeichnis"),
+                          field(qsl("dbFolder")).toString(), QFileDialog::ShowDirsOnly );
+
+    if( not folder.isEmpty ())
+        setField( qsl("dbFolder"), folder);
+
 }
 
 bool wpNewDb::validatePage()
@@ -240,11 +242,12 @@ void wpExistingDb::setVisible(bool v)
 
 void wpExistingDb::browseButtonClicked()
 {   LOG_CALL;
-     setField( qsl("existingFile"),
-               QFileDialog::getOpenFileName(this, qsl("Datenbankdatei auswählen"),
-                                            defaultFolder(), qsl("DK Datenbank *.dkdb *.db")));
-}
 
+    QString file =QFileDialog::getOpenFileName(this, qsl("Datenbankdatei auswählen"),
+                                  defaultFolder(), qsl("DK Datenbank *.dkdb *.db"));
+    if(not file.isEmpty())
+        setField( qsl("existingFile"),file);
+}
 
 /*
  * Wizard: wizOpenOrNewDb
