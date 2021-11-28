@@ -162,9 +162,10 @@ void changeContractComment(contract* pc)
         qInfo() << "inpud dlg canceled";
         return;
     }
-    if( pc->updateComment(ipd.textValue().trimmed())) {
+    if( pc->updateComment(ipd.textValue().trimmed()))
+        qInfo() << "successfully updated comment";
+    else
         qCritical() << "update comment failed";
-    }
 }
 void changeContractTermination(contract* pc)
 {   LOG_CALL;
