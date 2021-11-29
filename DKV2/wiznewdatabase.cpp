@@ -124,9 +124,11 @@ void wpFileSelectionNewDb_IntroPage::initializePage()
 wpProjectAddress_Page::wpProjectAddress_Page(QWidget *p) : QWizardPage(p)
 {
     setTitle(qsl("Adresse der Projekt GmbH"));
-    //QLabel* lDisclaimer = new QLabel();
+
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
     subTitleLabel->setWordWrap(true);
     subTitleLabel->setText(qsl("*<small>Diese Daten werden für Briefdruck benötigt und können auch später eingegeben und geändert werden.</small>"));
+
     QLineEdit *leAddress1 = new QLineEdit;
     registerField(dbConfig::paramName(GMBH_ADDRESS1), leAddress1);
     leAddress1->setToolTip(qsl("Gib hier die erste Adresszeile der GmbH ein"));
@@ -148,10 +150,11 @@ wpProjectAddress_Page::wpProjectAddress_Page(QWidget *p) : QWizardPage(p)
     QLineEdit *leUrl = new QLineEdit;
     registerField(dbConfig::paramName(GMBH_URL), leUrl);
 
+    QVBoxLayout* vb =new QVBoxLayout();
+    vb->addWidget(subTitleLabel);
+
     QGridLayout *grid = new QGridLayout;
     int row = 0;
-    grid->addWidget(subTitleLabel, row, 0, 1, 3);
-    row++;
     grid->addWidget(leAddress1, row, 0, 1, 3);
     row++;
     grid->addWidget(leAddress2, row, 0, 1, 3);
@@ -166,8 +169,9 @@ wpProjectAddress_Page::wpProjectAddress_Page(QWidget *p) : QWizardPage(p)
     grid->addWidget(leUrl, row, 0, 1, 3);
     grid->setColumnStretch(0, 1);
     grid->setColumnStretch(1, 4);
-    // grid->setHorizontalSpacing(0);
-    setLayout(grid);
+
+    vb->addLayout (grid);
+    setLayout(vb);
 }
 
 void wpProjectAddress_Page::initializePage()
@@ -238,6 +242,7 @@ void wpProjectDetails_Page::initializePage()
 wpContractLableInfo_Page::wpContractLableInfo_Page(QWidget *p) : QWizardPage(p)
 {
     setTitle(qsl("Vertragskennung"));
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
     subTitleLabel->setWordWrap(true);
     subTitleLabel->setText(qsl("Diese Informationen werden verwendet um eindeutige Kennzeichen für die einzelnen Verträge zu erzeugen"));
 
@@ -248,6 +253,7 @@ wpContractLableInfo_Page::wpContractLableInfo_Page(QWidget *p) : QWizardPage(p)
     leProject->setToolTip(qsl("Das Kürzel wird bei der Erstellung von Vertragskennzeichen verwendet"));
 
     QLabel *lIndex = new QLabel(qsl("Start Index:"));
+    QLineEdit* leStartIndex;
     leStartIndex = new QLineEdit;
     lIndex->setBuddy(leStartIndex);
     registerField(dbConfig::paramName(STARTINDEX), leStartIndex);
@@ -283,58 +289,58 @@ bool wpContractLableInfo_Page::validatePage()
 wpContractMinValues_Page::wpContractMinValues_Page(QWidget *p) : QWizardPage(p)
 {
     setTitle(qsl("Weitere Konfiguration"));
-    subTitleLabel->setWordWrap(true);
-    subTitleLabel->setText(qsl("Hier kannst Du den minimalen Auszahlungsbetrag und Vertragswert festlegen, für den das Programm eine Buchung erlaubt. "
-                               "Dieser Werte werden bei Auszahlungen und beim Anlegen von Verträgen berücksichtigt.<p>"
-                               "<small>Da Auszahlungen z.T. mit Überweisungskosten einhergehen und kleine Verträge unrentabel sind sollte man kleine Werte vermeiden.</small>"));
-    leMa = new QLineEdit;
+
+    QLabel* subtitle =new QLabel(qsl("Halte die Maus über die Beschriftungen für weitere Information!"));
+    subtitle->setWordWrap (true);
+
+    leMa =new QLineEdit;
     registerField(dbConfig::paramName(MIN_PAYOUT), leMa);
-    leMa->setValidator(new QIntValidator(1, 1000, this));
-    QLabel *lma = new QLabel(qsl("Kleinster Auszahlungsbetrag in Euro:"));
+    leMa->setValidator(new QIntValidator(1,1000,this));
+    QLabel* lma     =new QLabel(qsl("Kleinster Auszahlungsbetrag in Euro:"));
+    lma->setToolTip (qsl("DKV2 wird keine Auszahlungen erlauben, deren Wert geringer ist als der hier angegebene Wert"));
     lma->setBuddy(leMa);
 
-    leMc = new QLineEdit;
+    leMc =new QLineEdit;
     registerField(dbConfig::paramName(MIN_AMOUNT), leMc);
-    leMc->setValidator(new QIntValidator(1, 1000, this));
-    QLabel *lmc = new QLabel(qsl("Kleinster Vertragswert in Euro:"));
+    leMc->setValidator(new QIntValidator(1,1000, this));
+    QLabel* lmc     =new QLabel(qsl("Kleinster Vertragswert in Euro:"));
+    lmc->setToolTip (qsl("DKV2 wird nicht zulassen, dass der Wert eines Vertrages kleiner wird, als der hier angegebene Wert"));
     lmc->setBuddy(leMc);
 
-    leMi = new QLineEdit;
+    leMi =new QLineEdit;
     registerField(dbConfig::paramName(MAX_INTEREST), leMi);
     leMi->setValidator(new QIntValidator(100, 1000, this));
-    QLabel *lmi = new QLabel(qsl("Größter auswählbarer Zins in 100tel (100 entspricht 1%)"));
+    QLabel* lmi     =new QLabel(qsl("Größter auswählbarer Zins in 100tel Prozent"));
+    lmi->setToolTip (qsl("Diese Angabe beschränkt die Werte, die für den Zins angeboten werden. 100 entspricht 1%"));
     lmi->setBuddy(leMi);
 
-    leMaxINbr = new QLineEdit;
+    leMaxINbr =new QLineEdit;
     registerField(dbConfig::paramName(MAX_INVESTMENT_NBR), leMaxINbr);
     leMaxINbr->setValidator(new QIntValidator(1, 100, this));
-    QLabel *lmaxINbr = new QLabel(qsl("Ansahl von Verträgen in einem Investment ab der sie rot gekennzeichnet wird"));
+    QLabel* lmaxINbr =new QLabel(qsl("Grenzwert für die Ansahl von Verträgen pro Investment"));
+    lmaxINbr->setToolTip (qsl("Ab der hier angegebenen Anzahl wird im Programm die Anzahl<br> von Verträgen pro Investment rot eingefärbt"));
     lmaxINbr->setBuddy(leMaxINbr);
 
-    leMaxISum = new QLineEdit;
+    leMaxISum =new QLineEdit;
     registerField(dbConfig::paramName(MAX_INVESTMENT_SUM), leMaxISum);
     leMaxISum->setValidator(new QIntValidator(1, 1000000, this));
-    QLabel *lmaxISum = new QLabel(qsl("Summe aller Verträge in einem Investment ab der sie rot gekennzeichnet wird"));
+    QLabel* lmaxISum =new QLabel(qsl("Grenzwert für die Summe von Verträgen pro Investment"));
+    lmaxISum->setToolTip (qsl("Ab der hier angegebenen Summe wird im Programm der Wert<br> der VertrÃ¤ge pro Investment rot eingefärbt"));
     lmaxISum->setBuddy(leMaxISum);
 
-    QGridLayout *grid = new QGridLayout;
-    int row = 0;
-    grid->addWidget(subTitleLabel, row, 0, 1, 2);
-    row++;
-    grid->addWidget(lma, row, 0);
-    grid->addWidget(leMa, row, 1);
-    row++;
-    grid->addWidget(lmc, row, 0);
-    grid->addWidget(leMc, row, 1);
-    row++;
-    grid->addWidget(lmi, row, 0);
-    grid->addWidget(leMi, row, 1);
-    row++;
+    QGridLayout* grid =new QGridLayout;
+    int row =0, col =0;
+    grid->addWidget (subtitle, row++, col++);
+    grid->addWidget(lma,  row, 0);
+    grid->addWidget(leMa, row++, 1);
+    grid->addWidget(lmc,  row, 0);
+    grid->addWidget(leMc, row++, 1);
+    grid->addWidget(lmi,  row, 0);
+    grid->addWidget(leMi, row++, 1);
     grid->addWidget(lmaxINbr, row, 0);
-    grid->addWidget(leMaxINbr, row, 1);
-    row++;
+    grid->addWidget(leMaxINbr, row++, 1);
     grid->addWidget(lmaxISum, row, 0);
-    grid->addWidget(leMaxISum, row, 1);
+    grid->addWidget(leMaxISum, row++, 1);
     setLayout(grid);
 }
 
