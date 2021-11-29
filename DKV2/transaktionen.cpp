@@ -94,7 +94,7 @@ void newCreditorAndContract()
     }
 
     if( not wiz.field(pnConfirmContract).toBool()) {
-        qInfo() << "user decided not to save the creditor";
+        qInfo() << "user decided not to save the contract";
         return;
     }
     contract cont;
