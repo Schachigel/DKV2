@@ -4,18 +4,7 @@
 #include "helper.h"
 #include "contract.h"
 
-
-static const qlonglong allKreditors =0;
-
-enum class letterType {
-    all =0,
-    annPayoutL        =int(interestModel::payout)   +1,
-    annReinvestL      =int(interestModel::reinvest) +1,
-    annInterestInfoL  =int(interestModel::fixed)    +1,
-    annInfoL          =int(interestModel::zero)     +1,
-    maxValue
-};
-letterType letterTypeFromInt( int i);
+enum class letterType;
 
 enum class snippetType {
     allLettersAllKreditors, // like Datum: same for all letters and all creditors
@@ -60,7 +49,7 @@ const QMap<letterSnippet, snippetType> snippet_type {
 
 struct snippet
 {
-    snippet(letterSnippet ls, letterType lType =letterType::all, qlonglong creditor =0);
+    snippet(letterSnippet ls, letterType lType =(letterType)allLetters, qlonglong creditor =0);
 
     QString name()     const { return snippetNames[int(ls)]; };
     snippetType type() const { return snippet_type[ls]; };
@@ -72,6 +61,8 @@ struct snippet
     static const QString tableName, fnSnippet, fnLetter, fnCreditor, fnText;
     static const dbtable& getTableDef();
     static const QVector<QString> getIndexes();
+    static const qlonglong cId_allKreditors =0;
+    static const int allLetters =0;
 private:
     static std::pair<QString, bool> read  (const letterSnippet sId, const letterType lId, const qlonglong kId, QSqlDatabase db=QSqlDatabase::database ());
     static bool    write (const QString text, const letterSnippet sId, const letterType lId, const qlonglong kId, QSqlDatabase db=QSqlDatabase::database ());
@@ -80,8 +71,6 @@ private:
     qlonglong cId;
 };
 
-/// init for new db
-int writeDefaultSnippets(QSqlDatabase db =QSqlDatabase::database ());
 
 // for testing
 QVector<snippet> randomSnippets(int count);

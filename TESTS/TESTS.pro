@@ -49,6 +49,7 @@ SOURCES +=  \
     ../DKV2/dbtable.cpp \
     ../DKV2/helperfile.cpp \
     ../DKV2/helper.cpp \
+    ../DKV2/letters.cpp \
     ../DKV2/lettersnippets.cpp \
     ../DKV2/tabledatainserter.cpp \
     financaltimespan.cpp \
@@ -75,6 +76,7 @@ PRECOMPILED_HEADER  = ../DKV2/pch.h
 
 HEADERS += \
     ../DKV2/ibanvalidator.h \
+    ../DKV2/letters.h \
     financaltimespan.h \
     test_appconfig.h \
     test_booking.h \

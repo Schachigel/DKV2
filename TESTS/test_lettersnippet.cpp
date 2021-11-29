@@ -5,6 +5,7 @@
 #include "../DKV2/helpersql.h"
 #include "../DKV2/dkdbhelper.h"
 #include "../DKV2/lettersnippets.h"
+#include "../DKV2/letters.h"
 
 #include "testhelper.h"
 #include "test_lettersnippet.h"
@@ -98,7 +99,7 @@ void test_letterSnippet::test_fallback()
     const QString expected {qsl("expceted")};
 
     {
-        snippet s2(letterSnippet::address, letterType::annPayoutL, allKreditors);
+        snippet s2(letterSnippet::address, letterType::annPayoutL, snippet::cId_allKreditors);
         s2.write (expected);
         // address is "allLetters", should fall through to "allKreditors"
         snippet s1(letterSnippet::address, letterType::annPayoutL, 1);
