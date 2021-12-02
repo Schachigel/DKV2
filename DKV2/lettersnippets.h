@@ -4,16 +4,7 @@
 #include "helper.h"
 #include "contract.h"
 
-
-enum class letterType {
-    all =0,
-    annPayoutL        =int(interestModel::payout)   +1,
-    annReinvestL      =int(interestModel::reinvest) +1,
-    annInterestInfoL  =int(interestModel::fixed)    +1,
-    annInfoL          =int(interestModel::zero)     +1,
-    maxValue
-};
-letterType letterTypeFromInt( int i);
+enum class letterType;
 
 enum class snippetType {
     allLettersAllKreditors, // like Datum: same for all letters and all creditors
@@ -58,31 +49,31 @@ const QMap<letterSnippet, snippetType> snippet_type {
 
 struct snippet
 {
-    snippet(letterSnippet ls, letterType lType =letterType::all, qlonglong creditor =0);
+    snippet(letterSnippet ls, letterType lType =(letterType)allLetters, qlonglong creditor =0);
 
     QString name()     const { return snippetNames[int(ls)]; };
     snippetType type() const { return snippet_type[ls]; };
 
     std::pair<QString, bool> read(QSqlDatabase db=QSqlDatabase::database ()) const;
     bool write(const QString& t, QSqlDatabase db=QSqlDatabase::database ()) const;
+    bool wInitDb (const QString text, QSqlDatabase db=QSqlDatabase::database ()) const;
 
-    static const QString tableName;
-    static const QString fnSnippet;
-    static const QString fnLetter;
-    static const QString fnCreditor;
-    static const QString fnText;
+    static const QString tableName, fnSnippet, fnLetter, fnCreditor, fnText;
     static const dbtable& getTableDef();
     static const QVector<QString> getIndexes();
+    static const qlonglong cId_allKreditors =0;
+    static const int allLetters =0;
 private:
     static std::pair<QString, bool> read  (const letterSnippet sId, const letterType lId, const qlonglong kId, QSqlDatabase db=QSqlDatabase::database ());
     static bool    write (const QString text, const letterSnippet sId, const letterType lId, const qlonglong kId, QSqlDatabase db=QSqlDatabase::database ());
-    static bool    wInit (const QString text, const letterSnippet sId, const letterType lId, const qlonglong kId, QSqlDatabase db=QSqlDatabase::database ());
     const letterSnippet ls;
     letterType lType;
     qlonglong cId;
 };
 
+
 // for testing
 QVector<snippet> randomSnippets(int count);
+
 
 #endif // LETTERSNIPPETS_H

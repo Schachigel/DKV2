@@ -86,7 +86,7 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings03()
     QDate miniActDate/* =EndOfTheFuckingWorld*/;
     {
         dbgTimer timer(qsl("create many contracts"));
-        saveRandomCreditors(70);
+        saveRandomCreditors_q(70);
         saveRandomContracts(100);    // contract date: 2 years back or less
         miniActDate = activateRandomContracts(90);// activation date: > contract date
     }

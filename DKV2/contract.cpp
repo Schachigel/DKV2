@@ -1,5 +1,6 @@
 
 #include "helper.h"
+#include "appconfig.h"
 #include "contract.h"
 #include "booking.h"
 
@@ -349,6 +350,17 @@ bool contract::needsAnnualSettlement(const QDate intendedNextBooking)
     }
     return true;
 }
+
+double contract::ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)
+{
+    QString susance =dbConfig::readString (ZINSUSANCE);
+    qInfo() << "Zinssusance configured in database: " << susance;
+    if(  susance == qsl("act/act"))
+        return ::ZinsesZins_act_act (zins, wert, von, bis, thesa);
+    else
+        return ::ZinsesZins_30_360(zins, wert, von, bis, thesa);
+}
+
 
 int contract::annualSettlement( int year)
 {   LOG_CALL_W(QString::number(year));

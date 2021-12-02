@@ -71,5 +71,6 @@ extern QList <QPair<QString, QString>> Cities;// {{"68305", "Mannheim"}, {"69123
 // for testing
 creditor saveRandomCreditor();
 void saveRandomCreditors( const int i);
+void saveRandomCreditors_q( const int i);
 
 #endif // KREDITOR_H

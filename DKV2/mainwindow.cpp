@@ -144,7 +144,7 @@ QString MainWindow::askUserForNextDb()
         }
         // a new db should be created -> ask project details
         // closeAllDatabaseConnections();
-        if( not createNewDatabaseFileWDefaultContent(selectedDbPath)) {
+        if( not createNewDatabaseFileWDefaultContent(selectedDbPath, (wizOpenOrNew.field(qsl("Zinssusance")).toBool() ? zs30360 : zs_actact))) {
             QMessageBox::critical(this, qsl("Fehler"), qsl("Die neue Datenbank konnte nicht angelegt werden. Die Ausführung wird abgebrochen"));
             return QString();
         }
@@ -231,7 +231,8 @@ MainWindow::~MainWindow()
 void MainWindow::showDbInStatusbar( const QString &filename)
 {   LOG_CALL_W (filename);
     Q_ASSERT( filename.size());
-    ui->statusLabel->setText( filename);
+    QString statusstring ={qsl("%1 (%2)").arg(filename, dbConfig::readString(ZINSUSANCE))};
+    ui->statusLabel->setText( statusstring);
 }
 
 // whenever the stackedWidget changes ...
@@ -668,7 +669,7 @@ void MainWindow::on_comboUebersicht_currentIndexChanged(int i)
 void MainWindow::on_pbPrint_clicked()
 {   LOG_CALL;
     QString filename = appConfig::Outdir();
-    filename += qsl("\\") + QDate::currentDate().toString(qsl("yyyy-MM-dd_"));
+    filename += qsl("/") + QDate::currentDate().toString(qsl("yyyy-MM-dd_"));
     filename += Statistics_Filenames[ui->comboUebersicht->currentIndex()];
     filename += qsl(".pdf");
     QPdfWriter write(filename);

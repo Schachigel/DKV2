@@ -3,6 +3,7 @@
 
 #include <QDate>
 #include <QWizard>
+#include <QLabel>
 
 class wpChangeContract_IntroPage : public QWizardPage
 {
@@ -11,6 +12,9 @@ public:
     void initializePage() override;
     bool validatePage() override;
     Q_OBJECT;
+
+private:
+    QLabel *subTitleLabel = nullptr;
 };
 
 struct wpChangeContract_AmountPage : public QWizardPage
@@ -20,6 +24,9 @@ struct wpChangeContract_AmountPage : public QWizardPage
     void initializePage() override;
     bool validatePage() override;
     Q_OBJECT;
+
+private:
+    QLabel *subTitleLabel = nullptr;
 };
 
 struct wpChangeContract_DatePage : public QWizardPage
@@ -29,6 +36,9 @@ struct wpChangeContract_DatePage : public QWizardPage
     void initializePage() override;
     bool validatePage() override;
     Q_OBJECT;
+
+private:
+    QLabel *subTitleLabel = nullptr;
 };
 
 class wpChangeContract_Summary : public QWizardPage{
@@ -39,6 +49,9 @@ public:
     bool isComplete() const override;
 public slots:
     void onConfirmData_toggled(int);
+
+private:
+    QLabel *subTitleLabel = nullptr;
 };
 
 struct wizChangeContract : public QWizard

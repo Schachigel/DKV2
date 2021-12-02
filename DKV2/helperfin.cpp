@@ -20,15 +20,15 @@ QString prozent2prozent_str(double x)
     return qsl("%1 %").arg(QString::number(x, 'f', 2));
 }
 
-int TageZwischen(QDate von, QDate bis)
+int TageZwischen_30_360(QDate von, QDate bis)
 {   // finanzmathematischer Abstand zwischen zwei Daten im selben Jahr
     if( bis == von) return 0;
     Q_ASSERT( von.year() == bis.year());
     Q_ASSERT(bis > von);
     if( bis.day() == 31)
-        return TageZwischen(von, QDate(bis.year(), bis.month(), 30));
+        return TageZwischen_30_360(von, QDate(bis.year(), bis.month(), 30));
     if( von.day() == 31)
-        return TageZwischen(QDate(von.year(), von.month(), 30), bis);
+        return TageZwischen_30_360(QDate(von.year(), von.month(), 30), bis);
     if( von.month() == bis.month())
         return bis.day() -von.day();
 
@@ -41,7 +41,7 @@ int TageZwischen(QDate von, QDate bis)
     return tageErsterMonat + tageVolleMonate + tageLetzterMonat;
 }
 
-int TageBisJahresende(QDate d)
+int TageBisJahresende_30_360(QDate d)
 {
     if( d.day()==d.daysInMonth()) // letzter Tag des Monats
     {
@@ -58,24 +58,28 @@ int TageBisJahresende(QDate d)
     return 30*month +days;
 }
 
-int TageSeitJahresAnfang(QDate d)
+int TageSeitJahresAnfang_30_360(QDate d)
 {
     return 30* (d.month()-1) + ((d.day() == 31) ? 30 : d.day());
 }
 
-double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)
+double ZinsesZins_30_360(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)
 {
-    qDebug().noquote() << "\n\nZinsberechnung von " << von << " bis " << bis << ((thesa) ? (" thesaurierend\n") : ("ausschüttend\n"));
+    qDebug().noquote() << "\n\nZinsberechnung (30/360) von " << von << " bis " << bis << ((thesa) ? (" thesaurierend\n") : ("ausschüttend\n"));
     if( not (von.isValid() and bis.isValid()) or ( von > bis)) {
         qCritical() << "Zinseszins kann nicht berechnet werden - ungültige Parameter";
         return -1.;
     }
+    if( bis.year () - von.year () > 1) {
+        qCritical() << "Zinszeitraum über mehrere Jahre";
+    }
+
     if( wert <= 0.) return 0.;
 
     if( von.year() == bis.year()) {
-        return r2(TageZwischen(von, bis)/360. *zins/100. *wert);
+        return r2(TageZwischen_30_360(von, bis)/360. *zins/100. *wert);
     }
-    int TageImErstenJahr = TageBisJahresende(von); // first day no intrest
+    int TageImErstenJahr = TageBisJahresende_30_360(von); // first day no intrest
     double ZinsImErstenJahr = TageImErstenJahr/360. *zins/100. *wert;
     double gesamtZins (ZinsImErstenJahr);
 
@@ -87,7 +91,7 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
         gesamtZins += JahresZins; ZinsVolleJahre += JahresZins;
         zwischenWert = (thesa) ? (zwischenWert+JahresZins) : zwischenWert;
     }
-    int TageImLetztenJahr = TageSeitJahresAnfang(bis);
+    int TageImLetztenJahr = TageSeitJahresAnfang_30_360(bis);
     double ZinsRestjahr = TageImLetztenJahr/360. *zins/100. *zwischenWert;
     gesamtZins += ZinsRestjahr;
     gesamtZins = r2(gesamtZins);
@@ -97,4 +101,68 @@ double ZinsesZins(const double zins, const double wert,const QDate von, const QD
         << "\nLetztes Jahr: " << ZinsRestjahr << "(" << TageImLetztenJahr << " Tage)"
         << "\nGesamtzins  : " << gesamtZins << Qt::endl;
     return r2(gesamtZins);
+}
+
+int TageZwischen_act_act(QDate von, QDate bis)
+{
+    Q_ASSERT(von.year () == bis.year());
+    Q_ASSERT (bis >= von);
+
+    int days =von.daysTo(bis);
+    qInfo() << "Tage(a/a) von " << von << " bis " << bis << ": " << days;
+    return days;
+}
+
+int TageBisJahresende_act_act(QDate date)
+{
+    return date.daysTo (QDate(date.year(), 12, 31));
+}
+
+int TageSeitJahresAnfang_act_act(QDate date)
+{
+    return QDate(date.year()-1, 12, 31).daysTo (date);
+}
+
+double ZinsesZins_act_act(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)
+{
+    qDebug().noquote() << "\n\nZinsberechnung (act/act) von " << von << " bis " << bis << ((thesa) ? (" thesaurierend\n") : ("ausschüttend\n"));
+    if( not (von.isValid() and bis.isValid()) or ( von > bis)) {
+        qCritical() << "Zinseszins kann nicht berechnet werden - ungültige Parameter";
+        return -1.;
+    }
+    if( bis.year () - von.year () > 1) {
+        qCritical() << "Zinszeitraum über mehrere Jahre";
+    }
+    if( wert <= 0.) return 0.;
+
+    double dpy =QDate::isLeapYear (von.year ()) ? 366 : 365;
+    if( von.year() == bis.year()) {
+
+        return r2(TageZwischen_act_act(von, bis)/dpy *zins/100. *wert);
+    }
+    int TageImErstenJahr = TageBisJahresende_act_act(von); // first day no intrest
+    double ZinsImErstenJahr = TageImErstenJahr/dpy *zins/100. *wert;
+    double gesamtZins (ZinsImErstenJahr);
+
+    double zwischenWert = (thesa) ? (wert+ZinsImErstenJahr) : (wert);
+    double ZinsVolleJahre = 0.;
+    int jahre(0);
+    for( jahre=0; jahre < bis.year()-von.year()-1; jahre++) {
+        double JahresZins = zwischenWert *zins/100.;
+        gesamtZins += JahresZins; ZinsVolleJahre += JahresZins;
+        zwischenWert = (thesa) ? (zwischenWert+JahresZins) : zwischenWert;
+    }
+    int dp_final_y =QDate::isLeapYear (bis.year ())? 366 : 365;
+    double TageImLetztenJahr = TageSeitJahresAnfang_act_act(bis);
+    double ZinsRestjahr = TageImLetztenJahr/dp_final_y *zins/100. *zwischenWert;
+    gesamtZins += ZinsRestjahr;
+    gesamtZins = r2(gesamtZins);
+    qDebug().noquote()
+        << "\nverzl.Guthaben:" << wert
+        << "\nErstes Jahr : " << ZinsImErstenJahr << "(" << TageImErstenJahr << "/" << dpy << ") Tage)"
+        << "\nVolle Jahre : " << ZinsVolleJahre << "(" << jahre << " Jahre)"
+        << "\nLetztes Jahr: " << ZinsRestjahr << "(" << TageImLetztenJahr <<  "/" << dp_final_y << " Tage)"
+        << "\nGesamtzins  : " << gesamtZins << Qt::endl;
+    return r2(gesamtZins);
+
 }

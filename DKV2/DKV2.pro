@@ -102,6 +102,7 @@ SOURCES += \
         helpersql.cpp \
         ibanvalidator.cpp \
         investment.cpp \
+        letters.cpp \
         lettersnippets.cpp \
         main.cpp \
         mainwindow.cpp \
@@ -149,6 +150,7 @@ HEADERS += pch.h\
         investment.h \
         letterTemplate-old.h \
         letters-old.h \
+        letters.h \
         lettersnippets.h \
         mainwindow.h \
         pch.h \

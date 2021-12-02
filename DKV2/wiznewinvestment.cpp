@@ -19,12 +19,13 @@ const QString pnKorrekt =qsl("OK");
 wpInvestmentSummary::wpInvestmentSummary(QWidget* w) : QWizardPage(w)
 {   LOG_CALL;
     setTitle(qsl("Zusammenfassung"));
-    setSubTitle(qsl("Bitte prüfe die Daten"));
+    subTitleLabel->setText(qsl("Bitte prüfe die Daten"));
 
     QCheckBox* cb =new QCheckBox(qsl("Die Angaben sind korrekt"));
     registerField(pnKorrekt+qsl("*"), cb);
 
     QVBoxLayout* vl =new QVBoxLayout();
+    vl->addWidget(subTitleLabel);
     vl->addWidget(cb);
     setLayout(vl);
 }
@@ -39,7 +40,8 @@ void wpInvestmentSummary::initializePage()
     msg =msg.arg(field(pnVon).toDate().toString(qsl("dd.MM.yyyy")));
     msg =msg.arg(field(pnBis).toDate().toString(qsl("dd.MM.yyyy")));
     msg =msg.arg(field(pnTyp).toString());
-    setSubTitle(msg);
+    subTitleLabel->setText(msg);
+    subTitleLabel->setWordWrap(true);
 }
 /* ////////////////////////////
   wpType
@@ -47,16 +49,20 @@ void wpInvestmentSummary::initializePage()
 wpType::wpType(QWidget* w) : QWizardPage(w)
 {   LOG_CALL;
     setTitle(qsl("Titel/Name der Anlage"));
-    setTitle(qsl("Gib einen verständlichen Namen für diese Art der Anlage ein"));
-    QLabel* l =new QLabel(qsl("Anlage Typ"));
+    subTitleLabel->setText(qsl("Gib einen verständlichen Namen für diese Art der Anlage ein"));
+    subTitleLabel->setWordWrap(true);
+    QLabel *l = new QLabel(qsl("Anlage Typ"));
     l->setToolTip(qsl("Kurzbeschreibung der Anlage"));
     QLineEdit* le =new QLineEdit();
     l->setBuddy(le);
     le->setToolTip(l->toolTip());
     registerField(pnTyp, le);
-    QHBoxLayout* layout =new QHBoxLayout();
-    layout->addWidget(l);
-    layout->addWidget(le);
+    QHBoxLayout *lh = new QHBoxLayout();
+    lh->addWidget(l);
+    lh->addWidget(le);
+    QVBoxLayout *layout = new QVBoxLayout();
+    layout->addWidget(subTitleLabel);
+    layout->addLayout(lh);
     setLayout(layout);
 }
 void wpType::initializePage()
@@ -71,7 +77,8 @@ void wpType::initializePage()
 wpTimeFrame::wpTimeFrame(QWidget* w) : QWizardPage(w)
 {   LOG_CALL;
     setTitle(qsl("Ausgabedauer"));
-    setSubTitle(qsl("Gib an, in welchem Zeitfenster Verträge zu dieser Anlage gezählt werden."));
+    subTitleLabel->setText(qsl("Gib an, in welchem Zeitfenster Verträge zu dieser Anlage gezählt werden."));
+    subTitleLabel->setWordWrap(true);
 
     QLabel* lVon =new QLabel(qsl("Erstausgabe"));
     lVon->setToolTip(qsl("Verträge mit dem zuvor angegebenen Zinssatz werden ab diesem Datum zu der Geldanlage gezählt"));
@@ -93,10 +100,12 @@ wpTimeFrame::wpTimeFrame(QWidget* w) : QWizardPage(w)
     connect(deVon, &QDateTimeEdit::dateChanged, this, &wpTimeFrame::onStartDate_changed);
 
     QHBoxLayout* hlVon =new QHBoxLayout();
-    hlVon->addWidget(lVon); hlVon->addWidget(deVon);
+    hlVon->addWidget(lVon);
+    hlVon->addWidget(deVon);
     QHBoxLayout* hlBis =new QHBoxLayout();
     hlBis->addWidget(lBis); hlBis->addWidget(deBis);
     QVBoxLayout* vl =new QVBoxLayout();
+    vl->addWidget(subTitleLabel);
     vl->addLayout(hlVon);
     vl->addLayout(hlBis);
     setLayout(vl);
@@ -121,7 +130,9 @@ void wpTimeFrame::onStartDate_changed()
 wpNewInvestInterest::wpNewInvestInterest(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Geldanlage festlegen"));
-    setSubTitle(qsl("Mit dieser Dialogfolge kannst Du eine Geldanlage definieren. Gib zunächst den Zinssatz der Geldanlage ein."));
+    subTitleLabel->setText(qsl("Mit dieser Dialogfolge kannst Du eine Geldanlage definieren. "
+                                "Gib zunächst den Zinssatz der Geldanlage ein.<p>"));
+    subTitleLabel->setWordWrap(true);
 
     QLabel* lZinssatz =new QLabel(qsl("Zinssatz"));
 
@@ -133,9 +144,12 @@ wpNewInvestInterest::wpNewInvestInterest(QWidget* p) : QWizardPage(p)
         cbInterest->addItem(QString::number(i/100., 'f', 2), QVariant(i));
     cbInterest->setCurrentIndex(std::min(90, cbInterest->count()));
     cbInterest->setToolTip(qsl("Verträge mit diesem Zinssatz werden zu dieser Geldanlage gehören."));
-    QHBoxLayout* layout =new QHBoxLayout();
-    layout->addWidget(lZinssatz);
-    layout->addWidget(cbInterest);
+    QGridLayout* layout =new QGridLayout();
+    layout->addWidget(subTitleLabel, 0, 0, 1, 3);
+    layout->addWidget(lZinssatz, 1, 0, 2, 1);
+    layout->addWidget(cbInterest, 1, 1, 1, 1);
+    layout->setColumnStretch(0, 1);
+    layout->setColumnStretch(2, 2);
     setLayout(layout);
 }
 

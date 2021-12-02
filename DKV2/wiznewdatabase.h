@@ -5,6 +5,7 @@
 #include <QStringLiteral>
 #include <QLineEdit>
 #include <QWizard>
+#include <QLabel>
 
 #include "helper.h"
 
@@ -19,6 +20,9 @@ public:
     bool validatePage() override;
 private slots:
     void browseButtonClicked();
+
+private:
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 /* database -> open WIZ */
 class wizFileSelectionWiz : public QWizard
@@ -42,6 +46,9 @@ class wpFileSelectionNewDb_IntroPage : public QWizardPage
 public:
     wpFileSelectionNewDb_IntroPage(QWidget* p =nullptr);
     void initializePage() override;
+
+private:
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 /* project address Page */
 class wpProjectAddress_Page : public QWizardPage
@@ -51,8 +58,7 @@ public:
     wpProjectAddress_Page(QWidget* p=nullptr);
     void initializePage() override;
     void cleanupPage() override  {};
-//    void setVisible(bool v) override;
-//    bool validatePage() override;
+private:
 };
 /* project Details Page */
 struct wpProjectDetails_Page : public QWizardPage
@@ -61,6 +67,9 @@ struct wpProjectDetails_Page : public QWizardPage
     void cleanupPage() override  {};
     void initializePage() override;
     Q_OBJECT;
+
+private:
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 /* contract label Page */
 class wpContractLableInfo_Page : public QWizardPage
@@ -71,9 +80,8 @@ public:
     void cleanupPage() override  {};
     void initializePage() override;
     bool validatePage() override;
-//    void disableStartIndex() { leStartIndex->setDisabled(true);};
+
 private:
-    QLineEdit* leStartIndex;
 };
 /* min values Page */
 class wpContractMinValues_Page : public QWizardPage
@@ -100,6 +108,9 @@ public:
     bool isComplete() const override;
 public slots:
     void onConfirmData_toggled(int);
+
+private:
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 /* project address WIZ */
 struct wizConfigureNewDatabaseWiz : public QWizard
@@ -108,6 +119,9 @@ struct wizConfigureNewDatabaseWiz : public QWizard
     void updateDbConfig(const QString &dbFile);
     void updateDbConfig(const QSqlDatabase &db=QSqlDatabase::database());
     Q_OBJECT;
+
+private:
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 /* configure project intro PAGE*/
 class wpConfigure_IntroPage : public QWizardPage
@@ -116,6 +130,8 @@ class wpConfigure_IntroPage : public QWizardPage
 public:
     wpConfigure_IntroPage(QWidget* p =nullptr);
     // void initializePage() override;
+private:
+    QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 /* project config WIZ*/
 class wizConfigureProjectWiz : public QWizard
