@@ -96,7 +96,7 @@ void test_statistics::test_noContractsNoBookings()
 
 void test_statistics::test_randomContracts_50pActivated()
 {
-    saveRandomCreditors(10);
+    saveRandomCreditors_q(10);
     saveRandomContracts(8);
     activateRandomContracts(50/* % */);
     // activation date can be ahead of today

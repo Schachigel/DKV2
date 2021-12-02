@@ -165,7 +165,7 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
     {GMBH_INITIALS,  {qsl("gmbh.Projektinitialen"), QVariant("ESP")}},
     {STARTINDEX,     {qsl("startindex"),       QVariant(111)}},
     {MIN_PAYOUT,     {qsl("minAuszahlung"),    QVariant(100)}},
-    {MIN_AMOUNT,     {qsl("minVertragswert"),  QVariant(599)}},
+    {MIN_AMOUNT,     {qsl("minVertragswert"),  QVariant(500)}},
     {MAX_INTEREST,   {qsl("maxZins"),          QVariant(200)}},
     {DBID,           {qsl("dbId"),             QVariant("ESP1234")}},
     {GMBH_HRE,       {qsl("gmbh.Handelsregister"), QVariant("Amtsgericht Mannheim HRB HRB 7.....3")}},
@@ -175,7 +175,8 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
     {GMBH_DKV,       {qsl("gmbh.dkv"),         QVariant("DK Verwalter")}},
     {MAX_INVESTMENT_NBR, {qsl("maxInvestNbr"), QVariant(20)}},
     {MAX_INVESTMENT_SUM, {qsl("maxInvestSum"), QVariant(100000.)}},
-    {MAX_PC_INDEX,   {qsl("n/a"),              QVariant()}}
+    {ZINSUSANCE,     {qsl("Zinsusance"),       QVariant("30/360")}},
+    {MAX_PC_INDEX,   {qsl("n/a"),              QVariant()}},
 };
 
 /*static*/ QVariant dbConfig::read_DBVersion(const QSqlDatabase& db)

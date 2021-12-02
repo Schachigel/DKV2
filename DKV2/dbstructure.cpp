@@ -111,7 +111,7 @@ bool createFileWithDatabaseStructure (const QString& targetfn, const dbstructure
 }
 
 // database creation
-bool createNewDatabaseFileWDefaultContent(const QString& filename, const dbstructure& dbs/* =dkdbstructu*/)
+bool createNewDatabaseFileWDefaultContent(const QString& filename, zinssusance zs /*=zs30360*/, const dbstructure& dbs/* =dkdbstructu*/)
 {   LOG_CALL_W(qsl("filename: ") + filename);
     Q_ASSERT( filename.size());
     dbgTimer timer( qsl("Db Creation Time"));
@@ -130,7 +130,7 @@ bool createNewDatabaseFileWDefaultContent(const QString& filename, const dbstruc
         return false;
     }
     if( &dbs == &dkdbstructur)
-        return fill_DkDbDefaultContent(db);
+        return fill_DkDbDefaultContent(db, true, zs);
     else
         return true;
 }

@@ -14,14 +14,17 @@
 wpOpenOrNew::wpOpenOrNew(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Datenbank Auswahl"));
-    setSubTitle(qsl("Mit dieser Dialogfolge kann die Datenbank zum Speichern der Kreditdaten gewählt werden."));
+    subTitleLabel->setWordWrap(true);
+    subTitleLabel->setText(qsl("Mit dieser Dialogfolge kann die Datenbank zum Speichern der Kreditdaten gewählt werden."));
     QRadioButton* rbNew  = new QRadioButton(qsl("Neue Datenbank anlegen"));
     registerField(qsl("createNewDb"), rbNew);
     QRadioButton* rbOpen = new QRadioButton(qsl("Eine existierende Datenbank öffnen"));
-    QVBoxLayout* l =new QVBoxLayout();
-    l->addWidget(rbNew);
-    l->addWidget(rbOpen);
-    setLayout(l);
+    QVBoxLayout* lv =new QVBoxLayout();
+    lv->addWidget(subTitleLabel);
+    lv->addWidget(rbNew);
+    lv->addWidget(rbOpen);
+
+    setLayout(lv);
 }
 
 //void wizOpenOrNewDatabase::initializePage()
@@ -60,7 +63,8 @@ QString defaultDKDB_Filename() {
 wpNewDb::wpNewDb(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Angaben zur neuen Datenbank"));
-    setSubTitle(qsl("Wähle ein Verzeichnis aus und gib den Namen für die neue Datenbank an"));
+    subTitleLabel->setWordWrap(true);
+    subTitleLabel->setText(qsl("Wähle ein Verzeichnis aus und gib den Namen für die neue Datenbank an"));
 
     QLabel* lVerzeichnis =new QLabel(qsl("&Verzeichnis"));
     QLineEdit* verzeichnis =new QLineEdit();
@@ -79,6 +83,7 @@ wpNewDb::wpNewDb(QWidget* p) : QWizardPage(p)
     layoutFilename->addWidget(dateiname);
 
     QVBoxLayout* l =new QVBoxLayout();
+    l->addWidget(subTitleLabel);
     l->addLayout(layoutFolder);
     l->addLayout(layoutFilename);
     setLayout(l);
@@ -104,10 +109,12 @@ void wpNewDb::setVisible(bool v)
 
 void wpNewDb::browseButtonClicked()
 {   LOG_CALL;
-     setField( qsl("dbFolder"),
-               QFileDialog::getExistingDirectory(this, qsl("Datenbank Verzeichnis"),
-                                                 field(qsl("dbFolder")).toString(),
-                                                 QFileDialog::ShowDirsOnly ));
+    QString folder =QFileDialog::getExistingDirectory(this, qsl("Datenbank Verzeichnis"),
+                          field(qsl("dbFolder")).toString(), QFileDialog::ShowDirsOnly );
+
+    if( not folder.isEmpty ())
+        setField( qsl("dbFolder"), folder);
+
 }
 
 bool wpNewDb::validatePage()
@@ -138,6 +145,41 @@ bool wpNewDb::validatePage()
 
 int wpNewDb::nextId() const
 {
+    return Zinssusance;
+}
+
+/*
+ * wizard Pages: wpICalcMode
+ */
+wpICalcMode::wpICalcMode(QWidget* p) : QWizardPage (p)
+{
+    setTitle(qsl("Angaben zu Zinsmethode (Zinssusance)"));
+    setSubTitle (qsl("DKV2 unterstütz die Methoden <i>(30/360)</i> und <i>(act/act)</i> der Zinsberechnung"));
+    QLabel* lbl =new QLabel("Die Unterschiede sind geringfügig und treten nur in Jahren auf, "
+                    "die nicht vollständig im Zinszeitraum liegen. <br>Sie stellen "
+                   "keinen besonderen Vor- oder Nachteil für Projekt oder DK Geber*innen dar.");
+
+    QRadioButton* rb30360 =new QRadioButton(qsl("30 / 360"));
+    rb30360->setToolTip (qsl("Für jeden Tag gibt es 1/360-tel des Jahreszins. Es werden 30 Tage pro Monat berechnet.<br>"
+                             "Schaltjahre und normale Jahre werden gleich bewertet."));
+
+    QRadioButton* rbactact=new QRadioButton(qsl("act / act"));
+    rbactact->setToolTip (qsl("In Schaltjahren wird ein Tag mit 1/366-tel des Jahreszins berechnet, <br>in anderen Jahren mit einem 1/365-tel."));
+    registerField (qsl("Zinssusance"), rb30360);
+    QVBoxLayout* l =new QVBoxLayout();
+    l->addWidget (lbl);
+    l->addWidget (rb30360);
+    l->addWidget (rbactact);
+    setLayout (l);
+}
+
+void wpICalcMode::initializePage()
+{
+    setField (qsl("Zinssusance"), true);
+}
+
+int wpICalcMode::nextId () const
+{
     return -1;
 }
 
@@ -147,7 +189,8 @@ int wpNewDb::nextId() const
 wpExistingDb::wpExistingDb(QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("DK Datenbank auswählen"));
-    setSubTitle(qsl("Wähle eine existierende DK Datenbank (*.dkdb) aus"));
+    subTitleLabel->setWordWrap(true);
+    subTitleLabel->setText(qsl("Wähle eine existierende DK Datenbank (*.dkdb) aus"));
     QLabel* lAuswahl =new QLabel(qsl("&Ausgewählte Datei"));
     QLineEdit* leFullfile =new QLineEdit();
     leFullfile->setReadOnly(true);
@@ -156,7 +199,10 @@ wpExistingDb::wpExistingDb(QWidget* p) : QWizardPage(p)
     QHBoxLayout* hbl =new QHBoxLayout();
     hbl->addWidget(lAuswahl);
     hbl->addWidget(leFullfile);
-    setLayout(hbl);
+    QVBoxLayout *lv = new QVBoxLayout();
+    lv->addWidget(subTitleLabel);
+    lv->addLayout(hbl);
+    setLayout(lv);
 }
 
 void wpExistingDb::initializePage()
@@ -196,11 +242,12 @@ void wpExistingDb::setVisible(bool v)
 
 void wpExistingDb::browseButtonClicked()
 {   LOG_CALL;
-     setField( qsl("existingFile"),
-               QFileDialog::getOpenFileName(this, qsl("Datenbankdatei auswählen"),
-                                            defaultFolder(), qsl("DK Datenbank *.dkdb *.db")));
-}
 
+    QString file =QFileDialog::getOpenFileName(this, qsl("Datenbankdatei auswählen"),
+                                  defaultFolder(), qsl("DK Datenbank *.dkdb *.db"));
+    if(not file.isEmpty())
+        setField( qsl("existingFile"),file);
+}
 
 /*
  * Wizard: wizOpenOrNewDb
@@ -209,6 +256,7 @@ wizOpenOrNewDb::wizOpenOrNewDb(QWidget* p) : QWizard(p)
 {   LOG_CALL;
     setPage(NewOrOpen, new wpOpenOrNew(this));
     setPage(selectNewFile, new wpNewDb(this));
+    setPage (Zinssusance, new wpICalcMode(this));
     setPage(selectExistingFile, new wpExistingDb(this));
     QFont f = font(); f.setPointSize(10); setFont(f);
 }

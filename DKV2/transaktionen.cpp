@@ -94,7 +94,7 @@ void newCreditorAndContract()
     }
 
     if( not wiz.field(pnConfirmContract).toBool()) {
-        qInfo() << "user decided not to save the creditor";
+        qInfo() << "user decided not to save the contract";
         return;
     }
     contract cont;
@@ -162,9 +162,10 @@ void changeContractComment(contract* pc)
         qInfo() << "inpud dlg canceled";
         return;
     }
-    if( pc->updateComment(ipd.textValue().trimmed())) {
+    if( pc->updateComment(ipd.textValue().trimmed()))
+        qInfo() << "successfully updated comment";
+    else
         qCritical() << "update comment failed";
-    }
 }
 void changeContractTermination(contract* pc)
 {   LOG_CALL;

@@ -61,9 +61,12 @@ enum projectConfiguration {
    DBID,
    GMBH_HRE, GMBH_GEFUE1, GMBH_GEFUE2, GMBH_GEFUE3, GMBH_DKV,
    MAX_INVESTMENT_NBR, MAX_INVESTMENT_SUM,
-   MAX_PC_INDEX
+   ZINSUSANCE, MAX_PC_INDEX
 };
 
+// zinssusance
+// 30/360   : 360 days pa, 30 Tage pm
+// act/act : 365 days pa, actual days / 366 days in leap years,
 
 struct dbConfig
 {

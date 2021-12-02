@@ -143,7 +143,7 @@ void test_contract::test_randomContracts()
 {   LOG_CALL;
     int count = 50;
     dbgTimer t(QString::number(count) + " contracts");
-    saveRandomCreditors(count/3);
+    saveRandomCreditors_q(count/3);
     saveRandomContracts(count);
     QCOMPARE(rowCount("Vertraege"), count);
 }

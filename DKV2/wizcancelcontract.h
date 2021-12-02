@@ -2,6 +2,7 @@
 #define WIZCANCELCONTRACT_H
 
 #include <QWizard>
+#include <QLabel>
 
 #include "contract.h"
 
@@ -9,6 +10,9 @@ struct wpCancelContract_IntroPage : public QWizardPage {
     wpCancelContract_IntroPage (QWidget* w =nullptr);
     void initializePage() override;
     Q_OBJECT;
+
+private:
+    QLabel *subTitleLabel = nullptr;
 };
 
 struct wpCancelContract_DatePage : public QWizardPage {
@@ -17,6 +21,9 @@ struct wpCancelContract_DatePage : public QWizardPage {
     void initializePage() override;
     bool validatePage() override;
     Q_OBJECT;
+
+private:
+    QLabel *subTitleLabel = nullptr;
 };
 
 struct wpCancelContract_SummaryPage : public QWizardPage {
@@ -27,6 +34,7 @@ public slots:
     void onConfirmData_toggled(int);
 private:
     Q_OBJECT;
+    QLabel *subTitleLabel = nullptr;
 };
 
 struct wizCancelContract : public QWizard

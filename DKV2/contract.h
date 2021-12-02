@@ -192,6 +192,8 @@ private:
     TableDataInserter td;
     booking latestB{ -1};
     // helper
+    double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa =true);
+
     bool bookInBetweenInterest(const QDate d);
     bool storeTerminationDate(const QDate d) const;
     bool archive();
