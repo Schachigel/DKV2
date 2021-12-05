@@ -311,20 +311,21 @@ void MainWindow::updateViews()
 void MainWindow::prepare_startPage()
 {   LOG_CALL;
     busycursor b;
-    QString messageHtml {qsl("<table width='100%'><tr></tr><tr><td><center><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></center></td></tr>")};
+    QString messageHtml {qsl("<table width='100%'><tr></tr><tr><td width='20%'></td><td width='60%'><center><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></center></td><td width='20%'></td></tr>")};
 
     double allContractsValue =valueOfAllContracts();
 
     QString pName =dbConfig::readValue(projectConfiguration::GMBH_ADDRESS1).toString();
     if( pName.size()) {
-        messageHtml += qsl("<tr></tr><tr><td>DK Verwaltung für <font color=blue>%1</font></td></tr>").arg(pName);
+        messageHtml += qsl("<tr></tr><tr><td></td><td><b>DK Verwaltung für <font color=blue>%1</font></td><td></td></tr>").arg(pName);
     }
     if( allContractsValue > 0) {
         QLocale l;
-        QString valueRow = qsl("<tr><td>Die Summer aller Direktkredite und Zinsen beträgt <big><font color=red>")
-                + l.toCurrencyString(allContractsValue) + qsl("</font></big></td></tr>");
+        QString valueRow = qsl("<tr><td></td><td>Die Summer aller Direktkredite und Zinsen beträgt <big><font color=red>")
+                + l.toCurrencyString(allContractsValue) + qsl("</font></big></td><td></td></tr>");
         messageHtml += valueRow;
     }
+    messageHtml += qsl("<tr><td></td><td>[%1]</td><td></td></tr>").arg(ui->statusLabel->text ());
     messageHtml += qsl("</table>");
     qDebug() <<"welcome Screen html: " << Qt::endl << messageHtml << Qt::endl;
     ui->lblInfo->setText(messageHtml);
