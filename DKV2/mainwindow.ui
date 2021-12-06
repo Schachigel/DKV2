@@ -911,6 +911,9 @@
    </property>
   </action>
   <action name="actionAktuelle_Auswahl">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Vertragstabelle (gefiltert)</string>
    </property>

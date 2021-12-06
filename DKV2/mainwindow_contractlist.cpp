@@ -17,6 +17,7 @@ void MainWindow::on_action_menu_contracts_listview_triggered()
 {   LOG_CALL;
     showDeletedContracts =false;
     prepare_contracts_list_view();
+    ui->actionAktuelle_Auswahl->setEnabled (true);
 }
 /////////////////////////////////////////////////
 // terminated contracts list
