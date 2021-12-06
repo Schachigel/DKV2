@@ -130,6 +130,19 @@ struct dbViewDev{
     const QString sql;
 };
 bool createView(const QString& name, const QString& sql, const QSqlDatabase& db = QSqlDatabase::database());
+bool deleteView(const QString& name, const QSqlDatabase& db = QSqlDatabase::database());
 bool createViews( const QMap<QString, QString>& views, const QSqlDatabase& db);
+
+struct tempView
+{
+    tempView(const QString& name, const QString& sql, const QSqlDatabase& db = QSqlDatabase::database())
+        : name(name) {
+        Q_ASSERT(createView(name, sql, db));
+    }
+    ~tempView() {
+        deleteView(name);
+    }
+    const QString name;
+};
 
 #endif // SQLHELPER_H
