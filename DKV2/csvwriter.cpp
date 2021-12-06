@@ -24,7 +24,7 @@ int csvwriter::addColumns(const QString& headers)
 }
 
 void csvwriter::appendToRow(const QString& value)
-{   LOG_CALL_W(value);
+{   //LOG_CALL_W(value);
     QString v(value);
     v.replace(separator, qsl("#"));
     currentRow.append(v.trimmed());
@@ -36,7 +36,7 @@ void csvwriter::appendToRow(const QString& value)
 }
 
 void csvwriter::addRow(const QList<QString>& cols)
-{   LOG_CALL;
+{   //LOG_CALL;
     Q_ASSERT(cols.size() == headers.size());
     for( auto& s : qAsConst(cols))
     {
@@ -45,13 +45,13 @@ void csvwriter::addRow(const QList<QString>& cols)
 }
 
 void csvwriter::addRow(const QString& row)
-{   LOG_CALL_W(row);
+{   //LOG_CALL_W(row);
     QList<QString> list = row.split(separator);
     addRow(list);
 }
 
 QString csvwriter::appendCsvLine(const QString& line, const QString& appendix) const
-{   LOG_CALL_W(line);
+{   //LOG_CALL;
     QString l(line);
     if( l.size()) l += separator + qsl(" ");
     return l + appendix;
