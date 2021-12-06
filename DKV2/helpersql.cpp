@@ -232,7 +232,8 @@ QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbFo
     QString calculatedWhere;
     QSet<QString> usedTables;
 
-    for( auto& f : qAsConst(fields)) {
+    for( const auto& f : qAsConst(fields)) {
+        // qDebug() << f;
         if( f.tableName().isEmpty() or f.name().isEmpty())
             qCritical() << "selectQueryFromFields: missing table or field name";
         if( FieldList.size())
@@ -446,6 +447,15 @@ bool createView(const QString& name, const QString& sql, const QSqlDatabase& db 
         return true;
     }
     qCritical() << "Faild to create view " << name;
+    return false;
+}
+bool deleteView(const QString& name, const QSqlDatabase& db)
+{
+    if( executeSql_wNoRecords(qsl("DROP VIEW %1").arg(name), db)) {
+        qInfo() << "dropped view: " << name;
+        return true;
+    }
+    qInfo() << "drop view failed: " << name;
     return false;
 }
 bool createViews( const QMap<QString, QString>& views, const QSqlDatabase& db)

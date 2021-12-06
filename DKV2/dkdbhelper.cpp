@@ -221,7 +221,8 @@ void create_sampleData(int datensaetze)
 bool createCsvActiveContracts()
 {   LOG_CALL;
     QString filename(QDate::currentDate().toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
-    dbtable t(sqlContractsActiveDetailsView);
+    tempView tmpV(qsl("tempView"), sqlContractsActiveDetailsView);
+    dbtable t(tmpV.name);
     t.append(dbfield(qsl("Id"), QVariant::Type::Int));
     t.append(dbfield(contract::fnKreditorId, QVariant::Type::Int));
     t.append(dbfield(qsl("Vorname")));
@@ -240,11 +241,11 @@ bool createCsvActiveContracts()
     t.append(dbfield(qsl("Vertragsende"), QVariant::Type::Date));
     t.append(dbfield(qsl("thesa"), QVariant::Type::Bool));
 
-    if( not table2csv( filename, t.Fields())) {
+    bool res =table2csv( filename, t.Fields());
+    if( not res)
         qDebug() << "failed to print table";
-        return false;
-    }
-    return true;
+
+    return res;
 }
 
 // calculate data for start page
