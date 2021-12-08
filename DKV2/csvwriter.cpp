@@ -11,7 +11,7 @@ void csvwriter::addColumn(const QString &header)
     QString h(header);
     Q_ASSERT(rows.empty()); // no add. columns after adding data
     h.replace(separator, qsl(","));
-    h.replace(lineBreak, qsl(" | "));
+    h.replace(lineBreak, qsl(" | ")); // change lineBreak to pipe symbol
     headers.append(h.trimmed());
 }
 

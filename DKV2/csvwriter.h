@@ -24,7 +24,7 @@ private:
     QString appendCsvLine( const QString& line, const QString& appendix) const;
 
     QString separator;
-    QRegularExpression lineBreak = QRegularExpression(qsl("[\\n\\r]+"));
+    QRegularExpression lineBreak = QRegularExpression(qsl("[\\n\\r]+")); // all \r\n combinations
     QList<QString> headers;
     QList<QList<QString>> rows;
     QList<QString> currentRow;
