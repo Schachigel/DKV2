@@ -50,7 +50,7 @@ void wpCancelContract_DatePage::initializePage()
     QDate latestB = wiz->c.latestBooking().date;
     subTitle =subTitle.arg(wiz->contractualEnd.toString(qsl("dd.MM.yyyy")), latestB.toString(qsl("dd.MM.yyyy")));
     subTitleLabel->setText(subTitle);
-    setField(qsl("date"), std::max(wiz->contractualEnd, latestB));
+    setField(qsl("date"), qMax(wiz->contractualEnd, latestB));
 }
 
 bool wpCancelContract_DatePage::validatePage()

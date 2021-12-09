@@ -1,9 +1,11 @@
 #include <QtGlobal>
+
 #if defined(Q_OS_WIN)
 #include "windows.h"
 #else
 #include <stdlib.h>
 #endif
+
 // the qt header for preCompiled Header feature
 #include "pch.h"
 
@@ -28,8 +30,6 @@
 
 
 // generell functions (used for contruction)
-
-
 bool getValidDatabaseFromCommandline(QString& path)
 {
     QString dbPath =getDbFileFromCommandline();
@@ -158,9 +158,21 @@ QString MainWindow::askUserForNextDb()
     return selectedDbPath;
 }
 
+void treat_DbIsAlreadyInUse_File(QString filename)
+{
+    if( checkSignalFile (filename)) {
+        QMessageBox::information ((QWidget*)nullptr, qsl("Datenbank bereits geöffnet?"),
+           qsl("Es scheint, als sei die Datenbank bereits geöffnet. Das kommt vor"
+               "wenn DKV2 abgestürzt ist oder bereits läuft.<p>Stelle sicher, dass "
+               "DKV2 nicht läuft und drücke dann auf OK"));
+    }
+    return createSignalFile (filename);
+}
+
 bool MainWindow::useDb(const QString& dbfile)
 {   LOG_CALL;
     if( open_databaseForApplication(dbfile)) {
+        treat_DbIsAlreadyInUse_File (dbfile);
         appConfig::setLastDb(dbfile);
         showDbInStatusbar(dbfile);
         return true;
@@ -225,6 +237,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {   LOG_CALL;
+    deleteSignalFile();
     if (ui) delete ui;
     if (contractsSortingAdapter) delete contractsSortingAdapter;
 }
@@ -366,6 +379,11 @@ void MainWindow::on_action_menu_database_new_triggered()
         // askUserNextDb was not successful - maybe canceled.
         // do nothing
         QMessageBox::information( this, qsl("Abbruch"), qsl("Die Dateiauswahl wurde abgebrochen."));
+        return;
+    }
+    if( appConfig::LastDb () == dbFile)
+    {
+        QMessageBox::information( this, qsl("Abbruch"), qsl("Die ausgewählte Datei ist bereits geöffnet."));
         return;
     }
     if( not checkSchema_ConvertIfneeded(dbFile)) {

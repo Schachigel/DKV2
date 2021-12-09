@@ -114,3 +114,62 @@ QString absoluteCanonicalPath(const QString &path)
     QString newpath = QFileInfo(path).canonicalFilePath();
     return newpath.isEmpty() ? path : newpath;
 }
+
+#if defined(Q_OS_WIN)
+HANDLE openDbSignalnFile =INVALID_HANDLE_VALUE;
+#else
+// QTemporaryFile* openDbIndicationFile =nullptr;
+#endif
+namespace {
+QString indicatorfilenameExtension {qsl(".is_opened_By_Dkv2")};
+}
+
+void createSignalFile(const QString filename)
+{
+#ifdef WIN32
+    {
+        QString indicatorfilename {filename + indicatorfilenameExtension};
+        if( openDbSignalnFile not_eq INVALID_HANDLE_VALUE)
+            deleteSignalFile ();
+        openDbSignalnFile=CreateFile(indicatorfilename.toStdWString ().c_str (),
+                                     GENERIC_READ|GENERIC_WRITE,
+                                     FILE_SHARE_DELETE|FILE_SHARE_READ|FILE_SHARE_WRITE,
+                                     NULL /* security descriptor */,
+                                     CREATE_ALWAYS,
+                                     FILE_ATTRIBUTE_NORMAL,
+                                     NULL);
+        DWORD written =0;
+        WriteFile(openDbSignalnFile, (LPCVOID)"DKV2 is running", (DWORD)sizeof("DKV2 is running"), &written, NULL);
+        CloseHandle(openDbSignalnFile);
+        Sleep(1500);
+        openDbSignalnFile=CreateFile(indicatorfilename.toStdWString ().c_str (),
+                                     GENERIC_READ|GENERIC_WRITE,
+                                     FILE_SHARE_DELETE|FILE_SHARE_READ|FILE_SHARE_WRITE,
+                                     NULL /* security descriptor */,
+                                     CREATE_ALWAYS,
+                                     FILE_ATTRIBUTE_NORMAL|FILE_FLAG_DELETE_ON_CLOSE,
+                                     NULL);
+    }
+#else
+//    if( openDbIndicationFile) delete openDbIndicationFile;
+//    openDbIndicationFile =new QTemporaryFile(indicatorfilename);
+//    openDbIndicationFile->open ();
+#endif
+}
+void deleteSignalFile()
+{
+#if defined(Q_OS_WIN)
+    CloseHandle(openDbSignalnFile);
+#else
+//    if( openDbIndicationFile) delete openDbIndicationFile;
+#endif
+}
+bool checkSignalFile(const QString filename) {
+#if defined(Q_OS_WIN)
+    {
+        QString indicatorfilename {filename +indicatorfilenameExtension};
+        return QFile::exists (indicatorfilename);
+    }
+#else
+#endif
+}
