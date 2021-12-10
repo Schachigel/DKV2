@@ -206,12 +206,17 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     // WE ARE READY TO GO
     dbLoadedSuccessfully =true;
+
+    contractsListsDB_View  =std::make_unique<tempView>(vnContractView,    sqlContractView);
+    exContractsListDB_View =std::make_unique<tempView>(vnExContractView,  sqlExContractView);
+    exContractsListDB_View =std::make_unique<tempView>(vnInvestmentsView, sqlInvestmentsView);
+
     // //////////////////
     const QString tableCellStyle {qsl("QTableView::item { padding-top: 5px; padding-bottom: 5px; padding-right: 10px; padding-left: 10px; }")};
     ui->CreditorsTableView->setStyleSheet(tableCellStyle);
     ui->contractsTableView->setStyleSheet(tableCellStyle);
     // re-resize columns and rows after sorting
-    contractsSortingAdapter = new contractsHeaderSortingAdapter(ui->contractsTableView);
+    contractsSortingAdapter =std::make_unique<contractsHeaderSortingAdapter>(ui->contractsTableView);
 
     ui->bookingsTableView->setItemDelegateForColumn(2, new bookingTypeFormatter);
     ui->bookingsTableView->setStyleSheet(tableCellStyle);
@@ -226,7 +231,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->spinFontSize->setMaximum(11);
     connect(ui->wPreview, &QPrintPreviewWidget::paintRequested, this, &MainWindow::doPaint);
 
-
     QSettings settings;
     restoreGeometry(settings.value(qsl("geometry")).toByteArray());
     restoreState(settings.value(qsl("windowState")).toByteArray());
@@ -239,7 +243,6 @@ MainWindow::~MainWindow()
 {   LOG_CALL;
     deleteSignalFile();
     if (ui) delete ui;
-    if (contractsSortingAdapter) delete contractsSortingAdapter;
 }
 
 void MainWindow::showDbInStatusbar( const QString &filename)

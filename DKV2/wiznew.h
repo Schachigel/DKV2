@@ -178,7 +178,6 @@ private:
 */
 struct wpInterestFromInvestment : public QWizardPage {
     wpInterestFromInvestment(QWidget* w);
-//    ~wpInterestFromInvestment() { if( cbInvestments) delete cbInvestments;}
     void initializePage() override;
     bool validatePage() override;
     int nextId() const override;

@@ -27,10 +27,6 @@ enum version_check_result {
 int get_db_version(const QSqlDatabase &db =QSqlDatabase::database());
 int get_db_version(const QString &filename);
 
-// bool createView(QString name, QString Sql, QSqlDatabase db = QSqlDatabase::database());
-// void updateViews(QSqlDatabase db =QSqlDatabase::database());
-// bool isValidDatabase(QSqlDatabase db =QSqlDatabase::database());
-
 void closeAllDatabaseConnections();
 bool open_databaseForApplication( const QString &newDbFile=qsl(""));
 bool isExistingContractLabel( const QString& newLabel);
