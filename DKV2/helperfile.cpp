@@ -141,7 +141,7 @@ void createSignalFile(const QString filename)
         DWORD written =0;
         WriteFile(openDbSignalnFile, (LPCVOID)"DKV2 is running", (DWORD)sizeof("DKV2 is running"), &written, NULL);
         CloseHandle(openDbSignalnFile);
-        Sleep(1500);
+        Sleep(2500);
         openDbSignalnFile=CreateFile(indicatorfilename.toStdWString ().c_str (),
                                      GENERIC_READ|GENERIC_WRITE,
                                      FILE_SHARE_DELETE|FILE_SHARE_READ|FILE_SHARE_WRITE,
