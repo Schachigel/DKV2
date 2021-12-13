@@ -199,7 +199,6 @@ private:
 
     QVector<booking> toBePrinted;
     QVector<booking>::const_iterator currentBooking;
-
     QString askUserForNextDb();
     QString findValidDatabaseToUse();
     bool useDb(const QString& dbfile);
@@ -227,7 +226,9 @@ private:
 
 private:
     bool showDeletedContracts =false;
-    contractsHeaderSortingAdapter* contractsSortingAdapter =nullptr;
+    std::unique_ptr<tempView> contractsListsDB_View;
+    std::unique_ptr<tempView> exContractsListDB_View;
+    std::unique_ptr<contractsHeaderSortingAdapter> contractsSortingAdapter;
 };
 
 #endif // MAINWINDOW_H

@@ -1,7 +1,7 @@
 #include "helper.h"
 #include "dkdbviews.h"
 //////////////////////////////////////
-// VIEWs to be created in the database
+// VIEWs to be created temporarily in the database
 //////////////////////////////////////
 const QString vnContractView {qsl("vVertraege_alle_4view")};
 const QString sqlContractView {qsl(
@@ -17,8 +17,11 @@ SELECT
 
   ,IFNULL(Eingangsbuchung, '(steht aus)') AS Geldeingang
   ,IIF(V.zActive, ' aktiv ', ' ausgesetzt ') AS VerzinsungsStatus
-  ,IFNULL(AktivierungsWert, V.Betrag /100.) AS Nominalwert
-
+  ,IIF(V.Betrag /100. <= IIF(V.thesaurierend == 0, IFNULL(summeAllerBuchungen, 0)
+         , IIF(V.thesaurierend == 1, IFNULL(summeAllerBuchungen, 0)
+         , IIF(V.thesaurierend == 2, IFNULL(summeEinUndAuszahlungen, 0)
+         , IIF(V.thesaurierend == 3, 0, 'ERROR'))))
+    , V.Betrag /100., '[soll: ' || CAST( V.Betrag /100 AS TEXT) || ' €]' ) AS Nominalwert
   , IIF(IFNULL(AnlagenId, 0) == 0
       , CAST(V.Zsatz / 100. AS VARCHAR) || ' % (ohne Anlage)'
       , CAST(V.Zsatz / 100. AS VARCHAR) || ' % - ' || GA.Typ ) AS Zinssatz
@@ -182,6 +185,10 @@ ORDER BY ga.Offen DESC, ga.ZSatz DESC
 )str"
 )};
 
+
+//////////////////////////////////////
+// VIEWs to be created in the database
+//////////////////////////////////////
 const QString vnBookingsOverview {qsl("vBuchungen")};
 const QString sqlBookingsOverview {qsl(
 R"str(
@@ -211,12 +218,6 @@ ORDER BY B.Datum, V.id
 )};
 
 QMap<QString, QString> views ={
-    // model of table view: contracts
-    {vnContractView, sqlContractView},
-    // model of table view: deleted contracts
-    {vnExContractView, sqlExContractView},
-    // model of table view: investments
-    {vnInvestmentsView, sqlInvestmentsView},
     // convenientce view
     {vnBookingsOverview, sqlBookingsOverview},
 };

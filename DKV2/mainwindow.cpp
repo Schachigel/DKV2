@@ -1,9 +1,11 @@
 #include <QtGlobal>
+
 #if defined(Q_OS_WIN)
 #include "windows.h"
 #else
 #include <stdlib.h>
 #endif
+
 // the qt header for preCompiled Header feature
 #include "pch.h"
 
@@ -28,8 +30,6 @@
 
 
 // generell functions (used for contruction)
-
-
 bool getValidDatabaseFromCommandline(QString& path)
 {
     QString dbPath =getDbFileFromCommandline();
@@ -158,9 +158,21 @@ QString MainWindow::askUserForNextDb()
     return selectedDbPath;
 }
 
+void treat_DbIsAlreadyInUse_File(QString filename)
+{
+    if( checkSignalFile (filename)) {
+        QMessageBox::information ((QWidget*)nullptr, qsl("Datenbank bereits geöffnet?"),
+           qsl("Es scheint, als sei die Datenbank bereits geöffnet. Das kommt vor"
+               "wenn DKV2 abgestürzt ist oder bereits läuft.<p>Stelle sicher, dass "
+               "DKV2 nicht läuft und drücke dann auf OK"));
+    }
+    return createSignalFile (filename);
+}
+
 bool MainWindow::useDb(const QString& dbfile)
 {   LOG_CALL;
     if( open_databaseForApplication(dbfile)) {
+        treat_DbIsAlreadyInUse_File (dbfile);
         appConfig::setLastDb(dbfile);
         showDbInStatusbar(dbfile);
         return true;
@@ -194,12 +206,17 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     // WE ARE READY TO GO
     dbLoadedSuccessfully =true;
+
+    contractsListsDB_View  =std::make_unique<tempView>(vnContractView,    sqlContractView);
+    exContractsListDB_View =std::make_unique<tempView>(vnExContractView,  sqlExContractView);
+    exContractsListDB_View =std::make_unique<tempView>(vnInvestmentsView, sqlInvestmentsView);
+
     // //////////////////
     const QString tableCellStyle {qsl("QTableView::item { padding-top: 5px; padding-bottom: 5px; padding-right: 10px; padding-left: 10px; }")};
     ui->CreditorsTableView->setStyleSheet(tableCellStyle);
     ui->contractsTableView->setStyleSheet(tableCellStyle);
     // re-resize columns and rows after sorting
-    contractsSortingAdapter = new contractsHeaderSortingAdapter(ui->contractsTableView);
+    contractsSortingAdapter =std::make_unique<contractsHeaderSortingAdapter>(ui->contractsTableView);
 
     ui->bookingsTableView->setItemDelegateForColumn(2, new bookingTypeFormatter);
     ui->bookingsTableView->setStyleSheet(tableCellStyle);
@@ -214,7 +231,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->spinFontSize->setMaximum(11);
     connect(ui->wPreview, &QPrintPreviewWidget::paintRequested, this, &MainWindow::doPaint);
 
-
     QSettings settings;
     restoreGeometry(settings.value(qsl("geometry")).toByteArray());
     restoreState(settings.value(qsl("windowState")).toByteArray());
@@ -227,8 +243,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {   LOG_CALL;
+    deleteSignalFile();
     if (ui) delete ui;
-    if (contractsSortingAdapter) delete contractsSortingAdapter;
 }
 
 void MainWindow::showDbInStatusbar( const QString &filename)
@@ -368,6 +384,11 @@ void MainWindow::on_action_menu_database_new_triggered()
         // askUserNextDb was not successful - maybe canceled.
         // do nothing
         QMessageBox::information( this, qsl("Abbruch"), qsl("Die Dateiauswahl wurde abgebrochen."));
+        return;
+    }
+    if( appConfig::LastDb () == dbFile)
+    {
+        QMessageBox::information( this, qsl("Abbruch"), qsl("Die ausgewählte Datei ist bereits geöffnet."));
         return;
     }
     if( not checkSchema_ConvertIfneeded(dbFile)) {

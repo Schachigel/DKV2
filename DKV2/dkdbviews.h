@@ -4,11 +4,14 @@
 #include <QString>
 #include "helpersql.h"
 
-// create db views
-// views used as table in tableViews
+// dynamic view creatrion
 extern const QString vnContractView;
+extern const QString sqlContractView;
 extern const QString vnExContractView;
+extern const QString sqlExContractView;
 extern const QString vnInvestmentsView;
+extern const QString sqlInvestmentsView;
+
 // a nice view to check bookings, not used in the app
 extern const QString vnBookingsOverview;
 

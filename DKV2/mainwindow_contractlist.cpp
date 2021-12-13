@@ -157,7 +157,7 @@ void MainWindow::prepare_valid_contracts_list_view()
 void MainWindow::prepare_deleted_contracts_list_view()
 { LOG_CALL;
     QSqlTableModel* model = new QSqlTableModel(this);
-    model->setTable(qsl("vVertraege_geloescht"));
+    model->setTable(vnExContractView);
 
     model->setHeaderData(cp_d_Creditor, Qt::Horizontal, qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters"), Qt::ToolTipRole);
     model->setHeaderData(cp_d_ContractLabel, Qt::Horizontal, qsl("Eindeutige Identifizierung des Vertrags"), Qt::ToolTipRole);

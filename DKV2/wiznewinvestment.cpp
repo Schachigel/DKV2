@@ -142,7 +142,7 @@ wpNewInvestInterest::wpNewInvestInterest(QWidget* p) : QWizardPage(p)
     const int mI =dbConfig::readValue(MAX_INTEREST).toInt();
     for( int i =0; i <= mI; i++)
         cbInterest->addItem(QString::number(i/100., 'f', 2), QVariant(i));
-    cbInterest->setCurrentIndex(std::min(90, cbInterest->count()));
+    cbInterest->setCurrentIndex(qMin(90, cbInterest->count()));
     cbInterest->setToolTip(qsl("Verträge mit diesem Zinssatz werden zu dieser Geldanlage gehören."));
     QGridLayout* layout =new QGridLayout();
     layout->addWidget(subTitleLabel, 0, 0, 1, 3);
