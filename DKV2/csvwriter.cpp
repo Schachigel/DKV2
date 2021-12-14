@@ -9,7 +9,8 @@ void csvwriter::addColumn(const QString& header)
 {   LOG_CALL_W(header);
     QString h(header);
     Q_ASSERT(rows.empty()); // no add. columns after adding data
-    h.replace(separator, qsl("#"));
+    h.replace(separator, qsl(","));
+    h.replace(lineBreak, qsl(" | "));
     headers.append(h.trimmed());
 }
 
@@ -26,7 +27,8 @@ int csvwriter::addColumns(const QString& headers)
 void csvwriter::appendToRow(const QString& value)
 {   //LOG_CALL_W(value);
     QString v(value);
-    v.replace(separator, qsl("#"));
+    v.replace(separator, qsl(","));
+    v.replace(lineBreak, qsl(" | "));
     currentRow.append(v.trimmed());
     if( currentRow.size() == headers.size())
     {

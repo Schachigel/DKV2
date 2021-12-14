@@ -237,6 +237,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     prepare_startPage();
     ui->stackedWidget->setCurrentIndex(startPageIndex);
+    // Disable Verträge/Listen submenue
+    ui->menu_contracts_subm_print_lists->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -890,19 +892,21 @@ void MainWindow::on_actionAktuelle_Auswahl_triggered()
 {
     csvwriter csv;
     QSqlTableModel* model = qobject_cast<QSqlTableModel*>(ui->contractsTableView->model());
-    QSqlRecord rec =model->record();
-    // header
-    for( int i=0; i<rec.count(); i++) {
-        csv.addColumn(rec.fieldName(i));
-    }
-    // data
-    for( int i=0; i<model->rowCount(); i++) {
-        QSqlRecord recRows =model->record(i);
-        for( int j=0; j<recRows.count(); j++) {
-            csv.appendToRow(recRows.value(j).toString());
+    if (model != nullptr) {
+        QSqlRecord rec =model->record();
+        // header
+        for( int i=0; i<rec.count(); i++) {
+            csv.addColumn(rec.fieldName(i));
         }
+        // data
+        for( int i=0; i<model->rowCount(); i++) {
+            QSqlRecord recRows =model->record(i);
+            for( int j=0; j<recRows.count(); j++) {
+                csv.appendToRow(recRows.value(j).toString());
+            }
+        }
+        csv.saveAndShowInExplorer(QDate::currentDate().toString(qsl("yyyy-MM-dd_Vertragsliste.csv")));
     }
-    csv.saveAndShowInExplorer(QDate::currentDate().toString(qsl("yyyy-MM-dd_Vertragsliste.csv")));
 }
 
 /////////////////////////////////////////////////
