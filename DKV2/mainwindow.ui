@@ -646,7 +646,7 @@
      <x>0</x>
      <y>0</y>
      <width>1073</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_database">
@@ -683,6 +683,7 @@
      </property>
      <addaction name="action_menu_contracts_print_lists"/>
      <addaction name="actionAktuelle_Auswahl"/>
+     <addaction name="action_menu_contracts_interestLetters"/>
     </widget>
     <addaction name="action_menu_contracts_listview"/>
     <addaction name="actionBeendete_Vertr_ge_anzeigen"/>
@@ -986,6 +987,14 @@
    </property>
    <property name="toolTip">
     <string>Zeigt alle Verträge, die zu dieser Anlage abgeschlossen wurden</string>
+   </property>
+  </action>
+  <action name="action_menu_contracts_interestLetters">
+   <property name="text">
+    <string>Zinsbriefe</string>
+   </property>
+   <property name="toolTip">
+    <string>Zinsbriefe als  PDF ausgeben</string>
    </property>
   </action>
  </widget>

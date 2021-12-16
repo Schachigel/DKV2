@@ -634,6 +634,39 @@ bool contract::archive()
     return false;
 }
 
+QVariant contract::getVariant(int year) 
+{
+    QVariantMap v;
+
+    v["id"] = id();
+    v["strId"] = id_aS();
+    v["KreditorId"] = QString::number(creditorId());
+    v["VertragsNr"] = label();
+    v["startBetrag"] = QString::number(value(QDate(year-1, 12, 31)), 'f', 2);
+    v["startDatum"] = QDate(year - 1, 12, 31).toString(qsl("dd.MM.yyyy"));
+    v["endBetrag"] = QString::number(value(QDate(year, 12, 31)), 'f', 2);
+    v["endDatum"] = QDate(year, 12, 31).toString(qsl("dd.MM.yyyy"));
+    v["ZSatz"] = interestRate();
+    v["strZSatz"] = QString::number(interestRate(), 'f', 2);
+    v["Anmerkung"] = comment();
+
+    QVector<booking> bookVector = bookings::getBookings(id(), QDate(year, 1, 1), QDate(year, 12, 31), qsl("Datum ASC"));
+    QVariantList bl;
+
+    for ( const auto &b : qAsConst(bookVector) ) {
+        QVariantMap bookMap = {};
+        bookMap["Date"] = b.date.toString(qsl("dd.MM.yyyy"));
+        bookMap["Text"] = booking::displayString(b.type);
+        bookMap["Betrag"] = QString::number(b.amount, 'f', 2);
+
+        bl.append(bookMap);
+    }
+
+    v["Buchungen"] = bl;
+
+    return v;
+}
+
 // test helper
 contract saveRandomContract(qlonglong creditorId)
 {   LOG_CALL;

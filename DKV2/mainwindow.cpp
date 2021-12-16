@@ -880,6 +880,13 @@ void MainWindow::on_action_menu_contracts_annual_interest_settlement_triggered()
     updateViews();
 }
 
+void MainWindow::on_action_menu_contracts_interestLetters_triggered()
+{
+    LOG_CALL;
+    interestLetters();
+    updateViews();
+}
+
 /////////////////////////////////////////////////
 // list creation csv, printouts
 /////////////////////////////////////////////////

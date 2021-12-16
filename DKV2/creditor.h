@@ -44,7 +44,8 @@ struct creditor
     // interface
     bool fromDb(const int id);
     QVariant getValue(const QString& f) const { return ti.getValue(f);}
-    bool isValid( QString& errortext) const;
+    QVariant getVariant();
+    bool isValid(QString &errortext) const;
     bool isValid() const;
     int save();
     int update() const;

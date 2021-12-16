@@ -189,6 +189,7 @@ struct contract
     bool finalize(const bool simulate, const QDate finDate, double& finInterest, double& finPayout);
     // helper
     QString toString(const QString &name =qsl("")) const;
+    QVariant getVariant(int year=9999);
 
 private:
     // data

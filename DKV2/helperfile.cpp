@@ -118,7 +118,7 @@ QString absoluteCanonicalPath(const QString &path)
 #if defined(Q_OS_WIN)
 HANDLE openDbSignalnFile =INVALID_HANDLE_VALUE;
 #else
-// QTemporaryFile* openDbIndicationFile =nullptr;
+QTemporaryFile* openDbIndicationFile =nullptr;
 #endif
 namespace {
 QString indicatorfilenameExtension {qsl(".is_opened_By_Dkv2")};
@@ -151,9 +151,11 @@ void createSignalFile(const QString filename)
                                      NULL);
     }
 #else
-//    if( openDbIndicationFile) delete openDbIndicationFile;
-//    openDbIndicationFile =new QTemporaryFile(indicatorfilename);
-//    openDbIndicationFile->open ();
+    QString indicatorfilename{filename + indicatorfilenameExtension};
+    if (openDbIndicationFile)
+        delete openDbIndicationFile;
+    openDbIndicationFile = new QTemporaryFile(indicatorfilename);
+    openDbIndicationFile->open();
 #endif
 }
 void deleteSignalFile()
@@ -161,7 +163,7 @@ void deleteSignalFile()
 #if defined(Q_OS_WIN)
     CloseHandle(openDbSignalnFile);
 #else
-//    if( openDbIndicationFile) delete openDbIndicationFile;
+    if( openDbIndicationFile) delete openDbIndicationFile;
 #endif
 }
 bool checkSignalFile(const QString filename) {
@@ -171,5 +173,7 @@ bool checkSignalFile(const QString filename) {
         return QFile::exists (indicatorfilename);
     }
 #else
+    QString indicatorfilename {filename +indicatorfilenameExtension};
+    return QFile::exists (indicatorfilename);
 #endif
 }

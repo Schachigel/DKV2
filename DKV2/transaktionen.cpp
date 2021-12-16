@@ -1,4 +1,4 @@
-
+#include <QDate>
 #include "pch.h"
 
 #include "csvwriter.h"
@@ -16,9 +16,11 @@
 #include "wiznewinvestment.h"
 #include "dlgchangecontracttermination.h"
 #include "dlgannualsettlement.h"
+#include "dlginterestletters.h"
 #include "dlgaskdate.h"
 #include "wiznew.h"
 #include "transaktionen.h"
+#include "filewriter.h"
 
 namespace
 {
@@ -331,6 +333,64 @@ void annualSettlement()
     filename =filename.arg(QDate::currentDate().toString(Qt::ISODate), QString::number(yearOfSettlement));
     csv.saveAndShowInExplorer(filename);
     return;
+}
+
+void interestLetters()
+{
+    LOG_CALL;
+    int currentYear;
+    QDate::currentDate().getDate(&currentYear, nullptr, nullptr);
+
+    dlgInterestLetters dlg(getMainWindow(), currentYear);
+
+    dlg.exec();
+    if (not dlg.confirmed())
+        return;
+
+    int yearOfSettlement = dlg.getYear();
+
+    QVector<booking> annualBookings = bookings::getAnnualSettelments(yearOfSettlement);
+
+    if (annualBookings.size() == 0)
+    {
+        QMessageBox::information(nullptr, qsl("Fehler"),
+                                 qsl("Im Jahr %1 konnten keine Zinsbuchungen gefunden werden. "
+                                     "Es gibt keine Verträge für die eine Abrechnung gemacht werden kann.")
+                                     .arg(yearOfSettlement));
+        return;
+    }
+
+    QVariantMap printData = {};
+    printData["Zinsjahr"] = yearOfSettlement;
+    printData["Zinsdatum"] = QDate(yearOfSettlement, 12, 31).toString("dd.MM.yyyy");
+
+    QList<QPair<int, QString>> creditors;
+    KreditorenListeMitId(creditors);
+    if (creditors.size() > 0) {
+        for (auto &cred : qAsConst(creditors))
+        {
+            creditor credRecord(cred.first);
+            printData["creditor"] = credRecord.getVariant();
+
+            QVector<QVariant> ids = executeSingleColumnSql(
+                dkdbstructur[contract::tnContracts][contract::fnId],
+                qsl(" %1=%2 GROUP BY id").arg(contract::fnKreditorId).arg(QString::number(cred.first)));
+
+            QVariantList vl;
+            for (const auto &id : qAsConst(ids) ) {
+                contract contr(id.toLongLong());
+                vl.append(contr.getVariant(yearOfSettlement));
+            }
+            printData["Vertraege"] = vl;
+            QString fileName = QDate::currentDate().toString(qsl("yyyy-MM-dd")).
+                append("-Zinsen").append(QString::number(yearOfSettlement)).append("_").
+                append(QString::number(credRecord.id())).append("_").
+                append(credRecord.lastname()).append(".pdf");
+            pdfWrite( qsl("Zinsbrief"), fileName, printData);
+
+        }
+        qInfo() << "Alles OK";
+    }
 }
 
 void deleteInactiveContract(contract* c)
