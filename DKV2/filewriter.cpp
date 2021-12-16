@@ -8,7 +8,7 @@
 bool pdfWrite(QString templateName, QString fileName, QVariantMap data) 
 {
 
-    QString templateFname = appConfig::Outdir() + "/" + templateName;
+    QString templateFname = appConfig::Outdir() + "/printres/" + templateName;
     QFile templateFile(templateFname + ".html");
     QFile cssFile(templateFname + ".css");
 
@@ -37,6 +37,7 @@ bool pdfWrite(QString templateName, QString fileName, QVariantMap data)
     printer.setPageOrientation(QPageLayout::Portrait);
     printer.setOutputFormat(QPrinter::PdfFormat);
     printer.setPageSize(QPageSize(QPageSize::A4));
+    printer.setPageMargins(QMargins(3, 3, 3, 3));
 
     printer.setOutputFileName(appConfig::Outdir() + "/" + fileName);
 

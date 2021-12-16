@@ -1,0 +1,125 @@
+<head>
+    <!-- {{{meta.commonText}}}<br/><br/>-->
+	<!-- for use in a classic browser -->
+	<link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+{{#meta}}
+    <table class="Header">
+        <tr>
+            <td class="colFirmenname">
+                <b>{{gmbhaddress1}}</b>
+            </td>
+            <td class="colLogo"><img class="imgLogo" src="{{gmbhLogo}}"/></td>
+        </tr>
+    </table>
+
+
+    <table class="Header">
+        <tr>
+            <td width="60%" class="Anschrift" >
+                 {{gmbhaddress1}} | {{gmbhstrasse}} | {{gmbhplz}} {{gmbhstadt}}</td>
+            <td class="colGmbHAdresse"></td>
+{{/meta}}
+
+        </tr>
+		<tr>
+            <td class="KreditorAdresse" >
+                {{creditor.Vorname}} {{creditor.Nachname}}
+            </td>
+            <td class="colGmbHAdresse">
+                {{meta.gmbhaddress2}}<br/>
+                {{meta.gmbhstrasse}}
+            </td>
+        </tr>
+        <tr>
+            <td class="KreditorAdresse" >
+                {{creditor.Strasse}}
+            </td>
+            <td class="colGmbHAdresse">
+                {{meta.gmbhplz}} {{meta.gmbhstadt}}
+            </td>
+        </tr>
+        <tr>
+            <td class="KreditorAdresse">
+                {{creditor.Plz}} {{creditor.Stadt}}
+             </td>
+           <td class="colGmbHAdresse"> 
+                {{meta.gmbhdkv}}<br/>
+                {{meta.gmbhurl}}
+            </td>
+        </tr>
+        <tr>
+            <td class="invisible" >
+            </td>
+           <td class="colGmbHAdresse"> 
+                {{meta.gmbhHandelsregister}}<br/>
+                Geschäftsführer:<br/>
+                {{meta.gmbhgefue1}} | {{meta.gmbhgefue2}} | {{meta.gmbhgefue3}}<br/>
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td class="colDatum">{{Zinsdatum}}</td>
+        </tr>
+	</table>
+
+    <table>
+        <tr>
+            <td class="colHeaderLine">
+                <strong>Zinsabrechnung für das Jahr {{Zinsjahr}}</strong>
+            </td>
+        </tr>
+    </table>
+
+    <div class="Text">
+    Liebe*r {{creditor.Vorname}} {{creditor.Nachname}},    
+    <p>vielen Dank für Deine Unterstützung! Im Jahr 2021 mussten wir einige Baumaßnahmen im Außenbereich 
+        auf das Jahr 2022 verschieben, da noch nicht alle Baugenehmigungen vorlagen.
+    Der Eingangsbereich sieht also immer noch ein wenig provisorisch aus, aber wir sind zuversichtlich, dass 
+    sich das bald ändert. Unsere Finanzkalkulation erweist sich derweil als sehr solide und
+wir freuen uns schon darauf, die Zahlen nach Abschluss der Baumaßnahmen genau anzuschauen.</p>
+<p>
+Über Spenden, Erbschaften oder Berücksichtigungen jeder Art sowie die Übernahme von
+Wohnpatenschaften freuen wir uns immer! Mehr dazu auf der Webseite der OM10.</p>    
+    </div>
+
+{{#Vertraege}}
+<div class="divVertrag">    
+<div class="colVertragsNr">
+    <br/>
+    <strong>Vertrags-Nr. {{VertragsNr}}</strong>
+    - Zinssatz = {{strZSatz}}%
+</div>
+<table class="tabVertrag" >
+        <tr>
+            <td width=100><strong>Datum</strong></td>
+            <td width=150><strong>Text</strong></td>
+            <td class="colBuchungsBetrag" width=150 float="right"><strong>Betrag</strong></td>
+        </tr>
+        <tr>
+            <td class="colBuchungsdatum">{{startDatum}}</td>
+            <td class="colBuchungstext">letzter Saldo</td>
+            <td class="colBuchungsBetrag">{{startBetrag}}</td>
+        </tr>
+        {{#Buchungen}}
+        <tr>
+            <td class="colBuchungsdatum">{{Date}}</td>
+            <td class="colBuchungstext">{{Text}}</td>
+            <td class="colBuchungsBetrag">{{Betrag}}</td>
+        </tr>
+        {{/Buchungen}}
+        <tr>
+            <td class="colBuchungsdatum">{{endDatum}}</td>
+            <td class="colBuchungstext">neuer Saldo</td>
+            <td class="colBuchungsBetrag">{{endBetrag}}</td>
+        </tr>
+</table>
+</div>
+{{/Vertraege}}
+
+<br/><br/><br/>Achtung! Zinsen sind einkommenssteuerpflichtig.<br/>
+
+</body>
+
