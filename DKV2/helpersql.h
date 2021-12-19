@@ -117,7 +117,7 @@ QSqlRecord executeSingleRecordSql(const QString& sql);
 
 QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString());
 bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result, const QSqlDatabase& db =QSqlDatabase::database());
-bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlRecord>& result);
+bool executeSql(const QString& sql, QVector<QSqlRecord>& result);
 
 bool executeSql_wNoRecords(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database());
 bool executeSql_wNoRecords(const QString& sql, const QVariant& v, const QSqlDatabase& db = QSqlDatabase::database());

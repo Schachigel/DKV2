@@ -25,6 +25,7 @@ struct booking
     QDate date =EndOfTheFuckingWorld;
     double amount =0.;
     // construction
+    booking(){};
     booking(const qlonglong cId, const booking::Type t = Type::non, const QDate d =EndOfTheFuckingWorld, const double a =0.)
         : contractId(cId), type(t), date(d), amount(a) {};
     // comparison for tests

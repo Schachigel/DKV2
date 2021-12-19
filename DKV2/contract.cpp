@@ -636,7 +636,7 @@ bool contract::archive()
     return false;
 }
 
-QVariant contract::getVariant(int year) 
+QVariant contract::toVariantMap_4annualBooking(int year)
 {
     QVariantMap v;
     QLocale l;

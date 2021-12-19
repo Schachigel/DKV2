@@ -113,7 +113,7 @@ void newCreditorAndContract()
 
     if (not wiz.field(pnConfirmContract).toBool())
     {
-        qInfo() << "user decided not to save the creditor";
+        qInfo() << "user decided not to save the contract";
         return;
     }
     contract cont;
@@ -436,7 +436,7 @@ void interestLetters()
             for (const auto &id : qAsConst(ids))
             {
                 contract contr(id.toLongLong());
-                vl.append(contr.getVariant(yearOfSettlement));
+                vl.append(contr.toVariantMap_4annualBooking(yearOfSettlement));
             }
             printData["Vertraege"] = vl;
             QString fileName = QDate::currentDate().toString(qsl("yyyy-MM-dd")).append("-Zinsen").append(QString::number(yearOfSettlement)).append("_").append(QString::number(credRecord.id())).append("_").append(credRecord.lastname()).append(".pdf");
