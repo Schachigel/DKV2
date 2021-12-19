@@ -140,6 +140,28 @@ bool creditor::isValid( QString& errortext) const
     return false;
 }
 
+QVariant creditor::getVariant()
+{
+    QVariantMap v;
+
+    v["id"] = ti.getValue(qsl("id"));
+    v["strId"] = v["id"].toString();
+    v["Vorname"] = ti.getValue(qsl("Vorname")).toString();
+    v["Nachname"] = ti.getValue(qsl("Nachname")).toString();
+    v["Strasse"] = ti.getValue(qsl("Strasse")).toString();
+    v["Plz"] = ti.getValue(qsl("Plz")).toString();
+    v["Stadt"] = ti.getValue(qsl("Stadt")).toString();
+    v["Land"] = ti.getValue(qsl("Land")).toString();
+    v["Email"] = ti.getValue(qsl("Email")).toString();
+    v["IBAN"] = ti.getValue(qsl("IBAN")).toString();
+    v["BIC"] = ti.getValue(qsl("BIC")).toString();
+    v["Anmerkung"] = getValue(qsl("Anmerkung")).toString();
+    v["Zeitstempel"] = getValue(qsl("Zeitstempel"));
+    v["strZeitstempel"] = getValue(qsl("Zeitstempel")).toDate().toString("dd.MM.yyyy");
+
+    return v;
+}
+
 int creditor::save()
 {   LOG_CALL;
     if( ti.getRecord().isEmpty() )

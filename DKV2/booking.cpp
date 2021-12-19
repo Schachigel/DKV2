@@ -121,7 +121,7 @@
     return vRet;
 }
 
-/* static */ QVector<booking> bookings::getBookings(const qlonglong cid, QDate from, const QDate to)
+/* static */ QVector<booking> bookings::getBookings(const qlonglong cid, QDate from, const QDate to, QString order)
 {   LOG_CALL;
     // used in tests
     QString where = qsl("Buchungen.VertragsId=%1 "
@@ -134,6 +134,6 @@
 /* static */ QVector<booking> bookings::getAnnualSettelments(const int year)
 {   LOG_CALL;
     QString where = qsl("Buchungen.BuchungsArt = %1 AND Buchungen.Datum = '%2'");
-    where = where.arg(QString::number(static_cast<int>(booking::Type::annualInterestDeposit)), QDate(year + 1, 1, 1).toString(Qt::ISODate));
+    where = where.arg(QString::number(static_cast<int>(booking::Type::annualInterestDeposit)), QDate(year, 12, 31).toString(Qt::ISODate));
     return bookingsFromSql(where);
 }

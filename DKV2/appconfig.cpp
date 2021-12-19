@@ -129,6 +129,32 @@ void appConfig::delLastDb()
     deleteUserData(keyLastDb);
 }
 
+
+QVariantMap getMetaMap(const QSqlDatabase &db)
+{
+    LOG_CALL;
+    QVariantMap vm;
+    QSqlQuery q(db); // default database connection -> active database
+    q.setForwardOnly(true);
+    if (not q.exec(qsl("SELECT * FROM Meta")))
+    {
+        qInfo() << "no data returned from Meta table";
+        return vm;
+    }
+
+    QString name;
+    QString value;
+    QRegularExpression re("[/\\.]");
+    while (q.next())
+    {
+        QSqlRecord rec = q.record();
+        name = rec.value("name").toString().replace(re,"");
+        value = rec.value("Wert").toString();
+        vm[name] = value;
+    }
+    return vm;
+}
+
 /* private */
 /* static */
 void appConfig::setUserData(const QString& name, const QString& value)

@@ -96,6 +96,8 @@ SOURCES += \
         dlgannualsettlement.cpp \
         dlgaskdate.cpp \
         dlgchangecontracttermination.cpp \
+        dlginterestletters.cpp \
+        filewriter.cpp \
         helper.cpp \
         helperfile.cpp \
         helperfin.cpp \
@@ -108,6 +110,7 @@ SOURCES += \
         mainwindow.cpp \
         mainwindow_contractlist.cpp \
         mainwindow_creditorlist.cpp \
+        mustache.cpp \
         tabledatainserter.cpp \
         transaktionen.cpp \
         uebersichten.cpp \
@@ -142,6 +145,8 @@ HEADERS += pch.h\
         dlgannualsettlement.h \
         dlgaskdate.h \
         dlgchangecontracttermination.h \
+        dlginterestletters.h \
+        filewriter.h \
         helper.h \
         helperfile.h \
         helperfin.h \
@@ -151,6 +156,7 @@ HEADERS += pch.h\
         letterTemplate.h \
         letters.h \
         mainwindow.h \
+        mustache.h \
         pch.h \
         tabledatainserter.h \
         transaktionen.h \

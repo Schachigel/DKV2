@@ -103,6 +103,8 @@ private slots:
 
     void on_action_menu_contracts_annual_interest_settlement_triggered();
 
+    void on_action_menu_contracts_interestLetters_triggered();
+
     void on_action_menu_database_configure_outdir_triggered();
 
     void on_action_menu_contracts_print_lists_triggered();
