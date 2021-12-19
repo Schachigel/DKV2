@@ -341,7 +341,7 @@ void calc_contractEnd( QVector<contractEnd_rowData>& ces)
 void getBookingDateInfoBySql(const QString &sql, QVector<BookingDateData>& dates)
 {
     QVector<QSqlRecord> records;
-    if( not executeSql(sql, QVector<QVariant>(), records)) {
+    if( not executeSql(sql, records)) {
         qInfo() << "getDatesBySql: no dates to found";
         return;
     }

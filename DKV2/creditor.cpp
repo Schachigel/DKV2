@@ -235,15 +235,32 @@ bool creditor::remove()
     return creditortable;
 }
 
-void KreditorenListeMitId(QList<QPair<int,QString>>& entries)
+void KreditorenListeMitId(QList<QPair<int,QString>>& entries, int bookingYear)
 {   LOG_CALL;
     QSqlQuery query; query.setForwardOnly(true);
-    QString sql{qsl(R"str(
+    QString sql;
+    if( bookingYear == -1)
+        sql =         sql =qsl(R"str(
 SELECT id
   , Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse
 FROM Kreditoren
 ORDER BY Nachname ASC, Vorname ASC
-)str")};
+)str");
+    else
+        sql =qsl(R"str(
+SELECT id
+  , Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse
+FROM Kreditoren
+WHERE id IN (
+SELECT DISTINCT Kreditoren.Id AS kid
+FROM Buchungen
+INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id
+INNER JOIN Kreditoren ON Vertraege.KreditorId = Kreditoren.id
+WHERE Buchungen.BuchungsArt = %1 AND SUBSTR(Buchungen.Datum, 1, 4) = '%2')
+ORDER BY Nachname ASC, Vorname ASC
+)str").arg(QString::number((int)booking::Type::annualInterestDeposit), QString::number (bookingYear));
+
+    qDebug() << sql;
     if( not query.exec(sql)) {
         qCritical() << "Error reading DKGeber while creating a contract: " << query.lastError().text();
         return;

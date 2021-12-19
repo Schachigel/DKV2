@@ -2,13 +2,31 @@
 #include "helper.h"
 #include "ibanvalidator.h"
 
+namespace {
+
+const QString expression {
+qsl("(AL)\\d\\d[0-9]{8}[A-Z0-9]{16}|(AD)\\d\\d[0-9]{8}[A-Z0-9]{12}|(AT)\\d\\d[0-9]{16}|(BE)\\d\\d[0-9]{12}|(BH)\\\
+d\\d[A-Z]{4}[A-Z0-9]{14}|(BA)\\d\\d[0-9]{16}|(BG)\\d\\d[A-Z]{4}[0-9]{6}[A-Z0-9]{8}|(HR)\\d\\d[0-9]{17}|(CY\
+)\\d\\d[0-9]{8}[A-Z0-9]{16}|(CZ)\\d\\d[0-9]{20}|(DK)\\d\\d[0-9]{14}|(DO)\\d\\d[A-Z]{4}[0-9]{20}|(EE)\\d\\d[0-\
+9]{16}|(FO)\\d\\d[0-9]{14}|(FI)\\d\\d[0-9]{14}|(FR|TF|PF|YT|NC|PM|WF)\\d\\d[0-9]{10}[A-Z0-9]{11}[0-9]{2}|\
+(GE)\\d\\d[A-Z0-9]{2}[0-9]{16}|(DE)\\d\\d[0-9]{18}|(GI)\\d\\d[A-Z]{4}[A-Z0-9]{15}|(GR)\\d\\d[0-9]{7}[A-Z0-9\
+]{16}|(GL)\\d\\d[0-9]{14}|(HU)\\d\\d[0-9]{24}|(IS)\\d\\d[0-9]{22}|(IE)\\d\\d[A-Z0-9]{4}[0-9]{14}|(IL)\\d\\d[0\
+-9]{19}|(IT)\\d\\d[A-Z]{1}[0-9]{10}[A-Z0-9]{12}|(KZ)\\d\\d[0-9]{3}[A-Z0-9]{3}[0-9]{10}|(KW)\\d\\d[A-Z]{4}\
+[0-9]{22}|(LV)\\d\\d[A-Z]{4}[A-Z0-9]{13}|(LB)\\d\\d[0-9]{4}[A-Z0-9]{20}|(LI)\\d\\d[0-9]{5}[A-Z0-9]{12}|(L\
+T)\\d\\d[0-9]{16}|(LU)\\d\\d[0-9]{3}[A-Z0-9]{13}|(MK)\\d\\d[0-9]{3}[A-Z0-9]{10}[0-9]{2}|(MT)\\d\\d[A-Z]{4}[\
+0-9]{5}[A-Z0-9]{18}|(MR)\\d\\d[0-9]{23}|(MU)\\d\\d[A-Z]{4}[0-9]{19}[A-Z]{3}|(MC)\\d\\d[0-9]{10}[A-Z0-9]{1\
+1}[0-9]{2}|(ME)\\d\\d[0-9]{18}|(NL)\\d\\d[A-Z]{4}[0-9]{10}|(NO)\\d\\d[0-9]{11}|(PL)\\d\\d[0-9]{24}|(PT)\\d\\d\
+[0-9]{21}|(RO)\\d\\d[A-Z]{4}[A-Z0-9]{16}|(SM)\\d\\d[A-Z]{1}[0-9]{10}[A-Z0-9]{12}|(SA)\\d\\d[0-9]{2}[A-Z0-\
+9]{18}|(RS)\\d\\d[0-9]{18}|(SK)\\d\\d[0-9]{20}|(SI)\\d\\d[0-9]{15}|(ES)\\d\\d[0-9]{20}|(SE)\\d\\d[0-9]{20}|(C\
+H)\\d\\d[0-9]{5}[A-Z0-9]{12}|(TN)\\d\\d[0-9]{20}|(TR)\\d\\d[0-9]{5}[A-Z0-9]{17}|(AE)\\d\\d[0-9]{3}[0-9]{16}\
+|(GB)\\d\\d[A-Z]{4}[0-9]{14}")};
+
+}
+
 
 IbanValidator::IbanValidator(QObject* parent) : QRegExpValidator(parent)
 {
-    QFile f (qsl(":/res/IbanRegExp.txt"));
-    f.open(QIODevice::ReadOnly);
-    QString exp =f.readAll();
-    setRegExp(QRegExp(exp));
+    setRegExp(QRegExp(expression));
 
     Q_ASSERT_X(regExp().isValid(), "invalid regExp", regExp().pattern().toLatin1());
 }

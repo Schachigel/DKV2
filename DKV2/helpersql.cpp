@@ -371,15 +371,12 @@ bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& resu
         return false;
     }
 }
-bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlRecord>& result)
+bool executeSql(const QString& sql, /*const QVector<QVariant>& v,*/ QVector<QSqlRecord>& result)
 {
     QSqlQuery q; q.setForwardOnly(true);
     if( not q.prepare(sql)) {
-        qDebug() << "Faild to prep Query. Error:" << q.lastError();
+        qDebug() << "Faild to prep Query. Error:" << q.lastError() << Qt::endl << q.lastQuery();
         return false;
-    }
-    for( int i =0; i<v.size(); i++) {
-        q.bindValue(i, v[i]);
     }
     if( q.exec()) {
         while(q.next()) {
@@ -420,11 +417,11 @@ bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& v, const
         }
     }
     if( q.exec()) {
-        qInfo() << "Successfully executed query " << q.lastQuery() << " with "
+        qInfo().noquote () << "Successfully executed query " << q.lastQuery() << " with "
         << (q.numRowsAffected() ? QString::number(q.numRowsAffected()) : qsl("no")) << qsl(" affected Rows");
         return true;
     }
-    qDebug() << "Failed to execute query. Error: " << q.lastQuery() << Qt::endl << q.lastError() ;
+    qDebug() << "Failed to execute query. Error: " << q.lastError() << Qt::endl << q.lastQuery() ;
     return false;
 }
 

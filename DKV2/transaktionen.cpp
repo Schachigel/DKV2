@@ -113,7 +113,7 @@ void newCreditorAndContract()
 
     if (not wiz.field(pnConfirmContract).toBool())
     {
-        qInfo() << "user decided not to save the creditor";
+        qInfo() << "user decided not to save the contract";
         return;
     }
     contract cont;
@@ -387,38 +387,41 @@ void annualSettlement()
 void interestLetters()
 {
     LOG_CALL;
-    int currentYear;
-    QDate::currentDate().getDate(&currentYear, nullptr, nullptr);
-
-    dlgInterestLetters dlg(getMainWindow(), currentYear);
+    QVector<int> years =bookings::yearsWithAnnualBookings();
+    if( years.size () == 0) {
+        QMessageBox::information (getMainWindow (), qsl("Keine Daten"), qsl("Es liegen keine Abrechnungen zum Ausdruck vor"));
+        return;
+    }
+    dlgInterestLetters dlg(getMainWindow(), years);
 
     dlg.exec();
     if (not dlg.confirmed())
         return;
 
     int yearOfSettlement = dlg.getYear();
-
     QVector<booking> annualBookings = bookings::getAnnualSettelments(yearOfSettlement);
 
-    if (annualBookings.size() == 0)
-    {
+    if (annualBookings.size() == 0) {
         QMessageBox::information(nullptr, qsl("Fehler"),
                                  qsl("Im Jahr %1 konnten keine Zinsbuchungen gefunden werden. "
                                      "Es gibt keine Verträge für die eine Abrechnung gemacht werden kann.")
                                      .arg(yearOfSettlement));
         return;
     }
+    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("brieflogo.png"));
+    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("zinsbrief.css"));
+    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("zinsbrief.html"));
 
     QVariantMap printData = {};
     printData["Zinsjahr"] = yearOfSettlement;
     printData["Zinsdatum"] = QDate(yearOfSettlement, 12, 31).toString("dd.MM.yyyy");
     QVariantMap mm = getMetaMap();
-    QString logo = (appConfig::Outdir() + "/printres/logo.png");
+    QString logo = (appConfig::Outdir() + "/vorlagen/brieflogo.png");
     mm["gmbhLogo"] = logo;
     printData["meta"] = mm;
 
     QList<QPair<int, QString>> creditors;
-    KreditorenListeMitId(creditors);
+    KreditorenListeMitId(creditors, yearOfSettlement);
     if (creditors.size() > 0)
     {
         for (auto &cred : qAsConst(creditors))
@@ -428,18 +431,17 @@ void interestLetters()
 
             QVector<QVariant> ids = executeSingleColumnSql(
                 dkdbstructur[contract::tnContracts][contract::fnId],
-                qsl(" %1=%2 GROUP BY id").arg(contract::fnKreditorId).arg(QString::number(cred.first)));
+                qsl(" %1=%2 GROUP BY id").arg(contract::fnKreditorId, QString::number(cred.first)));
 
             QVariantList vl;
             for (const auto &id : qAsConst(ids))
             {
                 contract contr(id.toLongLong());
-                vl.append(contr.getVariant(yearOfSettlement));
+                vl.append(contr.toVariantMap_4annualBooking(yearOfSettlement));
             }
             printData["Vertraege"] = vl;
             QString fileName = QDate::currentDate().toString(qsl("yyyy-MM-dd")).append("-Zinsen").append(QString::number(yearOfSettlement)).append("_").append(QString::number(credRecord.id())).append("_").append(credRecord.lastname()).append(".pdf");
             pdfWrite(qsl("Zinsbrief"), fileName, printData);
-            // break; // ACHTUNG - TEST !!!
         }
         qInfo() << "Alles OK";
     }
