@@ -209,7 +209,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     contractsListsDB_View  =std::make_unique<tempView>(vnContractView,    sqlContractView);
     exContractsListDB_View =std::make_unique<tempView>(vnExContractView,  sqlExContractView);
-    exContractsListDB_View =std::make_unique<tempView>(vnInvestmentsView, sqlInvestmentsView);
+    investments_View =std::make_unique<tempView>(vnInvestmentsView, sqlInvestmentsView);
 
     // //////////////////
     const QString tableCellStyle {qsl("QTableView::item { padding-top: 5px; padding-bottom: 5px; padding-right: 10px; padding-left: 10px; }")};

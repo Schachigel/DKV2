@@ -230,6 +230,7 @@ private:
     bool showDeletedContracts =false;
     std::unique_ptr<tempView> contractsListsDB_View;
     std::unique_ptr<tempView> exContractsListDB_View;
+    std::unique_ptr<tempView> investments_View;
     std::unique_ptr<contractsHeaderSortingAdapter> contractsSortingAdapter;
 };
 
