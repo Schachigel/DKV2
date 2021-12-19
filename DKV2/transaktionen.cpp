@@ -399,23 +399,24 @@ void interestLetters()
         return;
 
     int yearOfSettlement = dlg.getYear();
-
     QVector<booking> annualBookings = bookings::getAnnualSettelments(yearOfSettlement);
 
-    if (annualBookings.size() == 0)
-    {
+    if (annualBookings.size() == 0) {
         QMessageBox::information(nullptr, qsl("Fehler"),
                                  qsl("Im Jahr %1 konnten keine Zinsbuchungen gefunden werden. "
                                      "Es gibt keine Verträge für die eine Abrechnung gemacht werden kann.")
                                      .arg(yearOfSettlement));
         return;
     }
+    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("brieflogo.png"));
+    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("zinsbrief.css"));
+    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("zinsbrief.html"));
 
     QVariantMap printData = {};
     printData["Zinsjahr"] = yearOfSettlement;
     printData["Zinsdatum"] = QDate(yearOfSettlement, 12, 31).toString("dd.MM.yyyy");
     QVariantMap mm = getMetaMap();
-    QString logo = (appConfig::Outdir() + "/printres/logo.png");
+    QString logo = (appConfig::Outdir() + "/vorlagen/brieflogo.png");
     mm["gmbhLogo"] = logo;
     printData["meta"] = mm;
 
@@ -441,7 +442,6 @@ void interestLetters()
             printData["Vertraege"] = vl;
             QString fileName = QDate::currentDate().toString(qsl("yyyy-MM-dd")).append("-Zinsen").append(QString::number(yearOfSettlement)).append("_").append(QString::number(credRecord.id())).append("_").append(credRecord.lastname()).append(".pdf");
             pdfWrite(qsl("Zinsbrief"), fileName, printData);
-            // break; // ACHTUNG - TEST !!!
         }
         qInfo() << "Alles OK";
     }
