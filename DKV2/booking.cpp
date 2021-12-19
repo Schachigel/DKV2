@@ -129,7 +129,7 @@
                   "AND Buchungen.Datum <='%3'");
     where = where.arg(QString::number(cid), from.toString(Qt::ISODate), to.toString(Qt::ISODate));
 
-    return bookingsFromSql(where, qsl("Datum DESC"));
+    return bookingsFromSql(where, order);
 }
 /* static */ QVector<booking> bookings::getAnnualSettelments(const int year)
 {   LOG_CALL;
