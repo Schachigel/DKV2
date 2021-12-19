@@ -7,7 +7,7 @@ void dlgInterestLetters::setYear(int y)
     year = y;
 }
 
-dlgInterestLetters::dlgInterestLetters(QWidget *parent, int currentYear) : QDialog(parent), year(currentYear)
+dlgInterestLetters::dlgInterestLetters(QWidget *parent, QVector<int> years) : QDialog(parent), years(years)
 {
     setFontPs(this, 10);
 
@@ -31,12 +31,12 @@ dlgInterestLetters::dlgInterestLetters(QWidget *parent, int currentYear) : QDial
     if (year == 0) {
         QDate::currentDate().getDate(&year, nullptr, nullptr);
     }
-    
+
     QLabel *yearLabel = new QLabel(qsl("Jahr"));
-    yearSelector = new QSpinBox;
-    yearSelector->setRange(year - 10, year + 3);
-    yearSelector->setSingleStep(1);
-    yearSelector->setValue(year);
+    yearSelector = new QComboBox;
+    for( const auto& year: years) {
+        yearSelector->addItem (QString::number(year), year);
+    }
 
     g->addWidget(yearLabel, row, 1);
     g->addWidget(yearSelector, row++, 2);

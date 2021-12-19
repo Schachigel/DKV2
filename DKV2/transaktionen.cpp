@@ -390,7 +390,12 @@ void interestLetters()
     int currentYear;
     QDate::currentDate().getDate(&currentYear, nullptr, nullptr);
 
-    dlgInterestLetters dlg(getMainWindow(), currentYear);
+    QVector<int> years =bookings::yearsWithAnnualBookings();
+    if( years.size () == 0) {
+        QMessageBox::information (getMainWindow (), qsl("Keine Daten"), qsl("Es liegen keine Abrechnungen zum Ausdruck vor"));
+        return;
+    }
+    dlgInterestLetters dlg(getMainWindow(), years);
 
     dlg.exec();
     if (not dlg.confirmed())

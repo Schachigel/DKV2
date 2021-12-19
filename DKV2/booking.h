@@ -60,9 +60,10 @@ struct bookings
 {
     static QDate dateOfnextSettlement();
     static QVector<booking> bookingsFromSql(const QString& where, const QString& order=QString());
-    static QVector<booking> getBookings(const qlonglong cid, const QDate from = BeginingOfTime, 
+    static QVector<booking> getBookings(const qlonglong cid, const QDate from = BeginingOfTime,
             const QDate to = EndOfTheFuckingWorld, const QString order = qsl("Datum DESC"));
     static QVector<booking> getAnnualSettelments(const int year);
+    static QVector<int> yearsWithAnnualBookings();
 };
 
 #endif // BOOKING_H
