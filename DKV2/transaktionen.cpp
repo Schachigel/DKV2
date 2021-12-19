@@ -387,9 +387,6 @@ void annualSettlement()
 void interestLetters()
 {
     LOG_CALL;
-    int currentYear;
-    QDate::currentDate().getDate(&currentYear, nullptr, nullptr);
-
     QVector<int> years =bookings::yearsWithAnnualBookings();
     if( years.size () == 0) {
         QMessageBox::information (getMainWindow (), qsl("Keine Daten"), qsl("Es liegen keine Abrechnungen zum Ausdruck vor"));
@@ -423,7 +420,7 @@ void interestLetters()
     printData["meta"] = mm;
 
     QList<QPair<int, QString>> creditors;
-    KreditorenListeMitId(creditors);
+    KreditorenListeMitId(creditors, yearOfSettlement);
     if (creditors.size() > 0)
     {
         for (auto &cred : qAsConst(creditors))
@@ -433,7 +430,7 @@ void interestLetters()
 
             QVector<QVariant> ids = executeSingleColumnSql(
                 dkdbstructur[contract::tnContracts][contract::fnId],
-                qsl(" %1=%2 GROUP BY id").arg(contract::fnKreditorId).arg(QString::number(cred.first)));
+                qsl(" %1=%2 GROUP BY id").arg(contract::fnKreditorId, QString::number(cred.first)));
 
             QVariantList vl;
             for (const auto &id : qAsConst(ids))

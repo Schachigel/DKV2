@@ -59,7 +59,7 @@ private:
     // helper
 };
 
-void KreditorenListeMitId(QList<QPair<int,QString>> &entries);
+void KreditorenListeMitId(QList<QPair<int,QString>> &entries, int bookingYear =-1);
 
 
 // sample data for testing
