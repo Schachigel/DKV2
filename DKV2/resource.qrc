@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>res/logo.png</file>
-        <file>res/IbanRegExp.txt</file>
         <file>res/splash.png</file>
         <file>res/weiss.png</file>
         <file>res/logo.ico</file>
