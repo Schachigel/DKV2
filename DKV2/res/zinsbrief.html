@@ -5,52 +5,39 @@
 </head>
 
 <body>
-{{#meta}}
     <table width=98%>
         <tr>
-            <td class="colFirmenname" width=50%>
-                <b>{{gmbhaddress1}}</b>
+            <td width=50%>
+              <div class="colFirmenname"> <b>{{meta.gmbhaddress1}}</b><p></div>
+              <div class="GmbHAnschrift"> {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}}</div>
+              <div class="KreditorAdresse" ><br>
+                  {{creditor.Vorname}} {{creditor.Nachname}}<p>
+                  {{creditor.Strasse}}<br>
+                  <b>{{creditor.Plz}}</b> &nbsp; &nbsp; {{creditor.Stadt}}
+              </div>
             </td>
-            <td class="colLogo" width=500%><img class="imgLogo" src="{{gmbhLogo}}"></td>
+            <td class="colLogo" width=500%><img class="imgLogo" src="{{gmbhLogo}}">
+            <div class="GmbHUrl">{{meta.gmbhurl}}</div>
+            </td>
         </tr>
+        <tr><td class="invisible"><p><p></td><td></td></tr>
     </table>
-
     <table width=90%>
-        <tr>
-            <td width="55%" class="GmbHAnschrift" >
-                 {{gmbhaddress1}} | {{gmbhstrasse}} | {{gmbhplz}} {{gmbhstadt}}
-            </td>
-            <td class="GmbHUrl">{{meta.gmbhurl}}</td>
-{{/meta}}
-        </tr>
-        <tr>
-            <td class="KreditorAdresse" ><br>
-                {{creditor.Vorname}} {{creditor.Nachname}}<p>
-                {{creditor.Strasse}}<br>
-                <b>{{creditor.Plz}}</b> &nbsp; &nbsp; {{creditor.Stadt}}
-            </td>
-            <td></td>
-        </tr>
         <tr>
             <td class="colBetreff">Zinsabrechnung für das Jahr {{Zinsjahr}} </td>
             <td class="colDatum">{{meta.gmbhstadt}} den {{Zinsdatum}}</td>
         </tr>
+        <tr><td class="invisible"><p><p></td><td></td></tr>
     </table>
 
     <div class="Text">
         <table width=90%>
             <tr>
                 <td class="colText">
-    Liebe*r {{creditor.Vorname}} {{creditor.Nachname}},
-    <p>vielen Dank für Deine Unterstützung! Im Jahr 2021 mussten wir einige Baumaßnahmen im Außenbereich
-        auf das Jahr 2022 verschieben, da noch nicht alle Baugenehmigungen vorlagen.
-    Der Eingangsbereich sieht also immer noch ein wenig provisorisch aus, aber wir sind zuversichtlich, dass
-    sich das bald ändert. Unsere Finanzkalkulation erweist sich derweil als sehr solide und
-wir freuen uns schon darauf, die Zahlen nach Abschluss der Baumaßnahmen genau anzuschauen.</p>
-<p>
-Über Spenden, Erbschaften oder Berücksichtigungen jeder Art sowie die Übernahme von
-Wohnpatenschaften freuen wir uns immer! Mehr dazu auf der Webseite der OM10.</p>
-                </td>
+    Liebe*r {{creditor.Vorname}},
+    <p>wir, die zukünftigen Bewohner*innen des Wohnprojekts Esperanza wünschen Dir ein gutes neues Jahr und bedanken uns herzlich für Deine Unterstützung.
+    <p>In folgender Tabelle kannst Du die Kontobewegungen und ggf. Zinszahlungen von {{Zinsjahr}} nachlesen.
+             </td>
             </tr>
         </table>
     </div>
@@ -95,19 +82,24 @@ Wohnpatenschaften freuen wir uns immer! Mehr dazu auf der Webseite der OM10.</p>
             <td class="colBuchungsBetrag">{{endBetrag}}</td>
         </tr>
 </table>
+
 </div>
 {{/Vertraege}}
 
-    <div class="Text">
-        <table>
-            <tr>
-                <td class="colText">
-
-<br/><br/><br/>Achtung! Zinsen sind einkommenssteuerpflichtig.<br/>
-                </td>
-            </tr>
-        </table>
-    </div>
+<div class="Text">
+    <table width=90%>
+      <tr>
+        <td class="invisible"><p></td>
+      </tr><tr>
+        <td class="colText">
+<p>Es wäre toll, wenn Du uns und unser Projekt weiterhin solidarisch unterstützt. Wir benötigen auch weiterhin Direktkredite um günstigen Mietwohnraum zu ermöglichen.
+Empfehle uns daher bitte weiter an Freund*innen, Bekannte und Verwandte!
+<p>Solltest Du Fragen zur Abrechnung haben, so zögere bitte nicht Dich - am besten per E-Mail - an uns zu wenden.
+<p><p>Mit freundlichen Grüßen
+<p>{{meta.gmbhdkv}}
+      </td>
+    </tr>
+  </table>
 
 </body>
 

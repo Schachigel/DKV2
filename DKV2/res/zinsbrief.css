@@ -48,11 +48,12 @@ table {
 }
 
 .colBetreff {
-    padding-top: 15px;
+    padding-top: 25px;
 }
 
 .colDatum {
     text-align: right;
+    padding-top: 5px;
 }
 
 
