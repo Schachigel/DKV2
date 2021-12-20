@@ -52,10 +52,13 @@ bool pdfWrite(const QString& templateName, const QString& fileName, const QVaria
     doc.setHtml(renderedHtml);
 
     QPrinter printer;
-    printer.setPageOrientation(QPageLayout::Portrait);
+    printer.setPaperSize(QPrinter::A4);
     printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setPageOrientation(QPageLayout::Portrait);
+ 
     printer.setPageSize(QPageSize(QPageSize::A4));
-    printer.setPageMargins(QMargins(3, 3, 3, 3));
+    // printer.setPageMargins(QMargins(3, 3, 3, 3));
+    doc.setPageSize(printer.pageRect().size()); 
 
     printer.setOutputFileName(appConfig::Outdir() + "/" + fileName);
 

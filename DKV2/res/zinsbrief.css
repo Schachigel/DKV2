@@ -20,7 +20,10 @@ table {
 
 .colFirmenname {
     text-align: center;
-    font-size: 16pt;
+    padding-left: 0px;    
+    font-size: 20pt;
+    padding-top: 12px;
+    padding-bottom: 10px;
 
 }
 
@@ -37,11 +40,12 @@ table {
     font-size: 7pt;
     vertical-align: bottom;
     text-align: left;
-    padding-left: 0px;
+    padding-left: 40px;
+    padding-top: 40px;
 }
 
 .colLogo {
-    padding-left: 200px;
+    padding-left: 1px;
     float: right;
 }
 
@@ -53,7 +57,7 @@ table {
 .KreditorAdresse {
     background: white;
     text-align: left;
-}
+    padding-left: 40px;}
 
 .GmbhAdresse {
     float: right;
@@ -64,13 +68,14 @@ table {
     text-align: left;
     font-size: 9pt;
     padding-left: 20px;
+    padding-right: 40px;
 
 }
 
 .colDatum {
     text-align: right;
     padding-top: 10px;
-    padding-left: 20px;
+    padding-right: 40px;
 
 }
 
@@ -80,8 +85,10 @@ table {
 }
 
 .tabVertrag {
-    border-style: solid;
-    border: 1;
+    padding-left: 40px; 
+    border-style: none;
+    border-collapse: collapse;
+   
 }
 
 .colVertragsNr {
@@ -90,6 +97,7 @@ table {
 }
 
 .colBuchungsDatum {
+    padding-left: 30px;
     text-align: left;
 }
 
@@ -110,5 +118,10 @@ table {
 }
 
 .Text {
-    font-size: 12pt
+    font-size: 12pt;
+    padding-left: 30px;}
+
+.colText {
+    padding-left: 40px;
+    padding-right: 40px;
 }
