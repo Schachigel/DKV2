@@ -1,99 +1,63 @@
 <head>
     <!-- {{{meta.commonText}}}<br/><br/>-->
-	<!-- for use in a classic browser -->
-	<link rel="stylesheet" href="./styles.css">
+    <!-- for use in a classic browser -->
+    <link rel="stylesheet" href="./zinsbrief.css">
 </head>
 
 <body>
 {{#meta}}
-    <table class="Header">
+    <table width=98%>
         <tr>
-            <td class="colFirmenname" width=65%>
+            <td class="colFirmenname" width=50%>
                 <b>{{gmbhaddress1}}</b>
             </td>
-            <td class="colLogo" width=35%><img class="imgLogo" src="{{gmbhLogo}}"/></td>
+            <td class="colLogo" width=500%><img class="imgLogo" src="{{gmbhLogo}}"></td>
         </tr>
     </table>
 
-
-    <table class="Header">
+    <table width=90%>
         <tr>
-            <td width="60%" class="Anschrift" >
-                 {{gmbhaddress1}} | {{gmbhstrasse}} | {{gmbhplz}} {{gmbhstadt}}</td>
-            <td class="colGmbHAdresse"></td>
+            <td width="55%" class="GmbHAnschrift" >
+                 {{gmbhaddress1}} | {{gmbhstrasse}} | {{gmbhplz}} {{gmbhstadt}}
+            </td>
+            <td class="GmbHUrl">{{meta.gmbhurl}}</td>
 {{/meta}}
-
-        </tr>
-		<tr>
-            <td class="KreditorAdresse" >
-                {{creditor.Vorname}} {{creditor.Nachname}}
-            </td>
-            <td class="colGmbHAdresse">
-                {{meta.gmbhaddress2}}<br/>
-                {{meta.gmbhstrasse}}
-            </td>
         </tr>
         <tr>
-            <td class="KreditorAdresse" >
-                {{creditor.Strasse}}
+            <td class="KreditorAdresse" ><br>
+                {{creditor.Vorname}} {{creditor.Nachname}}<p>
+                {{creditor.Strasse}}<br>
+                <b>{{creditor.Plz}}</b> &nbsp; &nbsp; {{creditor.Stadt}}
             </td>
-            <td class="colGmbHAdresse">
-                {{meta.gmbhplz}} {{meta.gmbhstadt}}
-            </td>
-        </tr>
-        <tr>
-            <td class="KreditorAdresse">
-                {{creditor.Plz}} {{creditor.Stadt}}
-             </td>
-           <td class="colGmbHAdresse"> 
-                {{meta.gmbhdkv}}<br/>
-                {{meta.gmbhurl}}
-            </td>
-        </tr>
-        <tr>
-            <td class="invisible" >
-            </td>
-           <td class="colGmbHAdresse"> 
-                {{meta.gmbhHandelsregister}}<br/>
-                Geschäftsführer:<br/>
-                {{meta.gmbhgefue1}} | {{meta.gmbhgefue2}} | {{meta.gmbhgefue3}}<br/>
-            </td>
-        </tr>
-        <tr>
             <td></td>
-            <td class="colDatum">{{Zinsdatum}}</td>
         </tr>
-	</table>
-
-    <table>
         <tr>
-            <td class="colHeaderLine">
-                <strong>Zinsabrechnung für das Jahr {{Zinsjahr}}</strong>
-            </td>
+            <td class="colBetreff">Zinsabrechnung für das Jahr {{Zinsjahr}} </td>
+            <td class="colDatum">{{meta.gmbhstadt}} den {{Zinsdatum}}</td>
         </tr>
     </table>
 
     <div class="Text">
-        <table>
+        <table width=90%>
             <tr>
                 <td class="colText">
-    Liebe*r {{creditor.Vorname}} {{creditor.Nachname}},    
-    <p>vielen Dank für Deine Unterstützung! Im Jahr 2021 mussten wir einige Baumaßnahmen im Außenbereich 
+    Liebe*r {{creditor.Vorname}} {{creditor.Nachname}},
+    <p>vielen Dank für Deine Unterstützung! Im Jahr 2021 mussten wir einige Baumaßnahmen im Außenbereich
         auf das Jahr 2022 verschieben, da noch nicht alle Baugenehmigungen vorlagen.
-    Der Eingangsbereich sieht also immer noch ein wenig provisorisch aus, aber wir sind zuversichtlich, dass 
+    Der Eingangsbereich sieht also immer noch ein wenig provisorisch aus, aber wir sind zuversichtlich, dass
     sich das bald ändert. Unsere Finanzkalkulation erweist sich derweil als sehr solide und
 wir freuen uns schon darauf, die Zahlen nach Abschluss der Baumaßnahmen genau anzuschauen.</p>
 <p>
 Über Spenden, Erbschaften oder Berücksichtigungen jeder Art sowie die Übernahme von
-Wohnpatenschaften freuen wir uns immer! Mehr dazu auf der Webseite der OM10.</p>    
+Wohnpatenschaften freuen wir uns immer! Mehr dazu auf der Webseite der OM10.</p>
                 </td>
             </tr>
         </table>
     </div>
 {{#Vertraege}}
-<div class="divVertrag">    
+<div class="divVertrag">
         <table class="tabVertrag">
-            <tr>            
+            <tr>
                 <td width=40></td>
                 <td class="colVertragsNr">
 

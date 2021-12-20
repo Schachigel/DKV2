@@ -9,21 +9,11 @@
 #include <QMainWindow>
 #include <QPrinter>
 
+#include "busycursor.h"
 #include "dkdbhelper.h"
 #include "appconfig.h"
 #include "contract.h"
 #include "contractsheadersortingadapter.h"
-
-struct busycursor
-{
-    busycursor() {
-        QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-    };
-    busycursor(const busycursor&) =delete;
-    ~busycursor() {
-        QGuiApplication::restoreOverrideCursor();
-    }
-};
 
 class InvestmentsTableModel : public QSqlTableModel
 {

@@ -18,6 +18,7 @@
 #include "dlgannualsettlement.h"
 #include "dlginterestletters.h"
 #include "dlgaskdate.h"
+#include "busycursor.h"
 #include "wiznew.h"
 #include "transaktionen.h"
 #include "filewriter.h"
@@ -384,6 +385,17 @@ void annualSettlement()
     return;
 }
 
+void createInitialTemplates()
+{
+    QDir vorlagenDir (appConfig::Outdir ());
+    vorlagenDir.mkdir (qsl("vorlagen"));
+    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("brieflogo.png"));
+    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("zinsbrief.css"));
+    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("zinsbrief.html"));
+}
+
+struct busycursor;
+
 void interestLetters()
 {
     LOG_CALL;
@@ -398,6 +410,7 @@ void interestLetters()
     if (not dlg.confirmed())
         return;
 
+    busycursor b;
     int yearOfSettlement = dlg.getYear();
     QVector<booking> annualBookings = bookings::getAnnualSettelments(yearOfSettlement);
 
@@ -408,43 +421,44 @@ void interestLetters()
                                      .arg(yearOfSettlement));
         return;
     }
-    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("brieflogo.png"));
-    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("zinsbrief.css"));
-    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("zinsbrief.html"));
+
+    createInitialTemplates();
+
+    QList<QPair<int, QString>> creditors;
+    fillCreditorsListForLetters(creditors, yearOfSettlement);
 
     QVariantMap printData = {};
     printData["Zinsjahr"] = yearOfSettlement;
     printData["Zinsdatum"] = QDate(yearOfSettlement, 12, 31).toString("dd.MM.yyyy");
-    QVariantMap mm = getMetaMap();
-    QString logo = (appConfig::Outdir() + "/vorlagen/brieflogo.png");
-    mm["gmbhLogo"] = logo;
-    printData["meta"] = mm;
+    printData["gmbhLogo"] = QVariant(appConfig::Outdir() + qsl("/vorlagen/brieflogo.png"));
+    printData["meta"] = getMetaMap();
 
-    QList<QPair<int, QString>> creditors;
-    KreditorenListeMitId(creditors, yearOfSettlement);
-    if (creditors.size() > 0)
-    {
-        for (auto &cred : qAsConst(creditors))
-        {
-            creditor credRecord(cred.first);
-            printData["creditor"] = credRecord.getVariant();
-
-            QVector<QVariant> ids = executeSingleColumnSql(
-                dkdbstructur[contract::tnContracts][contract::fnId],
-                qsl(" %1=%2 GROUP BY id").arg(contract::fnKreditorId, QString::number(cred.first)));
-
-            QVariantList vl;
-            for (const auto &id : qAsConst(ids))
-            {
-                contract contr(id.toLongLong());
-                vl.append(contr.toVariantMap_4annualBooking(yearOfSettlement));
-            }
-            printData["Vertraege"] = vl;
-            QString fileName = QDate::currentDate().toString(qsl("yyyy-MM-dd")).append("-Zinsen").append(QString::number(yearOfSettlement)).append("_").append(QString::number(credRecord.id())).append("_").append(credRecord.lastname()).append(".pdf");
-            pdfWrite(qsl("Zinsbrief"), fileName, printData);
-        }
-        qInfo() << "Alles OK";
+    if (creditors.size() <= 0) {
+        qDebug() << "no creditors to create letters for";
+        return;
     }
+    for (auto &cred : qAsConst(creditors))
+    {
+        creditor credRecord(cred.first);
+        printData["creditor"] = credRecord.getVariant();
+
+        QVector<QVariant> ids = executeSingleColumnSql(
+            dkdbstructur[contract::tnContracts][contract::fnId],
+            qsl(" %1=%2 GROUP BY id").arg(contract::fnKreditorId, QString::number(cred.first)));
+
+        QVariantList vl;
+        for (const auto &id : qAsConst(ids)) {
+            contract contr(id.toLongLong());
+            vl.append(contr.toVariantMap_4annualBooking(yearOfSettlement));
+        }
+        printData["Vertraege"] = vl;
+        QString fileName = QDate::currentDate().toString(qsl("yyyy-MM-dd")).append("-Zinsen").append(QString::number(yearOfSettlement)).append("_").append(QString::number(credRecord.id())).append("_").append(credRecord.lastname()).append(".pdf");
+        /////////////////////////////////////////////////
+        pdfWrite(qsl("Zinsbrief"), fileName, printData);
+        /////////////////////////////////////////////////
+    }
+    qInfo() << "Alles OK";
+
 }
 
 void deleteInactiveContract(contract *c)

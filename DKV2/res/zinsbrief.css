@@ -1,30 +1,58 @@
 
 body {
-	color: black;
-	background: white;
-
+    color: black;
+    background: white;
 }
 
 table {
-	border-style: none;
-	border-collapse: collapse;
+/*    border-width: 1px;*/
+    border-style: solid;
+    border-collapse: collapse;
 }
 
 .invisible {
     color: white;
-}
-
-.Header {
     background: white;
 }
 
 .colFirmenname {
     text-align: center;
-    padding-left: 0px;    
-    font-size: 20pt;
-    padding-top: 12px;
-    padding-bottom: 10px;
+    padding-left: 0px;
+    font-size: 14pt;
+    padding-top: 6px;
+    padding-bottom: 6px;
 
+}
+
+.imgLogo {
+    height: 100%;
+}
+
+.GmbHAnschrift {
+    font-size: 5pt;
+    vertical-align: bottom;
+    text-align: left;
+    padding-left: 0px;
+    padding-top: 30px;
+}
+
+.GmbHUrl {
+    font-size: 7pt;
+    text-align: center;
+    vertical-align: top;
+}
+
+.KreditorAdresse {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.colBetreff {
+    padding-top: 15px;
+}
+
+.colDatum {
+    text-align: right;
 }
 
 
@@ -36,28 +64,11 @@ table {
     padding-right: 120px;
 }
 
-.Anschrift {
-    font-size: 7pt;
-    vertical-align: bottom;
-    text-align: left;
-    padding-left: 40px;
-    padding-top: 40px;
-}
 
 .colLogo {
     padding-left: 1px;
     float: right;
 }
-
-.imgLogo {
-    width: 135px;
-    float: right;
-}
-
-.KreditorAdresse {
-    background: white;
-    text-align: left;
-    padding-left: 40px;}
 
 .GmbhAdresse {
     float: right;
@@ -72,23 +83,16 @@ table {
 
 }
 
-.colDatum {
-    text-align: right;
-    padding-top: 10px;
-    padding-right: 40px;
-
-}
-
 .divVertrag {
     page-break-before: auto;
 
 }
 
 .tabVertrag {
-    padding-left: 40px; 
+    padding-left: 40px;
     border-style: none;
     border-collapse: collapse;
-   
+
 }
 
 .colVertragsNr {
@@ -118,10 +122,5 @@ table {
 }
 
 .Text {
-    font-size: 12pt;
-    padding-left: 30px;}
+    font-size: 10pt;
 
-.colText {
-    padding-left: 40px;
-    padding-right: 40px;
-}

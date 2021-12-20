@@ -237,8 +237,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     prepare_startPage();
     ui->stackedWidget->setCurrentIndex(startPageIndex);
-    // Disable Verträge/Listen submenue
-    ui->menu_contracts_subm_print_lists->setEnabled(false);
 }
 
 MainWindow::~MainWindow()

@@ -130,6 +130,7 @@ PRECOMPILED_HEADER  = pch.h
 HEADERS += pch.h\
         appconfig.h \
         booking.h \
+        busycursor.h \
         contract.h \
         contractsheadersortingadapter.h \
         contracttablemodel.h \

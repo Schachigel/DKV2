@@ -54,7 +54,7 @@ void wpNewOrExisting::initializePage()
         setField(pnNew, true);
         QList<QPair<int, QString>> Personen;
         cbCreditors->clear();
-        KreditorenListeMitId(Personen);
+        fillCreditorsListForLetters(Personen);
         if (Personen.count())
         {
             for (auto &Entry : qAsConst(Personen))
