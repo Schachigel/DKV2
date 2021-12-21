@@ -121,7 +121,7 @@
     return vRet;
 }
 
-/* static */ QVector<booking> bookings::getBookings(const qlonglong cid, QDate from, const QDate to)
+/* static */ QVector<booking> bookings::getBookings(const qlonglong cid, QDate from, const QDate to, QString order)
 {   LOG_CALL;
     // used in tests
     QString where = qsl("Buchungen.VertragsId=%1 "
@@ -129,11 +129,27 @@
                   "AND Buchungen.Datum <='%3'");
     where = where.arg(QString::number(cid), from.toString(Qt::ISODate), to.toString(Qt::ISODate));
 
-    return bookingsFromSql(where, qsl("Datum DESC"));
+    return bookingsFromSql(where, order);
 }
 /* static */ QVector<booking> bookings::getAnnualSettelments(const int year)
 {   LOG_CALL;
     QString where = qsl("Buchungen.BuchungsArt = %1 AND Buchungen.Datum = '%2'");
-    where = where.arg(QString::number(static_cast<int>(booking::Type::annualInterestDeposit)), QDate(year + 1, 1, 1).toString(Qt::ISODate));
+    where = where.arg(QString::number(static_cast<int>(booking::Type::annualInterestDeposit)), QDate(year, 12, 31).toString(Qt::ISODate));
     return bookingsFromSql(where);
+}
+
+/*static */ QVector<int> bookings::yearsWithAnnualBookings()
+{
+    QVector<int> years;
+    QString sql{qsl("SELECT DISTINCT SUBSTR(Datum, 1, 4) AS year FROM Buchungen WHERE BuchungsArt =%1 ORDER BY year DESC")
+                .arg (booking::bookingTypeToInt(booking::Type::annualInterestDeposit))};
+    QVector<QSqlRecord> vYears;
+    if( executeSql (sql, QVariant(), vYears)) {
+        for (const QSqlRecord& year : qAsConst(vYears)) {
+            years.push_back (year.value (0).toInt ());
+        }
+    } else {
+        qCritical() << "error reading annual settlement years from db";
+    }
+    return years;
 }

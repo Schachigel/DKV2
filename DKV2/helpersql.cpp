@@ -371,15 +371,12 @@ bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& resu
         return false;
     }
 }
-bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlRecord>& result)
+bool executeSql(const QString& sql, /*const QVector<QVariant>& v,*/ QVector<QSqlRecord>& result)
 {
     QSqlQuery q; q.setForwardOnly(true);
     if( not q.prepare(sql)) {
-        qDebug() << "Faild to prep Query. Error:" << q.lastError();
+        qDebug() << "Faild to prep Query. Error:" << q.lastError() << Qt::endl << q.lastQuery();
         return false;
-    }
-    for( int i =0; i<v.size(); i++) {
-        q.bindValue(i, v[i]);
     }
     if( q.exec()) {
         while(q.next()) {
@@ -420,11 +417,11 @@ bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& v, const
         }
     }
     if( q.exec()) {
-        qInfo() << "Successfully executed query " << q.lastQuery() << " with "
+        qInfo().noquote () << "Successfully executed query " << q.lastQuery() << " with "
         << (q.numRowsAffected() ? QString::number(q.numRowsAffected()) : qsl("no")) << qsl(" affected Rows");
         return true;
     }
-    qDebug() << "Failed to execute query. Error: " << q.lastQuery() << Qt::endl << q.lastError() ;
+    qDebug() << "Failed to execute query. Error: " << q.lastError() << Qt::endl << q.lastQuery() ;
     return false;
 }
 
@@ -433,7 +430,7 @@ int getHighestRowId(const QString& tablename)
     return executeSingleValueSql(qsl("MAX(rowid)"), tablename).toInt();
 }
 
-bool createView(const QString& name, const QString& sql, const QSqlDatabase& db /*= QSqlDatabase::database()*/)
+bool createDBView(const QString& name, const QString& sql, const QSqlDatabase& db /*= QSqlDatabase::database()*/)
 {   LOG_CALL_W(name);
 
     autoRollbackTransaction art(db.connectionName());
@@ -449,7 +446,7 @@ bool createView(const QString& name, const QString& sql, const QSqlDatabase& db 
     qCritical() << "Faild to create view " << name;
     return false;
 }
-bool deleteView(const QString& name, const QSqlDatabase& db)
+bool deleteDBView(const QString& name, const QSqlDatabase& db)
 {
     if( executeSql_wNoRecords(qsl("DROP VIEW %1").arg(name), db)) {
         qInfo() << "dropped view: " << name;
@@ -458,10 +455,10 @@ bool deleteView(const QString& name, const QSqlDatabase& db)
     qInfo() << "drop view failed: " << name;
     return false;
 }
-bool createViews( const QMap<QString, QString>& views, const QSqlDatabase& db)
+bool createDBViews( const QMap<QString, QString>& views, const QSqlDatabase& db)
 {
     foreach(QString view, views.keys()) {
-        if( not createView(view, views[view], db))
+        if( not createDBView(view, views[view], db))
             return false;
     }
     return true;

@@ -22,7 +22,7 @@
 
 bool insert_views( const QSqlDatabase &db)
 {   LOG_CALL;
-    return createViews(getViews(), db);
+    return createDBViews(getViews(), db);
 }// initial database tables and content
 
 void insert_DbProperties(const QSqlDatabase &db = QSqlDatabase::database())
@@ -221,7 +221,7 @@ void create_sampleData(int datensaetze)
 bool createCsvActiveContracts()
 {   LOG_CALL;
     QString filename(QDate::currentDate().toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
-    tempView tmpV(qsl("tempView"), sqlContractsActiveDetailsView);
+    temporaryDbView tmpV(qsl("tempView"), sqlContractsActiveDetailsView);
     dbtable t(tmpV.name);
     t.append(dbfield(qsl("Id"), QVariant::Type::Int));
     t.append(dbfield(contract::fnKreditorId, QVariant::Type::Int));
@@ -341,7 +341,7 @@ void calc_contractEnd( QVector<contractEnd_rowData>& ces)
 void getBookingDateInfoBySql(const QString &sql, QVector<BookingDateData>& dates)
 {
     QVector<QSqlRecord> records;
-    if( not executeSql(sql, QVector<QVariant>(), records)) {
+    if( not executeSql(sql, records)) {
         qInfo() << "getDatesBySql: no dates to found";
         return;
     }

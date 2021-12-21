@@ -117,7 +117,7 @@ QSqlRecord executeSingleRecordSql(const QString& sql);
 
 QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString());
 bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result, const QSqlDatabase& db =QSqlDatabase::database());
-bool executeSql(const QString& sql, const QVector<QVariant>& v, QVector<QSqlRecord>& result);
+bool executeSql(const QString& sql, QVector<QSqlRecord>& result);
 
 bool executeSql_wNoRecords(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database());
 bool executeSql_wNoRecords(const QString& sql, const QVariant& v, const QSqlDatabase& db = QSqlDatabase::database());
@@ -129,18 +129,18 @@ struct dbViewDev{
     const QString name;
     const QString sql;
 };
-bool createView(const QString& name, const QString& sql, const QSqlDatabase& db = QSqlDatabase::database());
-bool deleteView(const QString& name, const QSqlDatabase& db = QSqlDatabase::database());
-bool createViews( const QMap<QString, QString>& views, const QSqlDatabase& db);
+bool createDBView(const QString& name, const QString& sql, const QSqlDatabase& db = QSqlDatabase::database());
+bool deleteDBView(const QString& name, const QSqlDatabase& db = QSqlDatabase::database());
+bool createDBViews( const QMap<QString, QString>& views, const QSqlDatabase& db);
 
-struct tempView
+struct temporaryDbView
 {
-    tempView(const QString& name, const QString& sql, const QSqlDatabase& db = QSqlDatabase::database())
+    temporaryDbView(const QString& name, const QString& sql, const QSqlDatabase& db = QSqlDatabase::database())
         : name(name) {
-        Q_ASSERT(createView(name, sql, db));
+        Q_ASSERT(createDBView(name, sql, db));
     }
-    ~tempView() {
-        deleteView(name);
+    ~temporaryDbView() {
+        deleteDBView(name);
     }
     const QString name;
 };

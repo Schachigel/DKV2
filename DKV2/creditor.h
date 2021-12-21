@@ -44,7 +44,8 @@ struct creditor
     // interface
     bool fromDb(const int id);
     QVariant getValue(const QString& f) const { return ti.getValue(f);}
-    bool isValid( QString& errortext) const;
+    QVariant getVariant();
+    bool isValid(QString &errortext) const;
     bool isValid() const;
     int save();
     int update() const;
@@ -58,7 +59,7 @@ private:
     // helper
 };
 
-void KreditorenListeMitId(QList<QPair<int,QString>> &entries);
+void fillCreditorsListForLetters(QList<QPair<int,QString>> &entries, int bookingYear =-1);
 
 
 // sample data for testing

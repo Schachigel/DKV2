@@ -25,6 +25,7 @@ struct booking
     QDate date =EndOfTheFuckingWorld;
     double amount =0.;
     // construction
+    booking(){};
     booking(const qlonglong cId, const booking::Type t = Type::non, const QDate d =EndOfTheFuckingWorld, const double a =0.)
         : contractId(cId), type(t), date(d), amount(a) {};
     // comparison for tests
@@ -60,8 +61,10 @@ struct bookings
 {
     static QDate dateOfnextSettlement();
     static QVector<booking> bookingsFromSql(const QString& where, const QString& order=QString());
-    static QVector<booking> getBookings(const qlonglong cid, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld);
+    static QVector<booking> getBookings(const qlonglong cid, const QDate from = BeginingOfTime,
+            const QDate to = EndOfTheFuckingWorld, const QString order = qsl("Datum DESC"));
     static QVector<booking> getAnnualSettelments(const int year);
+    static QVector<int> yearsWithAnnualBookings();
 };
 
 #endif // BOOKING_H

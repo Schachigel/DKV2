@@ -2,11 +2,13 @@
 #include <QRandomGenerator>
 #include <QTextStream>
 #include <QtMath>
+#include <QLocale>
 
 #include "helper.h"
 #include "appconfig.h"
 #include "contract.h"
 #include "booking.h"
+#include "uiitemformatter.h"
 
 // statics & friends
 /*static*/ const QString contract::tnContracts{qsl("Vertraege")};
@@ -632,6 +634,40 @@ bool contract::archive()
           }
     qCritical() << "contract could not be moved to the archive";
     return false;
+}
+
+QVariant contract::toVariantMap_4annualBooking(int year)
+{
+    QVariantMap v;
+    QLocale l;
+    v["id"] = id();
+    v["strId"] = id_aS();
+    v["KreditorId"] = QString::number(creditorId());
+    v["VertragsNr"] = label();
+    v["startBetrag"] = l.toCurrencyString(value(QDate(year - 1, 12, 31)));
+    v["startDatum"] = QDate(year - 1, 12, 31).toString(qsl("dd.MM.yyyy"));
+    v["endBetrag"] = l.toCurrencyString(value(QDate(year, 12, 31)));
+    v["endDatum"] = QDate(year, 12, 31).toString(qsl("dd.MM.yyyy"));
+    v["ZSatz"] = interestRate();
+    v["strZSatz"] = QString::number(interestRate(), 'f', 2);
+    v["zzAusgesezt"] = QVariant(not interestActive());
+    v["Anmerkung"] = comment();
+
+    QVector<booking> bookVector = bookings::getBookings(id(), QDate(year, 1, 1), QDate(year, 12, 31), qsl("Datum ASC"));
+    QVariantList bl;
+
+    for ( const auto &b : qAsConst(bookVector) ) {
+        QVariantMap bookMap = {};
+        bookMap["Date"] = b.date.toString(qsl("dd.MM.yyyy"));
+        bookMap["Text"] = booking::displayString(b.type);
+        bookMap["Betrag"] = l.toCurrencyString(b.amount);
+
+        bl.append(bookMap);
+    }
+
+    v["Buchungen"] = bl;
+
+    return v;
 }
 
 // test helper

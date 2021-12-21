@@ -19,7 +19,6 @@
 #include "dkdbhelper.h"
 #include "dkdbviews.h"
 #include "dkdbcopy.h"
-#include "dkdbviews.h"
 #include "letters.h"
 #include "contracttablemodel.h"
 #include "transaktionen.h"
@@ -207,10 +206,6 @@ MainWindow::MainWindow(QWidget *parent) :
     // WE ARE READY TO GO
     dbLoadedSuccessfully =true;
 
-    contractsListsDB_View  =std::make_unique<tempView>(vnContractView,    sqlContractView);
-    exContractsListDB_View =std::make_unique<tempView>(vnExContractView,  sqlExContractView);
-    exContractsListDB_View =std::make_unique<tempView>(vnInvestmentsView, sqlInvestmentsView);
-
     // //////////////////
     const QString tableCellStyle {qsl("QTableView::item { padding-top: 5px; padding-bottom: 5px; padding-right: 10px; padding-left: 10px; }")};
     ui->CreditorsTableView->setStyleSheet(tableCellStyle);
@@ -237,8 +232,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     prepare_startPage();
     ui->stackedWidget->setCurrentIndex(startPageIndex);
-    // Disable Verträge/Listen submenue
-    ui->menu_contracts_subm_print_lists->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -877,6 +870,13 @@ void MainWindow::on_actionStatistik_triggered()
 void MainWindow::on_action_menu_contracts_annual_interest_settlement_triggered()
 {   LOG_CALL;
     annualSettlement();
+    updateViews();
+}
+
+void MainWindow::on_action_menu_contracts_interestLetters_triggered()
+{
+    LOG_CALL;
+    interestLetters();
     updateViews();
 }
 

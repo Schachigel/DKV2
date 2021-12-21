@@ -21,6 +21,7 @@ void initNumMetaInfo( const QString& name, const double wert, const QSqlDatabase
 // reading
 QString getMetaInfo(const QString& name, const QString& def=QString(), const QSqlDatabase& db = QSqlDatabase::database());
 double getNumMetaInfo(const QString& name, const double def =0., const QSqlDatabase& db = QSqlDatabase::database());
+QVariantMap getMetaMap(const QSqlDatabase &db = QSqlDatabase::database());
 // writing
 void setMetaInfo(const QString& name, const QString& value, const QSqlDatabase& db = QSqlDatabase::database(), const QString& tblAlias =QString());
 void setNumMetaInfo(const QString& name, const double Wert, const QSqlDatabase& db = QSqlDatabase::database(), const QString& tblAlias =QString());

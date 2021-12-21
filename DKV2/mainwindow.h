@@ -9,21 +9,14 @@
 #include <QMainWindow>
 #include <QPrinter>
 
+#include "busycursor.h"
+#include "helpersql.h"
 #include "dkdbhelper.h"
+
+#include "dkdbviews.h"
 #include "appconfig.h"
 #include "contract.h"
 #include "contractsheadersortingadapter.h"
-
-struct busycursor
-{
-    busycursor() {
-        QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-    };
-    busycursor(const busycursor&) =delete;
-    ~busycursor() {
-        QGuiApplication::restoreOverrideCursor();
-    }
-};
 
 class InvestmentsTableModel : public QSqlTableModel
 {
@@ -102,6 +95,8 @@ private slots:
     void on_action_cmenu_go_contracts_triggered();
 
     void on_action_menu_contracts_annual_interest_settlement_triggered();
+
+    void on_action_menu_contracts_interestLetters_triggered();
 
     void on_action_menu_database_configure_outdir_triggered();
 
@@ -226,8 +221,6 @@ private:
 
 private:
     bool showDeletedContracts =false;
-    std::unique_ptr<tempView> contractsListsDB_View;
-    std::unique_ptr<tempView> exContractsListDB_View;
     std::unique_ptr<contractsHeaderSortingAdapter> contractsSortingAdapter;
 };
 
