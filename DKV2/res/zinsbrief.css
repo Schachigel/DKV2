@@ -6,7 +6,7 @@ body {
 
 table {
 /*    border-width: 1px;*/
-    border-style: solid;
+/*    border-style: solid;*/
     border-collapse: collapse;
 }
 
@@ -24,10 +24,6 @@ table {
 
 }
 
-.imgLogo {
-    height: 100%;
-}
-
 .GmbHAnschrift {
     font-size: 5pt;
     vertical-align: bottom;
@@ -36,15 +32,23 @@ table {
     padding-top: 30px;
 }
 
+.KreditorAdresse {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.imgLogo {
+
+}
+
+.colLogo {
+    float: right;
+}
+
 .GmbHUrl {
     font-size: 7pt;
     text-align: center;
     vertical-align: top;
-}
-
-.KreditorAdresse {
-    padding-top: 10px;
-    padding-bottom: 10px;
 }
 
 .colBetreff {
@@ -56,32 +60,8 @@ table {
     padding-top: 5px;
 }
 
-
-.colHeaderLine {
-    text-align: center;
-    font-size: 14pt;
-    padding-top: 20px;
-    padding-left: 120px;
-    padding-right: 120px;
-}
-
-
-.colLogo {
-    padding-left: 1px;
-    float: right;
-}
-
-.GmbhAdresse {
-    float: right;
-}
-
-.colGmbHAdresse {
-    background: white;
-    text-align: left;
-    font-size: 9pt;
-    padding-left: 20px;
-    padding-right: 40px;
-
+.Text {
+    font-size: 10pt;
 }
 
 .divVertrag {
@@ -90,15 +70,19 @@ table {
 }
 
 .tabVertrag {
-    padding-left: 40px;
     border-style: none;
     border-collapse: collapse;
-
 }
 
 .colVertragsNr {
     padding-top: 5px;
 
+}
+
+.colBuchungsBetrag {
+    text-align: right;
+    padding-left: 40px;
+    float: right;
 }
 
 .colBuchungsDatum {
@@ -111,17 +95,8 @@ table {
     padding-left: 40px;
 }
 
-.colBuchungsBetrag {
-    text-align: right;
-    padding-left: 40px;
-    float: right;
-}
-
 .colSaldoBetrag {
     text-align: right;
     padding-left: 20px;
 }
-
-.Text {
-    font-size: 10pt;
 

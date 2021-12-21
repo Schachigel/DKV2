@@ -387,11 +387,14 @@ void annualSettlement()
 
 void createInitialTemplates()
 {
-    QDir vorlagenDir (appConfig::Outdir ());
-    vorlagenDir.mkdir (qsl("vorlagen"));
+    QDir outDir (appConfig::Outdir ());
+    outDir.mkdir (qsl("vorlagen"));
+    outDir.mkdir (qsl("html"));
+
     extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("brieflogo.png"));
     extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("zinsbrief.css"));
     extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("zinsbrief.html"));
+    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/html/"), qsl("zinsbrief.css"));
 }
 
 struct busycursor;
@@ -452,7 +455,8 @@ void interestLetters()
             vl.append(contr.toVariantMap_4annualBooking(yearOfSettlement));
         }
         printData["Vertraege"] = vl;
-        QString fileName = QDate::currentDate().toString(qsl("yyyy-MM-dd")).append("-Zinsen").append(QString::number(yearOfSettlement)).append("_").append(QString::number(credRecord.id())).append("_").append(credRecord.lastname()).append(".pdf");
+//        QString fileName = QDate::currentDate().toString(qsl("yyyy-MM-dd")).append("-Zinsen").append(QString::number(yearOfSettlement)).append("_").append(QString::number(credRecord.id())).append("_").append(credRecord.lastname()).append(".pdf");
+        QString fileName = qsl("Jahresinfo ").append(QString::number(yearOfSettlement)).append("_").append(QString::number(credRecord.id())).append("_").append(credRecord.lastname()).append(qsl(", ")).append(credRecord.firstname ()).append(".pdf");
         /////////////////////////////////////////////////
         pdfWrite(qsl("Zinsbrief"), fileName, printData);
         /////////////////////////////////////////////////

@@ -650,6 +650,7 @@ QVariant contract::toVariantMap_4annualBooking(int year)
     v["endDatum"] = QDate(year, 12, 31).toString(qsl("dd.MM.yyyy"));
     v["ZSatz"] = interestRate();
     v["strZSatz"] = QString::number(interestRate(), 'f', 2);
+    v["zzAusgesezt"] = QVariant(not interestActive());
     v["Anmerkung"] = comment();
 
     QVector<booking> bookVector = bookings::getBookings(id(), QDate(year, 1, 1), QDate(year, 12, 31), qsl("Datum ASC"));

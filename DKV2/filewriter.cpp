@@ -56,13 +56,10 @@ bool pdfWrite(const QString& templateName, const QString& fileName, const QVaria
     // doc.setPageSize(QPageSize(QPageSize::A4));
     doc.setDefaultStyleSheet(cssFile.readAll());
     doc.setHtml(renderedHtml);
-#ifdef QT_DEBUG
-    {
-        QFile html(appConfig::Outdir () + "/" +fileName +qsl(".html"));
-        html.open(QFile::WriteOnly);
-        html.write(renderedHtml.toUtf8 ());
-    }
-#endif
+
+    QFile html(appConfig::Outdir () + "/html/" +fileName +qsl(".html"));
+    html.open(QFile::WriteOnly);
+    html.write(renderedHtml.toUtf8 ());
 
     QPrinter printer;
     printer.setOutputFormat(QPrinter::PdfFormat);
