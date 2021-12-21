@@ -129,18 +129,18 @@ struct dbViewDev{
     const QString name;
     const QString sql;
 };
-bool createView(const QString& name, const QString& sql, const QSqlDatabase& db = QSqlDatabase::database());
-bool deleteView(const QString& name, const QSqlDatabase& db = QSqlDatabase::database());
-bool createViews( const QMap<QString, QString>& views, const QSqlDatabase& db);
+bool createDBView(const QString& name, const QString& sql, const QSqlDatabase& db = QSqlDatabase::database());
+bool deleteDBView(const QString& name, const QSqlDatabase& db = QSqlDatabase::database());
+bool createDBViews( const QMap<QString, QString>& views, const QSqlDatabase& db);
 
-struct tempView
+struct temporaryDbView
 {
-    tempView(const QString& name, const QString& sql, const QSqlDatabase& db = QSqlDatabase::database())
+    temporaryDbView(const QString& name, const QString& sql, const QSqlDatabase& db = QSqlDatabase::database())
         : name(name) {
-        Q_ASSERT(createView(name, sql, db));
+        Q_ASSERT(createDBView(name, sql, db));
     }
-    ~tempView() {
-        deleteView(name);
+    ~temporaryDbView() {
+        deleteDBView(name);
     }
     const QString name;
 };

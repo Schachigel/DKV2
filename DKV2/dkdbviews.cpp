@@ -220,6 +220,9 @@ ORDER BY B.Datum, V.id
 QMap<QString, QString> views ={
     // convenientce view
     {vnBookingsOverview, sqlBookingsOverview},
+    {vnContractView, sqlContractView},
+    {vnExContractView, sqlExContractView},
+    {vnInvestmentsView, sqlInvestmentsView}
 };
 const QMap<QString, QString>& getViews() {
     return views;

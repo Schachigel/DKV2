@@ -19,7 +19,6 @@
 #include "dkdbhelper.h"
 #include "dkdbviews.h"
 #include "dkdbcopy.h"
-#include "dkdbviews.h"
 #include "letters.h"
 #include "contracttablemodel.h"
 #include "transaktionen.h"
@@ -206,10 +205,6 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     // WE ARE READY TO GO
     dbLoadedSuccessfully =true;
-
-    contractsListsDB_View  =std::make_unique<tempView>(vnContractView,    sqlContractView);
-    exContractsListDB_View =std::make_unique<tempView>(vnExContractView,  sqlExContractView);
-    investments_View =std::make_unique<tempView>(vnInvestmentsView, sqlInvestmentsView);
 
     // //////////////////
     const QString tableCellStyle {qsl("QTableView::item { padding-top: 5px; padding-bottom: 5px; padding-right: 10px; padding-left: 10px; }")};

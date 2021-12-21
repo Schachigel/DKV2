@@ -430,7 +430,7 @@ int getHighestRowId(const QString& tablename)
     return executeSingleValueSql(qsl("MAX(rowid)"), tablename).toInt();
 }
 
-bool createView(const QString& name, const QString& sql, const QSqlDatabase& db /*= QSqlDatabase::database()*/)
+bool createDBView(const QString& name, const QString& sql, const QSqlDatabase& db /*= QSqlDatabase::database()*/)
 {   LOG_CALL_W(name);
 
     autoRollbackTransaction art(db.connectionName());
@@ -446,7 +446,7 @@ bool createView(const QString& name, const QString& sql, const QSqlDatabase& db 
     qCritical() << "Faild to create view " << name;
     return false;
 }
-bool deleteView(const QString& name, const QSqlDatabase& db)
+bool deleteDBView(const QString& name, const QSqlDatabase& db)
 {
     if( executeSql_wNoRecords(qsl("DROP VIEW %1").arg(name), db)) {
         qInfo() << "dropped view: " << name;
@@ -455,10 +455,10 @@ bool deleteView(const QString& name, const QSqlDatabase& db)
     qInfo() << "drop view failed: " << name;
     return false;
 }
-bool createViews( const QMap<QString, QString>& views, const QSqlDatabase& db)
+bool createDBViews( const QMap<QString, QString>& views, const QSqlDatabase& db)
 {
     foreach(QString view, views.keys()) {
-        if( not createView(view, views[view], db))
+        if( not createDBView(view, views[view], db))
             return false;
     }
     return true;

@@ -10,7 +10,10 @@
 #include <QPrinter>
 
 #include "busycursor.h"
+#include "helpersql.h"
 #include "dkdbhelper.h"
+
+#include "dkdbviews.h"
 #include "appconfig.h"
 #include "contract.h"
 #include "contractsheadersortingadapter.h"
@@ -218,9 +221,6 @@ private:
 
 private:
     bool showDeletedContracts =false;
-    std::unique_ptr<tempView> contractsListsDB_View;
-    std::unique_ptr<tempView> exContractsListDB_View;
-    std::unique_ptr<tempView> investments_View;
     std::unique_ptr<contractsHeaderSortingAdapter> contractsSortingAdapter;
 };
 
