@@ -88,7 +88,7 @@ void test_csv::test_csv_fix_semicolon()
     csv.appendToRow("mairon;");
     csv.appendToRow("69;242");
 
-    QCOMPARE(csv.out(), "VN#; #NN; P#LZ\n#holger; mairon#; 69#242");
+    QCOMPARE(csv.out(), "VN,; ,NN; P,LZ\n,holger; mairon,; 69,242");
 }
 
 void test_csv::test_csv_Headers_Rows02()
@@ -100,5 +100,5 @@ void test_csv::test_csv_Headers_Rows02()
     csv.appendToRow("Felix;");
     csv.appendToRow("Oliv;er");
 
-    QCOMPARE(csv.out(), "VN; NN; PLZ\nholger; mairon; 69242\nLukas; Felix#; Oliv#er");
+    QCOMPARE(csv.out(), "VN; NN; PLZ\nholger; mairon; 69242\nLukas; Felix,; Oliv,er");
 }
