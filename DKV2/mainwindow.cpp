@@ -930,7 +930,7 @@ void MainWindow::on_action_menu_debug_show_log_triggered()
 }
 void MainWindow::on_actionDatenbank_Views_schreiben_triggered()
 {
-    insert_views(QSqlDatabase::database());
+    insertDKDB_Views(QSqlDatabase::database());
 }
 // about
 void MainWindow::on_action_about_DKV2_triggered()

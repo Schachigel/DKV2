@@ -20,9 +20,9 @@
 #include "dbstructure.h"
 #include "investment.h"
 
-bool insert_views( const QSqlDatabase &db)
+bool insertDKDB_Views( const QSqlDatabase &db)
 {   LOG_CALL;
-    return createDBViews(getViews(), db);
+    return createDbViews(getViews(), db);
 }// initial database tables and content
 
 void insert_DbProperties(const QSqlDatabase &db = QSqlDatabase::database())
@@ -38,7 +38,7 @@ bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/
     bool ret = false;
     autoRollbackTransaction art(db.connectionName());
     do {
-        if( includeViews) if ( not insert_views(db)) break;
+        if( includeViews) if ( not insertDKDB_Views(db)) break;
         insert_DbProperties(db);
         if ( not letterTemplate::insert_letterTypes(db)) break;
         if ( not letterTemplate::insert_elementTypes(db)) break;
@@ -75,25 +75,6 @@ int get_db_version(const QSqlDatabase &db)
     return d;
 }
 
-bool updateViews(const QSqlDatabase &db =QSqlDatabase::database())
-{   LOG_CALL;
-//    QString lastProgramVersion = dbConfig::readValue(DKV2_VERSION).toString();
-    QString lastProgramVersion = dbConfig::read_DKV2_Version(db);
-    QString thisProgramVersion = QCoreApplication::applicationVersion();
-    if( lastProgramVersion not_eq thisProgramVersion) {
-        qInfo() << "Program versions used differ -> views will be updated";
-        qInfo() << qsl("last exe: ") << lastProgramVersion << qsl(" / this exe: ") << thisProgramVersion;
-        if( not insert_views(db)) {
-            qDebug() << "Faild to insert views for current exe version";
-            return false;
-        }
-        else {
-            dbConfig::writeValue(DKV2_VERSION, thisProgramVersion);
-            return true;
-        }
-    }
-    return true;
-}
 // manage the app wide used database
 void closeAllDatabaseConnections()
 {   LOG_CALL;
@@ -128,7 +109,7 @@ bool open_databaseForApplication( const QString &newDbFile)
     }
 
     switchForeignKeyHandling(db, fkh_on);
-    if( not updateViews())
+    if( not insertDKDB_Views ())
         return false;
     return true;
 }
@@ -220,9 +201,12 @@ void create_sampleData(int datensaetze)
 }
 bool createCsvActiveContracts()
 {   LOG_CALL;
-    QString filename(QDate::currentDate().toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
-    temporaryDbView tmpV(qsl("tempView"), sqlContractsActiveDetailsView);
-    dbtable t(tmpV.name);
+    QString tempViewContractsCsv {qsl("tvActiveContractsCsv")};
+    if( not createTemporaryDbView(tempViewContractsCsv, sqlContractsActiveDetailsView)) {
+        qCritical() << "failed to create view " << tempViewContractsCsv;
+        return false;
+    }
+    dbtable t(tempViewContractsCsv);
     t.append(dbfield(qsl("Id"), QVariant::Type::Int));
     t.append(dbfield(contract::fnKreditorId, QVariant::Type::Int));
     t.append(dbfield(qsl("Vorname")));
@@ -241,6 +225,7 @@ bool createCsvActiveContracts()
     t.append(dbfield(qsl("Vertragsende"), QVariant::Type::Date));
     t.append(dbfield(qsl("thesa"), QVariant::Type::Bool));
 
+    QString filename(QDate::currentDate().toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
     bool res =table2csv( filename, t.Fields());
     if( not res)
         qDebug() << "failed to print table";

@@ -14,7 +14,7 @@
 #include "helpersql.h"
 
 
-bool insert_views( const QSqlDatabase &db =QSqlDatabase::database());
+bool insertDKDB_Views( const QSqlDatabase &db =QSqlDatabase::database());
 bool fill_DkDbDefaultContent(const QSqlDatabase &db = QSqlDatabase::database(), bool includeViews =true, zinssusance sz =zs30360);
 
 enum version_check_result {

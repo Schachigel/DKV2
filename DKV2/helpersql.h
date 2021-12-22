@@ -129,20 +129,20 @@ struct dbViewDev{
     const QString name;
     const QString sql;
 };
-bool createDBView(const QString& name, const QString& sql, const QSqlDatabase& db = QSqlDatabase::database());
-bool deleteDBView(const QString& name, const QSqlDatabase& db = QSqlDatabase::database());
-bool createDBViews( const QMap<QString, QString>& views, const QSqlDatabase& db);
 
-struct temporaryDbView
+const bool persistentView =false;
+const bool temporaryView  =true;
+bool createDbView(const QString& name, const QString& sql, bool temporary =false, const QSqlDatabase& db = QSqlDatabase::database());
+inline bool createTemporaryDbView(const QString& name, const QString& sql, const QSqlDatabase& db = QSqlDatabase::database())
 {
-    temporaryDbView(const QString& name, const QString& sql, const QSqlDatabase& db = QSqlDatabase::database())
-        : name(name) {
-        Q_ASSERT(createDBView(name, sql, db));
-    }
-    ~temporaryDbView() {
-        deleteDBView(name);
-    }
-    const QString name;
-};
+    return createDbView(name, sql, temporaryView, db);
+}
+inline bool createPersistentDbView(const QString& name, const QString& sql, const QSqlDatabase& db = QSqlDatabase::database())
+{
+    return createDbView(name, sql, persistentView, db);
+}
+
+bool deleteDbView(const QString& name, const QSqlDatabase& db = QSqlDatabase::database());
+bool createDbViews( const QMap<QString, QString>& views, const QSqlDatabase& db);
 
 #endif // SQLHELPER_H
