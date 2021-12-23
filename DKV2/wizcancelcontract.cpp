@@ -57,7 +57,7 @@ bool wpCancelContract_DatePage::validatePage()
 {
     wizCancelContract* wiz = qobject_cast<wizCancelContract*>(wizard());
     QDate lastB =wiz->c.latestBooking().date;
-    if( field(qsl("date")).toDate() > lastB)
+    if( field(qsl("date")).toDate() >= lastB)
         return true;
     else {
         QString msg (qsl("Das Vertragsende muss nach der letzten Buchung des Vertrags am %1 sein"));
