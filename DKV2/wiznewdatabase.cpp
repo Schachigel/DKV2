@@ -129,6 +129,9 @@ wpProjectAddress_Page::wpProjectAddress_Page(QWidget *p) : QWizardPage(p)
     subTitleLabel->setWordWrap(true);
     subTitleLabel->setText(qsl("*<small>Diese Daten werden für Briefdruck benötigt und können auch später eingegeben und geändert werden.</small>"));
 
+    QLineEdit *leProjekt =new QLineEdit();
+    registerField (dbConfig::paramName(GMBH_PROJECT), leProjekt);
+    leProjekt->setToolTip (qsl("Name des Wohnprojektes"));
     QLineEdit *leAddress1 = new QLineEdit;
     registerField(dbConfig::paramName(GMBH_ADDRESS1), leAddress1);
     leAddress1->setToolTip(qsl("Gib hier die erste Adresszeile der GmbH ein"));
@@ -155,6 +158,8 @@ wpProjectAddress_Page::wpProjectAddress_Page(QWidget *p) : QWizardPage(p)
 
     QGridLayout *grid = new QGridLayout;
     int row = 0;
+    grid->addWidget (leProjekt, row, 0, 1, 3);
+    row++;
     grid->addWidget(leAddress1, row, 0, 1, 3);
     row++;
     grid->addWidget(leAddress2, row, 0, 1, 3);
@@ -176,6 +181,7 @@ wpProjectAddress_Page::wpProjectAddress_Page(QWidget *p) : QWizardPage(p)
 
 void wpProjectAddress_Page::initializePage()
 {
+    setField(dbConfig::paramName(GMBH_PROJECT), dbConfig::readValue (GMBH_PROJECT));
     setField(dbConfig::paramName(GMBH_ADDRESS1), dbConfig::readValue(GMBH_ADDRESS1));
     setField(dbConfig::paramName(GMBH_ADDRESS2), dbConfig::readValue(GMBH_ADDRESS2));
     setField(dbConfig::paramName(GMBH_STREET), dbConfig::readValue(GMBH_STREET));
@@ -373,10 +379,13 @@ wpNewDatabase_SummaryPage::wpNewDatabase_SummaryPage(QWidget *p) : QWizardPage(p
 void wpNewDatabase_SummaryPage::initializePage()
 {
     QString subt = qsl("<b>Projekt Daten:</b>"
-                       "<table><tr><td>Adresse:</td><td>%1</td></tr>"
-                       "<tr><td></td><td>%2</td></tr>"
+                       "<table>"
+                       "<tr><td>Projekt:</td><td>%1</td></tr>"
+                       "<tr><td>Adresse:</td><td>%2</td></tr>"
                        "<tr><td></td><td>%3</td></tr>"
-                       "<tr><td></td><td>%4 %5<br></td></tr>");
+                       "<tr><td></td><td>%4</td></tr>"
+                       "<tr><td></td><td>%5 %6<br></td></tr>");
+    subt = subt.arg(field(dbConfig::paramName(GMBH_PROJECT)).toString());
     subt = subt.arg(field(dbConfig::paramName(GMBH_ADDRESS1)).toString());
     subt = subt.arg(field(dbConfig::paramName(GMBH_ADDRESS2)).toString());
     subt = subt.arg(field(dbConfig::paramName(GMBH_STREET)).toString());
@@ -435,6 +444,7 @@ void wizConfigureNewDatabaseWiz::updateDbConfig(const QString &dbFile)
 void wizConfigureNewDatabaseWiz::updateDbConfig(const QSqlDatabase &db)
 {
     LOG_CALL;
+    dbConfig::writeValue(GMBH_PROJECT, field(dbConfig::paramName(GMBH_PROJECT)), db);
     dbConfig::writeValue(GMBH_ADDRESS1, field(dbConfig::paramName(GMBH_ADDRESS1)), db);
     dbConfig::writeValue(GMBH_ADDRESS2, field(dbConfig::paramName(GMBH_ADDRESS2)), db);
     dbConfig::writeValue(GMBH_STREET, field(dbConfig::paramName(GMBH_STREET)), db);
@@ -484,6 +494,7 @@ wizConfigureProjectWiz::wizConfigureProjectWiz(QWidget *p) : QWizard(p)
 void wizConfigureProjectWiz::updateDbConfig()
 {
     LOG_CALL;
+    dbConfig::writeValue(GMBH_PROJECT, field(dbConfig::paramName(GMBH_PROJECT)));
     dbConfig::writeValue(GMBH_ADDRESS1, field(dbConfig::paramName(GMBH_ADDRESS1)));
     dbConfig::writeValue(GMBH_ADDRESS2, field(dbConfig::paramName(GMBH_ADDRESS2)));
     dbConfig::writeValue(GMBH_STREET, field(dbConfig::paramName(GMBH_STREET)));

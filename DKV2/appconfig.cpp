@@ -21,13 +21,13 @@ QString appConfig::keyLastDb = qsl("dbg-db/last");
 // db config info in 'meta' table
 void initMetaInfo( const QString& name, const QString& initialValue, const QSqlDatabase& db)
 {   LOG_CALL;
-    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='") + name +qsl("'"), db);
+    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='%1'").arg(name), db);
     if( value.type() == QVariant::Type::Invalid)
         setMetaInfo(name, initialValue, db);
 }
 void initNumMetaInfo( const QString& name, const double newValue, const QSqlDatabase& db)
 {   LOG_CALL;
-    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='") + name +qsl("'"), db);
+    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='%1'").arg(name), db);
     if( value.type() == QVariant::Type::Invalid)
         setNumMetaInfo(name, newValue, db);
 }
@@ -37,7 +37,7 @@ QString getMetaInfo(const QString& name, const QString& def, const QSqlDatabase&
         qInfo() << "getMetaInfo: No database ready (yet), defaulting";
         return def;
     }
-    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='") + name +qsl("'"), db);
+    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='%1'").arg(name), db);
     if( not value.isValid()) {
         qInfo() << "getMetaInfo: read uninitialized property " << name << " -> using default " << def;
         return def;
@@ -51,7 +51,7 @@ double getNumMetaInfo(const QString& name, const double def, const QSqlDatabase&
         qInfo() << "no database ready (yet), defaulting";
         return def;
     }
-    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='") +name +qsl("'"), db);
+    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='%1'").arg(name), db);
     if( not value.isValid()) {
         qInfo() << "getNumProperty read empty property " << name << " -> using default";
         return def;
@@ -181,6 +181,7 @@ void appConfig::deleteUserData(const QString& name)
 QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
     {DB_VERSION,     {qsl("Version"),              QVariant(CURRENT_DB_VERSION)}},
     {DKV2_VERSION,   {qsl("dkv2.exe.Version"),     QVariant(CURRENT_DKV2_VERSION)}},
+    {GMBH_PROJECT,   {qsl("gmbh.projekt"),         QVariant("Esperanza")}},
     {GMBH_ADDRESS1,  {qsl("gmbh.address1"),        QVariant("Esperanza Franklin GmbH")}},
     {GMBH_ADDRESS2,  {qsl("gmbh.address2"),        QVariant("")}},
     {GMBH_STREET,    {qsl("gmbh.strasse"),     QVariant("Turley-Platz 9")}},

@@ -61,7 +61,7 @@ table {
 }
 
 .Text {
-    font-size: 10pt;
+    font-size: 9pt;
 }
 
 .divVertrag {
@@ -100,3 +100,6 @@ table {
     padding-left: 20px;
 }
 
+.footer {
+    font-size:5pt;
+}

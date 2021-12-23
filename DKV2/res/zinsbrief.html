@@ -7,7 +7,7 @@
 <body>
     <table width=98%>
         <tr>
-            <td width=50%>
+            <td width=40%>
               <div class="colFirmenname"> <b>{{meta.gmbhaddress1}}</b><p></div>
               <div class="GmbHAnschrift"> {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}}</div>
               <div class="KreditorAdresse" ><br>
@@ -16,7 +16,7 @@
                   <b>{{creditor.Plz}}</b> &nbsp; &nbsp; {{creditor.Stadt}}
               </div>
             </td>
-            <td class="colLogo" width=50%><img class="imgLogo" src="{{gmbhLogo}}">
+            <td class="colLogo" width=60%><img class="imgLogo" src="{{gmbhLogo}}">
                 <div class="GmbHUrl">{{meta.gmbhurl}}</div>
             </td>
         </tr>
@@ -39,7 +39,7 @@
             <tr>
                 <td class="Text">
     Liebe*r {{creditor.Vorname}},
-    <p>wir, die zukünftigen Bewohner*innen des Wohnprojekts Esperanza wünschen Dir ein gutes neues Jahr und bedanken uns herzlich für Deine Unterstützung.
+    <p>wir, die zukünftigen Bewohner*innen des Wohnprojekts {{meta.gmbhprojekt}} wünschen Dir ein gutes neues Jahr und bedanken uns herzlich für Deine Unterstützung.
     <p>In folgender Tabelle kannst Du die Kontobewegungen und Zinszahlungen von {{Zinsjahr}} nachlesen.
                  </td>
             </tr>
@@ -90,15 +90,22 @@
     <table width=90%>
       <tr>
         <td class="invisible"><p></td>
-      </tr><tr>
-        <td class="colText">
-<p>Es wäre toll, wenn Du uns und unser Projekt weiterhin solidarisch unterstützt. Wir benötigen auch weiterhin Direktkredite um günstigen Mietwohnraum zu ermöglichen.
+      </tr>
+      <tr>
+         <td class="colText">
+<p>Es w&auml;re toll, wenn Du uns und unser Projekt weiterhin solidarisch unterstützt. Wir benötigen auch weiterhin Direktkredite um günstigen Mietwohnraum zu ermöglichen.
 Empfehle uns daher bitte weiter an Freund*innen, Bekannte und Verwandte!
 <p>Solltest Du Fragen zur Abrechnung haben, so zögere bitte nicht Dich - am besten per E-Mail - an uns zu wenden.
 <p><p>Mit freundlichen Grüßen<br>
-<p>{{meta.gmbhdkv}}<br>
-<small>DK Verwaltung Esperanza Franklin GmbH</small>
-       </td>
+<p>{{meta.gmbhdkv}}<p>
+<small>DK Verwaltung<p></small>
+        </td>
+    </tr>
+    <tr>
+    <td class="footer">
+    {{meta.gmbhaddress1}} | {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}} | Handelsregister Eintrag {{meta.gmbhHandelsregister}}
+    Gesch&auml;ftsf&uuml;hrer: {{meta.gmbhgefue1}} | {{meta.gmbhgefue2}} | {{meta.gmbhgefue3}}<br/>
+    <td>
     </tr>
   </table>
 
