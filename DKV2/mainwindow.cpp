@@ -159,11 +159,28 @@ QString MainWindow::askUserForNextDb()
 
 void treat_DbIsAlreadyInUse_File(QString filename)
 {
-    if( checkSignalFile (filename)) {
-        QMessageBox::information ((QWidget*)nullptr, qsl("Datenbank bereits geöffnet?"),
-           qsl("Es scheint, als sei die Datenbank bereits geöffnet. Das kommt vor"
-               "wenn DKV2 abgestürzt ist oder bereits läuft.<p>Stelle sicher, dass "
-               "DKV2 nicht läuft und drücke dann auf OK"));
+    QMessageBox::StandardButton result = QMessageBox::NoButton;
+
+    while (checkSignalFile(filename))
+    {
+        result = QMessageBox::information((QWidget *)nullptr, qsl("Datenbank bereits geöffnet?"),
+                                 qsl("Es scheint, als sei die Datenbank bereits geöffnet. Das kommt vor, "
+                                     "wenn DKV2 abgestürzt ist oder bereits läuft.<p>"
+                                     "Falls die Datenbank auf einem Fileserver läuft, kann auch eine "
+                                     "andere Benutzerin die Datenbank gerade verwenden."
+                                     "<p>Retry: Wenn das andere Programm beendet ist."
+                                     "<p>Cancel: Um dieses Programm zu beenden."
+                                     "<p>Ignore: Wenn du sicher bist, dass kein anderes "
+                                     "Programm läuft. (auf eigene Gefahr!)"),
+                                 QMessageBox::Cancel | QMessageBox::Retry | QMessageBox::Ignore);
+
+        if (result == QMessageBox::Cancel)
+            exit(1);
+
+        if (result == QMessageBox::Ignore)
+            break;
+
+        /* QMessageBox::Retry repeats the file check */
     }
     return createSignalFile (filename);
 }
@@ -924,8 +941,13 @@ void MainWindow::on_action_menu_debug_show_log_triggered()
 #if defined(Q_OS_WIN)
     ::ShellExecuteA(nullptr, "open", logFilePath().toUtf8(), "", QDir::currentPath().toUtf8(), 1);
 #else
-    QString cmd = QStringLiteral("open ") + logFilePath();
-    system(cmd.toUtf8().constData());
+    QString cmd = QStringLiteral("xdg-open ") + logFilePath();
+    if (system(cmd.toUtf8().constData())) {
+        QString msg = qsl("Ich weiß nicht wie %1 geöffnet werden kann.\n" \
+        "Benutze bitte einen Text-Editor wie gedit, kate oder ähnlich.").arg(logFilePath());
+        QMessageBox::information(this, qsl("I n f o"), msg);
+    }
+    
 #endif
 }
 void MainWindow::on_actionDatenbank_Views_schreiben_triggered()

@@ -28,7 +28,7 @@ QString absoluteCanonicalPath(const QString &path);
 #if defined(Q_OS_WIN)
 extern HANDLE openDbSignalnFile;
 #else
-extern QTemporaryFile* openDbIndicationFile;
+extern QFile* openDbIndicationFile;
 #endif
 void createSignalFile(const QString filename);
 void deleteSignalFile();
