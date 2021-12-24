@@ -709,7 +709,7 @@ void MainWindow::on_pbPrint_clicked()
     filename += qsl(".pdf");
     QPdfWriter write(filename);
     ui->txtOverview->print(&write);
-    showFileInFolder(filename);
+    showInExplorer(filename);
 }
 
   ////////////////////////////////////////////////
@@ -947,7 +947,7 @@ void MainWindow::on_action_menu_debug_show_log_triggered()
         "Benutze bitte einen Text-Editor wie gedit, kate oder ähnlich.").arg(logFilePath());
         QMessageBox::information(this, qsl("I n f o"), msg);
     }
-    
+
 #endif
 }
 void MainWindow::on_actionDatenbank_Views_schreiben_triggered()

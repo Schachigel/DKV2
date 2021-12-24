@@ -15,7 +15,9 @@ bool moveToBackup(const QString &fn);
 
 bool backupFile(const QString& filename, const QString& subfolder=QString());
 
-void showFileInFolder(const QString &fullPath);
+static const bool showFolder =true;
+static const bool showFile   =false;
+void showInExplorer(const QString &fullPath, bool fileOrFolder =showFile);
 
 void printHtmlToPdf( const QString &html, const QString &fn);
 
