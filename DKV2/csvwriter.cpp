@@ -92,7 +92,7 @@ bool csvwriter::saveAndShowInExplorer(const QString& filename) const
     s.setGenerateByteOrderMark(true);
     s << out();
     }
-    showFileInFolder(path);
+    showInExplorer(path);
     return true;
 }
 

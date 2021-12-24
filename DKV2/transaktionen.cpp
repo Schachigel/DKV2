@@ -461,8 +461,8 @@ void interestLetters()
         pdfWrite(qsl("Zinsbrief"), fileName, printData);
         /////////////////////////////////////////////////
     }
+    showInExplorer(appConfig::Outdir (), showFolder);
     qInfo() << "Alles OK";
-
 }
 
 void deleteInactiveContract(contract *c)

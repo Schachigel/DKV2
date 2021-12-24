@@ -64,18 +64,23 @@ bool backupFile(const QString&  fn, const QString& subfolder)
     return true;
 }
 
-void showFileInFolder(const QString &fullPath)
+void showInExplorer(const QString &fullPath, bool fileOrFolder)
 {   LOG_CALL_W(fullPath);
 #ifdef _WIN32    //Code for Windows
-    QString explorerW_selectedFile {qsl(" /select,\"%1\"")};
-    explorerW_selectedFile =explorerW_selectedFile.arg(QDir::toNativeSeparators(fullPath));
+
+    QString explorerW_selectedFile = QDir::toNativeSeparators(fullPath);
+    if( fileOrFolder == showFile)
+        explorerW_selectedFile =qsl(" /select,\"%1\"").arg(explorerW_selectedFile);
+    else
+        explorerW_selectedFile =qsl(" \"%1\"").arg(explorerW_selectedFile);
+
     QProcess p;
     p.setNativeArguments(explorerW_selectedFile);
     p.setProgram(qsl("explorer.exe"));
     qint64 pid;
     p.startDetached(&pid);
     if( not p.waitForStarted(1000))
-        qDebug() << "failed to start explorer. Arg was: " << explorerW_selectedFile;
+        qDebug().noquote ()<< "failed to start explorer. Arg was: " << explorerW_selectedFile;
 
 #elif defined(__APPLE__)    //Code for Mac
     QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to reveal POSIX file \"" + fullPath + "\""});
