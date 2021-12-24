@@ -118,7 +118,7 @@ QString absoluteCanonicalPath(const QString &path)
 #if defined(Q_OS_WIN)
 HANDLE openDbSignalnFile =INVALID_HANDLE_VALUE;
 #else
-QTemporaryFile* openDbIndicationFile =nullptr;
+QFile* openDbIndicationFile =nullptr;
 #endif
 namespace {
 QString indicatorfilenameExtension {qsl(".is_opened_By_Dkv2")};
@@ -154,8 +154,12 @@ void createSignalFile(const QString filename)
     QString indicatorfilename{filename + indicatorfilenameExtension};
     if (openDbIndicationFile)
         delete openDbIndicationFile;
-    openDbIndicationFile = new QTemporaryFile(indicatorfilename);
-    openDbIndicationFile->open();
+    openDbIndicationFile = new QFile(indicatorfilename);
+    bool ok = openDbIndicationFile->open(QIODevice::WriteOnly | QIODevice::NewOnly);
+    if (ok) {
+        openDbIndicationFile->write("DKV2 Database is in use!");
+        openDbIndicationFile->close();
+    }
 #endif
 }
 void deleteSignalFile()
@@ -163,7 +167,10 @@ void deleteSignalFile()
 #if defined(Q_OS_WIN)
     CloseHandle(openDbSignalnFile);
 #else
-    if( openDbIndicationFile) delete openDbIndicationFile;
+    if( openDbIndicationFile) {
+        openDbIndicationFile->remove();
+        delete openDbIndicationFile;
+}
 #endif
 }
 bool checkSignalFile(const QString filename) {
