@@ -1,5 +1,4 @@
 #include <QRandomGenerator>
-//#include <QTemporaryFile>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
