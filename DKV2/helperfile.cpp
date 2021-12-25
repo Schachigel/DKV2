@@ -13,6 +13,13 @@
 #include "helper.h"
 #include "helperfile.h"
 
+QString tempPathTemplateFromPath (const QString& path)
+{
+    QFileInfo fi(path);
+    QString ext =fi.suffix ();
+    return path.left(path.size ()-fi.suffix ().size ()-1).append ("_XXXXXX.").append (ext);
+}
+
 QString getUniqueTempFilename(const QString &templateFileName)
 {
     QTemporaryFile temp {templateFileName +qsl(".preconversion")};
@@ -39,6 +46,10 @@ bool moveToBackup(const QString &fn)
 
 bool backupFile(const QString&  fn, const QString& subfolder)
 {   LOG_CALL_W(fn);
+    if (not QFile::exists(fn)) {
+        qDebug() << "no need to backup not existing file: " << fn;
+        return true;
+    }
     QString backupname{fn};
     QFileInfo fi{fn};
     QString suffix = fi.completeSuffix();
@@ -79,8 +90,9 @@ void showInExplorer(const QString &fullPath, bool fileOrFolder)
     p.setProgram(qsl("explorer.exe"));
     qint64 pid;
     p.startDetached(&pid);
-    if( not p.waitForStarted(1000))
-        qDebug().noquote ()<< "failed to start explorer. Arg was: " << explorerW_selectedFile;
+//  ?! debugging showed, that .waitForStarted always returns an error (on my system...)
+//    if( not p.waitForStarted(-1))
+//        qDebug().noquote ()<< "failed to start explorer. Arg was: " << explorerW_selectedFile << " Error was " << p.error ();
 
 #elif defined(__APPLE__)    //Code for Mac
     QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to reveal POSIX file \"" + fullPath + "\""});
@@ -129,7 +141,7 @@ namespace {
 QString indicatorfilenameExtension {qsl(".is_opened_By_Dkv2")};
 }
 
-void createSignalFile(const QString filename)
+void createSignalFile(const QString& filename)
 {
 #ifdef WIN32
     {
@@ -178,7 +190,7 @@ void deleteSignalFile()
 }
 #endif
 }
-bool checkSignalFile(const QString filename) {
+bool checkSignalFile(const QString& filename) {
 #if defined(Q_OS_WIN)
     {
         QString indicatorfilename {filename +indicatorfilenameExtension};

@@ -129,10 +129,12 @@ bool dbsHaveSameTables(const QString& fn1, const QString& fn2)
 
     QSqlDatabase db1 = QSqlDatabase::addDatabase(dbTypeName, closer1.conName);
     db1.setDatabaseName(fn1);
-    Q_ASSERT(db1.open());
+    bool open =db1.open();
+    Q_ASSERT(open);
     QSqlDatabase db2 = QSqlDatabase::addDatabase(dbTypeName, closer2.conName);
     db2.setDatabaseName(fn2);
-    Q_ASSERT(db2.open());
+    open =db2.open();
+    Q_ASSERT(open);
     return dbsHaveSameTables(db1, db2);
 }
 
