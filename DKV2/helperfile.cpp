@@ -22,7 +22,7 @@ QString tempPathTemplateFromPath (const QString& path)
 
 QString getUniqueTempFilename(const QString &templateFileName)
 {
-    QTemporaryFile temp {templateFileName +qsl(".preconversion")};
+    QTemporaryFile temp {tempPathTemplateFromPath(templateFileName +qsl("-preconversion"))};
     temp.open();
     return temp.fileName();
 }

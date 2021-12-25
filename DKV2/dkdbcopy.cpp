@@ -1,5 +1,4 @@
 #include <QFileInfo>
-#include <QTemporaryFile>
 
 #include "tabledatainserter.h"
 #include "helperfile.h"
@@ -11,13 +10,12 @@
 /*
 *  locally used helper functions
 */
-QString createPreConversionCopy( const QString& file, const QString& fixedTempFileName)
+QString moveToPreConversionCopy( const QString& file)
 {
     QFileInfo fi(file);
     QString fullFile =fi.canonicalFilePath();
-    QString newFile = fixedTempFileName.isEmpty() ?
-        getUniqueTempFilename(fullFile +qsl(".preconversion")) :
-        fixedTempFileName;
+    QString newFile = getUniqueTempFilename(fullFile +qsl(".preconversion"));
+
     QFile f(fullFile);
     if( f.rename( newFile))
         return newFile;
@@ -229,9 +227,9 @@ bool copy_database_mangled(const QString& targetfn, const QSqlDatabase& dbToBeCo
 *  convert_database will create a copy of a given database file to a new file using
 *  the current schema inserting the data given, leaving any new fields empty / to their default value
 */
-QString convert_database_inplace( const QString& targetFilename, const QString& tempFileName, const dbstructure& dbs)
+QString convert_database_inplace( const QString& targetFilename, const dbstructure& dbs)
 {   LOG_CALL_W(targetFilename);
-    QString backupFileName =createPreConversionCopy(targetFilename, tempFileName);
+    QString backupFileName =moveToPreConversionCopy(targetFilename);
     if( backupFileName.isEmpty()) {
         qCritical() << "Could not create backup copy - abort " << backupFileName << " of " << targetFilename;
         return QString();

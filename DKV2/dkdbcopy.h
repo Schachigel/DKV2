@@ -9,8 +9,7 @@
 
 const QString dbCopyConnection {qsl("db_copy")};
 // helper functions - exported for testability
-QString createPreConversionCopy( const QString& file, const QString& tempFileName =QString());
-
+QString moveToPreConversionCopy( const QString& file);
 
 /*
 *  copy_database will create a 1 : 1 copy of the currently opened database to a new file
@@ -28,7 +27,7 @@ bool copy_database_mangled(const QString& targetfn, const QSqlDatabase& db =QSql
 *  convert_database will create a copy of a given database file to a new file using
 *  the current schema inserting the data given, leaving any new fields empty / to their default value
 */
-QString convert_database_inplace( const QString& targetFilename, const QString& tempFileName =QString(), const dbstructure& dbs =dkdbstructur);
+QString convert_database_inplace( const QString& targetFilename, const dbstructure& dbs =dkdbstructur);
 
 
 #endif // DKDBCOPY_H
