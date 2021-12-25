@@ -65,7 +65,7 @@ bool pdfWrite(const QString& templateName, const QString& fileName, const QVaria
     printer.setOutputFormat(QPrinter::PdfFormat);
     QPageLayout pl =printer.pageLayout ();
     double leftB   = cm2Pt(3.); // breiter für Lochung
-    double topB    = cm2Pt(2.);
+    double topB    = cm2Pt(1.); // logo darf in den oberen Rand reichen
     double rightB  = cm2Pt(0.); // logo darf in den Rand reichen
     double bottomB = cm2Pt(2.);
     pl.setPageSize (QPageSize(QPageSize::A4), QMargins(leftB, topB,rightB, bottomB));
