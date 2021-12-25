@@ -16,11 +16,15 @@ table {
 }
 
 .colFirmenname {
-    text-align: center;
+    padding-top: 29px;
     padding-left: 0px;
-    font-size: 14pt;
-    padding-top: 6px;
     padding-bottom: 6px;
+
+}
+
+.divFirmenname {
+    text-align: center;
+    font-size: 14pt;
 
 }
 
@@ -37,12 +41,16 @@ table {
     padding-bottom: 10px;
 }
 
+/*
 .imgLogo {
 
 }
+*/
 
 .colLogo {
+    padding-top: 23px;
     float: right;
+
 }
 
 .GmbHUrl {
