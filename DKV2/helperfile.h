@@ -9,7 +9,8 @@
 
 #include <QString>
 
-QString getUniqueTempFilename(const QString &templateFileName);
+QString tempPathTemplateFromPath (const QString& path);
+QString getUniqueTempFilename(const QString& templateFileName);
 
 bool moveToBackup(const QString &fn);
 
@@ -32,8 +33,8 @@ extern HANDLE openDbSignalnFile;
 #else
 extern QFile* openDbIndicationFile;
 #endif
-void createSignalFile(const QString filename);
+void createSignalFile(const QString& filename);
 void deleteSignalFile();
-bool checkSignalFile(const QString filename);
+bool checkSignalFile(const QString& filename);
 
 #endif // FILEHELPER_H

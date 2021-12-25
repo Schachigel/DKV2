@@ -81,17 +81,31 @@ bool csvwriter::saveAndShowInExplorer(const QString& filename) const
 {   LOG_CALL_W(filename);
     QString path {appConfig::Outdir() + qsl("/") + filename};
     backupFile(path);
-    {
+
     QFile file(path);
+    std::unique_ptr<QTemporaryFile> p_tf {nullptr};
     if( not file.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
         qCritical() << "could not open csv file for writing: " << filename;
-        return false;
+        // check if we could get another filename to work with...
+        p_tf =std::make_unique<QTemporaryFile>(tempPathTemplateFromPath(path));
+        if( p_tf->open())
+            qDebug() << "falling back to temporary file: " << p_tf->fileName ();
+        else{
+            qCritical() << "could not open any file for writing csv";
+            return false;
+        }
+        p_tf->setAutoRemove (false); // we want to keep the file
+        path =p_tf->fileName ();
     }
-    QTextStream s(&file);
+    QTextStream s;
+    if( p_tf)
+        s.setDevice (p_tf.get ());
+    else
+        s.setDevice (&file);
     s.setCodec("UTF-8");
     s.setGenerateByteOrderMark(true);
     s << out();
-    }
+
     showInExplorer(path);
     return true;
 }
