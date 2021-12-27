@@ -397,24 +397,26 @@ void createInitialTemplates()
     extractTemplateFileFromResource(appConfig::Outdir () +qsl("/html/"), qsl("zinsbrief.css"));
 }
 
-struct busycursor;
-
-void interestLetters()
-{
-    LOG_CALL;
+int askUserForYearOfPrintouts()
+{   LOG_CALL;
     QVector<int> years =bookings::yearsWithAnnualBookings();
     if( years.size () == 0) {
         QMessageBox::information (getMainWindow (), qsl("Keine Daten"), qsl("Es liegen keine Abrechnungen zum Ausdruck vor"));
-        return;
+        return -1;
     }
     dlgInterestLetters dlg(getMainWindow(), years);
 
     dlg.exec();
     if (not dlg.confirmed())
-        return;
+        return -1;
+    return dlg.getYear ();
+}
 
+void interestLetters()
+{
+    LOG_CALL;
     busycursor b;
-    int yearOfSettlement = dlg.getYear();
+    int yearOfSettlement = askUserForYearOfPrintouts ();
     QVector<booking> annualBookings = bookings::getAnnualSettelments(yearOfSettlement);
 
     if (annualBookings.size() == 0) {
@@ -429,17 +431,17 @@ void interestLetters()
 
     QList<QPair<int, QString>> creditors;
     fillCreditorsListForLetters(creditors, yearOfSettlement);
-
-    QVariantMap printData = {};
-    printData["Zinsjahr"] = yearOfSettlement;
-    printData["Zinsdatum"] = QDate(yearOfSettlement, 12, 31).toString("dd.MM.yyyy");
-    printData["gmbhLogo"] = QVariant(appConfig::Outdir() + qsl("/vorlagen/brieflogo.png"));
-    printData["meta"] = getMetaMap();
-
     if (creditors.size() <= 0) {
         qDebug() << "no creditors to create letters for";
         return;
     }
+
+    QVariantMap printData = {};
+    printData[qsl("Zinsjahr")] = yearOfSettlement;
+    printData[qsl("Zinsdatum")] = QDate(yearOfSettlement, 12, 31).toString(qsl("dd.MM.yyyy"));
+    printData[qsl("gmbhLogo")] = QVariant(appConfig::Outdir() + qsl("/vorlagen/brieflogo.png"));
+    printData[qsl("meta")] = getMetaTableAsMap();
+
     for (auto &cred : qAsConst(creditors))
     {
         creditor credRecord(cred.first);
@@ -450,11 +452,15 @@ void interestLetters()
             qsl(" %1=%2 GROUP BY id").arg(contract::fnKreditorId, QString::number(cred.first)));
 
         QVariantList vl;
+        double payedInterest =0.;
         for (const auto &id : qAsConst(ids)) {
             contract contr(id.toLongLong());
             vl.append(contr.toVariantMap_4annualBooking(yearOfSettlement));
+            payedInterest +=contr.payedInterest(yearOfSettlement);
         }
-        printData["Vertraege"] = vl;
+        printData[qsl("mitAusbezahltemZins")] =payedInterest >0.;
+        printData[qsl("ausbezahlterZins")] =payedInterest;
+        printData[qsl("Vertraege")] = vl;
 //        QString fileName = QDate::currentDate().toString(qsl("yyyy-MM-dd")).append("-Zinsen").append(QString::number(yearOfSettlement)).append("_").append(QString::number(credRecord.id())).append("_").append(credRecord.lastname()).append(".pdf");
         QString fileName = qsl("Jahresinfo ").append(QString::number(yearOfSettlement)).append("_").append(QString::number(credRecord.id())).append("_").append(credRecord.lastname()).append(qsl(", ")).append(credRecord.firstname ()).append(".pdf");
         /////////////////////////////////////////////////
