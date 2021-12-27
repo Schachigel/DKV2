@@ -670,6 +670,17 @@ QVariant contract::toVariantMap_4annualBooking(int year)
     return v;
 }
 
+double contract::payedInterest(int year)
+{
+    if( iModel() not_eq interestModel::payout)
+        return 0;
+
+    QString sql{qsl("SELECT SUM(Betrag) FROM Buchungen WHERE VertragsId=%1 AND BuchungsArt=%2 AND substr(Buchungen.Datum, 1, 4)='%3'")};
+    sql =sql.arg(id_aS(), QString::number(int(booking::Type::annualInterestDeposit)), QString::number(year));
+    return euroFromCt(executeSingleValueSql (sql).toInt());
+}
+
+
 // test helper
 contract saveRandomContract(qlonglong creditorId)
 {   LOG_CALL;

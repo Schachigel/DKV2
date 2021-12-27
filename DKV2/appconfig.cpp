@@ -130,7 +130,7 @@ void appConfig::delLastDb()
 }
 
 
-QVariantMap getMetaMap(const QSqlDatabase &db)
+QVariantMap getMetaTableAsMap(const QSqlDatabase &db)
 {
     LOG_CALL;
     QVariantMap vm;

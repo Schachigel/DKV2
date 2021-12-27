@@ -190,6 +190,7 @@ struct contract
     // helper
     QString toString(const QString &name =qsl("")) const;
     QVariant toVariantMap_4annualBooking(int year=9999);
+    double payedInterest(int year);
 
 private:
     // data
