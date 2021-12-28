@@ -76,6 +76,7 @@
 #include <QVector>
 #include <QPair>
 #include <QList>
+#include <QBitArray>
 
 #include <QSqlTableModel>
 #include <QSqlQueryModel>

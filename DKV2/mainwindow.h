@@ -179,6 +179,8 @@ private slots:
 
     void on_action_cmenu_Vertraege_anzeigen_triggered();
 
+    void on_btnVertragsSpalten_clicked();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();

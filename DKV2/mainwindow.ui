@@ -31,7 +31,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <property name="font">
@@ -168,6 +168,13 @@
            <widget class="QPushButton" name="reset_contracts_filter">
             <property name="text">
              <string>alle anzeigen</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnVertragsSpalten">
+            <property name="text">
+             <string>Spalten ausblenden</string>
             </property>
            </widget>
           </item>
@@ -646,7 +653,7 @@
      <x>0</x>
      <y>0</y>
      <width>1073</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_database">

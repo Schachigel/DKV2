@@ -17,6 +17,22 @@ const QString EndOfTheFuckingWorld_str {qsl("9999-12-31")};
 const QDate BeginingOfTime =QDate(1900, 1, 1);
 const int daysUntilTheEndOfTheFuckingWorld =2916000;
 
+QString toString(const QBitArray& ba)
+{
+    QString res;
+    for( int i=0; i < ba.size (); i++)
+        res.append (ba[i] ? qsl("1") : qsl("0"));
+    return res;
+}
+
+QBitArray toQBitArray(const QString& s)
+{
+    QBitArray ba(s.size ());
+    for( int i=0; i<s.size (); i++)
+        ba[i] = (s[i] == qsl("1")) ? true : false;
+    return ba;
+}
+
 void setFontPs(QWidget* w, int ps)
 {
     QFont f =w->font();
