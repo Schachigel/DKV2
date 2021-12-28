@@ -17,6 +17,9 @@
 
 #define qsl(x) QStringLiteral(x)
 
+QString toString(const QBitArray &ba);
+QBitArray toQBitArray(const QString& s);
+
 void setFontPs(QWidget* w, int ps);
 void centerDlg(QWidget* parent, QWidget* child, int minWidth =300, int minHeight =400);
 class dbgTimer

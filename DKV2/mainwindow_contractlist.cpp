@@ -90,29 +90,39 @@ void applyFilterToModel( QSqlTableModel* model, const QString filter)
 }
 }
 
+struct cText {
+    QString header;
+    QString toolTip;
+};
+
+const QVector<cText> columnTexts {
+    /*cp_vid,             */ {qsl(""), qsl("")},
+    /*cp_Creditor_id,     */ {qsl(""), qsl("")},
+    /*cp_Investment_id,   */ {qsl(""), qsl("")},
+    /*cp_Creditor,        */ {qsl("KreditorIn"), qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters")},
+    /*cp_ContractLabel,   */ {qsl("Vertragskennung"), qsl("Die Vertragskennung identifiziert den Vertrag eindeutig")},
+    /*cp_Comment,         */ {qsl("Anmerkung"), qsl("Freitext zum Vertrag")},
+    /*cp_ContractDate,    */ {qsl("Vertragsdatum"), qsl("Datum der letzten Unterschrift auf dem Vertrag")},
+    /*cp_InitialBooking,  */ {qsl("Geldeingang"), qsl("'Wertstellung' der ersten Überweisung")},
+    /*cp_InterestActive,  */ {qsl("Zins Status"), qsl("Ist die Zinsanrechnung aktiv?")},
+    /*cp_ContractValue,   */ {qsl("Nominalwert"), qsl("Bei aktiven Verträgen: Höhe der Einlage, sonst der im Vertrag vereinbarte Kreditbetrag")},
+    /*cp_InterestRate,    */ {qsl("Zinssatz"), qsl("Zinssatz in %")},
+    /*cp_InterestMode,    */ {qsl("Zinsmodus"), qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein")},
+    /*cp_InterestBearing, */ {qsl("Verzinsliches\nGuthaben"), qsl("Bei thesaurierenden Verträgen: Einlage und angesparte Zinsen")},
+    /*cp_Interest,        */ {qsl("Angesparter\nZins"), qsl("Nicht ausgezahlte Zinsen bei Verträgen mit fester Verzinsung und thesaurierenden Verträgen")},
+    /*cp_ContractEnd      */ {qsl("Kündigungsfrist/ \nVertragsende"), qsl("Modalität und Datum des Vertrag Endes")}
+};
+
 void MainWindow::prepare_valid_contracts_list_view()
 { LOG_CALL;
     QSqlTableModel* model = new ContractTableModel(this);
     model->setTable(vnContractView);
-    model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("KreditorIn"));
-    model->setHeaderData(cp_Creditor, Qt::Horizontal, qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters"), Qt::ToolTipRole);
-    model->setHeaderData(cp_ContractLabel, Qt::Horizontal, qsl("Vertragskennung"));
-    model->setHeaderData(cp_ContractLabel, Qt::Horizontal, qsl("Die Vertragskennung identifiziert den Vertrag eindeutig"), Qt::ToolTipRole);
-    model->setHeaderData(cp_Comment, Qt::Horizontal, qsl("Anmerkung"));
-    model->setHeaderData(cp_Comment, Qt::Horizontal, qsl("Freitext zum Vertrag"), Qt::ToolTipRole);
-    model->setHeaderData(cp_ContractDate, Qt::Horizontal, qsl(""), Qt::ToolTipRole);
-    model->setHeaderData(cp_ContractValue, Qt::Horizontal, qsl("Bei aktiven Verträgen: Höhe der Ersteinlage, sonst der im Vertrag vereinbarte Kreditbetrag"), Qt::ToolTipRole);
-    model->setHeaderData(cp_InterestRate, Qt::Horizontal, qsl(""), Qt::ToolTipRole);
-    model->setHeaderData(cp_InterestMode, Qt::Horizontal, qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein"), Qt::ToolTipRole);
-    model->setHeaderData(cp_InitialBooking, Qt::Horizontal, qsl("Datum des initialen Geldeingangs"), Qt::ToolTipRole);
-    model->setHeaderData(cp_InitialBooking, Qt::Horizontal, qsl("Geldeingang"));
-    model->setHeaderData(cp_InterestActive, Qt::Horizontal, qsl("Ist die Zinsanrechnung aktiv?"), Qt::ToolTipRole);
-    model->setHeaderData(cp_InterestBearing, Qt::Horizontal, qsl("Verzinsliches\nGuthaben"));
-    model->setHeaderData(cp_InterestActive, Qt::Horizontal, qsl("Zins Status"));
-    model->setHeaderData(cp_InterestBearing, Qt::Horizontal, qsl("Bei thesaurierenden Verträgen: Einlage und angesparte Zinsen"), Qt::ToolTipRole);
-    model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Angesparter\nZins"));
-    model->setHeaderData(cp_Interest, Qt::Horizontal, qsl("Nicht ausgezahlte Zinsen bei Verträgen mit fester Verzinsung und thesaurierenden Verträgen"), Qt::ToolTipRole);
-    model->setHeaderData(cp_ContractEnd, Qt::Horizontal, qsl("Kündigungsfrist/ \nVertragsende"));
+    for(int i =0; i< int(colmn_Pos::cp_colCount); i++) {
+        if( not columnTexts[i].header.isEmpty ())
+            model->setHeaderData (i, Qt::Horizontal, columnTexts[i].header);
+        if( not columnTexts[i].toolTip.isEmpty ())
+            model->setHeaderData (i, Qt::Horizontal, columnTexts[i].toolTip, Qt::ToolTipRole);
+    }
 
     QTableView*& tv = ui->contractsTableView;
     tv->setModel(model);
@@ -126,7 +136,6 @@ void MainWindow::prepare_valid_contracts_list_view()
     applyFilterToModel(model,
                        ui->le_ContractsFilter->text());
 
-
     tv->setEditTriggers(QTableView::NoEditTriggers);
     tv->setSelectionMode(QAbstractItemView::SingleSelection);
     tv->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -139,9 +148,15 @@ void MainWindow::prepare_valid_contracts_list_view()
     tv->setItemDelegateForColumn(cp_InterestBearing, new CurrencyFormatter(tv));
     tv->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(tv));
     tv->setItemDelegateForColumn(cp_InterestMode, new interestModeFormatter(tv));
-    tv->hideColumn(cp_vid);
-    tv->hideColumn(cp_Creditor_id);
-    tv->hideColumn(cp_Investment_id);
+
+    QBitArray ba =toQBitArray(getMetaInfo (qsl("VertraegeSpalten"), qsl("000111111111111")));
+    if( ba.size () >= cp_colCount) {
+        ba[0] = ba[1] = ba[2] =false;
+        for(int i=0; i<int(colmn_Pos::cp_colCount); i++) {
+            if( not ba[i])
+                tv->hideColumn (i);
+        }
+    }
 
     tv->resizeColumnsToContents();
     tv->resizeRowsToContents();
@@ -215,6 +230,12 @@ void MainWindow::on_reset_contracts_filter_clicked()
     ui->le_ContractsFilter->setText(QString());
     on_le_ContractsFilter_editingFinished ();
 }
+
+void MainWindow::on_btnVertragsSpalten_clicked()
+{
+
+}
+
 void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex & )
 {
     // todo: do all init only once, this function should only do the

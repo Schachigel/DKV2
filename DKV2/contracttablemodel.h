@@ -19,7 +19,8 @@ enum colmn_Pos {
     cp_InterestMode,
     cp_InterestBearing,
     cp_Interest,
-    cp_ContractEnd
+    cp_ContractEnd,
+    cp_colCount
 };
 
 enum column_pos_del {
