@@ -323,8 +323,8 @@ void annualSettlement()
     //    wizAnnualSettlement wiz(getMainWindow());
     dlgAnnualsettlement dlg(getMainWindow(), yearOfSettlement);
 
-    dlg.exec();
-    if (not dlg.confirmed())
+    int dlgFeedback = dlg.exec();
+    if (dlgFeedback == QDialog::Rejected || not dlg.confirmed())
         return;
 
     QVector<QVariant> ids = executeSingleColumnSql(dkdbstructur[contract::tnContracts][contract::fnId]);
