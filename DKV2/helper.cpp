@@ -1,12 +1,5 @@
 
-#include <QDate>
-#include <QString>
-#include <QFile>
-#include <QDir>
-#include <QTextStream>
-#include <QTime>
-
-// #include <QMutex>
+#include "pch.h"
 
 #include "helper.h"
 
