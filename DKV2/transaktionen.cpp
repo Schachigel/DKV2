@@ -385,6 +385,10 @@ void annualSettlement()
     return;
 }
 
+/*************************/
+/*** Ausdrucke ***********/
+/*************************/
+
 void createInitialTemplates()
 {
     QDir outDir (appConfig::Outdir ());
@@ -406,17 +410,22 @@ int askUserForYearOfPrintouts()
     }
     dlgInterestLetters dlg(getMainWindow(), years);
 
-    dlg.exec();
-    if (not dlg.confirmed())
+    if( QDialog::Rejected == dlg.exec())
         return -1;
+
     return dlg.getYear ();
 }
 
 void interestLetters()
 {
     LOG_CALL;
-    busycursor b;
     int yearOfSettlement = askUserForYearOfPrintouts ();
+    if( yearOfSettlement <= 0) {
+        qInfo() << "print out canceled by user";
+        return;
+    }
+
+    busycursor b;
     QVector<booking> annualBookings = bookings::getAnnualSettelments(yearOfSettlement);
 
     if (annualBookings.size() == 0) {
