@@ -352,11 +352,11 @@ wpContractMinValues_Page::wpContractMinValues_Page(QWidget *p) : QWizardPage(p)
 
 void wpContractMinValues_Page::initializePage()
 {
-    setField(dbConfig::paramName(MIN_PAYOUT), dbConfig::readValue(MIN_PAYOUT));
-    setField(dbConfig::paramName(MIN_AMOUNT), dbConfig::readValue(MIN_AMOUNT));
-    setField(dbConfig::paramName(MAX_INTEREST), dbConfig::readValue(MAX_INTEREST));
-    setField(dbConfig::paramName(MAX_INVESTMENT_NBR), dbConfig::readValue(MAX_INVESTMENT_NBR));
-    setField(dbConfig::paramName(MAX_INVESTMENT_SUM), dbConfig::readValue(MAX_INVESTMENT_SUM));
+    setField(dbConfig::paramName(MIN_PAYOUT), dbConfig::readValue(MIN_PAYOUT).toInt());
+    setField(dbConfig::paramName(MIN_AMOUNT), dbConfig::readValue(MIN_AMOUNT).toInt());
+    setField(dbConfig::paramName(MAX_INTEREST), dbConfig::readValue(MAX_INTEREST).toInt());
+    setField(dbConfig::paramName(MAX_INVESTMENT_NBR), dbConfig::readValue(MAX_INVESTMENT_NBR).toInt());
+    setField(dbConfig::paramName(MAX_INVESTMENT_SUM), dbConfig::readValue(MAX_INVESTMENT_SUM).toInt ());
 }
 
 bool wpContractMinValues_Page::validatePage()
