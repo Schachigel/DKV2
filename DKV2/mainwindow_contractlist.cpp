@@ -3,6 +3,7 @@
 
 #include "pch.h"
 
+#include "busycursor.h"
 #include "contracttablemodel.h"
 #include "uiitemformatter.h"
 #include "dkdbviews.h"
@@ -24,13 +25,14 @@ void MainWindow::on_action_menu_contracts_listview_triggered()
 /////////////////////////////////////////////////
 void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
 {
+    busycursor bc;
     showDeletedContracts =true;
     prepare_contracts_list_view();
 }
 
 void MainWindow::prepare_contracts_list_view()
 {   LOG_CALL;
-    busycursor b;
+    busycursor bc;
 
     if( showDeletedContracts)
         prepare_deleted_contracts_list_view();
@@ -115,6 +117,7 @@ const QVector<cText> columnTexts {
 
 void MainWindow::prepare_valid_contracts_list_view()
 { LOG_CALL;
+    busycursor bc;
     QSqlTableModel* model = new ContractTableModel(this);
     model->setTable(vnContractView);
     for(int i =0; i< int(colmn_Pos::cp_colCount); i++) {
@@ -171,6 +174,7 @@ void MainWindow::prepare_valid_contracts_list_view()
 }
 void MainWindow::prepare_deleted_contracts_list_view()
 { LOG_CALL;
+    busycursor bc;
     QSqlTableModel* model = new QSqlTableModel(this);
     model->setTable(vnExContractView);
 
@@ -238,6 +242,7 @@ void MainWindow::on_btnVertragsSpalten_clicked()
 
 void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex & )
 {
+    busycursor bc;
     // todo: do all init only once, this function should only do the
     // setFilter and the select()
     QModelIndex indexIndex = newI.siblingAtColumn(0);
@@ -274,6 +279,7 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
 contract* contractUnderMouseMenu =nullptr;
 void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;
+    busycursor bc;
     if( showDeletedContracts)
         return;
     QTableView*& tv = ui->contractsTableView;

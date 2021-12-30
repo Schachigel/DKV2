@@ -3,6 +3,7 @@
 
 #include "pch.h"
 
+#include "busycursor.h"
 #include "contracttablemodel.h"
 #include "transaktionen.h"
 

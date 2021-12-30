@@ -36,30 +36,31 @@ namespace
 bool checkSchema_ConvertIfneeded(const QString &origDbFile)
 {
     LOG_CALL;
-
+    busycursor bc;
     int version_of_original_file = get_db_version(origDbFile);
     if (version_of_original_file < CURRENT_DB_VERSION)
     {
         qInfo() << "lower version -> converting";
-        if (QMessageBox::Yes not_eq QMessageBox::question(getMainWindow(), qsl("Achtung"), qsl("Das Format der Datenbank ist veraltet. Soll die Datenbank konvertiert werden?")))
-        {
+        bc.finish ();
+        if (QMessageBox::Yes not_eq QMessageBox::question(getMainWindow(), qsl("Achtung"), qsl("Das Format der Datenbank ist veraltet. Soll die Datenbank konvertiert werden?"))) {
             qInfo() << "conversion rejected by user";
             return false;
         }
         QString backup = convert_database_inplace(origDbFile);
-        if (backup.isEmpty())
-        {
+        if (backup.isEmpty()) {
+            bc.finish ();
             QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Bei der Konvertierung ist ein Fehler aufgetreten. Die Ausführung muss beendet werden."));
             qCritical() << "db converstion of older DB failed";
             return false;
         }
         // actions which depend on the source version of the db
-        if (not postDB_UpgradeActions(version_of_original_file, origDbFile))
-        {
+        if (not postDB_UpgradeActions(version_of_original_file, origDbFile)) {
+            bc.finish ();
             QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Bei der Konvertierung ist ein Fehler aufgetreten. Die Ausführung muss beendet werden."));
             qCritical() << "db converstion of older DB failed";
             return false;
         }
+        bc.finish ();
         QMessageBox::information(nullptr, qsl("Erfolgsmeldung"), qsl("Die Konvertierung ware erfolgreich. Eine Kopie der ursprünglichen Datei liegt unter \n") + backup);
         return true;
     }
@@ -163,11 +164,13 @@ void editCreditor(qlonglong creditorId)
 
     if (QDialog::Accepted == wiz.exec())
     {
+        busycursor bc;
         wiz.c_tor.setId(creditorId);
         if (wiz.c_tor.update())
             qInfo() << "successfully updated creditor";
         else
         {
+            bc.finish ();
             QMessageBox::critical(getMainWindow(), qsl("Programm Fehler"), qsl("Die Kundeninfo konnte nicht "
                                                                                "geändert werden. Details findest Du in der Log Datei."));
             return;
@@ -190,6 +193,7 @@ void changeContractComment(contract *pc)
         qInfo() << "inpud dlg canceled";
         return;
     }
+    busycursor bc;
     if (pc->updateComment(ipd.textValue().trimmed()))
         qInfo() << "successfully updated comment";
     else
@@ -326,7 +330,7 @@ void annualSettlement()
     int dlgFeedback = dlg.exec();
     if (dlgFeedback == QDialog::Rejected || not dlg.confirmed())
         return;
-
+    busycursor bc;
     QVector<QVariant> ids = executeSingleColumnSql(dkdbstructur[contract::tnContracts][contract::fnId]);
     qDebug() << "contracts to try execute annual settlement for: " << ids;
     QVector<contract> changedContracts;
@@ -425,10 +429,11 @@ void interestLetters()
         return;
     }
 
-    busycursor b;
+    busycursor bc;
     QVector<booking> annualBookings = bookings::getAnnualSettelments(yearOfSettlement);
 
     if (annualBookings.size() == 0) {
+        bc.finish ();
         QMessageBox::information(nullptr, qsl("Fehler"),
                                  qsl("Im Jahr %1 konnten keine Zinsbuchungen gefunden werden. "
                                      "Es gibt keine Verträge für die eine Abrechnung gemacht werden kann.")
@@ -470,7 +475,7 @@ void interestLetters()
         printData[qsl("mitAusbezahltemZins")] =payedInterest >0.;
         printData[qsl("ausbezahlterZins")] =payedInterest;
         printData[qsl("Vertraege")] = vl;
-//        QString fileName = QDate::currentDate().toString(qsl("yyyy-MM-dd")).append("-Zinsen").append(QString::number(yearOfSettlement)).append("_").append(QString::number(credRecord.id())).append("_").append(credRecord.lastname()).append(".pdf");
+
         QString fileName = qsl("Jahresinfo ").append(QString::number(yearOfSettlement)).append("_").append(QString::number(credRecord.id())).append("_").append(credRecord.lastname()).append(qsl(", ")).append(credRecord.firstname ()).append(".pdf");
         /////////////////////////////////////////////////
         pdfWrite(qsl("Zinsbrief"), fileName, printData);

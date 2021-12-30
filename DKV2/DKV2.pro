@@ -110,6 +110,7 @@ SOURCES += \
         mainwindow.cpp \
         mainwindow_contractlist.cpp \
         mainwindow_creditorlist.cpp \
+        mainwindow_mru.cpp \
         mustache.cpp \
         tabledatainserter.cpp \
         transaktionen.cpp \
