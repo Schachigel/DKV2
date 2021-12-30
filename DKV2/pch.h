@@ -14,6 +14,8 @@
 #include <QtMath>
 #include <QRandomGenerator>
 
+#include <QMenuBar>
+
 #include <QItemSelection>
 #include <QPushButton>
 #include <QDialogButtonBox>

@@ -663,13 +663,14 @@
     <addaction name="action_menu_database_start"/>
     <addaction name="separator"/>
     <addaction name="action_menu_database_new"/>
-    <addaction name="action_menu_database_exit"/>
     <addaction name="separator"/>
     <addaction name="action_menu_database_copy"/>
     <addaction name="action_menu_database_anonymous_copy"/>
     <addaction name="separator"/>
     <addaction name="actionProjektkonfiguration_ndern"/>
     <addaction name="action_menu_database_configure_outdir"/>
+    <addaction name="separator"/>
+    <addaction name="actionZuletzt_verwendet"/>
     <addaction name="separator"/>
     <addaction name="action_menu_database_program_exit"/>
    </widget>
@@ -728,23 +729,6 @@
    </property>
    <property name="toolTip">
     <string>Legen Sie hiermit eine leere DK Datenbank an</string>
-   </property>
-  </action>
-  <action name="action_menu_database_exit">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Schließen</string>
-   </property>
-   <property name="toolTip">
-    <string>Schließen Sie hiermit die geöffnete Datenbank</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+S</string>
-   </property>
-   <property name="visible">
-    <bool>false</bool>
    </property>
   </action>
   <action name="action_menu_creditors_listview">
@@ -1002,6 +986,11 @@
    </property>
    <property name="toolTip">
     <string>Zinsbriefe als  PDF ausgeben</string>
+   </property>
+  </action>
+  <action name="actionZuletzt_verwendet">
+   <property name="text">
+    <string>Zuletzt verwendet</string>
    </property>
   </action>
  </widget>

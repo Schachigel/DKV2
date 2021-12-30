@@ -12,6 +12,12 @@ struct busycursor
     ~busycursor() {
         QGuiApplication::restoreOverrideCursor();
     }
+    void finish() {
+        QGuiApplication::restoreOverrideCursor();
+    }
+    void set() {
+        QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    }
 };
 
 #endif // BUSYCURSOR_H

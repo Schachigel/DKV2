@@ -9,17 +9,16 @@
 // the qt header for preCompiled Header feature
 #include "pch.h"
 
-#include "wiznewdatabase.h"
+#include "busycursor.h"
+
+#include "appconfig.h"
 #include "investment.h"
+#include "wiznewdatabase.h"
 #include "wizopenornewdatabase.h"
 #include "dlgaskdate.h"
-#include "appconfig.h"
 #include "csvwriter.h"
 #include "uiitemformatter.h"
-#include "dkdbhelper.h"
-#include "dkdbviews.h"
 #include "dkdbcopy.h"
-#include "letters.h"
 #include "contracttablemodel.h"
 #include "transaktionen.h"
 #include "uebersichten.h"
@@ -185,9 +184,11 @@ void treat_DbIsAlreadyInUse_File(QString filename)
     return createSignalFile (filename);
 }
 
+
 bool MainWindow::useDb(const QString& dbfile)
 {   LOG_CALL;
     if( open_databaseForApplication(dbfile)) {
+        add_MRU_entry (dbfile);
         treat_DbIsAlreadyInUse_File (dbfile);
         appConfig::setLastDb(dbfile);
         showDbInStatusbar(dbfile);
@@ -339,7 +340,7 @@ void MainWindow::updateViews()
 void MainWindow::prepare_startPage()
 {   LOG_CALL;
     busycursor b;
-    QString messageHtml {qsl("<table width='100%'><tr></tr><tr><td width='20%'></td><td width='60%'><center><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktrediten</h2></center></td><td width='20%'></td></tr>")};
+    QString messageHtml {qsl("<table width='100%'><tr></tr><tr><td width='20%'></td><td width='60%'><center><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktkrediten</h2></center></td><td width='20%'></td></tr>")};
 
     double allContractsValue =valueOfAllContracts();
 
@@ -387,23 +388,19 @@ QString askUserFilenameForCopy(const QString& title, bool onlyExistingFiles=fals
     return wiz.field(qsl("selectedFile")).toString();
 }
 
-void MainWindow::on_action_menu_database_new_triggered()
-{   LOG_CALL;
-    QString dbFile =askUserForNextDb();
-    if( dbFile.isEmpty()) {
-        // askUserNextDb was not successful - maybe canceled.
-        // do nothing
-        QMessageBox::information( this, qsl("Abbruch"), qsl("Die Dateiauswahl wurde abgebrochen."));
-        return;
-    }
+void MainWindow::open_Database(const QString& dbFile)
+{
+    busycursor bc;
     if( appConfig::LastDb () == dbFile)
     {
+        bc.finish();
         QMessageBox::information( this, qsl("Abbruch"), qsl("Die ausgewählte Datei ist bereits geöffnet."));
         return;
     }
     if( not checkSchema_ConvertIfneeded(dbFile)) {
         // selected file is not valid or can not be converted
         // do nothing
+        bc.finish();
         QMessageBox::information( this, qsl("Abbruch"), qsl("Die ausgewählte Datei ist keine gültige Datenbank."));
         return;
     }
@@ -413,12 +410,26 @@ void MainWindow::on_action_menu_database_new_triggered()
         return;
     } else {
         appConfig::delLastDb();
+        bc.finish();
         QMessageBox::critical(this, qsl("Großes Problem"), qsl("Die gewählte Datenbank konnte nicht verwendet werden. "
                                        "Suche in der dkv2.log Datei im %temp% Verzeichnis nach der Ursache!"));
         // useDb has closed the openDb -> without old and new db we could not run
         close();
     }
 }
+
+void MainWindow::on_action_menu_database_new_triggered()
+{   LOG_CALL;
+    QString dbFile =askUserForNextDb();
+    if( dbFile.isEmpty()) {
+        // askUserNextDb was not successful - maybe canceled.
+        // do nothing
+        QMessageBox::information( this, qsl("Abbruch"), qsl("Die Dateiauswahl wurde abgebrochen."));
+        return;
+    }
+    return open_Database (dbFile);
+}
+
 void MainWindow::on_action_menu_database_copy_triggered()
 {   LOG_CALL;
     QString dbfile = askUserFilenameForCopy(qsl("Dateiname der Kopie Datenbank angeben."));
@@ -426,9 +437,12 @@ void MainWindow::on_action_menu_database_copy_triggered()
         return;
 
     busycursor b;
-    if( copy_dkdb_database(QSqlDatabase::database().databaseName(), dbfile))
+    if( copy_dkdb_database(QSqlDatabase::database().databaseName(), dbfile)){
+        b.finish ();
         QMessageBox::information(this, qsl("Kopie angelegt"), qsl("Die Kopie ") +dbfile +qsl(" wurde erfolgreich angelegt"));
+    }
     else {
+        b.finish ();
         QMessageBox::information(this, qsl("Fehler beim Kopieren"), qsl("Die Datenbankkopie konnte nicht angelegt werden. "
                                                                "Weitere Info befindet sich in der LOG Datei"));
         qCritical() << "creating copy failed";
@@ -442,12 +456,15 @@ void MainWindow::on_action_menu_database_anonymous_copy_triggered()
         return;
     busycursor b;
     if( not copy_database_mangled(dbfile)) {
+        b.finish ();
         QMessageBox::information(this, qsl("Fehler beim Kopieren"),
                                  qsl("Die anonymisierte Datenbankkopie konnte nicht angelegt werden. "
                                      "Weitere Info befindet sich in der LOG Datei"));
         qCritical() << "creating depersonaliced copy failed";
-    } else
+    } else {
+        b.finish ();
         QMessageBox::information(this, qsl("Kopie angelegt"), qsl("Die Kopie ohne personenbezogene Daten ") +dbfile +qsl(" wurde erfolgreich angelegt"));
+    }
 
     return;
 }
@@ -548,8 +565,10 @@ void MainWindow::on_btnAutoMatch_clicked()
 {
     busycursor b;
     int i =automatchInvestmentsToContracts();
+    b.finish ();
     QMessageBox::information(this, qsl("Zugeordnete Verträge"),
                              qsl("Es wurden %1 Verträge passenden Geldanlagen zugeordnet.").arg(QString::number(i)));
+    b.set();
     prepare_investmentsListView();
 }
 void MainWindow::on_InvestmentsTableView_customContextMenuRequested(QPoint pos)
@@ -1050,17 +1069,13 @@ void MainWindow::doPaint(QPrinter* pri)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+
 #ifndef QT_DEBUG
     QMessageBox::StandardButton mr = QMessageBox::question(this, qsl("Beenden?"), qsl("Möchtest Du DKV2 beenden?"));
     if (mr == QMessageBox::Yes) {
-        QSettings settings;
-        settings.setValue(qsl("geometry"), saveGeometry());
-        settings.setValue(qsl("windowState"), saveState());
         event->accept();
-        return;
     } else {
         event->ignore();
-        return;
     }
 #endif
 
@@ -1068,4 +1083,5 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settings.setValue(qsl("geometry"), saveGeometry());
     settings.setValue(qsl("windowState"), saveState());
     event->accept();
+
 }

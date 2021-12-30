@@ -9,7 +9,6 @@
 #include <QMainWindow>
 #include <QPrinter>
 
-#include "busycursor.h"
 #include "helpersql.h"
 #include "dkdbhelper.h"
 
@@ -44,16 +43,16 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     bool dbLoadedSuccessfully =false;
+    void open_Database(const QString& file);
 
     int id_SelectedCreditor();
-//    int get_current_id_from_contracts_list();
     void updateViews();
     void updateUebersichtView(int uebersichtIndex);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
 private slots:
-
+    void onMRU_MenuItem();
     void currentChange_ctv(const QModelIndex & , const QModelIndex & );
     void on_action_menu_database_new_triggered();
     void on_action_menu_database_program_exit_triggered();
@@ -194,12 +193,19 @@ private:
     void prepare_startPage();
     void prepare_printPreview();
 
+    // letter editing
     QVector<booking> toBePrinted;
     QVector<booking>::const_iterator currentBooking;
+
+    // initialization
     QString askUserForNextDb();
     QString findValidDatabaseToUse();
     bool useDb(const QString& dbfile);
     void showDbInStatusbar(const QString &filename = QString());
+
+    // MRU
+    void create_MRU_Menue();
+    void add_MRU_entry(const QString& filepath);
 
     enum stackedWidgedsPageIndex
     {
@@ -221,7 +227,6 @@ private:
         qsl("Gesamtübersicht")
     };
 
-private:
     bool showDeletedContracts =false;
     std::unique_ptr<contractsHeaderSortingAdapter> contractsSortingAdapter;
 };
