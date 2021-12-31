@@ -447,7 +447,7 @@ wpLableAndAmount::wpLableAndAmount(QWidget *p) : QWizardPage(p)
     QLineEdit *leAmount = new QLineEdit;
     leAmount->setToolTip(qsl("Der Kreditbetrag muss größer als ") + dbConfig::readValue(MIN_AMOUNT).toString() + qsl("Euro sein"));
     registerField(pnAmount, leAmount);
-    leAmount->setValidator(new QIntValidator(this));
+    leAmount->setValidator(new QDoubleValidator(this));
     l2->setBuddy(leAmount);
 
     QLabel *l3 = new QLabel(qsl("Anmerkung"));
@@ -498,6 +498,8 @@ void wpLableAndAmount::cleanupPage()
 bool wpLableAndAmount::validatePage()
 {
     LOG_CALL;
+    QLocale l;
+    double dAmount =l.toDouble (field(pnAmount).toString());
     QString msg;
     setField(pnLabel, field(pnLabel.trimmed()));
     int minContractValue = dbConfig::readValue(MIN_AMOUNT).toInt();
@@ -506,15 +508,15 @@ bool wpLableAndAmount::validatePage()
         msg = qsl("Die Vertragskennung darf nicht leer sein");
     else if (not isValidNewContractLabel(label))
         msg = qsl("Die Vertragskennung existiert bereits für einen laufenden oder beendeten Vertrag und darf nicht erneut vergeben werden");
-    else if (field(pnAmount).toInt() < minContractValue)
+    else if ( dAmount < minContractValue)
         msg = qsl("Der Wert des Vertrags muss größer sein als der konfigurierte Minimalwert "
                   "eines Vertrages von ") +
               dbConfig::readValue(MIN_AMOUNT).toString() + qsl(" Euro");
-    if (msg.size())
-    {
+    if (msg.size()) {
         QMessageBox::critical(this, qsl("Fehler"), msg);
         return false;
     }
+    setField(pnAmount, dAmount);
     return true;
 }
 int wpLableAndAmount::nextId() const

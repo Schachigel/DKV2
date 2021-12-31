@@ -228,7 +228,7 @@ void activateContract(contract *v)
     wiz.label = v->label();
     wiz.creditorName = cred.firstname() + qsl(" ") + cred.lastname();
     wiz.expectedAmount = v->plannedInvest();
-    wiz.setField(fnAmount, v->plannedInvest());
+    wiz.setField(fnAmount, QLocale().toString(v->plannedInvest()));
     wiz.setField(fnDate, v->conclusionDate().addDays(1));
     wiz.minimalActivationDate = v->conclusionDate().addDays(1);
     wiz.delayedInterest = not v->interestActive();
