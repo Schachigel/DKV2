@@ -71,8 +71,8 @@ wpInitialPayment_AmountPage::wpInitialPayment_AmountPage(QWidget* p) : QWizardPa
     QVBoxLayout *layout = new QVBoxLayout;
     QLabel* l = new QLabel(qsl("Betrag in Euro"));
     QLineEdit* le = new QLineEdit;
+    le->setValidator(new QDoubleValidator(this));
     registerField(fnAmount, le);
-    le->setValidator(new QIntValidator(this));
     l->setBuddy(le);
     layout->addWidget(subTitleLabel);
     layout->addWidget(l);
@@ -83,7 +83,8 @@ wpInitialPayment_AmountPage::wpInitialPayment_AmountPage(QWidget* p) : QWizardPa
 bool wpInitialPayment_AmountPage::validatePage()
 {
     wizInitialPayment* wiz = qobject_cast<wizInitialPayment*>(wizard());
-    double amount = field(fnAmount).toDouble();
+    QLocale l;
+    double amount = l.toDouble(field(fnAmount).toString());
     if( amount < dbConfig::readValue(MIN_AMOUNT).toDouble())
         return false;
     setField(fnAmount, r2(amount));
