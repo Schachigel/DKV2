@@ -310,6 +310,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
     menu.addAction(ui->action_cmenu_Anmerkung_aendern);
     menu.addAction(ui->action_cmenu_assoc_investment);
 
+    bc.finish ();
     menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
     contractUnderMouseMenu =nullptr;
     return;

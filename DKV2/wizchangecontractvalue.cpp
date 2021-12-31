@@ -41,11 +41,12 @@ void wpChangeContract_IntroPage::initializePage()
 bool wpChangeContract_IntroPage::validatePage()
 {
     wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
+    QLocale l;
 
+    // is there enough money in the contract to do a payout?
     double minContract =dbConfig::readValue(MIN_AMOUNT).toDouble();
     double minPayout   =dbConfig::readValue(MIN_PAYOUT).toDouble();
     double minAmountToMakeA_Payout = minContract + minPayout +1;
-    QLocale l;
     if( not field(qsl("deposit_notPayment")).toBool() and wiz->currentAmount < minAmountToMakeA_Payout) {
         QString msg(qsl("Die kleinste Einlage beträgt %1. Die kleinste Auszahlung beträgt %2. "
                     "Daher ist im Moment keine Auszahlung möglich.<p>Du kannst einen Einzahlung machen oder "
@@ -57,6 +58,10 @@ bool wpChangeContract_IntroPage::validatePage()
     return true;
 }
 
+///////////////////////////////////////////
+/// wpChangeContract_AmountPage
+///////////////////////////////////////////
+
 wpChangeContract_AmountPage::wpChangeContract_AmountPage(QWidget* parent) : QWizardPage(parent)
 {
     subTitleLabel = new QLabel("Keine Daten!");
@@ -64,8 +69,14 @@ wpChangeContract_AmountPage::wpChangeContract_AmountPage(QWidget* parent) : QWiz
 
     QVBoxLayout *layout = new QVBoxLayout;
     QLineEdit* le = new QLineEdit;
+
+
+    QDoubleValidator* dv =new QDoubleValidator(0., 100000000., 2, this );
+    QLocale l;
+    dv->setLocale (l);
+    le->setValidator(dv);
     registerField(qsl("amount"), le);
-    le->setValidator(new QIntValidator(this));
+
     layout->addWidget(subTitleLabel);
     layout->addWidget(le);
     setLayout(layout);
@@ -73,16 +84,15 @@ wpChangeContract_AmountPage::wpChangeContract_AmountPage(QWidget* parent) : QWiz
 
 void wpChangeContract_AmountPage::initializePage()
 {
-    bool deposit = field(qsl("deposit_notPayment")).toBool();
+    QLocale l;
+    bool isDeposit = field(qsl("deposit_notPayment")).toBool();
     double minPayout =dbConfig::readValue(MIN_PAYOUT).toDouble();
     double minAmount =dbConfig::readValue(MIN_AMOUNT).toDouble();
-    QLocale l;
-    if( deposit) {
+    if( isDeposit) {
         setTitle(qsl("Einzahlungsbetrag"));
-        QString subt =qsl("Gib den eingezahlten Betrag in ganzen Euro an. Der Betrag muss größer als %1 sein.");
+        QString subt =qsl("Der Betrag muss größer als %1 sein.");
         subt =subt.arg(l.toCurrencyString(minPayout));
         subTitleLabel->setText(subt);
-
         setField(qsl("amount"), 1000.);
     } else {
         setTitle(qsl("Auszahlungsbetrag"));
@@ -90,9 +100,8 @@ void wpChangeContract_AmountPage::initializePage()
         double currentAmount = wiz->currentAmount;
         // double minPayment = 100., minRemains = 500.;
         double maxPayout = currentAmount - minAmount;
-        QLocale locale;
         QString subtitle =qsl("Der Auszahlungsbetrag kann zwischen %1 und %2 liegen.");
-        subtitle = subtitle.arg(locale.toCurrencyString(minPayout), locale.toCurrencyString(maxPayout));
+        subtitle = subtitle.arg(l.toCurrencyString(minPayout), l.toCurrencyString(maxPayout));
         subTitleLabel->setText(subtitle);
         setField(qsl("amount"), minPayout);
     }
@@ -100,19 +109,32 @@ void wpChangeContract_AmountPage::initializePage()
 
 bool wpChangeContract_AmountPage::validatePage()
 {
-    bool deposit = field(qsl("deposit_notPayment")).toBool();
-    double amount = r2(field(qsl("amount")).toDouble());
-    if( amount < 100)
-        return false;
-    setField(qsl("amount"), amount);
+    QLocale l;
+    bool isDeposit = field(qsl("deposit_notPayment")).toBool();
+    QString tmp =field(qsl("amount")).toString();
+    double amount = r2(l.toDouble(tmp));
 
-    if( not deposit) {
+    if( isDeposit) {
+        setField(qsl("amount"), amount);
+        if( amount <= 0)
+            return false;
+        else
+            return true;
+    } else {
         wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
         double currentAmount = wiz->currentAmount;
-        // double minPayout = 100., minRemains = 500.
-        if( field(qsl("amount")).toDouble() <100 or (currentAmount-amount) <500)
+        double minPayout =dbConfig::readValue(MIN_PAYOUT).toDouble();
+        double minAmount =dbConfig::readValue(MIN_AMOUNT).toDouble();
+        if( amount < minPayout) {
+            QMessageBox::information(this, qsl("Auszahlung nicht möglich"), qsl("Der Auszahlungsbetrag muss mindestens %1 betragen").arg(l.toCurrencyString (minPayout)));
             return false;
+        }
+        if( currentAmount-amount < minAmount) {
+            QMessageBox::information(this, qsl("Auszahlung nicht möglich"), qsl("Der Restbetrag muss mindestens %1 betragen").arg(l.toCurrencyString (minAmount)));
+            return false;
+        }
     }
+    setField(qsl("amount"), amount);
     return true;
 }
 

@@ -279,8 +279,7 @@ void activateInterest(contract *v)
 void changeContractValue(contract *pc)
 {
     LOG_CALL;
-    if (not pc->initialBookingReceived())
-    {
+    if (not pc->initialBookingReceived()) {
         qCritical() << "tried to changeContractValue of an inactive contract";
         Q_ASSERT(false);
         return;
@@ -295,17 +294,13 @@ void changeContractValue(contract *pc)
     wiz.setField(qsl("deposit_notPayment"), QVariant(true));
 
     wiz.exec();
-    if (wiz.field(qsl("confirmed")).toBool())
-    {
+    if (wiz.field(qsl("confirmed")).toBool()) {
         double amount{wiz.field(qsl("amount")).toDouble()};
         QDate date{wiz.field(qsl("date")).toDate()};
         qDebug() << wiz.field(qsl("deposit_notPayment")) << ", " << amount << ", " << date;
-        if (wiz.field(qsl("deposit_notPayment")).toBool())
-        {
+        if (wiz.field(qsl("deposit_notPayment")).toBool()) {
             pc->deposit(date, amount);
-        }
-        else
-        {
+        } else {
             pc->payout(date, amount);
         }
     }
@@ -316,8 +311,7 @@ void annualSettlement()
 {
     LOG_CALL;
     QDate bookingDate = bookings::dateOfnextSettlement();
-    if (not bookingDate.isValid() or bookingDate.isNull())
-    {
+    if (not bookingDate.isValid() or bookingDate.isNull()) {
         QMessageBox::information(nullptr, qsl("Fehler"),
                                  qsl("Ein Jahr für die nächste Zinsberechnung konnte nicht gefunden werden."
                                      "Es gibt keine Verträge für die eine Abrechnung gemacht werden kann."));
@@ -336,12 +330,10 @@ void annualSettlement()
     QVector<contract> changedContracts;
     QVector<QDate> startOfInterrestCalculation;
     QVector<booking> asBookings;
-    for (const auto &id : qAsConst(ids))
-    {
+    for (const auto &id : qAsConst(ids)) {
         contract c(id.toLongLong());
         QDate startDate = c.latestBooking().date;
-        if (0 not_eq c.annualSettlement(yearOfSettlement))
-        {
+        if (0 not_eq c.annualSettlement(yearOfSettlement)) {
             changedContracts.push_back(c);
             asBookings.push_back(c.latestBooking());
             startOfInterrestCalculation.push_back(startDate);
@@ -356,8 +348,7 @@ void annualSettlement()
     // Kennung; Auszahlend; Begin; Buchungsdatum; Zinssatz; Kreditbetrag;
     // Zins; Endbetrag
     QLocale l;
-    for (int i = 0; i < changedContracts.count(); i++)
-    {
+    for (int i = 0; i < changedContracts.count(); i++) {
         contract &c = changedContracts[i];
         booking &b = asBookings[i];
         // write data to CSV
