@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "mainwindow.h"
 
 const char nbr_mru_entries =5;
