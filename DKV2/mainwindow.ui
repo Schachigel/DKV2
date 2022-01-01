@@ -172,6 +172,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="btnSave2Csv">
+            <property name="text">
+             <string>Als Csv Datei speichern</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="btnVertragsSpalten">
             <property name="text">
              <string>Spalten ausblenden</string>
@@ -690,7 +697,6 @@
       <string>&amp;Listen drucken</string>
      </property>
      <addaction name="action_menu_contracts_print_lists"/>
-     <addaction name="actionAktuelle_Auswahl"/>
      <addaction name="action_menu_contracts_interestLetters"/>
     </widget>
     <addaction name="action_menu_contracts_listview"/>
@@ -1005,14 +1011,42 @@
  </customwidgets>
  <tabstops>
   <tabstop>le_CreditorsFilter</tabstop>
-  <tabstop>btn_reset_filter_creditors</tabstop>
+  <tabstop>comboUebersicht</tabstop>
+  <tabstop>txtOverview</tabstop>
   <tabstop>CreditorsTableView</tabstop>
+  <tabstop>btn_reset_filter_creditors</tabstop>
   <tabstop>le_ContractsFilter</tabstop>
   <tabstop>reset_contracts_filter</tabstop>
+  <tabstop>btnSave2Csv</tabstop>
+  <tabstop>btnVertragsSpalten</tabstop>
   <tabstop>contractsTableView</tabstop>
-  <tabstop>comboUebersicht</tabstop>
+  <tabstop>bookingsTableView</tabstop>
+  <tabstop>rbActive</tabstop>
+  <tabstop>rbInactive</tabstop>
+  <tabstop>rbFinished</tabstop>
+  <tabstop>rbAll</tabstop>
+  <tabstop>pbBack</tabstop>
+  <tabstop>pbNext</tabstop>
+  <tabstop>pbLetzter</tabstop>
+  <tabstop>tvData</tabstop>
+  <tabstop>graphicsView</tabstop>
+  <tabstop>btnNewInvestment</tabstop>
+  <tabstop>btnCreateFromContracts</tabstop>
+  <tabstop>btnAutoMatch</tabstop>
+  <tabstop>btnAutoClose</tabstop>
+  <tabstop>InvestmentsTableView</tabstop>
+  <tabstop>btnUpdatePreview</tabstop>
+  <tabstop>btnPrint</tabstop>
+  <tabstop>btnPrintAll</tabstop>
+  <tabstop>btnPrevBooking</tabstop>
+  <tabstop>btnNextBooking</tabstop>
+  <tabstop>fontComboBox</tabstop>
+  <tabstop>spinFontSize</tabstop>
+  <tabstop>txtAnrede</tabstop>
+  <tabstop>txtText1</tabstop>
+  <tabstop>txtText2</tabstop>
+  <tabstop>txtGruss</tabstop>
   <tabstop>pbPrint</tabstop>
-  <tabstop>txtOverview</tabstop>
  </tabstops>
  <resources>
   <include location="resource.qrc"/>

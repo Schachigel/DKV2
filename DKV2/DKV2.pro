@@ -96,6 +96,7 @@ SOURCES += \
         dlgannualsettlement.cpp \
         dlgaskdate.cpp \
         dlgchangecontracttermination.cpp \
+        dlgdisplaycolumns.cpp \
         dlginterestletters.cpp \
         filewriter.cpp \
         helper.cpp \
@@ -147,6 +148,7 @@ HEADERS += pch.h\
         dlgannualsettlement.h \
         dlgaskdate.h \
         dlgchangecontracttermination.h \
+        dlgdisplaycolumns.h \
         dlginterestletters.h \
         filewriter.h \
         helper.h \

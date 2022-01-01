@@ -9,6 +9,8 @@
 #include "dkdbviews.h"
 #include "investment.h"
 #include "transaktionen.h"
+#include "dlgdisplaycolumns.h"
+#include "csvwriter.h"
 #include "helper.h"
 
 /////////////////////////////////////////////////
@@ -156,7 +158,9 @@ void MainWindow::prepare_valid_contracts_list_view()
     if( ba.size () >= cp_colCount) {
         ba[0] = ba[1] = ba[2] =false;
         for(int i=0; i<int(colmn_Pos::cp_colCount); i++) {
-            if( not ba[i])
+            if( ba[i])
+                tv->showColumn (i);
+            else
                 tv->hideColumn (i);
         }
     }
@@ -237,7 +241,17 @@ void MainWindow::on_reset_contracts_filter_clicked()
 
 void MainWindow::on_btnVertragsSpalten_clicked()
 {
+    QBitArray ba =toQBitArray(getMetaInfo (qsl("VertraegeSpalten"), qsl("000111111111111")));
+    QVector<QPair<int, QString>> colInfo;
+    for( int i=0; i<int(colmn_Pos::cp_colCount); i++)
+        colInfo.push_back (QPair<int, QString>(i, columnTexts[i].header));
+    dlgDisplayColumns dlg(colInfo, ba, getMainWindow ());
+    QFont f =dlg.font(); f.setPointSize(10); dlg.setFont(f);
 
+    if( dlg.exec () == QDialog::Accepted ) {
+        setMetaInfo (qsl("VertraegeSpalten"), toString(dlg.getNewStatus()));
+        prepare_valid_contracts_list_view ();
+    }
 }
 
 void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex & )
@@ -408,6 +422,38 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
     }
     }; // Eo switch
     updateViews();
+}
+
+void MainWindow::on_btnSave2Csv_clicked()
+{
+    csvwriter csv;
+    QLocale l;
+    QSqlTableModel* model = qobject_cast<QSqlTableModel*>(ui->contractsTableView->model());
+    QBitArray ba =toQBitArray(getMetaInfo (qsl("VertraegeSpalten"), qsl("000111111111111")));
+
+    if (model != nullptr) {
+        QSqlRecord rec =model->record();
+        // header
+        for( int i=0; i<rec.count(); i++) {
+            if( ba[i])
+                csv.addColumn(rec.fieldName(i));
+        }
+        // data
+        for( int i=0; i<model->rowCount(); i++) {
+            QSqlRecord recRows =model->record(i);
+            for( int j=0; j<recRows.count(); j++) {
+                if( ba[j]){
+                    QVariant v =recRows.value (j);
+                    QVariant tmp(v);
+                    if( tmp.canConvert (QVariant::Double) && tmp.convert (QVariant::Double))
+                        csv.appendToRow( QLocale().toString(tmp.toDouble ()));
+                    else
+                        csv.appendToRow(recRows.value(j).toString());
+                }
+            }
+        }
+        csv.saveAndShowInExplorer(QDate::currentDate().toString(qsl("yyyy-MM-dd_Vertragsliste.csv")));
+    }
 }
 
 /////////////////////////////////////////////////
