@@ -16,7 +16,6 @@
 #include "wiznewdatabase.h"
 #include "wizopenornewdatabase.h"
 #include "dlgaskdate.h"
-#include "csvwriter.h"
 #include "uiitemformatter.h"
 #include "dkdbcopy.h"
 #include "contracttablemodel.h"
@@ -924,26 +923,6 @@ void MainWindow::on_action_menu_contracts_print_lists_triggered()
     if( not createCsvActiveContracts())
         QMessageBox::critical(this, qsl("Fehler"), qsl("Die Datei konnte nicht angelegt werden. Ist sie z.B. in Excel geöffnet?"));
 }
-void MainWindow::on_actionAktuelle_Auswahl_triggered()
-{
-    csvwriter csv;
-    QSqlTableModel* model = qobject_cast<QSqlTableModel*>(ui->contractsTableView->model());
-    if (model != nullptr) {
-        QSqlRecord rec =model->record();
-        // header
-        for( int i=0; i<rec.count(); i++) {
-            csv.addColumn(rec.fieldName(i));
-        }
-        // data
-        for( int i=0; i<model->rowCount(); i++) {
-            QSqlRecord recRows =model->record(i);
-            for( int j=0; j<recRows.count(); j++) {
-                csv.appendToRow(recRows.value(j).toString());
-            }
-        }
-        csv.saveAndShowInExplorer(QDate::currentDate().toString(qsl("yyyy-MM-dd_Vertragsliste.csv")));
-    }
-}
 
 /////////////////////////////////////////////////
 // debug funktions
@@ -1085,3 +1064,4 @@ void MainWindow::closeEvent(QCloseEvent *event)
     event->accept();
 
 }
+

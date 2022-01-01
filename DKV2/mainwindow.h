@@ -125,8 +125,6 @@ private slots:
 
     void on_action_Neu_triggered();
 
-    void on_actionAktuelle_Auswahl_triggered();
-
     void on_actionTEST_triggered();
 
     void on_btnNextBooking_clicked();
@@ -179,6 +177,8 @@ private slots:
     void on_action_cmenu_Vertraege_anzeigen_triggered();
 
     void on_btnVertragsSpalten_clicked();
+
+    void on_btnSave2Csv_clicked();
 
 private:
     Ui::MainWindow *ui;

@@ -233,13 +233,11 @@ void activateContract(contract *v)
     wiz.minimalActivationDate = v->conclusionDate().addDays(1);
     wiz.delayedInterest = not v->interestActive();
     wiz.exec();
-    if (not wiz.field(qsl("confirmed")).toBool())
-    {
+    if (not wiz.field(qsl("confirmed")).toBool()) {
         qInfo() << "contract activation canceled by the user";
         return;
     }
-    if (not v->bookInitialPayment(wiz.field(fnDate).toDate(), wiz.field(fnAmount).toDouble()))
-    {
+    if (not v->bookInitialPayment(wiz.field(fnDate).toDate(), wiz.field(fnAmount).toDouble())) {
         qCritical() << "activation failed";
         Q_ASSERT(false);
     }
@@ -254,15 +252,12 @@ void activateInterest(contract *v)
     dlg.setDate(earlierstActivation);
     dlg.setHeader(qsl("Aktivierung der Zinszahlung"));
     dlg.setMsg(qsl("Gib das Datum an, zu dem die Zinszahlung des Vertrags aktiviert werden soll"));
-    do
-    {
-        if (QDialog::Rejected == dlg.exec())
-        {
+    do {
+        if (QDialog::Rejected == dlg.exec()) {
             qInfo() << "interest activation was canceled by the user";
             return;
         }
-        if (dlg.date() < earlierstActivation)
-        {
+        if (dlg.date() < earlierstActivation) {
             QString msg{qsl("Das Datum kann nicht vor dem letzten Buchungsdatum (%1) sein!").arg(earlierstActivation.toString(Qt::ISODate))};
             QMessageBox::information(getMainWindow(), qsl("Ungültiges Datum"), msg);
             continue;
@@ -447,8 +442,7 @@ void interestLetters()
     printData[qsl("gmbhLogo")] = QVariant(appConfig::Outdir() + qsl("/vorlagen/brieflogo.png"));
     printData[qsl("meta")] = getMetaTableAsMap();
 
-    for (auto &cred : qAsConst(creditors))
-    {
+    for (auto &cred : qAsConst(creditors)) {
         creditor credRecord(cred.first);
         printData["creditor"] = credRecord.getVariant();
 
@@ -488,13 +482,9 @@ void terminateContract(contract *pc)
 {
     LOG_CALL;
     if (pc->hasEndDate())
-    {
         terminateContract_Final(*pc);
-    }
     else
-    {
         cancelContract(*pc);
-    }
 }
 void terminateContract_Final(contract &c)
 {
@@ -505,9 +495,7 @@ void terminateContract_Final(contract &c)
         return;
     double interest = 0., finalValue = 0.;
     if (not c.finalize(false, wiz.field(qsl("date")).toDate(), interest, finalValue))
-    {
         qDebug() << "failed to terminate contract";
-    }
     return;
 }
 void cancelContract(contract &c)
@@ -518,8 +506,7 @@ void cancelContract(contract &c)
     wiz.creditorName = executeSingleValueSql(qsl("Vorname || ' ' || Nachname"), qsl("Kreditoren"), qsl("id=") + QString::number(c.creditorId())).toString();
     wiz.contractualEnd = QDate::currentDate().addMonths(c.noticePeriod());
     wiz.exec();
-    if (not wiz.field(qsl("confirmed")).toBool())
-    {
+    if (not wiz.field(qsl("confirmed")).toBool()) {
         qInfo() << "cancel wizard canceled by user";
         return;
     }
@@ -535,8 +522,7 @@ qlonglong createInvestment(int &interest, QDate &from, QDate &to)
     wiz.setField(pnVon, QVariant(from));
     wiz.setField(pnBis, QVariant(from.addYears(1).addDays(-1)));
     wiz.exec();
-    if (not wiz.field(pnKorrekt).toBool())
-    {
+    if (not wiz.field(pnKorrekt).toBool()) {
         qInfo() << "investment wiz was canceled";
         return 0;
     }
@@ -544,8 +530,7 @@ qlonglong createInvestment(int &interest, QDate &from, QDate &to)
                                         wiz.field(pnVon).toDate(),
                                         wiz.field(pnBis).toDate(),
                                         wiz.field(pnTyp).toString());
-    if (0 >= newId)
-    {
+    if (0 >= newId) {
         qCritical() << "Investment could not be saved";
         QMessageBox::warning(nullptr, qsl("Fehler"), qsl("Die Geldanlage konnte nicht gespeichert werden"));
         return 0;
@@ -571,8 +556,7 @@ void createInvestment()
     if (0 >= saveNewInvestment(wiz.field(pnZSatz).toInt(),
                                wiz.field(pnVon).toDate(),
                                wiz.field(pnBis).toDate(),
-                               wiz.field(pnTyp).toString()))
-    {
+                               wiz.field(pnTyp).toString())) {
         qCritical() << "Investment could not be saved";
         QMessageBox::warning(nullptr, qsl("Fehler"), qsl("Die Geldanlage konnte nicht gespeichert werden"));
     }
