@@ -30,7 +30,8 @@ bool openInvestment(const int ZSatz, const QDate v, const QDate b, const QString
 int nbrActiveInvestments(const QDate contractDate=EndOfTheFuckingWorld);
 QVector<QPair<qlonglong, QString>> activeInvestments(const QDate contractDate=EndOfTheFuckingWorld);
 int interestOfInvestmentByRowId(qlonglong rid);
-QString investmentInfoForNewContract(qlonglong rowId, double amount);
+QString investmentInfoForNewContract(qlonglong ridInvestment, double amount, QDate contractStartDate);
+
 QVector<investment> openInvestments(int rate, QDate concluseionDate);
 int closeInvestmentsPriorTo(QDate d);
 

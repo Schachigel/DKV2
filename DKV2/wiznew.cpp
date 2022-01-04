@@ -712,7 +712,7 @@ void wpInterestFromInvestment::onInvestments_currentIndexChanged(int)
 {
     qlonglong rowId = cbInvestments->currentData().toLongLong();
     double amount = field(pnAmount).toDouble();
-    QString html = investmentInfoForNewContract(rowId, amount);
+    QString html = investmentInfoForNewContract(rowId, amount, field(pnCDate).toDate());
     lblInvestmentInfo->setText(html);
 }
 bool wpInterestFromInvestment::validatePage()
@@ -867,8 +867,7 @@ void wpConfirmContract::initializePage()
     QLocale l;
 
     wizNew *wiz = qobject_cast<wizNew *>(wizard());
-    if (wiz)
-    {
+    if (wiz) {
         interestModel iMode{wiz->iPaymentMode};
         QString interestMode = toString(iMode);
         subTitleLabel->setText(

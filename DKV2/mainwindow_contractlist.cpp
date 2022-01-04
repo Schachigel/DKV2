@@ -397,6 +397,7 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
     default:
     {
         QInputDialog id(this);
+        id.setLabelText (qsl("Wähle die gewünschte Geldanlage aus der Liste aus"));
         QFont f=id.font(); f.setPointSize(10); id.setFont(f);
         id.setComboBoxEditable(false);
         QStringList iList;
@@ -427,7 +428,6 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
 void MainWindow::on_btnSave2Csv_clicked()
 {
     csvwriter csv;
-    QLocale l;
     QSqlTableModel* model = qobject_cast<QSqlTableModel*>(ui->contractsTableView->model());
     QBitArray ba =toQBitArray(getMetaInfo (qsl("VertraegeSpalten"), qsl("000111111111111")));
 
