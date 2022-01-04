@@ -1,10 +1,7 @@
 #ifndef WIZNEWINVESTMENT_H
 #define WIZNEWINVESTMENT_H
 
-#include <QWizard>
-#include <QComboBox>
-#include <QLabel>
-
+#include "pch.h"
 #include "investment.h"
 
 extern const QString pnVon /*=qsl("von*")*/;
