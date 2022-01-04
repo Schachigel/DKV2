@@ -152,9 +152,10 @@ ON V.id = vid_mit_Zinsen
 const QString vnInvestmentsView {qsl("vInvestmentsOverview")};
 const QString sqlInvestmentsView {qsl(
 R"str(
+WITH abgeschlossene AS (
 SELECT ga.ZSatz
-  , ga.Anfang
-  , ga.Ende
+  , ga.Anfang AS Anfang
+  , ga.Ende AS Ende
   , ga.Typ
   , (SELECT count(*)
      FROM Vertraege
@@ -181,7 +182,46 @@ SELECT ga.ZSatz
   , CASE WHEN ga.Offen THEN 'Offen' ELSE 'Abgeschlossen' END AS Offen
   , ga.rowid
 FROM Geldanlagen AS ga
+WHERE ga.Ende < DATE('9999-12-31')
 ORDER BY ga.Offen DESC, ga.ZSatz DESC
+
+), fortlaufende AS (
+SELECT ga.ZSatz
+  , '[' || DATE('now', '-1 year') || ']' AS Anfang
+  , 'fortlaufend' AS Ende
+  , ga.Typ
+  , (SELECT count(*)
+     FROM Vertraege
+     WHERE Vertraege.AnlagenId == ga.rowid AND Vertraege.Vertragsdatum > DATE('now', '-1 year')
+  ) AS Anzahl
+  , (SELECT SUM(Betrag) /100.
+     FROM Vertraege
+     WHERE Vertraege.AnlagenId == ga.rowid AND Vertraege.Vertragsdatum > DATE('now', '-1 year')
+  ) AS Summe
+  , (SELECT count(*)
+     FROM Vertraege AS v
+     WHERE v.AnlagenId == ga.rowid
+       AND (SELECT count(*)
+            FROM Buchungen AS B
+            WHERE B.VertragsId == v.id)>0 AND v.Vertragsdatum > DATE('now', '-1 year')
+  ) AS AnzahlAktive
+  , (SELECT SUM(Betrag) /100.
+     FROM Vertraege AS v
+     WHERE v.AnlagenId == ga.rowid
+       AND (SELECT count(*)
+            FROM Buchungen AS B
+            WHERE B.VertragsId == v.id)>0 AND v.Vertragsdatum > DATE('now', '-1 year')
+  ) AS SummeAktive
+  , CASE WHEN ga.Offen THEN 'Offen' ELSE 'Abgeschlossen' END AS Offen
+  , ga.rowid
+FROM Geldanlagen AS ga
+WHERE ga.Ende = DATE('9999-12-31')
+ORDER BY ga.Offen DESC, ga.ZSatz DESC
+)
+
+SELECT * FROM abgeschlossene
+UNION
+SELeCT * FroM fortlaufende
 )str"
 )};
 

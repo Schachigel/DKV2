@@ -70,7 +70,9 @@ QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
             // end date should be bigger than current date
             if( i.siblingAtColumn(8).data().toString() == qsl("Offen")) {
                 QDate enddate =i.data().toDate();
-                if(enddate <= today)
+                if( not enddate.isValid () or enddate == EndOfTheFuckingWorld)
+                    return QColor(Qt::black);
+                if( enddate <= today)
                     return QColor(Qt::red);
             }
         }
@@ -508,11 +510,10 @@ void MainWindow::prepare_investmentsListView()
     model->setHeaderData(7, Qt::Horizontal, qsl("Summe\n(aktive)"), Qt::DisplayRole);
     tv->hideColumn(9);
     tv->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
+    tv->setAlternatingRowColors(true);
     model->setEditStrategy(QSqlTableModel::OnFieldChange);
     model->select();
     tv->resizeColumnsToContents();
-    tv->setAlternatingRowColors(true);
 }
 void MainWindow::on_actionAnlagen_verwalten_triggered()
 {   LOG_CALL;
@@ -697,7 +698,8 @@ void MainWindow::on_action_menu_contracts_statistics_view_triggered()
                                      qsl("Ausgezahlte Zinsen pro Jahr"),
                                      qsl("Anzahl auslaufender Verträge nach Jahr"),
                                      qsl("Anzahl Verträge nach Zinssatz und Jahr"),
-                                     qsl("Anzahl Verträge nach Laufzeiten")}));
+                                     qsl("Anzahl Verträge nach Laufzeiten"),
+                                     qsl("Fortlaufende Geldanlagen")}));
     } else {
         updateUebersichtView(combo->currentIndex());
     }

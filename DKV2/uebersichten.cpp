@@ -197,6 +197,9 @@ void uebersichten::renderDocument( uebersichten::uetype t)
     case uetype::CONTRACT_RUNTIME_DISTRIB:
         renderContractRuntimeDistrib();
         break;
+    case uetype::PERPETUAL_INVESTMENTS_CHECK:
+        renderPerpetualInvestmentsCheck ();
+        break;
 //    case uetype::CONTRACT_by_interest_By_Year
 //        renderContractsByInterestByYear();
 //        break
@@ -314,7 +317,6 @@ void uebersichten::renderInterestDistribution()
     tl.renderTable();
 }
 
-
 void uebersichten::renderContractRuntimeDistrib()
 {
     QString head {qsl("Laufzeitenverteilung")};
@@ -329,6 +331,25 @@ void uebersichten::renderContractRuntimeDistrib()
     }
     tl.sections.push_back(sec);
     tl.renderTable();
+}
+
+void uebersichten::renderPerpetualInvestmentsCheck()
+{
+    QString head {qsl("Prüfung der Grenzwerte für fortlaufende Geldanlagen")};
+    QString desc {qsl("Diese Tabelle gibt dür Verträge mit fortlaufenden Geldanlagen an, "
+                      "wie hoch die Kreditsumme ist, die in den letzten 12 Monaten zu dieser Geldanlage angenommen wurde.")};
+    prep(head, desc);
+
+    tablelayout tl(td);
+    tl.cols =QStringList{qsl("Vertrags\ndatum"), qsl("Vertrag"), qsl("Start der\nPeriode"), qsl("Anlage"), qsl("Angelegter\nBetrag"), qsl("Summe in\nPeriode")};
+
+    QVector<QStringList> lines =perpetualInvestmentCheck();
+    tablelayout::section sec;
+    for(int i=0; i<lines.count (); i++) {
+        sec.data.push_back (lines[i]);
+    }
+    tl.sections.push_back (sec);
+    tl.renderTable ();
 }
 
 //void uebersichten::renderContractsByInterestByYear()

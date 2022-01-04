@@ -1,4 +1,4 @@
-#include <QString>
+#include "pch.h"
 
 #include "helper.h"
 #include "appconfig.h"
@@ -17,7 +17,10 @@ investment::investment(qlonglong id /*=-1*/, int interest /*=0*/,
 
 QString investment::toString() const
 {
-    return d2percent_str(interest) + qsl(" (") + start.toString() + qsl(" - ") + end.toString() + ") " + type;
+    if( end == EndOfTheFuckingWorld)
+        return d2percent_str(interest) + qsl(" (") + start.toString() + qsl(" - ohne Enddatum) : ") + type;
+    else
+        return d2percent_str(interest) + qsl(" (") + start.toString() + qsl(" - ") + end.toString() + ") " + type;
 }
 
 const QString fnInvestmentInterest{qsl("ZSatz")};
@@ -171,13 +174,50 @@ QString redOrBlack(double d, double max)
     if( d >= max) return qsl("<div style=\"color:red\">") +l.toCurrencyString(d) +qsl("</div>");
     else return l.toCurrencyString(d);
 }
-QString investmentInfoForNewContract(qlonglong ridInvestment, double amount)
-{   LOG_CALL;
 
+QString htmlInvestmentInfoOpenInvestments(qlonglong rowId, double amount, QDate newContractDate)
+{
+    QLocale l;
+    QDate oneYearBack =newContractDate.addYears (-1);
+    QString sqlAll{qsl("SELECT SUM(Betrag), COUNT(*) "
+                    "FROM Vertraege "
+                    "WHERE AnlagenId = %1 AND Vertragsdatum > '%2' AND Vertragsdatum <= '%3'").arg(QString::number(rowId), oneYearBack.toString (Qt::ISODate), newContractDate.toString (Qt::ISODate))};
+    QSqlRecord rec = executeSingleRecordSql (sqlAll);
+    QString oldSum =l.toCurrencyString (euroFromCt (rec.value(0).toInt ()));
+    QString newSum =redOrBlack (euroFromCt (rec.value(0).toInt ()) +amount, 100000.);
+    QString count  =rec.value(1).toString ();
+    QString newCount =QString::number (rec.value(1).toInt ()+1);
+
+    QString sqlActive{qsl("SELECT SUM(Betrag), COUNT(*) "
+                    "FROM Vertraege "
+                    "WHERE AnlagenId = %1 AND Vertragsdatum > '%2' AND Vertragsdatum <= '%3' "
+                    " AND (SELECT count(*) FROM Buchungen WHERE VertragsId == Vertraege.id) > 0").arg(QString::number(rowId), oneYearBack.toString (Qt::ISODate), newContractDate.toString (Qt::ISODate))};
+    QSqlRecord recActive =executeSingleRecordSql (sqlActive);
+    QString oldSumActive =l.toCurrencyString (euroFromCt (recActive.value(0).toInt ()));
+    QString countActive  =recActive.value(1).toString ();
+
+    QString s_zSatz =d2percent_str(double (interestOfInvestmentByRowId (rowId)));
+
+    QString html1 {qsl("<tr><td colspan=3 align=left><b>Anlagedaten (Fortlaufende Geldanlage)</b></td></tr>"
+                       "<tr><td align=left>Zinssatz</td><td align=left colspan=2> %1 </td></tr>"
+                       "<tr><td >Auswertung 1 Jahr rückwirkend seit </td><td><b> %2 <b></td><td/></tr>"
+                       "<tr><td colspan=3></td></tr>").arg(s_zSatz, oneYearBack.toString(qsl("dd.MM.yyyy"))) };
+
+    QString html2 {qsl("<tr><td align=left><b>Bisherige Verträge</b></td><td align=right>Anzahl</td><td align=right>Summe</td></tr>"
+                       "<tr><td>Aktive Verträge </td><td align=right> %1 </td><td align=right> %2 </td></tr>"
+                       "<tr><td>Alle Verträge </td><td align=right> %3 </td><td align=right> %4 </td></tr>"
+                       "<tr><td colspan=3><b>Nach der Buchung<b></td></tr>"
+                       "<tr><td>Alle Verträge </td><td align=right> %5 </td><td align=right> %6 </td></tr>").arg(countActive, oldSumActive, count, oldSum, newCount, newSum, newContractDate.toString (qsl("dd.MM.yyyy"))) };
+
+    return  qsl("<table width=100% style=\"border-width:0px\">%1 %2</table>").arg(html1, html2);
+}
+
+QString htmlInvestmentInfo(qlonglong rowId, double amount)
+{
     int maxNbr =dbConfig::readValue(MAX_INVESTMENT_NBR).toInt();
     double maxSum =dbConfig::readValue(MAX_INVESTMENT_SUM).toDouble();
 
-    QString sql {qsl("SELECT * FROM vInvestmentsOverview WHERE rowid=") +QString::number(ridInvestment)};
+    QString sql {qsl("SELECT * FROM vInvestmentsOverview WHERE rowid=") +QString::number(rowId)};
     QSqlRecord r =executeSingleRecordSql(sql);
     QString s_zSatz  = QString::number(r.value(qsl("ZSatz")).toInt()/100., 'g', 2) +qsl(" %");
     QString from =r.value(qsl("Anfang")).toDate().toString(qsl("dd.MM.yyyy"));
@@ -189,12 +229,12 @@ QString investmentInfoForNewContract(qlonglong ridInvestment, double amount)
     QString summeActive =redOrBlack(r.value(qsl("SummeAktive")).toDouble(), maxSum);
 
     QString html1 =qsl("<tr><td colspan=3 align=left><b>Anlagedaten</b></td></tr>"
-                   "<tr><td align=left>Zinssatz</td><td align=left colspan=2>%1</td></tr>"
-                   "<tr><td align=left>Laufzeit </td><td align=left colspan=2> von %2 bis %3 </td></tr>"
-                   "<tr><td colspan=3></td></tr>"
-                   "<tr><td align=left><b>Bisherige Verträge</b></td><td align=right>Anzahl</td><td align=right>Summe</td></tr>"
-                   "<tr><td align=left>Aktive Verträge </td><td  align=right>%4</td><td align=right>%5</td></tr>"
-                   "<tr><td align=left>Alle Verträge</td><td align=right>%6</td><td align=right>%7</td></tr>").arg(s_zSatz, from, bis, anzahl, summe, anzahlActive, summeActive);
+               "<tr><td align=left>Zinssatz</td><td align=left colspan=2>%1</td></tr>"
+               "<tr><td align=left>Laufzeit </td><td align=left colspan=2> von %2 bis %3 </td></tr>"
+               "<tr><td colspan=3></td></tr>"
+               "<tr><td align=left><b>Bisherige Verträge</b></td><td align=right>Anzahl</td><td align=right>Summe</td></tr>"
+               "<tr><td align=left>Aktive Verträge </td><td  align=right>%4</td><td align=right>%5</td></tr>"
+               "<tr><td align=left>Alle Verträge</td><td align=right>%6</td><td align=right>%7</td></tr>").arg(s_zSatz, from, bis, anzahl, summe, anzahlActive, summeActive);
 
 
     QString anzahlNew =redOrBlack(r.value(qsl("Anzahl")).toInt() +1, maxNbr);
@@ -202,9 +242,16 @@ QString investmentInfoForNewContract(qlonglong ridInvestment, double amount)
 
     QString html2 ={qsl("<tr><td colspan=3><b>Nach der Buchung<b></td></tr>"
                     "<tr><td align=left>Alle Verträge   </td><td align=right> %1</td><td align=right> %2</td></tr>").arg(anzahlNew, summeNew)};
-    QString ret =qsl("<table width=100% style=\"border-width:0px\">%1 %2</table>").arg(html1, html2);
-    qDebug() << ret;
-    return ret;
+    return  qsl("<table width=100% style=\"border-width:0px\">%1 %2</table>").arg(html1, html2);
+}
+
+QString investmentInfoForNewContract(qlonglong ridInvestment, double amount, QDate newContractDate)
+{   LOG_CALL;
+    QDate finDate =executeSingleValueSql (investment::getTableDef ()[fnInvestmentEnd], qsl("rowid=%1").arg(ridInvestment)).toDate ();
+    if( finDate == EndOfTheFuckingWorld)
+        return htmlInvestmentInfoOpenInvestments (ridInvestment, amount, newContractDate);
+    else
+        return htmlInvestmentInfo (ridInvestment, amount);
 }
 
 QVector<investment> openInvestments(int rate, QDate conclusionDate)

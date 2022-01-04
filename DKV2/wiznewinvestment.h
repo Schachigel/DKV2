@@ -44,9 +44,13 @@ public:
     bool validatePage() override;
 private slots:
     void onStartDate_changed();
+    void onSwitchFloating(int state);
 
 private:
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
+    QDateEdit* deBis;
+    QDateEdit* deVon;
+    QCheckBox* cbFloating;
 };
 
 struct wpNewInvestInterest : public QWizardPage

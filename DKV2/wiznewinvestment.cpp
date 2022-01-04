@@ -76,7 +76,7 @@ void wpType::initializePage()
 */
 wpTimeFrame::wpTimeFrame(QWidget* w) : QWizardPage(w)
 {   LOG_CALL;
-    setTitle(qsl("Ausgabedauer"));
+    setTitle(qsl("Ausgabezeitraum"));
     subTitleLabel->setText(qsl("Gib an, in welchem Zeitfenster Verträge zu dieser Anlage gezählt werden."));
     subTitleLabel->setWordWrap(true);
 
@@ -85,13 +85,18 @@ wpTimeFrame::wpTimeFrame(QWidget* w) : QWizardPage(w)
     QLabel* lBis =new QLabel(qsl("Ende der Ausgabe"));
     lBis->setToolTip(qsl("Verträge mit dem zuvor angegebenen Zinssatz werden bis zu diesem Datum zu der Geldanlage gezählt"));
 
-    QDateEdit* deVon =new QDateEdit();
+    deVon =new QDateEdit();
     deVon->setDisplayFormat(qsl("dd.MM.yyyy"));
     lVon->setBuddy(deVon);
     deVon->setToolTip(lVon->toolTip());
     registerField(pnVon, deVon/*, "date", "dateChanged(QDate)"*/);
 
-    QDateEdit* deBis =new QDateEdit();
+    cbFloating =new QCheckBox(qsl("Ohne Ende Datum (\"fortlaufend\")"));
+    cbFloating->setToolTip (qsl("Bei einer Anlage ohne Ende Datum werden immer die letzten 12 Monate als Referenzzeitraum verwendet"));
+    cbFloating->setCheckState (Qt::Unchecked);
+    connect(cbFloating, &QCheckBox::stateChanged, this, &wpTimeFrame::onSwitchFloating);
+
+    deBis =new QDateEdit();
     deBis->setDisplayFormat(qsl("dd.MM.yyyy"));
     lBis->setBuddy(deBis);
     deBis->setToolTip(lBis->toolTip());
@@ -107,9 +112,23 @@ wpTimeFrame::wpTimeFrame(QWidget* w) : QWizardPage(w)
     QVBoxLayout* vl =new QVBoxLayout();
     vl->addWidget(subTitleLabel);
     vl->addLayout(hlVon);
+    vl->addWidget (cbFloating);
     vl->addLayout(hlBis);
     setLayout(vl);
 }
+
+void wpTimeFrame::onSwitchFloating(int state)
+{
+    if( state == Qt::CheckState::Checked){
+        deBis->setDate (EndOfTheFuckingWorld);
+        deBis->setEnabled (false);
+    }
+    else{
+        deBis->setDate (deVon->date ().addYears (1));
+        deBis->setEnabled (true);
+    }
+}
+
 void wpTimeFrame::initializePage()
 {   LOG_CALL_W(qsl("wpTimeFrame"));
 }
@@ -121,7 +140,8 @@ bool wpTimeFrame::validatePage()
 }
 void wpTimeFrame::onStartDate_changed()
 {   LOG_CALL;
-    setField(pnBis, field(pnVon).toDate().addYears(1));
+    if( cbFloating->checkState () == Qt::Unchecked)
+        setField(pnBis, field(pnVon).toDate().addYears(1));
 }
 
 /* ////////////////////////////
@@ -130,8 +150,8 @@ void wpTimeFrame::onStartDate_changed()
 wpNewInvestInterest::wpNewInvestInterest(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Geldanlage festlegen"));
-    subTitleLabel->setText(qsl("Mit dieser Dialogfolge kannst Du eine Geldanlage definieren. "
-                                "Gib zunächst den Zinssatz der Geldanlage ein.<p>"));
+    subTitleLabel->setText(qsl("Mit dieser Dialogfolge kannst Du eine Geldanlage definieren.<br>"
+                                "Gib zunächst den Zinssatz der Geldanlage ein:<p>"));
     subTitleLabel->setWordWrap(true);
 
     QLabel* lZinssatz =new QLabel(qsl("Zinssatz"));
