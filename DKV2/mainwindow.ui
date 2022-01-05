@@ -763,11 +763,6 @@
     <bool>true</bool>
    </property>
   </action>
-  <action name="action_menu_creditors_delete">
-   <property name="text">
-    <string>Löschen</string>
-   </property>
-  </action>
   <action name="action_cmenu_delete_creditor">
    <property name="text">
     <string>Löschen</string>

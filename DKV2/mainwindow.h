@@ -59,8 +59,6 @@ private slots:
 
     void on_action_menu_creditors_listview_triggered();
     void on_action_menu_debug_create_sample_data_triggered();
-    void on_action_menu_creditors_delete_triggered();
-
     void on_action_cmenu_edit_creditor_triggered();
 
     void on_stackedWidget_currentChanged(int arg1);
