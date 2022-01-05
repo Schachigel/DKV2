@@ -121,6 +121,8 @@ void MainWindow::prepare_valid_contracts_list_view()
 { LOG_CALL;
     busycursor bc;
     QSqlTableModel* model = new ContractTableModel(this);
+    QSortFilterProxyModel *proxy = new ContractProxyModel(this);
+
     model->setTable(vnContractView);
     for(int i =0; i< int(colmn_Pos::cp_colCount); i++) {
         if( not columnTexts[i].header.isEmpty ())
@@ -129,8 +131,10 @@ void MainWindow::prepare_valid_contracts_list_view()
             model->setHeaderData (i, Qt::Horizontal, columnTexts[i].toolTip, Qt::ToolTipRole);
     }
 
-    QTableView*& tv = ui->contractsTableView;
-    tv->setModel(model);
+    proxy->setSourceModel(model);
+
+    QTableView *&tv = ui->contractsTableView;
+    tv->setModel(proxy);
 
     if ( not model->select()) {
         qCritical() << "Model selection failed" << model->lastError();
@@ -171,10 +175,10 @@ void MainWindow::prepare_valid_contracts_list_view()
     connect(ui->contractsTableView->selectionModel(),
             &QItemSelectionModel::currentChanged, this ,&MainWindow::currentChange_ctv);
 
-    if( not model->rowCount()) {
+    if( not proxy->rowCount()) {
         ui->bookingsTableView->setModel(new QSqlTableModel(this));
     } else
-        tv->setCurrentIndex(model->index(0, 1));
+        tv->setCurrentIndex(proxy->index(0, 1));
 }
 void MainWindow::prepare_deleted_contracts_list_view()
 { LOG_CALL;

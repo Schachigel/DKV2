@@ -67,3 +67,50 @@ QVariant ContractTableModel::data(const QModelIndex& index, int role) const
     }
     return QSqlTableModel::data(index, role);
 }
+
+bool ContractProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
+{
+    
+    if (left.column() == cp_ContractEnd) {
+        int leftDtce = sourceModel()->data(left, Qt::UserRole).toInt();
+        int rightDtce = sourceModel()->data(right, Qt::UserRole).toInt();
+        QString leftString = sourceModel()->data(left, Qt::DisplayRole).toString();
+        QString rightString = sourceModel()->data(right, Qt::DisplayRole).toString();
+
+        if (leftDtce == rightDtce) {
+            QRegularExpression re(qsl("\\((\\d+) *Monate\\)"));
+            int leftMonth = re.match(leftString).captured(1).toInt();
+            int rightMonth = re.match(rightString).captured(1).toInt();
+            return leftMonth < rightMonth;
+        }
+        else
+            return leftDtce < rightDtce;
+    }
+    else {
+        QVariant leftData = sourceModel()->data(left, Qt::DisplayRole);
+        QVariant rightData = sourceModel()->data(right, Qt::DisplayRole);
+        if (leftData.type() != rightData.type())
+            return false;
+
+        switch (leftData.type()) {
+            case QVariant::Type::String:
+                return leftData.toString() < rightData.toString();
+            case QVariant::Type::Double:
+                return leftData.toDouble() < rightData.toDouble();
+            case QVariant::Type::Int:
+                return leftData.toInt() < rightData.toInt();
+            case QVariant::Type::UInt:
+                return leftData.toUInt() < rightData.toUInt();
+            case QVariant::Type::LongLong:
+                return leftData.toLongLong() < rightData.toLongLong();
+            case QVariant::Type::ULongLong:
+                return leftData.toULongLong() < rightData.toULongLong();
+            case QVariant::Type::Date :
+                return leftData.toDate() < rightData.toDate();
+            case QVariant::Type::DateTime:
+                return leftData.toDateTime() < rightData.toDateTime();
+            default:
+                return false;
+            }
+    }
+}

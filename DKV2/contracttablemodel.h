@@ -2,6 +2,7 @@
 #define CONTRACTTABLEMODEL_H
 
 #include <QSqlTableModel>
+#include <QSortFilterProxyModel>
 #include <QObject>
 
 enum colmn_Pos {
@@ -45,8 +46,17 @@ public:
     explicit ContractTableModel(QObject* p) : QSqlTableModel(p) {};
     QVariant data(const QModelIndex& index, int role) const override;
     void setCol13ExtraData();
+
 private:
     QMap<int, int> extraData;
+};
+
+class ContractProxyModel : public QSortFilterProxyModel
+{
+    Q_OBJECT
+public:
+    explicit ContractProxyModel(QObject *p) : QSortFilterProxyModel(p) {};
+    bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
 };
 
 #endif // CONTRACTTABLEMODEL_H
