@@ -11,7 +11,7 @@ void editCreditor(qlonglong creditorId);
 void changeContractComment(contract* c);
 void changeContractTermination(contract* c);
 
-void activateContract(contract* v);
+void bookInitialPaymentReceived(contract* v);
 void activateInterest(contract* v);
 void changeContractValue(contract* v);
 void annualSettlement();
