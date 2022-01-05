@@ -273,39 +273,25 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
         qWarning() << "stackedWidget changed to non existing page";
         return;
     }
-    switch(arg1)
-    {
-    case startPageIndex:
-        ui->action_menu_creditors_delete->setEnabled(false);
-        ui->menu_contracts_subm_print_lists->setEnabled(false);
-        break;
-    case creditorsListPageIndex:
-        ui->action_menu_creditors_delete->setEnabled(true);
-        ui->menu_contracts_subm_print_lists->setEnabled(false);
-        break;
-    case contractsListPageIndex:
-        ui->action_menu_creditors_delete->setEnabled(false);
-        ui->menu_contracts_subm_print_lists->setEnabled(true);
-        break;
-    case overviewsPageIndex:
-        ui->action_menu_creditors_delete->setEnabled(false);
-        ui->menu_contracts_subm_print_lists->setEnabled(false);
-        break;
-    case statisticsPageIndex:
-        ui->action_menu_creditors_delete->setEnabled(false);
-        ui->menu_contracts_subm_print_lists->setEnabled(false);
-        break;
-    case printPreviewPageIndex:
-        ui->action_menu_creditors_delete->setEnabled(false);
-        ui->menu_contracts_subm_print_lists->setEnabled(false);
-        break;
-    case investmentsPageIndex:
-        ui->action_menu_creditors_delete->setEnabled(false);
-        ui->menu_contracts_subm_print_lists->setEnabled(false);
-        break;
-    default:
-        qWarning() << "stackedWidget current change not implemented for this index " << arg1;
-    }// e.o. switch
+//    switch(arg1)
+//    {
+//    case startPageIndex:
+//        break;
+//    case creditorsListPageIndex:
+//        break;
+//    case contractsListPageIndex:
+//        break;
+//    case overviewsPageIndex:
+//        break;
+//    case statisticsPageIndex:
+//        break;
+//    case printPreviewPageIndex:
+//        break;
+//    case investmentsPageIndex:
+//        break;
+//    default:
+//        qWarning() << "stackedWidget current change not implemented for this index " << arg1;
+//    }// e.o. switch
     return;
 }
 

@@ -59,10 +59,6 @@ void MainWindow::on_btn_reset_filter_creditors_clicked()
     ui->le_CreditorsFilter->setText(qsl(""));
     prepare_CreditorsListPage();
 }
-void MainWindow::on_action_menu_creditors_delete_triggered()
-{
-    on_action_cmenu_delete_creditor_triggered();
-}
 
 // Context Menue in Creditor Table
 void MainWindow::on_CreditorsTableView_customContextMenuRequested(QPoint pos)
