@@ -54,7 +54,7 @@ void wpInitialPayment_DatePage::initializePage()
 bool wpInitialPayment_DatePage::validatePage()
 {
     if( field(fnDate).toDate() < minDate) {
-        QMessageBox::information(this, qsl("Fehlerhaftes Datum"), qsl("Das Datum muss nach dem Vertragsdatum liegen"));
+        QMessageBox::information(this, qsl("Fehlerhaftes Datum"), qsl("Das Datum muss nach dem oder am Vertragsdatum liegen"));
         setField(fnDate, minDate);
         return false;
     }

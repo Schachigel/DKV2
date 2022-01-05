@@ -331,7 +331,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
 }
 void MainWindow::on_action_cmenu_activate_contract_triggered()
 {   LOG_CALL;
-    activateContract(contractUnderMouseMenu);
+    bookInitialPaymentReceived(contractUnderMouseMenu);
     updateViews();
 }
 void MainWindow::on_action_cmenu_terminate_contract_triggered()

@@ -219,7 +219,7 @@ void changeContractTermination(contract *pc)
     return;
 }
 
-void activateContract(contract *v)
+void bookInitialPaymentReceived(contract *v)
 {
     LOG_CALL;
     creditor cred(v->creditorId());
@@ -229,8 +229,8 @@ void activateContract(contract *v)
     wiz.creditorName = cred.firstname() + qsl(" ") + cred.lastname();
     wiz.expectedAmount = v->plannedInvest();
     wiz.setField(fnAmount, QLocale().toString(v->plannedInvest()));
-    wiz.setField(fnDate, v->conclusionDate().addDays(1));
-    wiz.minimalActivationDate = v->conclusionDate().addDays(1);
+    wiz.setField(fnDate, v->conclusionDate());
+    wiz.minimalActivationDate = v->conclusionDate();
     wiz.delayedInterest = not v->interestActive();
     wiz.exec();
     if (not wiz.field(qsl("confirmed")).toBool()) {
