@@ -4,8 +4,8 @@
 // VIEWs to be created temporarily in the database
 //////////////////////////////////////
 const QString vnContractView {qsl("vVertraege_alle_4view")};
-const QString sqlContractView {qsl(
-R"str(
+const QString sqlContractView{qsl(
+    R"str(
 SELECT
   V.id AS VertragsId
   ,K.id AS KreditorId
@@ -17,10 +17,10 @@ SELECT
 
   ,IFNULL(Eingangsbuchung, '(steht aus)') AS Geldeingang
   ,IIF(V.zActive, ' aktiv ', ' ausgesetzt ') AS VerzinsungsStatus
-  ,IIF(V.Betrag /100. <= IIF(V.thesaurierend == 0, IFNULL(summeAllerBuchungen, 0)
-         , IIF(V.thesaurierend == 1, IFNULL(summeAllerBuchungen, 0)
-         , IIF(V.thesaurierend == 2, IFNULL(summeEinUndAuszahlungen, 0)
-         , IIF(V.thesaurierend == 3, 0, 'ERROR'))))
+  ,IIF(V.Betrag /100. <= IIF(V.thesaurierend == 0, IFNULL(summeAllerBuchungen + 0.005, 0.005)
+         , IIF(V.thesaurierend == 1, IFNULL(summeAllerBuchungen + 0.005, 0.005)
+         , IIF(V.thesaurierend == 2, IFNULL(summeEinUndAuszahlungen + 0.005, 0.005)
+         , IIF(V.thesaurierend == 3, IFNULL(summeEinUndAuszahlungen + 0.005, 0.005), 'ERROR'))))
     , V.Betrag /100., '[soll: ' || CAST( V.Betrag /100 AS TEXT) || ' €]' ) AS Nominalwert
   , IIF(IFNULL(AnlagenId, 0) == 0
       , CAST(V.Zsatz / 100. AS VARCHAR) || ' % (ohne Anlage)'
@@ -71,8 +71,7 @@ LEFT JOIN
 -- VerzinslGuthaben FestZins: Summe aller ein und auszahlungen
 LEFT JOIN
     (SELECT VertragsId AS B5VertragsId, SUM(Betrag) /100. AS summeEinUndAuszahlungen FROM Buchungen AS B5 WHERE B5.BuchungsArt = 1 /*deposit*/ OR B5.BuchungsArt = 2 /*payout*/ GROUP BY B5.VertragsId) ON V.id = B5VertragsId
-)str"
-)};
+)str")};
 
 const QString vnExContractView {qsl("vVertraege_geloescht")};
 const QString sqlExContractView {qsl(
