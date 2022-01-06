@@ -81,7 +81,8 @@ qInfo() << "index: " << indexAtCursor;
             header->setSortIndicatorShown(false);
         }
         emit header->sectionClicked(indexAtCursor);
-        m_table->resizeColumnsToContents();
+        // It shouldn't be necessary to resize column (as content didn't change)
+        // m_table->resizeColumnsToContents();
         m_table->resizeRowsToContents();
         return true;
     }
