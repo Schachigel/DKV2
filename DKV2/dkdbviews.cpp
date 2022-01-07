@@ -17,11 +17,11 @@ SELECT
 
   ,IFNULL(Eingangsbuchung, '(steht aus)') AS Geldeingang
   ,IIF(V.zActive, ' aktiv ', ' ausgesetzt ') AS VerzinsungsStatus
-  ,IIF(V.Betrag /100. <= IIF(V.thesaurierend == 0, IFNULL(summeAllerBuchungen + 0.005, 0.005)
-         , IIF(V.thesaurierend == 1, IFNULL(summeAllerBuchungen + 0.005, 0.005)
-         , IIF(V.thesaurierend == 2, IFNULL(summeEinUndAuszahlungen + 0.005, 0.005)
-         , IIF(V.thesaurierend == 3, IFNULL(summeEinUndAuszahlungen + 0.005, 0.005), 'ERROR'))))
-    , V.Betrag /100., '[soll: ' || CAST( V.Betrag /100 AS TEXT) || ' €]' ) AS Nominalwert
+  ,IIF(V.Betrag <= IIF(V.thesaurierend == 0, IFNULL(summeAllerBuchungen, 0)
+         , IIF(V.thesaurierend == 1, IFNULL(summeAllerBuchungen, 0)
+         , IIF(V.thesaurierend == 2, IFNULL(summeEinUndAuszahlungen, 0)
+         , IIF(V.thesaurierend == 3, IFNULL(summeEinUndAuszahlungen, 0), 'ERROR'))))
+    , V.Betrag /100., '[soll: ' || CAST( V.Betrag /100. AS TEXT) || ' €]' ) AS Nominalwert
   , IIF(IFNULL(AnlagenId, 0) == 0
       , CAST(V.Zsatz / 100. AS VARCHAR) || ' % (ohne Anlage)'
       , CAST(V.Zsatz / 100. AS VARCHAR) || ' % - ' || GA.Typ ) AS Zinssatz
@@ -30,15 +30,15 @@ SELECT
   , V.thesaurierend AS Zinsmodus
 
 -- VerzinslGuthaben
-  ,IIF(V.thesaurierend == 0, IFNULL(summeAllerBuchungen, ' (inaktiv) ')
-       , IIF(V.thesaurierend == 1, IFNULL(summeAllerBuchungen, ' (inaktiv) ')
-       , IIF(V.thesaurierend == 2, IFNULL(summeEinUndAuszahlungen, ' (inaktiv) ')
+  ,IIF(V.thesaurierend == 0, IFNULL(summeAllerBuchungen /100., ' (inaktiv) ')
+       , IIF(V.thesaurierend == 1, IFNULL(summeAllerBuchungen /100., ' (inaktiv) ')
+       , IIF(V.thesaurierend == 2, IFNULL(summeEinUndAuszahlungen /100., ' (inaktiv) ')
        , IIF(V.thesaurierend == 3, ' ohne Verzinsung ', 'ERROR')))) AS VerzinslGuthaben
 
 -- angesparter Zins
-  ,IIF(V.thesaurierend == 0, IFNULL(summeAllerZinsZwBuchungen, '(noch 0) ')
-       ,IIF(V.thesaurierend == 1, IFNULL(summeAllerZinsBuchungen, '(noch 0) ')
-       ,IIF(V.thesaurierend == 2, IFNULL(summeAllerZinsBuchungen, '(noch 0) ')
+  ,IIF(V.thesaurierend == 0, IFNULL(summeAllerZinsZwBuchungen /100., '(noch 0) ')
+       ,IIF(V.thesaurierend == 1, IFNULL(summeAllerZinsBuchungen /100., '(noch 0) ')
+       ,IIF(V.thesaurierend == 2, IFNULL(summeAllerZinsBuchungen /100., '(noch 0) ')
        ,IIF(V.thesaurierend == 3, '(zinslos)   ', 'ERROR')))) AS angespZins
 
 -- kdFrist/VEnd
@@ -58,19 +58,19 @@ LEFT JOIN
 
 -- VerzinslGuthaben f auszahlende
 LEFT JOIN
-     (SELECT VertragsId, SUM(Betrag)/100. AS summeAllerBuchungen FROM Buchungen AS B1 GROUP BY VertragsId) ON V.id = VertragsId
+     (SELECT VertragsId, SUM(Betrag) AS summeAllerBuchungen FROM Buchungen AS B1 GROUP BY VertragsId) ON V.id = VertragsId
 
 -- angespZins f auszahlende: nur zwischenzinsen
 LEFT JOIN
-     (SELECT VertragsId AS B2VertragsId, SUM(Betrag)/100. AS summeAllerZinsZwBuchungen FROM Buchungen AS B2 WHERE B2.BuchungsArt = 4 /*ReInvInterest*/  GROUP BY B2.VertragsId) ON V.id = B2VertragsId
+     (SELECT VertragsId AS B2VertragsId, SUM(Betrag) AS summeAllerZinsZwBuchungen FROM Buchungen AS B2 WHERE B2.BuchungsArt = 4 /*ReInvInterest*/  GROUP BY B2.VertragsId) ON V.id = B2VertragsId
 
 -- angespZins f thesaurierende: zwischenzinsen + Jahreszins
 LEFT JOIN
-     (SELECT VertragsId AS B4VertragsId, SUM(Betrag)/100. AS summeAllerZinsBuchungen FROM Buchungen AS B4 WHERE B4.BuchungsArt = 8 /*annual*/ OR B4.BuchungsArt = 4 /*ReInvInterest*/  GROUP BY B4.VertragsId) ON V.id = B4VertragsId
+     (SELECT VertragsId AS B4VertragsId, SUM(Betrag) AS summeAllerZinsBuchungen FROM Buchungen AS B4 WHERE B4.BuchungsArt = 8 /*annual*/ OR B4.BuchungsArt = 4 /*ReInvInterest*/  GROUP BY B4.VertragsId) ON V.id = B4VertragsId
 
 -- VerzinslGuthaben FestZins: Summe aller ein und auszahlungen
 LEFT JOIN
-    (SELECT VertragsId AS B5VertragsId, SUM(Betrag) /100. AS summeEinUndAuszahlungen FROM Buchungen AS B5 WHERE B5.BuchungsArt = 1 /*deposit*/ OR B5.BuchungsArt = 2 /*payout*/ GROUP BY B5.VertragsId) ON V.id = B5VertragsId
+    (SELECT VertragsId AS B5VertragsId, SUM(Betrag) AS summeEinUndAuszahlungen FROM Buchungen AS B5 WHERE B5.BuchungsArt = 1 /*deposit*/ OR B5.BuchungsArt = 2 /*payout*/ GROUP BY B5.VertragsId) ON V.id = B5VertragsId
 )str")};
 
 const QString vnExContractView {qsl("vVertraege_geloescht")};
