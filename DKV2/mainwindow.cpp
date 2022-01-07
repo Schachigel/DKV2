@@ -305,14 +305,20 @@ void MainWindow::updateViews()
             temp->select();
     }
     if( ui->stackedWidget->currentIndex() == contractsListPageIndex) {
-        if( (temp =qobject_cast<QSqlTableModel*>(ui->contractsTableView->model())))
-            temp->select();
-        if( (temp =qobject_cast<QSqlTableModel*>(ui->bookingsTableView ->model())))
-            temp->select();
+        ContractProxyModel *contractsTableProxy_ptr = qobject_cast<ContractProxyModel *>(ui->contractsTableView->model());
+        QSqlTableModel *bookingsTableModel_ptr = qobject_cast<QSqlTableModel *>(ui->bookingsTableView->model());
+        ContractTableModel *contractsTableModel_ptr = nullptr;
+        if (contractsTableProxy_ptr)
+            contractsTableModel_ptr = qobject_cast<ContractTableModel *>(contractsTableProxy_ptr->sourceModel());
+        if (contractsTableModel_ptr)
+            contractsTableModel_ptr->select();
+        if (bookingsTableModel_ptr)
+            bookingsTableModel_ptr->select();
         ui->contractsTableView->resizeColumnsToContents();
         ui->contractsTableView->resizeRowsToContents();
         ui->bookingsTableView->resizeColumnsToContents();
-        qobject_cast<ContractTableModel*>(ui->contractsTableView->model())->setCol13ExtraData();
+        if (contractsTableModel_ptr)
+            contractsTableModel_ptr->setCol13ExtraData();
     }
     if( ui->stackedWidget->currentIndex() == investmentsPageIndex) {
         prepare_investmentsListView();
