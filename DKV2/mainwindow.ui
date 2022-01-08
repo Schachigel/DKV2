@@ -31,7 +31,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <property name="font">
@@ -111,7 +111,7 @@
       <widget class="QWidget" name="CreditorsListPage">
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0">
+         <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0">
           <property name="spacing">
            <number>7</number>
           </property>
@@ -133,6 +133,13 @@
            <widget class="QPushButton" name="btn_reset_filter_creditors">
             <property name="text">
              <string>alle anzeigen</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pbCreditorsColumnsOnOff">
+            <property name="text">
+             <string>Spalten ein-/ausblenden</string>
             </property>
            </widget>
           </item>
@@ -181,7 +188,7 @@
           <item>
            <widget class="QPushButton" name="btnVertragsSpalten">
             <property name="text">
-             <string>Spalten ausblenden</string>
+             <string>Spalten ein-/ausblenden</string>
             </property>
            </widget>
           </item>

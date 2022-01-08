@@ -94,12 +94,7 @@ void applyFilterToModel( QSqlTableModel* model, const QString filter)
 }
 }
 
-struct cText {
-    QString header;
-    QString toolTip;
-};
-
-const QVector<cText> columnTexts {
+const QVector<tableViewColTexts> columnTextsContracts {
     /*cp_vid,             */ {qsl(""), qsl("")},
     /*cp_Creditor_id,     */ {qsl(""), qsl("")},
     /*cp_Investment_id,   */ {qsl(""), qsl("")},
@@ -125,10 +120,10 @@ void MainWindow::prepare_valid_contracts_list_view()
 
     model->setTable(vnContractView);
     for(int i =0; i< int(colmn_Pos::cp_colCount); i++) {
-        if( not columnTexts[i].header.isEmpty ())
-            model->setHeaderData (i, Qt::Horizontal, columnTexts[i].header);
-        if( not columnTexts[i].toolTip.isEmpty ())
-            model->setHeaderData (i, Qt::Horizontal, columnTexts[i].toolTip, Qt::ToolTipRole);
+        if( not columnTextsContracts[i].header.isEmpty ())
+            model->setHeaderData (i, Qt::Horizontal, columnTextsContracts[i].header);
+        if( not columnTextsContracts[i].toolTip.isEmpty ())
+            model->setHeaderData (i, Qt::Horizontal, columnTextsContracts[i].toolTip, Qt::ToolTipRole);
     }
 
     proxy->setSourceModel(model);
@@ -248,7 +243,7 @@ void MainWindow::on_btnVertragsSpalten_clicked()
     QBitArray ba =toQBitArray(getMetaInfo (qsl("VertraegeSpalten"), qsl("000111111111111")));
     QVector<QPair<int, QString>> colInfo;
     for( int i=0; i<int(colmn_Pos::cp_colCount); i++)
-        colInfo.push_back (QPair<int, QString>(i, columnTexts[i].header));
+        colInfo.push_back (QPair<int, QString>(i, columnTextsContracts[i].header));
     dlgDisplayColumns dlg(colInfo, ba, getMainWindow ());
     QFont f =dlg.font(); f.setPointSize(10); dlg.setFont(f);
 

@@ -31,6 +31,11 @@ private:
     double dMax =0.;
 };
 
+struct tableViewColTexts {
+    QString header;
+    QString toolTip;
+};
+
 namespace Ui {
 class MainWindow;
 }
@@ -177,6 +182,8 @@ private slots:
     void on_btnVertragsSpalten_clicked();
 
     void on_btnSave2Csv_clicked();
+
+    void on_pbCreditorsColumnsOnOff_clicked();
 
 private:
     Ui::MainWindow *ui;

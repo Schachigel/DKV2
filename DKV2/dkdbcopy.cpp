@@ -1,5 +1,6 @@
 #include <QFileInfo>
 
+#include "creditor.h"
 #include "tabledatainserter.h"
 #include "helperfile.h"
 #include "appconfig.h"
@@ -157,13 +158,17 @@ bool copy_mangledCreditors(const QSqlDatabase& db =QSqlDatabase::database())
         recCount++;
         QSqlRecord rec = q.record();
         qDebug() << "de-Pers. Copy: working on Record #" << rec;
-        QString vn {qsl("Vorname")}, nn {qsl("Nachname")};
-        tdi.setValue(qsl("id"), rec.value(qsl("id")));
-        tdi.setValue(qsl("Vorname"),  QVariant(vn + QString::number(recCount)));
-        tdi.setValue(qsl("Nachname"), QVariant(nn + QString::number(recCount)));
-        tdi.setValue(qsl("Strasse"), qsl("Strasse"));
-        tdi.setValue(qsl("Plz"), qsl("D-xxxxx"));
-        tdi.setValue(qsl("Stadt"), qsl("Stadt"));
+        tdi.setValue(creditor::fnId, rec.value(creditor::fnId));
+        tdi.setValue(creditor::fnVorname,  QVariant(creditor::fnVorname + QString::number(recCount)));
+        tdi.setValue(creditor::fnNachname, QVariant(creditor::fnNachname + QString::number(recCount)));
+        tdi.setValue(creditor::fnStrasse, creditor::fnStrasse);
+        tdi.setValue(creditor::fnPlz, qsl("D-xxxxx"));
+        tdi.setValue(creditor::fnStadt, qsl("Stadt"));
+        tdi.setValue(creditor::fnTel, qsl(""));
+        tdi.setValue(creditor::fnKontakt, qsl(""));
+        tdi.setValue(creditor::fnIBAN, qsl(""));
+        tdi.setValue(creditor::fnBIC, qsl(""));
+        tdi.setValue(creditor::fnBuchungskonto, qsl(""));
 
         if( tdi.InsertData_noAuto() == -1) {
             qDebug() << "Error inserting Data into deperso.Copy Table" << q.lastError() << Qt::endl << q.record();

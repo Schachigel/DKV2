@@ -3,6 +3,7 @@
 
 #include "pch.h"
 
+#include "dlgdisplaycolumns.h"
 #include "busycursor.h"
 #include "contracttablemodel.h"
 #include "transaktionen.h"
@@ -18,6 +19,39 @@ void MainWindow::on_action_menu_creditors_listview_triggered()
 
     ui->stackedWidget->setCurrentIndex(creditorsListPageIndex);
 }
+
+enum colPosCreditors {
+    col_id =0,
+    col_Vorname, col_Nachname,
+    col_Strasse, col_Plz, col_Stadt, col_Land,
+    col_Email, col_Tel,
+    col_Anmerkung, col_APartner, col_BKonto,
+    col_IBAN, col_BIC,
+    col_Zeitstempel,
+    col_count
+};
+
+const QVector<tableViewColTexts> columnTextsCreditors {
+    /*col_id         */ {qsl(""),         qsl("")},
+    /*col_Vorname    */ {qsl("Vorname"),  qsl("")},
+    /*col_Nachname,  */ {qsl("Nachname"), qsl("")},
+    /*col_Strasse,   */ {qsl("Strasse"),  qsl("")},
+    /*col_Plz,       */ {qsl("PLZ"),      qsl("Postleitzahl")},
+    /*col_Stadt,     */ {qsl("Stadt"),    qsl("")},
+    /*col_Land,      */ {qsl("Land"),     qsl("")},
+    /*col_Email      */ {qsl("E-Mail"),   qsl("E-Mail Adresse zum Zusenden von Vertragsinformation")},
+    /*col_Tel,       */ {qsl("Telefon Nr."), qsl("Telefonnummer für schnellen Kontakt")},
+    /*col_Anmerkung, */ {qsl("Anmerkung"), qsl("Allgemeine Anmerkung")},
+    /*col_APartner,  */ {qsl("Ansprechp."), qsl("Ansprechpartner im Projekt")},
+    /*col_BKonto,    */ {qsl("Buch.Konto"), qsl("Buchungskonto oder ähnliche Info.")},
+    /*col_IBAN,      */ {qsl("IBAN"),       qsl("Bank Information für Überweisungen")},
+    /*col_BIC,       */ {qsl("BIC"),        qsl("zusätzliche BI für Auslandsüberw.")},
+    /*col_Zeitstempel*/ {qsl(""), qsl("")}
+};
+
+const QString creditorTableColumnVisibilityStatus {qsl("KreditorenSpalten")};
+const QString creditorTableColumnVisibilityDefault{qsl("011111111111110")};
+
 void MainWindow::prepare_CreditorsListPage()
 {   LOG_CALL;
     busycursor b;
@@ -26,15 +60,22 @@ void MainWindow::prepare_CreditorsListPage()
     model->setFilter(qsl("Vorname LIKE '%") + ui->le_CreditorsFilter->text() + qsl("%' OR Nachname LIKE '%") + ui->le_CreditorsFilter->text() + qsl("%'"));
     model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model->select();
+    ui->CreditorsTableView->setModel(model);
+
+    QBitArray ba =toQBitArray (getMetaInfo (creditorTableColumnVisibilityStatus, creditorTableColumnVisibilityDefault));
+    if( ba.size() >= col_count) {
+        ba[0] =ba[14] =0;
+        for( int i=0; i<int(colPosCreditors::col_count); i++) {
+            if( ba[i]) ui->CreditorsTableView->showColumn (i);
+            else       ui->CreditorsTableView->hideColumn (i);
+        }
+    }
 
     ui->CreditorsTableView->setEditTriggers(QTableView::NoEditTriggers);
     ui->CreditorsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->CreditorsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->CreditorsTableView->setAlternatingRowColors(true);
     ui->CreditorsTableView->setSortingEnabled(true);
-    ui->CreditorsTableView->setModel(model);
-    ui->CreditorsTableView->hideColumn(0);
-    ui->CreditorsTableView->hideColumn(11); // Zeitstempel
     ui->CreditorsTableView->resizeColumnsToContents();
 }
 void MainWindow::on_le_CreditorsFilter_editingFinished()
@@ -95,7 +136,7 @@ void MainWindow::on_action_cmenu_delete_creditor_triggered()
 
     creditor c (id_SelectedCreditor());
     QString msg( qsl("Soll der Kreditgeber %1 %2 (id %3) gelöscht werden?"));
-    msg =msg.arg(c.getValue(qsl("Vorname")).toString(), c.getValue(qsl("Nachname")).toString(), QString::number(id_SelectedCreditor()));
+    msg =msg.arg(c.getValue(creditor::fnVorname).toString(), c.getValue(creditor::fnNachname).toString(), QString::number(id_SelectedCreditor()));
 
     if( QMessageBox::Yes not_eq QMessageBox::question(this, qsl("Kreditgeber löschen?"), msg))
         return;
@@ -120,3 +161,19 @@ void MainWindow::on_actionNeu_triggered()
     updateViews();
 }
 
+void MainWindow::on_pbCreditorsColumnsOnOff_clicked()
+{
+    QBitArray ba =toQBitArray (getMetaInfo(creditorTableColumnVisibilityStatus, creditorTableColumnVisibilityDefault));
+    QVector <QPair<int, QString>> colInfo;
+    for(int i=0; i<int(colPosCreditors::col_count); i++) {
+        colInfo.push_back (QPair<int, QString>(i, columnTextsCreditors[i].header));
+    }
+    dlgDisplayColumns dlg(colInfo, ba, getMainWindow ());
+    QFont f =dlg.font(); f.setPointSize(10); dlg.setFont(f);
+
+    if( dlg.exec () == QDialog::Accepted ) {
+        setMetaInfo (creditorTableColumnVisibilityStatus, toString(dlg.getNewStatus()));
+        prepare_CreditorsListPage ();
+    }
+
+}

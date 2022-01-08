@@ -206,18 +206,18 @@ bool createCsvActiveContracts()
         return false;
     }
     dbtable t(tempViewContractsCsv);
-    t.append(dbfield(qsl("Id"), QVariant::Type::Int));
-    t.append(dbfield(contract::fnKreditorId, QVariant::Type::Int));
-    t.append(dbfield(qsl("Vorname")));
-    t.append(dbfield(qsl("Nachname")));
-    t.append(dbfield(qsl("Strasse")));
-    t.append(dbfield(qsl("Plz")));
-    t.append(dbfield(qsl("Stadt")));
-    t.append(dbfield(qsl("Email")));
-    t.append(dbfield(qsl("Iban")));
-    t.append(dbfield(qsl("Bic")));
-    t.append(dbfield(qsl("Strasse")));
-    t.append(dbfield(qsl("Zinssatz"), QVariant::Type::Double));
+    t.append(dbfield(contract::fnId, QVariant::Type::Int));
+    t.append(dbfield(creditor::fnId, QVariant::Type::Int));
+    t.append(dbfield(creditor::fnVorname));
+    t.append(dbfield(creditor::fnNachname));
+    t.append(dbfield(creditor::fnStrasse));
+    t.append(dbfield(creditor::fnPlz));
+    t.append(dbfield(creditor::fnStadt));
+    t.append(dbfield(creditor::fnEmail));
+    t.append(dbfield(creditor::fnIBAN));
+    t.append(dbfield(creditor::fnBIC));
+//    t.append(dbfield(creditor::fnStrasse));
+    t.append(dbfield(contract::fnZSatz, QVariant::Type::Double));
     t.append(dbfield(qsl("Wert"), QVariant::Type::Double));
     t.append(dbfield(qsl("Aktivierungsdatum"), QVariant::Type::Date));
     t.append(dbfield(qsl("Kuendigungsfrist"), QVariant::Type::Int));
@@ -499,4 +499,3 @@ UNION ALL
 )str")};
     return getBookingDateInfoBySql(sql, dates);
 }
-

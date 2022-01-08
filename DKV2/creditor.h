@@ -9,9 +9,25 @@
 #include "tabledatainserter.h"
 #include "dkdbhelper.h"
 
-
 struct creditor
 {
+    static const QString fnId;
+    static const QString tablename;
+    static const QString fnVorname;
+    static const QString fnNachname;
+    static const QString fnStrasse;
+    static const QString fnPlz;
+    static const QString fnStadt;
+    static const QString fnLand;
+    static const QString fnTel;
+    static const QString fnEmail;
+    static const QString fnAnmerkung;
+    static const QString fnKontakt;
+    static const QString fnBuchungskonto;
+    static const QString fnIBAN;
+    static const QString fnBIC;
+    static const QString fnZeitstepel;
+
     static const dbtable& getTableDef();
     // constructors
     creditor() : ti(getTableDef()){}
@@ -19,22 +35,28 @@ struct creditor
     // comparison
     bool operator==(const creditor& c) const;
     // setter
-    QString firstname() const   { return getValue(qsl("Vorname")).toString();}
-    void setFirstname(const QString& v){ ti.setValue(qsl("Vorname"),  v); }
-    QString lastname() const    { return getValue(qsl("Nachname")).toString();}
-    void setLastname(const QString& n) { ti.setValue(qsl("Nachname"), n); }
-    QString street() const      { return getValue(qsl("Strasse")).toString();}
-    void setStreet(const QString& s)   { ti.setValue(qsl("Strasse"),  s); }
-    QString postalCode() const  { return getValue(qsl("Plz")).toString();}
-    void setPostalCode(const QString& p){ ti.setValue(qsl("Plz"),     p); }
-    QString city() const        { return getValue(qsl("Stadt")).toString();}
-    void setCity(const QString& s)     { ti.setValue(qsl("Stadt"),  s); }
-    QString country() const     { return getValue(qsl("Land")).toString();}
-    void setCountry(const QString& s)  { ti.setValue(qsl("Land"), s); }
-    QString email() const       { return getValue(qsl("Email")).toString();}
-    void setEmail(const QString& e)    { ti.setValue(qsl("Email"), e); }
-    QString comment() const     { return getValue(qsl("Anmerkung")).toString();}
-    void setComment(const QString& a)  { ti.setValue(qsl("Anmerkung"), a);}
+    QString firstname() const   { return getValue(fnVorname).toString();}
+    void setFirstname(const QString& v){ ti.setValue(fnVorname,  v); }
+    QString lastname() const    { return getValue(fnNachname).toString();}
+    void setLastname(const QString& n) { ti.setValue(fnNachname, n); }
+    QString street() const      { return getValue(fnStrasse).toString();}
+    void setStreet(const QString& s)   { ti.setValue(fnStrasse,  s); }
+    QString postalCode() const  { return getValue(fnPlz).toString();}
+    void setPostalCode(const QString& p){ ti.setValue(fnPlz,     p); }
+    QString city() const        { return getValue(fnStadt).toString();}
+    void setCity(const QString& s)     { ti.setValue(fnStadt,  s); }
+    QString country() const     { return getValue(fnLand).toString();}
+    void setCountry(const QString& s)  { ti.setValue(fnLand, s); }
+    QString email() const       { return getValue(fnEmail).toString();}
+    void setEmail(const QString& e)    { ti.setValue(fnEmail, e); }
+    QString tel() const       { return getValue(fnTel).toString();}
+    void setTel(const QString& e)    { ti.setValue(fnTel, e); }
+    QString comment() const     { return getValue(fnAnmerkung).toString();}
+    void setComment(const QString& a)  { ti.setValue(fnAnmerkung, a);}
+    QString contact() const     { return getValue(fnKontakt).toString();}
+    void setContact(const QString& a)  { ti.setValue(fnKontakt, a);}
+    QString account() const     { return getValue(fnBuchungskonto).toString();}
+    void setAccount(const QString& a)  { ti.setValue(fnBuchungskonto, a);}
     QString iban() const        {return getValue(qsl("IBAN")).toString();}
     void setIban(const QString& i)     { ti.setValue(qsl("IBAN"), i);}
     QString bic() const        {return getValue(qsl("BIC")).toString();}
@@ -62,13 +84,6 @@ private:
 void fillCreditorsListForLetters(QList<QPair<int,QString>> &entries, int bookingYear =-1);
 
 
-// sample data for testing
-extern QList<QString> Vornamen;// {"Holger", "Volker", "Peter", "Hans", ...
-extern QList<QString> Nachnamen;// {"Maier", "Müller", "Schmit", "Kramp", ...
-extern QList<QString> Strassen;// {"Hauptstrasse", "Nebenstrasse", "Bahnhofstrasse"...
-extern QList<QString> emailprovider;// {"gmail.com", "googlemail.com", "mailbox.org",...
-extern QList<QString> ibans;//  {"BG80BNBG96611020345678", "DE38531742365852502530", ...
-extern QList <QPair<QString, QString>> Cities;// {{"68305", "Mannheim"}, {"69123", ...
 // for testing
 creditor saveRandomCreditor();
 void saveRandomCreditors( const int i);
