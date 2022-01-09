@@ -933,7 +933,11 @@ void MainWindow::on_action_menu_debug_show_log_triggered()
 #if defined(Q_OS_WIN)
     ::ShellExecuteA(nullptr, "open", logFilePath().toUtf8(), "", QDir::currentPath().toUtf8(), 1);
 #else
+    #if defined(Q_OS_MAC)
+    QString cmd = QStringLiteral("open -e ") + logFilePath();
+    #else
     QString cmd = QStringLiteral("xdg-open ") + logFilePath();
+    #endif
     if (system(cmd.toUtf8().constData())) {
         QString msg = qsl("Ich weiß nicht wie %1 geöffnet werden kann.\n" \
         "Benutze bitte einen Text-Editor wie gedit, kate oder ähnlich.").arg(logFilePath());
@@ -942,6 +946,7 @@ void MainWindow::on_action_menu_debug_show_log_triggered()
 
 #endif
 }
+
 void MainWindow::on_actionDatenbank_Views_schreiben_triggered()
 {
     insertDKDB_Views(QSqlDatabase::database());
