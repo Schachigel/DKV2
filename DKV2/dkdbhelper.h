@@ -48,7 +48,8 @@ struct contractRuntimeDistrib_rowData
 Q_DECLARE_TYPEINFO(contractRuntimeDistrib_rowData, Q_PRIMITIVE_TYPE);
 QVector<contractRuntimeDistrib_rowData> contractRuntimeDistribution();
 
-QVector<QStringList> perpetualInvestmentCheck();
+QVector<QStringList> perpetualInvestmentByDate();
+QVector<QStringList> perpetualInvestmentByInvestments();
 
 struct BookingDateData {
     int count;

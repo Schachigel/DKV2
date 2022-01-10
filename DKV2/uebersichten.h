@@ -91,7 +91,8 @@ struct uebersichten
         BY_CONTRACT_ENDING,
         INTEREST_DISTRIBUTION,
         CONTRACT_RUNTIME_DISTRIB,
-        PERPETUAL_INVESTMENTS_CHECK
+        PERPETUAL_INVESTMENTS_CHECK,
+        PERPETUAL_INVESTMENTS_BY_INVESTMENT
     };
     //static int fromUeType(uetype t) { return static_cast<int>(t);}
     static uetype fromInt(int i) { return static_cast<uetype>(i);}
@@ -105,6 +106,7 @@ private:
     void renderInterestDistribution();
     void renderContractRuntimeDistrib();
     void renderPerpetualInvestmentsCheck();
+    void renderPerpetualInvestmentsByInvestment();
 //    void renderContractsByInterestByYear();
 private: /*static*/
     static QString titles[];

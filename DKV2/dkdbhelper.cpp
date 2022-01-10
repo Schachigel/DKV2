@@ -307,7 +307,7 @@ QVector<contractRuntimeDistrib_rowData> contractRuntimeDistribution()
     return ret;
 }
 
-QVector<QStringList> perpetualInvestmentCheck()
+QVector<QStringList> perpetualInvestmentByDate()
 {
     QString sql {qsl(R"str(
     WITH Abschluesse AS (
@@ -335,7 +335,7 @@ QVector<QStringList> perpetualInvestmentCheck()
       ) AS periodenSumme
     FROM Abschluesse
     GROUP BY Datum, AnlageId
-    ORDER BY Datum DESC, Anlage ASC
+    ORDER BY Anlage ASC, Datum DESC
     )str")};
 
     QVector<QSqlRecord> rec;
@@ -356,6 +356,55 @@ QVector<QStringList> perpetualInvestmentCheck()
     }
     return result;
 }
+
+QVector<QStringList> perpetualInvestmentByInvestments()
+{
+    QString sql {qsl(R"str(
+    WITH Abschluesse AS (
+      SELECT G.rowid    AS AnlageId
+        , G.Typ         AS Anlage
+        , V.Kennung          AS Vertrag
+        , V.Vertragsdatum AS Datum
+        , V.Betrag        AS Betrag
+      FROM Vertraege AS V
+      INNER JOIN Geldanlagen AS G ON G.rowid = V.AnlagenId
+    )
+    SELECT
+    Abschluesse.Anlage AS Anlage
+    , Abschluesse.Datum AS Vertragsdatum
+    , Abschluesse.Vertrag
+    , sum(Abschluesse.Betrag/100.) AS AnlageSumme_Tag
+    , (SELECT SUM(Betrag)/100.
+      FROM ( SELECT Betrag
+             FROM Abschluesse AS _ab
+             WHERE _ab.AnlageId = Abschluesse.AnlageId
+               AND _ab.Datum > DATE(Abschluesse.Datum, '-1 years')
+               AND _ab.Datum <= Abschluesse.Datum
+           )
+      ) AS periodenSumme
+    FROM Abschluesse
+    GROUP BY Datum, AnlageId
+    ORDER BY Anlage ASC, Datum DESC
+    )str")};
+    QVector<QSqlRecord> rec;
+    if( not executeSql (sql, rec)) {
+        return QVector<QStringList>();
+    }
+    QLocale l;
+    QVector<QStringList> result;
+    for( int i=0; i< rec.size (); i++) {
+        QStringList zeile;
+        zeile.push_back (rec[i].value(0).toString ()), // Anlage
+        zeile.push_back (rec[i].value(1).toDate().toString("dd.MM.yyyy")); // Vertragsdatum
+        zeile.push_back (rec[i].value(2).toString());  //Kennung
+        zeile.push_back (l.toCurrencyString (rec[i].value(3).toDouble ())); // new contract sum
+        zeile.push_back (l.toCurrencyString (rec[i].value(4).toDouble ()));
+        result.push_back (zeile);
+    }
+    return result;
+}
+
+
 
 // calc how many contracts end each year
 void calc_contractEnd( QVector<contractEnd_rowData>& ces)

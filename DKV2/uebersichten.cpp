@@ -200,6 +200,10 @@ void uebersichten::renderDocument( uebersichten::uetype t)
     case uetype::PERPETUAL_INVESTMENTS_CHECK:
         renderPerpetualInvestmentsCheck ();
         break;
+    case uetype::PERPETUAL_INVESTMENTS_BY_INVESTMENT:
+        renderPerpetualInvestmentsByInvestment ();
+        break;
+
 //    case uetype::CONTRACT_by_interest_By_Year
 //        renderContractsByInterestByYear();
 //        break
@@ -343,12 +347,45 @@ void uebersichten::renderPerpetualInvestmentsCheck()
     tablelayout tl(td);
     tl.cols =QStringList{qsl("Vertrags\ndatum"), qsl("Vertrag"), qsl("Start der\nPeriode"), qsl("Anlage"), qsl("Angelegter\nBetrag"), qsl("Summe in\nPeriode")};
 
-    QVector<QStringList> lines =perpetualInvestmentCheck();
+    QVector<QStringList> lines =perpetualInvestmentByDate();
     tablelayout::section sec;
     for(int i=0; i<lines.count (); i++) {
         sec.data.push_back (lines[i]);
     }
     tl.sections.push_back (sec);
+    tl.renderTable ();
+}
+
+void uebersichten::renderPerpetualInvestmentsByInvestment()
+{
+    QString head {qsl("Liste der fortlaufenden Geldanlagen")};
+    QString desc {qsl("Diese Tabelle zeigt für jede fortlaufende Geldanlage ihren zeitlichen Verlauf")};
+    prep(head, desc);
+
+    tablelayout tl(td);
+
+    QVector<QStringList> data =perpetualInvestmentByInvestments ();
+    if( data.size () == 0)
+        return;
+    QString investment;
+    tablelayout::section curSec;
+    for( int i=0; i< data.length (); i++) {
+        if( data[i][0] not_eq investment) {
+            // new section starts here
+            if( i>0) {
+                tl.sections.push_back (curSec);
+                curSec.data.clear ();
+            }
+            curSec.header =investment =data[i][0];
+        }
+        QStringList row;
+        for (int j=1; j<data[i].length (); j++) {
+            row.append (data[i][j]);
+        }
+        curSec.data.append(row);
+    }
+    if( curSec.data.size ())
+        tl.sections.push_back (curSec);
     tl.renderTable ();
 }
 

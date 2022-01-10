@@ -691,7 +691,8 @@ void MainWindow::on_action_menu_contracts_statistics_view_triggered()
                                      qsl("Anzahl auslaufender Verträge nach Jahr"),
                                      qsl("Anzahl Verträge nach Zinssatz und Jahr"),
                                      qsl("Anzahl Verträge nach Laufzeiten"),
-                                     qsl("Fortlaufende Geldanlagen")}));
+                                     qsl("Fortlaufende Geldanlagen nach Datum"),
+                                     qsl("Fortlaufende Geldanlagen nach Anlagen")}));
     } else {
         updateUebersichtView(combo->currentIndex());
     }
