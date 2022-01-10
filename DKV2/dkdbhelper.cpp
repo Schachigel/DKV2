@@ -323,6 +323,7 @@ QVector<QStringList> perpetualInvestmentCheck()
     , Abschluesse.Vertrag
     , DATE(Abschluesse.Datum, '-1 years') AS periodenStart
     , Abschluesse.Anlage AS Anlage
+    , sum(Abschluesse.Betrag/100.) AS AnlageSumme
     , Abschluesse.Betrag/100. AS Anlagebetrag
     , (SELECT SUM(Betrag)/100.
       FROM ( SELECT Betrag
@@ -334,7 +335,7 @@ QVector<QStringList> perpetualInvestmentCheck()
       ) AS periodenSumme
     FROM Abschluesse
     GROUP BY Datum, AnlageId
-    ORDER BY Datum DESC
+    ORDER BY Datum DESC, Anlage ASC
     )str")};
 
     QVector<QSqlRecord> rec;
