@@ -297,6 +297,8 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
         return;
     QTableView*& tv = ui->contractsTableView;
     QModelIndex index = tv->indexAt(pos).siblingAtColumn(0);
+    if( not index.isValid ())
+        return;
 
     contract c(index.data().toInt());
     contractUnderMouseMenu =&c;
