@@ -70,10 +70,7 @@ wpChangeContract_AmountPage::wpChangeContract_AmountPage(QWidget* parent) : QWiz
     QVBoxLayout *layout = new QVBoxLayout;
     QLineEdit* le = new QLineEdit;
 
-
-    QDoubleValidator* dv =new QDoubleValidator(0., 100000000., 2, this );
-    QLocale l;
-    dv->setLocale (l);
+    QDoubleValidator* dv =new QDoubleValidator(0., 100000000., 2, le);
     le->setValidator(dv);
     registerField(qsl("amount"), le);
 
@@ -93,7 +90,7 @@ void wpChangeContract_AmountPage::initializePage()
         QString subt =qsl("Der Betrag muss größer als %1 sein.");
         subt =subt.arg(l.toCurrencyString(minPayout));
         subTitleLabel->setText(subt);
-        setField(qsl("amount"), 1000.);
+        setField(qsl("amount"), l.toString (1000.));
     } else {
         setTitle(qsl("Auszahlungsbetrag"));
         wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
@@ -103,7 +100,7 @@ void wpChangeContract_AmountPage::initializePage()
         QString subtitle =qsl("Der Auszahlungsbetrag kann zwischen %1 und %2 liegen.");
         subtitle = subtitle.arg(l.toCurrencyString(minPayout), l.toCurrencyString(maxPayout));
         subTitleLabel->setText(subtitle);
-        setField(qsl("amount"), minPayout);
+        setField(qsl("amount"), l.toString(minPayout));
     }
 }
 
@@ -115,7 +112,6 @@ bool wpChangeContract_AmountPage::validatePage()
     double amount = r2(l.toDouble(tmp));
 
     if( isDeposit) {
-        setField(qsl("amount"), amount);
         if( amount <= 0)
             return false;
         else
@@ -134,7 +130,6 @@ bool wpChangeContract_AmountPage::validatePage()
             return false;
         }
     }
-    setField(qsl("amount"), amount);
     return true;
 }
 
@@ -207,7 +202,7 @@ void wpChangeContract_Summary::initializePage()
                       "<p>Datum: %7</b>");
     bool deposit = field(qsl("deposit_notPayment")).toBool();
     double oldValue = wiz->currentAmount, newValue =0;
-    double change = field(qsl("amount")).toDouble();
+    double change = QLocale().toDouble(field(qsl("amount")).toString());
     if( deposit) {
         setTitle(qsl("Zusammenfassung der Einzahlung"));
         subtitle = qsl("Einzahlung ") +subtitle;

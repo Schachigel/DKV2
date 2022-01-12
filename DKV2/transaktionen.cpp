@@ -120,7 +120,7 @@ void newCreditorAndContract()
     }
     contract cont;
     cont.setCreditorId(wiz.c_tor.id());
-    cont.setPlannedInvest(wiz.field(pnAmount).toDouble());
+    cont.setPlannedInvest(QLocale().toDouble(wiz.field(pnAmount).toString()));
     cont.setInterestRate(wiz.interest / 100.);
     cont.setInvestment(wiz.investmentId);
     cont.setLabel(wiz.field(pnLabel).toString());
@@ -237,7 +237,8 @@ void bookInitialPaymentReceived(contract *v)
         qInfo() << "contract activation canceled by the user";
         return;
     }
-    if (not v->bookInitialPayment(wiz.field(fnDate).toDate(), wiz.field(fnAmount).toDouble())) {
+
+    if (not v->bookInitialPayment(wiz.field(fnDate).toDate(), QLocale().toDouble (wiz.field(fnAmount).toString()))) {
         qCritical() << "activation failed";
         Q_ASSERT(false);
     }
@@ -289,8 +290,9 @@ void changeContractValue(contract *pc)
     wiz.setField(qsl("deposit_notPayment"), QVariant(true));
 
     wiz.exec();
+
     if (wiz.field(qsl("confirmed")).toBool()) {
-        double amount{wiz.field(qsl("amount")).toDouble()};
+        double amount{ QLocale().toDouble(wiz.field(qsl("amount")).toString())};
         QDate date{wiz.field(qsl("date")).toDate()};
         qDebug() << wiz.field(qsl("deposit_notPayment")) << ", " << amount << ", " << date;
         if (wiz.field(qsl("deposit_notPayment")).toBool()) {

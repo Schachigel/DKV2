@@ -71,7 +71,7 @@ wpInitialPayment_AmountPage::wpInitialPayment_AmountPage(QWidget* p) : QWizardPa
     QVBoxLayout *layout = new QVBoxLayout;
     QLabel* l = new QLabel(qsl("Betrag in Euro"));
     QLineEdit* le = new QLineEdit;
-    le->setValidator(new QDoubleValidator(this));
+    le->setValidator(new QDoubleValidator(0., 1000000., 2, le));
     registerField(fnAmount, le);
     l->setBuddy(le);
     layout->addWidget(subTitleLabel);
@@ -84,10 +84,11 @@ bool wpInitialPayment_AmountPage::validatePage()
 {
     wizInitialPayment* wiz = qobject_cast<wizInitialPayment*>(wizard());
     QLocale l;
-    double amount = l.toDouble(field(fnAmount).toString());
+    QString strAmount =field(fnAmount).toString();
+    double amount = l.toDouble(strAmount);
     if( amount < dbConfig::readValue(MIN_AMOUNT).toDouble())
         return false;
-    setField(fnAmount, r2(amount));
+
     if( wiz->expectedAmount not_eq amount) {
         qInfo() << "activation with different amount";
     }
@@ -112,8 +113,8 @@ void wpInitialPayment_SummaryPage::initializePage()
     QString subt =qsl("Der Geldeingang für den Vertrag <p><b>%1</b> von <b>%2</b><p> soll mit einem Betrag von <p>"
                   "<b>%3 </b><p> zum %4 gebucht werden. <br>");
     wizInitialPayment* wiz = qobject_cast<wizInitialPayment*>(wizard());
-    double amount = field(fnAmount).toDouble();
-    QLocale locale;
+
+    double amount = QLocale().toDouble (field(fnAmount).toString());
     subt = subt.arg(wiz->label, wiz->creditorName, locale.toCurrencyString(amount), field(fnDate).toDate().toString(qsl("dd.MM.yyyy")));
     if( amount not_eq wiz->expectedAmount)
         subt += qsl(" <b><small>Der Überweisungsbetrag stimmt nicht mit dem Kreditbetrag überein.</small></b>");

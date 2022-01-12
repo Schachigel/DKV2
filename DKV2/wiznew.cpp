@@ -447,7 +447,7 @@ wpLableAndAmount::wpLableAndAmount(QWidget *p) : QWizardPage(p)
     QLineEdit *leAmount = new QLineEdit;
     leAmount->setToolTip(qsl("Der Kreditbetrag muss größer als ") + dbConfig::readValue(MIN_AMOUNT).toString() + qsl("Euro sein"));
     registerField(pnAmount, leAmount);
-    leAmount->setValidator(new QDoubleValidator(this));
+    leAmount->setValidator(new QDoubleValidator(0., 1000000., 2, leAmount));
     l2->setBuddy(leAmount);
 
     QLabel *l3 = new QLabel(qsl("Anmerkung"));
@@ -516,7 +516,6 @@ bool wpLableAndAmount::validatePage()
         QMessageBox::critical(this, qsl("Fehler"), msg);
         return false;
     }
-    setField(pnAmount, dAmount);
     return true;
 }
 int wpLableAndAmount::nextId() const
@@ -871,7 +870,7 @@ void wpConfirmContract::initializePage()
         interestModel iMode{wiz->iPaymentMode};
         QString interestMode = toString(iMode);
         subTitleLabel->setText(
-            summary.arg(field(pnFName).toString(), field(pnLName).toString(), field(pnLabel).toString(), l.toCurrencyString(field(pnAmount).toDouble()), QString::number(wiz->interest / 100., 'f', 2), interestMode, field(pnCDate).toDate().toString(qsl("dd.MM.yyyy")), (wiz->noticePeriod == -1) ? wiz->field(pnEDate).toDate().toString(qsl("dd.MM.yyyy")) : QString::number(wiz->noticePeriod) + qsl(" Monate nach Kündigung"), field(pnIPaymentDelayed).toBool() ? qsl("Zinszahlung nicht ab Geldeingang") : qsl("Verzinsung ab Geldeingang")));
+            summary.arg(field(pnFName).toString(), field(pnLName).toString(), field(pnLabel).toString(), l.toCurrencyString(l.toDouble (field(pnAmount).toString())), QString::number(wiz->interest / 100., 'f', 2), interestMode, field(pnCDate).toDate().toString(qsl("dd.MM.yyyy")), (wiz->noticePeriod == -1) ? wiz->field(pnEDate).toDate().toString(qsl("dd.MM.yyyy")) : QString::number(wiz->noticePeriod) + qsl(" Monate nach Kündigung"), field(pnIPaymentDelayed).toBool() ? qsl("Zinszahlung nicht ab Geldeingang") : qsl("Verzinsung ab Geldeingang")));
     }
     else
         Q_ASSERT(false);
