@@ -307,25 +307,50 @@ QVector<contractRuntimeDistrib_rowData> contractRuntimeDistribution()
     return ret;
 }
 
+namespace {
+QString decorateHighValues(double d)
+{
+    QString ret =QLocale().toCurrencyString (d);
+    if (d >=80000.) {
+        if (d >=90000.) {
+            if (d >=100000.) {
+                return qsl("<font color='red'><b>%1</b></font>").arg(ret);
+            }
+            // 90t - 100t
+            return qsl("<font color='red'>%1</font>").arg(ret );
+        }
+        // 80t - 90t
+        return qsl("<b>%1</b>").arg(ret);
+    }
+    return ret;
+}
+}
+
 QVector<QStringList> perpetualInvestmentByDate()
 {
     QString sql {qsl(R"str(
-    WITH Abschluesse AS (
+   WITH
+   fortlaufendeGeldanlagen AS
+   (
+      SELECT * FROM Geldanlagen WHERE Ende = '9999-12-31'
+   ),
+   Abschluesse AS
+   (
       SELECT G.rowid    AS AnlageId
-        , G.Typ         AS Anlage
+        , G.Typ || ' (' || printf("%.2f%", V.zSatz/100.) || ')' AS Anlage
         , V.Kennung          AS Vertrag
         , V.Vertragsdatum AS Datum
         , V.Betrag        AS Betrag
       FROM Vertraege AS V
-      INNER JOIN Geldanlagen AS G ON G.rowid = V.AnlagenId
+      INNER JOIN fortlaufendeGeldanlagen AS G ON G.rowid = V.AnlagenId
     )
     SELECT Abschluesse.Datum AS Vertragsdatum
     , Abschluesse.Vertrag
     , DATE(Abschluesse.Datum, '-1 years') AS periodenStart
     , Abschluesse.Anlage AS Anlage
     , sum(Abschluesse.Betrag/100.) AS AnlageSumme
-    , Abschluesse.Betrag/100. AS Anlagebetrag
-    , (SELECT SUM(Betrag)/100.
+    , count(Abschluesse.Vertrag) AS AnzahlVertraege
+     , (SELECT SUM(Betrag)/100.
       FROM ( SELECT Betrag
              FROM Abschluesse AS _ab
              WHERE _ab.AnlageId = Abschluesse.AnlageId
@@ -335,7 +360,7 @@ QVector<QStringList> perpetualInvestmentByDate()
       ) AS periodenSumme
     FROM Abschluesse
     GROUP BY Datum, AnlageId
-    ORDER BY Anlage ASC, Datum DESC
+    ORDER BY Datum DESC, Anlage DESC
     )str")};
 
     QVector<QSqlRecord> rec;
@@ -346,12 +371,13 @@ QVector<QStringList> perpetualInvestmentByDate()
     QVector<QStringList> result;
     for( int i=0; i< rec.size (); i++) {
         QStringList zeile;
-        zeile.push_back (rec[i].value(0).toDate().toString("dd.MM.yyyy"));
+        zeile.push_back (rec[i].value(0).toDate().toString("dd.MM.yyyy")); // VDatum
         zeile.push_back (rec[i].value(1).toString()); // Kennung
-        zeile.push_back (rec[i].value(2).toDate().toString ("dd.MM.yyyy"));
+        zeile.push_back (rec[i].value(2).toDate().toString ("dd.MM.yyyy")); // periodenstart
         zeile.push_back (rec[i].value(3).toString()); // Geldanlage Typ
         zeile.push_back (l.toCurrencyString (rec[i].value(4).toDouble ())); // Kreditvol.
-        zeile.push_back (l.toCurrencyString (rec[i].value(5).toDouble ())); // Summe über Periode
+        zeile.push_back (rec[i].value(5).toString()); // VAnzahl
+        zeile.push_back (decorateHighValues (rec[i].value(6).toDouble ()));
         result.push_back (zeile);
     }
     return result;
@@ -360,20 +386,26 @@ QVector<QStringList> perpetualInvestmentByDate()
 QVector<QStringList> perpetualInvestmentByInvestments()
 {
     QString sql {qsl(R"str(
-    WITH Abschluesse AS (
+   WITH
+   fortlaufendeGeldanlagen AS
+   (
+      SELECT * FROM Geldanlagen WHERE Ende = '9999-12-31'
+   ),
+    Abschluesse AS (
       SELECT G.rowid    AS AnlageId
-        , G.Typ         AS Anlage
+        , G.Typ || ' (' || printf("%.2f%", V.zSatz/100.) || ')' AS Anlage
         , V.Kennung          AS Vertrag
         , V.Vertragsdatum AS Datum
         , V.Betrag        AS Betrag
       FROM Vertraege AS V
-      INNER JOIN Geldanlagen AS G ON G.rowid = V.AnlagenId
+      INNER JOIN fortlaufendeGeldanlagen AS G ON G.rowid = V.AnlagenId
     )
     SELECT
     Abschluesse.Anlage AS Anlage
     , Abschluesse.Datum AS Vertragsdatum
     , Abschluesse.Vertrag
     , sum(Abschluesse.Betrag/100.) AS AnlageSumme_Tag
+    , count(Abschluesse.Vertrag) AS AnzahlVerträge
     , (SELECT SUM(Betrag)/100.
       FROM ( SELECT Betrag
              FROM Abschluesse AS _ab
@@ -397,8 +429,10 @@ QVector<QStringList> perpetualInvestmentByInvestments()
         zeile.push_back (rec[i].value(0).toString ()), // Anlage
         zeile.push_back (rec[i].value(1).toDate().toString("dd.MM.yyyy")); // Vertragsdatum
         zeile.push_back (rec[i].value(2).toString());  //Kennung
-        zeile.push_back (l.toCurrencyString (rec[i].value(3).toDouble ())); // new contract sum
-        zeile.push_back (l.toCurrencyString (rec[i].value(4).toDouble ()));
+        zeile.push_back (l.toCurrencyString (rec[i].value(3).toDouble ())); // new contract sum by day
+        zeile.push_back (rec[i].value(4).toString ()); // contract count
+        double periodSum =rec[i].value(5).toDouble ();
+        zeile.push_back (decorateHighValues (periodSum));
         result.push_back (zeile);
     }
     return result;

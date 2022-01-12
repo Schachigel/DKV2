@@ -49,9 +49,9 @@ private: // data
     const bool regular =false;
 
     // font sizes in pt
-    const int fontSize_colHeader =18;
+    const int fontSize_colHeader =14;
     const int fontSize_secHeader =14;
-    const int fontSize_data      =12;
+    const int fontSize_data      =11;
     const int fontSize_emptyRow  =1;
 
     struct cellTypeFormat {

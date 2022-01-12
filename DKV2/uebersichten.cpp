@@ -118,7 +118,7 @@ int tablelayout::fillSectionData(QTextTable* table, const int secIndex, const in
                     setCellFormat( cell, dataLastColEven);
                 else setCellFormat( cell, dataMiddleColEven);
             }
-            cell.firstCursorPosition().insertText(sec.data[rowInData][colInData]);
+            cell.firstCursorPosition().insertHtml(sec.data[rowInData][colInData]);
         }
     }
     return sec.data.count();
@@ -172,7 +172,7 @@ void uebersichten::prep( const QString& head, const QString& desc)
 
     // add Title, project info and current date
     QTextCursor tc(td);
-    tc.insertHtml(qsl("<h1>%1</h1><p>").arg(head));
+    tc.insertHtml(qsl("<h2>%1</h2><p>").arg(head));
     QString headerline =qsl("<big>%1</big> - Stand: %2<p>");
     //qsl("<div style=\"text-align:left; float:left\">%1</div> <div style=\"text-align:right;\">Stand: %2</div>");
     tc.insertHtml(headerline.arg( dbConfig::readString(GMBH_ADDRESS1), QDate::currentDate().toString(Qt::ISODate)));
@@ -345,7 +345,7 @@ void uebersichten::renderPerpetualInvestmentsCheck()
     prep(head, desc);
 
     tablelayout tl(td);
-    tl.cols =QStringList{qsl("Vertrags\ndatum"), qsl("Vertrag"), qsl("Start der\nPeriode"), qsl("Anlage"), qsl("Angelegter\nBetrag"), qsl("Summe in\nPeriode")};
+    tl.cols =QStringList{qsl("Vertrags\ndatum"), qsl("Vertrag"), qsl("Start der\nPeriode"), qsl("Anlage"), qsl("Angelegter\nBetrag"),qsl("# Vertr."), qsl("Summe in\nPeriode")};
 
     QVector<QStringList> lines =perpetualInvestmentByDate();
     tablelayout::section sec;
@@ -390,4 +390,3 @@ void uebersichten::renderPerpetualInvestmentsByInvestment()
 }
 
 //void uebersichten::renderContractsByInterestByYear()
-
