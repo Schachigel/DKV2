@@ -17,11 +17,12 @@ SELECT
 
   ,IFNULL(Eingangsbuchung, '(steht aus)') AS Geldeingang
   ,IIF(V.zActive, ' aktiv ', ' ausgesetzt ') AS VerzinsungsStatus
-  ,IIF(V.Betrag <= IIF(V.thesaurierend == 0, IFNULL(summeAllerBuchungen, 0)
+  ,IIF(V.thesaurierend > 3, 'Fehler'
+         , IIF(V.Betrag <= IIF(V.thesaurierend == 0, IFNULL(summeAllerBuchungen, 0)
          , IIF(V.thesaurierend == 1, IFNULL(summeAllerBuchungen, 0)
          , IIF(V.thesaurierend == 2, IFNULL(summeEinUndAuszahlungen, 0)
-         , IIF(V.thesaurierend == 3, IFNULL(summeEinUndAuszahlungen, 0), 'ERROR'))))
-    , V.Betrag /100., '[soll: ' || CAST( V.Betrag /100. AS TEXT) || ' €]' ) AS Nominalwert
+         , IIF(V.thesaurierend == 3, IFNULL(summeEinUndAuszahlungen, 0), 0))))
+    , V.Betrag /100., '[soll: ' || CAST( V.Betrag /100. AS TEXT) || ' €]' )) AS Nominalwert
   , IIF(IFNULL(AnlagenId, 0) == 0
       , CAST(V.Zsatz / 100. AS VARCHAR) || ' % (ohne Anlage)'
       , CAST(V.Zsatz / 100. AS VARCHAR) || ' % - ' || GA.Typ ) AS Zinssatz
