@@ -521,7 +521,7 @@ qlonglong createInvestment(int &interest, QDate &from, QDate &to)
     // give the user a UI to create a investment which will match a certain set of contract data
     wizNewInvestment wiz;
     wiz.setField(pnZSatz, QVariant(interest));
-    wiz.setField(pnVon, QVariant(from));
+    wiz.initStartDate (from);
     wiz.setField(pnBis, QVariant(from.addYears(1).addDays(-1)));
     wiz.exec();
     if (not wiz.field(pnKorrekt).toBool()) {
@@ -548,7 +548,7 @@ void createInvestment()
 {
     LOG_CALL;
     wizNewInvestment wiz;
-    wiz.setField(pnVon, QDate::currentDate());
+    wiz.initStartDate (QDate::currentDate ());
     wiz.exec();
     if (not wiz.field(pnKorrekt).toBool())
     {

@@ -37,9 +37,18 @@ void wpInvestmentSummary::initializePage()
                      "<tr><td>Ende:</td><td>%3</td></tr>"
                      "<tr><td>Typ:</td><td>%4</td></tr></table>")};
     msg =msg.arg(QString::number(field(pnZSatz).toInt()/100.));
-    msg =msg.arg(field(pnVon).toDate().toString(qsl("dd.MM.yyyy")));
-    msg =msg.arg(field(pnBis).toDate().toString(qsl("dd.MM.yyyy")));
-    msg =msg.arg(field(pnTyp).toString());
+
+    QDate von =field(pnVon).toDate();
+    QDate bis =field(pnBis).toDate ();
+    if( bis == EndOfTheFuckingWorld) {
+        msg =msg.arg(qsl("-"));
+        msg =msg.arg(qsl("(fortlaufend)"));
+        msg =msg.arg(field(pnTyp).toString());
+    } else {
+        msg =msg.arg(von.toString(qsl("dd.MM.yyyy")));
+        msg =msg.arg(bis.toString(qsl("dd.MM.yyyy")));
+        msg =msg.arg(field(pnTyp).toString());
+    }
     subTitleLabel->setText(msg);
     subTitleLabel->setWordWrap(true);
 }
@@ -85,16 +94,16 @@ wpTimeFrame::wpTimeFrame(QWidget* w) : QWizardPage(w)
     QLabel* lBis =new QLabel(qsl("Ende der Ausgabe"));
     lBis->setToolTip(qsl("Verträge mit dem zuvor angegebenen Zinssatz werden bis zu diesem Datum zu der Geldanlage gezählt"));
 
+    cbFloating =new QCheckBox(qsl("Ohne Datum (\"fortlaufend\")"));
+    cbFloating->setToolTip (qsl("Bei einer Anlage ohne Ende Datum werden immer die letzten 12 Monate als Referenzzeitraum verwendet"));
+    cbFloating->setCheckState (Qt::Unchecked);
+    connect(cbFloating, &QCheckBox::stateChanged, this, &wpTimeFrame::onSwitchFloating);
+
     deVon =new QDateEdit();
     deVon->setDisplayFormat(qsl("dd.MM.yyyy"));
     lVon->setBuddy(deVon);
     deVon->setToolTip(lVon->toolTip());
     registerField(pnVon, deVon/*, "date", "dateChanged(QDate)"*/);
-
-    cbFloating =new QCheckBox(qsl("Ohne Ende Datum (\"fortlaufend\")"));
-    cbFloating->setToolTip (qsl("Bei einer Anlage ohne Ende Datum werden immer die letzten 12 Monate als Referenzzeitraum verwendet"));
-    cbFloating->setCheckState (Qt::Unchecked);
-    connect(cbFloating, &QCheckBox::stateChanged, this, &wpTimeFrame::onSwitchFloating);
 
     deBis =new QDateEdit();
     deBis->setDisplayFormat(qsl("dd.MM.yyyy"));
@@ -111,8 +120,8 @@ wpTimeFrame::wpTimeFrame(QWidget* w) : QWizardPage(w)
     hlBis->addWidget(lBis); hlBis->addWidget(deBis);
     QVBoxLayout* vl =new QVBoxLayout();
     vl->addWidget(subTitleLabel);
-    vl->addLayout(hlVon);
     vl->addWidget (cbFloating);
+    vl->addLayout(hlVon);
     vl->addLayout(hlBis);
     setLayout(vl);
 }
@@ -120,10 +129,14 @@ wpTimeFrame::wpTimeFrame(QWidget* w) : QWizardPage(w)
 void wpTimeFrame::onSwitchFloating(int state)
 {
     if( state == Qt::CheckState::Checked){
+        deVon->setDate (BeginingOfTime);
+        deVon->setEnabled (false);
         deBis->setDate (EndOfTheFuckingWorld);
         deBis->setEnabled (false);
-    }
-    else{
+    } else {
+        wizNewInvestment* wiz =qobject_cast<wizNewInvestment*> (wizard());
+        deVon->setDate (wiz->getInitStartDate ());
+        deVon->setEnabled (true);
         deBis->setDate (deVon->date ().addYears (1));
         deBis->setEnabled (true);
     }
@@ -185,4 +198,10 @@ wizNewInvestment::wizNewInvestment(QWidget* p) : QWizard(p)
     addPage(new wpTimeFrame());
     addPage(new wpType());
     addPage(new wpInvestmentSummary());
+}
+
+void wizNewInvestment::initStartDate (QDate d)
+{
+    initialStartDate =d;
+    setField(pnVon, d);
 }

@@ -64,7 +64,10 @@ struct wizNewInvestment : public QWizard
 {
 public:
     wizNewInvestment(QWidget* w =nullptr);
+    void initStartDate(QDate date);
+    QDate getInitStartDate() { return initialStartDate;}
 private:
+    QDate initialStartDate;
     Q_OBJECT;
 };
 
