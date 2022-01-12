@@ -11,12 +11,13 @@ const QString init    {qsl("init")};
 dlgDisplayColumns::dlgDisplayColumns(const QVector<QPair<int, QString>>& colInfo, const QBitArray& status, QWidget* p)
     : QDialog(p), status(status), colInfo(colInfo)
 {
-    QLabel* header =new QLabel( qsl("Wähle die Spalten, die angezeigt werden sollen!"));
-    setFontPs(header, 14);
-    QVBoxLayout* layout =new QVBoxLayout();
-    layout->addWidget (header);
-    layout->addWidget (new QLabel());
+    QVBoxLayout* mainlayout =new QVBoxLayout();
 
+    QLabel* header =new QLabel( qsl("<h3>Wähle die Spalten aus,<br> die angezeigt werden sollen!</h3>"));
+    //header->setWordWrap (true);
+    mainlayout->addWidget (header);
+
+    QVBoxLayout* layout =new QVBoxLayout();
     for( const QPair<int, QString>& col : qAsConst(colInfo)) {
         if( col.second.isEmpty ()) continue;
         QCheckBox* cb =new QCheckBox(col.second);
@@ -25,16 +26,30 @@ dlgDisplayColumns::dlgDisplayColumns(const QVector<QPair<int, QString>>& colInfo
         layout->addWidget (cb);
     }
 
-    layout->addWidget (new QLabel());
+    QGroupBox* gb =new QGroupBox();
+    gb->setCheckable (false);
+    gb->setLayout (layout);
+
+    mainlayout->addWidget (gb);
+
+    QPushButton* selectAll =new QPushButton(qsl("Alle auswählen"));
+    connect( selectAll, &QPushButton::pressed, this, &dlgDisplayColumns::selectAll);
+    mainlayout->addWidget (selectAll, Qt::AlignLeft);
+
+    setLayout (mainlayout);
 
     QDialogButtonBox* buttons =new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
     buttons->button(QDialogButtonBox::Ok)->setDefault(true);
-    layout->addWidget (buttons);
-
     connect(buttons, &QDialogButtonBox::accepted, this, &dlgDisplayColumns::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &dlgDisplayColumns::reject);
+    mainlayout->addWidget (buttons);
+}
 
-    setLayout (layout);
+void dlgDisplayColumns::selectAll()
+{
+    for( const auto& box : qAsConst(checkboxes)) {
+        box->setCheckState (Qt::CheckState::Checked);
+    }
 }
 
 void dlgDisplayColumns::accept ()

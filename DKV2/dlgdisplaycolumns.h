@@ -10,6 +10,7 @@ public:
     QBitArray getNewStatus() {return status;};
 private slots:
     void accept() override;
+    void selectAll();
 
 private:
     QBitArray status;

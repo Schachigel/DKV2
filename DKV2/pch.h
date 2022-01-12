@@ -19,6 +19,7 @@
 #include <QItemSelection>
 #include <QPushButton>
 #include <QDialogButtonBox>
+#include <QGroupBox>
 #include <QRadioButton>
 #include <QDateEdit>
 #include <QLineEdit>
