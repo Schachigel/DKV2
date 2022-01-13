@@ -589,8 +589,12 @@ void MainWindow::on_actionInvestmentLoeschen_triggered()
     QString ende =dEnde.toString(qsl("yyyy.MM.dd"));
     int zinssatz =rec.value(qsl("ZSatz")).toInt();
     QString typ =rec.value(qsl("Typ")).toString();
-    QString msg{qsl("Soll die Anlage mit <b>%1%</b>, vom %2 zum %3 mit dem Typ <br>  > %4 <  <br> gelöscht werden?")};
+
+    QString msg{qsl("Soll die Anlage mit <b>%1% Zins</b>, <br>vom <b>%2 zum %3</b><br> mit dem Typ <br><b>'%4'<b><br> gelöscht werden?")};
     msg =msg.arg(QString::number(zinssatz/100., 'f', 2), anfang, ende, typ);
+
+    if( not dEnde.isValid ())
+        msg =qsl("Soll die fortlaufende Anlage <b>'%1'</b> gelöscht werden?").arg(typ);
 
     if( QMessageBox::Yes == QMessageBox::question(this, qsl("Löschen"), msg)) {
         // delete the entry, update the view
