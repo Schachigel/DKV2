@@ -182,12 +182,12 @@ SELECT ga.ZSatz
   , CASE WHEN ga.Offen THEN 'Offen' ELSE 'Abgeschlossen' END AS Offen
   , ga.rowid
 FROM Geldanlagen AS ga
-WHERE ga.Ende < DATE('9999-12-31')
+WHERE ga.Ende != DATE('9999-12-31')
 ORDER BY ga.Offen DESC, ga.ZSatz DESC
 
 ), fortlaufende AS (
 SELECT ga.ZSatz
-  , '[' || DATE('now', '-1 year') || ']' AS Anfang
+  , IIF( ga.Anfang == '1900-01-01', '-', ga.Anfang) AS Anfang
   , 'fortlaufend' AS Ende
   , ga.Typ
   , (SELECT count(*)

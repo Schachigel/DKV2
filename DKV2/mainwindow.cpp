@@ -590,19 +590,20 @@ void MainWindow::on_actionInvestmentLoeschen_triggered()
     int zinssatz =rec.value(qsl("ZSatz")).toInt();
     QString typ =rec.value(qsl("Typ")).toString();
 
-    QString msg{qsl("Soll die Anlage mit <b>%1% Zins</b>, <br>vom <b>%2 zum %3</b><br> mit dem Typ <br><b>'%4'<b><br> gelöscht werden?")};
+    QString msg{qsl("Soll die Anlage mit <b>%1% Zins</b>, <br>vom <b>%2 zum %3</b><br> mit dem Typ <br><b>'%4'</b><br> gelöscht werden?")};
     msg =msg.arg(QString::number(zinssatz/100., 'f', 2), anfang, ende, typ);
 
     if( not dEnde.isValid ())
-        msg =qsl("Soll die fortlaufende Anlage <b>'%1'</b> gelöscht werden?").arg(typ);
+        msg =qsl("Soll die fortlaufende Anlage <b>'%1'</b> mit <b>%2% Zins</b> gelöscht werden?").arg(typ, QString::number(zinssatz/100., 'f', 2));
 
     if( QMessageBox::Yes == QMessageBox::question(this, qsl("Löschen"), msg)) {
         // delete the entry, update the view
-        if( deleteInvestment(zinssatz, dAnfang, dEnde, typ)) {
+        if( deleteInvestment(rec.value(qsl("rowid")).toLongLong ())) {
             qInfo() << "removed investment row " << index.row();
             //tm->submitAll();
             tm->select();
         } else {
+            QMessageBox::information (this, qsl("Fehler"), qsl("Beim Löschen ist ein Fehler aufgetreten - bitte schau in die LOG Datei!"));
             qWarning() << tm->lastError();
         }
     }

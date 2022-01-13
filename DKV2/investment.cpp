@@ -94,15 +94,10 @@ qlonglong createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
     return tdi.WriteData();
 }
 
-bool deleteInvestment(const int ZSatz, const QString& v, const QString& b, const QString& t)
+bool deleteInvestment(const qlonglong rowid)
 {   LOG_CALL;
-    QString sql{qsl("DELETE FROM Geldanlagen WHERE ZSatz=%1 AND Anfang='%2' AND Ende='%3' AND Typ='%4'")};
-    sql =sql.arg(QString::number(ZSatz),v, b, t);
-    return executeSql_wNoRecords(sql);
-}
-bool deleteInvestment(const int ZSatz, const QDate v, const QDate b, const QString& t)
-{
-    return deleteInvestment(ZSatz, v.toString(Qt::ISODate), b.toString(Qt::ISODate), t);
+    QString sql{qsl("DELETE FROM Geldanlagen WHERE rowid=%1").arg(QString::number(rowid))};
+    return executeSql_wNoRecords (sql);
 }
 
 bool setInvestment(const int ZSatz, const QString& v, const QString& b, const QString& t, bool state)
