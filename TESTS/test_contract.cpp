@@ -196,8 +196,8 @@ void test_contract::deposit_inactive_contract_fails()
         QVERIFY(cont.deposit(aDate.addMonths(6), 1000.));
         QVERIFY(cont.payout(aDate.addMonths(6).addDays(1), 100.));
         QCOMPARE(cont.investedValue(), 1900.);
-        double newValue =1000. +r2(cont.interestRate() *0.005 *1000.) +1000.;
-        newValue =newValue +r2(cont.interestRate() /36000. *newValue) -100.;
+        double newValue =1000. +r2(cont.interestRate() /100. *1000. /2) +1000.;
+        newValue =newValue +r2(cont.interestRate() /100. /360. *newValue) -100.;
         QCOMPARE(cont.value(), r2(newValue));
     }
     {

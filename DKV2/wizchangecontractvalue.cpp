@@ -168,13 +168,18 @@ bool wpChangeContract_DatePage::validatePage()
 {
     wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
     QDate d {field(qsl("date")).toDate()};
+    QString msg;
+
     if( d < wiz->earlierstDate)
-        return false;
-    if( d.month() == 1 and d.day() == 1)
+        msg =qsl("Das Vertragsdatum muss nach der letzten Buchung liegen");
+    if( d.month() == 12 and d.day() == 31)
         // avoid interest bookings on the date of anual settlements.
         // it is a holiday anyways
+        msg += qsl("Eine Ein- oder Auszahlung darf nicht am 31.12. sein");
+    if( not msg.isEmpty ()){
+        QMessageBox::information (this, "Info", msg);
         return false;
-
+    }
     return true;
 }
 

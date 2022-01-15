@@ -225,11 +225,13 @@ bool contract::updateInterestActive(bool a)
     Q_ASSERT(a); // for now we only support activation but not deactivation
     return td.updateValue(fnZAktiv, a, id());
 }
-// helper: only annual settlements should be on the last day of the year
+
+// helper: only annual settlements or initial payments should be on the last day of the year
 // other bookings should move to dec. 30th
 QDate avoidYearEndBookings(const QDate d)
 {   LOG_CALL;
-    if( not d.isValid()) return d;
+    if( not d.isValid())
+        return d;
     if( d.month() == 12 and d.day() == 31) {
         qInfo() << "no deposit possible on dec. 31st -> switching to 30th";
         return d.addDays(-1);
@@ -242,8 +244,9 @@ bool contract::bookInitialPayment(const QDate date, double amount)
 {   LOG_CALL;
     Q_ASSERT(id() >= 0);
     QString error;
-    QDate actualBookingDate =avoidYearEndBookings(date);
 
+//    QDate actualBookingDate =avoidYearEndBookings(date);
+    QDate actualBookingDate {date};
     if (initialBookingReceived()) {
         error = qsl("Already active contract can not be activated");
     } else if ( not actualBookingDate.isValid()) {
@@ -289,7 +292,8 @@ bool contract::bookActivateInterest(QDate d)
 
     autoRollbackTransaction art;
 
-    QDate actualDate =avoidYearEndBookings(d);
+//    QDate actualDate =avoidYearEndBookings(d);
+    QDate actualDate {d};
     if ( latestBooking().date >= d) {
         qCritical() << "could not activate interest on same data as last booking";
         return false;
@@ -322,6 +326,16 @@ QDate contract::nextDateForAnnualSettlement()
         Q_ASSERT(lastB.date.day() == 31);
         return QDate(lastB.date.year() +1, 12, 31);
     }
+    if( lastB.type == booking::Type::deposit
+            && bookings::getBookings (id()).count () == 1
+            && lastB.date.month() == 12
+            && lastB.date.day () == 31) {
+        {
+            qInfo() << "contract activation at years end -> no annualSettlement this year";
+            return QDate(lastB.date.year () +1, 12, 31);
+        }
+    }
+
     if(lastB.type == booking::Type::payout) {
         // in early versions payouts of annual interests could be after the annualInterestDeposits
         if((lastB.date.month() == 12 and lastB.date.day() == 31))
@@ -329,7 +343,7 @@ QDate contract::nextDateForAnnualSettlement()
         if((lastB.date.month() == 1 and lastB.date.day() == 1))
             return QDate(lastB.date.addDays(-1).addYears(1));
     }
-    Q_ASSERT( not ((lastB.date.month() == 12) and (lastB.date.day() == 31)));
+//    Q_ASSERT( not ((lastB.date.month() == 12) and (lastB.date.day() == 31)));
     // for deposits, payouts, activations we return year end of the same year
     return QDate(lastB.date.year(), 12, 31);
 }

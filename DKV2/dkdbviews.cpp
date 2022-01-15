@@ -293,7 +293,7 @@ bool remove_all_views(const QSqlDatabase& db /*=QSqlDatabase::database()*/)
 const QString sqlNextAnnualSettlement_firstAS {qsl(
 R"str(
 SELECT
-  STRFTIME('%Y-%m-%d', MIN(Datum), '1 year', 'start of year', '-1 day')  as nextInterestDate
+  STRFTIME('%Y-%m-%d', MIN(Datum), '1 day', '1 year', 'start of year', '-1 day')  as nextInterestDate
 FROM Buchungen INNER JOIN Vertraege ON Vertraege.id = buchungen.VertragsId
 /* buchungen von Verträgen für die es keine Zinsbuchungen gibt */
 WHERE
