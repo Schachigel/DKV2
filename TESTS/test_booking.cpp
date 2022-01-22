@@ -36,7 +36,7 @@ void test_booking::test_dateONSettlement_activatedContracts()
     creditor c(saveRandomCreditor());
     contract cont2(saveRandomContract(c.id()));
     cont2.bookInitialPayment(QDate( 2000,12,31), 1000.);
-    QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2000, 12, 31));
+    QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2001, 12, 31));
 
     contract cont(saveRandomContract(c.id()));
     cont.bookInitialPayment(QDate( 2000, 1, 1), 1000.);
@@ -44,7 +44,7 @@ void test_booking::test_dateONSettlement_activatedContracts()
 
     contract cont3(saveRandomContract(c.id()));
     cont3.bookInitialPayment(QDate( 1999,12,31), 1000.);
-    QCOMPARE( bookings::dateOfnextSettlement(), QDate( 1999, 12, 31));
+    QCOMPARE( bookings::dateOfnextSettlement(), QDate( 2000, 12, 31));
 }
 void test_booking::test_dateONSettelment_contractsW_interestBookings00()
 {
