@@ -247,8 +247,9 @@ void bookInitialPaymentReceived(contract *v)
 void activateInterest(contract *v)
 {
     LOG_CALL;
-    Q_ASSERT(v->latestBooking().type != booking::Type::non);
-    QDate earlierstActivation = v->latestBooking().date.addDays(1);
+    booking lastB =v->latestBooking ();
+    Q_ASSERT(lastB.type != booking::Type::non);
+    QDate earlierstActivation = lastB.date.addDays(1);
     dlgAskDate dlg(getMainWindow());
     dlg.setDate(earlierstActivation);
     dlg.setHeader(qsl("Aktivierung der Zinszahlung"));
@@ -329,10 +330,10 @@ void annualSettlement()
     QVector<booking> asBookings;
     for (const auto &id : qAsConst(ids)) {
         contract c(id.toLongLong());
-        QDate startDate = c.latestBooking().date;
+        QDate startDate = c.latestBooking ().date;
         if (0 not_eq c.annualSettlement(yearOfSettlement)) {
             changedContracts.push_back(c);
-            asBookings.push_back(c.latestBooking());
+            asBookings.push_back(c.latestBooking ());
             startOfInterrestCalculation.push_back(startDate);
         }
     }

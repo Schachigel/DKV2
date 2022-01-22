@@ -163,21 +163,18 @@ struct contract
     // interestBearingValue depends on interestMode
     double interestBearingValue() const;
 
-    const booking& latestBooking();
-    void setLatestBooking( const booking& b) { latestB=b;};
+    const booking latestBooking();
     // write to db
     int saveNewContract();
     bool updateComment(const QString&);
     bool updateTerminationDate(QDate termination, int noticePeriod);
     bool updateInvestment(qlonglong id);
-/* not used?  int validateAndSaveNewContract(QString& meldung); */
+
     // contract activation
     bool bookInitialPayment(const QDate aDate, double amount);
     bool initialBookingReceived() const;
-    QDate initialBookingDate() const;
-    void setInitialBookingDate( const QDate d) {aDate=d; activated=active;}
 
-    bool bookActivateInterest(QDate d);
+    bool bookActivateInterest(const QDate d);
 
     // other booking actions
     QDate nextDateForAnnualSettlement();
@@ -195,7 +192,6 @@ struct contract
 private:
     // data
     TableDataInserter td;
-    booking latestB;
     // helper
     double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa =true);
 
@@ -203,9 +199,6 @@ private:
     bool storeTerminationDate(const QDate d) const;
     bool archive();
     void reset() {initContractDefaults();}
-    mutable enum constract_activation_status
-         { uninit =-1, passive =0, active =1 } activated=uninit;
-    mutable QDate aDate = EndOfTheFuckingWorld;
 };
 
 // test helper

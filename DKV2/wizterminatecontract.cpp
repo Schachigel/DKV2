@@ -37,10 +37,11 @@ void wpTerminateContract_DatePage::initializePage()
 bool wpTerminateContract_DatePage::validatePage()
 {
     wizTerminateContract* wiz = qobject_cast<wizTerminateContract*>(wizard());
-    if( field(qsl("date")).toDate() >= wiz->cont.latestBooking().date)
+    QDate lastB =wiz->cont.latestBooking ().date;
+    if( field(qsl("date")).toDate() >= lastB)
         return true;
     QString msg (qsl("Das Vertragsende muss nach der letzten Buchung des Vertrags am %1 sein"));
-    msg = msg.arg(wiz->cont.latestBooking().date.toString(qsl("dd.MM.yyyy")));
+    msg = msg.arg(lastB.toString(qsl("dd.MM.yyyy")));
     QMessageBox::information(this, qsl("Ungültiges Datum"), msg);
     return false;
 }
