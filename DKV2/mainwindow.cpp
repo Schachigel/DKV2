@@ -85,6 +85,8 @@ QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
         case 4:
         case 6:
         case 8:
+        case 9:
+        case 10:
             return Qt::AlignCenter;
         case 5:
         case 7:
@@ -494,9 +496,10 @@ void MainWindow::prepare_investmentsListView()
     model->setHeaderData(1, Qt::Horizontal, qsl("Begin"), Qt::DisplayRole);
     tv->setItemDelegateForColumn(2, new DateItemFormatter);
     model->setHeaderData(2, Qt::Horizontal, qsl("Ende"), Qt::DisplayRole);
+    model->setHeaderData (3, Qt::Horizontal, qsl("Bezeichner"), Qt::DisplayRole);
     model->setHeaderData(4, Qt::Horizontal, qsl("Anzahl\n(alle)"), Qt::DisplayRole);
     tv->setItemDelegateForColumn(5, new CurrencyFormatter);
-    model->setHeaderData(5, Qt::Horizontal, qsl("Summe\n(alle)"), Qt::DisplayRole);
+    model->setHeaderData(5, Qt::Horizontal, qsl("Summe\n(alle Vertr.)"), Qt::DisplayRole);
     model->setHeaderData(6, Qt::Horizontal, qsl("Anzahl\n(aktive)"), Qt::DisplayRole);
     tv->setItemDelegateForColumn(7, new CurrencyFormatter);
     model->setHeaderData(7, Qt::Horizontal, qsl("Summe\n(aktive)"), Qt::DisplayRole);
@@ -504,7 +507,7 @@ void MainWindow::prepare_investmentsListView()
     model->setHeaderData (8, Qt::Horizontal, qsl("Summe\nEinzahlungen"), Qt::DisplayRole);
     tv->setItemDelegateForColumn (9, new CurrencyFormatter);
     model->setHeaderData (9, Qt::Horizontal, qsl("Summe\nincl. Zins"), Qt::DisplayRole);
-    tv->hideColumn(10);
+    tv->hideColumn(11);
     tv->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tv->setAlternatingRowColors(true);
     model->setEditStrategy(QSqlTableModel::OnFieldChange);
@@ -518,7 +521,14 @@ void MainWindow::on_actionAnlagen_verwalten_triggered()
 }
 void MainWindow::on_btnCreateFromContracts_clicked()
 {   LOG_CALL;
-    int newInvestments =createNewInvestmentsFromContracts();
+
+    QStringList options {qsl("Fortlaufende Geldanlagen erstellen"), qsl("Zeitlich abgeschlossene Anlagen (1 Jahr) erstellen")};
+    bool ok =false;
+    QString item =QInputDialog::getItem(this, qsl("Art der Anlage auswählen"), qsl(""), options, 0, false, &ok);
+    if( !ok)
+        return;
+
+    int newInvestments =createNewInvestmentsFromContracts(item == options[0]);
     if( newInvestments == -1) {
         QMessageBox::critical(this, qsl("Fehler"), qsl("Beim Anlegen der Geldanlagen ist ein Fehler aufgetreten"));
         return;
@@ -567,6 +577,15 @@ void MainWindow::on_btnAutoMatch_clicked()
     b.set();
     prepare_investmentsListView();
 }
+void MainWindow::on_btnAlleLoeschen_clicked()
+{
+    if( QMessageBox::Yes == QMessageBox::question(this, qsl("Alle Löschen"), qsl("Sollen alle Anlagen unwiderruflich gelöscht werden?"))) {
+        executeSql_wNoRecords (qsl("DELETE FROM Geldanlagen"));
+        prepare_investmentsListView ();
+    }
+}
+
+
 void MainWindow::on_InvestmentsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;
     QTableView* tv =ui->InvestmentsTableView;
@@ -594,7 +613,7 @@ void MainWindow::on_actionInvestmentLoeschen_triggered()
     int zinssatz =rec.value(qsl("ZSatz")).toInt();
     QString typ =rec.value(qsl("Typ")).toString();
 
-    QString msg{qsl("Soll die Anlage mit <b>%1% Zins</b>, <br>vom <b>%2 zum %3</b><br> mit dem Typ <br><b>'%4'</b><br> gelöscht werden?")};
+    QString msg{qsl("Soll die Anlage mit <b>%1% Zins</b>, <br>vom <b>%2 zum %3</b><br> mit dem Bezeichner <br><b>'%4'</b><br> gelöscht werden?")};
     msg =msg.arg(QString::number(zinssatz/100., 'f', 2), anfang, ende, typ);
 
     if( not dEnde.isValid ())
@@ -602,7 +621,7 @@ void MainWindow::on_actionInvestmentLoeschen_triggered()
 
     if( QMessageBox::Yes == QMessageBox::question(this, qsl("Löschen"), msg)) {
         // delete the entry, update the view
-        if( deleteInvestment(rec.value(qsl("rowid")).toLongLong ())) {
+        if( deleteInvestment(rec.value(qsl("AnlagenId")).toLongLong ())) {
             qInfo() << "removed investment row " << index.row();
             //tm->submitAll();
             tm->select();
@@ -673,7 +692,7 @@ void MainWindow::on_actionTyp_Bezeichnung_aendern_triggered()
 
     QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
     QSqlRecord rec =tm->record(index.row());
-    QString sql(qsl("UPDATE Geldanlagen SET Typ =? WHERE rowid =%1").arg(rec.value(qsl("rowid")).toString()));
+    QString sql(qsl("UPDATE Geldanlagen SET Typ =? WHERE rowid =%1").arg(rec.value(qsl("AnlagenId")).toString()));
     if( executeSql_wNoRecords(sql, {QVariant(txt)}))
         tm->select();
 }
@@ -682,7 +701,7 @@ void MainWindow::on_action_cmenu_Vertraege_anzeigen_triggered()
     QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
     QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
     QSqlRecord rec =tm->record(index.row());
-    qlonglong id =rec.value(qsl("rowid")).toLongLong ();
+    qlonglong id =rec.value(qsl("AnlagenId")).toLongLong ();
     ui->le_ContractsFilter->setText (qsl("Anlage:%1").arg(id));
     on_action_menu_contracts_listview_triggered();
 }
@@ -1073,4 +1092,3 @@ void MainWindow::closeEvent(QCloseEvent *event)
     event->accept();
 
 }
-

@@ -148,7 +148,7 @@ QString proposeContractLabel()
     return kennung;
 }
 
-int createNewInvestmentsFromContracts()
+int createNewInvestmentsFromContracts( bool fortlaufend)
 {   LOG_CALL;
     QString sql{qsl("SELECT ZSatz, Vertragsdatum FROM Vertraege WHERE AnlagenId IS NULL OR AnlagenId <= 0 ORDER BY Vertragsdatum ASC ")};
     QSqlQuery q; q.setForwardOnly(true);
@@ -161,6 +161,8 @@ int createNewInvestmentsFromContracts()
     while(q.next()) {
         int ZSatz =q.record().value(qsl("ZSatz")).toInt();
         QDate vDate =q.record().value(qsl("Vertragsdatum")).toDate();
+        if( fortlaufend)
+            vDate =BeginingOfTime;
         if( 0 < createInvestmentFromContractIfNeeded(ZSatz, vDate))
             ret++;
     }

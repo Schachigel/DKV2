@@ -31,7 +31,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <property name="font">
@@ -421,6 +421,13 @@
            <widget class="QPushButton" name="btnAutoClose">
             <property name="text">
              <string>Abgelaufene &amp;schließen</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnAlleLoeschen">
+            <property name="text">
+             <string>Alle löschen</string>
             </property>
            </widget>
           </item>

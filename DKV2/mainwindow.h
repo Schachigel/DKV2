@@ -185,6 +185,8 @@ private slots:
 
     void on_pbCreditorsColumnsOnOff_clicked();
 
+    void on_btnAlleLoeschen_clicked();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();
