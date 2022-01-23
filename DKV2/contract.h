@@ -150,7 +150,7 @@ struct contract
     QDate conclusionDate() const { return td.getValue(fnVertragsDatum).toDate();}
 
     void setInterestActive(bool active){ td.setValue(fnZAktiv, active);}
-    bool updateInterestActive(bool a);
+    bool updateSetInterestActive();
     bool interestActive() const { return td.getValue(fnZAktiv).toBool();}
 
     void setComment(const QString& q) {td.setValue(fnAnmerkung, q);}

@@ -220,10 +220,10 @@ bool contract::updateInvestment(qlonglong investmentId)
 {   LOG_CALL;
     return td.updateValue(fnAnlagenId, investmentId, id());
 }
-bool contract::updateInterestActive(bool a)
+bool contract::updateSetInterestActive()
 {   LOG_CALL;
-    Q_ASSERT(a); // for now we only support activation but not deactivation
-    return td.updateValue(fnZAktiv, a, id());
+    // for now we only support activation but not deactivation
+    return td.updateValue(fnZAktiv, true, id());
 }
 
 // helper: only annual settlements or initial payments should be on the last day of the year
@@ -302,7 +302,7 @@ bool contract::bookActivateInterest(QDate d)
         qCritical() << "could not book inbetween interest on ";
         return false;
     }
-    if( updateInterestActive(true)
+    if( updateSetInterestActive()
             &&
         booking::bookInterestActive(id(), d))
     {
@@ -380,7 +380,6 @@ double contract::ZinsesZins(const double zins, const double wert,const QDate von
     else
         return ::ZinsesZins_30_360(zins, wert, von, bis, thesa);
 }
-
 
 int contract::annualSettlement( int year)
 {   LOG_CALL_W(QString::number(year));

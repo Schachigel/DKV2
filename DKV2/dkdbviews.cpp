@@ -152,40 +152,7 @@ ON V.id = vid_mit_Zinsen
 const QString vnInvestmentsView {qsl("vInvestmentsOverview")};
 const QString sqlInvestmentsView {qsl(
 R"str(
-WITH abgeschlossene AS (
-SELECT ga.ZSatz
-  , ga.Anfang AS Anfang
-  , ga.Ende AS Ende
-  , ga.Typ
-  , (SELECT count(*)
-     FROM Vertraege
-     WHERE Vertraege.AnlagenId == ga.rowid
-  ) AS Anzahl
-  , (SELECT SUM(Betrag) /100.
-     FROM Vertraege
-     WHERE Vertraege.AnlagenId == ga.rowid
-  ) AS Summe
-  , (SELECT count(*)
-     FROM Vertraege AS v
-     WHERE v.AnlagenId == ga.rowid
-       AND (SELECT count(*)
-            FROM Buchungen AS B
-            WHERE B.VertragsId == v.id)>0
-  ) AS AnzahlAktive
-  , (SELECT SUM(Betrag) /100.
-     FROM Vertraege AS v
-     WHERE v.AnlagenId == ga.rowid
-       AND (SELECT count(*)
-            FROM Buchungen AS B
-            WHERE B.VertragsId == v.id)>0
-  ) AS SummeAktive
-  , CASE WHEN ga.Offen THEN 'Offen' ELSE 'Abgeschlossen' END AS Offen
-  , ga.rowid
-FROM Geldanlagen AS ga
-WHERE ga.Ende != DATE('9999-12-31')
-ORDER BY ga.Offen DESC, ga.ZSatz DESC
-
-), fortlaufende AS (
+WITH fortlaufend_temp AS (
 SELECT ga.ZSatz
   , IIF( ga.Anfang == '1900-01-01', '-', ga.Anfang) AS Anfang
   , 'fortlaufend' AS Ende
@@ -197,7 +164,7 @@ SELECT ga.ZSatz
   , (SELECT SUM(Betrag) /100.
      FROM Vertraege
      WHERE Vertraege.AnlagenId == ga.rowid AND Vertraege.Vertragsdatum > DATE('now', '-1 year')
-  ) AS Summe
+  ) AS SummeVertraege
   , (SELECT count(*)
      FROM Vertraege AS v
      WHERE v.AnlagenId == ga.rowid
@@ -212,16 +179,86 @@ SELECT ga.ZSatz
             FROM Buchungen AS B
             WHERE B.VertragsId == v.id)>0 AND v.Vertragsdatum > DATE('now', '-1 year')
   ) AS SummeAktive
+  , (SELECT SUM(Betrag) /100.
+     FROM Buchungen
+     WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend == 0 AND Vertraege.AnlagenId == ga.rowid)
+       AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2 OR Buchungen.BuchungsArt == 8)
+     ) AS EinzahlungenAuszahlenderV
+  , (SELECT SUM(Betrag) /100.
+     FROM Buchungen
+     WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend != 0 AND Vertraege.AnlagenId == ga.rowid)
+       AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2)
+     ) AS EinzahlungenRestlV
+  , (SELECT SUM(Betrag) /100.
+     FROM Buchungen
+     WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.AnlagenId == ga.rowid)) AS SummeInclZins
   , CASE WHEN ga.Offen THEN 'Offen' ELSE 'Abgeschlossen' END AS Offen
   , ga.rowid
 FROM Geldanlagen AS ga
 WHERE ga.Ende = DATE('9999-12-31')
 ORDER BY ga.Offen DESC, ga.ZSatz DESC
 )
+, abgeschl_temp AS (
+SELECT ga.ZSatz
+  , ga.Anfang AS Anfang
+  , ga.Ende AS Ende
+  , ga.Typ
+  , (SELECT count(*)
+     FROM Vertraege
+     WHERE Vertraege.AnlagenId == ga.rowid
+  ) AS Anzahl
+  , (SELECT SUM(Betrag) /100.
+     FROM Vertraege
+     WHERE Vertraege.AnlagenId == ga.rowid
+  ) AS SummeVertraege
+  , (SELECT count(*)
+     FROM Vertraege AS v
+     WHERE v.AnlagenId == ga.rowid
+       AND (SELECT count(*)
+            FROM Buchungen AS B
+            WHERE B.VertragsId == v.id)>0
+  ) AS AnzahlAktive
+  , (SELECT SUM(Betrag) /100.
+     FROM Vertraege AS v
+     WHERE v.AnlagenId == ga.rowid
+       AND (SELECT count(*)
+            FROM Buchungen AS B
+            WHERE B.VertragsId == v.id)>0
+  ) AS SummeAktive
+  , (SELECT SUM(Betrag) /100.
+     FROM Buchungen
+     WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend == 0 AND Vertraege.AnlagenId == ga.rowid)
+       AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2 OR Buchungen.BuchungsArt == 8)
+     ) AS EinzahlungenAuszahlenderV
+  , (SELECT SUM(Betrag) /100.
+     FROM Buchungen
+     WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend != 0 AND Vertraege.AnlagenId == ga.rowid)
+       AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2)
+     ) AS EinzahlungenRestlV
+  , (SELECT SUM(Betrag) /100.
+     FROM Buchungen
+     WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.AnlagenId == ga.rowid)) AS SummeInclZins
 
-SELECT * FROM abgeschlossene
+  , CASE WHEN ga.Offen THEN 'Offen' ELSE 'Abgeschlossen' END AS Offen
+  , ga.rowid
+FROM Geldanlagen AS ga
+WHERE ga.Ende != DATE('9999-12-31')
+ORDER BY ga.Offen DESC, ga.ZSatz DESC
+)
+, alle AS (
+SELECT * FROM fortlaufend_temp
 UNION
-SELeCT * FroM fortlaufende
+SELECT * FROM abgeschl_temp
+)
+SELECT
+  ZSatz, Anfang, Ende, Typ, Anzahl
+  , IFNULL(SummeVertraege, 0.) AS SummeVertraege
+  , AnzahlAktive
+  , IFNULL(SummeAktive, 0.) AS SummeAktive
+  , IFNULL(EinzahlungenAuszahlenderV, 0.) + IFNULL(EinzahlungenRestlV, 0.) AS Einzahlungen
+  , IFNULL(SummeInclZins, 0.) AS SummeInclZins
+  , Offen, rowid AS AnlagenId
+FROM alle
 )str"
 )};
 

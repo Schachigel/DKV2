@@ -500,7 +500,11 @@ void MainWindow::prepare_investmentsListView()
     model->setHeaderData(6, Qt::Horizontal, qsl("Anzahl\n(aktive)"), Qt::DisplayRole);
     tv->setItemDelegateForColumn(7, new CurrencyFormatter);
     model->setHeaderData(7, Qt::Horizontal, qsl("Summe\n(aktive)"), Qt::DisplayRole);
-    tv->hideColumn(9);
+    tv->setItemDelegateForColumn (8, new CurrencyFormatter);
+    model->setHeaderData (8, Qt::Horizontal, qsl("Summe\nEinzahlungen"), Qt::DisplayRole);
+    tv->setItemDelegateForColumn (9, new CurrencyFormatter);
+    model->setHeaderData (9, Qt::Horizontal, qsl("Summe\nincl. Zins"), Qt::DisplayRole);
+    tv->hideColumn(10);
     tv->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tv->setAlternatingRowColors(true);
     model->setEditStrategy(QSqlTableModel::OnFieldChange);
