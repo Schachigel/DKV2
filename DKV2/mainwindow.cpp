@@ -524,7 +524,7 @@ void MainWindow::on_btnCreateFromContracts_clicked()
 
     QStringList options {qsl("Fortlaufende Geldanlagen erstellen"), qsl("Zeitlich abgeschlossene Anlagen (1 Jahr) erstellen")};
     bool ok =false;
-    QString item =QInputDialog::getItem(this, qsl("Art der Anlage auswählen"), qsl(""), options, 0, false, &ok);
+    QString item =QInputDialog::getItem(this, qsl("Art der Anlage auswählen"), qsl("Wähle aus, ob zeitlich befristete oder fortlaufende Anlagen erzeugt werden sollen."), options, 0, false, &ok);
     if( !ok)
         return;
 
