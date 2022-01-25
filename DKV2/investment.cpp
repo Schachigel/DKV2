@@ -81,7 +81,7 @@ qlonglong createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
 {   LOG_CALL;
 
     QString sql{qsl("SELECT * FROM Geldanlagen WHERE ZSatz =%1 AND Anfang <= date('%2') AND Ende >= date('%3')")};
-    QDate endDate =vDate.addYears(1).addDays(-1);
+    QDate endDate =vDate.addYears(1);
     if( vDate == BeginingOfTime) {
         sql =qsl("SELECT * FROM Geldanlagen WHERE ZSatz =%1 AND Ende == date('9999-12-31')");
         endDate =EndOfTheFuckingWorld;

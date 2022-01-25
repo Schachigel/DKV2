@@ -265,7 +265,7 @@ bool contract::bookInitialPayment(const QDate date, double amount)
         qInfo() << "Successfully activated contract " << id_aS() << "[" << actualBookingDate << ", " << amount << " Euro]";
         return true;
     } else {
-        qCritical() << "Failed to execut activation on contract " << id_aS() << qsl(" [") << actualBookingDate.toString() << qsl(", ") << QString::number(amount) << qsl("]");
+        qCritical().noquote ()<< "Failed to execut activation on contract " << id_aS() << qsl(" [") << actualBookingDate.toString() << qsl(", ") << QString::number(amount) << qsl("]");
         return false;
     }
 }
