@@ -34,7 +34,7 @@ SELECT
   ,IIF(V.thesaurierend == 0, IFNULL(summeAllerBuchungen /100., ' (inaktiv) ')
        , IIF(V.thesaurierend == 1, IFNULL(summeAllerBuchungen /100., ' (inaktiv) ')
        , IIF(V.thesaurierend == 2, IFNULL(summeEinUndAuszahlungen /100., ' (inaktiv) ')
-       , IIF(V.thesaurierend == 3, ' ohne Verzinsung ', 'ERROR')))) AS VerzinslGuthaben
+       , IIF(V.thesaurierend == 3, IFNULL(summeAllerBuchungen /100., '(inaktiv) '), 'ERROR')))) AS VerzinslGuthaben
 
 -- angesparter Zins
   ,IIF(V.thesaurierend == 0, IFNULL(summeAllerZinsZwBuchungen /100., '(noch 0) ')
