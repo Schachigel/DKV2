@@ -334,19 +334,16 @@ QVector<QStringList> perpetualInvestment_bookings()
 WITH
 fortlaufendeGeldanlagen AS
 (
-   SELECT Typ, rowid FROM Geldanlagen WHERE Ende = '9999-12-31'
+   SELECT Typ, rowid, ZSatz FROM Geldanlagen WHERE Ende = '9999-12-31'
 )
 , geldBewegungen AS
 (
   SELECT
----    Buchungen.id AS bId
     Buchungen.Datum AS bDatum
----	, Buchungen.BuchungsArt AS bArt
     , Buchungen.Betrag AS Buchungsbetrag
----	, Vertraege.id AS  vId
----	, Vertraege.Vertragsdatum
     , Anlagen.rowid AS aId
     , Anlagen.Typ AS Anlage
+    , Anlagen.ZSatz AS Zinssatz
 
   FROM Buchungen
   INNER JOIN Vertraege ON Vertraege.id == Buchungen.VertragsId
@@ -356,6 +353,7 @@ fortlaufendeGeldanlagen AS
 (
   SELECT
     aId
+    , Zinssatz
     , Anlage
     , bDatum
     , SUM(Buchungsbetrag) /100. AS Buchungsbetraege
@@ -380,6 +378,7 @@ fortlaufendeGeldanlagen AS
 SELECT
   aId
   , Anlage
+  , Zinssatz
   , bDatum
   , anzahlBuchungen AS zumDatum_anzahlBuchungen
   , IFNULL(Buchungsbetraege, 0.) AS zumDatum_Gebucht
@@ -397,7 +396,8 @@ FROM temp
         QStringList zeile;
         int col =1;
         // zeile.push_back (QString::number(rec[i].value(col++).toInt())); // AnlagenId
-        zeile.push_back (rec[i].value(col++).toString()); // Anlagenbez.
+        QString anlage =qsl("%1 (%2%)").arg(rec[i].value(col++).toString());
+        zeile.push_back (anlage.arg(QString::number(rec[i].value(col++).toInt ()/100.))); // Anlagenbez.
         zeile.push_back (rec[i].value(col++).toDate().toString ("dd.MM.yyyy")); // Buchungsdatum
         zeile.push_back (QString::number(rec[i].value(col++).toInt())); // Anzahl Buchungen
         zeile.push_back (l.toCurrencyString (rec[i].value(col++).toDouble ())); // buchungen zu diesem Buchungsdatum
