@@ -196,11 +196,11 @@ void uebersichten::renderDocument( uebersichten::uetype t)
     case uetype::CONTRACT_RUNTIME_DISTRIB:
         renderContractRuntimeDistrib();
         break;
-    case uetype::PERPETUAL_INVESTMENTS_CHECK:
-        renderPerpetualInvestmentsCheck ();
+    case uetype::PERPETUAL_INVESTMENTS_CHECK_BY_CONTRACTS:
+        renderPerpetualInvestmentsCheckContracts ();
         break;
-    case uetype::PERPETUAL_INVESTMENTS_BY_INVESTMENT:
-        renderPerpetualInvestmentsByInvestment ();
+    case uetype::PERPETUAL_INVESTMENTS_CHECK_BY_BOOKINGS:
+        renderPerpetualInvestmentsCheckBookings ();
         break;
 
 //    case uetype::CONTRACT_by_interest_By_Year
@@ -336,34 +336,15 @@ void uebersichten::renderContractRuntimeDistrib()
     tl.renderTable();
 }
 
-void uebersichten::renderPerpetualInvestmentsCheck()
+void uebersichten::renderPerpetualInvestmentsCheckContracts()
 {
-    QString head {qsl("Prüfung der Grenzwerte für fortlaufende Geldanlagen")};
-    QString desc {qsl("Diese Tabelle gibt dür Verträge mit fortlaufenden Geldanlagen an, "
-                      "wie hoch die Kreditsumme ist, die in den letzten 12 Monaten zu dieser Geldanlage angenommen wurde.")};
+    QString head {qsl("Liste fortlaufender Geldanlagen")};
+    QString desc {qsl("Diese Tabelle gibt für jede fortlaufende Geldanlage die Sumnme der Vertragswerte im Jahr vor dem jeweiligen Vertragsabschluß an.")};
     prep(head, desc);
-
     tablelayout tl(td);
-    tl.cols =QStringList{qsl("Vertrags\ndatum"), qsl("Vertrag"), qsl("Start der\nPeriode"), qsl("Anlage"), qsl("Angelegter\nBetrag"),qsl("# Vertr."), qsl("Summe in\nPeriode")};
+    tl.cols =QStringList{qsl("Vert.\nDatum"), qsl("Vertrags-\nkennung"), qsl("Anzahl"), qsl("Vertragswert(e)"), qsl("Summe der\nletzten 12M") };
 
-    QVector<QStringList> lines =perpetualInvestmentByDate();
-    tablelayout::section sec;
-    for(int i=0; i<lines.count (); i++) {
-        sec.data.push_back (lines[i]);
-    }
-    tl.sections.push_back (sec);
-    tl.renderTable ();
-}
-
-void uebersichten::renderPerpetualInvestmentsByInvestment()
-{
-    QString head {qsl("Liste der fortlaufenden Geldanlagen")};
-    QString desc {qsl("Diese Tabelle zeigt für jede fortlaufende Geldanlage ihren zeitlichen Verlauf")};
-    prep(head, desc);
-
-    tablelayout tl(td);
-
-    QVector<QStringList> data =perpetualInvestmentByInvestments ();
+    QVector<QStringList> data =perpetualInvestmentByContracts ();
     if( data.size () == 0)
         return;
     QString investment;
@@ -388,4 +369,36 @@ void uebersichten::renderPerpetualInvestmentsByInvestment()
     tl.renderTable ();
 }
 
-//void uebersichten::renderContractsByInterestByYear()
+void uebersichten::renderPerpetualInvestmentsCheckBookings()
+{
+    QString head {qsl("Prüfung der Grenzwerte für fortlaufende Geldanlagen anhand aller Buchungen")};
+    QString desc {qsl("Diese Tabelle gibt dür Verträge mit fortlaufenden Geldanlagen an, "
+                      "wie hoch die Summe der Vertragswerte ist, die sich aus den Buchungen der letzten 12 Monate ergeben.")};
+    prep(head, desc);
+    tablelayout tl(td);
+    tl.cols =QStringList{qsl("Buchungs-\ndatum"), qsl("# Buchungen\nzu diesem\nDatum"), qsl("Wert d. Buchungen\nzu diesem\nDatum"), qsl("Gesamtwert\nincl. Zinsen"), qsl("Gesamtwert der\nEinzahlungen\no. Zinsen")};
+
+    QVector<QStringList> data =perpetualInvestment_bookings();
+    if( data.size () == 0)
+        return;
+    QString investment;
+    tablelayout::section curSec;
+    for( int i=0; i< data.length (); i++) {
+        if( data[i][0] not_eq investment) {
+            // new section starts here
+            if( i>0) {
+                tl.sections.push_back (curSec);
+                curSec.data.clear ();
+            }
+            curSec.header =investment =data[i][0];
+        }
+        QStringList row;
+        for (int j=1; j<data[i].length (); j++) {
+            row.append (data[i][j]);
+        }
+        curSec.data.append(row);
+    }
+    if( curSec.data.size ())
+        tl.sections.push_back (curSec);
+    tl.renderTable ();
+}

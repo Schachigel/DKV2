@@ -386,8 +386,7 @@ QString askUserFilenameForCopy(const QString& title, bool onlyExistingFiles=fals
 void MainWindow::open_Database(const QString& dbFile)
 {
     busycursor bc;
-    if( appConfig::LastDb () == dbFile)
-    {
+    if( appConfig::LastDb () == dbFile) {
         bc.finish();
         QMessageBox::information( this, qsl("Abbruch"), qsl("Die ausgewählte Datei ist bereits geöffnet."));
         return;
@@ -403,14 +402,13 @@ void MainWindow::open_Database(const QString& dbFile)
         prepare_startPage();
         ui->stackedWidget->setCurrentIndex(startPageIndex);
         return;
-    } else {
-        appConfig::delLastDb();
-        bc.finish();
-        QMessageBox::critical(this, qsl("Großes Problem"), qsl("Die gewählte Datenbank konnte nicht verwendet werden. "
-                                       "Suche in der dkv2.log Datei im %temp% Verzeichnis nach der Ursache!"));
-        // useDb has closed the openDb -> without old and new db we could not run
-        close();
     }
+    appConfig::delLastDb();
+    bc.finish();
+    QMessageBox::critical(this, qsl("Großes Problem"), qsl("Die gewählte Datenbank konnte nicht verwendet werden. "
+                                   "Suche in der dkv2.log Datei im %temp% Verzeichnis nach der Ursache!"));
+    // useDb has closed the openDb -> without old and new db we could not run
+    close();
 }
 
 void MainWindow::on_action_menu_database_new_triggered()
@@ -719,8 +717,8 @@ void MainWindow::on_action_menu_contracts_statistics_view_triggered()
                                      qsl("Anzahl auslaufender Verträge nach Jahr"),
                                      qsl("Anzahl Verträge nach Zinssatz und Jahr"),
                                      qsl("Anzahl Verträge nach Laufzeiten"),
-                                     qsl("Fortlaufende Geldanlagen nach Datum"),
-                                     qsl("Fortlaufende Geldanlagen nach Anlagen")}));
+                                     qsl("Verlauf fortlaufender Geldanlagen (Vertragswert)"),
+                                     qsl("Verlauf fortlaufender Geldanlagen (Buchungen)")}));
     } else {
         updateUebersichtView(combo->currentIndex());
     }

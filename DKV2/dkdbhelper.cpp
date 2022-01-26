@@ -328,64 +328,87 @@ QString decorateHighValues(double d)
 }
 }
 
-QVector<QStringList> perpetualInvestmentByDate()
+QVector<QStringList> perpetualInvestment_bookings()
 {
     QString sql {qsl(R"str(
-   WITH
-   fortlaufendeGeldanlagen AS
-   (
-      SELECT * FROM Geldanlagen WHERE Ende = '9999-12-31'
-   ),
-   Abschluesse AS
-   (
-      SELECT G.rowid    AS AnlageId
-        , G.Typ || ' (' || printf("%.2f%", V.zSatz/100.) || ')' AS Anlage
-        , V.Kennung          AS Vertrag
-        , V.Vertragsdatum AS Datum
-        , V.Betrag        AS Betrag
-      FROM Vertraege AS V
-      INNER JOIN fortlaufendeGeldanlagen AS G ON G.rowid = V.AnlagenId
-    )
-    SELECT Abschluesse.Datum AS Vertragsdatum
-    , Abschluesse.Vertrag
-    , DATE(Abschluesse.Datum, '-1 years') AS periodenStart
-    , Abschluesse.Anlage AS Anlage
-    , sum(Abschluesse.Betrag/100.) AS AnlageSumme
-    , count(Abschluesse.Vertrag) AS AnzahlVertraege
-     , (SELECT SUM(Betrag)/100.
-      FROM ( SELECT Betrag
-             FROM Abschluesse AS _ab
-             WHERE _ab.AnlageId = Abschluesse.AnlageId
-               AND _ab.Datum > DATE(Abschluesse.Datum, '-1 years')
-               AND _ab.Datum <= Abschluesse.Datum
-           )
-      ) AS periodenSumme
-    FROM Abschluesse
-    GROUP BY Datum, AnlageId
-    ORDER BY Datum DESC, Anlage DESC
-    )str")};
+WITH
+fortlaufendeGeldanlagen AS
+(
+   SELECT Typ, rowid FROM Geldanlagen WHERE Ende = '9999-12-31'
+)
+, geldBewegungen AS
+(
+  SELECT
+---    Buchungen.id AS bId
+    Buchungen.Datum AS bDatum
+---	, Buchungen.BuchungsArt AS bArt
+    , Buchungen.Betrag AS Buchungsbetrag
+---	, Vertraege.id AS  vId
+---	, Vertraege.Vertragsdatum
+    , Anlagen.rowid AS aId
+    , Anlagen.Typ AS Anlage
 
+  FROM Buchungen
+  INNER JOIN Vertraege ON Vertraege.id == Buchungen.VertragsId
+  INNER JOIN fortlaufendeGeldanlagen AS Anlagen ON Anlagen.rowid = Vertraege.AnlagenId
+)
+, temp AS
+(
+  SELECT
+    aId
+    , Anlage
+    , bDatum
+    , SUM(Buchungsbetrag) /100. AS Buchungsbetraege
+    , COUNT(Buchungsbetrag) AS anzahlBuchungen
+
+    , (SELECT SUM(Buchungen.Betrag) /100. FROM Buchungen WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.AnlagenId == aId) AND Buchungen.Datum <= bDatum AND Buchungen.Datum > DATE(bDatum, '-1 year')
+    ) AS BuchungsSummenInclZins
+    , (SELECT COUNT(*) FROM Buchungen WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.AnlagenId == aId) AND Buchungen.Datum <= bDatum AND Buchungen.Datum > DATE(bDatum, '-1 year')
+    ) AS BuchungsSummenInclZins_count
+
+    , (SELECT SUM(Buchungen.Betrag) /100. FROM Buchungen WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend == 0 AND Vertraege.AnlagenId == aId) AND Buchungen.Datum <= bDatum AND Buchungen.Datum > DATE(bDatum, '-1 year') AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2 OR Buchungen.BuchungsArt == 8)
+    ) AS BuchungsSummenExclZins_ausz
+
+    , (SELECT COUNT(*) FROM Buchungen WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend != 0 AND Vertraege.AnlagenId == aId) AND Buchungen.Datum <= bDatum AND Buchungen.Datum > DATE(bDatum, '-1 year') AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2)
+    ) AS BuchungsSummenExclZins_N_ausz_count
+    , (SELECT SUM(Buchungen.Betrag) /100. FROM Buchungen WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend != 0 AND Vertraege.AnlagenId == aId) AND Buchungen.Datum <= bDatum AND Buchungen.Datum > DATE(bDatum, '-1 year') AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2)
+    ) AS BuchungsSummenExclZins_N_ausz
+
+  FROM geldBewegungen
+  GROUP BY aId, bDatum
+)
+SELECT
+  aId
+  , Anlage
+  , bDatum
+  , anzahlBuchungen AS zumDatum_anzahlBuchungen
+  , IFNULL(Buchungsbetraege, 0.) AS zumDatum_Gebucht
+  , IFNULL(BuchungsSummenExclZins_ausz, 0.) + IFNULL(BuchungsSummenExclZins_N_ausz, 0.) AS ly_einAusZahlungen_oZ
+  , IFNULL(BuchungsSummenInclZins, 0.) AS ly_Wert_incl_Zinsen
+FROM temp
+    )str")};
+    QLocale l;
     QVector<QSqlRecord> rec;
     if( not executeSql (sql, rec)) {
         return QVector<QStringList>();
     }
-    QLocale l;
     QVector<QStringList> result;
     for( int i=0; i< rec.size (); i++) {
         QStringList zeile;
-        zeile.push_back (rec[i].value(0).toDate().toString("dd.MM.yyyy")); // VDatum
-        zeile.push_back (rec[i].value(1).toString()); // Kennung
-        zeile.push_back (rec[i].value(2).toDate().toString ("dd.MM.yyyy")); // periodenstart
-        zeile.push_back (rec[i].value(3).toString()); // Geldanlage Typ
-        zeile.push_back (l.toCurrencyString (rec[i].value(4).toDouble ())); // Kreditvol.
-        zeile.push_back (rec[i].value(5).toString()); // VAnzahl
-        zeile.push_back (decorateHighValues (rec[i].value(6).toDouble ()));
+        int col =1;
+        // zeile.push_back (QString::number(rec[i].value(col++).toInt())); // AnlagenId
+        zeile.push_back (rec[i].value(col++).toString()); // Anlagenbez.
+        zeile.push_back (rec[i].value(col++).toDate().toString ("dd.MM.yyyy")); // Buchungsdatum
+        zeile.push_back (QString::number(rec[i].value(col++).toInt())); // Anzahl Buchungen
+        zeile.push_back (l.toCurrencyString (rec[i].value(col++).toDouble ())); // buchungen zu diesem Buchungsdatum
+        zeile.push_back (decorateHighValues (rec[i].value(col++).toDouble ())); // Wert nur Einzahlungen
+        zeile.push_back (decorateHighValues (rec[i].value(col++).toDouble ())); // Wert incl. Zinsen
         result.push_back (zeile);
     }
     return result;
 }
 
-QVector<QStringList> perpetualInvestmentByInvestments()
+QVector<QStringList> perpetualInvestmentByContracts()
 {
     QString sql {qsl(R"str(
    WITH
@@ -406,8 +429,8 @@ QVector<QStringList> perpetualInvestmentByInvestments()
     Abschluesse.Anlage AS Anlage
     , Abschluesse.Datum AS Vertragsdatum
     , Abschluesse.Vertrag
-    , sum(Abschluesse.Betrag/100.) AS AnlageSumme_Tag
     , count(Abschluesse.Vertrag) AS AnzahlVerträge
+    , sum(Abschluesse.Betrag/100.) AS AnlageSumme_Tag
     , (SELECT SUM(Betrag)/100.
       FROM ( SELECT Betrag
              FROM Abschluesse AS _ab
@@ -428,12 +451,13 @@ QVector<QStringList> perpetualInvestmentByInvestments()
     QVector<QStringList> result;
     for( int i=0; i< rec.size (); i++) {
         QStringList zeile;
-        zeile.push_back (rec[i].value(0).toString ()), // Anlage
-        zeile.push_back (rec[i].value(1).toDate().toString("dd.MM.yyyy")); // Vertragsdatum
-        zeile.push_back (rec[i].value(2).toString());  //Kennung
-        zeile.push_back (l.toCurrencyString (rec[i].value(3).toDouble ())); // new contract sum by day
-        zeile.push_back (rec[i].value(4).toString ()); // contract count
-        double periodSum =rec[i].value(5).toDouble ();
+        int col =0;
+        zeile.push_back (rec[i].value(col++).toString ()), // Anlage
+        zeile.push_back (rec[i].value(col++).toDate().toString("dd.MM.yyyy")); // Vertragsdatum
+        zeile.push_back (rec[i].value(col++).toString());  //Kennung
+        zeile.push_back (rec[i].value(col++).toString ()); // contract count
+        zeile.push_back (l.toCurrencyString (rec[i].value(col++).toDouble ())); // new contract sum by day
+        double periodSum =rec[i].value(col++).toDouble ();
         zeile.push_back (decorateHighValues (periodSum));
         result.push_back (zeile);
     }

@@ -49,8 +49,8 @@ private: // data
     const bool regular =false;
 
     // font sizes in pt
-    const int fontSize_colHeader =14;
-    const int fontSize_secHeader =14;
+    const int fontSize_colHeader =12;
+    const int fontSize_secHeader =12;
     const int fontSize_data      =11;
     const int fontSize_emptyRow  =1;
 
@@ -91,8 +91,8 @@ struct uebersichten
         BY_CONTRACT_ENDING,
         INTEREST_DISTRIBUTION,
         CONTRACT_RUNTIME_DISTRIB,
-        PERPETUAL_INVESTMENTS_CHECK,
-        PERPETUAL_INVESTMENTS_BY_INVESTMENT
+        PERPETUAL_INVESTMENTS_CHECK_BY_CONTRACTS,
+        PERPETUAL_INVESTMENTS_CHECK_BY_BOOKINGS
     };
     //static int fromUeType(uetype t) { return static_cast<int>(t);}
     static uetype fromInt(int i) { return static_cast<uetype>(i);}
@@ -105,8 +105,8 @@ private:
     void renderContractsByContractEnd();
     void renderInterestDistribution();
     void renderContractRuntimeDistrib();
-    void renderPerpetualInvestmentsCheck();
-    void renderPerpetualInvestmentsByInvestment();
+    void renderPerpetualInvestmentsCheckContracts();
+    void renderPerpetualInvestmentsCheckBookings();
 //    void renderContractsByInterestByYear();
 private: /*static*/
     static QString titles[];
