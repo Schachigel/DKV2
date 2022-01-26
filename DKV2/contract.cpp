@@ -115,10 +115,13 @@ void contract::initRandom(qlonglong creditorId)
     setLabel(proposeContractLabel());
     setCreditorId(creditorId);
     setInterestModel(fromInt(rand->bounded(100)%3));
-    setInterestRate(1 +rand->bounded(149) /100.);
-    setPlannedInvest(    rand->bounded(50)*1000.
+    if( rand->bounded (1000)%15 == 0)
+        setInterestRate (0.);
+    else
+        setInterestRate(rand->bounded(25)* 0.15);
+    setPlannedInvest(    rand->bounded(50)  *1000.
                        + rand->bounded(1,3) *500.
-                       + rand->bounded(10) *100.);
+                       + rand->bounded(10)  *100.);
     setConclusionDate(QDate::currentDate().addYears(-2).addDays(rand->bounded(720)));
     if( rand->bounded(100)%5 > 0)
         // in 4 von 5 Fällen
