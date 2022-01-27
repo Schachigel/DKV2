@@ -112,6 +112,23 @@ const QVector<tableViewColTexts> columnTextsContracts {
     /*cp_ContractEnd      */ {qsl("Kündigungsfrist/ \nVertragsende"), qsl("Modalität und Datum des Vertrag Endes")}
 };
 
+const QVector<tableViewColTexts> columnTexts_d_Contracts {
+    /*cp_d_vid,                */ {qsl(""), qsl("")},
+    /*cp_d_Creditor_id,        */ {qsl(""), qsl("")},
+    /*cp_d_Creditor,           */ {qsl("KreditorIn"), qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters")},
+    /*cp_d_ContractLabel,      */ {qsl("Vertragskennung"), qsl("Die Vertragskennung identifiziert den Vertrag eindeutig")},
+    /*cp_d_ContractActivation, */ {qsl("Geldeingang"), qsl("'Wertstellung' der ersten Überweisung")},
+    /*cp_d_ContractTermination,*/ {qsl("Vertragsende"), qsl("Datum, zu dem der Vertrag beendet wurde")},
+    /*cp_d_InitialValue,       */ {qsl("Nominalwert"), qsl("Ursprünglich vereinbarter Kreditbetrag")},
+    /*cp_d_InterestRate,       */ {qsl("Zinssatz"), qsl("Vereinbarter Zinssatz")},
+    /*cp_d_InterestMode,       */ {qsl("Zinsmodus"), qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein")},
+    /*cp_d_Interest,           */ {qsl("Zins"), qsl("")},
+    /*cp_d_TotalDeposit,       */ {qsl("Einzahlungen"), qsl("Summe aller Einzahlungen")},
+    /*cp_d_FinalPayout,        */ {qsl("Abschl. Auszahlung"), qsl("")}
+    /*cp_d_colCount            */
+};
+
+
 void MainWindow::prepare_valid_contracts_list_view()
 { LOG_CALL;
     busycursor bc;
@@ -213,6 +230,17 @@ void MainWindow::prepare_deleted_contracts_list_view()
     contractsTV->hideColumn(cp_d_vid);
     contractsTV->hideColumn(cp_d_Creditor_id);
 
+    QBitArray ba =toQBitArray (getMetaInfo (qsl("geloeschteVertraegeSpalten")));
+    if( ba.size () >= cp_d_colCount) {
+        ba[0] = ba[1] = ba[2] =false;
+        for(int i=0; i<int(cp_d_colCount); i++) {
+            if( ba[i])
+                contractsTV->showColumn (i);
+            else
+                contractsTV->hideColumn (i);
+        }
+    }
+
     contractsTV->resizeColumnsToContents();
 
     connect(ui->contractsTableView->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::currentChange_ctv);
@@ -240,16 +268,34 @@ void MainWindow::on_reset_contracts_filter_clicked()
 
 void MainWindow::on_btnVertragsSpalten_clicked()
 {
-    QBitArray ba =toQBitArray(getMetaInfo (qsl("VertraegeSpalten"), qsl("000111111111111")));
+    QString storageName;
+    int colCount =0;
+    const QVector<tableViewColTexts>* colTexts =nullptr;
+    if( showDeletedContracts) {
+        storageName =qsl("geloeschteVertraegeSpalten");
+        colCount =cp_d_colCount;
+        colTexts =&columnTexts_d_Contracts;
+    } else {
+       storageName =qsl("VertraegeSpalten");
+       colCount =cp_colCount;
+       colTexts =&columnTextsContracts;
+    }
+
     QVector<QPair<int, QString>> colInfo;
-    for( int i=0; i<int(colmn_Pos::cp_colCount); i++)
-        colInfo.push_back (QPair<int, QString>(i, columnTextsContracts[i].header));
+    QString initMetaInfo;
+    for( int i=0; i < colCount; i++){
+        colInfo.push_back (QPair<int, QString>(i, (*colTexts)[i].header));
+        initMetaInfo +="1";
+    }
+    QBitArray ba =toQBitArray(getMetaInfo (storageName, initMetaInfo));
+
     dlgDisplayColumns dlg(colInfo, ba, getMainWindow ());
     QFont f =dlg.font(); f.setPointSize(10); dlg.setFont(f);
 
     if( dlg.exec () == QDialog::Accepted ) {
-        setMetaInfo (qsl("VertraegeSpalten"), toString(dlg.getNewStatus()));
-        prepare_valid_contracts_list_view ();
+        setMetaInfo (storageName, toString(dlg.getNewStatus()));
+        showDeletedContracts ? prepare_deleted_contracts_list_view ()
+                             : prepare_valid_contracts_list_view ();
     }
 }
 

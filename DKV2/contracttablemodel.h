@@ -36,7 +36,8 @@ enum column_pos_del {
     cp_d_InterestMode,
     cp_d_Interest,
     cp_d_TotalDeposit,
-    cp_d_FinalPayout
+    cp_d_FinalPayout,
+    cp_d_colCount
 };
 
 class ContractTableModel : public QSqlTableModel
