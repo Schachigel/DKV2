@@ -69,7 +69,8 @@ macx:QMAKE_POST_LINK += cp $${PWD}/$${TARGET}.icns $${OUT_PWD}/$${TARGET}.app/Co
 # macx:QMAKE_POST_LINK += cp $$[QT_INSTALL_TRANSLATIONS]/qtbase_de.qm $${OUT_PWD}/$${TARGET}.app/Contents/MacOS/translations/ &&
 CONFIG( release, debug|release ){
    macx:QMAKE_POST_LINK += rm $${OUT_PWD}/$${TARGET}.dmg || true &&
-   macx:QMAKE_POST_LINK += macdeployqt $${OUT_PWD}/$${TARGET}.app -dmg &&
+   macx:QMAKE_POST_LINK += cd $${OUT_PWD} &&
+   macx:QMAKE_POST_LINK += macdeployqt $${TARGET}.app -dmg &&
 }
 macx:QMAKE_POST_LINK += echo "... beende post link steps"
 
