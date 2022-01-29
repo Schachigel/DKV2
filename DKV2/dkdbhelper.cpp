@@ -19,10 +19,40 @@
 #include "dbstructure.h"
 #include "investment.h"
 
+
+bool updateViewsAndIndices_if_needed(const QSqlDatabase& db =QSqlDatabase::database ())
+{   LOG_CALL;
+    QString lastProgramVersion = dbConfig::read_DKV2_Version(db);
+    QString thisProgramVersion = QCoreApplication::applicationVersion();
+    if( lastProgramVersion == thisProgramVersion) {
+        qInfo() << "Same Program Version -> no update of views and indices necessary";
+        return true;
+    }
+    qInfo() << "Program versions used differ -> views will be updated";
+    qInfo() << qsl("last exe: ") << lastProgramVersion << qsl(" / this exe: ") << thisProgramVersion;
+    QString errorMsg;
+    if( not insertDKDB_Views (db)) {
+        errorMsg.append(qsl("Faild to insert views for current exe version"));
+    }
+    if( not insertDKDB_Views (db)) {
+        errorMsg.append (qsl("\nFailed to insert indices for current exe version"));
+    }
+    if( errorMsg.isEmpty ()) {
+        dbConfig::writeValue(DKV2_VERSION, thisProgramVersion);
+        return true;
+    }
+    return false;
+}
+
 bool insertDKDB_Views( const QSqlDatabase &db)
 {   LOG_CALL;
     return createDbViews(getViews(), db);
 }// initial database tables and content
+
+bool insertDKDB_Indices( const QSqlDatabase& db)
+{   LOG_CALL;
+    return createIndicesFromSQL( getIndexSql (), db);
+}
 
 void insert_DbProperties(const QSqlDatabase &db = QSqlDatabase::database())
 {
@@ -38,6 +68,7 @@ bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/
     autoRollbackTransaction art(db.connectionName());
     do {
         if( includeViews) if ( not insertDKDB_Views(db)) break;
+        if( includeViews) if (not insertDKDB_Indices(db)) break;
         insert_DbProperties(db);
         if ( not letterTemplate::insert_letterTypes(db)) break;
         if ( not letterTemplate::insert_elementTypes(db)) break;
@@ -108,9 +139,7 @@ bool open_databaseForApplication( const QString &newDbFile)
     }
 
     switchForeignKeyHandling(db, fkh_on);
-    if( not insertDKDB_Views ())
-        return false;
-    return true;
+    return updateViewsAndIndices_if_needed (db);
 }
 
 // general stuff
