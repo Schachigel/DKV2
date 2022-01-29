@@ -444,7 +444,7 @@ bool createDbView(const QString& name, const QString& sql, bool temporary, const
 }
 
 bool deleteDbView(const QString& name, const QSqlDatabase& db)
-{
+{   LOG_CALL;
     if( executeSql_wNoRecords(qsl("DROP VIEW IF EXISTS %1").arg(name), db)) {
         qInfo() << "dropped view: " << name;
         return true;
@@ -457,6 +457,23 @@ bool createDbViews( const QMap<QString, QString>& views, const QSqlDatabase& db)
 {
     foreach(QString view, views.keys()) {
         if( not createPersistentDbView (view, views[view], db))
+            return false;
+    }
+    return true;
+}
+bool createIndicesFromSQL( const QStringList Sqls, const QSqlDatabase& db)
+{   LOG_CALL;
+    QVector<QSqlRecord> indices;
+    executeSql (qsl("SELECT name from sqlite_master WHERE type=='index'"), QVariant(), indices, db);
+    for( int i =0; i<indices.count (); i++) {
+        QString tablename =indices[i].field(0).value().toString ();
+        if( tablename.startsWith (qsl("sqlite"), Qt::CaseInsensitive))
+            continue;
+        else
+            executeSql_wNoRecords (qsl("DROP INDEX %1").arg(tablename), db);
+    }
+    for(int i=0; i < Sqls.count (); i++) {
+        if( not executeSql_wNoRecords (Sqls[i], db))
             return false;
     }
     return true;

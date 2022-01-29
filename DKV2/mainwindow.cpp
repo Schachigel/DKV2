@@ -187,7 +187,6 @@ void treat_DbIsAlreadyInUse_File(QString filename)
     return createSignalFile (filename);
 }
 
-
 bool MainWindow::useDb(const QString& dbfile)
 {   LOG_CALL;
     if( open_databaseForApplication(dbfile)) {

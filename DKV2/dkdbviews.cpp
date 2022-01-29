@@ -307,6 +307,20 @@ const QMap<QString, QString>& getViews() {
 QString getView(const QString &vn) {
     return views.value(vn);
 }
+
+const QStringList getIndexSql() {
+    return {
+        qsl("CREATE INDEX 'Buchungen-BArt' ON 'Buchungen' ( 'BuchungsArt' )"),
+        qsl("CREATE INDEX 'Buchungen-vid-bdatum' ON 'Buchungen' ('VertragsId', 'Datum' )"),
+        qsl("CREATE INDEX 'Vertraege-aId' ON 'Vertraege' ( 'AnlagenId' )"),
+        qsl("CREATE INDEX 'Vertraege-Datum' ON 'Vertraege' ('Vertragsdatum' )"),
+        qsl("CREATE INDEX 'Geldanlagen-Ende' ON 'Geldanlagen' ( 'Ende' )")
+    };
+}
+
+
+
+
 bool remove_all_views(const QSqlDatabase& db /*=QSqlDatabase::database()*/)
 {   LOG_CALL;
     QVector<QSqlRecord> views;

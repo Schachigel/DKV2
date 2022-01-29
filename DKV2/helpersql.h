@@ -145,4 +145,6 @@ inline bool createPersistentDbView(const QString& name, const QString& sql, cons
 bool deleteDbView(const QString& name, const QSqlDatabase& db = QSqlDatabase::database());
 bool createDbViews( const QMap<QString, QString>& views, const QSqlDatabase& db);
 
+bool createIndicesFromSQL( const QStringList Sqls, const QSqlDatabase& db);
+
 #endif // SQLHELPER_H
