@@ -26,8 +26,8 @@ class dbgTimer
 {
     QElapsedTimer t;
     QString fname;
-    int labcount =0;
-    int lastLab =0;
+    qint64 labcount =0;
+    qint64 lastLab =0;
 public:
     dbgTimer() {t.start();}
     dbgTimer(const dbgTimer&) = delete;
@@ -35,11 +35,11 @@ public:
     ~dbgTimer() {qInfo().noquote() << Qt::endl << (fname.isEmpty() ? qsl("") : fname+ qsl(" end") )
                                    << Qt::endl << qsl("Elapsed time: ")<< t.elapsed() << "ms" << Qt::endl;}
     void lab(const QString& msg =QString()) {
-        int now =t.elapsed();
-        qInfo().noquote() << (fname.isEmpty() ? qsl("") : fname) <<  qsl(" Lab time ")
+        qint64 now =t.elapsed();
+        qInfo().noquote() << (fname.isEmpty() ? qsl("") : fname) <<  qsl(" Lab# ")
                           << (msg.isEmpty() ? QString::number(labcount++) : msg)
-                          << now
-                          << "ms (delta: " << now-lastLab << ")";
+                          << ":" << (now-lastLab)
+                          << "ms (overall: " << now << ")";
         lastLab =now;
     }
 };
