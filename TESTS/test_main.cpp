@@ -68,8 +68,11 @@ int main(int argc, char *argv[])
     srand(time(0));
     std::random_shuffle(tests.begin(), tests.end());
 
-    for( auto test: tests){
-        ASSERT_TEST(test);
+    {
+        dbgTimer timer("overall test time");
+        for( auto test: tests){
+            ASSERT_TEST(test);
+        }
     }
 
     if( errCount == 1) qDebug() << "\n>>>   There was an error   <<< ";
