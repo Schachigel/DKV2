@@ -310,10 +310,11 @@ QString getView(const QString &vn) {
 
 const QStringList getIndexSql() {
     return {
-        qsl("CREATE INDEX 'Buchungen-BArt' ON 'Buchungen' ( 'BuchungsArt' )"),
-        qsl("CREATE INDEX 'Buchungen-vid-bdatum' ON 'Buchungen' ('VertragsId', 'Datum' )"),
-        qsl("CREATE INDEX 'Vertraege-aId' ON 'Vertraege' ( 'AnlagenId' )"),
-        qsl("CREATE INDEX 'Vertraege-Datum' ON 'Vertraege' ('Vertragsdatum' )"),
+        qsl("CREATE INDEX 'Buchungen-vId'        ON 'Buchungen' ( 'VertragsId')"),
+        qsl("CREATE INDEX 'Buchungen-vid-bdatum' ON 'Buchungen' ( 'VertragsId', 'Datum' )"),
+        qsl("CREATE INDEX 'Buchungen-BArt'       ON 'Buchungen' ( 'BuchungsArt' )"),
+        qsl("CREATE INDEX 'Vertraege-aId'    ON 'Vertraege'   ( 'AnlagenId' )"),
+        qsl("CREATE INDEX 'Vertraege-Datum'  ON 'Vertraege'   ('Vertragsdatum' )"),
         qsl("CREATE INDEX 'Geldanlagen-Ende' ON 'Geldanlagen' ( 'Ende' )")
     };
 }

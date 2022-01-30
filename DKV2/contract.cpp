@@ -172,16 +172,14 @@ double contract::interestBearingValue() const
 
 const booking contract::latestBooking()
 {
-    QSqlRecord rec = executeSingleRecordSql(dkdbstructur[qsl("Buchungen")].Fields(), qsl("VertragsId=") + id_aS(), qsl("rowid DESC LIMIT 1"));
+//dbgTimer timer(qsl("latestBooking"));
+    QString sql {qsl("SELECT id, VertragsId, Datum, BuchungsArt, Betrag FROM Buchungen WHERE VertragsId=%1 ORDER BY rowid DESC LIMIT 1").arg(id_aS())};
+    QSqlRecord rec = executeSingleRecordSql(sql);
     if( 0 == rec.count()) {
         qInfo() << "latestBooking returns empty value";
         return booking();
     }
-    booking latestB;
-    latestB.type   =booking::Type(rec.value(qsl("BuchungsArt")).toInt());
-    latestB.date   =rec.value(qsl("Datum")).toDate();
-    latestB.amount =euroFromCt(rec.value(qsl("Betrag")).toInt());
-    latestB.contractId = id();
+    booking latestB(id(), booking::Type(rec.value(qsl("BuchungsArt")).toInt()), rec.value(qsl("Datum")).toDate(), euroFromCt(rec.value(qsl("Betrag")).toInt()));
     qDebug() << "Latest Booking: " << booking::displayString(latestB.type) << ", " << latestB.date << ", " << latestB.amount << ", cId:" << latestB.contractId;
     return latestB;
 }

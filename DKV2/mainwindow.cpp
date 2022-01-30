@@ -975,7 +975,8 @@ void MainWindow::on_action_menu_debug_show_log_triggered()
 
 void MainWindow::on_actionDatenbank_Views_schreiben_triggered()
 {
-    insertDKDB_Views(QSqlDatabase::database());
+    insertDKDB_Views ();
+    insertDKDB_Indices ();
 }
 // about
 void MainWindow::on_action_about_DKV2_triggered()
