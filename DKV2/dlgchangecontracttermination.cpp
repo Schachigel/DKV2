@@ -4,16 +4,15 @@
 
 dlgChangeContractTermination::dlgChangeContractTermination(QWidget *parent) : QDialog(parent)
 {
+    setFontPs(this, 10);
     title =new QLabel(qsl("Verändern von Vertragsende und Kündigungsfrist<p>"));
     setFontPs(title, 14);
-
     subTitle =new QLabel(qsl("Für das Vertragsende kann eine Kündigungsfrist <b>oder</b> "
                              "ein festes Vertragsende vereinbart werden.<p>"
                              "Bei einem festen Vertragsende wird üblicher Weise keine Kündigungsfrist "
                              "angegeben. Falls nötig kann dies jedoch mit dem Kontrollkästchen "
                              "erzwungen werden.<p>"));
     subTitle->setWordWrap(true);
-    setFontPs(subTitle, 10);
 
     buttons =new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
     buttons->button(QDialogButtonBox::Ok)->setDefault(true);
@@ -21,10 +20,8 @@ dlgChangeContractTermination::dlgChangeContractTermination(QWidget *parent) : QD
     connect(buttons, &QDialogButtonBox::rejected, this, &dlgChangeContractTermination::reject);
 
     QLabel* lKfrist =new QLabel(qsl("Kündigungsfrist"));
-    setFontPs(lKfrist, 10);
 
     notPeriod =new QComboBox();
-    setFontPs(notPeriod, 10);
     notPeriod->addItem(qsl("festes Vertragsende"), QVariant(-1));
     for (int i=3; i<12; i++)
         notPeriod->addItem(QString::number(i) + qsl(" Monate"), QVariant(i));
@@ -41,11 +38,7 @@ dlgChangeContractTermination::dlgChangeContractTermination(QWidget *parent) : QD
                                    "in dieser Liste \"festes Vertragsende\""));
 
     QLabel* lContractEnd =new QLabel(qsl("Neues Vertragsende"));
-    setFontPs(lContractEnd, 10);
-
     terminationDate =new QDateEdit();
-    setFontPs(terminationDate, 10);
-
 
     QLabel* lBoth =new QLabel(qsl("Kündigungsfrist <i>und</i> Vertragsende zulassen"));
     allowBoth =new QCheckBox();
