@@ -520,12 +520,21 @@ void MainWindow::on_btnCreateFromContracts_clicked()
 {   LOG_CALL;
 
     QStringList options {qsl("Fortlaufende Geldanlagen erstellen"), qsl("Zeitlich abgeschlossene Anlagen (1 Jahr) erstellen")};
-    bool ok =false;
-    QString item =QInputDialog::getItem(this, qsl("Art der Anlage auswählen"), qsl("Wähle aus, ob zeitlich befristete oder fortlaufende Anlagen erzeugt werden sollen."), options, 0, false, &ok);
+    QInputDialog id(this);
+    id.setInputMode (QInputDialog::InputMode::TextInput);
+    id.setWindowTitle (qsl("Art der Anlage auswählen"));
+    id.setLabelText (qsl("Wähle aus, ob zeitlich befristete oder fortlaufende Anlagen erzeugt werden sollen."));
+    id.setComboBoxItems (options);
+    QFont font =id.font ();
+    font.setPointSize (10);
+    id.setFont (font);
+    bool ok =id.exec ();
+
+//    QString item =QInputDialog::getItem(this, qsl("Art der Anlage auswählen"), qsl("Wähle aus, ob zeitlich befristete oder fortlaufende Anlagen erzeugt werden sollen."), options, 0, false, &ok);
     if( !ok)
         return;
 
-    int newInvestments =createNewInvestmentsFromContracts(item == options[0]);
+    int newInvestments =createNewInvestmentsFromContracts(id.textValue () == options[0]);
     if( newInvestments == -1) {
         QMessageBox::critical(this, qsl("Fehler"), qsl("Beim Anlegen der Geldanlagen ist ein Fehler aufgetreten"));
         return;
