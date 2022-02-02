@@ -55,9 +55,9 @@ bool investment::matchesContract(const contract& c)
     if( d2percent(c.interestRate()) not_eq interest)
         msg +=qsl("Interest missmatch:") +QString::number(interest) +qsl("vs.") +QString::number(d2percent(c.investment()));
     if( c.conclusionDate() < start)
-        msg +=qsl("start date missmatch;");
+        msg +=qsl("\nstart date missmatch;");
     if( c.conclusionDate() > end)
-        msg += qsl("end date missmatch:");
+        msg += qsl("\nend date missmatch:");
     if( msg.isEmpty())
         return true;
     qInfo() << "investment  -contract mismatch: \n" << msg;
@@ -93,7 +93,7 @@ qlonglong createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
     tdi.setValue(fnInvestmentInterest, ZSatz);
     tdi.setValue(fnInvestmentStart, vDate);
     tdi.setValue(fnInvestmentEnd, endDate);
-    QString type { qsl("100.tEuro pa /max 20")};
+    QString type { qsl("100.tEuro pa /max. 20 (%1)").arg(ZSatz/100.)};
     tdi.setValue(fnInvestmentType, type);
     tdi.setValue(fnInvestmentState, true);
     return tdi.WriteData();
@@ -105,20 +105,20 @@ bool deleteInvestment(const qlonglong rowid)
     return executeSql_wNoRecords (sql);
 }
 
-bool setInvestment(const int ZSatz, const QString& v, const QString& b, const QString& t, bool state)
+bool setInvestment(const qlonglong rowid, bool state)
 {   LOG_CALL;
-    QString sql{qsl("UPDATE  Geldanlagen  SET Offen = %1 WHERE ZSatz=%2 AND Anfang='%3' AND Ende='%4' AND Typ='%5'")};
+    QString sql{qsl("UPDATE  Geldanlagen  SET Offen = %1 WHERE rowid == %2")};
 
-    sql =sql.arg(state?qsl("true"):qsl("false"),QString::number(ZSatz),v, b, t);
+    sql =sql.arg(state ? qsl("true") : qsl("false"), QString::number(rowid));
     return executeSql_wNoRecords(sql);
 }
-bool closeInvestment(const int ZSatz, const QDate v, const QDate b, const QString& t)
+bool closeInvestment(const qlonglong rowid)
 {
-    return setInvestment(ZSatz, v.toString(Qt::ISODate), b.toString(Qt::ISODate), t, false);
+    return setInvestment(rowid, false);
 }
-bool openInvestment(const int ZSatz, const QDate v, const QDate b, const QString& t)
+bool openInvestment(const qlonglong rowid)
 {
-    return setInvestment(ZSatz, v.toString(Qt::ISODate), b.toString(Qt::ISODate), t, true);
+    return setInvestment(rowid, true);
 }
 
 int nbrActiveInvestments(const QDate cDate/*=EndOfTheFuckingWorld*/)

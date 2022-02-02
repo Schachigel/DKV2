@@ -655,10 +655,12 @@ void MainWindow::on_actionInvestmentSchliessen_triggered()
                };
     msg =msg.arg(QString::number(zinssatz/100., 'f', 2), anfang, ende, typ);
 
+    qlonglong rowid =rec.value(qsl("AnlagenId")).toLongLong ();
     if( QMessageBox::Yes == QMessageBox::question(this, qsl("Status ändern"), msg)) {
-        bool result = currentStatus ? closeInvestment(zinssatz, dAnfang, dEnde, typ) : openInvestment(zinssatz, dAnfang, dEnde, typ);
+        bool result =currentStatus ? closeInvestment(rowid) : openInvestment(rowid);
+//        bool result = currentStatus ? closeInvestment(zinssatz, dAnfang, dEnde, typ) : openInvestment(zinssatz, dAnfang, dEnde, typ);
         if( result) {
-            qInfo() << "Investment status from investment " << index.row() << " was changed to " << (currentStatus ? "closed" : "open");
+            qInfo() << "Investment status from investment " << rowid << " was changed to " << (currentStatus ? "closed" : "open");
             tm->select();
         } else {
             qWarning() << tm->lastError();
