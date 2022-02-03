@@ -711,6 +711,7 @@ void MainWindow::on_action_cmenu_Vertraege_anzeigen_triggered()
     QSqlRecord rec =tm->record(index.row());
     qlonglong id =rec.value(qsl("AnlagenId")).toLongLong ();
     ui->le_ContractsFilter->setText (qsl("Anlage:%1").arg(id));
+    on_le_ContractsFilter_editingFinished();
     on_action_menu_contracts_listview_triggered();
 }
 
