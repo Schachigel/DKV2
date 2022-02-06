@@ -435,7 +435,9 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
     }
     case 1:
     {
-        if( contractUnderMouseMenu->updateInvestment(invests[0].rowid))
+        if( contractUnderMouseMenu->investment () > 0)
+            QMessageBox::information(this, qsl("Erfolg"), qsl("Die Geldanlage mit dem passenden Zins und Vertragsdatum ist bereits zugewiesen"));
+        else if( contractUnderMouseMenu->updateInvestment(invests[0].rowid))
             QMessageBox::information(this, qsl("Erfolg"), qsl("Die Geldanlage mit dem passenden Zins und Vertragsdatum wurde zugewiesen"));
         else
             QMessageBox::information(this, qsl("Fehler"), qsl("Die einzige Geldanlage konnte nicht zugewiesen werden. Schau bitte in die Log Datei."));
