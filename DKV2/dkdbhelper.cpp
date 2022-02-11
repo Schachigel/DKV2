@@ -403,6 +403,7 @@ fortlaufendeGeldanlagen AS
 
   FROM geldBewegungen
   GROUP BY aId, bDatum
+  ORDER BY aId DESC, bDatum DESC
 )
 SELECT
   aId
