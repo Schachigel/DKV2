@@ -520,12 +520,21 @@ void MainWindow::on_btnCreateFromContracts_clicked()
 {   LOG_CALL;
 
     QStringList options {qsl("Fortlaufende Geldanlagen erstellen"), qsl("Zeitlich abgeschlossene Anlagen (1 Jahr) erstellen")};
-    bool ok =false;
-    QString item =QInputDialog::getItem(this, qsl("Art der Anlage auswählen"), qsl("Wähle aus, ob zeitlich befristete oder fortlaufende Anlagen erzeugt werden sollen."), options, 0, false, &ok);
+    QInputDialog id(this);
+    id.setInputMode (QInputDialog::InputMode::TextInput);
+    id.setWindowTitle (qsl("Art der Anlage auswählen"));
+    id.setLabelText (qsl("Wähle aus, ob zeitlich befristete oder fortlaufende Anlagen erzeugt werden sollen."));
+    id.setComboBoxItems (options);
+    QFont font =id.font ();
+    font.setPointSize (10);
+    id.setFont (font);
+    bool ok =id.exec ();
+
+//    QString item =QInputDialog::getItem(this, qsl("Art der Anlage auswählen"), qsl("Wähle aus, ob zeitlich befristete oder fortlaufende Anlagen erzeugt werden sollen."), options, 0, false, &ok);
     if( !ok)
         return;
 
-    int newInvestments =createNewInvestmentsFromContracts(item == options[0]);
+    int newInvestments =createNewInvestmentsFromContracts(id.textValue () == options[0]);
     if( newInvestments == -1) {
         QMessageBox::critical(this, qsl("Fehler"), qsl("Beim Anlegen der Geldanlagen ist ein Fehler aufgetreten"));
         return;
@@ -646,10 +655,12 @@ void MainWindow::on_actionInvestmentSchliessen_triggered()
                };
     msg =msg.arg(QString::number(zinssatz/100., 'f', 2), anfang, ende, typ);
 
+    qlonglong rowid =rec.value(qsl("AnlagenId")).toLongLong ();
     if( QMessageBox::Yes == QMessageBox::question(this, qsl("Status ändern"), msg)) {
-        bool result = currentStatus ? closeInvestment(zinssatz, dAnfang, dEnde, typ) : openInvestment(zinssatz, dAnfang, dEnde, typ);
+        bool result =currentStatus ? closeInvestment(rowid) : openInvestment(rowid);
+//        bool result = currentStatus ? closeInvestment(zinssatz, dAnfang, dEnde, typ) : openInvestment(zinssatz, dAnfang, dEnde, typ);
         if( result) {
-            qInfo() << "Investment status from investment " << index.row() << " was changed to " << (currentStatus ? "closed" : "open");
+            qInfo() << "Investment status from investment " << rowid << " was changed to " << (currentStatus ? "closed" : "open");
             tm->select();
         } else {
             qWarning() << tm->lastError();
@@ -700,6 +711,7 @@ void MainWindow::on_action_cmenu_Vertraege_anzeigen_triggered()
     QSqlRecord rec =tm->record(index.row());
     qlonglong id =rec.value(qsl("AnlagenId")).toLongLong ();
     ui->le_ContractsFilter->setText (qsl("Anlage:%1").arg(id));
+    on_le_ContractsFilter_editingFinished();
     on_action_menu_contracts_listview_triggered();
 }
 

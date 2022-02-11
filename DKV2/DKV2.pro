@@ -1,7 +1,7 @@
 # Project created by QtCreator 2019-09-04T21:33:31
 
 QT += core
-QT += gui widgets sql charts printsupport
+QT += gui widgets sql printsupport
 
 TARGET = DKV2
 RC_ICONS = "res/logo.ico"
