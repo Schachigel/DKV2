@@ -210,6 +210,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->action_menu_debug_create_sample_data->setVisible(false);
 #endif
 
+#ifdef Q_OS_MAC
+    ui->action_menu_contracts_statistics_view->setText(QStringLiteral("Uebe&rsichten"));
+#endif
+
     ui->statusBar->addPermanentWidget(ui->statusLabel);
     setCentralWidget(ui->stackedWidget);
 
