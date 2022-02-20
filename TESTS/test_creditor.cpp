@@ -36,6 +36,8 @@ void test_creditor::test_createCreditor()
     c.setPostalCode("68205");
     c.setCity("Mannheim");
     c.setEmail("holger.mairon@test.de");
+    c.setTel("+49 123 56789012");
+    c.setContact("Holger selbst");
     c.setComment("bester DK Geber");
     c.setIban("DE02120300000000202051");
     c.setBic("BYLADEM1001");
