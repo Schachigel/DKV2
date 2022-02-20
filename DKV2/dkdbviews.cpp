@@ -394,6 +394,9 @@ SELECT
   Kreditoren.Plz        AS Plz,
   Kreditoren.Stadt      AS Stadt,
   Kreditoren.Email      AS Email,
+  Kreditoren.Telefon    AS Telefon,
+  Kreditoren.Kontakt    AS Kontakt
+  Kreditoren.Buchungskonto AS Buchungskonto,
   Kreditoren.IBAN       AS Iban,
   Kreditoren.BIC        AS Bic
 FROM Vertraege

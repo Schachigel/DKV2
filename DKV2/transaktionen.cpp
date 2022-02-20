@@ -154,6 +154,8 @@ void editCreditor(qlonglong creditorId)
     wiz.setField(pnPcode, cred.postalCode());
     wiz.setField(pnCity, cred.city());
     wiz.setField(pnEMail, cred.email());
+    wiz.setField(pnPhone, cred.tel());
+    wiz.setField(pnContact, cred.contact());
     wiz.setField(pnComment, cred.comment());
     wiz.setField(pnIban, cred.iban());
     wiz.setField(pnBic, cred.bic());
