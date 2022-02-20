@@ -97,6 +97,8 @@ bool wpNewOrExisting::validatePage()
         setField(pnCity, c.city());
         setField(pnCountry, c.country());
         setField(pnEMail, c.email());
+        setField(pnPhone, c.tel());
+        setField(pnContact, c.contact());
         setField(pnComment, c.comment());
         setField(pnIban, c.iban());
         setField(pnBic, c.bic());
@@ -213,25 +215,39 @@ int wpNewCreditorAddress::nextId() const
  * wizEmailPage - ask e-mail and comment for the new creditor
 */
 const QString pnEMail{qsl("e-mail")};
+const QString pnPhone{qsl("phone")};
+const QString pnContact{qsl("contact")};
 const QString pnComment{qsl("comment")};
 
 wpEmail::wpEmail(QWidget *p) : QWizardPage(p)
 {
     LOG_CALL;
-    setTitle(qsl("E-mail"));
+    setTitle(qsl("Kontaktdaten"));
     subTitleLabel->setWordWrap(true);
-    subTitleLabel->setText(qsl("Gib hier die E-Mail Adresse und eine Anmerkung an.<p>"));
+    subTitleLabel->setText(qsl("Gib hier Telefon, E-Mail und eine Anmerkung an.<p>"));
 
     QLabel *l1 = new QLabel(qsl("E-mail"));
     QLineEdit *leEmail = new QLineEdit;
     leEmail->setToolTip(qsl("Die E-Mail Adresse muss im gültigen Format vorliegen "
                             "(s. https://de.wikipedia.org/wiki/E-Mail-Adresse)."));
     registerField(pnEMail, leEmail);
-    QLabel *l2 = new QLabel(qsl("Anmerkung"));
+
+    QLabel *l2 = new QLabel(qsl("Telefon"));
+    QLineEdit *lePhone = new QLineEdit;
+    lePhone->setToolTip(qsl("Telefonnummer(n)"));
+    registerField(pnPhone, lePhone);
+
+    QLabel *l3 = new QLabel(qsl("Kontakt"));
+    QLineEdit *leContact = new QLineEdit;
+    leContact->setToolTip(qsl("Es ist hilfreich eine Kontaktperson im Projekt "
+                              "anzugeben."));
+    registerField(pnContact, leContact);
+
+    QLabel *l4 = new QLabel(qsl("Anmerkung"));
     QPlainTextEdit *eComment = new QPlainTextEdit;
     registerField(pnComment, eComment, "plainText", "textChanged");
-    eComment->setToolTip(qsl("Es ist hilfreich in der Anmerkung den Kontakt "
-                             "im Projekt oder sonstige Besonderheiten vermerken."));
+    eComment->setToolTip(qsl("Sonstige Besonderheiten hier vermerken."));
+
     QGridLayout *g = new QGridLayout;
     int row = 0;
     g->addWidget(subTitleLabel, row, 0, 1, 4);
@@ -239,15 +255,23 @@ wpEmail::wpEmail(QWidget *p) : QWizardPage(p)
     row += 2;
     g->addWidget(l1, row, 0, 1, 1);
     g->addWidget(leEmail, row, 1, 1, 4);
-
     row++;
     g->addWidget(l2, row, 0, 1, 1);
+    g->addWidget(lePhone, row, 1, 1, 4);
+    row++;
+    g->addWidget(l3, row, 0, 1, 1);
+    g->addWidget(leContact, row, 1, 1, 4);
+    row++;
+    g->addWidget(l4, row, 0, 1, 1);
     g->addWidget(eComment, row, 1, 2, 4);
     g->setColumnStretch(0, 1);
     g->setColumnStretch(1, 2);
     g->setColumnStretch(2, 2);
     g->setColumnStretch(3, 2);
     g->setColumnStretch(4, 2);
+    g->setColumnStretch(5, 2);
+    g->setColumnStretch(6, 2);
+
     setLayout(g);
 }
 bool wpEmail::validatePage()
@@ -266,6 +290,8 @@ bool wpEmail::validatePage()
         }
     }
     setField(pnComment, field(pnComment).toString().trimmed());
+    setField(pnPhone, field(pnPhone).toString().trimmed());
+    setField(pnContact, field(pnContact).toString().trimmed());
     return true;
 }
 int wpEmail::nextId() const
@@ -363,8 +389,10 @@ void wpConfirmCreditor::initializePage()
                                 "<tr><td>Straße:</td><td>%3</td></tr>"
                                 "<tr><td>Plz/Ort:</td><td>%4</td></tr>"
                                 "<tr><td>E-Mail:</td><td>%5<br></td></tr>"
-                                "<tr><td>Kommentar:</td><td><small>%6<small></td></tr>"
-                                "<tr><td>Bankdaten:</td><td><table><tr><td>IBAN:</td><td>%7</td></tr><tr><td>BIC:</td><td>%8<td></tr></table></td></tr></table>")};
+                                "<tr><td>Telefon:</td><td>%6<br></td></tr>"
+                                "<tr><td>Kontakt:</td><td>%7<br></td></tr>"
+                                "<tr><td>Kommentar:</td><td><small>%8<small></td></tr>"
+                                "<tr><td>Bankdaten:</td><td><table><tr><td>IBAN:</td><td>%9</td></tr><tr><td>BIC:</td><td>%10<td></tr></table></td></tr></table>")};
     QString firstn = field(pnFName).toString().isEmpty() ? qsl("(kein Vorname)") : field(pnFName).toString();
     QString lastn = field(pnLName).toString().isEmpty() ? qsl("(kein Nachname)") : field(pnLName).toString();
     QString street = field(pnStreet).toString().isEmpty() ? qsl("(keine Strasse)") : field(pnStreet).toString();
@@ -376,12 +404,14 @@ void wpConfirmCreditor::initializePage()
     if (not country.isEmpty())
         xxx += qsl(" (") + country + qsl(")");
     QString email = field(pnEMail).toString().isEmpty() ? qsl("(keine E-Mail Adresse)") : field(pnEMail).toString();
+    QString phone = field(pnPhone).toString().isEmpty() ? qsl("(keine Telefonnummer)") : field(pnPhone).toString();
+    QString contact = field(pnContact).toString().isEmpty() ? qsl("(kein Kontakt)") : field(pnContact).toString();
     QString comment = field(pnComment).toString().isEmpty() ? qsl("(keine Anmerkung)") : field(pnComment).toString();
     QString iban = field(pnIban).toString().isEmpty() ? qsl("(keine IBAN)") : field(pnIban).toString();
     QString bic = field(pnBic).toString().isEmpty() ? qsl("(keine BIC)") : field(pnBic).toString();
 
     subTitleLabel->setText(creditorSummary.arg(firstn, lastn, street, xxx,
-                                                 email, comment, iban, bic));
+                                                 email, phone, contact, comment, iban, bic));
     wizNew *wiz = qobject_cast<wizNew *>(wizard());
     if (wiz->selectCreateContract)
         cbCreateContract->setChecked(true);
@@ -401,6 +431,8 @@ bool wpConfirmCreditor::validatePage()
     wiz->c_tor.setCity(wiz->field(pnCity).toString());
     wiz->c_tor.setCountry(wiz->field(pnCountry).toString());
     wiz->c_tor.setEmail(wiz->field(pnEMail).toString());
+    wiz->c_tor.setTel(wiz->field(pnPhone).toString());
+    wiz->c_tor.setContact(wiz->field(pnContact).toString());
     wiz->c_tor.setComment(wiz->field(pnComment).toString());
     wiz->c_tor.setIban(wiz->field(pnIban).toString());
     wiz->c_tor.setBic(wiz->field(pnBic).toString());
@@ -491,6 +523,8 @@ void wpLableAndAmount::cleanupPage()
     setField(pnCity, QString());
     setField(pnCountry, QString());
     setField(pnEMail, QString());
+    setField(pnPhone, QString());
+    setField(pnContact, QString());
     setField(pnComment, QString());
     setField(pnIban, QString());
     setField(pnBic, QString());

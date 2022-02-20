@@ -38,7 +38,10 @@ bool creditor::operator==(const creditor& c) const
         if( postalCode() not_eq c.postalCode()) break;
         if( city()      not_eq c.city()) break;
         if( comment()   not_eq c.comment()) break;
-        if( email()     not_eq c.email()) break;
+        if (email() not_eq c.email()) break;
+        if( tel()       not_eq c.tel()) break;
+        if (contact() not_eq c.contact()) break;
+        if (account() not_eq c.account()) break;
         if( iban()      not_eq c.iban()) break;
         if( bic()       not_eq c.bic()) break;
         ret = true;
@@ -52,6 +55,9 @@ bool creditor::operator==(const creditor& c) const
         qInfo() << city() << " vs. " << c.city();
         qInfo() << comment() << " vs. " << c.comment();
         qInfo() << email() << " vs. " << c.email();
+        qInfo() << tel() << " vs. " << c.tel();
+        qInfo() << contact() << " vs. " << c.contact();
+        qInfo() << account() << " vs. " << c.account();
         qInfo() << iban() << " vs. " << c.iban();
         qInfo() << bic() << " vs. " << c.bic();
     }
@@ -133,6 +139,9 @@ QVariant creditor::getVariant()
     v["Stadt"] = ti.getValue(fnStadt).toString();
     v["Land"] = ti.getValue(fnLand).toString();
     v["Email"] = ti.getValue(fnEmail).toString();
+    v["Telefon"] = ti.getValue(fnTel).toString();
+    v["Kontakt"] = ti.getValue(fnKontakt).toString();
+    v["Buchungskonto"] = ti.getValue(fnBuchungskonto).toString();
     v["IBAN"] = ti.getValue(fnIBAN).toString();
     v["BIC"] = ti.getValue(fnBIC).toString();
     v["Anmerkung"] = getValue(fnAnmerkung).toString();
@@ -313,6 +322,9 @@ creditor saveRandomCreditor()
     c.setIban(ibans[rand->bounded(ibans.count())]);
     c.setBic(qsl("bic...         ."));
     c.setComment(qsl(""));
+    c.setTel(qsl(""));
+    c.setContact(qsl(""));
+    c.setAccount(qsl(""));
     Q_ASSERT(c.isValid());
     c.save();
     return c;

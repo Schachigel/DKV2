@@ -70,6 +70,8 @@ private:
 };
 
 extern const QString pnEMail;
+extern const QString pnPhone;
+extern const QString pnContact;
 extern const QString pnComment;
 
 struct wpEmail : public QWizardPage {
