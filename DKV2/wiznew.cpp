@@ -401,12 +401,12 @@ void wpConfirmCreditor::initializePage()
     QString creditorSummary{qsl("<table><tr><td>Name:</td><td><b>%1 %2</b><br></td></tr>"
                                 "<tr><td>Straße:</td><td>%3</td></tr>"
                                 "<tr><td>Plz/Ort:</td><td>%4</td></tr>"
-                                "<tr><td>E-Mail:</td><td>%5<br></td></tr>"
-                                "<tr><td>Telefon:</td><td>%6<br></td></tr>"
+                                "<tr><td>E-Mail:</td><td>%5</td></tr>"
+                                "<tr><td>Telefon:</td><td>%6</td></tr>"
                                 "<tr><td>Kontakt:</td><td>%7<br></td></tr>"
                                 "<tr><td>Kommentar:</td><td><small>%8<small></td></tr>"
                                 "<tr><td>Bankdaten:</td><td><table><tr><td>IBAN:</td><td>%9</td></tr><tr><td>BIC:</td><td>%10<td></tr></table></td></tr>"
-                                "<tr><td>Buchh.-Konto:</td><td>%11</td></tr>"
+                                "<tr><td>Buchh.-Konto:</td><td>%11<br></td></tr>"
                                 "</table>")};
     QString firstn = field(pnFName).toString().isEmpty() ? qsl("(kein Vorname)") : field(pnFName).toString();
     QString lastn = field(pnLName).toString().isEmpty() ? qsl("(kein Nachname)") : field(pnLName).toString();
