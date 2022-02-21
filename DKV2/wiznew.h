@@ -86,6 +86,7 @@ private:
 
 extern const QString pnIban;
 extern const QString pnBic;
+extern const QString pnAccount;
 
 struct wpBankAccount : public QWizardPage{
     wpBankAccount(QWidget* p);

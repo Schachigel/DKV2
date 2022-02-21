@@ -159,6 +159,7 @@ void editCreditor(qlonglong creditorId)
     wiz.setField(pnComment, cred.comment());
     wiz.setField(pnIban, cred.iban());
     wiz.setField(pnBic, cred.bic());
+    wiz.setField(pnAccount, cred.account());
     wiz.selectCreateContract = false;
     //wiz.setField(pnConfirmContract, false);
     wiz.creditorId = creditorId;

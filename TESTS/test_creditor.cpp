@@ -41,6 +41,7 @@ void test_creditor::test_createCreditor()
     c.setComment("bester DK Geber");
     c.setIban("DE02120300000000202051");
     c.setBic("BYLADEM1001");
+    c.setAccount("80123");
     QVERIFY2(0 <= c.save(), "creating creditor failed");
     QCOMPARE(tableRecordCount("Kreditoren"), 1);
 }
