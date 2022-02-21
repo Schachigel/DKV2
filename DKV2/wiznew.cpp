@@ -102,6 +102,7 @@ bool wpNewOrExisting::validatePage()
         setField(pnComment, c.comment());
         setField(pnIban, c.iban());
         setField(pnBic, c.bic());
+        setField(pnAccount, c.account());
         qInfo() << "User selected user Id " << wiz->creditorId;
     }
     return true;
@@ -305,22 +306,31 @@ int wpEmail::nextId() const
 */
 const QString pnIban{qsl("iban")};
 const QString pnBic{qsl("bic")};
+const QString pnAccount{qsl("account")};
+
 wpBankAccount::wpBankAccount(QWidget *p) : QWizardPage(p)
 {
     LOG_CALL;
     setTitle(qsl("Bankdaten"));
     subTitleLabel->setWordWrap(true);
-    subTitleLabel->setText(qsl("Gib die Bankdaten der neuen Kreditor*in ein.<p>"));
+    subTitleLabel->setText(qsl("Gib die Bank- und Buchhaltungsdaten der neuen Kreditor*in ein.<p>"));
+
     QLabel *l1 = new QLabel(qsl("IBAN"));
     QLineEdit *leIban = new QLineEdit;
     leIban->setToolTip(qsl("Es muss eine gültige IBAN eingegeben werden "
                            "(s. https://de.wikipedia.org/wiki/Internationale_Bankkontonummer)."));
     l1->setBuddy(leIban);
     registerField(pnIban, leIban);
+
     QLabel *l2 = new QLabel(qsl("BIC <small>(optional)</small>"));
     QLineEdit *leBic = new QLineEdit;
     l2->setBuddy(leBic);
     registerField(pnBic, leBic);
+
+    QLabel *l3 = new QLabel(qsl("Buchh.-Konto"));
+    QLineEdit *leAccount = new QLineEdit;
+    l3->setBuddy(leAccount);
+    registerField(pnAccount, leAccount);
 
     QGridLayout *g = new QGridLayout;
     g->addWidget(subTitleLabel);
@@ -328,6 +338,8 @@ wpBankAccount::wpBankAccount(QWidget *p) : QWizardPage(p)
     g->addWidget(leIban);
     g->addWidget(l2);
     g->addWidget(leBic);
+    g->addWidget(l3);
+    g->addWidget(leAccount);
     setLayout(g);
 }
 bool wpBankAccount::validatePage()
@@ -347,6 +359,7 @@ bool wpBankAccount::validatePage()
     }
     setField(pnIban, iban);
     setField(pnBic, field(pnBic).toString().trimmed());
+    setField(pnAccount, field(pnAccount).toString().trimmed());
     return true;
 }
 int wpBankAccount::nextId() const
@@ -392,7 +405,9 @@ void wpConfirmCreditor::initializePage()
                                 "<tr><td>Telefon:</td><td>%6<br></td></tr>"
                                 "<tr><td>Kontakt:</td><td>%7<br></td></tr>"
                                 "<tr><td>Kommentar:</td><td><small>%8<small></td></tr>"
-                                "<tr><td>Bankdaten:</td><td><table><tr><td>IBAN:</td><td>%9</td></tr><tr><td>BIC:</td><td>%10<td></tr></table></td></tr></table>")};
+                                "<tr><td>Bankdaten:</td><td><table><tr><td>IBAN:</td><td>%9</td></tr><tr><td>BIC:</td><td>%10<td></tr></table></td></tr>"
+                                "<tr><td>Buchh.-Konto:</td><td>%11</td></tr>"
+                                "</table>")};
     QString firstn = field(pnFName).toString().isEmpty() ? qsl("(kein Vorname)") : field(pnFName).toString();
     QString lastn = field(pnLName).toString().isEmpty() ? qsl("(kein Nachname)") : field(pnLName).toString();
     QString street = field(pnStreet).toString().isEmpty() ? qsl("(keine Strasse)") : field(pnStreet).toString();
@@ -409,9 +424,9 @@ void wpConfirmCreditor::initializePage()
     QString comment = field(pnComment).toString().isEmpty() ? qsl("(keine Anmerkung)") : field(pnComment).toString();
     QString iban = field(pnIban).toString().isEmpty() ? qsl("(keine IBAN)") : field(pnIban).toString();
     QString bic = field(pnBic).toString().isEmpty() ? qsl("(keine BIC)") : field(pnBic).toString();
-
+    QString account = field(pnAccount).toString().isEmpty() ? qsl("(kein Buchh.-Konto)") : field(pnAccount).toString();
     subTitleLabel->setText(creditorSummary.arg(firstn, lastn, street, xxx,
-                                                 email, phone, contact, comment, iban, bic));
+                                                 email, phone, contact, comment, iban, bic, account));
     wizNew *wiz = qobject_cast<wizNew *>(wizard());
     if (wiz->selectCreateContract)
         cbCreateContract->setChecked(true);
@@ -436,6 +451,7 @@ bool wpConfirmCreditor::validatePage()
     wiz->c_tor.setComment(wiz->field(pnComment).toString());
     wiz->c_tor.setIban(wiz->field(pnIban).toString());
     wiz->c_tor.setBic(wiz->field(pnBic).toString());
+    wiz->c_tor.setAccount(wiz->field(pnAccount).toString());
 
     return true;
 }
@@ -528,6 +544,7 @@ void wpLableAndAmount::cleanupPage()
     setField(pnComment, QString());
     setField(pnIban, QString());
     setField(pnBic, QString());
+    setField(pnAccount, QString());
 }
 bool wpLableAndAmount::validatePage()
 {
