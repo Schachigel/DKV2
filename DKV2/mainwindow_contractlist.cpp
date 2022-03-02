@@ -171,15 +171,20 @@ void MainWindow::prepare_valid_contracts_list_view()
     tv->setItemDelegateForColumn(cp_InterestMode, new interestModeFormatter(tv));
 
     QBitArray ba =toQBitArray(getMetaInfo (qsl("VertraegeSpalten"), qsl("000111111111111")));
-    if( ba.size () >= cp_colCount) {
-        ba[0] = ba[1] = ba[2] =false;
-        for(int i=0; i<int(colmn_Pos::cp_colCount); i++) {
-            if( ba[i])
-                tv->showColumn (i);
-            else
-                tv->hideColumn (i);
-        }
+    /* Hide the unwanted id columns */
+    ba[cp_vid] = ba[cp_Creditor_id] = ba[cp_Investment_id] = false;
+    /* Force minimum length of QBitArray */
+    int oldSize = ba.size();
+    ba.resize(cp_colCount);
+    ba.fill(true, oldSize, cp_colCount + 1);
+
+    for(int i=0; i<int(colmn_Pos::cp_colCount); i++) {
+        if( ba[i])
+            tv->showColumn (i);
+        else
+            tv->hideColumn (i);
     }
+    
 
     tv->resizeColumnsToContents();
     tv->resizeRowsToContents();
@@ -231,10 +236,16 @@ void MainWindow::prepare_deleted_contracts_list_view()
     contractsTV->hideColumn(cp_d_Creditor_id);
 
     QBitArray ba =toQBitArray (getMetaInfo (qsl("geloeschteVertraegeSpalten")));
-    if( ba.size () >= cp_d_colCount) {
-        ba[0] = ba[1] = ba[2] =false;
-        for(int i=0; i<int(cp_d_colCount); i++) {
-            if( ba[i])
+    /* force hiding the unwanted ids */
+    ba[cp_d_vid] = ba[cp_d_Creditor_id] = false;
+    /* make sure that array is long enough to hold all columns */
+    int oldSize = ba.size();
+    ba.resize(cp_d_colCount);
+    ba.fill(true, oldSize, cp_d_colCount + 1);
+    for (int i = 0; i < int(cp_d_colCount); i++)
+    {
+        if( ba.size () > i ) {
+            if( ba.size() < i || ba[i])
                 contractsTV->showColumn (i);
             else
                 contractsTV->hideColumn (i);
@@ -288,6 +299,10 @@ void MainWindow::on_btnVertragsSpalten_clicked()
         initMetaInfo +="1";
     }
     QBitArray ba =toQBitArray(getMetaInfo (storageName, initMetaInfo));
+    /* force right length of QBitArray */
+    int oldSize = ba.size();
+    ba.resize(colCount);
+    ba.fill(true, oldSize, colCount + 1);
 
     dlgDisplayColumns dlg(colInfo, ba, getMainWindow ());
     QFont f =dlg.font(); f.setPointSize(10); dlg.setFont(f);
