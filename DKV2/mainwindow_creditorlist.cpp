@@ -24,7 +24,7 @@ enum colPosCreditors {
     col_id =0,
     col_Vorname, col_Nachname,
     col_Strasse, col_Plz, col_Stadt, col_Land,
-    col_Email, col_Tel,
+    col_Tel, col_Email, 
     col_Anmerkung, col_APartner, col_BKonto,
     col_IBAN, col_BIC,
     col_Zeitstempel,
@@ -39,8 +39,8 @@ const QVector<tableViewColTexts> columnTextsCreditors {
     /*col_Plz,       */ {qsl("PLZ"),      qsl("Postleitzahl")},
     /*col_Stadt,     */ {qsl("Stadt"),    qsl("")},
     /*col_Land,      */ {qsl("Land"),     qsl("")},
-    /*col_Email      */ {qsl("E-Mail"),   qsl("E-Mail Adresse zum Zusenden von Vertragsinformation")},
     /*col_Tel,       */ {qsl("Telefon Nr."), qsl("Telefonnummer für schnellen Kontakt")},
+    /*col_Email      */ {qsl("E-Mail"),   qsl("E-Mail Adresse zum Zusenden von Vertragsinformation")},
     /*col_Anmerkung, */ {qsl("Anmerkung"), qsl("Allgemeine Anmerkung")},
     /*col_APartner,  */ {qsl("Ansprechp."), qsl("Ansprechpartner im Projekt")},
     /*col_BKonto,    */ {qsl("Buch.Konto"), qsl("Buchungskonto oder ähnliche Info.")},
@@ -63,12 +63,17 @@ void MainWindow::prepare_CreditorsListPage()
     ui->CreditorsTableView->setModel(model);
 
     QBitArray ba =toQBitArray (getMetaInfo (creditorTableColumnVisibilityStatus, creditorTableColumnVisibilityDefault));
-    if( ba.size() >= col_count) {
-        ba[0] =ba[14] =0;
-        for( int i=0; i<int(colPosCreditors::col_count); i++) {
-            if( ba[i]) ui->CreditorsTableView->showColumn (i);
-            else       ui->CreditorsTableView->hideColumn (i);
-        }
+    /* Force appropriate length of QBitArray */
+    int oldSize = ba.size();
+    ba.resize(col_count);
+    ba.fill(true, oldSize, col_count + 1);
+    /* Hide unwanted columns */
+    ba[col_id] = ba[col_Zeitstempel] = 0;
+
+    for (int i = 0; i < int(colPosCreditors::col_count); i++)
+    {
+        if( ba[i]) ui->CreditorsTableView->showColumn (i);
+        else       ui->CreditorsTableView->hideColumn (i);
     }
 
     ui->CreditorsTableView->setEditTriggers(QTableView::NoEditTriggers);
@@ -164,6 +169,10 @@ void MainWindow::on_actionNeu_triggered()
 void MainWindow::on_pbCreditorsColumnsOnOff_clicked()
 {
     QBitArray ba =toQBitArray (getMetaInfo(creditorTableColumnVisibilityStatus, creditorTableColumnVisibilityDefault));
+    int oldSize = ba.size();
+    ba.resize(col_count);
+    ba.fill(true, oldSize, col_count + 1);
+
     QVector <QPair<int, QString>> colInfo;
     for(int i=0; i<int(colPosCreditors::col_count); i++) {
         colInfo.push_back (QPair<int, QString>(i, columnTextsCreditors[i].header));
