@@ -509,7 +509,7 @@ void cancelContract(contract &c)
     LOG_CALL;
     wizCancelContract wiz(getMainWindow());
     wiz.c = c;
-    wiz.creditorName = executeSingleValueSql(qsl("Vorname || ' ' || Nachname"), qsl("Kreditoren"), qsl("id=") + QString::number(c.creditorId())).toString();
+    wiz.creditorName = executeSingleValueSql(qsl("IFNULL(Vorname || ' ', '') || Nachname"), qsl("Kreditoren"), qsl("id=") + QString::number(c.creditorId())).toString();
     wiz.contractualEnd = QDate::currentDate().addMonths(c.noticePeriod());
     wiz.exec();
     if (not wiz.field(qsl("confirmed")).toBool()) {
