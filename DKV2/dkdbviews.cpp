@@ -10,7 +10,7 @@ SELECT
   V.id AS VertragsId
   ,K.id AS KreditorId
   ,V.AnlagenId AS AnlagenId
-  ,K.Nachname || ', ' || K.Vorname          AS KreditorIn
+  ,IFNULL(K.Nachname || ', ' || K.Vorname, K.Nachname) AS KreditorIn
   ,V.Kennung AS Vertragskennung
   ,V.Anmerkung AS Anmerkung
   ,V.Vertragsdatum     AS Vertragsdatum
@@ -75,12 +75,12 @@ LEFT JOIN
 )str")};
 
 const QString vnExContractView {qsl("vVertraege_geloescht")};
-const QString sqlExContractView {qsl(
-R"str(
+const QString sqlExContractView{qsl(
+    R"str(
 SELECT
   V.id AS VertragsId
   , K.id AS KreditorId
-  , K.Nachname || ', ' || K.Vorname AS KreditorIn
+  , IFNULL(K.Nachname || ', ' || K.Vorname, K.Nachname) AS KreditorIn
   , V.Kennung AS Vertragskennung
   , strftime('%d.%m.%Y',Aktivierungsdatum) AS Aktivierung
   , strftime('%d.%m.%Y', Vertragsende) AS Vertragsende
@@ -146,8 +146,7 @@ LEFT JOIN ( SELECT
             WHERE B.BuchungsArt = 1 OR B.BuchungsArt = 2 OR B.BuchungsArt = 8
             GROUP BY B.VertragsId  )
 ON V.id = vid_mit_Zinsen
-)str"
-)};
+)str")};
 
 const QString vnInvestmentsView {qsl("vInvestmentsOverview")};
 const QString sqlInvestmentsView {qsl(
@@ -375,8 +374,8 @@ FROM
 )str").arg(sqlNextAnnualSettlement_firstAS, sqlNextAnnualSettlement_nextAS)};
 
 // Listenausdruck createCsvActiveContracts
-const QString sqlContractsActiveDetailsView{ qsl(
-R"str(
+const QString sqlContractsActiveDetailsView{qsl(
+    R"str(
 SELECT
   Vertraege.id          AS id,
   Vertraege.Kennung     AS Vertragskennung,
@@ -386,7 +385,7 @@ SELECT
   Vertraege.Kfrist      AS Kuendigungsfrist,
   Vertraege.LaufzeitEnde  AS Vertragsende,
   Vertraege.thesaurierend AS thesa,
-  Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin,
+  IFNULL(K.Nachname || ', ' || K.Vorname, K.Nachname) AS KreditorIn,
   Kreditoren.id         AS KreditorId,
   Kreditoren.Nachname   AS Nachname,
   Kreditoren.Vorname    AS Vorname,
@@ -403,8 +402,7 @@ FROM Vertraege
     INNER JOIN Buchungen  ON Buchungen.VertragsId = Vertraege.id
     INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId
 GROUP BY Vertraege.id
-)str"
-)};
+)str")};
 // uebersicht contract use and other uses
 const QString sqlContractsActiveView { qsl(
 R"str(

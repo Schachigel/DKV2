@@ -231,14 +231,14 @@ void fillCreditorsListForLetters(QList<QPair<int,QString>>& entries, int booking
     if( bookingYear == -1)
         sql =         sql =qsl(R"str(
 SELECT id
-  , Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse
+  , IFNULL(Nachname || ', ' || Vorname, Nachname) || ' '||  Plz || '-' || Stadt || ' ' || Strasse
 FROM Kreditoren
 ORDER BY Nachname ASC, Vorname ASC
 )str");
     else
-        sql =qsl(R"str(
+        sql = qsl(R"str(
 SELECT id
-  , Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse
+  , IFNULL(Nachname || ', ' || Vorname, Nachname) || ' '||  Plz || '-' || Stadt || ' ' || Strasse
 FROM Kreditoren
 WHERE id IN (
 SELECT DISTINCT Kreditoren.Id AS kid
@@ -247,7 +247,8 @@ INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id
 INNER JOIN Kreditoren ON Vertraege.KreditorId = Kreditoren.id
 WHERE Buchungen.BuchungsArt = %1 AND SUBSTR(Buchungen.Datum, 1, 4) = '%2')
 ORDER BY Nachname ASC, Vorname ASC
-)str").arg(QString::number((int)booking::Type::annualInterestDeposit), QString::number (bookingYear));
+)str")
+                  .arg(QString::number((int)booking::Type::annualInterestDeposit), QString::number(bookingYear));
 
     qDebug() << sql;
     if( not query.exec(sql)) {
