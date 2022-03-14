@@ -24,7 +24,7 @@ enum colPosCreditors {
     col_id =0,
     col_Vorname, col_Nachname,
     col_Strasse, col_Plz, col_Stadt, col_Land,
-    col_Tel, col_Email, 
+    col_Tel, col_Email,
     col_Anmerkung, col_APartner, col_BKonto,
     col_IBAN, col_BIC,
     col_Zeitstempel,
@@ -66,7 +66,8 @@ void MainWindow::prepare_CreditorsListPage()
     /* Force appropriate length of QBitArray */
     int oldSize = ba.size();
     ba.resize(col_count);
-    ba.fill(true, oldSize, col_count + 1);
+    if( oldSize < col_count)
+        ba.fill(true, oldSize, col_count);
     /* Hide unwanted columns */
     ba[col_id] = ba[col_Zeitstempel] = 0;
 
@@ -171,7 +172,7 @@ void MainWindow::on_pbCreditorsColumnsOnOff_clicked()
     QBitArray ba =toQBitArray (getMetaInfo(creditorTableColumnVisibilityStatus, creditorTableColumnVisibilityDefault));
     int oldSize = ba.size();
     ba.resize(col_count);
-    ba.fill(true, oldSize, col_count + 1);
+    ba.fill(true, oldSize, col_count);
 
     QVector <QPair<int, QString>> colInfo;
     for(int i=0; i<int(colPosCreditors::col_count); i++) {

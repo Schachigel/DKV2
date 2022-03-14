@@ -176,7 +176,7 @@ void MainWindow::prepare_valid_contracts_list_view()
     /* Force minimum length of QBitArray */
     int oldSize = ba.size();
     ba.resize(cp_colCount);
-    ba.fill(true, oldSize, cp_colCount + 1);
+    ba.fill(true, oldSize, cp_colCount);
 
     for(int i=0; i<int(colmn_Pos::cp_colCount); i++) {
         if( ba[i])
@@ -184,7 +184,6 @@ void MainWindow::prepare_valid_contracts_list_view()
         else
             tv->hideColumn (i);
     }
-    
 
     tv->resizeColumnsToContents();
     tv->resizeRowsToContents();
@@ -241,7 +240,7 @@ void MainWindow::prepare_deleted_contracts_list_view()
     /* make sure that array is long enough to hold all columns */
     int oldSize = ba.size();
     ba.resize(cp_d_colCount);
-    ba.fill(true, oldSize, cp_d_colCount + 1);
+    ba.fill(true, oldSize, cp_d_colCount);
     for (int i = 0; i < int(cp_d_colCount); i++)
     {
         if( ba.size () > i ) {
@@ -302,7 +301,7 @@ void MainWindow::on_btnVertragsSpalten_clicked()
     /* force right length of QBitArray */
     int oldSize = ba.size();
     ba.resize(colCount);
-    ba.fill(true, oldSize, colCount + 1);
+    ba.fill(true, oldSize, colCount);
 
     dlgDisplayColumns dlg(colInfo, ba, getMainWindow ());
     QFont f =dlg.font(); f.setPointSize(10); dlg.setFont(f);
