@@ -684,7 +684,7 @@ void MainWindow::on_actionTyp_Bezeichnung_aendern_triggered()
     QString von =doFormatDateItem(model->data(index.siblingAtColumn(1)));
     QString bis =doFormatDateItem(model->data(index.siblingAtColumn(2)));
 
-    QString msg {qsl("<table><tr><th>Neue Bezeichnung für den Anlage </th></tr><tr><td style=\"align:center\">mit %1 Zins</td></tr>"
+    QString msg {qsl("<table><tr><th>Neue Bezeichnung für den Anlage </th></tr><tr><td style=\"text-align:center\">mit %1 Zins</td></tr>"
                      "<tr><td>von %2 bis %3.</tr>"
                      "<tr><td>alter Wert: <i>'%4'</i></td></tr></table>")};
 

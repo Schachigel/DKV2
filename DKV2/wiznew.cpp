@@ -649,14 +649,11 @@ void wpContractTimeframe::initializePage()
 void wpContractTimeframe::onNoticePeriod_currentIndexChanged(int i)
 {
     LOG_CALL;
-    if (i == 0)
-    {
+    if (i == 0) {
         // deTerminationDate->setDate(QDate::currentDate().addYears(5));
         setField(pnEDate, QDate::currentDate().addYears(5));
         deTerminationDate->setEnabled(true);
-    }
-    else
-    {
+    } else {
         //deTerminationDate->setDate(EndOfTheFuckingWorld);
         setField(pnEDate, EndOfTheFuckingWorld);
         deTerminationDate->setEnabled(false);
@@ -667,14 +664,12 @@ bool wpContractTimeframe::validatePage()
     LOG_CALL;
     QDate start = field(pnCDate).toDate();
     QDate end = field(pnEDate).toDate();
-    if (start > end)
-    {
+    if (start > end) {
         qInfo() << "Enddate is before Startdate: " << field(pnCDate).toDate() << "/" << field(pnEDate).toDate();
         return false;
     }
     wizNew *wiz = qobject_cast<wizNew *>(wizard());
-    if (wiz)
-    {
+    if (wiz) {
         wiz->noticePeriod = cbNoticePeriod->itemData(field(pnPeriod).toInt()).toInt();
         //        wiz->date =start;
         //        wiz->termination =end;
@@ -740,12 +735,6 @@ wpInterestFromInvestment::wpInterestFromInvestment(QWidget *w) : QWizardPage(w)
     l->addWidget(cbInvestments);
     l->addWidget(lblInvestmentInfo);
     setLayout(l);
-    // todo: on cbInvestments_change: show details in lable / table
-    // interest/startd/endd
-    // sum(active), count(active) / sum(inactive), count(inactive)
-    // after booking:
-    // sum(active), count(active) / sum(inactive), count(inactive)
-    // RED if any number goes too high
     connect(cbInvestments, SIGNAL(currentIndexChanged(int)), this, SLOT(onInvestments_currentIndexChanged(int)));
 }
 void wpInterestFromInvestment::initializePage()
