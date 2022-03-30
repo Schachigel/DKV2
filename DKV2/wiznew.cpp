@@ -922,7 +922,8 @@ void wpConfirmContract::initializePage()
 wizNew::wizNew(QWidget *p) : QWizard(p)
 {
     LOG_CALL;
-    // setOption(QWizard::IndependentPages);
+    QFont f =font(); f.setPointSize(10); setFont(f);
+
     setPage(page_new_or_existing, new wpNewOrExisting(this));
     setPage(page_address, new wpNewCreditorAddress(this));
     setPage(page_email, new wpEmail(this));
@@ -935,7 +936,4 @@ wizNew::wizNew(QWidget *p) : QWizard(p)
     setPage(page_interest_payment_mode, new wpInterestPayoutMode(this));
     setPage(page_contract_timeframe, new wpContractTimeframe(this));
     setPage(page_confirm_contract, new wpConfirmContract(this));
-    QFont f = font();
-    f.setPointSize(10);
-    setFont(f);
 }

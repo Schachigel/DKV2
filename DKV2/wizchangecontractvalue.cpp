@@ -14,15 +14,22 @@
 #include "helperfin.h"
 #include "wizchangecontractvalue.h"
 
+enum change_contract_pages {
+    intro_page,
+    amount_page,
+    date_page,
+    payout_page,
+    summary_page
+};
+
 wpChangeContract_IntroPage::wpChangeContract_IntroPage(QWidget* parent) : QWizardPage(parent)
 {
     setTitle(qsl("Ein- / Auszahlung"));
-    subTitleLabel = new QLabel(qsl("Keine Daten!"));
-    subTitleLabel->setWordWrap(true);
+    subTitleLabel = new QLabel(qsl("In dieser Dialogfolge kannst Du Ein- oder Auszahlungen zum Vertrag <br><b>DK-PPP-yyyy-nnnnnn</b> <br>von <b>Vorname Nachname</b> verbuchen."));
 
     QRadioButton *rbDeposit = new QRadioButton(qsl("Einzahlung"));
     QRadioButton* rbPayout = new QRadioButton(qsl("Auszahlung"));
-    registerField(qsl("deposit_notPayment"), rbDeposit);
+    registerField(fnDeposit_notPayment, rbDeposit);
     QVBoxLayout* layout = new QVBoxLayout;
     layout->addWidget(subTitleLabel);
     layout->addWidget(rbDeposit);
@@ -32,7 +39,7 @@ wpChangeContract_IntroPage::wpChangeContract_IntroPage(QWidget* parent) : QWizar
 
 void wpChangeContract_IntroPage::initializePage()
 {
-    QString subtitle =qsl("In dieser Dialogfolge kannst Du Ein- oder Auszahlungen zum Vertrag <b>%1</b> von <b>%2</b> verbuchen.");
+    QString subtitle =qsl("In dieser Dialogfolge kannst Du Ein- oder Auszahlungen zum Vertrag <br><b>%1</b> <br>von <b>%2</b> verbuchen.");
     wizChangeContract* wiz= qobject_cast<wizChangeContract*>(wizard());
     subtitle = subtitle.arg(wiz->contractLabel, wiz->creditorName);
     subTitleLabel->setText(subtitle);
@@ -47,7 +54,7 @@ bool wpChangeContract_IntroPage::validatePage()
     double minContract =dbConfig::readValue(MIN_AMOUNT).toDouble();
     double minPayout   =dbConfig::readValue(MIN_PAYOUT).toDouble();
     double minAmountToMakeA_Payout = minContract + minPayout +1;
-    if( not field(qsl("deposit_notPayment")).toBool() and wiz->currentAmount < minAmountToMakeA_Payout) {
+    if( not field(fnDeposit_notPayment).toBool() and wiz->currentAmount < minAmountToMakeA_Payout) {
         QString msg(qsl("Die kleinste Einlage beträgt %1. Die kleinste Auszahlung beträgt %2. "
                     "Daher ist im Moment keine Auszahlung möglich.<p>Du kannst einen Einzahlung machen oder "
                     "über den entsprechenden Menüpunkt den Vertrag beenden"));
@@ -56,6 +63,11 @@ bool wpChangeContract_IntroPage::validatePage()
         return false;
     }
     return true;
+}
+
+int wpChangeContract_IntroPage::nextId() const
+{
+    return amount_page;
 }
 
 ///////////////////////////////////////////
@@ -82,7 +94,7 @@ wpChangeContract_AmountPage::wpChangeContract_AmountPage(QWidget* parent) : QWiz
 void wpChangeContract_AmountPage::initializePage()
 {
     QLocale l;
-    bool isDeposit = field(qsl("deposit_notPayment")).toBool();
+    bool isDeposit = field(fnDeposit_notPayment).toBool();
     double minPayout =dbConfig::readValue(MIN_PAYOUT).toDouble();
     double minAmount =dbConfig::readValue(MIN_AMOUNT).toDouble();
     if( isDeposit) {
@@ -107,7 +119,7 @@ void wpChangeContract_AmountPage::initializePage()
 bool wpChangeContract_AmountPage::validatePage()
 {
     QLocale l;
-    bool isDeposit = field(qsl("deposit_notPayment")).toBool();
+    bool isDeposit = field(fnDeposit_notPayment).toBool();
     QString tmp =field(qsl("amount")).toString();
     double amount = r2(l.toDouble(tmp));
 
@@ -133,6 +145,11 @@ bool wpChangeContract_AmountPage::validatePage()
     return true;
 }
 
+int wpChangeContract_AmountPage::nextId() const
+{
+    return date_page;
+}
+
 wpChangeContract_DatePage::wpChangeContract_DatePage(QWidget* parent) : QWizardPage(parent)
 {
     subTitleLabel = new QLabel(qsl("Keine Daten!"));
@@ -153,7 +170,7 @@ void wpChangeContract_DatePage::initializePage()
     wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
     QString subt=QString(qsl("Das Datum muss nach der letzten Buchung zu diesem Vertrag (%1) liegen. ")).arg(wiz->earlierstDate.toString(qsl("dd.MM.yyyy")));
 
-    bool deposit = field(qsl("deposit_notPayment")).toBool();
+    bool deposit = field(fnDeposit_notPayment).toBool();
     if( deposit) {
         setTitle(qsl("Datum des Geldeingangs"));
         subTitleLabel->setText(subt + qsl("<p>Gib das Datum an, an dem das Geld auf unserem Konto gutgeschrieben wurde."));
@@ -197,6 +214,37 @@ wpChangeContract_Summary::wpChangeContract_Summary(QWidget* p) : QWizardPage(p)
     setLayout(layout);
     connect(cb, &QCheckBox::stateChanged, this, &wpChangeContract_Summary::onConfirmData_toggled);
 }
+
+int wpChangeContract_DatePage::nextId() const
+{
+    bool askForPayout =qobject_cast<wizChangeContract*>(wizard())->interestPayoutPossible;
+    if( askForPayout)
+        return payout_page;
+    else
+        return summary_page;
+}
+
+wpChangeContract_PayoutInterestPage::wpChangeContract_PayoutInterestPage(QWidget* p) : QWizardPage (p)
+{
+    QLabel* subTitleLabel =new QLabel(qsl("Sollen die Zinsen als ausgezahlt gebucht werden?"));
+    subTitleLabel->setWordWrap (true);
+
+    QCheckBox* chk =new QCheckBox(qsl("Zinsen auszahlen"));
+    chk->setChecked (false);
+    registerField (fnPayoutInterest, chk);
+
+    QVBoxLayout* l =new QVBoxLayout;
+    l->addWidget (subTitleLabel);
+    l->addWidget (chk);
+
+    setLayout (l);
+}
+
+int wpChangeContract_PayoutInterestPage::nextId() const
+{
+    return summary_page;
+}
+
 void wpChangeContract_Summary::initializePage()
 {
     wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
@@ -205,7 +253,10 @@ void wpChangeContract_Summary::initializePage()
                       "<table width=100%><tr><td align=center>Vorheriger Wert</td><td align=center>Änderungsbetrag</td><td align=center>neuer Wert</td></tr>"
                       "<tr><td align=center>%3</td><td align=center>%4%5</td><td align=center>%6</td></tr></table>"
                       "<p>Datum: %7</b>");
-    bool deposit = field(qsl("deposit_notPayment")).toBool();
+    if( field (fnPayoutInterest).toBool ()) {
+        subtitle.append (qsl("<br>Die Zinsen werden <b>ausgezahlt.</b>"));
+    }
+    bool deposit = field(fnDeposit_notPayment).toBool();
     double oldValue = wiz->currentAmount, newValue =0;
     double change = QLocale().toDouble(field(qsl("amount")).toString());
     if( deposit) {
@@ -234,9 +285,10 @@ void wpChangeContract_Summary::onConfirmData_toggled(int)
 
 wizChangeContract::wizChangeContract(QWidget* p) : QWizard(p)
 {
-    QFont f = font(); f.setPointSize(10); setFont(f);
-    addPage(new wpChangeContract_IntroPage);
-    addPage(new wpChangeContract_AmountPage);
-    addPage(new wpChangeContract_DatePage);
-    addPage(new wpChangeContract_Summary);
+    QFont f =font(); f.setPointSize(10); setFont(f);
+    setPage(intro_page, new wpChangeContract_IntroPage);
+    setPage(amount_page, new wpChangeContract_AmountPage);
+    setPage(date_page, new wpChangeContract_DatePage);
+    setPage(payout_page, new wpChangeContract_PayoutInterestPage);
+    setPage(summary_page, new wpChangeContract_Summary);
 }

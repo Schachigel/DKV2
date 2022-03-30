@@ -180,12 +180,12 @@ struct contract
     QDate nextDateForAnnualSettlement();
     bool needsAnnualSettlement( const QDate d);
     int annualSettlement(const int year);
-    bool deposit(const QDate d, double amount);
-    bool payout(const QDate d, double amount);
+    bool deposit(const QDate d, double amount, bool payoutInterest =false);
+    bool payout(const QDate d, double amount, bool payoutInterest =false);
     bool cancel(const QDate d);
     bool finalize(const bool simulate, const QDate finDate, double& finInterest, double& finPayout);
     // helper
-    QString toString(const QString &name =qsl("")) const;
+    QString toString(const QString &name =QString()) const;
     QVariant toVariantMap_4annualBooking(int year=9999);
     double payedInterest(int year);
 
@@ -195,7 +195,7 @@ private:
     // helper
     double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa =true);
 
-    bool bookInBetweenInterest(const QDate d);
+    bool bookInBetweenInterest(const QDate d, bool payout =false);
     bool storeTerminationDate(const QDate d) const;
     bool archive();
     void reset() {initContractDefaults();}
