@@ -422,7 +422,7 @@ int contract::annualSettlement( int year)
 }
 
 // booking actions
-bool contract::bookInBetweenInterest(const QDate nextBookingDate)
+bool contract::bookInBetweenInterest(const QDate nextBookingDate, bool payout)
 {   LOG_CALL;
     // booking interest in case of deposits, payouts or finalization
     // performs annualSettlements if necesarry
@@ -450,10 +450,12 @@ bool contract::bookInBetweenInterest(const QDate nextBookingDate)
     double zins = ZinsesZins(actualInterestRate(), interestBearingValue(), lastB.date, nextBookingDate);
                    //////////
     // only annualSettlements can be payed out
+    if( payout)
+        booking::bookPayout (id(), nextBookingDate, zins);
     return booking::bookReInvestInterest(id(), nextBookingDate, zins);
 }
 
-bool contract::deposit(const QDate d, double amount)
+bool contract::deposit(const QDate d, double amount, bool payoutInterest)
 {   LOG_CALL;
     double actualAmount = qFabs(amount);
     const booking lastBooking =latestBooking ();
@@ -472,7 +474,7 @@ bool contract::deposit(const QDate d, double amount)
     QDate actualD =avoidYearEndBookings(d);
     // update interest calculation
     QSqlDatabase::database().transaction();
-    if( not bookInBetweenInterest(actualD)) {
+    if( not bookInBetweenInterest(actualD, payoutInterest)) {
         QSqlDatabase::database().rollback();
         return false;
     }
@@ -484,7 +486,7 @@ bool contract::deposit(const QDate d, double amount)
     return true;
 }
 
-bool contract::payout(const QDate d, double amount)
+bool contract::payout(const QDate d, double amount, bool payoutInterest)
 {   LOG_CALL;
     double actualAmount = qFabs(amount);
 
@@ -501,7 +503,7 @@ bool contract::payout(const QDate d, double amount)
     QDate actualD =avoidYearEndBookings(d);
     // update interest calculation
     QSqlDatabase::database().transaction();
-    if( not bookInBetweenInterest(actualD)) {
+    if( not bookInBetweenInterest(actualD, payoutInterest)) {
         QSqlDatabase::database().rollback();
         return false;
     }

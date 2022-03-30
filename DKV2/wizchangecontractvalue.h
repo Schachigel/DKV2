@@ -1,9 +1,13 @@
 #ifndef CHANGECONTRACTVALUEWIZ_H
 #define CHANGECONTRACTVALUEWIZ_H
 
+
 #include <QDate>
 #include <QWizard>
 #include <QLabel>
+#include "helper.h"
+
+const QString fnDeposit_notPayment {qsl("deposit_notPayment")};
 
 class wpChangeContract_IntroPage : public QWizardPage
 {
@@ -11,6 +15,7 @@ public:
     wpChangeContract_IntroPage(QWidget* parent =nullptr);
     void initializePage() override;
     bool validatePage() override;
+    int nextId() const override;
     Q_OBJECT;
 
 private:
@@ -23,6 +28,7 @@ struct wpChangeContract_AmountPage : public QWizardPage
     void cleanupPage() override  {};
     void initializePage() override;
     bool validatePage() override;
+    int nextId() const override;
     Q_OBJECT;
 
 private:
@@ -35,10 +41,23 @@ struct wpChangeContract_DatePage : public QWizardPage
     void cleanupPage() override  {};
     void initializePage() override;
     bool validatePage() override;
+    int nextId() const override;
     Q_OBJECT;
 
 private:
     QLabel *subTitleLabel = nullptr;
+};
+
+const QString fnPayoutInterest {qsl("payout_interest")};
+
+struct wpChangeContract_PayoutInterestPage : public QWizardPage
+{
+    wpChangeContract_PayoutInterestPage(QWidget* parent =nullptr);
+//    void cleanupPage() override  {};
+//    void initializePage() override;
+//    bool validatePage() override;
+    int nextId() const override;
+    Q_OBJECT;
 };
 
 class wpChangeContract_Summary : public QWizardPage{
@@ -61,6 +80,7 @@ struct wizChangeContract : public QWizard
     QString contractLabel;
     double  currentAmount = 0.;
     QDate   earlierstDate;
+    bool interestPayoutPossible =false;
     Q_OBJECT;
 };
 

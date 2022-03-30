@@ -291,18 +291,19 @@ void changeContractValue(contract *pc)
     wiz.contractLabel = pc->label();
     wiz.currentAmount = pc->value();
     wiz.earlierstDate = pc->latestBooking().date.addDays(1);
-    wiz.setField(qsl("deposit_notPayment"), QVariant(true));
+    wiz.interestPayoutPossible =pc->iModel() == interestModel::payout && pc->interestActive();
+    wiz.setField(fnDeposit_notPayment, QVariant(true));
 
     wiz.exec();
-
+qDebug() << wiz.field (fnPayoutInterest);
     if (wiz.field(qsl("confirmed")).toBool()) {
         double amount{ QLocale().toDouble(wiz.field(qsl("amount")).toString())};
         QDate date{wiz.field(qsl("date")).toDate()};
-        qDebug() << wiz.field(qsl("deposit_notPayment")) << ", " << amount << ", " << date;
+        qDebug() << wiz.field(fnDeposit_notPayment) << ", " << amount << ", " << date;
         if (wiz.field(qsl("deposit_notPayment")).toBool()) {
-            pc->deposit(date, amount);
+            pc->deposit(date, amount, wiz.field(fnPayoutInterest).toBool ());
         } else {
-            pc->payout(date, amount);
+            pc->payout(date, amount, wiz.field(fnPayoutInterest).toBool ());
         }
     }
     else
