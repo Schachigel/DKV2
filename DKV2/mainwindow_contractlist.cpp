@@ -492,6 +492,16 @@ void MainWindow::on_btnSave2Csv_clicked()
 {
     csvwriter csv;
     QSqlTableModel* model = qobject_cast<QSqlTableModel*>(ui->contractsTableView->model());
+
+    if(model == nullptr)
+    {
+        QAbstractProxyModel *proxyModel =qobject_cast<QAbstractProxyModel *>(ui->contractsTableView->model());
+        if(proxyModel)
+        {
+            model = qobject_cast<QSqlTableModel*>(proxyModel->sourceModel());
+        }
+    }
+
     QBitArray ba =toQBitArray(getMetaInfo (qsl("VertraegeSpalten"), qsl("000111111111111")));
 
     if (model != nullptr) {
