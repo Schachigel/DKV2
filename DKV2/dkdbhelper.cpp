@@ -248,7 +248,7 @@ bool createCsvActiveContracts()
     t.append(dbfield(creditor::fnIBAN));
     t.append(dbfield(creditor::fnBIC));
 //    t.append(dbfield(creditor::fnStrasse));
-    t.append(dbfield(contract::fnZSatz, QVariant::Type::Double));
+    t.append(dbfield(qsl("Zinssatz"), QVariant::Type::Double));
     t.append(dbfield(qsl("Wert"), QVariant::Type::Double));
     t.append(dbfield(qsl("Aktivierungsdatum"), QVariant::Type::Date));
     t.append(dbfield(qsl("Kuendigungsfrist"), QVariant::Type::Int));
