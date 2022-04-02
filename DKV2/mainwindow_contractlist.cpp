@@ -234,7 +234,7 @@ void MainWindow::prepare_deleted_contracts_list_view()
     contractsTV->hideColumn(cp_d_vid);
     contractsTV->hideColumn(cp_d_Creditor_id);
 
-    QBitArray ba =toQBitArray (getMetaInfo (qsl("geloeschteVertraegeSpalten")));
+    QBitArray ba =toQBitArray (getMetaInfo (qsl("geloeschteVertraegeSpalten"), qsl("000111111111111")));
     /* force hiding the unwanted ids */
     ba[cp_d_vid] = ba[cp_d_Creditor_id] = false;
     /* make sure that array is long enough to hold all columns */
