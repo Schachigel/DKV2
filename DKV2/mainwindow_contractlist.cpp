@@ -496,29 +496,31 @@ void MainWindow::on_btnSave2Csv_clicked()
                 qobject_cast<QAbstractProxyModel *>(ui->contractsTableView->model())->sourceModel());
     QBitArray ba =toQBitArray(getMetaInfo (qsl("VertraegeSpalten"), qsl("000111111111111")));
 
-    if (model != nullptr) {
-        QSqlRecord rec =model->record();
-        // header
-        for( int i=0; i<rec.count(); i++) {
-            if( ba[i])
-                csv.addColumn(rec.fieldName(i));
-        }
-        // data
-        for( int i=0; i<model->rowCount(); i++) {
-            QSqlRecord recRows =model->record(i);
-            for( int j=0; j<recRows.count(); j++) {
-                if( ba[j]){
-                    QVariant v =recRows.value (j);
-                    QVariant tmp(v);
-                    if( tmp.canConvert (QVariant::Double) && tmp.convert (QVariant::Double))
-                        csv.appendToRow( QLocale().toString(tmp.toDouble ()));
-                    else
-                        csv.appendToRow(recRows.value(j).toString());
-                }
+    if (model == nullptr)
+        return;
+
+    QSqlRecord rec =model->record();
+    // header
+    for( int i=0; i<rec.count(); i++) {
+        if( ba[i])
+            csv.addColumn(rec.fieldName(i));
+    }
+    // data
+    for( int i=0; i<model->rowCount(); i++) {
+        QSqlRecord recRows =model->record(i);
+        for( int j=0; j<recRows.count(); j++) {
+            if( ba[j]){
+                QVariant v =recRows.value (j);
+                QVariant tmp(v);
+                if( tmp.canConvert (QVariant::Double) && tmp.convert (QVariant::Double))
+                    csv.appendToRow( QLocale().toString(tmp.toDouble ()));
+                else
+                    csv.appendToRow(recRows.value(j).toString());
             }
         }
-        csv.saveAndShowInExplorer(QDate::currentDate().toString(qsl("yyyy-MM-dd_Vertragsliste.csv")));
     }
+    csv.saveAndShowInExplorer(QDate::currentDate().toString(qsl("yyyy-MM-dd_Vertragsliste.csv")));
+
 }
 
 /////////////////////////////////////////////////
