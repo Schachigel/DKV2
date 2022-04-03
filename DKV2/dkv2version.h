@@ -5,7 +5,7 @@
 #define STRINGIFY_HELPER(s) #s
 
 #define DKV2_VERSION_MAJOR      0
-#define DKV2_VERSION_MINOR      19
+#define DKV2_VERSION_MINOR      20
 #define DKV2_VERSION_BUILD      0
 #define DKV2_VERSION_LAST       1
 
