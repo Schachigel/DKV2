@@ -1097,5 +1097,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 #ifndef QT_DEBUG
     if (QMessageBox::Yes not_eq QMessageBox::question(this, qsl("Beenden?"), qsl("Möchtest Du DKV2 beenden?")))
         event->ignore();
+#else
+    Q_UNUSED(event);
 #endif
 }
