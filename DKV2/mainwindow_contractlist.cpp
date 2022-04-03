@@ -491,7 +491,9 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
 void MainWindow::on_btnSave2Csv_clicked()
 {
     csvwriter csv;
-    QSqlTableModel* model = qobject_cast<QSqlTableModel*>(ui->contractsTableView->model());
+    QSqlTableModel* model =
+            qobject_cast<QSqlTableModel*>(
+                qobject_cast<QAbstractProxyModel *>(ui->contractsTableView->model())->sourceModel());
     QBitArray ba =toQBitArray(getMetaInfo (qsl("VertraegeSpalten"), qsl("000111111111111")));
 
     if (model != nullptr) {
