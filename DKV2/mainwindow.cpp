@@ -1090,18 +1090,12 @@ void MainWindow::doPaint(QPrinter* pri)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-
-#ifndef QT_DEBUG
-    QMessageBox::StandardButton mr = QMessageBox::question(this, qsl("Beenden?"), qsl("Möchtest Du DKV2 beenden?"));
-    if (mr == QMessageBox::Yes) {
-        event->accept();
-    } else {
-        event->ignore();
-    }
-#endif
-
     QSettings settings;
     settings.setValue(qsl("geometry"), saveGeometry());
     settings.setValue(qsl("windowState"), saveState());
 
+#ifndef QT_DEBUG
+    if (QMessageBox::Yes not_eq QMessageBox::question(this, qsl("Beenden?"), qsl("Möchtest Du DKV2 beenden?")))
+        event->ignore();
+#endif
 }
