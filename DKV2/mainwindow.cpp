@@ -1103,6 +1103,5 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QSettings settings;
     settings.setValue(qsl("geometry"), saveGeometry());
     settings.setValue(qsl("windowState"), saveState());
-    event->accept();
 
 }
