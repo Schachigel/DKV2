@@ -76,8 +76,11 @@ wpType::wpType(QWidget* w) : QWizardPage(w)
 }
 void wpType::initializePage()
 {   LOG_CALL_W(qsl("wpType"));
-    QString prop {qsl("ab %1; max. 100.000")};
-    setField(pnTyp, prop.arg(field(pnVon).toDate().toString(qsl("dd.MM.yyyy"))));
+    QString prop {qsl("%1; max. 100.000")};
+    if(field(pnBis).toDate () == EndOfTheFuckingWorld)
+        setField(pnTyp, prop.arg(qsl("(Fortlaufend)")));
+    else
+        setField(pnTyp, prop.arg(field(pnVon).toDate().toString(qsl("bis dd.MM.yyyy"))));
 }
 
 /* ////////////////////////////
@@ -193,7 +196,7 @@ wizNewInvestment::wizNewInvestment(QWidget* p) : QWizard(p)
 {
     QFont f =font(); f.setPointSize(10); setFont(f);
     // keep values going back and forth
-    setOption(WizardOption::IndependentPages);
+//    setOption(WizardOption::IndependentPages);
     addPage(new wpNewInvestInterest());
     addPage(new wpTimeFrame());
     addPage(new wpType());
