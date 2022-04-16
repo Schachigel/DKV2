@@ -88,8 +88,8 @@ bool wpNewOrExisting::validatePage()
     else
     {
         wizNew *wiz = qobject_cast<wizNew *>(wizard());
-        wiz->creditorId = cbCreditors->itemData(field(pnCreditor).toInt()).toLongLong();
-        creditor c(wiz->creditorId);
+        wiz->existingCreditorId = cbCreditors->itemData(field(pnCreditor).toInt()).toLongLong();
+        creditor c(wiz->existingCreditorId);
         setField(pnFName, c.firstname());
         setField(pnLName, c.lastname());
         setField(pnStreet, c.street());
@@ -103,7 +103,7 @@ bool wpNewOrExisting::validatePage()
         setField(pnIban, c.iban());
         setField(pnBic, c.bic());
         setField(pnAccount, c.account());
-        qInfo() << "User selected user Id " << wiz->creditorId;
+        qInfo() << "User selected user Id " << wiz->existingCreditorId;
     }
     return true;
 }
@@ -197,12 +197,16 @@ bool wpNewCreditorAddress::validatePage()
     setField(pnCountry, field(pnCountry).toString().trimmed());
 
     if (field(pnFName).toString().isEmpty() &&
-        field(pnLName).toString().isEmpty())
+            field(pnLName).toString().isEmpty()) {
+        QMessageBox::information(this, qsl("Ungültige Eingabe"), qsl("Vor- und Nachname dürfen nicht beide leer sein"));
         return false;
+    }
     if (field(pnStreet).toString().isEmpty() ||
         field(pnPcode).toString().isEmpty() ||
-        field(pnCity).toString().isEmpty())
+        field(pnCity).toString().isEmpty()) {
+        QMessageBox::information(this, qsl("Ungültige Eingabe"), qsl("Es müssen Adressdaten eingegeben werden."));
         return false;
+    }
     else
         return true;
 }
@@ -438,22 +442,23 @@ bool wpConfirmCreditor::validatePage()
     LOG_CALL;
     wizNew *wiz = qobject_cast<wizNew *>(wizard());
     wiz->createCreditor = field(pnConfirmCreditor).toBool();
-
-    wiz->c_tor.setFirstname(wiz->field(pnFName).toString());
-    wiz->c_tor.setLastname(wiz->field(pnLName).toString());
-    wiz->c_tor.setStreet(wiz->field(pnStreet).toString());
-    wiz->c_tor.setPostalCode(wiz->field(pnPcode).toString());
-    wiz->c_tor.setCity(wiz->field(pnCity).toString());
-    wiz->c_tor.setCountry(wiz->field(pnCountry).toString());
-    wiz->c_tor.setEmail(wiz->field(pnEMail).toString());
-    wiz->c_tor.setTel(wiz->field(pnPhone).toString());
-    wiz->c_tor.setContact(wiz->field(pnContact).toString());
-    wiz->c_tor.setComment(wiz->field(pnComment).toString());
-    wiz->c_tor.setIban(wiz->field(pnIban).toString());
-    wiz->c_tor.setBic(wiz->field(pnBic).toString());
-    wiz->c_tor.setAccount(wiz->field(pnAccount).toString());
-
-    return true;
+    if( wiz->createCreditor) {
+        wiz->c_tor.setFirstname(wiz->field(pnFName).toString());
+        wiz->c_tor.setLastname(wiz->field(pnLName).toString());
+        wiz->c_tor.setStreet(wiz->field(pnStreet).toString());
+        wiz->c_tor.setPostalCode(wiz->field(pnPcode).toString());
+        wiz->c_tor.setCity(wiz->field(pnCity).toString());
+        wiz->c_tor.setCountry(wiz->field(pnCountry).toString());
+        wiz->c_tor.setEmail(wiz->field(pnEMail).toString());
+        wiz->c_tor.setTel(wiz->field(pnPhone).toString());
+        wiz->c_tor.setContact(wiz->field(pnContact).toString());
+        wiz->c_tor.setComment(wiz->field(pnComment).toString());
+        wiz->c_tor.setIban(wiz->field(pnIban).toString());
+        wiz->c_tor.setBic(wiz->field(pnBic).toString());
+        wiz->c_tor.setAccount(wiz->field(pnAccount).toString());
+        return true;
+    }
+    return false;
 }
 int wpConfirmCreditor::nextId() const
 {
@@ -741,8 +746,7 @@ void wpInterestFromInvestment::initializePage()
 {
     QVector<QPair<qlonglong, QString>> investments = activeInvestments(field(pnCDate).toDate());
     cbInvestments->clear();
-    for (const auto &invest : qAsConst(investments))
-    {
+    for (const auto &invest : qAsConst(investments)) {
         cbInvestments->addItem(invest.second, invest.first);
     }
     registerField(pnI_CheckBoxIndex, cbInvestments);
@@ -919,7 +923,7 @@ void wpConfirmContract::initializePage()
 /*
 * wizNew - the wizard containing the pages to create a cerditor and a contract
 */
-wizNew::wizNew(QWidget *p) : QWizard(p)
+wizNew::wizNew(creditor& c, QWidget *p) : QWizard(p), c_tor(c)
 {
     LOG_CALL;
     QFont f =font(); f.setPointSize(10); setFont(f);
@@ -936,4 +940,21 @@ wizNew::wizNew(QWidget *p) : QWizard(p)
     setPage(page_interest_payment_mode, new wpInterestPayoutMode(this));
     setPage(page_contract_timeframe, new wpContractTimeframe(this));
     setPage(page_confirm_contract, new wpConfirmContract(this));
+
+    if( c_tor.isValid()) {
+        setField(pnFName,   c_tor.firstname());
+        setField(pnLName,   c_tor.lastname());
+        setField(pnStreet,  c_tor.street());
+        setField(pnPcode,   c_tor.postalCode());
+        setField(pnCity,    c_tor.city());
+        setField(pnEMail,   c_tor.email());
+        setField(pnPhone,   c_tor.tel());
+        setField(pnContact, c_tor.contact());
+        setField(pnComment, c_tor.comment());
+        setField(pnIban,    c_tor.iban());
+        setField(pnBic,     c_tor.bic());
+        setField(pnAccount, c_tor.account());
+        existingCreditorId =c_tor.id ();
+        selectCreateContract = false;
+    }
 }

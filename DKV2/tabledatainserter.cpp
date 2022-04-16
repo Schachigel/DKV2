@@ -11,12 +11,12 @@ TableDataInserter::TableDataInserter(const dbtable& t)
 void TableDataInserter::init(const dbtable& t)
 {   //LOG_CALL;
     tablename = t.Name();
-    for (auto& dbfield : t.Fields()) {
-        QSqlField sqlField(dbfield.name(), dbfield.type(), tablename);
-        if( dbfield.isAutoValue())
-            sqlField.setAutoValue(true);
-        record.append(sqlField);
+    for( int i =0; i < t.Fields ().count (); i++) {
+        QSqlField f {t.Fields ().at (i)};
+        record.append (f);
     }
+//for (int i =0; i < record.count (); i++)
+//    qDebug() << record.field (i) << "; " << (record.field(i).defaultValue ().isNull () ? QVariant("(null)") : record.field(i).defaultValue ());
 }
 
 bool TableDataInserter::setValue(const QString& n, const QVariant& v, treatNull allowNull)
@@ -25,11 +25,11 @@ bool TableDataInserter::setValue(const QString& n, const QVariant& v, treatNull 
         qCritical() << "wrong field name for insertion " << n;
         return false;
     }
-    if( allowNull and v.toString()==qsl("")) {
-        setValueNULL(n);
+    if( allowNull and (v.isNull () or not v.isValid ())) {
+        setValueToDefault(n);
         return true;
     }
-    if( record.field(n).type() == v.type()) {
+    if( dbAffinityType(record.field(n).type()) == dbAffinityType(v.type())) {
         record.setValue(n, v);
         return true;
     }
@@ -43,13 +43,14 @@ bool TableDataInserter::setValue(const QString& n, const QVariant& v, treatNull 
     return false;
 }
 
-bool TableDataInserter::setValueNULL(const QString &n)
+bool TableDataInserter::setValueToDefault(const QString &n)
 {
     if( record.contains(n)) {
-        record.setNull(n);
+        record.field(n).value () = record.field(n).defaultValue ();
+        // qDebug() << "field set to default: " << record.field(n).name() << record.field(n).value ();
         return true;
     }
-    qCritical() << "wrong field name for insertion " << n;
+    qCritical() << "wrong field name for insertion of default value" << n;
     return false;
 }
 
@@ -76,7 +77,7 @@ bool TableDataInserter::setValues(const QSqlRecord &input)
 bool TableDataInserter::updateValue(const QString& n, const QVariant& v, qlonglong index)
 {   LOG_CALL_W(n);
     if( not v.isValid() || v.isNull()) {
-        setValueNULL(n);
+        setValueToDefault(n);
     } else {
         setValue(n, v);
     }
@@ -179,18 +180,21 @@ QString TableDataInserter::getUpdateRecordSQL(qlonglong& autovalue) const
 
     bool firstField = true;
     for( int i=0; i<record.count(); i++) {
-        if( not firstField) sql += qsl(", ");
-        if( record.field(i).isNull()) {
-            sql += record.field(i).name() +qsl("=NULL");
-            firstField = false;
-        }
         // WARN ! THIS will work with exactly 1 AutoValue. if it is missing ...
-        else if( record.field(i).isAutoValue()) {
+        if( record.field(i).isAutoValue()) {
             where += record.field(i).name() + qsl("=") + record.field(i).value().toString();
             autovalue =record.field(i).value().toLongLong();
-        } else {
+            continue;
+        }
+        if( firstField) firstField = false; else sql += qsl(", ");
+        if( record.field(i).isNull()) {
+            if( record.field(i).defaultValue().isNull ())
+                sql +=  record.field(i).name() +qsl("=NULL");
+            else
+                sql += record.field(i).name() +qsl("= %1").arg(DbInsertableString (record.field (i).defaultValue ()));
+        }
+        else {
             sql += record.field(i).name() + qsl("=") + DbInsertableString(record.field(i).value());
-            firstField = false;
         }
     }
     sql += where;
@@ -199,7 +203,7 @@ QString TableDataInserter::getUpdateRecordSQL(qlonglong& autovalue) const
 
 int TableDataInserter::WriteData(const QSqlDatabase &db) const
 {   // LOG_CALL;
-    if( record.isEmpty()) return false;
+    if( record.isEmpty()) return -1;
 
     QSqlQuery q(db);
     bool ret = q.exec(getInsertRecordSQL());

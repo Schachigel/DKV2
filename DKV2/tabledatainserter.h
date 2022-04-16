@@ -16,7 +16,7 @@ struct TableDataInserter
     void init(const dbtable& t);
     enum treatNull {allowNullValues, notAllowNullValues};
     bool setValue(const QString& field, const QVariant& v, treatNull allowNull =treatNull::notAllowNullValues);
-    bool setValueNULL(const QString& field);
+    bool setValueToDefault(const QString& field);
     bool setValues(const QSqlRecord &rec);
     bool updateValue(const QString& n, const QVariant& v, qlonglong index);
     QVariant getValue(const QString& f) const { return record.field(f).value();}

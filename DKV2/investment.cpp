@@ -47,7 +47,7 @@ QString investment::toString() const
         investmentTable.append(dbfield(fnInvestmentInterest, QVariant::Int).setNotNull());
         investmentTable.append(dbfield(fnInvestmentStart,    QVariant::Date).setNotNull());
         investmentTable.append(dbfield(fnInvestmentEnd,      QVariant::Date).setNotNull());
-        investmentTable.append(dbfield(fnInvestmentType,      QVariant::String).setNotNull());
+        investmentTable.append(dbfield(fnInvestmentType,     QVariant::String).setNotNull());
         investmentTable.append(dbfield(fnInvestmentState,    QVariant::Bool).setNotNull());
         QVector<dbfield> unique;
         unique.append(investmentTable[fnInvestmentInterest]);
@@ -218,13 +218,15 @@ QVector<QPair<qlonglong, QString>> activeInvestments(const QDate cDate)
         where =qsl("Offen AND Anfang <= date('%1') AND Ende >= date('%1')").arg(cDate.toString(Qt::ISODate));
     }
 
-    QString sql {(qsl("SELECT rowid, Typ FROM Geldanlagen WHERE %1 ORDER BY %2").arg(where, fnInvestmentInterest))};
+    QString sql {(qsl("SELECT rowid, ZSatz, Typ FROM Geldanlagen WHERE %1 ORDER BY %2").arg(where, fnInvestmentInterest))};
     QVector<QSqlRecord> result;
     if( not executeSql(sql, QVariant(), result)) {
-            return QVector<QPair<qlonglong, QString>>();
+        qInfo() << "no investments";
+        return QVector<QPair<qlonglong, QString>>();
     }
     for(const auto& rec : qAsConst(result)) {
-        investments.push_back({rec.value(qsl("rowid")).toLongLong(), rec.value(fnInvestmentType).toString()});
+        QString comboboxentry {qsl("%1 (%2)").arg(rec.value(fnInvestmentType).toString(), prozent2prozent_str (rec.value(qsl("ZSatz")).toInt ()/100.))};
+        investments.push_back({rec.value(qsl("rowid")).toLongLong(), comboboxentry});
     }
     return investments;
 }

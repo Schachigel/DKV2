@@ -200,8 +200,8 @@ void test_dkdbcopy::test_convertDatabaseInplace_wNewColumn()
         QSqlDatabase db =QSqlDatabase::addDatabase(dbTypeName, closer.conName);
         db.setDatabaseName(dbfn1); db.open();
         TableDataInserter tdi1{t1};
-        tdi1.setValue("fi", "v1");    tdi1.WriteData(db);
-        tdi1.setValue("fi", "v2");    tdi1.WriteData(db);
+        tdi1.setValue("f1", "v1");    tdi1.WriteData(db);
+        tdi1.setValue("f2", "v2");    tdi1.WriteData(db);
         TableDataInserter tdi2{t2};
         tdi2.setValue("t1id", 1); tdi2.setValue("t2f1", "v1"); tdi2.WriteData(db);
         tdi2.setValue("t1id", 2); tdi2.setValue("t2f1", "v2"); tdi2.WriteData(db);

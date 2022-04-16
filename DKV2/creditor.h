@@ -30,8 +30,8 @@ struct creditor
 
     static const dbtable& getTableDef();
     // constructors
-    creditor() : ti(getTableDef()){}
-    creditor (int i) : ti(getTableDef()){ fromDb(i);}
+    creditor() : ti(getTableDef()) {}
+    creditor (int i) : ti(getTableDef()) { fromDb(i);}
     // comparison
     bool operator==(const creditor& c) const;
     // setter

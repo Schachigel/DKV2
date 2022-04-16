@@ -48,7 +48,7 @@ public: // types and data
 public:
     // statics
     static dbtable getTableDef_letterTypes();
-    static dbtable getTabelDef_elementTypes();
+    static dbtable getTableDef_elementTypes();
     static dbtable getTableDef_letterElements();
     static bool insert_letterTypes(QSqlDatabase db);
     static bool insert_elementTypes(QSqlDatabase db);

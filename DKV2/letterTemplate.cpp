@@ -49,7 +49,7 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
     return letterTypesTable;
 }
 
-/* static */ dbtable letterTemplate::getTabelDef_elementTypes()
+/* static */ dbtable letterTemplate::getTableDef_elementTypes()
 {
     static dbtable sectionsTable(qsl("BriefElementTypen"));
     if (0 == sectionsTable.Fields().size()) {
@@ -63,7 +63,8 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
 {
     static dbtable letterTable("BriefElemente");
     if (0 == letterTable.Fields().size()) {
-        letterTable.append(dbfield(contract::fnKreditorId, QVariant::LongLong)); // NOT setNotNull !!
+        letterTable.append(dbfield(contract::fnKreditorId, QVariant::LongLong)); // NOT setNotNull !! ...
+        // ... is NULL for letter elements which are the same for all creditors
         letterTable.append(dbForeignKey(letterTable[contract::fnKreditorId],
                                         dkdbstructur[qsl("Kreditoren")][qsl("id")], qsl("ON DELETE CASCADE")));
 
@@ -89,9 +90,12 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
 /* static */ bool letterTemplate::insert_letterTypes(QSqlDatabase db)
 { LOG_CALL;
     TableDataInserter tdi(dkdbstructur["Brieftypen"]);
-    for (auto i : all_templates.keys()) {
-        tdi.setValue(qsl("id"), QVariant(int(i)));
-        tdi.setValue(qsl("Brieftyp"), QVariant(all_templates[i]));
+    auto all_templates_keys =all_templates.keys();
+    for (int i =0; i < all_templates_keys.size (); i++) {
+        letterTemplate::templId key =all_templates_keys[i];
+        QString value =all_templates.value (key);
+        tdi.setValue(qsl("id"), int(key));
+        tdi.setValue(qsl("Brieftyp"), value);
         if (-1 == tdi.WriteData(db))
             return false;
     }
@@ -101,9 +105,12 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
 /* static */ bool letterTemplate::insert_elementTypes(QSqlDatabase db)
 { LOG_CALL;
     TableDataInserter tdi(dkdbstructur[qsl("BriefElementTypen")]);
-    for (auto s : all_elementTypes.keys()) {
-        tdi.setValue(qsl("id"), QVariant(int(s)));
-        tdi.setValue(qsl("ElementName"), QVariant(all_elementTypes.value(s)));
+    auto all_elementTypes_keys =all_elementTypes.keys();
+    for (int i =0; i < all_elementTypes_keys.size (); i++) {
+        letterTemplate::elementType key =all_elementTypes_keys[i];
+        QString value =all_elementTypes.value(key);
+        tdi.setValue(qsl("id"), int(key));
+        tdi.setValue(qsl("ElementName"), value);
         if (-1 == tdi.InsertOrReplaceData(db))
             return false;
     }
@@ -113,14 +120,17 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
 bool insertLetterElementFromMap(qlonglong kreditor, letterTemplate::templId briefTyp, QMap<letterTemplate::elementType, QString> map, QSqlDatabase db)
 { LOG_CALL;
     TableDataInserter tdi(dkdbstructur[qsl("BriefElemente")]);
-    kreditor<=0 ? tdi.setValueNULL(contract::fnKreditorId) : tdi.setValue(contract::fnKreditorId, kreditor);
+    kreditor<=0 ? tdi.setValueToDefault(contract::fnKreditorId) : tdi.setValue(contract::fnKreditorId, kreditor);
     tdi.setValue(qsl("BriefTypenId"), QVariant(int(briefTyp)));
     bool res =true;
-    for( const auto i : map.keys()) {
-        tdi.setValue(qsl("BriefElementTypenId"), QVariant(int(i)));
-        tdi.setValue(qsl("Texte"), QVariant(map[i]));
+    auto map_keys =map.keys();
+    for( int i =0; i < map_keys.size (); i++) {
+        letterTemplate::elementType key =map_keys[i];
+        QString value =map.value(key);
+        tdi.setValue(qsl("BriefElementTypenId"), int(key));
+        tdi.setValue(qsl("Texte"), value);
         if( -1 == tdi.WriteData(db)) {
-            qDebug() << "Failded to insert generic letter Element " << map[i];
+            qDebug() << "Failded to insert generic letter Element " << map.value (letterTemplate::elementType(i));
             res = false;
         }
     }

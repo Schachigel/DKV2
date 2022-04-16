@@ -32,25 +32,25 @@
     static dbtable contractTable(tnContracts);
     if (0 == contractTable.Fields().size())
     {
-        contractTable.append(dbfield(fnId, QVariant::LongLong).setPrimaryKey().setAutoInc());
-        contractTable.append(dbfield(fnKreditorId, QVariant::LongLong).setNotNull());
+        contractTable.append(dbfield(fnId,           QVariant::LongLong).setPrimaryKey().setAutoInc());
+        contractTable.append(dbfield(fnKreditorId,   QVariant::LongLong).setNotNull());
         contractTable.append(dbForeignKey(contractTable[fnKreditorId],
             dkdbstructur[qsl("Kreditoren")][fnId], qsl("ON DELETE CASCADE")));
         // deleting a creditor will delete inactive contracts but not
         // contracts with existing bookings (=active or terminated contracts)
-        contractTable.append(dbfield(fnKennung, QVariant::String, qsl("UNIQUE")));
-        contractTable.append(dbfield(fnAnmerkung, QVariant::String).setDefault(""));
-        contractTable.append(dbfield(fnZSatz, QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
-        contractTable.append(dbfield(fnBetrag, QVariant::Int).setNotNull().setDefault(0)); // ct
+        contractTable.append(dbfield(fnKennung,       QVariant::String, qsl("UNIQUE")));
+        contractTable.append(dbfield(fnAnmerkung,     QVariant::String).setDefault(""));
+        contractTable.append(dbfield(fnZSatz,         QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
+        contractTable.append(dbfield(fnBetrag,        QVariant::Int).setNotNull().setDefault(0)); // ct
         contractTable.append(dbfield(fnThesaurierend, QVariant::Int).setNotNull().setDefault(1));
         contractTable.append(dbfield(fnVertragsDatum, QVariant::Date).setNotNull());
-        contractTable.append(dbfield(fnKFrist, QVariant::Int).setNotNull().setDefault(6));
-        contractTable.append(dbfield(fnAnlagenId, QVariant::Int));
+        contractTable.append(dbfield(fnKFrist,        QVariant::Int).setNotNull().setDefault(6));
+        contractTable.append(dbfield(fnAnlagenId,     QVariant::Int));
         contractTable.append(dbForeignKey(contractTable[fnAnlagenId],
             qsl("Geldanlagen"), qsl("rowid"), qsl("ON DELETE SET NULL")));
-        contractTable.append(dbfield(fnLaufzeitEnde, QVariant::Date).setNotNull().setDefault(EndOfTheFuckingWorld_str));
-        contractTable.append(dbfield(fnZAktiv,       QVariant::Bool) .setDefault(true));
-        contractTable.append(dbfield(fnZeitstempel, QVariant::DateTime).setDefaultNow());
+        contractTable.append(dbfield(fnLaufzeitEnde,  QVariant::Date).setNotNull().setDefault(EndOfTheFuckingWorld_str));
+        contractTable.append(dbfield(fnZAktiv,        QVariant::Bool).setDefault(true));
+        contractTable.append(dbfield(fnZeitstempel,   QVariant::DateTime).setDefaultNow());
     }
     return contractTable;
 }

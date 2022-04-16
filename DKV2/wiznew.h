@@ -243,14 +243,14 @@ private:
 
 struct wizNew : public QWizard
 {
-    wizNew(QWidget* p =nullptr);
-    qlonglong creditorId =-1;
+    wizNew(creditor& c, QWidget* p =nullptr);
+    qlonglong existingCreditorId =-1;
     int interest =-1;
     qlonglong investmentId =0;
     int noticePeriod =-1;
     interestModel iPaymentMode =interestModel::maxId;
     bool createCreditor =false; // the corresponding field becomes false on cancel during contract dialog
-    creditor c_tor;
+    creditor& c_tor;
     bool selectCreateContract =true; // for edit creditor this should be false
 private:
     Q_OBJECT;

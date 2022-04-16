@@ -25,11 +25,25 @@
 
 namespace
 {
-    bool postDB_UpgradeActions(int /*sourceVersion*/, const QString & /*dbName*/)
+    bool postDB_UpgradeActions(int /*sourceVersion*/, const QString & dbName)
     {
-        //    autoDb db(dbName, qsl("postUpgradeActions"));
+        autoDb db(dbName, qsl("postUpgradeActions"));
         bool ret = true;
         //  do stuff to adapt to new db depending on the source version
+        QVector<QString> updates {
+            // set strings, which might become concatenated in SQL to empty but not NULL
+            qsl("UPDATE Kreditoren SET Vorname  = '' WHERE Vorname  IS NULL"),
+            qsl("UPDATE Kreditoren SET Nachname = '' WHERE Nachname IS NULL"),
+            qsl("UPDATE Kreditoren SET Strasse  = '' WHERE Strasse  IS NULL"),
+            qsl("UPDATE Kreditoren SET Plz      = '' WHERE Plz      IS NULL"),
+            qsl("UPDATE Kreditoren SET Stadt    = '' WHERE Stadt    IS NULL"),
+            qsl("UPDATE Geldanlagen SET Typ     = '' WHERE Typ      IS NULL")
+            // other updates...
+        };
+        for(const auto & sql: qAsConst(updates)) {
+            QVector<QVariant> params;
+            executeSql_wNoRecords (sql, params, db);
+        }
         return ret;
     }
 }
@@ -78,38 +92,38 @@ bool checkSchema_ConvertIfneeded(const QString &origDbFile)
 void newCreditorAndContract()
 {
     LOG_CALL;
-    wizNew wiz(getMainWindow());
+    creditor cred;
+    wizNew wiz(cred, getMainWindow());
     wiz.setField(pnNew, true);
     wiz.setField(pnConfirmContract, false);
-
-    /*auto wizRes =*/wiz.exec();
+    // !!!!
+    /*auto wizRes =*/     wiz.exec();
+    // !!!!
     if (wiz.field(pnNew).toBool())
     {
-        if (not wiz.createCreditor)
-        {
-            qInfo() << "User decided against creditor creation";
-            return;
-        }
+
         // one can only come here, if the users accepted the creation of the creditor
         if (not wiz.c_tor.isValid())
         {
             // the user was checked during validation of the wizard -> very wrong
+            QMessageBox::critical(getMainWindow(), qsl("Eingabefehler"), qsl("Die Kundendaten sind ungültig"
+                                ". Details findest Du in der Log Datei."));
             qCritical() << "invalid creditor data -> we have to fail";
             return;
         }
 
-        if (wiz.c_tor.save() >= 0)
+        if (cred.save() >= 0)
             qInfo() << "creditor created successfully";
         else
         {
             QMessageBox::critical(getMainWindow(), qsl("Programm Fehler"), qsl("Die Kundeninfo konnte nicht "
-                                                                               "gespeichert werden. Details findest Du in der Log Datei."));
+                                "gespeichert werden. Details findest Du in der Log Datei."));
             return;
         }
     }
     else
     {
-        wiz.c_tor.setId(wiz.creditorId);
+        wiz.c_tor.setId(wiz.existingCreditorId);
         qInfo() << "contract for existing creditor will be created";
     }
 
@@ -134,7 +148,7 @@ void newCreditorAndContract()
     {
         qCritical() << "New contract could not be saved";
         QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Der Vertrag konnte nicht "
-                                                                  "gespeichert werden. Details findest Du in der Log Datei"));
+                               "gespeichert werden. Details findest Du in der Log Datei"));
     }
     else
     {
@@ -146,23 +160,8 @@ void newCreditorAndContract()
 void editCreditor(qlonglong creditorId)
 {
     LOG_CALL;
-    wizNew wiz(getMainWindow());
     creditor cred(creditorId);
-    wiz.setField(pnFName, cred.firstname());
-    wiz.setField(pnLName, cred.lastname());
-    wiz.setField(pnStreet, cred.street());
-    wiz.setField(pnPcode, cred.postalCode());
-    wiz.setField(pnCity, cred.city());
-    wiz.setField(pnEMail, cred.email());
-    wiz.setField(pnPhone, cred.tel());
-    wiz.setField(pnContact, cred.contact());
-    wiz.setField(pnComment, cred.comment());
-    wiz.setField(pnIban, cred.iban());
-    wiz.setField(pnBic, cred.bic());
-    wiz.setField(pnAccount, cred.account());
-    wiz.selectCreateContract = false;
-    //wiz.setField(pnConfirmContract, false);
-    wiz.creditorId = creditorId;
+    wizNew wiz(cred, getMainWindow());
     wiz.setStartId(page_address);
 
     if (QDialog::Accepted == wiz.exec())
@@ -175,7 +174,7 @@ void editCreditor(qlonglong creditorId)
         {
             bc.finish ();
             QMessageBox::critical(getMainWindow(), qsl("Programm Fehler"), qsl("Die Kundeninfo konnte nicht "
-                                                                               "geändert werden. Details findest Du in der Log Datei."));
+                                  "geändert werden. Details findest Du in der Log Datei."));
             return;
         }
     }

@@ -80,7 +80,7 @@ void init_DKDBStruct()
     dkdbstructur.appendTable(meta);
 
     dkdbstructur.appendTable(letterTemplate::getTableDef_letterTypes());
-    dkdbstructur.appendTable(letterTemplate::getTabelDef_elementTypes());
+    dkdbstructur.appendTable(letterTemplate::getTableDef_elementTypes());
     dkdbstructur.appendTable(letterTemplate::getTableDef_letterElements());
 
     done = true;
