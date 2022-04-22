@@ -160,7 +160,7 @@ QVariantMap getMetaTableAsMap(const QSqlDatabase &db)
 void appConfig::setUserData(const QString& name, const QString& value)
 {
     QSettings config;
-    qInfo() << "setUserDatea " << name << " : " << value;
+    qInfo() << "setUserData " << name << " : " << value;
     config.setValue(name, value);
 }
 /* static */
