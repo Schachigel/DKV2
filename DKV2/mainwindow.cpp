@@ -159,39 +159,10 @@ QString MainWindow::askUserForNextDb()
     return selectedDbPath;
 }
 
-void treat_DbIsAlreadyInUse_File(QString filename)
-{
-    QMessageBox::StandardButton result = QMessageBox::NoButton;
-
-    while (checkSignalFile(filename))
-    {
-        result = QMessageBox::information((QWidget *)nullptr, qsl("Datenbank bereits geöffnet?"),
-                                 qsl("Es scheint, als sei die Datenbank bereits geöffnet. Das kommt vor, "
-                                     "wenn DKV2 abgestürzt ist oder bereits läuft.<p>"
-                                     "Falls die Datenbank auf einem Fileserver läuft, kann auch eine "
-                                     "andere Benutzerin die Datenbank gerade verwenden."
-                                     "<p>Retry: Wenn das andere Programm beendet ist."
-                                     "<p>Cancel: Um dieses Programm zu beenden."
-                                     "<p>Ignore: Wenn du sicher bist, dass kein anderes "
-                                     "Programm läuft. (auf eigene Gefahr!)"),
-                                 QMessageBox::Cancel | QMessageBox::Retry | QMessageBox::Ignore);
-
-        if (result == QMessageBox::Cancel)
-            exit(1);
-
-        if (result == QMessageBox::Ignore)
-            break;
-
-        /* QMessageBox::Retry repeats the file check */
-    }
-    return createSignalFile (filename);
-}
-
 bool MainWindow::useDb(const QString& dbfile)
 {   LOG_CALL;
     if( open_databaseForApplication(dbfile)) {
         add_MRU_entry (dbfile);
-        treat_DbIsAlreadyInUse_File (dbfile);
         appConfig::setLastDb(dbfile);
         showDbInStatusbar(dbfile);
         return true;
