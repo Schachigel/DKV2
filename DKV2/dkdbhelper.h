@@ -25,13 +25,10 @@ enum version_check_result {
     higherVersion =2
 };
 
-int get_db_version(const QSqlDatabase &db =QSqlDatabase::database());
 int get_db_version(const QString &filename);
 
 void closeAllDatabaseConnections();
 bool open_databaseForApplication( const QString &newDbFile=qsl(""));
-bool isExistingContractLabel( const QString& newLabel);
-bool isExistingExContractLabel( const QString& newLabel);
 bool isValidNewContractLabel( const QString& label);
 QString proposeContractLabel();
 void create_sampleData(int datensaetze =20);

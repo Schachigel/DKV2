@@ -56,7 +56,7 @@ bool checkSchema_ConvertIfneeded(const QString &origDbFile)
     {
         qInfo() << "lower version -> converting";
         bc.finish ();
-        if (QMessageBox::Yes not_eq QMessageBox::question(getMainWindow(), qsl("Achtung"), qsl("Das Format der Datenbank ist veraltet. Soll die Datenbank konvertiert werden?"))) {
+        if (QMessageBox::Yes not_eq QMessageBox::question(getMainWindow(), qsl("Achtung"), qsl("Das Format der Datenbank \n%1\nist veraltet.\nSoll die Datenbank konvertiert werden?").arg(origDbFile))) {
             qInfo() << "conversion rejected by user";
             return false;
         }

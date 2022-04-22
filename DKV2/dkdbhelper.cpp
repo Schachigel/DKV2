@@ -19,6 +19,7 @@
 #include "dbstructure.h"
 #include "investment.h"
 
+namespace  {
 
 bool updateViewsAndIndices_if_needed(const QSqlDatabase& db =QSqlDatabase::database ())
 {   LOG_CALL;
@@ -44,6 +45,77 @@ bool updateViewsAndIndices_if_needed(const QSqlDatabase& db =QSqlDatabase::datab
     return false;
 }
 
+void insert_DbProperties(const QSqlDatabase &db = QSqlDatabase::database())
+{
+    LOG_CALL;
+    dbConfig::writeDefaults(db);
+}
+
+int get_db_version(const QSqlDatabase &db)
+{   /*LOG_CALL;*/
+    QVariant vversion =dbConfig::read_DBVersion(db);
+    if( not (vversion.isValid() and vversion.canConvert(QMetaType::Double)))
+        return noVersion; // big problem: no db
+    int d =vversion.toInt();
+    qInfo() << "DB Version Comparison: expected / found: " << CURRENT_DB_VERSION << " / " << d;
+    return d;
+}
+
+bool isExistingContractLabel( const QString& newLabel)
+{
+    QVariant existingLabel =executeSingleValueSql(contract::fnKennung, contract::tnContracts, qsl("Kennung = '") +newLabel +qsl("'"));
+    return existingLabel.isValid();
+}
+
+bool isExisting_Ex_ContractLabel( const QString& newLabel)
+{
+    QVariant existingLabel =executeSingleValueSql(contract::fnKennung, contract::tnExContracts, qsl("Kennung = '") +newLabel +qsl("'"));
+    return existingLabel.isValid();
+}
+
+void treat_DbIsAlreadyInUse_File(QString filename)
+{
+    QMessageBox::StandardButton result = QMessageBox::NoButton;
+
+    while (checkSignalFile(filename))
+    {
+        result = QMessageBox::information((QWidget *)nullptr, qsl("Datenbank bereits geöffnet?"),
+                                 qsl("Es scheint, als sei die Datenbank\n%1%1\n bereits geöffnet. Das kommt vor, "
+                                     "wenn DKV2 abgestürzt ist oder bereits läuft.<p>"
+                                     "Falls die Datenbank auf einem Fileserver läuft, kann auch eine "
+                                     "andere Benutzerin die Datenbank gerade verwenden."
+                                     "<p>Retry: Wenn das andere Programm beendet ist."
+                                     "<p>Cancel: Um dieses Programm zu beenden."
+                                     "<p>Ignore: Wenn du sicher bist, dass kein anderes "
+                                     "Programm läuft. (auf eigene Gefahr!)").arg(filename),
+                                 QMessageBox::Cancel | QMessageBox::Retry | QMessageBox::Ignore);
+
+        if (result == QMessageBox::Cancel)
+            exit(1);
+
+        if (result == QMessageBox::Ignore)
+            break;
+
+        /* QMessageBox::Retry repeats the file check */
+    }
+    return createSignalFile (filename);
+}
+
+void getBookingDateInfoBySql(const QString &sql, QVector<BookingDateData>& dates)
+{
+    QVector<QSqlRecord> records;
+    if( not executeSql(sql, records)) {
+        qInfo() << "getDatesBySql: no dates to found";
+        return;
+    }
+    for (const auto &rec : qAsConst(records)) {
+        dates.push_back({rec.value(0).toInt(), rec.value(1).toString(), rec.value(2).toDate()});
+    }
+    qInfo() << "getDatesBySql added " << dates.size() << " dates to the vector";
+}
+
+}
+
 bool insertDKDB_Views( const QSqlDatabase &db)
 {   LOG_CALL;
     return createDbViews(getViews(), db);
@@ -52,12 +124,6 @@ bool insertDKDB_Views( const QSqlDatabase &db)
 bool insertDKDB_Indices( const QSqlDatabase& db)
 {   LOG_CALL;
     return createIndicesFromSQL( getIndexSql (), db);
-}
-
-void insert_DbProperties(const QSqlDatabase &db = QSqlDatabase::database())
-{
-    LOG_CALL;
-    dbConfig::writeDefaults(db);
 }
 
 bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/, zinssusance sz /*=zs30360*/)
@@ -95,16 +161,6 @@ int get_db_version(const QString &file)
     }
 }
 
-int get_db_version(const QSqlDatabase &db)
-{   /*LOG_CALL;*/
-    QVariant vversion =dbConfig::read_DBVersion(db);
-    if( not (vversion.isValid() and vversion.canConvert(QMetaType::Double)))
-        return noVersion; // big problem: no db
-    int d =vversion.toInt();
-    qInfo() << "DB Version Comparison: expected / found: " << CURRENT_DB_VERSION << " / " << d;
-    return d;
-}
-
 // manage the app wide used database
 void closeAllDatabaseConnections()
 {   LOG_CALL;
@@ -137,27 +193,18 @@ bool open_databaseForApplication( const QString &newDbFile)
         qCritical() << "open database file " << newDbFile << " failed";
         return false;
     }
-
+    treat_DbIsAlreadyInUse_File (newDbFile);
+    if( not updateViewsAndIndices_if_needed (db)) {
+        qCritical() << "update views on " << newDbFile << " failed";
+        return false;
+    }
     switchForeignKeyHandling(db, fkh_on);
-    return updateViewsAndIndices_if_needed (db);
-}
-
-// general stuff
-bool isExistingContractLabel( const QString& newLabel)
-{
-    QVariant existingLabel =executeSingleValueSql(contract::fnKennung, contract::tnContracts, qsl("Kennung = '") +newLabel +qsl("'"));
-    return existingLabel.isValid();
-}
-
-bool isExistingExContractLabel( const QString& newLabel)
-{
-    QVariant existingLabel =executeSingleValueSql(contract::fnKennung, contract::tnExContracts, qsl("Kennung = '") +newLabel +qsl("'"));
-    return existingLabel.isValid();
+    return true;
 }
 
 bool isValidNewContractLabel(const QString& label)
 {
-    return ( not isExistingContractLabel(label)) and ( not isExistingExContractLabel(label));
+    return ( not isExistingContractLabel(label)) and ( not isExisting_Ex_ContractLabel(label));
 }
 
 QString proposeContractLabel()
@@ -229,6 +276,7 @@ void create_sampleData(int datensaetze)
     activateRandomContracts(90);
 
 }
+
 bool createCsvActiveContracts()
 {   LOG_CALL;
     QString tempViewContractsCsv {qsl("tvActiveContractsCsv")};
@@ -494,8 +542,6 @@ QVector<QStringList> perpetualInvestmentByContracts()
     return result;
 }
 
-
-
 // calc how many contracts end each year
 void calc_contractEnd( QVector<contractEnd_rowData>& ces)
 {   LOG_CALL;
@@ -510,19 +556,6 @@ void calc_contractEnd( QVector<contractEnd_rowData>& ces)
     } else
         qCritical() << "sql exec failed";
     return;
-}
-
-void getBookingDateInfoBySql(const QString &sql, QVector<BookingDateData>& dates)
-{
-    QVector<QSqlRecord> records;
-    if( not executeSql(sql, records)) {
-        qInfo() << "getDatesBySql: no dates to found";
-        return;
-    }
-    for (const auto &rec : qAsConst(records)) {
-        dates.push_back({rec.value(0).toInt(), rec.value(1).toString(), rec.value(2).toDate()});
-    }
-    qInfo() << "getDatesBySql added " << dates.size() << " dates to the vector";
 }
 
 // get dates for statistic page
