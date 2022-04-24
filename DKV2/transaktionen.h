@@ -3,8 +3,6 @@
 
 #include "contract.h"
 
-bool checkSchema_ConvertIfneeded(const QString& origDbFile);
-
 void newCreditorAndContract();
 
 void editCreditor(qlonglong creditorId);

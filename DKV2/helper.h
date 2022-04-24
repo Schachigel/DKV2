@@ -17,6 +17,8 @@
 
 #define qsl(x) QStringLiteral(x)
 
+inline void expected_error (QString MSG) {QMessageBox::information(NULL, qsl("Fehler"), MSG); qInfo() << MSG;}
+
 QString toString(const QBitArray &ba);
 QBitArray toQBitArray(const QString& s);
 

@@ -5,6 +5,7 @@
 #include <QSqlRecord>
 #include <QVector>
 
+#include "busycursor.h"
 #include "helper.h"
 #include "helpersql.h"
 #include "appconfig.h"
@@ -73,7 +74,44 @@ bool isExisting_Ex_ContractLabel( const QString& newLabel)
     return existingLabel.isValid();
 }
 
-void treat_DbIsAlreadyInUse_File(QString filename)
+void getBookingDateInfoBySql(const QString &sql, QVector<BookingDateData>& dates)
+{
+    QVector<QSqlRecord> records;
+    if( not executeSql(sql, records)) {
+        qInfo() << "getDatesBySql: no dates to found";
+        return;
+    }
+    for (const auto &rec : qAsConst(records)) {
+        dates.push_back({rec.value(0).toInt(), rec.value(1).toString(), rec.value(2).toDate()});
+    }
+    qInfo() << "getDatesBySql added " << dates.size() << " dates to the vector";
+}
+
+bool postDB_UpgradeActions(int /*sourceVersion*/, const QString & dbName)
+{
+    autoDb db(dbName, qsl("postUpgradeActions"));
+    bool ret = true;
+    //  do stuff to adapt to new db depending on the source version
+    QVector<QString> updates {
+        // set strings, which might become concatenated in SQL to empty but not NULL
+        qsl("UPDATE Kreditoren SET Vorname  = '' WHERE Vorname  IS NULL"),
+        qsl("UPDATE Kreditoren SET Nachname = '' WHERE Nachname IS NULL"),
+        qsl("UPDATE Kreditoren SET Strasse  = '' WHERE Strasse  IS NULL"),
+        qsl("UPDATE Kreditoren SET Plz      = '' WHERE Plz      IS NULL"),
+        qsl("UPDATE Kreditoren SET Stadt    = '' WHERE Stadt    IS NULL"),
+        qsl("UPDATE Geldanlagen SET Typ     = '' WHERE Typ      IS NULL")
+        // other updates...
+    };
+    for(const auto & sql: qAsConst(updates)) {
+        QVector<QVariant> params;
+        executeSql_wNoRecords (sql, params, db);
+    }
+    return ret;
+}
+
+}
+
+bool treat_DbIsAlreadyInUse_File(QString filename)
 {
     QMessageBox::StandardButton result = QMessageBox::NoButton;
 
@@ -89,31 +127,20 @@ void treat_DbIsAlreadyInUse_File(QString filename)
                                      "<p>Ignore: Wenn du sicher bist, dass kein anderes "
                                      "Programm läuft. (auf eigene Gefahr!)").arg(filename),
                                  QMessageBox::Cancel | QMessageBox::Retry | QMessageBox::Ignore);
-
-        if (result == QMessageBox::Cancel)
-            exit(1);
-
-        if (result == QMessageBox::Ignore)
+        switch (result)  {
+        case QMessageBox::Cancel:
+            return false;
+        case QMessageBox::Retry:
+            /* QMessageBox::Retry repeats the file check */
+            continue;
+//        case QMessageBox::Ignore:
+//            break;
+        default:
             break;
-
-        /* QMessageBox::Retry repeats the file check */
+        }
     }
-    return createSignalFile (filename);
-}
-
-void getBookingDateInfoBySql(const QString &sql, QVector<BookingDateData>& dates)
-{
-    QVector<QSqlRecord> records;
-    if( not executeSql(sql, records)) {
-        qInfo() << "getDatesBySql: no dates to found";
-        return;
-    }
-    for (const auto &rec : qAsConst(records)) {
-        dates.push_back({rec.value(0).toInt(), rec.value(1).toString(), rec.value(2).toDate()});
-    }
-    qInfo() << "getDatesBySql added " << dates.size() << " dates to the vector";
-}
-
+    createSignalFile (filename);
+    return true;
 }
 
 bool insertDKDB_Views( const QSqlDatabase &db)
@@ -161,6 +188,49 @@ int get_db_version(const QString &file)
     }
 }
 
+bool checkSchema_ConvertIfneeded(const QString &origDbFile)
+{
+    LOG_CALL;
+    busycursor bc;
+    int version_of_original_file = get_db_version(origDbFile);
+    if (version_of_original_file < CURRENT_DB_VERSION)
+    {
+        qInfo() << "lower version -> converting";
+        bc.finish ();
+        if (QMessageBox::Yes not_eq QMessageBox::question(getMainWindow(), qsl("Achtung"), qsl("Das Format der Datenbank \n%1\nist veraltet.\nSoll die Datenbank konvertiert werden?").arg(origDbFile))) {
+            qInfo() << "conversion rejected by user";
+            return false;
+        }
+        QString backup = convert_database_inplace(origDbFile);
+        if (backup.isEmpty()) {
+            bc.finish ();
+            QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Bei der Konvertierung ist ein Fehler aufgetreten. Die Ausführung muss beendet werden."));
+            qCritical() << "db converstion of older DB failed";
+            return false;
+        }
+        // actions which depend on the source version of the db
+        if (not postDB_UpgradeActions(version_of_original_file, origDbFile)) {
+            bc.finish ();
+            QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Bei der Konvertierung ist ein Fehler aufgetreten. Die Ausführung muss beendet werden."));
+            qCritical() << "db converstion of older DB failed";
+            return false;
+        }
+        bc.finish ();
+        QMessageBox::information(nullptr, qsl("Erfolgsmeldung"), qsl("Die Konvertierung ware erfolgreich. Eine Kopie der ursprünglichen Datei liegt unter \n") + backup);
+        return true;
+    }
+    else if (version_of_original_file == CURRENT_DB_VERSION)
+    {
+        return validateDbSchema(origDbFile, dkdbstructur);
+    }
+    else
+    {
+        qInfo() << "higher version ? there is no way back";
+        return false;
+    }
+}
+
+
 // manage the app wide used database
 void closeAllDatabaseConnections()
 {   LOG_CALL;
@@ -193,7 +263,6 @@ bool open_databaseForApplication( const QString &newDbFile)
         qCritical() << "open database file " << newDbFile << " failed";
         return false;
     }
-    treat_DbIsAlreadyInUse_File (newDbFile);
     if( not updateViewsAndIndices_if_needed (db)) {
         qCritical() << "update views on " << newDbFile << " failed";
         return false;

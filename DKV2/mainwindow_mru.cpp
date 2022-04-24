@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include "opendatabase.h"
 #include "mainwindow.h"
 
 const char nbr_mru_entries =5;
@@ -105,5 +106,9 @@ void MainWindow::onMRU_MenuItem()
     if( not action)
         return;
     QString file =action->data ().toString();
-    open_Database (file);
+    if( openDB_MRU (file)) {
+        useDb(appConfig::LastDb ());
+        return;
+    }
+    //if we come here the file does not exist
 }
