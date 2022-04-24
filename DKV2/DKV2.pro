@@ -114,6 +114,7 @@ SOURCES += \
         mainwindow_creditorlist.cpp \
         mainwindow_mru.cpp \
         mustache.cpp \
+        opendatabase.cpp \
         tabledatainserter.cpp \
         transaktionen.cpp \
         uebersichten.cpp \
@@ -162,6 +163,7 @@ HEADERS += pch.h\
         letters.h \
         mainwindow.h \
         mustache.h \
+        opendatabase.h \
         pch.h \
         tabledatainserter.h \
         transaktionen.h \

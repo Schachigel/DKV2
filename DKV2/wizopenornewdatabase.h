@@ -6,9 +6,15 @@
 #include <QRadioButton>
 #include <QLabel>
 #include <QString>
+#include "helper.h"
 
 enum { NewOrOpen, selectNewFile, Zinssusance, selectExistingFile};
 
+const QString fnCreateNew   {qsl("createNewDb")};
+const QString fnZinssusance {qsl("Zinssusance")};
+const QString fnDbFolder    {qsl("dbFolder")};
+const QString fnDbFilename  {qsl("dbFilename")};
+const QString fnExistingFile{qsl("existingFile")};
 
 struct wpOpenOrNew : public QWizardPage
 {

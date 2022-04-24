@@ -17,7 +17,7 @@ wpOpenOrNew::wpOpenOrNew(QWidget* p) : QWizardPage(p)
     subTitleLabel->setWordWrap(true);
     subTitleLabel->setText(qsl("Mit dieser Dialogfolge kann die Datenbank zum Speichern der Kreditdaten gewählt werden."));
     QRadioButton* rbNew  = new QRadioButton(qsl("Neue Datenbank anlegen"));
-    registerField(qsl("createNewDb"), rbNew);
+    registerField(fnCreateNew, rbNew);
     QRadioButton* rbOpen = new QRadioButton(qsl("Eine existierende Datenbank öffnen"));
     QVBoxLayout* lv =new QVBoxLayout();
     lv->addWidget(subTitleLabel);
@@ -38,7 +38,7 @@ wpOpenOrNew::wpOpenOrNew(QWidget* p) : QWizardPage(p)
 
 int wpOpenOrNew::nextId() const
 {
-    if(field(qsl("createNewDb")).toBool())
+    if(field(fnCreateNew).toBool())
         return selectNewFile;
     else
         return selectExistingFile;
@@ -68,7 +68,7 @@ wpNewDb::wpNewDb(QWidget* p) : QWizardPage(p)
 
     QLabel* lVerzeichnis =new QLabel(qsl("&Verzeichnis"));
     QLineEdit* verzeichnis =new QLineEdit();
-    registerField(qsl("dbFolder"), verzeichnis);
+    registerField(fnDbFolder, verzeichnis);
     lVerzeichnis->setBuddy(verzeichnis);
     QHBoxLayout* layoutFolder =new QHBoxLayout();
     layoutFolder->addWidget(lVerzeichnis);
@@ -76,7 +76,7 @@ wpNewDb::wpNewDb(QWidget* p) : QWizardPage(p)
 
     QLabel* lDateiname =new QLabel(qsl("&Dateiname"));
     QLineEdit* dateiname =new QLineEdit();
-    registerField(qsl("dbFilename"), dateiname);
+    registerField(fnDbFilename, dateiname);
     lDateiname->setBuddy(dateiname);
     QHBoxLayout* layoutFilename =new QHBoxLayout();
     layoutFilename->addWidget(lDateiname);
@@ -91,8 +91,8 @@ wpNewDb::wpNewDb(QWidget* p) : QWizardPage(p)
 
 void wpNewDb::initializePage()
 {
-    setField(qsl("dbFolder"), defaultFolder());
-    setField(qsl("dbFilename"), defaultDKDB_Filename());
+    setField(fnDbFolder, defaultFolder());
+    setField(fnDbFilename, defaultDKDB_Filename());
 }
 
 void wpNewDb::setVisible(bool v)
@@ -110,18 +110,18 @@ void wpNewDb::setVisible(bool v)
 void wpNewDb::browseButtonClicked()
 {   LOG_CALL;
     QString folder =QFileDialog::getExistingDirectory(this, qsl("Datenbank Verzeichnis"),
-                          field(qsl("dbFolder")).toString(), QFileDialog::ShowDirsOnly );
+                          field(fnDbFolder).toString(), QFileDialog::ShowDirsOnly );
 
     if( not folder.isEmpty ())
-        setField( qsl("dbFolder"), folder);
+        setField( fnDbFolder, folder);
 
 }
 
 bool wpNewDb::validatePage()
 {   LOG_CALL;
-    QString folder =field(qsl("dbFolder")).toString();
+    QString folder =field(fnDbFolder).toString();
     QFileInfo fiFolder (folder);
-    QString file =field(qsl("dbFilename")).toString().trimmed();
+    QString file =field(fnDbFilename).toString().trimmed();
     if( not file.contains('.')) file += qsl(".dkdb");
     QString path =folder +qsl("/") +file;
     bool allGood =false;
@@ -165,7 +165,7 @@ wpICalcMode::wpICalcMode(QWidget* p) : QWizardPage (p)
 
     QRadioButton* rbactact=new QRadioButton(qsl("act / act"));
     rbactact->setToolTip (qsl("In Schaltjahren wird ein Tag mit 1/366-tel des Jahreszins berechnet, <br>in anderen Jahren mit einem 1/365-tel."));
-    registerField (qsl("Zinssusance"), rb30360);
+    registerField (fnZinssusance, rb30360);
     QVBoxLayout* l =new QVBoxLayout();
     l->addWidget (lbl);
     l->addWidget (rb30360);
@@ -175,7 +175,7 @@ wpICalcMode::wpICalcMode(QWidget* p) : QWizardPage (p)
 
 void wpICalcMode::initializePage()
 {
-    setField (qsl("Zinssusance"), true);
+    setField (fnZinssusance, true);
 }
 
 int wpICalcMode::nextId () const
@@ -194,7 +194,7 @@ wpExistingDb::wpExistingDb(QWidget* p) : QWizardPage(p)
     QLabel* lAuswahl =new QLabel(qsl("&Ausgewählte Datei"));
     QLineEdit* leFullfile =new QLineEdit();
     leFullfile->setReadOnly(true);
-    registerField(qsl("existingFile"), leFullfile);
+    registerField(fnExistingFile, leFullfile);
     lAuswahl->setBuddy(leFullfile);
     QHBoxLayout* hbl =new QHBoxLayout();
     hbl->addWidget(lAuswahl);
@@ -212,7 +212,7 @@ void wpExistingDb::initializePage()
 
 bool wpExistingDb::validatePage()
 {
-    QString db =field(qsl("existingFile")).toString();
+    QString db =field(fnExistingFile).toString();
     if( QFileInfo::exists(db)) {
         qobject_cast<wizOpenOrNewDb*>( wizard())->selectedFile = db;
         return true;
@@ -246,7 +246,7 @@ void wpExistingDb::browseButtonClicked()
     QString file =QFileDialog::getOpenFileName(this, qsl("Datenbankdatei auswählen"),
                                   defaultFolder(), qsl("DK Datenbank *.dkdb *.db"));
     if(not file.isEmpty())
-        setField( qsl("existingFile"),file);
+        setField( fnExistingFile,file);
 }
 
 /*

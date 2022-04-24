@@ -48,7 +48,6 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     bool dbLoadedSuccessfully =false;
-    void open_Database(const QString& file);
 
     int id_SelectedCreditor();
     void updateViews();
@@ -205,9 +204,8 @@ private:
     QVector<booking>::const_iterator currentBooking;
 
     // initialization
-    QString askUserForNextDb();
     QString findValidDatabaseToUse();
-    bool useDb(const QString& dbfile);
+    void useDb(const QString& dbfile);
     void showDbInStatusbar(const QString &filename = QString());
 
     // MRU

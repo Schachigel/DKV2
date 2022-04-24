@@ -25,68 +25,6 @@
 
 namespace
 {
-    bool postDB_UpgradeActions(int /*sourceVersion*/, const QString & dbName)
-    {
-        autoDb db(dbName, qsl("postUpgradeActions"));
-        bool ret = true;
-        //  do stuff to adapt to new db depending on the source version
-        QVector<QString> updates {
-            // set strings, which might become concatenated in SQL to empty but not NULL
-            qsl("UPDATE Kreditoren SET Vorname  = '' WHERE Vorname  IS NULL"),
-            qsl("UPDATE Kreditoren SET Nachname = '' WHERE Nachname IS NULL"),
-            qsl("UPDATE Kreditoren SET Strasse  = '' WHERE Strasse  IS NULL"),
-            qsl("UPDATE Kreditoren SET Plz      = '' WHERE Plz      IS NULL"),
-            qsl("UPDATE Kreditoren SET Stadt    = '' WHERE Stadt    IS NULL"),
-            qsl("UPDATE Geldanlagen SET Typ     = '' WHERE Typ      IS NULL")
-            // other updates...
-        };
-        for(const auto & sql: qAsConst(updates)) {
-            QVector<QVariant> params;
-            executeSql_wNoRecords (sql, params, db);
-        }
-        return ret;
-    }
-}
-bool checkSchema_ConvertIfneeded(const QString &origDbFile)
-{
-    LOG_CALL;
-    busycursor bc;
-    int version_of_original_file = get_db_version(origDbFile);
-    if (version_of_original_file < CURRENT_DB_VERSION)
-    {
-        qInfo() << "lower version -> converting";
-        bc.finish ();
-        if (QMessageBox::Yes not_eq QMessageBox::question(getMainWindow(), qsl("Achtung"), qsl("Das Format der Datenbank \n%1\nist veraltet.\nSoll die Datenbank konvertiert werden?").arg(origDbFile))) {
-            qInfo() << "conversion rejected by user";
-            return false;
-        }
-        QString backup = convert_database_inplace(origDbFile);
-        if (backup.isEmpty()) {
-            bc.finish ();
-            QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Bei der Konvertierung ist ein Fehler aufgetreten. Die Ausführung muss beendet werden."));
-            qCritical() << "db converstion of older DB failed";
-            return false;
-        }
-        // actions which depend on the source version of the db
-        if (not postDB_UpgradeActions(version_of_original_file, origDbFile)) {
-            bc.finish ();
-            QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Bei der Konvertierung ist ein Fehler aufgetreten. Die Ausführung muss beendet werden."));
-            qCritical() << "db converstion of older DB failed";
-            return false;
-        }
-        bc.finish ();
-        QMessageBox::information(nullptr, qsl("Erfolgsmeldung"), qsl("Die Konvertierung ware erfolgreich. Eine Kopie der ursprünglichen Datei liegt unter \n") + backup);
-        return true;
-    }
-    else if (version_of_original_file == CURRENT_DB_VERSION)
-    {
-        return validateDbSchema(origDbFile, dkdbstructur);
-    }
-    else
-    {
-        qInfo() << "higher version ? there is no way back";
-        return false;
-    }
 }
 
 void newCreditorAndContract()
