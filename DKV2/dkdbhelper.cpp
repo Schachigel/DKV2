@@ -93,6 +93,8 @@ bool postDB_UpgradeActions(int /*sourceVersion*/, const QString & dbName)
     bool ret = true;
     //  do stuff to adapt to new db depending on the source version
     QVector<QString> updates {
+        // make sure the views are rewritten
+        qsl("DELETE FROM Meta WHERE Name = 'dkv2.exe.Version'"),
         // set strings, which might become concatenated in SQL to empty but not NULL
         qsl("UPDATE Kreditoren SET Vorname  = '' WHERE Vorname  IS NULL"),
         qsl("UPDATE Kreditoren SET Nachname = '' WHERE Nachname IS NULL"),
@@ -196,21 +198,21 @@ bool checkSchema_ConvertIfneeded(const QString &origDbFile)
     if (version_of_original_file < CURRENT_DB_VERSION)
     {
         qInfo() << "lower version -> converting";
-        bc.finish ();
+        bc.finish (); // normal cursor during message box
         if (QMessageBox::Yes not_eq QMessageBox::question(getMainWindow(), qsl("Achtung"), qsl("Das Format der Datenbank \n%1\nist veraltet.\nSoll die Datenbank konvertiert werden?").arg(origDbFile))) {
             qInfo() << "conversion rejected by user";
             return false;
         }
         QString backup = convert_database_inplace(origDbFile);
         if (backup.isEmpty()) {
-            bc.finish ();
+            bc.finish (); // normal cursor during message box
             QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Bei der Konvertierung ist ein Fehler aufgetreten. Die Ausführung muss beendet werden."));
             qCritical() << "db converstion of older DB failed";
             return false;
         }
         // actions which depend on the source version of the db
         if (not postDB_UpgradeActions(version_of_original_file, origDbFile)) {
-            bc.finish ();
+            bc.finish (); // normal cursor during message box
             QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Bei der Konvertierung ist ein Fehler aufgetreten. Die Ausführung muss beendet werden."));
             qCritical() << "db converstion of older DB failed";
             return false;
