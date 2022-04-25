@@ -7,6 +7,7 @@
 #include <QApplication>
 #include <QString>
 #include <QStringLiteral>
+#include <QMessageBox>
 #include <QMainWindow>
 #include <QWidget>
 #include <QElapsedTimer>
