@@ -23,6 +23,8 @@ bool tryToUseDb(const QString dbPath) {
         expected_error (qsl("Datenbank %1 kann nicht kovertiert werden.").arg(dbPath));;
         return false;
     }
+    // signal that the current db is disconected
+    appConfig::delLastDb ();
 
     if( not open_databaseForApplication (dbPath)) {
         expected_error (qsl("Datenbank %1 kann nicht für die Anwendung geöffnet werden.").arg(dbPath));
@@ -62,7 +64,6 @@ bool askUserForNextDb() {
     }
 }
 
-
 bool openDB_atStartup()
 {
     // was a path provided by command line?
@@ -72,7 +73,7 @@ bool openDB_atStartup()
         qInfo() << "Path from command line: " << dbPath;
         dbPath = QFileInfo (dbPath).canonicalFilePath ();
         if( dbPath.isEmpty ()) {
-            qInfo() << "The given filename is invalid or the file does not exist";
+            expected_error(qsl("Die an der Kommandozeile angegebene Datei %1 existiert nicht. Die Ausführung des Programms wird beendet").arg(dbPath));
             return false;
         } else
             return tryToUseDb(dbPath);
@@ -82,21 +83,17 @@ bool openDB_atStartup()
     // no command line argument -> check registry
     dbPath =appConfig::LastDb();
     QString dbCanonicalPath {QFileInfo(dbPath).canonicalFilePath ()};
-
-    if( dbPath.isEmpty ()) {
-        QMessageBox::information (NULL, qsl("Fehler beim Öffnen der Datenbank"),
-                                  qsl("Die zuletzt geöffnete Datenbank Datei wurde nicht gefunden"));
+    if( dbCanonicalPath.isEmpty ()) {
+        appConfig::delLastDb (); // do not retry next time
+        expected_error(qsl("Die zuletzt geöffnete Datenbank Datei %1 wurde nicht gefunden").arg(dbPath));
         // continue interactively
     } else {
-        if( tryToUseDb(dbCanonicalPath)) {
+        if( tryToUseDb(dbCanonicalPath))
             return true;
-        } else {
-            QMessageBox::information (NULL, qsl("Fehler beim Öffnen der Datenbank"),
-                                      qsl("Die zuletzt geöffnete Datenbank konnte nicht geöffnet werden"));
-            // continue interactivly
-        }
+        appConfig::delLastDb (); // do not retry next time
+        expected_error(qsl("Die zuletzt geöffnete Datenbank konnte nicht geöffnet werden"));
+        // continue interactivly
     }
-
     // use UI to get a db name
     return askUserForNextDb();
 }
@@ -104,14 +101,13 @@ bool openDB_atStartup()
 bool openDB_MRU( const QString path)
 {
     QString cPath = QFileInfo(path).canonicalFilePath ();
-    if( cPath.isEmpty ()) {
-        expected_error (qsl("Die ausgewählte Datei %1 existiert nicht mehr").arg(path));
-        return false;
-    }
-    if( not tryToUseDb (path)) {
-        QMessageBox::information (NULL, qsl("Schwerer Fehler"),
-                                  qsl("Beim Öffnen der Datenbank %1 ist ein schwerwiegender Fehler aufgetreten. Die Anwendung wird beendet").arg(path));
+    if( tryToUseDb (path))
+        return true;
+    if( appConfig::LastDb().isEmpty()){
+        expected_error(qsl("Beim Öffnen der Datenbank %1 ist ein schwerwiegender Fehler aufgetreten. Die Anwendung wird beendet").arg(path));
         exit(1);
+    } else {
+        expected_error(qsl("Beim Öffnen der Datenbank %1 ist ein Fehler aufgetretet. Die zuletzt geöffnete Datenbank ist noch geöffnet").arg(path));
+        return true;
     }
-    return true;
 }
