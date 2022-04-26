@@ -140,7 +140,6 @@ bool treat_DbIsAlreadyInUse_File(QString filename)
             /* QMessageBox::Retry and other repeats the file check */
         }
     }
-
     createSignalFile (filename);
     return true;
 }
