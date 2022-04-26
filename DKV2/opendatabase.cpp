@@ -15,7 +15,7 @@ namespace
 bool tryToUseDb(const QString dbPath) {
 
     if( not treat_DbIsAlreadyInUse_File(dbPath)) {
-        expected_error (qsl("Datenbank %1 ist bereits geöffnet und kann nicht verwendet werden.").arg(dbPath));
+        qInfo() << qsl("Datenbank %1 ist bereits geöffnet und kann nicht verwendet werden.").arg(dbPath);
         return false;
     }
 

@@ -120,25 +120,24 @@ bool treat_DbIsAlreadyInUse_File(QString filename)
     while (checkSignalFile(filename))
     {
         result = QMessageBox::information((QWidget *)nullptr, qsl("Datenbank bereits geöffnet?"),
-                                 qsl("Es scheint, als sei die Datenbank\n%1%1\n bereits geöffnet. Das kommt vor, "
-                                     "wenn DKV2 abgestürzt ist oder bereits läuft.<p>"
+                                 qsl("Es scheint, als sei die Datenbank\n%1\n bereits geöffnet. Das kommt vor, "
+                                     "wenn DKV2 abgestürzt ist oder bereits läuft.\n"
                                      "Falls die Datenbank auf einem Fileserver läuft, kann auch eine "
-                                     "andere Benutzerin die Datenbank gerade verwenden."
-                                     "<p>Retry: Wenn das andere Programm beendet ist."
-                                     "<p>Cancel: Um dieses Programm zu beenden."
-                                     "<p>Ignore: Wenn du sicher bist, dass kein anderes "
-                                     "Programm läuft. (auf eigene Gefahr!)").arg(filename),
+                                     "andere Benutzerin die Datenbank gerade verwenden.\n"
+                                     "\nIgnore: Wenn du sicher bist, dass kein anderes "
+                                     "Programm läuft. (auf eigene Gefahr!)"
+                                     "\nCancel: Um eine andere Datenbank zu wählen."
+                                     "\nRetry: Wenn das andere Programm beendet ist."
+                                     " ").arg(filename),
                                  QMessageBox::Cancel | QMessageBox::Retry | QMessageBox::Ignore);
-        switch (result)  {
-        case QMessageBox::Cancel:
+
+        if (result == QMessageBox::Cancel)  {
             return false;
-        case QMessageBox::Retry:
-            /* QMessageBox::Retry repeats the file check */
-            continue;
-//        case QMessageBox::Ignore:
-//            break;
-        default:
+        } else if (result == QMessageBox::Ignore) {
+            /* QMessageBox::Ignore leaves the file check loop */
             break;
+        } else {
+            /* QMessageBox::Retry and other repeats the file check */
         }
     }
     createSignalFile (filename);
