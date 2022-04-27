@@ -3,11 +3,6 @@
 #include "helper.h"
 #include "dlgdisplaycolumns.h"
 
-const QString visible {qsl("sichtbar")};
-const QString hidden  {qsl("ausgeblendet")};
-const QString init    {qsl("init")};
-
-
 dlgDisplayColumns::dlgDisplayColumns(const QVector<QPair<int, QString>>& colInfo, const QBitArray& status, QWidget* p)
     : QDialog(p), status(status), colInfo(colInfo)
 {

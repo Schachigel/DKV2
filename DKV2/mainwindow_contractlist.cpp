@@ -298,10 +298,10 @@ void MainWindow::on_btnVertragsSpalten_clicked()
         initMetaInfo +="1";
     }
     QBitArray ba =toQBitArray(getMetaInfo (storageName, initMetaInfo));
-    /* force right length of QBitArray */
-    int oldSize = ba.size();
-    ba.resize(colCount);
-    ba.fill(true, oldSize, colCount);
+    if( ba.size() not_eq colCount) {
+        ba.resize(colCount); // force right length of QBitArray
+        ba.fill(true, ba.size()-1, colCount); // switch new elements to visible
+    }
 
     dlgDisplayColumns dlg(colInfo, ba, getMainWindow ());
     QFont f =dlg.font(); f.setPointSize(10); dlg.setFont(f);
