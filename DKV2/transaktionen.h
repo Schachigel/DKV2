@@ -14,8 +14,9 @@ void activateInterest(contract* v);
 void changeContractValue(contract* v);
 void annualSettlement();
 void interestLetters();
+void endLetter(contract *c);
 
-void deleteInactiveContract(contract* c);
+void deleteInactiveContract(contract *c);
 void terminateContract(contract* c);
 void terminateContract_Final( contract& v);
 void cancelContract( contract& v);

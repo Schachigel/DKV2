@@ -414,6 +414,11 @@ void interestLetters()
     qInfo() << "Alles OK";
 }
 
+void endLetter(contract *c)
+{
+
+}
+
 void deleteInactiveContract(contract *c)
 {
     LOG_CALL;
