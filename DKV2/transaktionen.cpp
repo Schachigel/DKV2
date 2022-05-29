@@ -405,9 +405,9 @@ void interestLetters()
         printData[qsl("ausbezahlterZins")] =payedInterest;
         printData[qsl("Vertraege")] = vl;
 
-        QString fileName = qsl("Jahresinfo ").append(QString::number(yearOfSettlement)).append("_").append(QString::number(credRecord.id())).append("_").append(credRecord.lastname()).append(qsl(", ")).append(credRecord.firstname ()).append(".pdf");
+        QString fileName = qsl("Jahresinfo ").append(QString::number(yearOfSettlement)).append("_").append(QString::number(credRecord.id())).append("_").append(credRecord.lastname()).append(qsl(", ")).append(credRecord.firstname ());
         /////////////////////////////////////////////////
-        pdfWrite(qsl("Zinsbrief"), fileName, printData);
+        pdfWrite(qsl("Zinsbrief.html"), fileName, printData);
         /////////////////////////////////////////////////
     }
     showInExplorer(appConfig::Outdir (), showFolder);

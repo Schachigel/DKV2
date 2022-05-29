@@ -8,7 +8,10 @@
 
 bool extractTemplateFileFromResource(const QString& path, const QString& file);
 
-bool pdfWrite(const QString& templateName, const QString& fileName, const QVariantMap& data);
+QString renderContent(const QString &templateName, const QVariantMap &data);
 
+bool pdfWrite(const QString &templateName, const QString &fileName, const QVariantMap &data);
+
+bool textFileWrite(const QString &templateName, const QString &fileName, const QVariantMap &data);
 
 #endif // FILEWRITER_H

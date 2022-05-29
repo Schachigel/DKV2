@@ -1,6 +1,7 @@
 #include "filewriter.h"
 #include <QPrinter>
 #include <QFile>
+#include <QFileInfo>
 #include "appconfig.h"
 #include "mustache.h"
 
@@ -32,35 +33,62 @@ double cm2Pt(double cm)
 
 }
 
-bool pdfWrite(const QString& templateName, const QString& fileName, const QVariantMap& data)
+
+QString renderContent(const QString &templateName, const QVariantMap &data)
 {
-    QString templateFname = appConfig::Outdir() + "/vorlagen/" + templateName;
-    QFile templateFile(templateFname + ".html");
-    QFile cssFile(templateFname + ".css");
+    QFile templateFile(appConfig::Outdir() + "/vorlagen/" + templateName);
 
     templateFile.open(QFile::ReadOnly);
-    cssFile.open(QFile::ReadOnly);
-
-    //get QTextDocument reference
-    QTextDocument doc;
-
+    
     Mustache::Renderer renderer;
     Mustache::QtVariantContext context(data);
-    QString renderedHtml = templateFile.readAll();
+    QString renderedContent = templateFile.readAll();
 
     // We need 3 passes to replace all mustache variables.
     for (int pass = 1; pass <= 3; pass++)
-        renderedHtml = renderer.render(renderedHtml, &context);
+        renderedContent = renderer.render(renderedContent, &context);
 
-    //Set CSS and HTML
-    // doc.setPageSize(QPageSize(QPageSize::A4));
-    doc.setDefaultStyleSheet(cssFile.readAll());
+    // close files
+    templateFile.close();
+
+    return renderedContent;
+}
+
+bool textFileWrite(const QString &templateName, const QString &fileName, const QVariantMap &data)
+{
+    // get file extension from templateName
+    QFileInfo fi(templateName);
+    QString ext = qsl(".") + fi.completeSuffix();
+
+    // render the content.
+    QString renderedText = renderContent(templateName, data);
+    // Write the html content to file. (e.g. for editing)
+
+    QFile textFile(appConfig::Outdir() + fileName + ext);
+    textFile.open(QFile::WriteOnly);
+    textFile.write(renderedText.toUtf8());
+    textFile.close();
+
+    return true;
+}
+
+bool pdfWrite(const QString &templateName, const QString &fileName, const QVariantMap &data)
+{
+    //get QTextDocument reference
+    QTextDocument doc;
+
+    // render the content.
+    QString renderedHtml = renderContent(templateName, data);
     doc.setHtml(renderedHtml);
+    // doc.setPageSize(QPageSize(QPageSize::A4));
 
-    QFile html(appConfig::Outdir () + "/html/" +fileName +qsl(".html"));
+    // Write the html content to file. (e.g. for editing)
+    QFile html(appConfig::Outdir () + qsl("/html/") + fileName + qsl(".html"));
     html.open(QFile::WriteOnly);
     html.write(renderedHtml.toUtf8 ());
+    html.close();
 
+    // Write the PDF using a QPrinter
     QPrinter printer;
     printer.setOutputFormat(QPrinter::PdfFormat);
     QPageLayout pl =printer.pageLayout ();
@@ -70,7 +98,7 @@ bool pdfWrite(const QString& templateName, const QString& fileName, const QVaria
     double bottomB = cm2Pt(2.);
     pl.setPageSize (QPageSize(QPageSize::A4), QMargins(leftB, topB,rightB, bottomB));
     printer.setPageLayout (pl);
-    printer.setOutputFileName(appConfig::Outdir() + "/" + fileName);
+    printer.setOutputFileName(appConfig::Outdir() + "/" + fileName + qsl(".pdf"));
 
     QSizeF htmlSize = pl.pageSize ().size (QPageSize::Unit::Point);
     htmlSize.setWidth  (htmlSize.width() -leftB -rightB);
@@ -78,9 +106,6 @@ bool pdfWrite(const QString& templateName, const QString& fileName, const QVaria
     doc.setPageSize(htmlSize);
     doc.print(&printer);
 
-    //close files
-    templateFile.close();
-    cssFile.close();
 
     return true;
 }
