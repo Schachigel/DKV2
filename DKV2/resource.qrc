@@ -7,6 +7,7 @@
         <file>res/logo16.png</file>
         <file>res/logo32.png</file>
         <file>res/logo256.png</file>
+        <file>res/zinsbrief.css</file>
         <file>res/zinsbrief.html</file>
         <file>res/brieflogo.png</file>
     </qresource>
