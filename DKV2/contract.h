@@ -12,13 +12,20 @@
 #include "booking.h"
 #include "creditor.h"
 
-enum class interestModel {
-    payout   =0,
-    reinvest =1,
-    fixed    =2,
-    zero     =3,
-    maxId    =4,
-    allIModels =maxId
+enum class contractMode
+{
+    contractDeleted = 0,
+    contractUsed = 1
+};
+
+enum class interestModel
+{
+    payout = 0,
+    reinvest = 1,
+    fixed = 2,
+    zero = 3,
+    maxId = 4,
+    allIModels = maxId
 };
 inline QString toString(const interestModel m) {
     switch(m) {
@@ -98,7 +105,7 @@ struct contract
 
     // construction
     contract(const qlonglong CONTRACTid =-1);
-    void loadFromDb(const qlonglong id);
+    void loadFromDb(const qlonglong id, contractMode = contractMode::contractUsed);
     void initContractDefaults(const qlonglong creditorId =-1);
     void initRandom(const qlonglong creditorId =-1);
 
@@ -186,7 +193,7 @@ struct contract
     bool finalize(const bool simulate, const QDate finDate, double& finInterest, double& finPayout);
     // helper
     QString toString(const QString &name =QString()) const;
-    QVariant toVariantMap_4annualBooking(int year=9999);
+    QVariant toVariantMap(QDate fromDate = BeginingOfTime, QDate toDate = EndOfTheFuckingWorld);
     double payedInterest(int year);
 
 private:

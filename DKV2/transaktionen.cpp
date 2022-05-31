@@ -398,7 +398,7 @@ void interestLetters()
         double payedInterest =0.;
         for (const auto &id : qAsConst(ids)) {
             contract contr(id.toLongLong());
-            vl.append(contr.toVariantMap_4annualBooking(yearOfSettlement));
+            vl.append(contr.toVariantMap(QDate(yearOfSettlement,1,1),QDate(yearOfSettlement,12,31)));
             payedInterest +=contr.payedInterest(yearOfSettlement);
         }
         printData[qsl("mitAusbezahltemZins")] =payedInterest >0.;
@@ -410,13 +410,36 @@ void interestLetters()
         pdfWrite(qsl("Zinsbrief.html"), fileName, printData);
         /////////////////////////////////////////////////
     }
-    showInExplorer(appConfig::Outdir (), showFolder);
+    bc.finish();
+    showInExplorer(appConfig::Outdir(), showFolder);
     qInfo() << "Alles OK";
 }
 
 void endLetter(contract *c)
 {
+    LOG_CALL;
 
+    busycursor bc;
+    // copy Templates (if not available)
+    createInitialTemplates();
+
+
+    QVariantMap printData = {};
+    printData[qsl("gmbhLogo")] = QVariant(appConfig::Outdir() + qsl("/vorlagen/brieflogo.png"));
+    printData[qsl("meta")] = getMetaTableAsMap();
+
+    creditor credRecord(c->creditorId());
+    printData["creditor"] = credRecord.getVariant();
+
+    printData[qsl("Vertrag")] = c->toVariantMap();
+
+    QString fileName = qsl("Endabrechnung ").append(c->label().replace("/", "_"))
+            .append("_").append(credRecord.lastname()).append(qsl(", ")).append(credRecord.firstname());
+
+    pdfWrite(qsl("Endabrechnung.html"), fileName, printData);
+    textFileWrite(qsl("Endabrechnung.csv"), fileName, printData);
+    showInExplorer(appConfig::Outdir(), showFolder);
+    qInfo() << "Alles OK";
 }
 
 void deleteInactiveContract(contract *c)

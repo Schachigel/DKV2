@@ -358,8 +358,15 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
     if( not index.isValid ())
         return;
 
-    contract c(index.data().toInt());
-    contractUnderMouseMenu =&c;
+    int contractId = index.data().toInt();
+    contract c(contractId);
+    if (showDeletedContracts)
+    {
+        c.loadFromDb(contractId, contractMode::contractDeleted);
+    }
+    
+    contractUnderMouseMenu = &c;
+    
     bool gotTerminationDate = c.noticePeriod() == -1;
 
     QMenu menu( qsl("ContractContextMenu"), this);

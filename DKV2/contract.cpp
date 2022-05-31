@@ -93,9 +93,17 @@ void contract::initContractDefaults(const qlonglong CREDITORid /*=-1*/)
     setInvestment(0);
     setInterestActive(true);
 }
-void contract::loadFromDb(qlonglong id)
+void contract::loadFromDb(qlonglong id, contractMode mode)
 {   LOG_CALL_W(QString::number(id));
-    QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), "id=" + QString::number(id));
+    QSqlRecord rec;
+    if (mode == contractMode::contractDeleted)
+    {
+        rec = executeSingleRecordSql(getTableDef_deletedContracts().Fields(), "id=" + QString::number(id));
+    }
+    else
+    {
+        rec = executeSingleRecordSql(getTableDef().Fields(), "id=" + QString::number(id));
+    }
     if( not td.setValues(rec))
         qCritical() << "contract from id could not be created";
 }
@@ -574,7 +582,8 @@ bool contract::finalize(bool simulate, const QDate finDate,
         if( not booking::bookPayout(id(), finDate, finPayout)) break;
         if( value() not_eq 0.) break;
         if( not storeTerminationDate(finDate)) break;
-        if( not archive()) break;
+        if (not archive())
+            break;
         allGood = true;
     } while(false);
 
@@ -636,27 +645,40 @@ bool contract::archive()
     return false;
 }
 
-QVariant contract::toVariantMap_4annualBooking(int year)
+QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
 {
     QVariantMap v;
     QLocale l;
+    booking latestB = latestBooking();
+    if (fromDate == BeginingOfTime)
+        fromDate = td.getValue(fnVertragsDatum).toDate();
+    if (toDate == EndOfTheFuckingWorld)
+        toDate = latestB.date;
     v["id"] = id();
     v["strId"] = id_aS();
     v["KreditorId"] = QString::number(creditorId());
     v["VertragsNr"] = label();
-    v["startBetrag"] = l.toCurrencyString(value(QDate(year - 1, 12, 31)));
-    v["startDatum"] = QDate(year - 1, 12, 31).toString(qsl("dd.MM.yyyy"));
-    v["endBetrag"] = l.toCurrencyString(value(QDate(year, 12, 31)));
-    v["endDatum"] = QDate(year, 12, 31).toString(qsl("dd.MM.yyyy"));
+    v["startBetrag"] = l.toCurrencyString(value(fromDate));
+    v["startDatum"] = fromDate.toString(qsl("dd.MM.yyyy"));
+    v["endBetrag"] = l.toCurrencyString(value(toDate));
+    v["endDatum"] = toDate.toString(qsl("dd.MM.yyyy"));
+    v["Vertragsdatum"] = td.getValue(fnVertragsDatum).toDate().toString(qsl("dd.MM.yyyy"));
+    v["Vertragsende"] = hasEndDate() ? td.getValue(fnLaufzeitEnde).toDate().toString(qsl("dd.MM.yyyy")) : "offen";
     v["ZSatz"] = interestRate();
     v["strZSatz"] = QString::number(interestRate(), 'f', 2);
     v["zzAusgesezt"] = QVariant(not interestActive());
     v["Anmerkung"] = comment();
+    v["Betrag"] = euroFromCt(td.getValue(fnBetrag).toInt());
+    v["strBetrag"] = l.toCurrencyString(euroFromCt(td.getValue(fnBetrag).toInt()));
+    v["Zinsmodell"] = ::toString(iModel());
+    v["KFrist"] = hasEndDate() ? 0 : noticePeriod();
 
-    QVector<booking> bookVector = bookings::getBookings(id(), QDate(year, 1, 1), QDate(year, 12, 31), qsl("Datum ASC"));
+    // get the relevant bookings for period
+    QVector<booking> bookVector = bookings::getBookings(id(), fromDate, toDate, qsl("Datum ASC"));
     QVariantList bl;
 
-    for ( const auto &b : qAsConst(bookVector) ) {
+    for (const auto &b : qAsConst(bookVector))
+    {
         QVariantMap bookMap = {};
         bookMap["Date"] = b.date.toString(qsl("dd.MM.yyyy"));
         bookMap["Text"] = booking::displayString(b.type);
