@@ -27,6 +27,10 @@
 /*static*/ const QString contract::fnZAktiv{qsl("zActive")};
 /*static*/ const QString contract::fnZeitstempel{qsl("Zeitstempel")};
 
+void contract::setContractStatus(lifeStatus contractStatus)
+{
+    status = contractStatus;
+}
 /*static*/ const dbtable& contract::getTableDef()
 {
     static dbtable contractTable(tnContracts);
@@ -93,18 +97,20 @@ void contract::initContractDefaults(const qlonglong CREDITORid /*=-1*/)
     setInvestment(0);
     setInterestActive(true);
 }
-void contract::loadFromDb(qlonglong id, contractMode mode)
+void contract::loadFromDb(qlonglong id, lifeStatus contractStatus)
 {   LOG_CALL_W(QString::number(id));
     QSqlRecord rec;
-    if (mode == contractMode::contractDeleted)
+    if (contractStatus == lifeStatus::Terminated)
     {
         rec = executeSingleRecordSql(getTableDef_deletedContracts().Fields(), "id=" + QString::number(id));
+        
     }
     else
     {
         rec = executeSingleRecordSql(getTableDef().Fields(), "id=" + QString::number(id));
     }
-    if( not td.setValues(rec))
+    setContractStatus(contractStatus);
+    if (not td.setValues(rec))
         qCritical() << "contract from id could not be created";
 }
 contract::contract(qlonglong contractId) : td(getTableDef())
@@ -181,7 +187,8 @@ double contract::interestBearingValue() const
 const booking contract::latestBooking()
 {
 //dbgTimer timer(qsl("latestBooking"));
-    QString sql {qsl("SELECT id, VertragsId, Datum, BuchungsArt, Betrag FROM Buchungen WHERE VertragsId=%1 ORDER BY rowid DESC LIMIT 1").arg(id_aS())};
+    QString sql {qsl("SELECT id, VertragsId, Datum, BuchungsArt, Betrag FROM %2 WHERE VertragsId=%1 ORDER BY rowid DESC LIMIT 1").
+        arg(id_aS(), contractStatus() == lifeStatus::InUse ? "Buchungen" : "exBuchungen")};
     QSqlRecord rec = executeSingleRecordSql(sql);
     if( 0 == rec.count()) {
         qInfo() << "latestBooking returns empty value";
@@ -672,9 +679,9 @@ QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
     v["strBetrag"] = l.toCurrencyString(euroFromCt(td.getValue(fnBetrag).toInt()));
     v["Zinsmodell"] = ::toString(iModel());
     v["KFrist"] = hasEndDate() ? 0 : noticePeriod();
-
+    v["Status"] = contractStatus() == lifeStatus::InUse ? "Laufend" : "Beendet";
     // get the relevant bookings for period
-    QVector<booking> bookVector = bookings::getBookings(id(), fromDate, toDate, qsl("Datum ASC"));
+    QVector<booking> bookVector = bookings::getBookings(id(), fromDate, toDate, qsl("Datum ASC"), contractStatus());
     QVariantList bl;
 
     for (const auto &b : qAsConst(bookVector))

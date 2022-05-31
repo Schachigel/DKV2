@@ -331,8 +331,9 @@ void createInitialTemplates()
 
     extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("brieflogo.png"));
     extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("zinsbrief.css"));
-    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("zinsbrief.html"));
-    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/html/"), qsl("zinsbrief.css"));
+    extractTemplateFileFromResource(appConfig::Outdir() + qsl("/vorlagen/"), qsl("zinsbrief.html"));
+    extractTemplateFileFromResource(appConfig::Outdir() + qsl("/vorlagen/"), qsl("endabrechnung.html"));
+    extractTemplateFileFromResource(appConfig::Outdir() + qsl("/html/"), qsl("zinsbrief.css"));
 }
 
 int askUserForYearOfPrintouts()

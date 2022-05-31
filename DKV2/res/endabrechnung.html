@@ -1,0 +1,159 @@
+<head>
+    <!-- {{{meta.commonText}}}<br/><br/>-->
+    <!-- for use in a classic browser -->
+    <link rel="stylesheet" href="./zinsbrief.css">
+</head>
+
+<body>
+    <table width=98%>
+        <tr>
+            <td width=40% class="colFirmenname">
+              <div class="divFirmenname"> <b>{{meta.gmbhaddress1}}</b><p></div>
+              <div class="GmbHAnschrift"> {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}}</div>
+              <div class="KreditorAdresse" ><br>
+                  {{creditor.Vorname}} {{creditor.Nachname}}<p>
+                  {{creditor.Strasse}}<br>
+                  <b>{{creditor.Plz}}</b> &nbsp; &nbsp; {{creditor.Stadt}}
+              </div>
+            </td>
+            <td class="colLogo" width=60%><img class="imgLogo" src="{{gmbhLogo}}">
+                <div class="GmbHUrl">{{meta.gmbhurl}}</div>
+            </td>
+        </tr>
+        <tr><td class="invisible"><p><p></td>
+            <td></td>
+        </tr>
+    </table>
+    <table width=90%>
+        <tr>
+            <td class="colBetreff">Endabrechnung für den Vertrag {{Vertrag.VertragsNr}} </td>
+            <td class="colDatum">{{meta.gmbhstadt}} den {{Zinsdatum}}</td>
+        </tr>
+        <tr><td class="invisible"><p><p></td>
+            <td></td>
+        </tr>
+    </table>
+
+    <div class="Text">
+        <table width=90%>
+            <tr>
+                <td class="Text">
+    Liebe*r {{creditor.Vorname}},
+    <p>wir, die zukünftigen Bewohner*innen des Wohnprojekts {{meta.gmbhprojekt}} danken Dir herzlich für Deine Unterstützung.
+    <p>In folgender Tabelle kannst Du die Kontobewegungen und Zinszahlungen des Kreditvertags {{Vertrag.VertragsNr}} nachlesen.
+                 </td>
+            </tr>
+        </table>
+    </div>
+
+{{#Vertrag}}
+    <div class="divVertrag">
+        <table class="tabVertrag">
+            <tr>
+                <td colspan=2 class="colVertragsNr">
+                    <br/> <strong>Vertrag {{VertragsNr}}</strong> <small> Zinssatz {{strZSatz}}% {{#zzAusgesezt}}(ausgesetzt bis Baugenehmigung){{/zzAusgesezt}}</small>
+                </td>
+            </tr>
+        </table>
+    <table>
+        <tr>
+            <td width=20></td>
+            <td width=100><strong>Datum</strong></td>
+            <td width=150><strong>Text</strong></td>
+            <td class="colBuchungsBetrag" width=150 float="right"><strong>Betrag</strong></td>
+        </tr>
+        {{#Buchungen}}
+        <tr>
+            <td width=20></td>
+            <td class="colBuchungsdatum">{{Date}}</td>
+            <td class="colBuchungstext">{{Text}}</td>
+            <td class="colBuchungsBetrag">{{Betrag}}</td>
+        </tr>
+        {{/Buchungen}}
+        <tr>
+            <td width=20></td>
+            <td class="colBuchungsdatum">{{endDatum}}</td>
+            <td class="colBuchungstext">neuer Saldo</td>
+            <td class="colBuchungsBetrag">{{endBetrag}}</td>
+        </tr>
+    </table>
+    </div>
+{{/Vertrag}}
+
+<div class="Text">
+    <table width=90%>
+      <tr>
+        <td class="invisible"><p></td>
+      </tr>
+      <tr>
+         <td class="colText">
+<p>Es w&auml;re toll, wenn Du uns und unser Projekt weiterhin solidarisch unterstützt. Wir benötigen auch weiterhin Direktkredite um günstigen Mietwohnraum zu ermöglichen.
+Empfehle uns daher bitte weiter an Freund*innen, Bekannte und Verwandte!
+<p>Solltest Du Fragen zur Abrechnung haben, so zögere bitte nicht Dich - am besten per E-Mail - an uns zu wenden.
+<p><p>Mit freundlichen Grüßen<br>
+<p>{{meta.gmbhdkv}}<p>
+<small>DK Verwaltung<p></small>
+        </td>
+    </tr>
+    <tr>
+    <td class="footer">
+    {{meta.gmbhaddress1}} | {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}} | Handelsregister Eintrag {{meta.gmbhHandelsregister}}
+    Gesch&auml;ftsf&uuml;hrer: {{meta.gmbhgefue1}} | {{meta.gmbhgefue2}} | {{meta.gmbhgefue3}}<br/>
+    <td>
+    </tr>
+  </table>
+{{#mitAusbezahltemZins}}
+<p style="page-break-after: always;">&nbsp;</p>
+    <table width=98%>
+        <tr>
+            <td width=40%>
+              <div class="colFirmenname"> <b>{{meta.gmbhaddress1}}</b><p></div>
+              <div class="GmbHAnschrift"> {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}}</div>
+              <div class="KreditorAdresse" ><br>
+                  {{creditor.Vorname}} {{creditor.Nachname}}<p>
+                  {{creditor.Strasse}}<br>
+                  <b>{{creditor.Plz}}</b> &nbsp; &nbsp; {{creditor.Stadt}}
+              </div>
+            </td>
+            <td class="colLogo" width=60%><img class="imgLogo" src="{{gmbhLogo}}">
+                <div class="GmbHUrl">{{meta.gmbhurl}}</div>
+            </td>
+        </tr>
+        <tr><td class="invisible"><p><p></td>
+            <td></td>
+        </tr>
+    </table>
+    <table width=90%>
+        <tr>
+            <td class="colBetreff">Zinsnachweis für das Jahr {{Zinsjahr}} </td>
+            <td class="colDatum">{{meta.gmbhstadt}} den {{Zinsdatum}}</td>
+        </tr>
+        <tr><td class="invisible"><p><p></td>
+            <td></td>
+        </tr>
+    </table>
+    <div class="Text">
+        <table width=90%>
+            <tr>
+                <td class="Text">
+    Sehr geehrte Damen und Herren,
+    <p>{{creditor.Vorname}} {{creditor.Nachname}} hat der {{meta.gmbhaddress1}} einen zinsgünstigen Direktkredit zur Unterstützung des sozialen, selbstorganisierten Miethausprojekts
+    {{meta.gmbhprojekt}} gewährt.
+    Die Zinsen für das Jahr {{Zinsjahr}} in Höhe von {{ausbezahlterZins}} Euro wurden ausbezahlt.
+<p><p>Mit freundlichen Grüßen<br>
+<p>{{meta.gmbhdkv}}<p>
+<small>DK Verwaltung<p></small>
+        </td>
+    </tr>
+    <tr>
+    <td class="footer">
+    {{meta.gmbhaddress1}} | {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}} | Handelsregister Eintrag {{meta.gmbhHandelsregister}}
+    Gesch&auml;ftsf&uuml;hrer: {{meta.gmbhgefue1}} | {{meta.gmbhgefue2}} | {{meta.gmbhgefue3}}<br/>
+    <td>
+    </tr>
+  </table>
+    </div>
+{{/mitAusbezahltemZins}}
+
+</body>
+

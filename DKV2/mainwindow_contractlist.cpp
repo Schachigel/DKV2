@@ -362,7 +362,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
     contract c(contractId);
     if (showDeletedContracts)
     {
-        c.loadFromDb(contractId, contractMode::contractDeleted);
+        c.loadFromDb(contractId, lifeStatus::Terminated);
     }
     
     contractUnderMouseMenu = &c;

@@ -9,6 +9,7 @@
         <file>res/logo256.png</file>
         <file>res/zinsbrief.css</file>
         <file>res/zinsbrief.html</file>
+        <file>res/endabrechnung.html</file>
         <file>res/brieflogo.png</file>
     </qresource>
 </RCC>

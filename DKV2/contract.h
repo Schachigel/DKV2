@@ -12,12 +12,6 @@
 #include "booking.h"
 #include "creditor.h"
 
-enum class contractMode
-{
-    contractDeleted = 0,
-    contractUsed = 1
-};
-
 enum class interestModel
 {
     payout = 0,
@@ -105,7 +99,7 @@ struct contract
 
     // construction
     contract(const qlonglong CONTRACTid =-1);
-    void loadFromDb(const qlonglong id, contractMode = contractMode::contractUsed);
+    void loadFromDb(const qlonglong id, lifeStatus contractStatus = lifeStatus::InUse);
     void initContractDefaults(const qlonglong creditorId =-1);
     void initRandom(const qlonglong creditorId =-1);
 
@@ -116,8 +110,11 @@ struct contract
 
     void setCreditorId(qlonglong kid) {td.setValue(fnKreditorId, kid);}
     qlonglong creditorId() const{ return td.getValue(fnKreditorId).toLongLong();}
-
-    void setLabel(const QString& l) { td.setValue(fnKennung, l);}
+    lifeStatus contractStatus() const { 
+        return status == lifeStatus::Terminated ? lifeStatus::Terminated : lifeStatus::InUse ; 
+    }
+    void setContractStatus(lifeStatus contractStatus);
+    void setLabel(const QString &l) { td.setValue(fnKennung, l); }
     QString label() const { return td.getValue(fnKennung).toString();};
 
     void setInterestRate( const double percent) {
@@ -195,6 +192,8 @@ struct contract
     QString toString(const QString &name =QString()) const;
     QVariant toVariantMap(QDate fromDate = BeginingOfTime, QDate toDate = EndOfTheFuckingWorld);
     double payedInterest(int year);
+
+    enum lifeStatus status = lifeStatus::InUse;
 
 private:
     // data
