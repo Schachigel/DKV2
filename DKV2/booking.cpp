@@ -106,13 +106,11 @@
     qInfo() << "Date of next Settlement was found as " << ret;
     return ret;
 }
-/*static */ QVector<booking> bookings::bookingsFromSql(const QString& where, const QString& order, 
-        const lifeStatus bookingStatus)
+/*static */ QVector<booking> bookings::bookingsFromSql(const QString& where, const QString& order, bool terminated)
 {
-    QVector<QSqlRecord> records = executeSql(
-        bookingStatus == lifeStatus::InUse ? 
-            booking::getTableDef().Fields(): booking::getTableDef_deletedBookings().Fields(),
-        where, order);
+    QVector<QSqlRecord> records = terminated ?
+               executeSql( booking::getTableDef_deletedBookings ().Fields (), where, order)
+             : executeSql( booking::getTableDef().Fields(), where, order);
 
     QVector<booking> vRet;
     for (auto& rec : qAsConst(records)) {
@@ -126,17 +124,17 @@
     return vRet;
 }
 
-/* static */ QVector<booking> bookings::getBookings(const qlonglong cid, QDate from, const QDate to, 
-                    QString order, lifeStatus bookingStatus)
+/* static */ QVector<booking> bookings::getBookings(const qlonglong cid, QDate from, const QDate to,
+                    QString order, bool terminated)
 {   LOG_CALL;
+    QString tablename = terminated ? qsl("ExBuchungen") : qsl("Buchungen");
     // used in tests
     QString where = qsl("%4.VertragsId=%1 "
                   "AND %4.Datum >='%2' "
                   "AND %4.Datum <='%3'");
-    where = where.arg(QString::number(cid), from.toString(Qt::ISODate), to.toString(Qt::ISODate),
-            bookingStatus == lifeStatus::InUse ? "Buchungen" : "exBuchungen");
+    where = where.arg(QString::number(cid), from.toString(Qt::ISODate), to.toString(Qt::ISODate), tablename);
 
-    return bookingsFromSql(where, order, bookingStatus);
+    return bookingsFromSql(where, order, terminated);
 }
 /* static */ QVector<booking> bookings::getAnnualSettelments(const int year)
 {   LOG_CALL;

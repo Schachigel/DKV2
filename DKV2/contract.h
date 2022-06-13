@@ -15,10 +15,10 @@
 enum class interestModel
 {
     payout = 0,
-    reinvest = 1,
-    fixed = 2,
-    zero = 3,
-    maxId = 4,
+    reinvest /*= 1*/,
+    fixed /*= 2*/,
+    zero  /*= 3*/,
+    maxId /*= 4*/,
     allIModels = maxId
 };
 inline QString toString(const interestModel m) {
@@ -98,8 +98,9 @@ struct contract
     }
 
     // construction
-    contract(const qlonglong CONTRACTid =-1);
-    void loadFromDb(const qlonglong id, lifeStatus contractStatus = lifeStatus::InUse);
+    contract(const qlonglong CONTRACTid =-1, bool isTerminated =false);
+    void loadFromDb(const qlonglong id);
+    void loadExFromDb(const qlonglong id);
     void initContractDefaults(const qlonglong creditorId =-1);
     void initRandom(const qlonglong creditorId =-1);
 
@@ -110,10 +111,7 @@ struct contract
 
     void setCreditorId(qlonglong kid) {td.setValue(fnKreditorId, kid);}
     qlonglong creditorId() const{ return td.getValue(fnKreditorId).toLongLong();}
-    lifeStatus contractStatus() const { 
-        return status == lifeStatus::Terminated ? lifeStatus::Terminated : lifeStatus::InUse ; 
-    }
-    void setContractStatus(lifeStatus contractStatus);
+
     void setLabel(const QString &l) { td.setValue(fnKennung, l); }
     QString label() const { return td.getValue(fnKennung).toString();};
 
@@ -180,6 +178,9 @@ struct contract
 
     bool bookActivateInterest(const QDate d);
 
+    // contract termination
+    bool isTerminated =false;
+
     // other booking actions
     QDate nextDateForAnnualSettlement();
     bool needsAnnualSettlement( const QDate d);
@@ -192,8 +193,6 @@ struct contract
     QString toString(const QString &name =QString()) const;
     QVariant toVariantMap(QDate fromDate = BeginingOfTime, QDate toDate = EndOfTheFuckingWorld);
     double payedInterest(int year);
-
-    enum lifeStatus status = lifeStatus::InUse;
 
 private:
     // data

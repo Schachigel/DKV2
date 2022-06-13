@@ -1,23 +1,23 @@
 <head>
     <!-- {{{meta.commonText}}}<br/><br/>-->
     <!-- for use in a classic browser -->
-    <link rel="stylesheet" href="./zinsbrief.css">
+    <link rel="stylesheet" href="zinsbrief.css">
 </head>
 
 <body>
     <table width=98%>
         <tr>
             <td width=40% class="colFirmenname">
-              <div class="divFirmenname"> <b>{{meta.gmbhaddress1}}</b><p></div>
-              <div class="GmbHAnschrift"> {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}}</div>
-              <div class="KreditorAdresse" ><br>
+              <span class="divFirmenname"> <b>{{meta.gmbhaddress1}}</b><p></span>
+              <span class="GmbHAnschrift"> {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}}</span>
+              <span class="KreditorAdresse" ><br>
                   {{creditor.Vorname}} {{creditor.Nachname}}<p>
                   {{creditor.Strasse}}<br>
                   <b>{{creditor.Plz}}</b> &nbsp; &nbsp; {{creditor.Stadt}}
-              </div>
+                  </span>
             </td>
             <td class="colLogo" width=60%><img class="imgLogo" src="{{gmbhLogo}}">
-                <div class="GmbHUrl">{{meta.gmbhurl}}</div>
+                <span class="GmbHUrl">{{meta.gmbhurl}}</span>
             </td>
         </tr>
         <tr><td class="invisible"><p><p></td>
@@ -51,7 +51,7 @@
         <table class="tabVertrag">
             <tr>
                 <td colspan=2 class="colVertragsNr">
-                    <br/> <strong>Vertrag {{VertragsNr}}</strong> <small> Zinssatz {{strZSatz}}% {{#zzAusgesezt}}(ausgesetzt bis Baugenehmigung){{/zzAusgesezt}}</small>
+                    <br/> <b>Vertrag {{VertragsNr}}</b> <span class="GmbHAnschrift"> Zinssatz {{strZSatz}}% {{#zzAusgesezt}}(ausgesetzt bis Baugenehmigung){{/zzAusgesezt}}</span>
                 </td>
             </tr>
         </table>

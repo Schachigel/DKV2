@@ -1,15 +1,16 @@
 
 body {
-    color: black;
-    background: white;
     width: 210mm;
     height: 297mm;
+    font-size: 9pt;
+    font-family: Verdana, Arial;
 }
 
 table {
-/*    border-width: 1px;*/
+/*    border-width: 1px;  */
 /*    border-style: solid;*/
     border-collapse: collapse;
+    font-size: 9pt;
 }
 
 .invisible {
@@ -21,13 +22,12 @@ table {
     padding-top: 29px;
     padding-left: 0px;
     padding-bottom: 6px;
-
 }
 
 .divFirmenname {
-    text-align: center;
-    font-size: 14pt;
-
+    text-align: left;
+    font-size: 12pt;
+    font-weight: bold;
 }
 
 .GmbHAnschrift {
@@ -39,6 +39,7 @@ table {
 }
 
 .KreditorAdresse {
+    font-size: 9pt;
     padding-top: 10px;
     padding-bottom: 10px;
 }
@@ -52,7 +53,6 @@ table {
 .colLogo {
     padding-top: 23px;
     float: right;
-
 }
 
 .GmbHUrl {
@@ -68,6 +68,7 @@ table {
 .colDatum {
     text-align: right;
     padding-top: 5px;
+    font-size: 8pt;
 }
 
 .Text {
@@ -98,16 +99,19 @@ table {
 .colBuchungsDatum {
     padding-left: 30px;
     text-align: left;
+    font-size: 8pt;
 }
 
 .colBuchungsText {
     text-align: left;
     padding-left: 40px;
+    font-size: 8pt;
 }
 
 .colSaldoBetrag {
     text-align: right;
     padding-left: 20px;
+    font-size: 8pt;
 }
 
 .footer {

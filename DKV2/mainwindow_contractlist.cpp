@@ -359,23 +359,17 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
         return;
 
     int contractId = index.data().toInt();
-    contract c(contractId);
-    if (showDeletedContracts)
-    {
-        c.loadFromDb(contractId, lifeStatus::Terminated);
-    }
-    
+    contract c;
     contractUnderMouseMenu = &c;
-    
-    bool gotTerminationDate = c.noticePeriod() == -1;
-
     QMenu menu( qsl("ContractContextMenu"), this);
-    if( showDeletedContracts)
-    {
+    if (showDeletedContracts) {
+        c.loadExFromDb (contractId);
         menu.addAction(ui->action_cmenu_contracts_EndLetter);
-    }
-    else
-    {
+        bc.finish ();
+        menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
+    } else {
+        bool gotTerminationDate = c.noticePeriod() == -1;
+
         if(c.initialBookingReceived())
         {
             if( gotTerminationDate)
@@ -396,11 +390,13 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
         menu.addAction(ui->action_cmenu_Anmerkung_aendern);
         menu.addAction(ui->action_cmenu_assoc_investment);
 
+        bc.finish ();
+        menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
     }
-    bc.finish ();
-    menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
     contractUnderMouseMenu =nullptr;
     return;
+//////////////////////////////////////
+
 }
 void MainWindow::on_action_cmenu_activate_contract_triggered()
 {   LOG_CALL;

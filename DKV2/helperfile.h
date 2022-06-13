@@ -20,11 +20,11 @@ static const bool showFolder =true;
 static const bool showFile   =false;
 void showInExplorer(const QString &fullPath, bool fileOrFolder =showFile);
 
-void printHtmlToPdf( const QString &html, const QString &fn);
+void printHtmlToPdf( const QString &html, const QString& css, const QString &fn);
 
 QString absoluteCanonicalPath(const QString &path);
 
-
+QString fileToString( const QString& filename);
 //
 // open a text file to signal that a database was opened
 //

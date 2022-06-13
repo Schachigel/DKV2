@@ -324,7 +324,7 @@ void annualSettlement()
 /*************************/
 
 void createInitialTemplates()
-{
+{   LOG_CALL;
     QDir outDir (appConfig::Outdir ());
     outDir.mkdir (qsl("vorlagen"));
     outDir.mkdir (qsl("html"));
@@ -406,9 +406,11 @@ void interestLetters()
         printData[qsl("ausbezahlterZins")] =payedInterest;
         printData[qsl("Vertraege")] = vl;
 
-        QString fileName = qsl("Jahresinfo ").append(QString::number(yearOfSettlement)).append("_").append(QString::number(credRecord.id())).append("_").append(credRecord.lastname()).append(qsl(", ")).append(credRecord.firstname ());
+        QString fileName = qsl("Jahresinfo ").append(QString::number(yearOfSettlement)).append(qsl("_"))
+                .append(QString::number(credRecord.id())).append(qsl("_")).append(credRecord.lastname())
+                .append(qsl(", ")).append(credRecord.firstname ().append(qsl(".pdf")));
         /////////////////////////////////////////////////
-        pdfWrite(qsl("Zinsbrief.html"), fileName, printData);
+        savePdfFromHtmlTemplate(qsl("zinsbrief.html"), fileName, printData);
         /////////////////////////////////////////////////
     }
     bc.finish();
@@ -417,8 +419,7 @@ void interestLetters()
 }
 
 void endLetter(contract *c)
-{
-    LOG_CALL;
+{    LOG_CALL;
 
     busycursor bc;
     // copy Templates (if not available)
@@ -431,16 +432,16 @@ void endLetter(contract *c)
 
     creditor credRecord(c->creditorId());
     printData["creditor"] = credRecord.getVariant();
-
     printData[qsl("Vertrag")] = c->toVariantMap();
 
     QString fileName = qsl("Endabrechnung ").append(c->label().replace("/", "_"))
-            .append("_").append(credRecord.lastname()).append(qsl(", ")).append(credRecord.firstname());
+            .append("_").append(credRecord.lastname()).append(qsl(", ")).append(credRecord.firstname()).append(qsl(".pdf"));
+// TODO: make sure there are no chars, which might not be part of a Windows / Linux filename (:, ...)
 
-    pdfWrite(qsl("Endabrechnung.html"), fileName, printData);
-    textFileWrite(qsl("Endabrechnung.csv"), fileName, printData);
+    savePdfFromHtmlTemplate(qsl("Endabrechnung.html"), fileName, printData);
+    writeRenderedTemplate(qsl("Endabrechnung.csv"), fileName, printData);
     showInExplorer(appConfig::Outdir(), showFolder);
-    qInfo() << "Alles OK";
+    qInfo() << "Vertragsabschlussdokument erfolgreich angelegt";
 }
 
 void deleteInactiveContract(contract *c)

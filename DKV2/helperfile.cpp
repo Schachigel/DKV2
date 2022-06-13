@@ -9,7 +9,7 @@
 // 4 html pdf generation
 #include <QPainter>
 #include <QPdfWriter>
-
+#include "appconfig.h"
 #include "helper.h"
 #include "helperfile.h"
 
@@ -75,9 +75,13 @@ bool backupFile(const QString&  fn, const QString& subfolder)
     return true;
 }
 
-void showInExplorer(const QString &fullPath, bool fileOrFolder)
-{   LOG_CALL_W(fullPath);
+void showInExplorer(const QString &pathOrFilename, bool fileOrFolder)
+{   LOG_CALL_W(pathOrFilename);
 #ifdef _WIN32    //Code for Windows
+    QString fullPath {pathOrFilename};
+    QFileInfo fi(fullPath);
+    if(fi.isRelative ())
+        fullPath = appConfig::Outdir ().append (qsl("/").append (pathOrFilename));
 
     QString explorerW_selectedFile = QDir::toNativeSeparators(fullPath);
     if( fileOrFolder == showFile)
@@ -104,9 +108,10 @@ void showInExplorer(const QString &fullPath, bool fileOrFolder)
 #endif
 }
 
-void printHtmlToPdf( const QString &html, const QString &fn)
+void printHtmlToPdf( const QString &html, const QString &css, const QString &fn)
 {   LOG_CALL;
     QTextDocument td;
+    td.setDefaultStyleSheet (css);
     td.setHtml(html);
 
     QPdfWriter pdfw(fn);
@@ -115,7 +120,7 @@ void printHtmlToPdf( const QString &html, const QString &fn)
     pdfw.setPageSize(QPageSize(QPageSize::A4));
     pdfw.setPageOrientation(QPageLayout::Portrait);
     pdfw.setPdfVersion(QPagedPaintDevice::PdfVersion_1_6);
-    pdfw.setResolution(120 );
+//    pdfw.setResolution(120 );
 
     QPageSize ps(QPageSize::A4);
     QMarginsF qmf( 188,235, 141, 235);
@@ -128,12 +133,27 @@ void printHtmlToPdf( const QString &html, const QString &fn)
     td.adjustSize();
     qDebug() << td.size();
     td.drawContents(&painter);
+
+    td.print( &pdfw);
 }
 
 QString absoluteCanonicalPath(const QString &path)
 {
     QString newpath = QFileInfo(path).canonicalFilePath();
     return newpath.isEmpty() ? path : newpath;
+}
+
+QString fileToString( const QString& filename)
+{   LOG_CALL_W(filename);
+    QFile f(filename);
+    if( not f.open(QFile::ReadOnly))
+        return qsl("file open error");
+    return f.readAll();
+}
+
+void StringToFile( const QString& string, const QString& fullFileName)
+{
+
 }
 
 #if defined(Q_OS_WIN)

@@ -95,11 +95,13 @@ void appConfig::setOutDirInteractive(QWidget* parent)
 QString appConfig::Outdir()
 {
     QString od;
+    QString defaultDir {QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/DKV2")};
     do {
-        od = getUserData(keyOutdir, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+        od = getUserData(keyOutdir, defaultDir);
         if( od.isEmpty())
             setOutDirInteractive();
     } while (od.isEmpty());
+    QDir().mkdir (od);
     return od;
 }
 /* static */ /* for testing puropose */
