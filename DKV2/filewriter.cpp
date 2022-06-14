@@ -8,7 +8,7 @@
 
 bool extractTemplateFileFromResource(const QString& path, const QString& file)
 {   LOG_CALL_W(file);
-    QFileInfo fi( path, file);
+    QFileInfo fi( QDir(path), file);
     if( fi.exists ())
         return true;
 
