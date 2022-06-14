@@ -86,7 +86,7 @@ void showInExplorer(const QString &pathOrFilename, bool fileOrFolder)
     QString explorerW_selectedFile = QDir::toNativeSeparators(fullPath);
     if( fileOrFolder == showFile)
         explorerW_selectedFile =qsl(" /select,\"%1\"").arg(explorerW_selectedFile);
-    else
+    if( fileOrFolder == showFolder)
         explorerW_selectedFile =qsl(" \"%1\"").arg(explorerW_selectedFile);
 
     QProcess p;
@@ -151,9 +151,11 @@ QString fileToString( const QString& filename)
     return f.readAll();
 }
 
-void StringToFile( const QString& string, const QString& fullFileName)
+bool stringToFile( const QString& string, const QString& fullFileName)
 {
-
+    QFile file(fullFileName);
+    file.open (QFile::WriteOnly);
+    return file.write( string.toUtf8 ()) > 0;
 }
 
 #if defined(Q_OS_WIN)

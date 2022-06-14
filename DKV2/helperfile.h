@@ -25,6 +25,8 @@ void printHtmlToPdf( const QString &html, const QString& css, const QString &fn)
 QString absoluteCanonicalPath(const QString &path);
 
 QString fileToString( const QString& filename);
+bool stringToFile( const QString& string, const QString& fullFileName);
+
 //
 // open a text file to signal that a database was opened
 //

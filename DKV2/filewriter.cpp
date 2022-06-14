@@ -1,9 +1,10 @@
-#include "filewriter.h"
 #include <QPrinter>
 #include <QFile>
 #include <QFileInfo>
+#include "helperfile.h"
 #include "appconfig.h"
 #include "mustache.h"
+#include "filewriter.h"
 
 bool extractTemplateFileFromResource(const QString& path, const QString& file)
 {   LOG_CALL_W(file);
@@ -18,6 +19,7 @@ bool extractTemplateFileFromResource(const QString& path, const QString& file)
     QFile target (fi.absoluteFilePath ());
     target.open(QIODevice::WriteOnly);
     target.write (br);
+
     if( not fi.exists()) {
         qCritical() << "failed to write template files";
         return false;
@@ -56,11 +58,7 @@ bool writeRenderedTemplate(const QString &templateFileName, const QString &outpu
     // render the content.
     QString renderedText = mustachReplace(templateFileName, data);
     // Write the html content to file. (e.g. for editing)
-
-    QFile textFile(appConfig::Outdir() + outputFileName + ext);
-    textFile.open(QFile::WriteOnly);
-    textFile.write(renderedText.toUtf8());
-    textFile.close();
+    stringToFile(renderedText, appConfig::Outdir() + outputFileName + ext);
 
     return true;
 }
@@ -108,10 +106,7 @@ bool savePdfFromHtmlTemplate(const QString &templateFileName, const QString &out
 
     // Write the html content to file. (just in case ... e.g. for editing)
     QString htmlFileName {appConfig::Outdir () +qsl("/html/") +replaceExtension(outputFileName, qsl(".html"))};
-    QFile html(htmlFileName);
-    html.open(QFile::WriteOnly);
-    html.write(renderedHtml.toUtf8 ());
-    html.close();
+    stringToFile( renderedHtml, htmlFileName);
 
     return true;
 }
