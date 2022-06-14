@@ -546,10 +546,13 @@ bool contract::finalize(bool simulate, const QDate finDate,
         return false;
     }
     qlonglong id_to_be_deleted = id();
-    qInfo() << "Finalization startet at value " << value();
+    qInfo() << "Finalization startet at value " << interestBearingValue ();
     executeSql_wNoRecords(qsl("SAVEPOINT fin"));
-    // as we are terminating the contract we have to sum up all interests
-    setInterestModel(interestModel::reinvest);
+
+    if( iModel() == interestModel::payout)
+        // adjust interest model, as there could be no payouts during finalize
+        setInterestModel( interestModel::reinvest);
+
     if( needsAnnualSettlement(finDate)){
         if( annualSettlement(finDate.year() -1)) {
             lastB =latestBooking ();
@@ -558,10 +561,10 @@ bool contract::finalize(bool simulate, const QDate finDate,
             return false;
         }
     }
-    double preFinValue = value(finDate);
-    qInfo() << "Fin. Value after annual settlement:" << preFinValue;
+    double preFinValue = interestBearingValue ();
+    qInfo() << "After last annual settlement: interest bearing / value " << preFinValue << " / " << value();
     finInterest = ZinsesZins(actualInterestRate(), preFinValue, lastB.date, finDate);
-    finPayout = preFinValue +finInterest;
+    finPayout = value() +finInterest;
     if( simulate) {
         qInfo() << "sumulation will stop here";
         executeSql_wNoRecords(qsl("ROLLBACK"));

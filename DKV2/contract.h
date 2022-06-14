@@ -200,7 +200,6 @@ private:
     bool archive();
     void reset() {initContractDefaults();}
 };
-
 // test helper
 contract saveRandomContract(const qlonglong creditorId);
 void saveRandomContracts(const int count);
