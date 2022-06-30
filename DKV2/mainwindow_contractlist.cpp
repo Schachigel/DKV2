@@ -353,42 +353,50 @@ contract* contractUnderMouseMenu =nullptr;
 void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;
     busycursor bc;
-    if( showDeletedContracts)
-        return;
     QTableView*& tv = ui->contractsTableView;
     QModelIndex index = tv->indexAt(pos).siblingAtColumn(0);
     if( not index.isValid ())
         return;
 
-    contract c(index.data().toInt());
-    contractUnderMouseMenu =&c;
-    bool gotTerminationDate = c.noticePeriod() == -1;
-
+    int contractId = index.data().toInt();
+    contract c;
+    contractUnderMouseMenu = &c;
     QMenu menu( qsl("ContractContextMenu"), this);
-    if(c.initialBookingReceived())
-    {
-        if( gotTerminationDate)
-            ui->action_cmenu_terminate_contract->setText(qsl("Vertrag beenden"));
-        else
-            ui->action_cmenu_terminate_contract->setText(qsl("Vertrag kündigen"));
-        menu.addAction(ui->action_cmenu_terminate_contract);
-        menu.addAction(ui->action_cmenu_change_contract);
-        if( not c.interestActive())
-            menu.addAction(ui->action_cmenu_activate_interest_payment);
-    }
-    else
-    {
-        menu.addAction(ui->action_cmenu_activate_contract);
-        menu.addAction(ui->action_cmenu_delete_inactive_contract); // passive Verträge können gelöscht werden
-    }
-    menu.addAction(ui->action_cmenu_changeContractTermination);
-    menu.addAction(ui->action_cmenu_Anmerkung_aendern);
-    menu.addAction(ui->action_cmenu_assoc_investment);
+    if (showDeletedContracts) {
+        c.loadExFromDb (contractId);
+        menu.addAction(ui->action_cmenu_contracts_EndLetter);
+        bc.finish ();
+        menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
+    } else {
+        bool gotTerminationDate = c.noticePeriod() == -1;
 
-    bc.finish ();
-    menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
+        if(c.initialBookingReceived())
+        {
+            if( gotTerminationDate)
+                ui->action_cmenu_terminate_contract->setText(qsl("Vertrag beenden"));
+            else
+                ui->action_cmenu_terminate_contract->setText(qsl("Vertrag kündigen"));
+            menu.addAction(ui->action_cmenu_terminate_contract);
+            menu.addAction(ui->action_cmenu_change_contract);
+            if( not c.interestActive())
+                menu.addAction(ui->action_cmenu_activate_interest_payment);
+        }
+        else
+        {
+            menu.addAction(ui->action_cmenu_activate_contract);
+            menu.addAction(ui->action_cmenu_delete_inactive_contract); // passive Verträge können gelöscht werden
+        }
+        menu.addAction(ui->action_cmenu_changeContractTermination);
+        menu.addAction(ui->action_cmenu_Anmerkung_aendern);
+        menu.addAction(ui->action_cmenu_assoc_investment);
+
+        bc.finish ();
+        menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
+    }
     contractUnderMouseMenu =nullptr;
     return;
+//////////////////////////////////////
+
 }
 void MainWindow::on_action_cmenu_activate_contract_triggered()
 {   LOG_CALL;
@@ -425,6 +433,13 @@ void MainWindow::on_action_cmenu_changeContractTermination_triggered()
     changeContractTermination(contractUnderMouseMenu);
     updateViews();
 }
+void MainWindow::on_action_cmenu_contracts_EndLetter_triggered()
+{
+    LOG_CALL;
+    endLetter(contractUnderMouseMenu);
+    updateViews();
+}
+
 void MainWindow::on_action_cmenu_assoc_investment_triggered()
 {   LOG_CALL;
     QVector<investment> invests =openInvestments(d2percent(contractUnderMouseMenu->interestRate()), contractUnderMouseMenu->conclusionDate());

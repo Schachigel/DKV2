@@ -12,13 +12,14 @@
 #include "booking.h"
 #include "creditor.h"
 
-enum class interestModel {
-    payout   =0,
-    reinvest =1,
-    fixed    =2,
-    zero     =3,
-    maxId    =4,
-    allIModels =maxId
+enum class interestModel
+{
+    payout = 0,
+    reinvest /*= 1*/,
+    fixed /*= 2*/,
+    zero  /*= 3*/,
+    maxId /*= 4*/,
+    allIModels = maxId
 };
 inline QString toString(const interestModel m) {
     switch(m) {
@@ -97,8 +98,9 @@ struct contract
     }
 
     // construction
-    contract(const qlonglong CONTRACTid =-1);
+    contract(const qlonglong CONTRACTid =-1, bool isTerminated =false);
     void loadFromDb(const qlonglong id);
+    void loadExFromDb(const qlonglong id);
     void initContractDefaults(const qlonglong creditorId =-1);
     void initRandom(const qlonglong creditorId =-1);
 
@@ -110,7 +112,7 @@ struct contract
     void setCreditorId(qlonglong kid) {td.setValue(fnKreditorId, kid);}
     qlonglong creditorId() const{ return td.getValue(fnKreditorId).toLongLong();}
 
-    void setLabel(const QString& l) { td.setValue(fnKennung, l);}
+    void setLabel(const QString &l) { td.setValue(fnKennung, l); }
     QString label() const { return td.getValue(fnKennung).toString();};
 
     void setInterestRate( const double percent) {
@@ -176,6 +178,9 @@ struct contract
 
     bool bookActivateInterest(const QDate d);
 
+    // contract termination
+    bool isTerminated =false;
+
     // other booking actions
     QDate nextDateForAnnualSettlement();
     bool needsAnnualSettlement( const QDate d);
@@ -186,7 +191,7 @@ struct contract
     bool finalize(const bool simulate, const QDate finDate, double& finInterest, double& finPayout);
     // helper
     QString toString(const QString &name =QString()) const;
-    QVariant toVariantMap_4annualBooking(int year=9999);
+    QVariant toVariantMap(QDate fromDate = BeginingOfTime, QDate toDate = EndOfTheFuckingWorld);
     double payedInterest(int year);
 
 private:

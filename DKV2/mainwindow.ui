@@ -674,7 +674,7 @@
      <x>0</x>
      <y>0</y>
      <width>1073</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_database">
@@ -1006,6 +1006,23 @@
   <action name="actionZuletzt_verwendet">
    <property name="text">
     <string>Zuletzt verwendet</string>
+   </property>
+  </action>
+  <action name="action_cmenu_contracts_EndLetter">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Endabrechnung</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Brief und CSV zur Endabrechnung ausgeben&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="visible">
+    <bool>true</bool>
    </property>
   </action>
  </widget>

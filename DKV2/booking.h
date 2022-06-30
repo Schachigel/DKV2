@@ -60,13 +60,13 @@ Q_DECLARE_TYPEINFO(booking, Q_PRIMITIVE_TYPE );
 struct bookings
 {
     static QDate dateOfnextSettlement();
-    static QVector<booking> bookingsFromSql(const QString& where, const QString& order=QString());
+    static QVector<booking> bookingsFromSql(const QString& where, const QString& order=QString(), bool terminated =false);
     static QVector<booking> getBookings(const qlonglong cid, const QDate from = BeginingOfTime,
-            const QDate to = EndOfTheFuckingWorld, const QString order = qsl("Datum DESC"));
+            const QDate to = EndOfTheFuckingWorld, const QString order = qsl("Datum DESC"), bool terminatedContract =true);
+
     static QVector<booking> getAnnualSettelments(const int year);
     static QVector<int> yearsWithAnnualBookings();
 };
 
 #endif // BOOKING_H
 
-const QVector<booking>& bookingsFromSql(const QString& where);

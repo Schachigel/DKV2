@@ -324,15 +324,16 @@ void annualSettlement()
 /*************************/
 
 void createInitialTemplates()
-{
+{   LOG_CALL;
     QDir outDir (appConfig::Outdir ());
     outDir.mkdir (qsl("vorlagen"));
     outDir.mkdir (qsl("html"));
 
     extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("brieflogo.png"));
     extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("zinsbrief.css"));
-    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/vorlagen/"), qsl("zinsbrief.html"));
-    extractTemplateFileFromResource(appConfig::Outdir () +qsl("/html/"), qsl("zinsbrief.css"));
+    extractTemplateFileFromResource(appConfig::Outdir() + qsl("/vorlagen/"), qsl("zinsbrief.html"));
+    extractTemplateFileFromResource(appConfig::Outdir() + qsl("/vorlagen/"), qsl("endabrechnung.html"));
+    extractTemplateFileFromResource(appConfig::Outdir() + qsl("/html/"), qsl("zinsbrief.css"));
 }
 
 int askUserForYearOfPrintouts()
@@ -398,20 +399,49 @@ void interestLetters()
         double payedInterest =0.;
         for (const auto &id : qAsConst(ids)) {
             contract contr(id.toLongLong());
-            vl.append(contr.toVariantMap_4annualBooking(yearOfSettlement));
+            vl.append(contr.toVariantMap(QDate(yearOfSettlement,1,1),QDate(yearOfSettlement,12,31)));
             payedInterest +=contr.payedInterest(yearOfSettlement);
         }
         printData[qsl("mitAusbezahltemZins")] =payedInterest >0.;
         printData[qsl("ausbezahlterZins")] =payedInterest;
         printData[qsl("Vertraege")] = vl;
 
-        QString fileName = qsl("Jahresinfo ").append(QString::number(yearOfSettlement)).append("_").append(QString::number(credRecord.id())).append("_").append(credRecord.lastname()).append(qsl(", ")).append(credRecord.firstname ()).append(".pdf");
+        QString fileName = qsl("Jahresinfo ").append(QString::number(yearOfSettlement)).append(qsl("_"))
+                .append(QString::number(credRecord.id())).append(qsl("_")).append(credRecord.lastname())
+                .append(qsl(", ")).append(credRecord.firstname ().append(qsl(".pdf")));
         /////////////////////////////////////////////////
-        pdfWrite(qsl("Zinsbrief"), fileName, printData);
+        savePdfFromHtmlTemplate(qsl("zinsbrief.html"), fileName, printData);
         /////////////////////////////////////////////////
     }
-    showInExplorer(appConfig::Outdir (), showFolder);
+    bc.finish();
+    showInExplorer(appConfig::Outdir(), showFolder);
     qInfo() << "Alles OK";
+}
+
+void endLetter(contract *c)
+{    LOG_CALL;
+
+    busycursor bc;
+    // copy Templates (if not available)
+    createInitialTemplates();
+
+
+    QVariantMap printData = {};
+    printData[qsl("gmbhLogo")] = QVariant(appConfig::Outdir() + qsl("/vorlagen/brieflogo.png"));
+    printData[qsl("meta")] = getMetaTableAsMap();
+
+    creditor credRecord(c->creditorId());
+    printData["creditor"] = credRecord.getVariant();
+    printData[qsl("Vertrag")] = c->toVariantMap();
+
+    QString fileName = qsl("Endabrechnung ").append(c->label().replace("/", "_"))
+            .append("_").append(credRecord.lastname()).append(qsl(", ")).append(credRecord.firstname()).append(qsl(".pdf"));
+// TODO: make sure there are no chars, which might not be part of a Windows / Linux filename (:, ...)
+
+    savePdfFromHtmlTemplate(qsl("Endabrechnung.html"), fileName, printData);
+    writeRenderedTemplate(qsl("Endabrechnung.csv"), fileName, printData);
+    showInExplorer(appConfig::Outdir(), showFolder);
+    qInfo() << "Vertragsabschlussdokument erfolgreich angelegt";
 }
 
 void deleteInactiveContract(contract *c)

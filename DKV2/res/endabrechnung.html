@@ -8,15 +8,15 @@
     <table width=98%>
         <tr>
             <td width=40% class="colFirmenname">
-              <span class="divFirmenname">{{meta.gmbhaddress1}}<p></span>
-              <span class="GmbHAnschrift"> {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}}<br></span>
+              <span class="divFirmenname"> <b>{{meta.gmbhaddress1}}</b><p></span>
+              <span class="GmbHAnschrift"> {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}}</span>
               <span class="KreditorAdresse" ><br>
                   {{creditor.Vorname}} {{creditor.Nachname}}<p>
                   {{creditor.Strasse}}<br>
                   <b>{{creditor.Plz}}</b> &nbsp; &nbsp; {{creditor.Stadt}}
                   </span>
             </td>
-            <td class="colLogo" width=50%><img class="imgLogo" src="{{gmbhLogo}}">
+            <td class="colLogo" width=60%><img class="imgLogo" src="{{gmbhLogo}}">
                 <span class="GmbHUrl">{{meta.gmbhurl}}</span>
             </td>
         </tr>
@@ -26,7 +26,7 @@
     </table>
     <table width=90%>
         <tr>
-            <td class="colBetreff">Zinsabrechnung für das Jahr {{Zinsjahr}} </td>
+            <td class="colBetreff">Endabrechnung für den Vertrag {{Vertrag.VertragsNr}} </td>
             <td class="colDatum">{{meta.gmbhstadt}} den {{Zinsdatum}}</td>
         </tr>
         <tr><td class="invisible"><p><p></td>
@@ -39,19 +39,19 @@
             <tr>
                 <td class="Text">
     Liebe*r {{creditor.Vorname}},
-    <p>wir, die zukünftigen Bewohner*innen des Wohnprojekts {{meta.gmbhprojekt}} wünschen Dir ein gutes neues Jahr und bedanken uns herzlich für Deine Unterstützung.
-    <p>In folgender Tabelle kannst Du die Kontobewegungen und Zinszahlungen von {{Zinsjahr}} nachlesen.
+    <p>wir, die zukünftigen Bewohner*innen des Wohnprojekts {{meta.gmbhprojekt}} danken Dir herzlich für Deine Unterstützung.
+    <p>In folgender Tabelle kannst Du die Kontobewegungen und Zinszahlungen des Kreditvertags {{Vertrag.VertragsNr}} nachlesen.
                  </td>
             </tr>
         </table>
     </div>
 
-{{#Vertraege}}
+{{#Vertrag}}
     <div class="divVertrag">
         <table class="tabVertrag">
             <tr>
                 <td colspan=2 class="colVertragsNr">
-                    <br/> <strong>Vertrag {{VertragsNr}}</strong> <span class="GmbHAnschrift"> Zinssatz {{strZSatz}}% {{#zzAusgesezt}}(ausgesetzt bis Baugenehmigung){{/zzAusgesezt}}</span>
+                    <br/> <b>Vertrag {{VertragsNr}}</b> <span class="GmbHAnschrift"> Zinssatz {{strZSatz}}% {{#zzAusgesezt}}(ausgesetzt bis Baugenehmigung){{/zzAusgesezt}}</span>
                 </td>
             </tr>
         </table>
@@ -61,12 +61,6 @@
             <td width=100><strong>Datum</strong></td>
             <td width=150><strong>Text</strong></td>
             <td class="colBuchungsBetrag" width=150 float="right"><strong>Betrag</strong></td>
-        </tr>
-        <tr>
-            <td width=20></td>
-            <td class="colBuchungsdatum">{{startDatum}}</td>
-            <td class="colBuchungstext">letzter Saldo</td>
-            <td class="colBuchungsBetrag">{{startBetrag}}</td>
         </tr>
         {{#Buchungen}}
         <tr>
@@ -84,7 +78,7 @@
         </tr>
     </table>
     </div>
-{{/Vertraege}}
+{{/Vertrag}}
 
 <div class="Text">
     <table width=90%>

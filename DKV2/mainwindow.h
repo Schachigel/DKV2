@@ -168,6 +168,8 @@ private slots:
 
     void on_action_cmenu_changeContractTermination_triggered();
 
+    void on_action_cmenu_contracts_EndLetter_triggered();
+
     void on_btnAutoMatch_clicked();
 
     void on_action_cmenu_assoc_investment_triggered();
