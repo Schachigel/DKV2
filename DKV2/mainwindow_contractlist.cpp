@@ -437,7 +437,7 @@ void MainWindow::on_action_cmenu_changeContractTermination_triggered()
 void MainWindow::on_action_cmenu_contracts_EndLetter_triggered()
 {
     LOG_CALL;
-    endLetter(contractUnderMouseMenu);
+    finalizeContractLetter(contractUnderMouseMenu);
     updateViews();
 }
 
@@ -454,7 +454,7 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
         int interest{d2percent(contractUnderMouseMenu->interestRate())};
         QDate from (contractUnderMouseMenu->conclusionDate().addDays(-1));
         QDate to;
-        qlonglong newIId =createInvestment(interest, from, to);
+        qlonglong newIId =createInvestment_matchingContract(interest, from, to);
         if(newIId <= 0) break;
         if( investment(-1, interest, from, to).matchesContract(*contractUnderMouseMenu)) {
             if( not contractUnderMouseMenu->updateInvestment(newIId))

@@ -800,7 +800,7 @@ void MainWindow::on_action_menu_contracts_annual_interest_settlement_triggered()
 void MainWindow::on_action_menu_contracts_interestLetters_triggered()
 {
     LOG_CALL;
-    interestLetters();
+    annualSettlementLetters();
     updateViews();
 }
 

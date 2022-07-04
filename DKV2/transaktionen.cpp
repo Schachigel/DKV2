@@ -323,7 +323,7 @@ void annualSettlement()
 /*** Ausdrucke ***********/
 /*************************/
 
-void createInitialTemplates()
+void createInitialLetterTemplates()
 {   LOG_CALL;
     QDir outDir (appConfig::Outdir ());
     outDir.mkdir (qsl("vorlagen"));
@@ -351,7 +351,7 @@ int askUserForYearOfPrintouts()
     return dlg.getYear ();
 }
 
-void interestLetters()
+void annualSettlementLetters()
 {
     LOG_CALL;
     int yearOfSettlement = askUserForYearOfPrintouts ();
@@ -372,7 +372,7 @@ void interestLetters()
         return;
     }
 
-    createInitialTemplates();
+    createInitialLetterTemplates();
 
     QList<QPair<int, QString>> creditors;
     fillCreditorsListForLetters(creditors, yearOfSettlement);
@@ -418,12 +418,62 @@ void interestLetters()
     qInfo() << "Alles OK";
 }
 
-void endLetter(contract *c)
+/*************************/
+/*** contract endings   **/
+/*************************/
+
+void deleteInactiveContract(contract *c)
+{
+    LOG_CALL;
+    // contracts w/o bookings can be deleted
+    // todo: wiz ui with confirmation?
+    // todo: if creditor has no other (active or deleted) contracts: propose delete creditor
+    contract::remove(c->id());
+}
+
+void terminateContract(contract *pc)
+{
+    LOG_CALL;
+    if (pc->hasEndDate())
+        terminateContract_Final(*pc);
+    else
+        cancelContract(*pc);
+}
+
+void terminateContract_Final(contract &c)
+{
+    LOG_CALL;
+    wizTerminateContract wiz(getMainWindow(), c);
+    wiz.exec();
+    if (not wiz.field(qsl("confirm")).toBool())
+        return;
+    double interest = 0., finalValue = 0.;
+    if (not c.finalize(false, wiz.field(qsl("date")).toDate(), interest, finalValue))
+        qDebug() << "failed to terminate contract";
+    return;
+}
+
+void cancelContract(contract &c)
+{
+    LOG_CALL;
+    wizCancelContract wiz(getMainWindow());
+    wiz.c = c;
+    wiz.creditorName = executeSingleValueSql(qsl("Vorname || ' ' || Nachname"), qsl("Kreditoren"), qsl("id=") + QString::number(c.creditorId())).toString();
+    wiz.contractualEnd = QDate::currentDate().addMonths(c.noticePeriod());
+    wiz.exec();
+    if (not wiz.field(qsl("confirmed")).toBool()) {
+        qInfo() << "cancel wizard canceled by user";
+        return;
+    }
+    c.cancel(wiz.field(qsl("date")).toDate());
+}
+
+void finalizeContractLetter(contract *c)
 {    LOG_CALL;
 
     busycursor bc;
     // copy Templates (if not available)
-    createInitialTemplates();
+    createInitialLetterTemplates();
 
 
     QVariantMap printData = {};
@@ -444,50 +494,11 @@ void endLetter(contract *c)
     qInfo() << "Vertragsabschlussdokument erfolgreich angelegt";
 }
 
-void deleteInactiveContract(contract *c)
-{
-    LOG_CALL;
-    // contracts w/o bookings can be deleted
-    // todo: wiz ui with confirmation?
-    // if creditor has no other contracts: delete creditor
-    contract::remove(c->id());
-}
-void terminateContract(contract *pc)
-{
-    LOG_CALL;
-    if (pc->hasEndDate())
-        terminateContract_Final(*pc);
-    else
-        cancelContract(*pc);
-}
-void terminateContract_Final(contract &c)
-{
-    LOG_CALL;
-    wizTerminateContract wiz(getMainWindow(), c);
-    wiz.exec();
-    if (not wiz.field(qsl("confirm")).toBool())
-        return;
-    double interest = 0., finalValue = 0.;
-    if (not c.finalize(false, wiz.field(qsl("date")).toDate(), interest, finalValue))
-        qDebug() << "failed to terminate contract";
-    return;
-}
-void cancelContract(contract &c)
-{
-    LOG_CALL;
-    wizCancelContract wiz(getMainWindow());
-    wiz.c = c;
-    wiz.creditorName = executeSingleValueSql(qsl("Vorname || ' ' || Nachname"), qsl("Kreditoren"), qsl("id=") + QString::number(c.creditorId())).toString();
-    wiz.contractualEnd = QDate::currentDate().addMonths(c.noticePeriod());
-    wiz.exec();
-    if (not wiz.field(qsl("confirmed")).toBool()) {
-        qInfo() << "cancel wizard canceled by user";
-        return;
-    }
-    c.cancel(wiz.field(qsl("date")).toDate());
-}
+/*************************/
+/*** investments        **/
+/*************************/
 
-qlonglong createInvestment(int &interest, QDate &from, QDate &to)
+qlonglong createInvestment_matchingContract(int &interest, QDate &from, QDate &to)
 {
     LOG_CALL;
     // give the user a UI to create a investment which will match a certain set of contract data
@@ -516,6 +527,7 @@ qlonglong createInvestment(int &interest, QDate &from, QDate &to)
 
     return newId;
 }
+
 void createInvestment()
 {
     LOG_CALL;
