@@ -368,6 +368,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
         bc.finish ();
         menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
     } else {
+        c.loadFromDb (contractId);
         bool gotTerminationDate = c.noticePeriod() == -1;
 
         if(c.initialBookingReceived())
