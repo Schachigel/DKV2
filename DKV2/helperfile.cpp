@@ -101,7 +101,7 @@ void showInExplorer(const QString &pathOrFilename, bool fileOrFolder)
 #elif defined(__APPLE__)    //Code for Mac
     Q_UNUSED(fileOrFolder);
 
-    QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to reveal POSIX file \"" + fullPath + "\""});
+    QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to reveal POSIX file \"" + pathOrFilename + "\""});
     QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to activate"});
 #else
     Q_UNUSED (fileOrFolder);
