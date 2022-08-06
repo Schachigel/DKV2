@@ -154,7 +154,7 @@ int wpNewDb::nextId() const
 wpICalcMode::wpICalcMode(QWidget* p) : QWizardPage (p)
 {
     setTitle(qsl("Angaben zu Zinsmethode (Zinssusance)"));
-    setSubTitle (qsl("DKV2 unterstützt die Methoden <i>(30/360)</i> und <i>(act/act)</i> der Zinsberechnung"));
+    setSubTitle (qsl("DKV2 unterstütz die Methoden <i>(30/360)</i> und <i>(act/act)</i> der Zinsberechnung"));
     QLabel* lbl =new QLabel("Die Unterschiede sind geringfügig und treten nur in Jahren auf, "
                     "die nicht vollständig im Zinszeitraum liegen. <br>Sie stellen "
                    "keinen besonderen Vor- oder Nachteil für Projekt oder DK Geber*innen dar.");
