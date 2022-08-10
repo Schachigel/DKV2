@@ -433,6 +433,14 @@ void deleteInactiveContract(contract *c)
 
 void terminateContract(contract *pc)
 {
+/* Contract termination is a 2 step process:
+ * - Cancel the contract
+ *      -> set an end date
+ * - terminate contract
+ *      -> set actual end date
+ *      -> calculate interest and payout value
+ *      -> move contract from Vertraege to exVertraege table
+*/
     LOG_CALL;
     if (pc->hasEndDate())
         terminateContract_Final(*pc);
@@ -448,8 +456,15 @@ void terminateContract_Final(contract &c)
     if (not wiz.field(qsl("confirm")).toBool())
         return;
     double interest = 0., finalValue = 0.;
-    if (not c.finalize(false, wiz.field(qsl("date")).toDate(), interest, finalValue))
+    if (not c.finalize(false, wiz.field(qsl("date")).toDate(), interest, finalValue)) {
+        QMessageBox::warning(nullptr, qsl("Fehler"), qsl("Die Geldanlage konnte nicht beendet werden.\nDetails findest Du in der LOG Datei!"));
         qDebug() << "failed to terminate contract";
+        return;
+    }
+    if( wiz.field (qsl("print")).toBool()) {
+// todo        printFinalizedContractAsCsv(c.id ());
+    }
+
     return;
 }
 
