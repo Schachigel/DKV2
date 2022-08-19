@@ -20,7 +20,7 @@ void test_appConfig::cleanupTestCase()
 {
     appConfig::delLastDb();
     appConfig::delOutDir();
-    QVERIFY(appConfig::Outdir() == QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+    QCOMPARE(appConfig::Outdir(), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/DKV2"));
     cleanupTestDb();
 }
 

@@ -329,7 +329,7 @@ void test_contract::test_deposit01()
         // booking 3: deposit
         cont.deposit(QDate(2019, 7, 1), 1000.);
         QCOMPARE(cont.value(), 2010.);
-        QVERIFY(bookings::getBookings(cont.id()).count() == 3);
+        QCOMPARE(bookings::getBookings(cont.id()).count(), 3);
     }
     {
         creditor c(saveRandomCreditor());
