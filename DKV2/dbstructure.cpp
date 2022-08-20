@@ -108,7 +108,6 @@ bool createFileWithDatabaseStructure (const QString& targetfn, const dbstructure
 bool createNewDatabaseFileWDefaultContent(const QString& filename, zinssusance zs /*=zs30360*/, const dbstructure& dbs/* =dkdbstructu*/)
 {   LOG_CALL_W(qsl("filename: ") + filename);
     Q_ASSERT( filename.size());
-    dbgTimer timer( qsl("Db Creation Time"));
 
     // create file an schema
     if( not createFileWithDatabaseStructure (filename, dbs)) {

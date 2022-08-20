@@ -8,7 +8,6 @@
 #include "appconfig.h"
 #include "contract.h"
 #include "booking.h"
-#include "uiitemformatter.h"
 
 // statics & friends
 /*static*/ const QString contract::tnContracts{qsl("Vertraege")};
@@ -187,7 +186,6 @@ double contract::interestBearingValue() const
 
 const booking contract::latestBooking()
 {   LOG_CALL;
-//dbgTimer timer(qsl("latestBooking"));
     QString sql {qsl("SELECT id, VertragsId, Datum, BuchungsArt, Betrag FROM %2 WHERE VertragsId=%1 ORDER BY rowid DESC LIMIT 1").
         arg(id_aS(), isTerminated ? "exBuchungen" : "Buchungen")};
     QSqlRecord rec = executeSingleRecordSql(sql);

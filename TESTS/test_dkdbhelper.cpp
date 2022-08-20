@@ -4,29 +4,18 @@
 #include "../DKV2/helper.h"
 #include "../DKV2/tabledatainserter.h"
 #include "../DKV2/helpersql.h"
-#include "../DKV2/dkdbhelper.h"
 
 #include "testhelper.h"
 #include "test_dkdbhelper.h"
 
-void test_dkdbhelper::initTestCase()
-{   LOG_CALL;
-    createTestDbTemplate();
-}
-
-void test_dkdbhelper::cleanupTestCase()
-{
-    cleanupTestDbTemplate();
-}
-
 void test_dkdbhelper::init()
 {   LOG_CALL;
-    initTestDbFromTemplate();
+    initTestDb_InMemory();
 }
 
 void test_dkdbhelper::cleanup()
 {   LOG_CALL;
-    cleanupTestDb();
+    cleanupTestDb_InMemory();
 }
 
 void test_dkdbhelper::test_selectQueryFromFields()

@@ -1,7 +1,6 @@
 #include <QtTest>
 
 #include "../DKV2/dkdbviews.h"
-#include "../DKV2/dkdbhelper.h"
 
 #include "test_statistics.h"
 
@@ -50,24 +49,14 @@ stats getStatsAllContracts(QDate date)
     return getStatsFromSql(sqlStat_allContracts_byIMode_toDate, date);
 }
 
-void test_statistics::initTestCase()
-{   LOG_CALL;
-    createTestDbTemplate();
-}
-
-void test_statistics::cleanupTestCase()
-{   LOG_CALL;
-    cleanupTestDbTemplate();
-}
-
 void test_statistics::init()
 {   LOG_CALL;
-    initTestDbFromTemplate();
+    initTestDb_InMemory();
 }
 
 void test_statistics::cleanup()
 {   LOG_CALL;
-    cleanupTestDb();
+    cleanupTestDb_InMemory();
 }
 
 void test_statistics::test_noContractsNoBookings()

@@ -7,9 +7,7 @@
 
 #include "../DKV2/tabledatainserter.h"
 #include "../DKV2/dbtable.h"
-#include "../DKV2/creditor.h"
 #include "../DKV2/dkdbhelper.h"
-#include "../DKV2/helperfile.h"
 #include "../DKV2/helper.h"
 
 #include "testhelper.h"
@@ -23,12 +21,12 @@ void test_db::initTestCase()
 
 void test_db::init()
 {   LOG_CALL;
-    initTestDb();
+    initTestDb_InMemory();
 }
 
 void test_db::cleanup()
 {   LOG_CALL;
-    cleanupTestDb();
+    cleanupTestDb_InMemory();
 }
 
 void test_db::test_init_and_cleanup()
@@ -69,7 +67,6 @@ void test_db::test_SimpleTableAddData()
                         .appendTable(dbtable("cities").append(dbfield("plz")));
 
     QVERIFY2(s.createDb(), "Database was not created");
-    QVERIFY2(QFile::exists(testDbFilename), "No database file found");
 
     TableDataInserter tdi(s["Ad"]);
     tdi.setValue("vname", QVariant("Holger"));
@@ -171,7 +168,6 @@ void test_db::test_deleteRecord_wDep()
     s.appendTable( c);
 
     QVERIFY2(s.createDb(), "Database was not created");
-    QVERIFY2(QFile::exists(testDbFilename), "No database file found");
 
     TableDataInserter tdi(s["p"]);
     tdi.setValue("name", "Holger");
@@ -197,7 +193,6 @@ void test_db::test_deleteRecord_wDep()
 
 void test_db::newDbIsValid()
 {
-    dbgTimer t;
     QVERIFY(fill_DkDbDefaultContent());
 }
 

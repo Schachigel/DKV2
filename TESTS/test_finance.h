@@ -31,6 +31,8 @@ private slots:
 
     void test_IsValidIban_data();
     void test_IsValidIban();
+    void test_checkIban_data();
+    void test_checkIban();
 };
 
 #endif // TEST_FINANCE_H

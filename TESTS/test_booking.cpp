@@ -3,26 +3,17 @@
 #include "../DKV2/booking.h"
 
 #include "../DKV2/helper.h"
-#include "../DKV2/dkdbhelper.h"
 
 #include "test_booking.h"
-
-void test_booking::initTestCase()
-{   LOG_CALL;
-    createTestDbTemplate();
-}
-void test_booking::cleanupTestCase()
-{   LOG_CALL;
-    cleanupTestDbTemplate();
-}
+#include "testhelper.h"
 
 void test_booking::init()
 {   LOG_CALL;
-    initTestDbFromTemplate();
+    initTestDb_InMemory ();
 }
 void test_booking::cleanup()
 {   LOG_CALL;
-    cleanupTestDb();
+    cleanupTestDb_InMemory ();
 }
 
 void test_booking::test_dateONSettlement_noContracts()
@@ -85,13 +76,11 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings03()
 {
     QDate miniActDate/* =EndOfTheFuckingWorld*/;
     {
-        dbgTimer timer(qsl("create many contracts"));
         saveRandomCreditors(70);
         saveRandomContracts(100);    // contract date: 2 years back or less
         miniActDate = activateRandomContracts(90);// activation date: > contract date
     }
     {
-        dbgTimer timer(qsl("calculate settlement year"));
         QCOMPARE( bookings::dateOfnextSettlement(), QDate(miniActDate.year(), 12, 31));
     }
 }

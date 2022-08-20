@@ -6,8 +6,6 @@
 #include <QDir>
 #include <QDebug>
 
-#include "testhelper.h"
-
 class test_dkdbhelper : public QObject
 {
     Q_OBJECT
@@ -20,8 +18,6 @@ private:
 signals:
 
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
     void init();
     void cleanup();
 

@@ -11,19 +11,14 @@
 
 #include "test_sqlhelper.h"
 
-void test_sqlhelper::initTestCase()
-{
-    init_DKDBStruct();
-}
-
 void test_sqlhelper::init()
 {   LOG_CALL;
-    initTestDb(); // start each test with an dkdb w/o any data
+    initTestDb_InMemory (); // start each test with an dkdb w/o any data
 }
 
 void test_sqlhelper::cleanup()
 {   LOG_CALL;
-    cleanupTestDb();
+    cleanupTestDb_InMemory ();
 }
 
 void test_sqlhelper::test_rowCount()
@@ -31,7 +26,7 @@ void test_sqlhelper::test_rowCount()
     QSqlQuery q;
     QVERIFY( q.exec("CREATE TABLE testRowCount01 "
                "(id integer PRIMARY KEY AUTOINCREMENT, s STRING)"));
-    dbgTimer testrowcount ("trc");
+//    dbgTimer testrowcount ("trc");
     int maxRows = 10;
     for( int i=1; i<=maxRows; i++)
         QVERIFY( q.exec(QString() + "INSERT INTO testRowCount01 (s) VALUES ('Hallo Welt')"));

@@ -4,7 +4,6 @@
 #include <QSqlDatabase>
 #include <QObject>
 #include <QTest>
-#include "testhelper.h"
 
 class test_booking : public QObject
 {
@@ -14,11 +13,8 @@ public:
     ~test_booking(){}
 private:
     // helper
-    QString tempFile {testDbFilename +".tmp"};
 signals:
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
     void init();
     void cleanup();
     // the actual tests

@@ -4,6 +4,7 @@
 #include <QString>
 #include <QDebug>
 
+#include "../DKV2/helper.h"
 #include "../DKV2/helperfin.h"
 #include "../DKV2/ibanvalidator.h"
 #include "test_finance.h"
@@ -354,8 +355,7 @@ void test_finance::test_act_act()
     QCOMPARE (interest, expected);
 }
 
-
-void test_finance::test_IsValidIban_data()
+void createData()
 {
     QTest::addColumn<QString>("IBAN");
     QTest::addColumn<bool>("isValid");
@@ -375,6 +375,12 @@ void test_finance::test_IsValidIban_data()
     QTest::newRow("Iban 10") << "DE28 5001 0517 5407 5101 98" << true;
     QTest::newRow("Iban 11") << "MC1112739000700011111000H79" << true;
     QTest::newRow("Iban 12") << "NL18ABNA0484869868    " << true;
+    QTest::newRow("Iban 13") << "DE23152931057149592044" << true;
+}
+
+void test_finance::test_IsValidIban_data()
+{
+    createData();
 }
 void test_finance::test_IsValidIban()
 {
@@ -382,5 +388,18 @@ void test_finance::test_IsValidIban()
     QFETCH(bool, isValid);
     IbanValidator iv;
     int pos = 0;
+//    dbgTimer t(qsl("IsValidIban"));
     QCOMPARE(iv.validate(IBAN, pos) == IbanValidator::State::Acceptable, isValid);
+}
+
+void test_finance::test_checkIban_data()
+{
+    createData();
+}
+void test_finance::test_checkIban()
+{
+    QFETCH(QString, IBAN);
+    QFETCH(bool, isValid);
+//    dbgTimer t(qsl("checkIban"));
+    QCOMPARE(checkIban(IBAN), isValid);
 }

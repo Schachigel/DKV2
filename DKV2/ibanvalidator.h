@@ -4,6 +4,7 @@
 #include <QRegExpValidator>
 #include <QObject>
 
+bool checkIban(QString iban);
 
 // taken from https://github.com/Al-/IbanValidator
 class IbanValidator : public QRegExpValidator
@@ -13,8 +14,14 @@ public:
     explicit IbanValidator(QObject* parent =nullptr);
     virtual void fixup (QString& input) const override;
     virtual State validate (QString& input, int& pos) const override;
+    static IbanValidator* getValidator() {
+        if( !globalValidator)
+            globalValidator =new IbanValidator();
+        return globalValidator;
+    }
+    static unsigned int mod97(const QString& input);
 private:
-    unsigned int mod97(const QString& input) const;
+    static IbanValidator* globalValidator;
 };
 
 #endif // IBANVALIDATOR_H

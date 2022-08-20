@@ -2,29 +2,19 @@
 
 #include "../DKV2/helper.h"
 #include "../DKV2/helpersql.h"
-#include "../DKV2/dkdbhelper.h"
 #include "../DKV2/contract.h"
 #include "../DKV2/creditor.h"
+#include "testhelper.h"
 #include "test_creditor.h"
-
-void test_creditor::initTestCase()
-{   LOG_CALL;
-    createTestDbTemplate();
-}
-
-void test_creditor::cleanupTestCase()
-{   LOG_CALL_W("test");
-    cleanupTestDbTemplate();
-}
 
 void test_creditor::init()
 {
-    initTestDbFromTemplate();
+    initTestDb_InMemory();
 }
 
 void test_creditor::cleanup()
 {   LOG_CALL;
-    cleanupTestDb();
+    cleanupTestDb_InMemory ();
 }
 
 void test_creditor::test_createCreditor()
@@ -59,40 +49,39 @@ void test_creditor::test_invalidCreditor()
 {   LOG_CALL;
     creditor c;
     QString errortext;
-dbgTimer timer(qsl("invalidCreditor"));
+//dbgTimer timer(qsl("invalidCreditor"));
     QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
     c.setFirstname(qsl("Holger"));
     QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
-timer.lab(qsl("firstname"));
+//timer.lab(qsl("firstname"));
     c.setLastname(qsl("Mairon"));
     QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
-timer.lab(qsl("lastname"));
+//timer.lab(qsl("lastname"));
     c.setStreet(qsl("Sesamstrasse"));
     QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
-timer.lab(qsl("street"));
+//timer.lab(qsl("street"));
     c.setPostalCode(qsl("49534"));
     QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
-timer.lab(qsl("pc"));
+//timer.lab(qsl("pc"));
     c.setCity(qsl("braunschweig")); // now all mandatory values are set
     QVERIFY2( c.isValid(errortext), errortext.toUtf8());
-timer.lab(qsl("city"));
+//timer.lab(qsl("city"));
     c.setEmail(qsl("invalid_email"));
     QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
-timer.lab(qsl("invalid e-mail"));
+//timer.lab(qsl("invalid e-mail"));
     c.setEmail(qsl("holger@mairon.esp"));
     QVERIFY2( c.isValid(errortext), errortext.toUtf8());
-timer.lab(qsl("e-mail"));
+//timer.lab(qsl("e-mail"));
     c.setIban(qsl("invalid_iban"));
     QVERIFY2( not c.isValid(errortext), errortext.toUtf8());
-timer.lab(qsl("inv. iban"));
+//timer.lab(qsl("inv. iban"));
     c.setIban(qsl("DE07123412341234123412"));
     QVERIFY2( c.isValid(errortext), errortext.toUtf8());
-timer.lab(qsl("iban"));
+//timer.lab(qsl("iban"));
 }
 
 void test_creditor::test_saveManyRandomCreditors()
 {   LOG_CALL;
-    dbgTimer t;
     int numberOfCreditors = 50;
     saveRandomCreditors(numberOfCreditors);
     //QVERIFY2(rowCount("Kreditoren") == numberOfCreditors, "random creditor creation failed");

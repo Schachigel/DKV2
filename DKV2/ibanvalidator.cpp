@@ -2,6 +2,8 @@
 #include "helper.h"
 #include "ibanvalidator.h"
 
+IbanValidator* IbanValidator::globalValidator =nullptr;
+
 namespace {
 
 const QString expression {
@@ -23,6 +25,33 @@ H)\\d\\d[0-9]{5}[A-Z0-9]{12}|(TN)\\d\\d[0-9]{20}|(TR)\\d\\d[0-9]{5}[A-Z0-9]{17}|
 
 }
 
+bool checkIban(QString iban)
+{
+    if( iban.isEmpty ())
+        return false;
+    iban.remove(QLatin1Char(' '));    // ignore spaces
+    iban = iban.toUpper ();
+    static QRegularExpression re(expression);
+
+    if( not re.match(iban).hasMatch()) {
+        return false;
+    }
+    QString start {iban.left(4)};
+    iban.remove(0,4);
+    iban.append(start);
+    QString ibanNumeric;
+    for (int i(0); i < iban.length(); ++i){
+        QChar character(iban.at(i));
+        Q_ASSERT_X(character.isDigit() or character.isUpper(), "illegal character survived QRegExp validation", QString(character).toLatin1());
+        if (character.isDigit())
+            ibanNumeric.append(character);
+        else
+            ibanNumeric.append(QString::number(character.toLatin1() - QChar(QLatin1Char('A')).toLatin1() + 10));}
+    if (IbanValidator::mod97(ibanNumeric) == 1)
+        return true;
+    else
+        return false;
+}
 
 IbanValidator::IbanValidator(QObject* parent) : QRegExpValidator(parent)
 {
@@ -73,7 +102,7 @@ void IbanValidator::fixup(QString& input) const
     input = input.trimmed();
 }
 
-unsigned int IbanValidator::mod97(const QString& input) const
+unsigned int IbanValidator::mod97(const QString& input)
 {
     // qDebug() << "IbanValidator::mod97" << "calculate module 97 of" << input;
     int a[30] = {1, 10, 3, 30, 9, 90, 27, 76, 81, 34, 49, 5, 50, 15, 53, 45, 62, 38, 89, 17, 73, 51, 25, 56, 75, 71, 31, 19, 93, 57};

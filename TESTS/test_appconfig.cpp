@@ -11,8 +11,7 @@ void test_appConfig::initTestCase()
     QVERIFY( appConfig::LastDb().size());
     appConfig::setOutDir("C:/temp/output");
     QVERIFY( appConfig::Outdir().size());
-    init_DKDBStruct();
-    initTestDb();
+    initTestDb_InMemory();
     fill_DkDbDefaultContent(QSqlDatabase::database(), false);
 
 }
@@ -21,7 +20,7 @@ void test_appConfig::cleanupTestCase()
     appConfig::delLastDb();
     appConfig::delOutDir();
     QCOMPARE(appConfig::Outdir(), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/DKV2"));
-    cleanupTestDb();
+    cleanupTestDb_InMemory();
 }
 
 void test_appConfig::test_initials()

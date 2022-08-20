@@ -7,7 +7,6 @@
 #include "../DKV2/helper.h"
 #include "test_dkdbcopy.h"
 #include "test_properties.h"
-#include "test_lettertemplate.h"
 #include "test_csv.h"
 #include "test_db.h"
 #include "test_dkdbhelper.h"
@@ -16,7 +15,6 @@
 #include "test_appconfig.h"
 #include "test_creditor.h"
 #include "test_contract.h"
-#include "test_views.h"
 #include "test_booking.h"
 #include "test_statistics.h"
 #include "test_tabledatainserter.h"
@@ -48,21 +46,30 @@ int main(int argc, char *argv[])
 
     int executions =1;
     do {
-        tests.push_back(new test_statistics);
-        tests.push_back(new test_appConfig);
-        tests.push_back(new test_dkdbcopy);
+
+
+
+        // in memory db
         tests.push_back(new test_booking);
-        tests.push_back(new test_contract);
+        tests.push_back(new test_appConfig);
         tests.push_back(new test_creditor);
-        tests.push_back(new test_csv);
-        tests.push_back(new test_views);
+        tests.push_back(new test_contract);
+        tests.push_back(new test_statistics);
         tests.push_back(new test_db);
         tests.push_back(new test_dkdbhelper);
-        tests.push_back(new test_letterTemplate);
-        tests.push_back(new test_finance);
         tests.push_back(new test_properties);
         tests.push_back(new test_sqlhelper);
+
+        // no db
+        tests.push_back(new test_finance);
+        tests.push_back(new test_csv);
+
+        // on disk db
         tests.push_back(new test_tableDataInserter);
+        tests.push_back(new test_dkdbcopy);
+
+// NO ACTIVE TESTS        tests.push_back(new test_letterTemplate);
+// NO ACTIVE TESTS        tests.push_back(new test_views);
     } while(--executions);
 
     srand(time(0));

@@ -15,8 +15,6 @@ public:
 private:
 
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
     void init();
     void cleanup();
     void test_setProperty_getProperty();

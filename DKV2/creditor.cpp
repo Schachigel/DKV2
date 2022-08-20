@@ -4,7 +4,6 @@
 #include <QRandomGenerator>
 
 #include "helper.h"
-#include "helperfin.h"
 #include "helpersql.h"
 #include "ibanvalidator.h"
 #include "creditor.h"
@@ -103,7 +102,6 @@ bool creditor::isValid( QString& errortext) const
          ||
         ti.getValue(fnStadt).toString().isEmpty())
         errortext = qsl("Die Adressdaten sind unvollständig");
-
     QString email = ti.getValue(fnEmail).toString();
     if( email.size() or email == qsl("NULL_STRING"))
     {
@@ -112,15 +110,11 @@ bool creditor::isValid( QString& errortext) const
         if( not rx.match(email).hasMatch())
             errortext = "Das Format der e-mail Adresse ist ungültig: " + email;
     }
-
-    IbanValidator iv;
     QString iban = ti.getValue(qsl("IBAN")).toString();
     if( iban.size()){
-        int pos =0;
-        if( iv.validate(iban, pos) not_eq IbanValidator::State::Acceptable)
+        if( not checkIban(iban))
             errortext = qsl("Das Format der IBAN ist nicht korrekt: ") + iban;
     }
-
     if( errortext.isEmpty())
         return true;
     qInfo() << "creditor::isValid found error: " << errortext;

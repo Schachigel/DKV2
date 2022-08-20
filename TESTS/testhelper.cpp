@@ -5,11 +5,9 @@
 #include <qdebug.h>
 #include <QTest>
 
-#include "../DKV2/appconfig.h"
 #include "../DKV2/dkdbhelper.h"
 #include "../DKV2/creditor.h"
 #include "../DKV2/contract.h"
-#include "../DKV2/booking.h"
 
 #include "testhelper.h"
 
@@ -22,6 +20,13 @@ void getRidOfFile(QString filename)
     if( QFile::exists(filename))
         QFile::remove(filename);
     QVERIFY(not QFile::exists(filename));
+}
+
+void initTestDb_InMemory()
+{   LOG_CALL;
+    init_DKDBStruct();
+    openDbConnection_InMemory();
+    QVERIFY(dkdbstructur.createDb());
 }
 
 void initTestDb()
@@ -61,10 +66,15 @@ void initTestDbFromTemplate()
 }
 void createTestDb_withRandomData()
 {   LOG_CALL;
+    dbgTimer t(qsl("createTestDb_wRandomData"));
     createTestDb();
     saveRandomCreditors(10);
     saveRandomContracts(8);
     activateRandomContracts(100 /* % */);
+}
+void cleanupTestDb_InMemory()
+{   LOG_CALL;
+    closeAllDatabaseConnections();
 }
 void cleanupTestDb()
 {   LOG_CALL;
@@ -73,6 +83,12 @@ void cleanupTestDb()
         QFile::remove(testDbFilename);
 //    QDir().rmdir("../data");
     QVERIFY2( (QFile::exists(testDbFilename) == false), "destroy database failed." );
+}
+void openDbConnection_InMemory()
+{
+    QSqlDatabase::addDatabase(dbTypeName);
+    QSqlDatabase::database().setDatabaseName(qsl(":memory:"));
+    QVERIFY(QSqlDatabase::database().open());
 }
 void openDbConnection(QString file /*testDbFilename*/)
 {

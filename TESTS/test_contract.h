@@ -4,8 +4,6 @@
 #include <QSqlDatabase>
 #include <QObject>
 
-#include "testhelper.h"
-
 class test_contract : public QObject
 {
     Q_OBJECT
@@ -15,8 +13,6 @@ private:
     // helper
 signals:
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
     void init();
     void cleanup();
     // the actual tests

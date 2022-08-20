@@ -6,24 +6,14 @@
 #include "testhelper.h"
 #include "test_properties.h"
 
-void test_properties::initTestCase()
-{
-    createTestDbTemplate();
-}
-
-void test_properties::cleanupTestCase()
-{
-    cleanupTestDbTemplate();
-}
-
 void test_properties::init()
 {    LOG_CALL;
-     initTestDbFromTemplate();
+     initTestDb_InMemory ();
 }
 
 void test_properties::cleanup()
 {   LOG_CALL;
-    cleanupTestDb();
+    cleanupTestDb_InMemory ();
 }
 
 void test_properties::test_setProperty_getProperty()

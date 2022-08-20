@@ -2,30 +2,20 @@
 
 #include "../DKV2/helper.h"
 #include "../DKV2/helpersql.h"
-#include "../DKV2/dkdbhelper.h"
 #include "../DKV2/creditor.h"
 #include "../DKV2/contract.h"
 
+#include "testhelper.h"
 #include "test_contract.h"
-
-void test_contract::initTestCase()
-{   LOG_CALL;
-    createTestDbTemplate();
-}
-
-void test_contract::cleanupTestCase()
-{   LOG_CALL;
-    cleanupTestDbTemplate();
-}
 
 void test_contract::init()
 {   LOG_CALL;
-    initTestDbFromTemplate();
+    initTestDb_InMemory ();
 }
 
 void test_contract::cleanup()
 {   LOG_CALL;
-    cleanupTestDb();
+    cleanupTestDb_InMemory ();
 }
 
 void test_contract::test_createUninit_Contract()
@@ -143,7 +133,7 @@ void test_contract::test_randomContract()
 void test_contract::test_randomContracts()
 {   LOG_CALL;
     int count = 50;
-    dbgTimer t(QString::number(count) + " contracts");
+//    dbgTimer t(QString::number(count) + " contracts");
     saveRandomCreditors(count/3);
     saveRandomContracts(count);
     QCOMPARE(rowCount("Vertraege"), count);
@@ -581,7 +571,7 @@ void test_contract::test_activate_interest_on_same_date_will_fail()
 
 void test_contract::test_getValue_byDate()
 {
-    dbgTimer t("8x contract::getValue()");
+//    dbgTimer t("8x contract::getValue()");
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
     cont.setInterestRate(1.0);
@@ -606,7 +596,7 @@ void test_contract::test_getValue_byDate()
 
 void test_contract::test_contract_cv_wInterestPayout()
 {
-    dbgTimer t(QStringLiteral("8x contract::getValue()"));
+//    dbgTimer t(QStringLiteral("8x contract::getValue()"));
     creditor c(saveRandomCreditor());
     contract cont;
     cont.initRandom(c.id());
@@ -661,7 +651,7 @@ void test_contract::test_contract_cv_wInterestPayout()
 
 void test_contract::test_contract_cv_reInvesting()
 {
-    dbgTimer t(QStringLiteral("8x contract::getValue()"));
+//    dbgTimer t(QStringLiteral("8x contract::getValue()"));
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
     cont.setInterestRate(1.0);
