@@ -44,6 +44,7 @@ inline int d2percent(const double d)
 
 
 
+
 int TageZwischen_30_360(QDate von, QDate bis);
 
 int TageBisJahresende_30_360(QDate d);

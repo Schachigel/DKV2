@@ -1,0 +1,11 @@
+Endabrechnung für den Vertrag {{Vertrag.VertragsNr}}; {{Vertrag.strZSatz}}; {{#Vertrag.zzAusgesezt}}(ausgesetzt bis Baugenehmigung){{/Vertrag.zzAusgesezt}}
+{{creditor.Vorname}} {{creditor.Nachname}}; {{creditor.Strasse}}; {{creditor.Plz}}; {{creditor.Stadt}}
+Buchungen; ;
+Datum; Text; Betrag
+{{#Vertrag}}
+{{#Buchungen}}
+{{Date}}; {{Text}}; {{Betrag}}
+{{/Buchungen}}
+;;
+{{endDatum}}; Endsaldo; {{endBetrag}}
+{{/Vertrag}}

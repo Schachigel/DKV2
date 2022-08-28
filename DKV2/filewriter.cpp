@@ -54,12 +54,11 @@ bool writeRenderedTemplate(const QString &templateFileName, const QString &outpu
 {   LOG_CALL;
     // get file extension from templateName
     QFileInfo fi(templateFileName);
-    QString ext = qsl(".") + fi.completeSuffix();
 
     // render the content.
     QString renderedText = mustachReplace(templateFileName, data);
     // Write the html content to file. (e.g. for editing)
-    stringToFile(renderedText, appConfig::Outdir() + outputFileName + ext);
+    stringToFile(renderedText, appConfig::Outdir() +qsl("/") +outputFileName);
 
     return true;
 }
