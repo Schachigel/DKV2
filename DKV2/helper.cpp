@@ -1,4 +1,4 @@
-
+#include "pch.h"
 #include "helper.h"
 
 QFile* outFile_p{nullptr};
