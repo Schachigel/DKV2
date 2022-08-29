@@ -81,6 +81,11 @@ RC_FILE += $${TARGET}.rc
 #         -lVersion
 
 SOURCES += \
+        ../qtcsv/contentiterator.cpp \
+        ../qtcsv/reader.cpp \
+        ../qtcsv/stringdata.cpp \
+        ../qtcsv/variantdata.cpp \
+        ../qtcsv/writer.cpp \
         appconfig.cpp \
         booking.cpp \
         contract.cpp \
@@ -132,6 +137,12 @@ SOURCES += \
 PRECOMPILED_HEADER  = pch.h
 
 HEADERS += pch.h\
+        ../qtcsv/include/abstractdata.h \
+        ../qtcsv/include/qtcsv_global.h \
+        ../qtcsv/include/reader.h \
+        ../qtcsv/include/stringdata.h \
+        ../qtcsv/include/variantdata.h \
+        ../qtcsv/include/writer.h \
         appconfig.h \
         booking.h \
         busycursor.h \

@@ -7,12 +7,12 @@
 
 #include "busycursor.h"
 #include "helper.h"
+#include "helperfile.h"
 #include "helpersql.h"
 #include "appconfig.h"
 #include "csvwriter.h"
 #include "creditor.h"
 #include "contract.h"
-#include "booking.h"
 #include "investment.h"
 #include "letterTemplate.h"
 #include "dkdbviews.h"

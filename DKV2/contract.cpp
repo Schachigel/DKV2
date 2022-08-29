@@ -674,7 +674,7 @@ QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
     v["Vertragsdatum"] = td.getValue(fnVertragsDatum).toDate().toString(qsl("dd.MM.yyyy"));
     v["Vertragsende"] = hasEndDate() ? td.getValue(fnLaufzeitEnde).toDate().toString(qsl("dd.MM.yyyy")) : "offen";
     v["ZSatz"] = interestRate();
-    v["strZSatz"] = QString::number(interestRate(), 'f', 2);
+    v["strZSatz"] = prozent2prozent_str (interestRate());
     v["zzAusgesezt"] = QVariant(not interestActive());
     v["Anmerkung"] = comment();
     v["Betrag"] = euroFromCt(td.getValue(fnBetrag).toInt());

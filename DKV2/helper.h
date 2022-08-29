@@ -14,8 +14,6 @@
 #include <QFile>
 #include <QDebug>
 
-#include "helperfile.h"
-
 #define qsl(x) QStringLiteral(x)
 
 inline void expected_error (QString MSG) {QMessageBox::information(NULL, qsl("Fehler"), MSG); qInfo() << MSG;}

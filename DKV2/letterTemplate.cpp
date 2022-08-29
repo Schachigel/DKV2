@@ -8,7 +8,6 @@
 #include "contract.h"
 #include "helper.h"
 #include "appconfig.h"
-#include "dkdbhelper.h"
 #include "tabledatainserter.h"
 #include "letterTemplate.h"
 

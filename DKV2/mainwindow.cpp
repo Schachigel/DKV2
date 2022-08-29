@@ -10,12 +10,11 @@
 #include "pch.h"
 
 #include "busycursor.h"
-
+#include "helperfile.h"
 #include "appconfig.h"
 #include "investment.h"
 #include "opendatabase.h"
 #include "wiznewdatabase.h"
-#include "wizopenornewdatabase.h"
 #include "dlgaskdate.h"
 #include "uiitemformatter.h"
 #include "dkdbcopy.h"
