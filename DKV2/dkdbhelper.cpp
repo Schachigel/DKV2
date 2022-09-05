@@ -424,7 +424,7 @@ QVector<contractRuntimeDistrib_rowData> contractRuntimeDistribution()
                   "FROM (%1)").arg(sqlContractsActiveView);
     QSqlQuery q; q.setForwardOnly(true);
     if( not q.exec(sql)) {
-        qCritical() << "calculation of runtime distribution failed: " << q.lastError() << Qt::endl << q.lastQuery();
+        qCritical() << "calculation of runtime distribution failed: " << q.lastError() << "\n" << q.lastQuery();
         return QVector<contractRuntimeDistrib_rowData>();
     }
 

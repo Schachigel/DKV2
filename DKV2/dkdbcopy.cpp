@@ -171,7 +171,7 @@ bool copy_mangledCreditors(const QSqlDatabase& db =QSqlDatabase::database())
         tdi.setValue(creditor::fnBuchungskonto, qsl(""));
 
         if( tdi.InsertData_noAuto() == -1) {
-            qDebug() << "Error inserting Data into deperso.Copy Table" << q.lastError() << Qt::endl << q.record();
+            qDebug() << "Error inserting Data into deperso.Copy Table" << q.lastError() << qsl("\n") << q.record();
             success = false;
             break;
         }

@@ -118,7 +118,7 @@ bool table2csv(const QString& filename, const QVector<dbfield>& fields, const QV
     QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where);
     QSqlQuery q;
     if( not q.exec(sql)) {
-        qCritical() << "sql faild to execute" << q.lastError() << Qt::endl << "SQL: " << q.lastQuery();
+        qCritical() << "sql faild to execute" << q.lastError() << "\nSQL: " << q.lastQuery();
         return false;
     }
     QLocale locale;

@@ -230,7 +230,7 @@ void MainWindow::prepare_startPage()
     }
     messageHtml += qsl("<tr><td></td><td>[%1]</td><td></td></tr>").arg(ui->statusLabel->text ());
     messageHtml += qsl("</table>");
-    qDebug() <<"welcome Screen html: " << Qt::endl << messageHtml << qsl("\n");
+    qDebug() <<"welcome Screen html: " << "\n" << messageHtml << qsl("\n");
     ui->lblInfo->setText(messageHtml);
 }
 void MainWindow::on_action_menu_database_start_triggered()

@@ -196,7 +196,7 @@ void test_views::cleanup()
 ////    avg: 1.25%, w avg 1.5%
 ////    */
 
-//    qInfo().noquote() << "pre settlement check. Expected Values: " << Qt::endl << expected.toString();
+//    qInfo().noquote() << "pre settlement check. Expected Values: " << "\n" << expected.toString();
 //    QCOMPARE(expected, getStatistic());
 
 //    /*
@@ -206,8 +206,8 @@ void test_views::cleanup()
 //    activeReInv2.annualSettlement(activationDate.year());
 //    activeNonReIn1.annualSettlement(activationDate.year());
 //    activeNonReIn2.annualSettlement(activationDate.year());
-//    qInfo().noquote() << activeReInv1.toString("Re1") << Qt::endl << activeReInv2.toString("Re2") << Qt::endl <<
-//        activeNonReIn1.toString("nRe1") << Qt::endl << activeNonReIn2.toString("nRe2");
+//    qInfo().noquote() << activeReInv1.toString("Re1") << "\n" << activeReInv2.toString("Re2") << "\n" <<
+//        activeNonReIn1.toString("nRe1") << "\n" << activeNonReIn2.toString("nRe2");
 
 //    // setup expected ...
 //    expected.reinvest(v, ir, 180);

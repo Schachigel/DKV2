@@ -120,7 +120,7 @@ int tableRecordCount( const QString& tname, const QSqlDatabase& db /*=QSqlDataba
         qDebug() << "#Datensätze: " << q.record().value(0).toInt();
         return q.record().value(0).toInt();
     } else {
-        qCritical() << "tableRecordCount: SELECT failed " << q.lastError() << Qt::endl << q.lastQuery() << qsl("\n");
+        qCritical() << "tableRecordCount: SELECT failed " << q.lastError() << "\n" << q.lastQuery() << qsl("\n");
         return -1;
     }
 }

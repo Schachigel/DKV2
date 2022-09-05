@@ -9,7 +9,7 @@ stats getStatsFromSql(QString sql, QDate date)
     stats retval;
     QSqlQuery q; q.prepare(sql.replace(qsl(":date"), date.toString(Qt::ISODate)));
     if( not q.exec()) {
-        qInfo() << "getStatsFromSql: Query failed: " << q.lastError() << Qt::endl << q.lastQuery();
+        qInfo() << "getStatsFromSql: Query failed: " << q.lastError() << "\n" << q.lastQuery();
         return retval;
     }
     // init
