@@ -23,7 +23,7 @@ void test_dkdbhelper::test_selectQueryFromFields()
     but as the dkdbstructur is useful for this
     the test was moved here */
     QString sql = selectQueryFromFields(dkdbstructur["Buchungen"].Fields(), dkdbstructur["Buchungen"].ForeignKeys());
-    qInfo() << sql << Qt::endl;
+    qInfo() << sql << qsl("\n");
     QCOMPARE(sql,  "SELECT Buchungen.id, Buchungen.VertragsId, Buchungen.Datum, Buchungen.BuchungsArt, Buchungen.Betrag, Buchungen.Zeitstempel FROM Buchungen WHERE true AND Buchungen.VertragsId=Vertraege.id");
 }
 

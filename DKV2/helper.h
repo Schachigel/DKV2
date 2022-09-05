@@ -32,9 +32,9 @@ class dbgTimer
 public:
     dbgTimer() {t.start();}
     dbgTimer(const dbgTimer&) = delete;
-    dbgTimer(const QString& fu) : fname(fu){t.start(); qInfo().noquote() << qsl("Debug Timer ") + fname << qsl(" start") << Qt::endl;}
+    dbgTimer(const QString& fu) : fname(fu){t.start(); qInfo().noquote() << qsl("Debug Timer ") + fname << qsl(" start") << qsl("\n");}
     ~dbgTimer() {qInfo().noquote() << Qt::endl << (fname.isEmpty() ? qsl("") : fname+ qsl(" end") )
-                                   << Qt::endl << qsl("Elapsed time: ")<< t.elapsed() << "ms" << Qt::endl;}
+                                   << Qt::endl << qsl("Elapsed time: ")<< t.elapsed() << "ms" << qsl("\n");}
     void lab(const QString& msg =QString()) {
         qint64 now =t.elapsed();
         qInfo().noquote() << (fname.isEmpty() ? qsl("") : fname) <<  qsl(" Lab# ")
@@ -60,7 +60,7 @@ public:
     ~functionlogging() {
         QString fill=QString(qsl("<")).repeated(depth);
         depth--;
-        qInfo().noquote() << fill << fuName << Qt::endl;
+        qInfo().noquote() << fill << fuName << qsl("\n");
     }
 };
 

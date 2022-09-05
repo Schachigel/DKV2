@@ -612,19 +612,19 @@ QString contract::toString(const QString &title) const
 {
     QString ret;
     QTextStream stream(&ret);
-    stream << title << Qt::endl;
+    stream << title << qsl("\n");
     if( id() <=0)
-        stream << qsl("[contract was not saved or loaded from DB]") << Qt::endl;
+        stream << qsl("[contract was not saved or loaded from DB]") << qsl("\n");
     else
-        stream << qsl("[id:") << id_aS() << qsl("]") << Qt::endl;
+        stream << qsl("[id:") << id_aS() << qsl("]") << qsl("\n");
     if( not initialBookingReceived()) {
-        stream << "Wert (gepl.):     " << plannedInvest() << Qt::endl;
-        stream << "Zinssatz (gepl.): " << interestRate() << Qt::endl;
+        stream << "Wert (gepl.):     " << plannedInvest() << qsl("\n");
+        stream << "Zinssatz (gepl.): " << interestRate() << qsl("\n");
         return ret;
     }
-    stream << "Wert:     " << value() << Qt::endl;
-    stream << "Zinssatz: " << interestRate() << Qt::endl;
-    stream << "Buchungen:" << bookings::getBookings(id()).count() << Qt::endl;
+    stream << "Wert:     " << value() << qsl("\n");
+    stream << "Zinssatz: " << interestRate() << qsl("\n");
+    stream << "Buchungen:" << bookings::getBookings(id()).count() << qsl("\n");
     return ret;
 }
 

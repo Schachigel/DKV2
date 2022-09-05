@@ -186,16 +186,16 @@ QVariant executeSingleValueSql(const QString& sql, const QSqlDatabase& db)
 {
     QSqlQuery q(db);
     if( not q.exec(sql)) {
-        qCritical() << "SingleValueSql failed to execute: " << q.lastError() << Qt::endl << q.lastQuery() << Qt::endl;;
+        qCritical() << "SingleValueSql failed to execute: " << q.lastError() << Qt::endl << q.lastQuery() << qsl("\n");;
         return QVariant();
     }
     q.last();
     if(q.at() > 0) {
-        qDebug() << "SingleValueSql returned more than one value\n" << q.lastQuery() << Qt::endl;;
+        qDebug() << "SingleValueSql returned more than one value\n" << q.lastQuery() << qsl("\n");;
         return QVariant();
     }
     if(q.at() < 0) {
-        // qDebug() << "SingleValueSql returned no value\n" << q.lastQuery() << Qt::endl;;
+        // qDebug() << "SingleValueSql returned no value\n" << q.lastQuery() << qsl("\n");;
         return QVariant();
     }
     qInfo() << "sql " << sql << " returned " << q.value(0);

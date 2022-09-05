@@ -99,7 +99,7 @@ double ZinsesZins_30_360(const double zins, const double wert,const QDate von, c
         << "\nErstes Jahr : " << ZinsImErstenJahr << "(" << TageImErstenJahr << " Tage)"
         << "\nVolle Jahre : " << ZinsVolleJahre << "(" << jahre << " Jahre)"
         << "\nLetztes Jahr: " << ZinsRestjahr << "(" << TageImLetztenJahr << " Tage)"
-        << "\nGesamtzins  : " << gesamtZins << Qt::endl;
+        << "\nGesamtzins  : " << gesamtZins << qsl("\n");
     return r2(gesamtZins);
 }
 
@@ -162,7 +162,7 @@ double ZinsesZins_act_act(const double zins, const double wert,const QDate von, 
         << "\nErstes Jahr : " << ZinsImErstenJahr << "(" << TageImErstenJahr << "/" << dpy << ") Tage)"
         << "\nVolle Jahre : " << ZinsVolleJahre << "(" << jahre << " Jahre)"
         << "\nLetztes Jahr: " << ZinsRestjahr << "(" << TageImLetztenJahr <<  "/" << dp_final_y << " Tage)"
-        << "\nGesamtzins  : " << gesamtZins << Qt::endl;
+        << "\nGesamtzins  : " << gesamtZins << qsl("\n");
     return r2(gesamtZins);
 
 }

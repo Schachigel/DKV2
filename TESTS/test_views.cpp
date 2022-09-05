@@ -140,7 +140,7 @@ void test_views::cleanup()
 //    contract inactive; inactive.initRandom(inactiveCred.id());
 //    inactive.setPlannedInvest(5000.);
 //    inactive.saveNewContract();
-//    qInfo().noquote() << inactive.toString(qsl("Inactive Contract:")) << Qt::endl;
+//    qInfo().noquote() << inactive.toString(qsl("Inactive Contract:")) << qsl("\n");
 //    expected =getStatistic();
 
 //    creditor activeCred1(saveRandomCreditor());
