@@ -1,11 +1,10 @@
-#include <QVector>
-#include <QRandomGenerator>
-#include <QTextStream>
-#include <QtMath>
-#include <QLocale>
+#include "pch.h"
 
 #include "helper.h"
+#include "helpersql.h"
 #include "appconfig.h"
+#include "dbstructure.h"
+#include "dkdbhelper.h"
 #include "contract.h"
 #include "booking.h"
 

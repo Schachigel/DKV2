@@ -1,7 +1,9 @@
 #include <QtTest>
 
 #include "../DKV2/dkdbviews.h"
+#include "../DKV2/creditor.h"
 
+#include "testhelper.h"
 #include "test_statistics.h"
 
 stats getStatsFromSql(QString sql, QDate date)

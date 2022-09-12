@@ -1,10 +1,8 @@
 #include <iso646.h>
-#include <QSettings>
-#include <QStandardPaths>
-#include <QFileDialog>
+#include "pch.h"
 
 #include "helper.h"
-#include "helperfin.h"
+#include "helpersql.h"
 #include "appconfig.h"
 #include "dkdbhelper.h"
 

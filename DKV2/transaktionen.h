@@ -1,6 +1,7 @@
 #ifndef TRANSAKTIONEN_H
 #define TRANSAKTIONEN_H
 
+#include "pch.h"
 #include "contract.h"
 
 void newCreditorAndContract();

@@ -1,13 +1,9 @@
 #ifndef WIZNEW_H
 #define WIZNEW_H
 
-#include <QStringLiteral>
-#include <QRadioButton>
-#include <QDateEdit>
-#include <QComboBox>
-#include <QCheckBox>
-#include <QLabel>
-#include <QWizard>
+#include "pch.h"
+
+#include "creditor.h"
 #include "contract.h"
 #include "helper.h"
 

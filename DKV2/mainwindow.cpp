@@ -1,7 +1,6 @@
 #include <QtGlobal>
 
 #if defined(Q_OS_WIN)
-#include "windows.h"
 #else
 #include <stdlib.h>
 #endif
@@ -12,6 +11,7 @@
 #include "busycursor.h"
 #include "helperfile.h"
 #include "appconfig.h"
+#include "creditor.h"
 #include "investment.h"
 #include "opendatabase.h"
 #include "wiznewdatabase.h"

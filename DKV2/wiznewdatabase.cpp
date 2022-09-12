@@ -1,17 +1,10 @@
 #include <iso646.h>
 
-#include <QStringLiteral>
-#include <QLineEdit>
-#include <QIntValidator>
-#include <QLabel>
-#include <QVBoxLayout>
-#include <QCheckBox>
-#include <QFileDialog>
-#include <QRandomGenerator>
+#include "pch.h"
 
 #include "helper.h"
+#include "helpersql.h"
 #include "appconfig.h"
-#include "dkdbhelper.h"
 #include "wiznewdatabase.h"
 
 /*

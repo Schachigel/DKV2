@@ -1,11 +1,11 @@
-#include "helperfile.h"
 #include "pch.h"
-#include <QDate>
 
+#include "helperfile.h"
+#include "helpersql.h"
 #include "appconfig.h"
+#include "creditor.h"
 #include "booking.h"
 #include "csvwriter.h"
-#include "dkdbcopy.h"
 #include "helper.h"
 #include "investment.h"
 

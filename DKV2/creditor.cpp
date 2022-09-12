@@ -1,11 +1,9 @@
-#include <QStringBuilder>
-#include <QSqlRecord>
-#include <QRegularExpression>
-#include <QRandomGenerator>
+#include "pch.h"
 
 #include "helper.h"
 #include "helpersql.h"
 #include "ibanvalidator.h"
+#include "booking.h"
 #include "creditor.h"
 
 const QString creditor::fnId           {qsl("id")};

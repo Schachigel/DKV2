@@ -5,6 +5,7 @@
 #include <qdebug.h>
 #include <QTest>
 
+#include "../DKV2/helpersql.h"
 #include "../DKV2/dkdbhelper.h"
 #include "../DKV2/creditor.h"
 #include "../DKV2/contract.h"

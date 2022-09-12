@@ -1,12 +1,12 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
-
 #include "pch.h"
 
 #include "dlgdisplaycolumns.h"
 #include "busycursor.h"
-#include "contracttablemodel.h"
 #include "transaktionen.h"
+#include "creditor.h"
+
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 
 
 // Creditor list view page

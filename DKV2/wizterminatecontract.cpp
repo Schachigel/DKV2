@@ -1,10 +1,7 @@
 
-#include <QLabel>
-#include <QDateEdit>
-#include <QCheckBox>
-#include <QVBoxLayout>
-#include <QMessageBox>
+#include "pch.h"
 
+#include "helpersql.h"
 #include "wizterminatecontract.h"
 
 wpTerminateContract_DatePage::wpTerminateContract_DatePage(QWidget* p) : QWizardPage(p)

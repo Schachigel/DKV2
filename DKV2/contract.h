@@ -8,9 +8,7 @@
 #include "helper.h"
 #include "helperfin.h"
 #include "tabledatainserter.h"
-#include "dkdbhelper.h"
 #include "booking.h"
-#include "creditor.h"
 
 enum class interestModel
 {
