@@ -17,11 +17,16 @@ void csvwriter::addColumn(const QString& header)
 int csvwriter::addColumns(const QString& headers)
 {   LOG_CALL_W(headers);
     QList<QString> list = headers.split(separator);
-    for(auto& s : qAsConst(list))
+    return addColumns(list);
+}
+
+int csvwriter::addColumns(const QStringList headers)
+{   LOG_CALL;
+    for(auto& s : qAsConst(headers))
     {
         addColumn(s);
     }
-    return list.size();
+    return headers.size();
 }
 
 void csvwriter::appendToRow(const QString& value)
@@ -30,18 +35,16 @@ void csvwriter::appendToRow(const QString& value)
     v.replace(separator, qsl(","));
     v.replace(lineBreak, qsl(" | "));
     currentRow.append(v.trimmed());
-    if( currentRow.size() == headers.size())
-    {
+    if( currentRow.size() == headers.size()) {
         rows.append( currentRow);
         currentRow.clear();
     }
 }
 
-void csvwriter::addRow(const QList<QString>& cols)
+void csvwriter::addRow(const QStringList &cols)
 {   //LOG_CALL;
     Q_ASSERT(cols.size() == headers.size());
-    for( auto& s : qAsConst(cols))
-    {
+    for( auto& s : qAsConst(cols)) {
         appendToRow(s);
     }
 }
@@ -60,7 +63,7 @@ QString csvwriter::appendCsvLine(const QString& line, const QString& appendix) c
 }
 
 
-QString csvwriter::out() const
+QString csvwriter::toString() const
 {   LOG_CALL;
     QString out;
     for( auto& i : qAsConst(headers)) {
@@ -104,10 +107,28 @@ bool csvwriter::saveAndShowInExplorer(const QString& filename) const
         s.setDevice (&file);
     s.setCodec("UTF-8");
     s.setGenerateByteOrderMark(true);
-    s << out();
+    s << toString();
 
     showInExplorer(path);
     return true;
+}
+
+bool StringLists2csv(const QString& filename, const QStringList& header, const QVector<QStringList>& data)
+{
+    LOG_CALL;
+    int numColumns =header.size();
+    csvwriter csv (qsl(";"));
+    qDebug() << header;
+    csv.addColumns(header);
+    for( auto& line : qAsConst(data)) {
+        qDebug() << line;
+        if(line.size() not_eq numColumns){
+            qWarning() << "csv file not created due to wrong number of elements in " << line;
+            return false;
+        }
+        csv.addRow(line);
+    }
+    return csv.saveAndShowInExplorer (filename);
 }
 
 bool table2csv(const QString& filename, const QVector<dbfield>& fields, const QVector<QVariant::Type>& types, const QString& where)
@@ -150,6 +171,5 @@ bool table2csv(const QString& filename, const QVector<dbfield>& fields, const QV
             }
         }
     }
-
     return csv.saveAndShowInExplorer(filename);
 }

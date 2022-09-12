@@ -1,18 +1,9 @@
 #ifndef DKDBHELPER_H
 #define DKDBHELPER_H
 
-#include <QSqlDatabase>
+#include "pch.h"
 
-#include <QDateTime>
-#include <QList>
-#include <QString>
-
-#include "booking.h"
-#include "dbtable.h"
-#include "dbfield.h"
 #include "dbstructure.h"
-#include "helpersql.h"
-
 
 bool insertDKDB_Views( const QSqlDatabase &db =QSqlDatabase::database());
 bool insertDKDB_Indices( const QSqlDatabase& db=QSqlDatabase::database());
