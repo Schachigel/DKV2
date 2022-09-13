@@ -1,8 +1,3 @@
-#include <QLabel>
-#include <QDateEdit>
-#include <QCheckBox>
-#include <QVBoxLayout>
-#include <QMessageBox>
 
 #include "wizcancelcontract.h"
 

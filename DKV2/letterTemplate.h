@@ -1,9 +1,7 @@
 #ifndef LETTER_H
 #define LETTER_H
 
-#include <QMap>
-#include <QDate>
-#include <QTextDocument>
+#include "pch.h"
 
 #include "dbtable.h"
 #include "helper.h"

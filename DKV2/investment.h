@@ -1,6 +1,6 @@
 #ifndef INVESTMENT_H
 #define INVESTMENT_H
-#include <QDate>
+#include "pch.h"
 #include "contract.h"
 #include "dbtable.h"
 

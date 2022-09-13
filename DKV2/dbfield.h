@@ -3,9 +3,7 @@
 
 #include <iso646.h>
 
-#include <QSqlField>
-#include <QString>
-#include <QStringLiteral>
+#include "pch.h"
 
 #include "helper.h"
 

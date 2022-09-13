@@ -1,13 +1,10 @@
 #ifndef KREDITOR_H
 #define KREDITOR_H
 
-#include <QString>
-#include <QPair>
-#include <QList>
+#include "pch.h"
 
 #include "helper.h"
 #include "tabledatainserter.h"
-#include "dkdbhelper.h"
 
 struct creditor
 {

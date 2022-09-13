@@ -1,4 +1,3 @@
-#include "pch.h"
 
 #include "helperfile.h"
 #include "helpersql.h"

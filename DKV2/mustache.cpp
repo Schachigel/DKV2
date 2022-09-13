@@ -14,10 +14,11 @@
 
 #include "mustache.h"
 
-#include <QtCore/QDebug>
-#include <QtCore/QFile>
-#include <QtCore/QStringList>
-#include <QtCore/QTextStream>
+#include "pch.h"
+//#include <QtCore/QDebug>
+//#include <QtCore/QFile>
+//#include <QtCore/QStringList>
+//#include <QtCore/QTextStream>
 
 using namespace Mustache;
 

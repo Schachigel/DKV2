@@ -2,7 +2,8 @@
 #define BOOKING_H
 #include <iso646.h>
 
-#include <QDate>
+#include "pch.h"
+
 #include "helper.h"
 #include "dbtable.h"
 

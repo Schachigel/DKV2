@@ -1,9 +1,7 @@
 #ifndef DBTABLE_H
 #define DBTABLE_H
 
-#include <QStringLiteral>
-
-#include <QSqlDatabase>
+#include "pch.h"
 
 #include "dbfield.h"
 

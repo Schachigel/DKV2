@@ -1,10 +1,9 @@
 #include <iso646.h>
-#include "pch.h"
 
 #include "helper.h"
 #include "helpersql.h"
 #include "appconfig.h"
-#include "dkdbhelper.h"
+#include "dkv2version.h"
 
 
 /* static data */

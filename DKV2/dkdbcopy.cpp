@@ -1,4 +1,3 @@
-#include <QFileInfo>
 
 #include "creditor.h"
 #include "tabledatainserter.h"

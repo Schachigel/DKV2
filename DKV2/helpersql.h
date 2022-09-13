@@ -1,11 +1,7 @@
 #ifndef SQLHELPER_H
 #define SQLHELPER_H
 
-#include <QSqlQuery>
-#include <QSqlError>
-#include <QSqlRecord>
-#include <QVariant>
-#include <QDate>
+#include "pch.h"
 
 #include "dbfield.h"
 #include "dbstructure.h"

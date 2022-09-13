@@ -1,7 +1,4 @@
-#include <QPrinter>
-#include <QFile>
-#include <QDir>
-#include <QFileInfo>
+
 #include "helperfile.h"
 #include "appconfig.h"
 #include "mustache.h"

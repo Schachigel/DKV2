@@ -1,7 +1,5 @@
 #include <iso646.h>
 
-#include "pch.h"
-
 #include "appconfig.h"
 #include "helper.h"
 #include "helperfin.h"

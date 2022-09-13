@@ -1,9 +1,7 @@
 #ifndef CONTRACTTABLEMODEL_H
 #define CONTRACTTABLEMODEL_H
 
-#include <QSqlTableModel>
-#include <QSortFilterProxyModel>
-#include <QObject>
+#include "pch.h"
 
 enum colmn_Pos {
     cp_vid,

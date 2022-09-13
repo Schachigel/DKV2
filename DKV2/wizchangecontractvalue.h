@@ -2,9 +2,8 @@
 #define CHANGECONTRACTVALUEWIZ_H
 
 
-#include <QDate>
-#include <QWizard>
-#include <QLabel>
+#include "pch.h"
+
 #include "helper.h"
 
 const QString fnDeposit_notPayment {qsl("deposit_notPayment")};

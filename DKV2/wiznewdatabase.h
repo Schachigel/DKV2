@@ -1,11 +1,7 @@
 #ifndef FILESELECTIONWIZ_H
 #define FILESELECTIONWIZ_H
 
-#include <QSqlDatabase>
-#include <QStringLiteral>
-#include <QLineEdit>
-#include <QWizard>
-#include <QLabel>
+#include "pch.h"
 
 #include "helper.h"
 

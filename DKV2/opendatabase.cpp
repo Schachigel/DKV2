@@ -1,9 +1,6 @@
 
-#include "pch.h"
 #include "appconfig.h"
 #include "helper.h"
-#include "helpersql.h"
-#include "busycursor.h"
 #include "dbstructure.h"
 #include "dkdbhelper.h"
 #include "wizopenornewdatabase.h"

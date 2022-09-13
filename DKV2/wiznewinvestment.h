@@ -2,6 +2,7 @@
 #define WIZNEWINVESTMENT_H
 
 #include "pch.h"
+
 #include "investment.h"
 
 extern const QString pnVon /*=qsl("von*")*/;

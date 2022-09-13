@@ -1,7 +1,7 @@
 #ifndef DLGDISPLAYCOLUMNS_H
 #define DLGDISPLAYCOLUMNS_H
 
-#include <QDialog>
+#include "pch.h"
 
 struct dlgDisplayColumns : public QDialog
 {

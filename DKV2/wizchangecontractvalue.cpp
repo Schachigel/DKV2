@@ -1,13 +1,3 @@
-#include <QDebug>
-#include <QVariant>
-
-#include <QLabel>
-#include <QLineEdit>
-#include <QDateEdit>
-#include <QRadioButton>
-#include <QCheckBox>
-#include <QVBoxLayout>
-#include <QMessageBox>
 
 #include "helper.h"
 #include "appconfig.h"

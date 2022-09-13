@@ -19,7 +19,6 @@ SOFTWARE.
 
 #include "contractsheadersortingadapter.h"
 #include <iso646.h>
-#include "pch.h"
 
 contractsHeaderSortingAdapter::contractsHeaderSortingAdapter(QObject *parent) : QObject(parent)
 {

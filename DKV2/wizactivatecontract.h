@@ -1,9 +1,7 @@
 #ifndef ACTIVATECONTRACTWIZ_H
 #define ACTIVATECONTRACTWIZ_H
 
-#include <QDate>
-#include <QWizard>
-#include <QLabel>
+#include "pch.h"
 
 struct wpInitialPayment_IntroPage : public QWizardPage {
     wpInitialPayment_IntroPage(QWidget* w =nullptr);

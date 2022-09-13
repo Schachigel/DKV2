@@ -1,9 +1,7 @@
 #ifndef VERTRAG_H
 #define VERTRAG_H
 
-#include <QString>
-#include <QVector>
-#include <QDate>
+#include "pch.h"
 
 #include "helper.h"
 #include "helperfin.h"

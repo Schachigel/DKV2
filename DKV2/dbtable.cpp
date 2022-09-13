@@ -1,4 +1,3 @@
-#include <QSqlError>
 
 #include "helper.h"
 #include "helpersql.h"

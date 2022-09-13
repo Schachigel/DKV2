@@ -1,4 +1,3 @@
-#include "pch.h"
 
 #include "opendatabase.h"
 #include "mainwindow.h"

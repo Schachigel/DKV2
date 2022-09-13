@@ -1,9 +1,7 @@
 #ifndef WIZTERMINATECONTRACT_H
 #define WIZTERMINATECONTRACT_H
 
-#include <QWizard>
-#include <QDate>
-#include <QLabel>
+#include "pch.h"
 
 #include "contract.h"
 

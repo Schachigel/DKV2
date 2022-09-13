@@ -1,17 +1,8 @@
 
-#include <QDateTime>
-#include <QFile>
-#include <QDir>
-#include <QFileInfo>
-#include <QTemporaryFile>
-#include <QProcess>
-#include <QTextDocument>
-// 4 html pdf generation
-#include <QPainter>
-#include <QPdfWriter>
 #include "appconfig.h"
 #include "helper.h"
 #include "helperfile.h"
+
 
 QString tempPathTemplateFromPath (const QString& path)
 {

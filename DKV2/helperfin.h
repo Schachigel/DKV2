@@ -1,8 +1,7 @@
 #ifndef FINHELPER_H
 #define FINHELPER_H
 
-#include <QDate>
-#include <QRegExpValidator>
+#include "pch.h"
 
 inline double r2(const double d)
 {

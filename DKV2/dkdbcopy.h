@@ -1,8 +1,7 @@
 #ifndef DKDBCOPY_H
 #define DKDBCOPY_H
 
-#include <QString>
-#include <QSqlDatabase>
+#include "pch.h"
 
 #include "dbstructure.h"
 #include "helper.h"

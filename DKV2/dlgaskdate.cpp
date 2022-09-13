@@ -1,6 +1,6 @@
+
 #include "dlgaskdate.h"
 #include "helper.h"
-#include "pch.h"
 
 dlgAskDate::dlgAskDate(QWidget *parent) : QDialog(parent)
 {

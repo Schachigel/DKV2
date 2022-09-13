@@ -17,11 +17,14 @@
 #include "wiznewdatabase.h"
 #include "dlgaskdate.h"
 #include "uiitemformatter.h"
+#include "dkdbhelper.h"
+#include "dkdbviews.h"
 #include "dkdbcopy.h"
 #include "contracttablemodel.h"
 #include "transaktionen.h"
 #include "uebersichten.h"
 
+#include "contractsheadersortingadapter.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 

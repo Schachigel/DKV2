@@ -2,6 +2,7 @@
 #define DBSTRUCTURE_H
 
 #include "pch.h"
+
 #include "dbtable.h"
 
 extern dbstructure dkdbstructur;

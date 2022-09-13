@@ -1,11 +1,8 @@
 #ifndef WIZOPENORNEWDATABASE_H
 #define WIZOPENORNEWDATABASE_H
 
-#include <QWizard>
-#include <QObject>
-#include <QRadioButton>
-#include <QLabel>
-#include <QString>
+#include "pch.h"
+
 #include "helper.h"
 
 enum { NewOrOpen, selectNewFile, Zinssusance, selectExistingFile};

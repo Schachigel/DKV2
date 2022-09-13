@@ -1,12 +1,5 @@
-#include <QLabel>
-#include <QLineEdit>
-#include <QRegExpValidator>
-#include <QPlainTextEdit>
-#include <QCheckBox>
-#include <QVBoxLayout>
-#include <QMessageBox>
 
-#include "helperfin.h"
+#include "dkdbhelper.h"
 #include "appconfig.h"
 #include "ibanvalidator.h"
 #include "creditor.h"

@@ -3,16 +3,7 @@
 
 #include <iso646.h>
 
-#include <QObject>
-#include <QApplication>
-#include <QString>
-#include <QStringLiteral>
-#include <QMessageBox>
-#include <QMainWindow>
-#include <QWidget>
-#include <QElapsedTimer>
-#include <QFile>
-#include <QDebug>
+#include "pch.h"
 
 #define qsl(x) QStringLiteral(x)
 

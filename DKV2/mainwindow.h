@@ -1,21 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QStringLiteral>
-#include <QGuiApplication>
-#include <QItemSelection>
-#include <QSqlTableModel>
-#include <QSqlQueryModel>
-#include <QMainWindow>
-#include <QPrinter>
+#include "pch.h"
 
-#include "helpersql.h"
-#include "dkdbhelper.h"
-
-#include "dkdbviews.h"
-#include "appconfig.h"
-#include "contract.h"
 #include "contractsheadersortingadapter.h"
+#include "booking.h"
+#include "appconfig.h"
 
 class InvestmentsTableModel : public QSqlTableModel
 {

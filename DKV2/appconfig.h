@@ -2,17 +2,9 @@
 #define APPCONFIG_H
 
 #include <iso646.h>
-
-#include <QString>
-#include <QStringLiteral>
-#include <QVariant>
-#include <QMap>
-#include <QWidget>
-#include <QSqlDatabase>
+#include "pch.h"
 
 #include "helper.h"
-
-#include "dkv2version.h"
 
 // db config info in 'meta' table
 // init = write only if not set

@@ -1,10 +1,7 @@
 #ifndef FILEWRITER_H
 #define FILEWRITER_H
 
-#include <QDateTime>
-#include <QVariant>
-#include <QString>
-#include <QTextDocument>
+#include "pch.h"
 
 bool extractTemplateFileFromResource(const QString& path, const QString& file);
 

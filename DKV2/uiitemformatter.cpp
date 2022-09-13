@@ -1,6 +1,3 @@
-//#include "finhelper.h"
-#include <QDate>
-#include <QtDebug>
 
 #include "booking.h"
 #include "contract.h"

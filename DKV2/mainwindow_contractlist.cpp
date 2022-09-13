@@ -1,8 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "pch.h"
-
 #include "busycursor.h"
 #include "contracttablemodel.h"
 #include "uiitemformatter.h"

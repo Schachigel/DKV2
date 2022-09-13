@@ -1,9 +1,3 @@
-#include <QTextDocument>
-#include <QTextImageFormat>
-#include <QTextFrame>
-#include <QTextCursor>
-#include <QTextTable>
-#include <QImage>
 
 #include "contract.h"
 #include "helper.h"

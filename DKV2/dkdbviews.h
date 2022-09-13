@@ -1,7 +1,8 @@
 #ifndef DKDBVIEWS_H
 #define DKDBVIEWS_H
 
-#include <QString>
+#include "pch.h"
+
 #include "helpersql.h"
 
 // dynamic view creatrion

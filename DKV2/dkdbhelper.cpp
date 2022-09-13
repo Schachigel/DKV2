@@ -1,19 +1,18 @@
-#include "pch.h"
 
 #include "busycursor.h"
-#include "helper.h"
 #include "helperfile.h"
-#include "helpersql.h"
+#include "contract.h"
+#include "dkv2version.h"
 #include "appconfig.h"
+#include "helpersql.h"
 #include "csvwriter.h"
 #include "creditor.h"
-#include "contract.h"
 #include "investment.h"
 #include "letterTemplate.h"
 #include "dkdbviews.h"
 #include "dkdbcopy.h"
-#include "dbstructure.h"
-#include "investment.h"
+#include "dkdbhelper.h"
+
 
 namespace  {
 

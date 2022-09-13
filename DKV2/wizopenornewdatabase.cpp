@@ -1,9 +1,4 @@
-#include <QLabel>
-#include <QLineEdit>
-#include <QVBoxLayout>
-#include <QFileDialog>
-#include <QStandardPaths>
-#include <QMessageBox>
+
 #include "appconfig.h"
 #include "helper.h"
 #include "wizopenornewdatabase.h"

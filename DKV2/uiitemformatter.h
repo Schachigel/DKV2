@@ -1,9 +1,7 @@
 #ifndef DATEITEMFORMATTER_H
 #define DATEITEMFORMATTER_H
 
-#include <QObject>
-#include <QString>
-#include <QStyledItemDelegate>
+#include "pch.h"
 
 class centralAlignedTextFormatter : public QStyledItemDelegate
 {

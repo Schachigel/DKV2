@@ -1,4 +1,4 @@
-#include <QLocale>
+#include "pch.h"
 
 #include"helper.h"
 #include "letters.h"

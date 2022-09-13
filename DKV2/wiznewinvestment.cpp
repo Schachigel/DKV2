@@ -1,8 +1,3 @@
-#include <QLabel>
-#include <QDateEdit>
-#include <QCheckBox>
-#include <QHBoxLayout>
-#include <QLineEdit>
 
 #include "appconfig.h"
 #include "wiznewinvestment.h"

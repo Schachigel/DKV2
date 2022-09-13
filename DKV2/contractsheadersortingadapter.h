@@ -1,10 +1,7 @@
 #ifndef CONTRACTSHEADERSORTINGADAPTER_H
 #define CONTRACTSHEADERSORTINGADAPTER_H
 
-#include <QObject>
-#include <QPoint>
-
-class QTableView;
+#include "pch.h"
 
 class contractsHeaderSortingAdapter : public QObject
 {

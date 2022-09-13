@@ -2,7 +2,6 @@
 #define DLGINTERESTLETTERS_H
 
 #include "pch.h"
-#include <QSpinBox>
 
 class dlgInterestLetters : public QDialog
 {

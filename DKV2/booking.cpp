@@ -1,4 +1,3 @@
-#include <QtMath>
 
 #include "dkdbviews.h"
 #include "contract.h"

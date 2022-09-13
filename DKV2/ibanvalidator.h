@@ -1,8 +1,7 @@
 #ifndef IBANVALIDATOR_H
 #define IBANVALIDATOR_H
 
-#include <QRegExpValidator>
-#include <QObject>
+#include "pch.h"
 
 bool checkIban(QString iban);
 

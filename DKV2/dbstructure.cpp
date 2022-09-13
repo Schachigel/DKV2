@@ -1,4 +1,3 @@
-#include <QSqlDatabase>
 
 #include "creditor.h"
 #include "contract.h"
@@ -6,11 +5,11 @@
 #include "investment.h"
 #include "letterTemplate.h"
 
-
 #include "helper.h"
 #include "helperfile.h"
 #include "helpersql.h"
 #include "dbstructure.h"
+#include "dkdbhelper.h"
 
 dbstructure dkdbstructur;
 

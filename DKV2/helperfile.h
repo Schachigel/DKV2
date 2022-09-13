@@ -2,7 +2,8 @@
 #define FILEHELPER_H
 
 #if defined(Q_OS_WIN)
-#include "windows.h"
+#include <windows.h>
+#include <winnt.h>
 #else
 #include <stdlib.h>
 #endif
@@ -16,8 +17,9 @@ bool moveToBackup(const QString &fn);
 
 bool backupFile(const QString& filename, const QString& subfolder=QString());
 
-static const bool showFolder =true;
-static const bool showFile   =false;
+#define showFolder true
+#define showFile   false
+
 void showInExplorer(const QString &fullPath, bool fileOrFolder =showFile);
 
 void printHtmlToPdf( const QString &html, const QString& css, const QString &fn);
