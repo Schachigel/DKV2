@@ -27,6 +27,7 @@ struct appConfig
     static void delOutDir();
 
     static void setLastDb(const QString&);
+    static bool hasLastDb();
     static QString LastDb();
     static void delLastDb();
 

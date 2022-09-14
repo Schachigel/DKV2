@@ -78,6 +78,8 @@ bool openDB_atStartup()
     }
 
     // no command line argument -> check registry
+    if( not appConfig::hasLastDb ())
+        return askUserForNextDb ();
     dbPath =appConfig::LastDb();
     QString dbCanonicalPath {QFileInfo(dbPath).canonicalFilePath ()};
     if( dbCanonicalPath.isEmpty ()) {
