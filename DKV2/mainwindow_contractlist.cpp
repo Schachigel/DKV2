@@ -53,7 +53,6 @@ qlonglong intFromRight(const QString& input, const QString& flag)
     else
         return 0;
 }
-
 QString nbrFromRight(const QString& input, const QString& flag)
 {
     auto nbr =intFromRight(input, flag);
@@ -62,7 +61,6 @@ QString nbrFromRight(const QString& input, const QString& flag)
     else
         return QString::number(nbr);
 }
-
 QString filterFromFilterphrase(const QString &fph)
 {
     const QString filterKreditor {qsl("kreditor:")};
@@ -109,7 +107,8 @@ const QVector<tableViewColTexts> columnTextsContracts {
     /*cp_Interest,        */ {qsl("Angesparter\nZins"), qsl("Nicht ausgezahlte Zinsen bei Verträgen mit fester Verzinsung und thesaurierenden Verträgen")},
     /*cp_ContractEnd      */ {qsl("Kündigungsfrist/ \nVertragsende"), qsl("Modalität und Datum des Vertrag Endes")}
 };
-
+const QString defaultVisibilityPattern_contracts {qsl("000111111111111")};
+const QString visibilityPatternMetaInfoName {qsl("VertraegeSpalten")};
 const QVector<tableViewColTexts> columnTexts_d_Contracts {
     /*cp_d_vid,                */ {qsl(""), qsl("")},
     /*cp_d_Creditor_id,        */ {qsl(""), qsl("")},
@@ -125,7 +124,8 @@ const QVector<tableViewColTexts> columnTexts_d_Contracts {
     /*cp_d_FinalPayout,        */ {qsl("Abschl. Auszahlung"), qsl("")}
     /*cp_d_colCount            */
 };
-
+const QString defaultVisibilityPattern_deletedContracts {qsl("001111111111")};
+const QString visibilityPattern_d_MetaInfoName {qsl("geloeschteVertraegeSpalten")};
 
 void MainWindow::prepare_valid_contracts_list_view()
 { LOG_CALL;
@@ -168,21 +168,25 @@ void MainWindow::prepare_valid_contracts_list_view()
     tv->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(tv));
     tv->setItemDelegateForColumn(cp_InterestMode, new interestModeFormatter(tv));
 
-    QBitArray ba =toQBitArray(getMetaInfo (qsl("VertraegeSpalten"), qsl("000111111111111")));
-    /* Hide the unwanted id columns */
-    ba[cp_vid] = ba[cp_Creditor_id] = ba[cp_Investment_id] = false;
+    Q_ASSERT(cp_colCount == columnTextsContracts.count ());
+    QBitArray ba =toQBitArray(getMetaInfo (visibilityPatternMetaInfoName, defaultVisibilityPattern_contracts));
     /* Force minimum length of QBitArray */
     int oldSize = ba.size();
     ba.resize(cp_colCount);
     ba.fill(true, oldSize, cp_colCount);
 
     for(int i=0; i<int(colmn_Pos::cp_colCount); i++) {
-        if( ba[i])
-            tv->showColumn (i);
-        else
+        if( columnTextsContracts[i].header.isEmpty ()){
             tv->hideColumn (i);
+            ba[i] =false;
+            setMetaInfo (visibilityPatternMetaInfoName, toString(ba));
+        } else {
+            if( ba[i])
+                tv->showColumn (i);
+            else
+                tv->hideColumn (i);
+        }
     }
-
     tv->resizeColumnsToContents();
     tv->resizeRowsToContents();
 
@@ -232,24 +236,29 @@ void MainWindow::prepare_deleted_contracts_list_view()
     contractsTV->hideColumn(cp_d_vid);
     contractsTV->hideColumn(cp_d_Creditor_id);
 
-    QBitArray ba =toQBitArray (getMetaInfo (qsl("geloeschteVertraegeSpalten"), qsl("000111111111111")));
-    /* force hiding the unwanted ids */
-    ba[cp_d_vid] = ba[cp_d_Creditor_id] = false;
+    Q_ASSERT(cp_d_colCount == columnTexts_d_Contracts.count());
+    QBitArray ba =toQBitArray (getMetaInfo (visibilityPattern_d_MetaInfoName, defaultVisibilityPattern_deletedContracts));
     /* make sure that array is long enough to hold all columns */
     int oldSize = ba.size();
     ba.resize(cp_d_colCount);
     ba.fill(true, oldSize, cp_d_colCount);
-    for (int i = 0; i < int(cp_d_colCount); i++)
-    {
+    for (int i = 0; i < int(cp_d_colCount); i++) {
         if( ba.size () > i ) {
-            if( ba.size() < i || ba[i])
-                contractsTV->showColumn (i);
-            else
+            if( columnTexts_d_Contracts[i].header.isEmpty ()) {
                 contractsTV->hideColumn (i);
+                ba[i] =false;
+                setMetaInfo (visibilityPattern_d_MetaInfoName, toString(ba));
+            } else {
+                if( ba.size() < i || ba[i])
+                    contractsTV->showColumn (i);
+                else
+                    contractsTV->hideColumn (i);
+            }
         }
     }
 
     contractsTV->resizeColumnsToContents();
+    contractsTV->resizeRowsToContents();
 
     connect(ui->contractsTableView->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::currentChange_ctv);
 
@@ -280,22 +289,20 @@ void MainWindow::on_btnVertragsSpalten_clicked()
     int colCount =0;
     const QVector<tableViewColTexts>* colTexts =nullptr;
     if( showDeletedContracts) {
-        storageName =qsl("geloeschteVertraegeSpalten");
+        storageName =visibilityPattern_d_MetaInfoName;
         colCount =cp_d_colCount;
         colTexts =&columnTexts_d_Contracts;
     } else {
-       storageName =qsl("VertraegeSpalten");
+       storageName =visibilityPatternMetaInfoName;
        colCount =cp_colCount;
        colTexts =&columnTextsContracts;
     }
 
     QVector<QPair<int, QString>> colInfo;
-    QString initMetaInfo;
     for( int i=0; i < colCount; i++){
         colInfo.push_back (QPair<int, QString>(i, (*colTexts)[i].header));
-        initMetaInfo +="1";
     }
-    QBitArray ba =toQBitArray(getMetaInfo (storageName, initMetaInfo));
+    QBitArray ba =toQBitArray(getMetaInfo (storageName, (showDeletedContracts ? defaultVisibilityPattern_deletedContracts : defaultVisibilityPattern_contracts)));
     if( ba.size() not_eq colCount) {
         ba.resize(colCount); // force right length of QBitArray
         ba.fill(true, ba.size()-1, colCount); // switch new elements to visible
@@ -505,36 +512,40 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
 void MainWindow::on_btnSave2Csv_clicked()
 {
     csvwriter csv;
-    QSqlTableModel* model =
-            qobject_cast<QSqlTableModel*>(
-                qobject_cast<QAbstractProxyModel *>(ui->contractsTableView->model())->sourceModel());
-    QBitArray ba =toQBitArray(getMetaInfo (qsl("VertraegeSpalten"), qsl("000111111111111")));
-
+    QSqlTableModel* model = (showDeletedContracts ?
+           qobject_cast<QSqlTableModel*>( ui->contractsTableView->model())
+            :
+           qobject_cast<QSqlTableModel*>(
+               qobject_cast<QAbstractProxyModel *>(ui->contractsTableView->model())->sourceModel()));
     if (model == nullptr)
         return;
-
     QSqlRecord rec =model->record();
+
+    QBitArray ba =(showDeletedContracts ?
+                       toQBitArray(getMetaInfo (visibilityPattern_d_MetaInfoName, defaultVisibilityPattern_deletedContracts))
+                      : toQBitArray(getMetaInfo (visibilityPatternMetaInfoName, defaultVisibilityPattern_contracts)));
     // header
     for( int i=0; i<rec.count(); i++) {
-        if( ba[i])
+        if( ba.at(i))
             csv.addColumn(rec.fieldName(i));
     }
     // data
     for( int i=0; i<model->rowCount(); i++) {
-        QSqlRecord recRows =model->record(i);
-        for( int j=0; j<recRows.count(); j++) {
-            if( ba[j]){
-                QVariant v =recRows.value (j);
+        QSqlRecord recSingleRow =model->record(i);
+        for( int j=0; j<recSingleRow.count(); j++) {
+            if( ba.at(j)) {
+                QVariant v =recSingleRow.value (j);
                 QVariant tmp(v);
                 if( tmp.canConvert (QVariant::Double) && tmp.convert (QVariant::Double))
                     csv.appendToRow( QLocale().toString(tmp.toDouble ()));
                 else
-                    csv.appendToRow(recRows.value(j).toString());
+                    csv.appendToRow(recSingleRow.value(j).toString());
             }
         }
     }
-    csv.saveAndShowInExplorer(QDate::currentDate().toString(qsl("yyyy-MM-dd_Vertragsliste.csv")));
-
+    csv.saveAndShowInExplorer((showDeletedContracts
+                               ? QDate::currentDate().toString(qsl("yyyy-MM-dd") +qsl("_beendeteVertraege.csv"))
+                               : QDate::currentDate().toString(qsl("yyyy-MM-dd") +qsl("_laufendeVertraege.csv"))));
 }
 
 /////////////////////////////////////////////////
