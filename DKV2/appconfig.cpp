@@ -115,6 +115,12 @@ void appConfig::setLastDb(const QString& filename)
     setUserData(keyLastDb, filename);
 }
 /* static */
+bool appConfig::hasLastDb()
+{
+    QSettings config;
+    return config.contains(keyLastDb);
+}
+/* static */
 QString appConfig::LastDb()
 {
     static QString defaultDb = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/Dkv2.dkdb");
