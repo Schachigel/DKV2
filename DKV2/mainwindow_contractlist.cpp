@@ -130,30 +130,27 @@ const QString visibilityPattern_d_MetaInfoName {qsl("geloeschteVertraegeSpalten"
 void MainWindow::prepare_valid_contracts_list_view()
 { LOG_CALL;
     busycursor bc;
+
     QSqlTableModel* model = new ContractTableModel(this);
     QSortFilterProxyModel *proxy = new ContractProxyModel(this);
-
     model->setTable(vnContractView);
+
     for(int i =0; i< int(colmn_Pos::cp_colCount); i++) {
-        if( not columnTextsContracts[i].header.isEmpty ())
-            model->setHeaderData (i, Qt::Horizontal, columnTextsContracts[i].header);
-        if( not columnTextsContracts[i].toolTip.isEmpty ())
-            model->setHeaderData (i, Qt::Horizontal, columnTextsContracts[i].toolTip, Qt::ToolTipRole);
+        model->setHeaderData (i, Qt::Horizontal, columnTextsContracts[i].header);
+        model->setHeaderData (i, Qt::Horizontal, columnTextsContracts[i].toolTip, Qt::ToolTipRole);
     }
 
-    proxy->setSourceModel(model);
-
     QTableView *&tv = ui->contractsTableView;
+    proxy->setSourceModel(model);
     tv->setModel(proxy);
-
     if ( not model->select()) {
         qCritical() << "Model selection failed" << model->lastError();
         return;
-    } else {
-        qobject_cast<ContractTableModel*>(model)->setCol13ExtraData();
     }
-    applyFilterToModel(model,
-                       ui->le_ContractsFilter->text());
+
+    qobject_cast<ContractTableModel*>(model)->setCol13ExtraData();
+
+    applyFilterToModel(model, ui->le_ContractsFilter->text());
 
     tv->setEditTriggers(QTableView::NoEditTriggers);
     tv->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -170,11 +167,10 @@ void MainWindow::prepare_valid_contracts_list_view()
 
     Q_ASSERT(cp_colCount == columnTextsContracts.count ());
     QBitArray ba =toQBitArray(getMetaInfo (visibilityPatternMetaInfoName, defaultVisibilityPattern_contracts));
-    /* Force minimum length of QBitArray */
+    /* make sure that array is long enough to hold all columns */
     int oldSize = ba.size();
     ba.resize(cp_colCount);
     ba.fill(true, oldSize, cp_colCount);
-
     for(int i=0; i<int(colmn_Pos::cp_colCount); i++) {
         if( columnTextsContracts[i].header.isEmpty ()){
             tv->hideColumn (i);
@@ -187,6 +183,7 @@ void MainWindow::prepare_valid_contracts_list_view()
                 tv->hideColumn (i);
         }
     }
+
     tv->resizeColumnsToContents();
     tv->resizeRowsToContents();
 
@@ -204,16 +201,10 @@ void MainWindow::prepare_deleted_contracts_list_view()
     QSqlTableModel* model = new QSqlTableModel(this);
     model->setTable(vnExContractView);
 
-    model->setHeaderData(cp_d_Creditor, Qt::Horizontal, qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters"), Qt::ToolTipRole);
-    model->setHeaderData(cp_d_ContractLabel, Qt::Horizontal, qsl("Eindeutige Identifizierung des Vertrags"), Qt::ToolTipRole);
-    model->setHeaderData(cp_d_ContractActivation, Qt::Horizontal, qsl("Datum der Vertragsaktivierung / Beginn der Zinsberechnung"), Qt::ToolTipRole);
-    model->setHeaderData(cp_d_ContractTermination, Qt::Horizontal, qsl("Datum des Vertragsende"), Qt::ToolTipRole);
-    model->setHeaderData(cp_d_InitialValue, Qt::Horizontal, qsl("Höhe der Ersteinlage"), Qt::ToolTipRole);
-    model->setHeaderData(cp_d_InterestRate, Qt::Horizontal, qsl("Zinsfuss"), Qt::ToolTipRole);
-    model->setHeaderData(cp_d_InterestMode, Qt::Horizontal, qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein"), Qt::ToolTipRole);
-    model->setHeaderData(cp_d_Interest, Qt::Horizontal, qsl("Angefallene, nicht bereits zur Laufzeit ausgezahlte Zinsen"), Qt::ToolTipRole);
-    model->setHeaderData(cp_d_TotalDeposit, Qt::Horizontal, qsl("Summe aller Einzahlungen"), Qt::ToolTipRole);
-    model->setHeaderData(cp_d_FinalPayout, Qt::Horizontal, qsl("Ausgezahltes finales Guthaben"), Qt::ToolTipRole);
+    for(int i =0; i< int(column_pos_del::cp_d_colCount); i++) {
+        model->setHeaderData(i, Qt::Horizontal, columnTexts_d_Contracts[i].header);
+        model->setHeaderData(i, Qt::Horizontal, columnTexts_d_Contracts[i].toolTip, Qt::ToolTipRole);
+    }
 
     QTableView*& contractsTV = ui->contractsTableView;
     contractsTV->setModel(model);
@@ -221,8 +212,8 @@ void MainWindow::prepare_deleted_contracts_list_view()
         qCritical() << "Model selection failed" << model->lastError();
         return;
     }
-    applyFilterToModel(model,
-                       ui->le_ContractsFilter->text());
+
+    applyFilterToModel(model, ui->le_ContractsFilter->text());
 
     contractsTV->setEditTriggers(QTableView::NoEditTriggers);
     contractsTV->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -233,8 +224,6 @@ void MainWindow::prepare_deleted_contracts_list_view()
     contractsTV->setItemDelegateForColumn(cp_d_Interest, new CurrencyFormatter(contractsTV));
     contractsTV->setItemDelegateForColumn(cp_d_TotalDeposit, new CurrencyFormatter(contractsTV));
     contractsTV->setItemDelegateForColumn(cp_d_FinalPayout, new CurrencyFormatter(contractsTV));
-    contractsTV->hideColumn(cp_d_vid);
-    contractsTV->hideColumn(cp_d_Creditor_id);
 
     Q_ASSERT(cp_d_colCount == columnTexts_d_Contracts.count());
     QBitArray ba =toQBitArray (getMetaInfo (visibilityPattern_d_MetaInfoName, defaultVisibilityPattern_deletedContracts));
@@ -243,17 +232,15 @@ void MainWindow::prepare_deleted_contracts_list_view()
     ba.resize(cp_d_colCount);
     ba.fill(true, oldSize, cp_d_colCount);
     for (int i = 0; i < int(cp_d_colCount); i++) {
-        if( ba.size () > i ) {
-            if( columnTexts_d_Contracts[i].header.isEmpty ()) {
+        if( columnTexts_d_Contracts[i].header.isEmpty ()) {
+            contractsTV->hideColumn (i);
+            ba[i] =false;
+            setMetaInfo (visibilityPattern_d_MetaInfoName, toString(ba));
+        } else {
+            if( ba[i])
+                contractsTV->showColumn (i);
+            else
                 contractsTV->hideColumn (i);
-                ba[i] =false;
-                setMetaInfo (visibilityPattern_d_MetaInfoName, toString(ba));
-            } else {
-                if( ba.size() < i || ba[i])
-                    contractsTV->showColumn (i);
-                else
-                    contractsTV->hideColumn (i);
-            }
         }
     }
 
