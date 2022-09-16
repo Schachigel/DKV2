@@ -186,12 +186,12 @@ QVariant executeSingleValueSql(const QString& sql, const QSqlDatabase& db)
 {
     QSqlQuery q(db);
     if( not q.exec(sql)) {
-        qCritical() << "SingleValueSql failed to execute: " << q.lastError() << "\n" << q.lastQuery() << qsl("\n");;
+        qCritical() << "SingleValueSql failed to execute: " << q.lastError() << "\n" << q.lastQuery();
         return QVariant();
     }
     q.last();
     if(q.at() > 0) {
-        qDebug() << "SingleValueSql returned more than one value\n" << q.lastQuery() << qsl("\n");;
+        qDebug() << "SingleValueSql returned more than one value\n" << q.lastQuery();
         return QVariant();
     }
     if(q.at() < 0) {
@@ -287,7 +287,7 @@ QVector<QVariant> executeSingleColumnSql( const dbfield& field, const QString& w
         }
     }
     else
-        qCritical() << "SingleColumnSql failed " << q.lastError() << "\n" << q.lastQuery();
+        qCritical() << "SingleColumnSql failed " << q.lastError() << q.lastQuery();
 
     return result;
 }
@@ -298,7 +298,7 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
 
     QSqlQuery q;
     if( not q.exec(sql)) {
-        qCritical() << "SingleRecordSql failed " << q.lastError() << "\n" << q.lastQuery();
+        qCritical() << "SingleRecordSql failed " << q.lastError() << q.lastQuery();
         return QSqlRecord();
     }
     q.last();
@@ -320,7 +320,7 @@ QSqlRecord executeSingleRecordSql(const QString& sql)
     QSqlQuery q; q.setForwardOnly(true);
     q.prepare(sql);
     if( not (q.exec() and q.next())) {
-        qCritical() << "failed to execute query /get first record" << q.lastError() << "\n" << q.lastQuery();
+        qCritical() << "failed to execute query /get first record" << q.lastError() << q.lastQuery();
         return QSqlRecord();
     }
     QSqlRecord res =q.record();
@@ -336,7 +336,7 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
     QVector<QSqlRecord> result;
     QSqlQuery q; q.setForwardOnly(true);
     if( not q.exec(sql)) {
-        qCritical() << "executeSql failed " << q.lastError() << "\n" << q.lastQuery();
+        qCritical() << "executeSql failed " << q.lastError() << q.lastQuery();
         return result;
     }
     while( q.next()) {
@@ -356,7 +356,7 @@ bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& resu
 {
     QSqlQuery q(db); q.setForwardOnly(true);
     if( not q.prepare(sql)) {
-        qDebug() << "Faild to prep Query. Error:" << sql << "\n" << q.lastError();
+        qDebug() << "Faild to prep Query. Error:" << sql << q.lastError();
         return false;
     }
     if( v.isValid())
@@ -367,7 +367,7 @@ bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& resu
         }
         return true;
     } else {
-        qDebug() << "Faild to execute Query. Error:" << q.lastError() << "\n" << q.lastQuery();
+        qDebug() << "Faild to execute Query. Error:" << q.lastError() << q.lastQuery();
         return false;
     }
 }
@@ -375,7 +375,7 @@ bool executeSql(const QString& sql, /*const QVector<QVariant>& v,*/ QVector<QSql
 {
     QSqlQuery q; q.setForwardOnly(true);
     if( not q.prepare(sql)) {
-        qDebug() << "Faild to prep Query. Error:" << q.lastError() << "\n" << q.lastQuery();
+        qDebug() << "Faild to prep Query. Error:" << q.lastError() << q.lastQuery();
         return false;
     }
     if( q.exec()) {
@@ -384,7 +384,7 @@ bool executeSql(const QString& sql, /*const QVector<QVariant>& v,*/ QVector<QSql
         }
         return true;
     } else {
-        qDebug() << "Faild to execute Query. Error:" << q.lastError() << "\n" << q.lastQuery();
+        qDebug() << "Faild to execute Query. Error:" << q.lastError() << q.lastQuery();
         return false;
     }
 }
@@ -433,7 +433,7 @@ int getHighestRowId(const QString& tablename)
 bool createDbView(const QString& name, const QString& sql, bool temporary, const QSqlDatabase& db /*= QSqlDatabase::database()*/)
 {   LOG_CALL_W(name);
 
-    deleteDbView (name);
+    deleteDbView (name, db);
     QString createViewSql = "CREATE %1 VIEW %2 AS " + sql;
     createViewSql = createViewSql.arg((temporary ? qsl("TEMP") : QString()), name);
     if( executeSql_wNoRecords(createViewSql, db)) {

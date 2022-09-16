@@ -294,19 +294,13 @@ ORDER BY B.Datum, V.id
 )str"
 )};
 
-QMap<QString, QString> views ={
+const QMap<QString, QString> views ={
     // convenientce view
     {vnBookingsOverview, sqlBookingsOverview},
     {vnContractView, sqlContractView},
     {vnExContractView, sqlExContractView},
     {vnInvestmentsView, sqlInvestmentsView}
 };
-const QMap<QString, QString>& getViews() {
-    return views;
-}
-QString getView(const QString &vn) {
-    return views.value(vn);
-}
 
 const QStringList getIndexSql() {
     return {

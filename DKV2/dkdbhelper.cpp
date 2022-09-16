@@ -30,7 +30,7 @@ bool updateViewsAndIndices_if_needed(const QSqlDatabase& db =QSqlDatabase::datab
     if( not insertDKDB_Views (db)) {
         errorMsg.append(qsl("Faild to insert views for current exe version"));
     }
-    if( not insertDKDB_Views (db)) {
+    if( not insertDKDB_Indices (db)) {
         errorMsg.append (qsl("\nFailed to insert indices for current exe version"));
     }
     if( errorMsg.isEmpty ()) {
@@ -140,7 +140,7 @@ bool treat_DbIsAlreadyInUse_File(QString filename)
 
 bool insertDKDB_Views( const QSqlDatabase &db)
 {   LOG_CALL;
-    return createDbViews(getViews(), db);
+    return createDbViews(views, db);
 }// initial database tables and content
 
 bool insertDKDB_Indices( const QSqlDatabase& db)
