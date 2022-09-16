@@ -17,7 +17,7 @@ extern const QString sqlInvestmentsView;
 extern const QString vnBookingsOverview;
 
 // statistics w/o time dep. saved as views
-const QMap<QString, QString>& getViews();
+extern const QMap<QString, QString> views;
 const QStringList getIndexSql();
 bool remove_all_views(const QSqlDatabase& db =QSqlDatabase::database());
 

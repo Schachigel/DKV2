@@ -30,7 +30,7 @@ void initNumMetaInfo( const QString& name, const double newValue, const QSqlData
 }
 QString getMetaInfo(const QString& name, const QString& def, const QSqlDatabase& db)
 {   LOG_CALL_W(name);
-    if( not db.isValid()){
+    if( not db.isValid()) {
         qInfo() << "getMetaInfo: No database ready (yet), defaulting";
         return def;
     }
