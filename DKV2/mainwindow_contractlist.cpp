@@ -403,7 +403,7 @@ void MainWindow::on_action_cmenu_terminate_contract_triggered()
 }
 void MainWindow::on_action_cmenu_delete_inactive_contract_triggered()
 {   LOG_CALL;
-    deleteInactiveContract(contractUnderMouseMenu);
+    contractUnderMouseMenu->deleteInactive ();
     updateViews();
 }
 void MainWindow::on_action_cmenu_change_contract_triggered()

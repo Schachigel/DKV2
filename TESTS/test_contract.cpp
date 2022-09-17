@@ -142,7 +142,7 @@ void test_contract::test_randomContracts()
 interestModel nextInterestModel (interestModel m) {
     int i =toInt(m);
     i = (i+1)%toInt(interestModel::maxId);
-    return fromInt(i);
+    return interestModelFromInt(i);
 }
 
 void test_contract::test_write_read_contract()

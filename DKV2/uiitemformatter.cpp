@@ -113,7 +113,7 @@ QString interestModeFormatter::displayText(const QVariant &value, const QLocale 
         qCritical() << "invalid interest model index: " << index;
         return qsl("Fehler");
     } else
-        return toString( fromInt(index));
+        return interestModelDisplayString( interestModelFromInt(index));
 }
 void interestModeFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {

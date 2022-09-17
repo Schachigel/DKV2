@@ -278,10 +278,8 @@ void annualSettlement() {
     if (not dlg.print_csv())
         return;
     csvwriter csv(qsl(";"));
-    csv.addColumns(contract::booking_csv_header());
-    // Vorname; Nachname; Email; Strasse; Plz; Stadt; IBAN;
-    // Kennung; Auszahlend; Begin; Buchungsdatum; Zinssatz; Kreditbetrag;
-    // Zins; Endbetrag
+    csv.addColumns(qsl("Vorname; Nachname; Email; Strasse; Plz; Stadt; IBAN; Kennung; Auszahlend;"
+                       "Beginn; Buchungsdatum; Zinssatz; Kreditbetrag; Zins; Endbetrag"));
     QLocale l;
     for (int i = 0; i < changedContracts.count(); i++) {
         contract &c = changedContracts[i];
@@ -297,7 +295,7 @@ void annualSettlement() {
 
         csv.appendToRow(cont.iban());
         csv.appendToRow(c.label());
-        csv.appendToRow(toString(c.iModel()));
+        csv.appendToRow(interestModelDisplayString(c.iModel()));
         csv.appendToRow(startOfInterrestCalculation[i].toString(qsl("dd.MM.yyyy")));
         csv.appendToRow(bookingDate.toString(qsl("dd.MM.yyyy")));
         csv.appendToRow(l.toString(c.interestRate(), 'f', 2));
@@ -447,7 +445,7 @@ void deleteInactiveContract(contract *c) {
     // todo: wiz ui with confirmation?
     // todo: if creditor has no other (active or deleted) contracts: propose
     // delete creditor
-    contract::remove(c->id());
+    c->deleteInactive ();
 }
 
 void terminateContract(contract *pc) {

@@ -17,7 +17,7 @@ enum class interestModel
     maxId /*= 4*/,
     allIModels = maxId
 };
-inline QString toString(const interestModel m) {
+inline QString interestModelDisplayString(const interestModel m) {
     switch(m) {
     case interestModel::payout:
         return qsl("auszahlend");
@@ -38,7 +38,7 @@ inline QString toString(const interestModel m) {
 inline int toInt(const interestModel m) {
     return static_cast<int>(m);
 }
-inline interestModel fromInt(const int i) {
+inline interestModel interestModelFromInt(const int i) {
     if( i < 0 or i >toInt(interestModel::maxId))
         Q_ASSERT(not "Invalid interestModel");
     return static_cast<interestModel>(i);
@@ -65,8 +65,7 @@ struct contract
     // static & friends
     static const dbtable& getTableDef();
     static const dbtable& getTableDef_deletedContracts();
-    static bool remove(const qlonglong id);
-    static QString booking_csv_header();
+    // Vergleichsoperatoren für TESTS !!
     inline friend bool operator==(const contract& lhs, const contract& rhs)
     {   // friend functions - even in the class definition - are not member
         bool ret =true;
@@ -104,13 +103,10 @@ struct contract
     void setId(qlonglong id) { td.setValue(qsl("id"), id);}
     qlonglong id() const { return td.getValue(qsl("id")).toLongLong();}
     QString id_aS()   const { return QString::number(id());}
-
     void setCreditorId(qlonglong kid) {td.setValue(fnKreditorId, kid);}
     qlonglong creditorId() const{ return td.getValue(fnKreditorId).toLongLong();}
-
     void setLabel(const QString &l) { td.setValue(fnKennung, l); }
     QString label() const { return td.getValue(fnKennung).toString();};
-
     void setInterestRate( const double percent) {
         td.setValue(fnZSatz, QVariant (qRound(percent * 100.)));
         if( percent == 0) td.setValue(fnThesaurierend, toInt(interestModel::zero));
@@ -125,57 +121,48 @@ struct contract
         if( interestActive()) return interestRate();
         else return 0.;
     }
-
     void setInvestment(qlonglong rId) { td.setValue(fnAnlagenId, (rId>0?QVariant(rId):QVariant()));}
     qlonglong investment() const { return td.getValue(fnAnlagenId).toLongLong();}
-
     void setPlannedInvest(const double d) { td.setValue(fnBetrag, ctFromEuro(d));}
     double plannedInvest() const { return euroFromCt( td.getValue(fnBetrag).toInt());}
-
     void setInterestModel( const interestModel b =interestModel::reinvest) {
         td.setValue(fnThesaurierend, toInt(b));
         if( b == interestModel::zero) td.setValue(fnZSatz, 0);
     }
-    interestModel iModel() const { return fromInt(td.getValue(fnThesaurierend).toInt());}
-
+    interestModel iModel() const { return interestModelFromInt(td.getValue(fnThesaurierend).toInt());}
     void setNoticePeriod(const int m) { td.setValue(fnKFrist, m); if( -1 not_eq m) setPlannedEndDate( EndOfTheFuckingWorld);}
     int noticePeriod() const { return td.getValue(fnKFrist).toInt();}
-
     bool hasEndDate() const {return -1 == td.getValue(fnKFrist);}
     void setPlannedEndDate( const QDate d) { td.setValue(fnLaufzeitEnde, d); if( d not_eq EndOfTheFuckingWorld) setNoticePeriod(-1);}
     QDate plannedEndDate() const { return td.getValue(fnLaufzeitEnde).toDate();}
     void setConclusionDate(const QDate d) { td.setValue(fnVertragsDatum, d);}
     QDate conclusionDate() const { return td.getValue(fnVertragsDatum).toDate();}
-
     void setInterestActive(bool active){ td.setValue(fnZAktiv, active);}
-    bool updateSetInterestActive();
     bool interestActive() const { return td.getValue(fnZAktiv).toBool();}
-
     void setComment(const QString& q) {td.setValue(fnAnmerkung, q);}
     QString comment() const {return td.getValue(fnAnmerkung).toString();}
+
     // interface
     // value -> sum of all bookings to a contract
     double value(const QDate d =EndOfTheFuckingWorld) const;
-    // depositValue sum of all deposits to a contract (w/o interest payments)
+    // sum of all deposits to a contract (w/o interest payments)
     double investedValue(const QDate d =EndOfTheFuckingWorld) const;
     // interestBearingValue depends on interestMode
     double interestBearingValue() const;
-
     const booking latestBooking();
+
     // write to db
     int saveNewContract();
     bool updateComment(const QString&);
     bool updateTerminationDate(QDate termination, int noticePeriod);
     bool updateInvestment(qlonglong id);
+    bool updateSetInterestActive();
+    bool deleteInactive();
 
     // contract activation
     bool bookInitialPayment(const QDate aDate, double amount);
     bool initialBookingReceived() const;
-
     bool bookActivateInterest(const QDate d);
-
-    // contract termination
-    bool isTerminated =false;
 
     // other booking actions
     QDate nextDateForAnnualSettlement();
@@ -191,6 +178,8 @@ struct contract
     double payedInterestAtTermination();
     double payedAnnualInterest(int year);
 
+    // allow contract objects from deleted contracts
+    bool isTerminated =false;
 private:
     // data
     TableDataInserter td;
@@ -203,7 +192,11 @@ private:
     void reset() {initContractDefaults();}
 };
 
-QVariant lastInterestPayment(const contract& c);
+// contract helper
+bool deleteContractFromDB(const qlonglong id);
+
+
+
 
 // test helper
 contract saveRandomContract(const qlonglong creditorId);

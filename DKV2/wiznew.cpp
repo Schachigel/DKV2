@@ -861,7 +861,7 @@ wpInterestPayoutMode::wpInterestPayoutMode(QWidget *p) : QWizardPage(p)
 bool wpInterestPayoutMode::validatePage()
 {
     wizNew *wiz = qobject_cast<wizNew *>(wizard());
-    wiz->iPaymentMode = fromInt(cbImode->itemData(field(pnIMode).toInt()).toInt());
+    wiz->iPaymentMode = interestModelFromInt(cbImode->itemData(field(pnIMode).toInt()).toInt());
     return true;
 }
 int wpInterestPayoutMode::nextId() const
@@ -905,7 +905,7 @@ void wpConfirmContract::initializePage()
     wizNew *wiz = qobject_cast<wizNew *>(wizard());
     if (wiz) {
         interestModel iMode{wiz->iPaymentMode};
-        QString interestMode = toString(iMode);
+        QString interestMode = interestModelDisplayString(iMode);
         subTitleLabel->setText(
             summary.arg(field(pnFName).toString(), field(pnLName).toString(), field(pnLabel).toString(), l.toCurrencyString(l.toDouble (field(pnAmount).toString())), QString::number(wiz->interest / 100., 'f', 2), interestMode, field(pnCDate).toDate().toString(qsl("dd.MM.yyyy")), (wiz->noticePeriod == -1) ? wiz->field(pnEDate).toDate().toString(qsl("dd.MM.yyyy")) : QString::number(wiz->noticePeriod) + qsl(" Monate nach Kündigung"), field(pnIPaymentDelayed).toBool() ? qsl("Zinszahlung nicht ab Geldeingang") : qsl("Verzinsung ab Geldeingang")));
     }

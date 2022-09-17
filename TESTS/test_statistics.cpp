@@ -17,7 +17,7 @@ stats getStatsFromSql(QString sql, QDate date)
     // init
     int i{0};
     for ( i=0; i<toInt(interestModel::maxId); i++)
-        retval.insert(fromInt(i), statSet());
+        retval.insert(interestModelFromInt(i), statSet());
     retval.insert(interestModel::maxId, statSet());
 
     int recordCount =0;
@@ -25,7 +25,7 @@ stats getStatsFromSql(QString sql, QDate date)
         QSqlRecord rec =q.record();
         qDebug() << rec;
         recordCount++;
-        interestModel key =rec.value(0).toString() == qsl("all") ? interestModel::maxId : fromInt(rec.value(0).toInt());
+        interestModel key =rec.value(0).toString() == qsl("all") ? interestModel::maxId : interestModelFromInt(rec.value(0).toInt());
         statSet set;
         set.nbrContracts =rec.value(1).toInt();
         set.nbrCreditors =rec.value(2).toInt();

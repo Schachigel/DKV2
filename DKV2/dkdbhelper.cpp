@@ -409,7 +409,7 @@ bool createCsvActiveContracts()
         col.append (q.value(qsl("Aktivierungsdatum")).toDate().toString ("dd.MM.yyyy"));
         col.append (q.value(qsl("Kuendigungsfrist")).toString());
         col.append (q.value(qsl("Vertragsende")).toDate().toString ("dd.MM.yyyy"));
-        col.append (toString(static_cast<const interestModel>(q.value(qsl("thesa")).toInt())));
+        col.append (interestModelDisplayString(interestModelFromInt(q.value(qsl("thesa")).toInt())));
         data.append(col);
     }
 
