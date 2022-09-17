@@ -700,7 +700,14 @@ QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
     return v;
 }
 
-double contract::payedInterest(int year)
+double contract::payedInterestAtTermination()
+{
+    if( not isTerminated) return 0.;
+    QString sql(qsl("SELECT Betrag FROM exBuchungen WHERE VertragsId=%1 AND BuchungsArt=%2 ORDER BY id DESC LIMIT 1"));
+    sql =sql.arg(id_aS (), QString::number(int(booking::Type::reInvestInterest)));
+    return euroFromCt(executeSingleValueSql(sql).toInt());
+}
+double contract::payedAnnualInterest(int year)
 {
     if( iModel() not_eq interestModel::payout)
         return 0;

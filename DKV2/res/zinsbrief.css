@@ -10,7 +10,7 @@ table {
 /*    border-width: 1px;  */
 /*    border-style: solid;*/
     border-collapse: collapse;
-    font-size: 9pt;
+    font-size: 8pt;
 }
 
 .invisible {
@@ -26,7 +26,7 @@ table {
 
 .divFirmenname {
     text-align: left;
-    font-size: 12pt;
+    font-size: 9pt;
     font-weight: bold;
 }
 
@@ -114,6 +114,6 @@ table {
     font-size: 8pt;
 }
 
-.footer {
+footer {
     font-size:5pt;
 }

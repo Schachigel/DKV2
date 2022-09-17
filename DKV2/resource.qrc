@@ -12,5 +12,6 @@
         <file>res/endabrechnung.html</file>
         <file>res/brieflogo.png</file>
         <file>res/endabrechnung.csv</file>
+        <file>res/endabr-Zinsnachw.html</file>
     </qresource>
 </RCC>

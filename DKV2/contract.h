@@ -188,7 +188,8 @@ struct contract
     // helper
     QString toString(const QString &name =QString()) const;
     QVariant toVariantMap(QDate fromDate = BeginingOfTime, QDate toDate = EndOfTheFuckingWorld);
-    double payedInterest(int year);
+    double payedInterestAtTermination();
+    double payedAnnualInterest(int year);
 
 private:
     // data
@@ -201,6 +202,9 @@ private:
     bool archive();
     void reset() {initContractDefaults();}
 };
+
+QVariant lastInterestPayment(const contract& c);
+
 // test helper
 contract saveRandomContract(const qlonglong creditorId);
 void saveRandomContracts(const int count);

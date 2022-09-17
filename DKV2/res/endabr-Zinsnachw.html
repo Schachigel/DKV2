@@ -1,0 +1,52 @@
+<head>
+    <!-- {{{meta.commonText}}}<br/><br/>-->
+    <!-- for use in a classic browser -->
+    <link rel="stylesheet" href="zinsbrief.css">
+</head>
+
+<body>
+    <table width=98%>
+        <tr>
+            <td width=40% class="colFirmenname">
+              <span class="divFirmenname"> <b>{{meta.gmbhaddress1}}</b><p></span>
+              <span class="GmbHAnschrift"> {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}}</span>
+              <span class="KreditorAdresse" ><br>
+                  {{creditor.Vorname}} {{creditor.Nachname}}<p>
+                  {{creditor.Strasse}}<br>
+                  <b>{{creditor.Plz}}</b> &nbsp; &nbsp; {{creditor.Stadt}}
+                  </span>
+            </td>
+            <td class="colLogo" width=60%><img class="imgLogo" src="{{gmbhLogo}}">
+                <span class="GmbHUrl">{{meta.gmbhurl}}</span>
+            </td>
+        </tr>
+        <tr><td class="invisible"><p><p></td>
+            <td></td>
+        </tr>
+    </table>
+    <table width=90%>
+        <tr>
+            <td class="colBetreff">Abschließender Zinsnachweis</td>
+            <td class="colDatum">{{meta.gmbhstadt}} den {{Vertrag.endDatum}}</td>
+        </tr>
+        <tr><td class="invisible"><p><p></td>
+            <td></td>
+        </tr>
+    </table>
+    <table width=90%>
+      <tr>
+        <td class="Text">
+        Sehr geehrte Damen und Herren,
+        <p>{{creditor.Vorname}} {{creditor.Nachname}} hat der {{meta.gmbhaddress1}} einen zinsgünstigen Direktkredit zur Unterstützung des sozialen, selbstorganisierten Miethausprojekts
+        {{meta.gmbhprojekt}} gewährt.<br>
+        Die Zinsen für das Jahr {{Zinsjahr}} in Höhe von {{ausbezahlterZins}} Euro wurden ausbezahlt.
+        <p><p>Mit freundlichen Grüßen<p>
+        {{meta.gmbhdkv}}<br> <small>(DK Verwaltung)<small>
+        </td>
+      </tr>
+    </table><p>
+    <footer>
+      {{meta.gmbhaddress1}} | {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}} <br> Handelsregister Eintrag {{meta.gmbhHandelsregister}}
+      Gesch&auml;ftsf&uuml;hrer: {{meta.gmbhgefue1}} | {{meta.gmbhgefue2}} | {{meta.gmbhgefue3}}<br/>
+    </footer>
+</body>

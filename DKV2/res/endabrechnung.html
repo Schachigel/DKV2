@@ -27,7 +27,7 @@
     <table width=90%>
         <tr>
             <td class="colBetreff">Endabrechnung für den Vertrag {{Vertrag.VertragsNr}} </td>
-            <td class="colDatum">{{meta.gmbhstadt}} den {{Zinsdatum}}</td>
+            <td class="colDatum">{{meta.gmbhstadt}} den {{Vertrag.endDatum}}</td>
         </tr>
         <tr><td class="invisible"><p><p></td>
             <td></td>
@@ -51,7 +51,7 @@
         <table class="tabVertrag">
             <tr>
                 <td colspan=2 class="colVertragsNr">
-                    <br/> <b>Vertrag {{VertragsNr}}</b> <span class="GmbHAnschrift"> Zinssatz {{strZSatz}}% {{#zzAusgesezt}}(ausgesetzt bis Baugenehmigung){{/zzAusgesezt}}</span>
+                    <br/> <b>Vertrag {{VertragsNr}}</b> <span class="GmbHAnschrift"> Zinssatz {{strZSatz}} {{#zzAusgesezt}}(ausgesetzt bis Baugenehmigung){{/zzAusgesezt}}</span>
                 </td>
             </tr>
         </table>
@@ -80,7 +80,6 @@
     </div>
 {{/Vertrag}}
 
-<div class="Text">
     <table width=90%>
       <tr>
         <td class="invisible"><p></td>
@@ -90,70 +89,14 @@
 <p>Es w&auml;re toll, wenn Du uns und unser Projekt weiterhin solidarisch unterstützt. Wir benötigen auch weiterhin Direktkredite um günstigen Mietwohnraum zu ermöglichen.
 Empfehle uns daher bitte weiter an Freund*innen, Bekannte und Verwandte!
 <p>Solltest Du Fragen zur Abrechnung haben, so zögere bitte nicht Dich - am besten per E-Mail - an uns zu wenden.
-<p><p>Mit freundlichen Grüßen<br>
-<p>{{meta.gmbhdkv}}<p>
-<small>DK Verwaltung<p></small>
-        </td>
-    </tr>
-    <tr>
-    <td class="footer">
-    {{meta.gmbhaddress1}} | {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}} | Handelsregister Eintrag {{meta.gmbhHandelsregister}}
-    Gesch&auml;ftsf&uuml;hrer: {{meta.gmbhgefue1}} | {{meta.gmbhgefue2}} | {{meta.gmbhgefue3}}<br/>
-    <td>
-    </tr>
-  </table>
-{{#mitAusbezahltemZins}}
-<p style="page-break-after: always;">&nbsp;</p>
-    <table width=98%>
-        <tr>
-            <td width=40%>
-              <div class="colFirmenname"> <b>{{meta.gmbhaddress1}}</b><p></div>
-              <div class="GmbHAnschrift"> {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}}</div>
-              <div class="KreditorAdresse" ><br>
-                  {{creditor.Vorname}} {{creditor.Nachname}}<p>
-                  {{creditor.Strasse}}<br>
-                  <b>{{creditor.Plz}}</b> &nbsp; &nbsp; {{creditor.Stadt}}
-              </div>
-            </td>
-            <td class="colLogo" width=60%><img class="imgLogo" src="{{gmbhLogo}}">
-                <div class="GmbHUrl">{{meta.gmbhurl}}</div>
-            </td>
-        </tr>
-        <tr><td class="invisible"><p><p></td>
-            <td></td>
-        </tr>
-    </table>
-    <table width=90%>
-        <tr>
-            <td class="colBetreff">Zinsnachweis für das Jahr {{Zinsjahr}} </td>
-            <td class="colDatum">{{meta.gmbhstadt}} den {{Zinsdatum}}</td>
-        </tr>
-        <tr><td class="invisible"><p><p></td>
-            <td></td>
-        </tr>
-    </table>
-    <div class="Text">
-        <table width=90%>
-            <tr>
-                <td class="Text">
-    Sehr geehrte Damen und Herren,
-    <p>{{creditor.Vorname}} {{creditor.Nachname}} hat der {{meta.gmbhaddress1}} einen zinsgünstigen Direktkredit zur Unterstützung des sozialen, selbstorganisierten Miethausprojekts
-    {{meta.gmbhprojekt}} gewährt.
-    Die Zinsen für das Jahr {{Zinsjahr}} in Höhe von {{ausbezahlterZins}} Euro wurden ausbezahlt.
-<p><p>Mit freundlichen Grüßen<br>
-<p>{{meta.gmbhdkv}}<p>
-<small>DK Verwaltung<p></small>
-        </td>
-    </tr>
-    <tr>
-    <td class="footer">
-    {{meta.gmbhaddress1}} | {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}} | Handelsregister Eintrag {{meta.gmbhHandelsregister}}
-    Gesch&auml;ftsf&uuml;hrer: {{meta.gmbhgefue1}} | {{meta.gmbhgefue2}} | {{meta.gmbhgefue3}}<br/>
-    <td>
-    </tr>
-  </table>
-    </div>
-{{/mitAusbezahltemZins}}
-
+<p><p>Mit freundlichen Grüßen<p>
+{{meta.gmbhdkv}}<br> <small>(DK Verwaltung)<small>
+         </td>
+       </tr>
+     </table><p>
+<footer>
+{{meta.gmbhaddress1}} | {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}} <br> Handelsregister Eintrag {{meta.gmbhHandelsregister}}
+Gesch&auml;ftsf&uuml;hrer: {{meta.gmbhgefue1}} | {{meta.gmbhgefue2}} | {{meta.gmbhgefue3}}<br/>
+</footer>
 </body>
 
