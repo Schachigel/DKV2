@@ -12,6 +12,7 @@ dlgAskDate::dlgAskDate(QWidget *parent) : QDialog(parent)
     msg->setWordWrap(true);
 
     dateEdit =new QDateEdit(QDate::currentDate(), this);
+    dateEdit->setDisplayFormat(qsl("dd.MM.yyyy"));
 
     buttons =new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
     buttons->button(QDialogButtonBox::Ok)->setDefault(true);

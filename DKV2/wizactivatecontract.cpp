@@ -2,7 +2,6 @@
 
 #include "appconfig.h"
 #include "helper.h"
-#include "helperfin.h"
 #include "wizactivatecontract.h"
 
 wpInitialPayment_IntroPage::wpInitialPayment_IntroPage(QWidget* p) : QWizardPage(p)
