@@ -34,32 +34,20 @@
 {
     switch(t)
     {
-    case booking::Type::deposit : return qsl("Einzahlung");
-    case booking::Type::payout : return qsl("Auszahlung");
-    case booking::Type::reInvestInterest: return qsl("Zinsanrechnung");
+    case booking::Type::deposit :            return qsl("Einzahlung");
+    case booking::Type::payout :             return qsl("Auszahlung");
+    case booking::Type::reInvestInterest:    return qsl("Zinsanrechnung");
     case booking::Type::annualInterestDeposit: return qsl("Jahreszins");
-    case booking::Type::setInterestActive: return qsl("Aktivierung d. Zinszahlung");
+    case booking::Type::setInterestActive:   return qsl("Aktivierung d. Zinszahlung");
     default:
-        QString error{qsl("FEHLER: ungültiger Buchungstyp")};
-        Q_ASSERT(false);
-        return error;
-    }
-}
-/* static */ QString booking::typeName(booking::Type t)
-{
-    switch(t) {
-    case booking::Type::non: return qsl("invalid booking");
-    case booking::Type::deposit: return qsl("deposit");
-    case booking::Type::payout: return qsl("payout");
-    case booking::Type::reInvestInterest: return qsl("reinvest interest");
-    case booking::Type::annualInterestDeposit: return qsl("annual interest");
-    case booking::Type::setInterestActive: return qsl("interest activation");
-    default: return qsl("ERROR");
+        return qsl("FEHLER: ungültiger Buchungstyp");
     }
 }
 
-/* static */ bool booking::doBooking( booking::Type t, const qlonglong contractId, QDate date, const double amount)
-{   LOG_CALL_W(typeName(t));
+/////////////// BOOKING functions (friends, not family ;) )
+///
+bool writeBookingToDB( booking::Type t, const qlonglong contractId, QDate date, const double amount)
+{   LOG_CALL_W(booking::displayString(t));
     TableDataInserter tdi(booking::getTableDef());
     tdi.setValue(qsl("VertragsId"), contractId);
     tdi.setValue(qsl("BuchungsArt"), static_cast<int>(t));
@@ -67,40 +55,45 @@
     tdi.setValue(qsl("Datum"), date);
 //    "Zeitstempel" will be created by default
     if( -1 not_eq tdi.WriteData()) {
-        qInfo() << "successful booking: " << typeName(t) << " contract#: " << contractId << " Amount: " << ctFromEuro(amount) << " date: " << date;
+        qInfo() << "erfolgreiche Buchung: " << booking::displayString(t) << " Vertrag#: " << contractId << " Betrag: " << ctFromEuro(amount) << " Datum: " << date;
         return true;
     }
-    qCritical() << "booking failed for contract#: " << contractId << " Amount: " << ctFromEuro(amount) << " date: " << date;;
+    qCritical() << "Buchung fehlgeschlagen! Vertrag#: " << contractId << " Betrag: " << ctFromEuro(amount) << " Datum: " << date;;
     return false;
 }
-/* static */ bool booking::bookDeposit(const qlonglong contractId, QDate date, const double amount)
+bool bookDeposit(const qlonglong contractId, QDate date, const double amount)
 {
     Q_ASSERT( amount > 0.);
-    return doBooking( Type::deposit, contractId, date, amount);
+    return writeBookingToDB( booking::Type::deposit, contractId, date, amount);
 }
-/* static */ bool booking::bookPayout(const qlonglong contractId, QDate date, const double amount)
+bool bookPayout(const qlonglong contractId, QDate date, const double amount)
 {
     // contract has to check that a payout is possible
-    return doBooking(Type::payout, contractId, date, -1*qFabs(amount));
+    return writeBookingToDB(booking::Type::payout, contractId, date, -1*qFabs(amount));
 }
-/* static */ bool booking::bookReInvestInterest(const qlonglong contractId, QDate date, const double amount)
+bool bookReInvestInterest(const qlonglong contractId, QDate date, const double amount)
 {
     Q_ASSERT( amount >= 0.);
-    return doBooking(Type::reInvestInterest, contractId, date, amount);
+    return writeBookingToDB(booking::Type::reInvestInterest, contractId, date, amount);
 }
-/* static */ bool booking::bookAnnualInterestDeposit(const qlonglong contractId, QDate date, const double amount)
+bool bookAnnualInterestDeposit(const qlonglong contractId, QDate date, const double amount)
 {
     Q_ASSERT( amount >= 0.);
-    return doBooking(Type::annualInterestDeposit, contractId, date, amount);
+    return writeBookingToDB(booking::Type::annualInterestDeposit, contractId, date, amount);
+}
+bool bookInterestActive(const qlonglong contractId, QDate date)
+{
+    return writeBookingToDB(booking::Type::setInterestActive, contractId, date, 0.);
 }
 
-/* static */ bool booking::bookInterestActive(const qlonglong contractId, QDate date)
-{
-    return doBooking(Type::setInterestActive, contractId, date, 0.);
-}
+///////////// bookingS start here
 
 /* static */ QDate bookings::dateOfnextSettlement()
 {   LOG_CALL;
+/*
+ * Man sollte eine Jahresendbuchung auch mehrmals machen können, für den Fall, dass es nachträglich
+ * gebuchte Geldeingänge für Neuverträge (=Aktivierungen) gab
+*/
     QDate ret =executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(sqlNextAnnualSettlement)).toDate();
     qInfo() << "Date of next Settlement was found as " << ret;
     return ret;
@@ -122,7 +115,6 @@
     }
     return vRet;
 }
-
 /* static */ QVector<booking> bookings::getBookings(const qlonglong cid, QDate from, const QDate to,
                     QString order, bool terminated)
 {   LOG_CALL;
@@ -141,7 +133,6 @@
     where = where.arg(QString::number(static_cast<int>(booking::Type::annualInterestDeposit)), QDate(year, 12, 31).toString(Qt::ISODate));
     return bookingsFromSql(where);
 }
-
 /*static */ QVector<int> bookings::yearsWithAnnualBookings()
 {
     QVector<int> years;

@@ -555,7 +555,7 @@ void test_contract::test_activationDate()
     QCOMPARE(initialBookingDate(cont.id ()), aDate);
     cont.deposit(aDate.addMonths(6), 1000.);
     QCOMPARE(initialBookingDate(cont.id ()), aDate);
-    booking::bookReInvestInterest(cont.id(), QDate(2021, 1, 1), 10.);
+    bookReInvestInterest(cont.id(), QDate(2021, 1, 1), 10.);
     QCOMPARE(initialBookingDate(cont.id ()), aDate);
 }
 

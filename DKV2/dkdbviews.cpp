@@ -336,19 +336,29 @@ bool remove_all_views(const QSqlDatabase& db /*=QSqlDatabase::database()*/)
 //////////////////////////////////////
 
 // annual interest calculation
+/*
+ * Fall 1: Aktive Verträgen für die es keine Zinsbuchungen gibt
+ *  d.h. keine Ein- oder Auszahlungen oder Jahresabrechnungen
+ *  -> Das Abrechnungsjahr sollte das Jahr der Aktivierung sein
+ *  Anmerkung: der "inner join" blendet nicht aktivierte Verträge aus
+*/
 const QString sqlNextAnnualSettlement_firstAS {qsl(
 R"str(
 SELECT
-  STRFTIME('%Y-%m-%d', MIN(Datum), '1 day', '1 year', 'start of year', '-1 day')  as nextInterestDate
+  STRFTIME('%Y-%m-%d', Min(Datum) , '1 day', '1 year', 'start of year', '-1 day')  as nextInterestDate
 FROM Buchungen INNER JOIN Vertraege ON Vertraege.id = buchungen.VertragsId
-/* buchungen von Verträgen für die es keine Zinsbuchungen gibt */
 WHERE
   (SELECT count(*)
    FROM Buchungen
    WHERE (Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8) AND Buchungen.VertragsId=Vertraege.id)=0
 GROUP BY Vertraege.id
+ORDER BY Datum ASC LIMIT 1
 )str"
 )};
+/*
+ * Fall 2: Aktive Verträge, für die es bereits Zinsbuchungen und / oder Jahresabr. gibt
+ * -> Das nächste Abrechnungsjahr ist das Jahr der letzten Buchung
+*/
 const QString sqlNextAnnualSettlement_nextAS {qsl(
 R"str(
 SELECT

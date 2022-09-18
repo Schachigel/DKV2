@@ -260,7 +260,7 @@ bool contract::bookInitialPayment(const QDate date, double amount)
         return false;
     }
 
-    if ( booking::bookDeposit(id(), actualBookingDate, amount)) {
+    if ( bookDeposit(id(), actualBookingDate, amount)) {
         qInfo() << "Successfully activated contract " << id_aS() << "[" << actualBookingDate << ", " << amount << " Euro]";
         return true;
     }
@@ -287,7 +287,7 @@ bool contract::bookActivateInterest(const QDate d)
     }
     if( updateSetInterestActive()
             &&
-        booking::bookInterestActive(id(), d))
+        bookInterestActive(id(), d))
     {
         art.commit();
         qInfo() << "activated interest payment for contract " << id_aS() << " successfully";
@@ -377,12 +377,12 @@ int contract::annualSettlement( int year)
         case interestModel::reinvest:
         case interestModel::fixed:
         case interestModel::zero: {
-            bookingSuccess =booking::bookAnnualInterestDeposit(id(), nextAnnualSettlementDate, zins);
+            bookingSuccess =bookAnnualInterestDeposit(id(), nextAnnualSettlementDate, zins);
             break;
         }
         case interestModel::payout: {
-            bookingSuccess = booking::bookPayout(id(), nextAnnualSettlementDate, zins);
-            bookingSuccess &=booking::bookAnnualInterestDeposit(id(), nextAnnualSettlementDate, zins);
+            bookingSuccess = bookPayout(id(), nextAnnualSettlementDate, zins);
+            bookingSuccess &=bookAnnualInterestDeposit(id(), nextAnnualSettlementDate, zins);
             break;
         }
         case interestModel::maxId:
@@ -433,7 +433,7 @@ bool contract::deposit(const QDate d, double amount, bool payoutInterest)
         QSqlDatabase::database().rollback();
         return false;
     }
-    if( not booking::bookDeposit(id(), actualD, actualAmount)) {
+    if( not bookDeposit(id(), actualD, actualAmount)) {
         QSqlDatabase::database().rollback();
         return false;
     }
@@ -461,7 +461,7 @@ bool contract::payout(const QDate d, double amount, bool payoutInterest)
         QSqlDatabase::database().rollback();
         return false;
     }
-    if( not booking::bookPayout(id(), actualD, actualAmount)) {
+    if( not bookPayout(id(), actualD, actualAmount)) {
         QSqlDatabase::database().rollback();
         qCritical() << "booking of payout failed";
         return false;
@@ -525,8 +525,8 @@ bool contract::finalize(bool simulate, const QDate finDate,
     }
     bool allGood =false;
     do {
-        if( not booking::bookReInvestInterest(id(), finDate, finInterest)) break;
-        if( not booking::bookPayout(id(), finDate, finPayout)) break;
+        if( not bookReInvestInterest(id(), finDate, finInterest)) break;
+        if( not bookPayout(id(), finDate, finPayout)) break;
         if( value() not_eq 0.) break;
         if( not storeTerminationDate(finDate)) break;
         if (not archive())
@@ -585,8 +585,8 @@ bool contract::bookInBetweenInterest(const QDate nextBookingDate, bool payout)
                    //////////
     // only annualSettlements can be payed out
     if( payout)
-        booking::bookPayout (id(), nextBookingDate, zins);
-    return booking::bookReInvestInterest(id(), nextBookingDate, zins);
+        bookPayout (id(), nextBookingDate, zins);
+    return bookReInvestInterest(id(), nextBookingDate, zins);
 }
 bool contract::storeTerminationDate(const QDate d) const
 {   LOG_CALL;
