@@ -58,6 +58,11 @@ private:
 };
 Q_DECLARE_TYPEINFO(booking, Q_PRIMITIVE_TYPE );
 
+bool bookDeposit(   const qlonglong contractId, QDate date, const double amount);
+bool bookPayout(    const qlonglong contractId, QDate date, const double amount);
+bool bookReInvestInterest(const qlonglong contractId, QDate date, const double amount);
+bool bookAnnualInterestDeposit( const qlonglong contractId, QDate date, const double amount);
+bool bookInterestActive(const qlonglong contractId, QDate date);
 
 
 
