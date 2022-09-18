@@ -240,50 +240,17 @@ void changeContractValue(contract *pc) {
     } else
         qInfo() << "contract change was cancled by the user";
 }
-void annualSettlement() {
-    LOG_CALL;
-    QDate bookingDate = bookings::dateOfnextSettlement();
-    if (not bookingDate.isValid() or bookingDate.isNull()) {
-        QMessageBox::information(nullptr, qsl("Fehler"),
-                                 qsl("Ein Jahr für die nächste Zinsberechnung "
-                                     "konnte nicht gefunden werden."
-                                     "Es gibt keine Verträge für die eine "
-                                     "Abrechnung gemacht werden kann."));
-        return;
-    }
-    int yearOfSettlement = bookingDate.year();
-    //    wizAnnualSettlement wiz(getMainWindow());
-    dlgAnnualsettlement dlg(getMainWindow(), yearOfSettlement);
 
-    int dlgFeedback = dlg.exec();
-    if (dlgFeedback == QDialog::Rejected || not dlg.confirmed())
-        return;
-    busycursor bc;
-    QVector<QVariant> ids = executeSingleColumnSql(
-                dkdbstructur[contract::tnContracts][contract::fnId]);
-    qDebug() << "contracts to try execute annual settlement for: " << ids;
-    QVector<contract> changedContracts;
-    QVector<QDate> startOfInterrestCalculation;
-    QVector<booking> asBookings;
-    for (const auto &id : qAsConst(ids)) {
-        contract c(id.toLongLong());
-        QDate startDate = c.latestBooking().date;
-        if (0 not_eq c.annualSettlement(yearOfSettlement)) {
-            changedContracts.push_back(c);
-            asBookings.push_back(c.latestBooking());
-            startOfInterrestCalculation.push_back(startDate);
-        }
-    }
-
-    if (not dlg.print_csv())
-        return;
+namespace {
+void print_as_csv( const QDate& bookingDate,  const QVector<contract>& changedContracts, const QVector<QDate>& startOfInterrestCalculation, const QVector<booking>& asBookings)
+{
     csvwriter csv(qsl(";"));
     csv.addColumns(qsl("Vorname; Nachname; Email; Strasse; Plz; Stadt; IBAN; Kennung; Auszahlend;"
                        "Beginn; Buchungsdatum; Zinssatz; Kreditbetrag; Zins; Endbetrag"));
     QLocale l;
     for (int i = 0; i < changedContracts.count(); i++) {
-        contract &c = changedContracts[i];
-        booking &b = asBookings[i];
+        const contract &c = changedContracts[i];
+        const booking &b = asBookings[i];
         // write data to CSV
         creditor cont(c.creditorId());
         csv.appendToRow(cont.firstname());
@@ -309,33 +276,68 @@ void annualSettlement() {
     }
     QString filename{qsl("%1_Jahresabrechnung-%2.csv")};
     filename = filename.arg(QDate::currentDate().toString(Qt::ISODate),
-                            QString::number(yearOfSettlement));
+                            QString::number(bookingDate.year ()));
     csv.saveAndShowInExplorer(filename);
+}
+}
+void annualSettlement() {
+    LOG_CALL;
+    QDate bookingDate = bookings::dateOfnextSettlement();
+    if (not bookingDate.isValid() or bookingDate.isNull()) {
+        QMessageBox::information(nullptr, qsl("Fehler"),
+              qsl("Ein Jahr für die nächste Zinsberechnung "
+              "konnte nicht gefunden werden."
+              "Es gibt keine Verträge für die eine "
+              "Abrechnung gemacht werden kann."));
+        return;
+    }
+    int yearOfSettlement = bookingDate.year();
+    //    wizAnnualSettlement wiz(getMainWindow());
+    dlgAnnualsettlement dlg(getMainWindow(), yearOfSettlement);
+
+    if (dlg.exec() == QDialog::Rejected || not dlg.confirmed())
+        return;
+
+    busycursor bc;
+    QVector<QVariant> ids = executeSingleColumnSql(
+                dkdbstructur[contract::tnContracts][contract::fnId]);
+    qDebug() << "contracts to try execute annual settlement for: " << ids;
+    QVector<contract> changedContracts;
+    QVector<QDate> startOfInterrestCalculation;
+    QVector<booking> asBookings;
+    // try execute annualSettlement for all contracts
+    for (const auto &id : qAsConst(ids)) {
+        contract c(id.toLongLong());
+        QDate startDate = c.latestBooking().date;
+        if (0 not_eq c.annualSettlement(yearOfSettlement)) {
+            if (dlg.print_csv()) {
+                changedContracts.push_back(c);
+                asBookings.push_back(c.latestBooking());
+                startOfInterrestCalculation.push_back(startDate);
+            }
+        }
+    }
+    if (dlg.print_csv())
+        print_as_csv(bookingDate, changedContracts, startOfInterrestCalculation, asBookings);
     return;
 }
 
 /*************************/
-/*** Ausdrucke ***********/
+/*** Ausdrucke Jahresend Briefe *******/
 /*************************/
-
+namespace {
 void createInitialLetterTemplates() {
     LOG_CALL;
     QDir outDir(appConfig::Outdir());
     outDir.mkdir(qsl("vorlagen"));
     outDir.mkdir(qsl("html"));
-
-    extractTemplateFileFromResource(appConfig::Outdir() + qsl("/vorlagen/"),
-                                    qsl("brieflogo.png"));
-    extractTemplateFileFromResource(appConfig::Outdir() + qsl("/vorlagen/"),
-                                    qsl("zinsbrief.css"));
-    extractTemplateFileFromResource(appConfig::Outdir() + qsl("/vorlagen/"),
-                                    qsl("zinsbrief.html"));
-    extractTemplateFileFromResource(appConfig::Outdir() + qsl("/vorlagen/"),
-                                    qsl("endabrechnung.html"));
-    extractTemplateFileFromResource(appConfig::Outdir() + qsl("/vorlagen/"),
-                                    qsl("endabr-Zinsnachw.html"));
-    extractTemplateFileFromResource(appConfig::Outdir() + qsl("/vorlagen/"),
-                                    qsl("endabrechnung.csv"));
+    const QString vorlagenVerzeichnis =appConfig::Outdir () +qsl("/vorlagen/");
+    extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("brieflogo.png"));
+    extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.css"));
+    extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.html"));
+    extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("endabrechnung.html"));
+    extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("endabr-Zinsnachw.html"));
+    extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("endabrechnung.csv"));
     extractTemplateFileFromResource(appConfig::Outdir() + qsl("/html/"),
                                     qsl("zinsbrief.css"));
 }
@@ -355,6 +357,7 @@ int askUserForYearOfPrintouts() {
         return -1;
 
     return dlg.getYear();
+}
 }
 
 void annualSettlementLetters() {
@@ -442,10 +445,18 @@ void annualSettlementLetters() {
 void deleteInactiveContract(contract *c) {
     LOG_CALL;
     // contracts w/o bookings can be deleted
-    // todo: wiz ui with confirmation?
     // todo: if creditor has no other (active or deleted) contracts: propose
     // delete creditor
-    c->deleteInactive ();
+    if( QMessageBox::question (getMainWindow (), qsl("Vertrag löschen"), qsl("Soll der inaktive Vertrag ")
+                           +c->label () +qsl(" gelöscht werden?")) == QMessageBox::Yes )  {
+            if( not c->deleteInactive ()) {
+                QMessageBox::information (getMainWindow(), qsl("Fehler"), qsl("Der Vertrag konnte nicht gelöscht werden"));
+            }
+    }
+    if( QMessageBox::question (getMainWindow (), qsl("Kreditor*in löschen?"), qsl("Soll die zugehörige Kreditgeber*in gelöscht werden?"))
+            == QMessageBox::Yes) {
+        creditor::remove(c->creditorId ());
+    }
 }
 
 void terminateContract(contract *pc) {
@@ -572,7 +583,6 @@ qlonglong createInvestment_matchingContract(int &interest, QDate &from,
 
     return newId;
 }
-
 void createInvestment() {
     LOG_CALL;
     wizNewInvestment wiz;
