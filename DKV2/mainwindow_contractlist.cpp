@@ -361,7 +361,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
         menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
     } else {
         c.loadFromDb (contractId);
-        bool gotTerminationDate = c.noticePeriod() == -1;
+        bool gotTerminationDate = (c.noticePeriod() == -1);
 
         if(c.initialBookingReceived())
         {
@@ -371,6 +371,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
                 ui->action_cmenu_terminate_contract->setText(qsl("Vertrag kündigen"));
             menu.addAction(ui->action_cmenu_terminate_contract);
             menu.addAction(ui->action_cmenu_change_contract);
+            // interest activation only after init.payment (not enforced by contract::)
             if( not c.interestActive())
                 menu.addAction(ui->action_cmenu_activate_interest_payment);
         }

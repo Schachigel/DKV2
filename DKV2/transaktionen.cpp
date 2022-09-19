@@ -179,7 +179,7 @@ void bookInitialPaymentReceived(contract *v) {
 void activateInterest(contract *v) {
     LOG_CALL;
     booking lastB = v->latestBooking();
-    Q_ASSERT(lastB.type != booking::Type::non);
+    Q_ASSERT(lastB.type != bookingType::non);
     QDate earlierstActivation = lastB.date.addDays(1);
     dlgAskDate dlg(getMainWindow());
     dlg.setDate(earlierstActivation);

@@ -885,8 +885,8 @@ QString letterName(const booking &b)
     QString txt = qsl("<table width=100%><tr><td align=center style='padding-top:5px;padding-bottom:5px;'>%1, %2; %3<br><b>%4</b></td></tr></table>");
     contract cont(b.contractId);
     creditor cred(cont.creditorId());
-    QString lettertype = booking::displayString(b.type) +qsl(" ");
-    lettertype += (b.type == booking::Type::annualInterestDeposit) ? QString::number(b.date.year() - 1) : b.date.toString();
+    QString lettertype = bookingTypeDisplayString(b.type) +qsl(" ");
+    lettertype += (b.type == bookingType::annualInterestDeposit) ? QString::number(b.date.year() - 1) : b.date.toString();
 
     txt = txt.arg(cred.lastname(), cred.firstname(), cont.label(), lettertype);
     return txt;

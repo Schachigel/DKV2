@@ -95,7 +95,7 @@ QString BookingAmountItemFormatter::displayText(const QVariant& value, const QLo
 
 QString bookingTypeFormatter::displayText(const QVariant &value, const QLocale &) const
 {
-    return booking::displayString( (booking::Type) value.toInt());
+    return bookingTypeDisplayString( fromInt(value.toInt()));
 }
 void bookingTypeFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {

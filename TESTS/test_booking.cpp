@@ -20,6 +20,7 @@ void test_booking::test_dateONSettlement_noContracts()
 {
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
+    // kein aktiver Vertrag -> keine Jahresabrechnung
     QCOMPARE( QDate(), bookings::dateOfnextSettlement());
 }
 void test_booking::test_dateONSettlement_activatedContracts()

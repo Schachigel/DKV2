@@ -237,7 +237,7 @@ INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id
 INNER JOIN Kreditoren ON Vertraege.KreditorId = Kreditoren.id
 WHERE Buchungen.BuchungsArt = %1 AND SUBSTR(Buchungen.Datum, 1, 4) = '%2')
 ORDER BY Nachname ASC, Vorname ASC
-)str").arg(QString::number((int)booking::Type::annualInterestDeposit), QString::number (bookingYear));
+)str").arg(bookingTypeToString(bookingType::annualInterestDeposit), QString::number (bookingYear));
 
     qDebug() << sql;
     if( not query.exec(sql)) {

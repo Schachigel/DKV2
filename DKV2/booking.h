@@ -7,27 +7,44 @@
 #include "helper.h"
 #include "dbtable.h"
 
+enum class bookingType{
+    non, // means all
+    deposit                = 1,
+    payout                 = 2,
+    reInvestInterest       = 4,
+    annualInterestDeposit  = 8,
+    setInterestActive      =16
+};
+QString bookingTypeDisplayString(const bookingType t);
+inline int bookingTypeToInt(const bookingType t) { return static_cast<int>(t);}
+inline bookingType fromInt(int i)
+{
+    switch(i)
+    {
+    case  0:
+    case  1:
+    case  2:
+    case  4:
+    case  8:
+    case 16:
+        return static_cast<bookingType>(i);
+    default:
+        Q_ASSERT(! "invalid booking type");
+        qCritical() << "invalid booking type";
+        return static_cast<bookingType>(0);
+    }
+}
+inline QString bookingTypeToString( const bookingType t) {return QString::number(bookingTypeToInt(t));};
+
 struct booking
 {
-    enum class Type{
-        non, // means all
-        deposit                = 1,
-        payout                 = 2,
-        reInvestInterest       = 4,
-        annualInterestDeposit  = 8,
-        setInterestActive      =16
-    };
-    static QString displayString(const Type t);
-    inline static int bookingTypeToInt(const booking::Type t) {
-        return static_cast<int>(t);
-    }
 
     qlonglong contractId =-1;
-    Type type =Type::non;
+    bookingType type =bookingType::non;
     QDate date =EndOfTheFuckingWorld;
     double amount =0.;
     // construction
-    booking(const qlonglong cId =-1, const booking::Type t = Type::non, const QDate d =EndOfTheFuckingWorld, const double a =0.)
+    booking(const qlonglong cId =-1, const bookingType t = bookingType::non, const QDate d =EndOfTheFuckingWorld, const double a =0.)
         : contractId(cId), type(t), date(d), amount(a) {};
     // comparison for tests
     inline friend bool operator==(const booking& lhs, const booking& rhs)
@@ -54,7 +71,7 @@ struct booking
     friend bool bookAnnualInterestDeposit( const qlonglong contractId, QDate date, const double amount);
     friend bool bookInterestActive(const qlonglong contractId, QDate date);
 private:
-    friend bool writeBookingToDB( booking::Type , const qlonglong contractId, QDate date, const double amount);
+    friend bool writeBookingToDB( bookingType , const qlonglong contractId, QDate date, const double amount);
 };
 Q_DECLARE_TYPEINFO(booking, Q_PRIMITIVE_TYPE );
 
