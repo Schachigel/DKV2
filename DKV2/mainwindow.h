@@ -109,7 +109,7 @@ private slots:
 
     void on_actionDatenbank_Views_schreiben_triggered();
 
-    void on_actionBeendete_Vertr_ge_anzeigen_triggered();
+    void on_action_menu_Beendete_Vertr_ge_anzeigen_triggered();
 
     void on_actionProjektkonfiguration_ndern_triggered();
 
@@ -223,8 +223,6 @@ private:
         qsl("Laufzeiten"),
         qsl("Gesamtübersicht")
     };
-
-    bool showDeletedContracts =false;
     std::unique_ptr<contractsHeaderSortingAdapter> contractsSortingAdapter;
 };
 

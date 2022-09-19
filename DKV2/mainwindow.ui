@@ -714,7 +714,7 @@
      <addaction name="action_menu_contracts_interestLetters"/>
     </widget>
     <addaction name="action_menu_contracts_listview"/>
-    <addaction name="actionBeendete_Vertr_ge_anzeigen"/>
+    <addaction name="action_menu_Beendete_Vertr_ge_anzeigen"/>
     <addaction name="action_Neu"/>
     <addaction name="separator"/>
     <addaction name="action_menu_contracts_annual_interest_settlement"/>
@@ -894,7 +894,7 @@
     <string>Datenbank Views schreiben</string>
    </property>
   </action>
-  <action name="actionBeendete_Vertr_ge_anzeigen">
+  <action name="action_menu_Beendete_Vertr_ge_anzeigen">
    <property name="text">
     <string>&amp;Beendete V. anzeigen</string>
    </property>

@@ -12,24 +12,24 @@
 #include "helper.h"
 
 /////////////////////////////////////////////////
-// Contract List
+// Contracts List & deleted contracts list
 /////////////////////////////////////////////////
+namespace {
+bool showDeletedContracts =false;
+}
+
 void MainWindow::on_action_menu_contracts_listview_triggered()
 {   LOG_CALL;
     showDeletedContracts =false;
     prepare_contracts_list_view();
     ui->actionAktuelle_Auswahl->setEnabled (true);
 }
-/////////////////////////////////////////////////
-// terminated contracts list
-/////////////////////////////////////////////////
-void MainWindow::on_actionBeendete_Vertr_ge_anzeigen_triggered()
+void MainWindow::on_action_menu_Beendete_Vertr_ge_anzeigen_triggered()
 {
     busycursor bc;
     showDeletedContracts =true;
     prepare_contracts_list_view();
 }
-
 void MainWindow::prepare_contracts_list_view()
 {   LOG_CALL;
     busycursor bc;
@@ -38,6 +38,7 @@ void MainWindow::prepare_contracts_list_view()
         prepare_deleted_contracts_list_view();
     else
         prepare_valid_contracts_list_view();
+
     ui->contractsTableView->selectRow(0);
     ui->stackedWidget->setCurrentIndex(contractsListPageIndex);
 }
@@ -89,7 +90,6 @@ void applyFilterToModel( QSqlTableModel* model, const QString filter)
     model->setFilter( filterFromFilterphrase(filter));
 }
 }
-
 const QVector<tableViewColTexts> columnTextsContracts {
     /*cp_vid,             */ {qsl(""), qsl("")},
     /*cp_Creditor_id,     */ {qsl(""), qsl("")},
@@ -126,7 +126,9 @@ const QVector<tableViewColTexts> columnTexts_d_Contracts {
 };
 const QString defaultVisibilityPattern_deletedContracts {qsl("001111111111")};
 const QString visibilityPattern_d_MetaInfoName {qsl("geloeschteVertraegeSpalten")};
-
+///////////////////////////////////////
+/// preparation of the list view
+///////////////////////////////////////
 void MainWindow::prepare_valid_contracts_list_view()
 { LOG_CALL;
     busycursor bc;
@@ -254,6 +256,7 @@ void MainWindow::prepare_deleted_contracts_list_view()
     } else
         contractsTV->setCurrentIndex(model->index(0, 1));
 }
+
 void MainWindow::on_le_ContractsFilter_editingFinished()
 {   LOG_CALL;
     static QString lastFilter {qsl("init")};
@@ -269,7 +272,6 @@ void MainWindow::on_reset_contracts_filter_clicked()
     ui->le_ContractsFilter->setText(QString());
     on_le_ContractsFilter_editingFinished ();
 }
-
 void MainWindow::on_btnVertragsSpalten_clicked()
 {
     QString storageName;
@@ -307,6 +309,8 @@ void MainWindow::on_btnVertragsSpalten_clicked()
 
 void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex & )
 {
+//// every time the selection in the contract tree view changes
+//// the bookings table below needs to be updated
     busycursor bc;
     // todo: do all init only once, this function should only do the
     // setFilter and the select()
@@ -341,7 +345,13 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
 /////////////////////////////////////////////////
 // contract list context menu
 /////////////////////////////////////////////////
+
+// this ugly global makes the contract, on which the context menu was called,
+// available in the handler functions
+namespace{
 contract* contractUnderMouseMenu =nullptr;
+}
+
 void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;
     busycursor bc;
