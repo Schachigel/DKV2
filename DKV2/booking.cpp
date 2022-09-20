@@ -47,18 +47,18 @@
 /////////////// BOOKING functions (friends, not family ;) )
 ///
 bool writeBookingToDB( bookingType t, const qlonglong contractId, QDate date, const double amount)
-{   LOG_CALL_W(bookingTypeDisplayString(t));
+{//   LOG_CALL_W(bookingTypeDisplayString(t));
     TableDataInserter tdi(booking::getTableDef());
     tdi.setValue(qsl("VertragsId"), contractId);
     tdi.setValue(qsl("BuchungsArt"), static_cast<int>(t));
     tdi.setValue(qsl("Betrag"), ctFromEuro(amount));
     tdi.setValue(qsl("Datum"), date);
-//    "Zeitstempel" will be created by default
+    //    "Zeitstempel" will be created by the sql default value =setDefaultNow()
     if( -1 not_eq tdi.WriteData()) {
-        qInfo() << "erfolgreiche Buchung: " << bookingTypeDisplayString(t) << " Vertrag#: " << contractId << " Betrag: " << ctFromEuro(amount) << " Datum: " << date;
+        qInfo() << "writeBookingToDB: Erfolgreiche Buchung: " << bookingTypeDisplayString(t) << " Vertrag#: " << contractId << " Betrag: " << ctFromEuro(amount) << " Datum: " << date;
         return true;
     }
-    qCritical() << "Buchung fehlgeschlagen! Vertrag#: " << contractId << " Betrag: " << ctFromEuro(amount) << " Datum: " << date;;
+    qCritical() << "writeBookingToDB: Buchung fehlgeschlagen! Vertrag#: " << contractId << " Betrag: " << ctFromEuro(amount) << " Datum: " << date;;
     return false;
 }
 bool bookDeposit(const qlonglong contractId, QDate date, const double amount)
@@ -89,17 +89,18 @@ bool bookInterestActive(const qlonglong contractId, QDate date)
 ///////////// bookingS start here
 
 /* static */ QDate bookings::dateOfnextSettlement()
-{   LOG_CALL;
-/*
- * Man sollte eine Jahresendbuchung auch mehrmals machen können, für den Fall, dass es nachträglich
- * gebuchte Geldeingänge für Neuverträge (=Aktivierungen) gab
-*/
+{
+    /*
+     * Man sollte eine Jahresendbuchung auch mehrmals machen können, für den Fall, dass es nachträglich
+     * gebuchte Geldeingänge für Neuverträge (=Aktivierungen) gab
+    */
     QDate ret =executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(sqlNextAnnualSettlement)).toDate();
-    qInfo() << "Date of next Settlement was found as " << ret;
+    qInfo() << "DateOfnextSettlement: Date of next Settlement was found as " << ret;
     return ret;
 }
 /*static */ QVector<booking> bookings::bookingsFromSql(const QString& where, const QString& order, bool terminated)
 {
+    qInfo() << "Where: "<< where << "\n" << "Order: " << order << "terminated: " << (terminated ? "true" : "false");
     QVector<QSqlRecord> records = terminated ?
                executeSql( booking::getTableDef_deletedBookings ().Fields (), where, order)
              : executeSql( booking::getTableDef().Fields(), where, order);
@@ -110,14 +111,14 @@ bool bookInterestActive(const qlonglong contractId, QDate date)
         bookingType t = bookingType(rec.value(qsl("BuchungsArt")).toInt());
         QDate d = rec.value(qsl("Datum")).toDate();
         double amount = euroFromCt(rec.value(qsl("Betrag")).toInt());
-        qInfo() << "Buchung: cid=" << cid << "; type=" << bookingTypeDisplayString(t) << "; Datum=" << d.toString() << "; Betrag=" << amount;
+        qInfo() << "bookingsFromSql: Buchung: cid=" << cid << "; type=" << bookingTypeDisplayString(t) << "; Datum=" << d.toString() << "; Betrag=" << amount;
         vRet.push_back(booking(cid, t, d, amount));
     }
     return vRet;
 }
 /* static */ QVector<booking> bookings::getBookings(const qlonglong cid, QDate from, const QDate to,
                     QString order, bool terminated)
-{   LOG_CALL;
+{
     QString tablename = terminated ? qsl("ExBuchungen") : qsl("Buchungen");
     // used in tests
     QString where = qsl("%4.VertragsId=%1 "
@@ -128,13 +129,13 @@ bool bookInterestActive(const qlonglong contractId, QDate date)
     return bookingsFromSql(where, order, terminated);
 }
 /* static */ QVector<booking> bookings::getAnnualSettelments(const int year)
-{   LOG_CALL;
+{
     QString where = qsl("Buchungen.BuchungsArt = %1 AND Buchungen.Datum = '%2'");
     where = where.arg(QString::number(static_cast<int>(bookingType::annualInterestDeposit)), QDate(year, 12, 31).toString(Qt::ISODate));
     return bookingsFromSql(where);
 }
 /*static */ QVector<int> bookings::yearsWithAnnualBookings()
-{
+{   LOG_CALL;
     QVector<int> years;
     QString sql{qsl("SELECT DISTINCT SUBSTR(Datum, 1, 4) AS year FROM Buchungen WHERE BuchungsArt =%1 ORDER BY year DESC")
                 .arg (bookingTypeToString(bookingType::annualInterestDeposit))};
