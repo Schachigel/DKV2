@@ -48,6 +48,7 @@ QString DbInsertableString(const QVariant& v)
         s = QString::number(v.toInt());
         break;
     case QVariant::String:
+    case QVariant::ByteArray:
     case QVariant::Char:
         s = v.toString().replace(qsl("'"), qsl("''"));;
         break;
@@ -65,6 +66,7 @@ QString dbCreateTable_type(const QVariant::Type t)
     switch( t)
     {
     case QVariant::String:
+    case QVariant::ByteArray:
     case QVariant::Char:
         return qsl("TEXT"); // affinity: TEXT
     case QVariant::Date:
@@ -91,6 +93,7 @@ QString dbAffinityType(const QVariant::Type t)
     switch( t)
     {
     case QVariant::String:
+    case QVariant::ByteArray:
     case QVariant::Char:
     case QVariant::Date:
     case QVariant::DateTime:
