@@ -36,32 +36,32 @@ bool moveToBackup(const QString &fn)
 }
 
 bool backupFile(const QString&  fn, const QString& subfolder)
-{   LOG_CALL_W(fn);
+{
     if (not QFile::exists(fn)) {
-        qDebug() << "no need to backup not existing file: " << fn;
+        qDebug() << "No need to backup not existing file: " << fn;
         return true;
     }
     QString backupname{fn};
     QFileInfo fi{fn};
     QString suffix = fi.completeSuffix();
     QString path = fi.path();
-    if( subfolder.size())
-    {
+    if( subfolder.size()) {
         QDir d(path); d.mkdir(subfolder);
         backupname =d.path() + qsl("/") + subfolder + qsl("/") + fi.fileName();
     }
     backupname.chop(suffix.size()+1/*dot*/);
     backupname += "_" + QDateTime::currentDateTime().toString(qsl("yyyyMMdd_hhmmss")) + qsl(".") + suffix;
     // copy the file
-    if( not QFile().copy(fn, backupname))
-    {
+    if( not QFile().copy(fn, backupname)) {
         qDebug() << "Backup copy failed. File to be copied: " << backupname;
         return false;
     }
+    qInfo() << qsl("Backup succeeded from %1 to %2").arg(fn, backupname);
     QString names(fi.baseName() + qsl("_????????_??????.") + suffix);
     QDir backups(fi.absolutePath(), names, QDir::Name | QDir::Reversed, QDir::Files);
     for (uint i = 30; i < backups.count(); i++) {
         QFile().remove(backups[i]);
+        qInfo() << "Removed old backup DB: " << backups[i];
     }
     return true;
 }
