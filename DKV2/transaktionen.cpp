@@ -38,7 +38,7 @@ void newCreditorAndContract() {
 
         // one can only come here, if the users accepted the creation of the
         // creditor
-        if (not wiz.c_tor.isValid()) {
+        if (not wiz.cred.isValid()) {
             // the user was checked during validation of the wizard -> very wrong
             QMessageBox::critical(getMainWindow(), qsl("Eingabefehler"),
                                   qsl("Die Kundendaten sind ungültig"
@@ -57,7 +57,7 @@ void newCreditorAndContract() {
             return;
         }
     } else {
-        wiz.c_tor.setId(wiz.existingCreditorId);
+        wiz.cred.setId(wiz.existingCreditorId);
         qInfo() << "contract for existing creditor will be created";
     }
 
@@ -66,7 +66,7 @@ void newCreditorAndContract() {
         return;
     }
     contract cont;
-    cont.setCreditorId(wiz.c_tor.id());
+    cont.setCreditorId(wiz.cred.id());
     cont.setPlannedInvest(QLocale().toDouble(wiz.field(pnAmount).toString()));
     cont.setInterestRate(wiz.interest / 100.);
     cont.setInvestment(wiz.investmentId);
@@ -97,8 +97,8 @@ void editCreditor(qlonglong creditorId) {
 
     if (QDialog::Accepted == wiz.exec()) {
         busycursor bc;
-        wiz.c_tor.setId(creditorId);
-        if (wiz.c_tor.update())
+        wiz.cred.setId(creditorId);
+        if (wiz.cred.update())
             qInfo() << "successfully updated creditor";
         else {
             bc.finish();

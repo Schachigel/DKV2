@@ -246,7 +246,7 @@ struct wizNew : public QWizard
     int noticePeriod =-1;
     interestModel iPaymentMode =interestModel::maxId;
     bool createCreditor =false; // the corresponding field becomes false on cancel during contract dialog
-    creditor& c_tor;
+    creditor& cred;
     bool selectCreateContract =true; // for edit creditor this should be false
 private:
     Q_OBJECT;
