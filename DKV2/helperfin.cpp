@@ -4,17 +4,6 @@
 
 #include "helperfin.h"
 
-QString d2euro(double x)
-{
-    static QLocale locale;
-    return locale.toCurrencyString(x);
-}
-
-QString prozent2prozent_str(double x)
-{
-    return qsl("%1 %").arg(QString::number(x, 'f', 2));
-}
-
 int TageZwischen_30_360(QDate von, QDate bis)
 {   // finanzmathematischer Abstand zwischen zwei Daten im selben Jahr
     if( bis == von) return 0;

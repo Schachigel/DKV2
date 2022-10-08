@@ -2,8 +2,9 @@
 
 #include "helper.h"
 #include "helpersql.h"
-#include "appconfig.h"
+#include "dbstructure.h"
 #include "dkv2version.h"
+#include "appconfig.h"
 
 
 /* static data */
@@ -19,13 +20,13 @@ QString appConfig::keyLastDb = qsl("dbg-db/last");
 void initMetaInfo( const QString& name, const QString& initialValue, const QSqlDatabase& db)
 {   LOG_CALL;
     QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='%1'").arg(name), db);
-    if( value.type() == QVariant::Type::Invalid)
+    if( value.type() == QVariant::Invalid)
         setMetaInfo(name, initialValue, db);
 }
 void initNumMetaInfo( const QString& name, const double newValue, const QSqlDatabase& db)
 {   LOG_CALL;
     QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='%1'").arg(name), db);
-    if( value.type() == QVariant::Type::Invalid)
+    if( value.type() == QVariant::Invalid)
         setNumMetaInfo(name, newValue, db);
 }
 QString getMetaInfo(const QString& name, const QString& def, const QSqlDatabase& db)
@@ -188,7 +189,7 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
     {DKV2_VERSION,   {qsl("dkv2.exe.Version"),     QVariant(qsl(CURRENT_DKV2_VERSION))}},
     {GMBH_PROJECT,   {qsl("gmbh.projekt"),         QVariant(qsl("Esperanza"))}},
     {GMBH_ADDRESS1,  {qsl("gmbh.address1"),        QVariant(qsl("Esperanza Franklin GmbH"))}},
-    {GMBH_ADDRESS2,  {qsl("gmbh.address2"),        QVariant(qsl(""))}},
+    {GMBH_ADDRESS2,  {qsl("gmbh.address2"),        QVariant(emptyStringV)}},
     {GMBH_STREET,    {qsl("gmbh.strasse"),     QVariant(qsl("Turley-Platz 8-9"))}},
     {GMBH_PLZ,       {qsl("gmbh.plz"),         QVariant(qsl("68167"))}},
     {GMBH_CITY,      {qsl("gmbh.stadt"),       QVariant(qsl("Mannheim"))}},

@@ -1,6 +1,6 @@
 
-#include "appconfig.h"
 #include "helper.h"
+#include "appconfig.h"
 #include "dbstructure.h"
 #include "dkdbhelper.h"
 #include "wizopenornewdatabase.h"
@@ -45,7 +45,7 @@ bool askUserForNextDb() {
     if( wizOpenOrNew.field(fnCreateNew).toBool ()) {
         if( createNewDatabaseFileWDefaultContent (wizOpenOrNew.selectedFile,
                                                       (wizOpenOrNew.field(qsl("Zinssusance")).toBool()
-                                                       ? zs30360 : zs_actact))) {
+                                                       ? zs_30360 : zs_actact))) {
             wizConfigureNewDatabaseWiz wizProjectData;
             if( wizProjectData.Accepted not_eq wizProjectData.exec())
                 qInfo() << "Project configuration failed or was aborted";

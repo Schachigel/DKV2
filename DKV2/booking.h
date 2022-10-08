@@ -2,8 +2,6 @@
 #define BOOKING_H
 #include <iso646.h>
 
-#include "pch.h"
-
 #include "helper.h"
 #include "dbtable.h"
 

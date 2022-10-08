@@ -1,15 +1,16 @@
 
-#include "dkdbviews.h"
 #include "contract.h"
+#include "dkdbviews.h"
+#include "dbstructure.h"
 #include "booking.h"
 
 /* static */ const dbtable& booking::getTableDef()
 {
     static dbtable bookingsTable(qsl("Buchungen"));
     if( 0 == bookingsTable.Fields().size()) {
-        bookingsTable.append(dbfield(qsl("id"),          QVariant::LongLong).setPrimaryKey().setAutoInc());
+        bookingsTable.append(dbfield(qsl("id"),          QVariant::LongLong).setAutoInc());
         bookingsTable.append(dbfield(qsl("VertragsId"),  QVariant::LongLong).setNotNull());
-        bookingsTable.append(dbForeignKey(bookingsTable[qsl("VertragsId")], dkdbstructur[contract::tnContracts][contract::fnId], qsl("ON DELETE RESTRICT")));
+        bookingsTable.append(dbForeignKey(bookingsTable[qsl("VertragsId")], dkdbstructur[contract::tnContracts][contract::fnId], ODOU_Action::RESTRICT));
         bookingsTable.append(dbfield(qsl("Datum"),       QVariant::Date).setDefault(EndOfTheFuckingWorld_str).setNotNull());
         bookingsTable.append(dbfield(qsl("BuchungsArt"), QVariant::Int).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
         bookingsTable.append(dbfield(qsl("Betrag"),      QVariant::Int).setNotNull()); // in cent
@@ -26,7 +27,7 @@
             deletedBookings.append(getTableDef().Fields()[i]);
         }
         deletedBookings.append(dbForeignKey(deletedBookings[qsl("VertragsId")],
-                               dkdbstructur[contract::tnExContracts][contract::fnId], qsl("ON DELETE RESTRICT")));
+                               dkdbstructur[contract::tnExContracts][contract::fnId],ODOU_Action::RESTRICT));
     }
     return deletedBookings;
 }
@@ -47,14 +48,14 @@
 /////////////// BOOKING functions (friends, not family ;) )
 ///
 bool writeBookingToDB( bookingType t, const qlonglong contractId, QDate date, const double amount)
-{//   LOG_CALL_W(bookingTypeDisplayString(t));
+{
     TableDataInserter tdi(booking::getTableDef());
     tdi.setValue(qsl("VertragsId"), contractId);
     tdi.setValue(qsl("BuchungsArt"), static_cast<int>(t));
     tdi.setValue(qsl("Betrag"), ctFromEuro(amount));
     tdi.setValue(qsl("Datum"), date);
     //    "Zeitstempel" will be created by the sql default value =setDefaultNow()
-    if( -1 not_eq tdi.WriteData()) {
+    if( -1 not_eq tdi.InsertRecord()) {
         qInfo() << "writeBookingToDB: Erfolgreiche Buchung: " << bookingTypeDisplayString(t) << " Vertrag#: " << contractId << " Betrag: " << ctFromEuro(amount) << " Datum: " << date;
         return true;
     }

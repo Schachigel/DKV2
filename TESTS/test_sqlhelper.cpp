@@ -5,6 +5,7 @@
 #include <QString>
 #include <QtTest>
 
+#include "../DKV2/dbstructure.h"
 #include "../DKV2/helpersql.h"
 #include "../DKV2/helper.h"
 #include "testhelper.h"
@@ -100,7 +101,7 @@ void test_sqlhelper::test_eSingleValueSql_not_PreservsValue()
 {
     QString tablename("testTable");
     dbtable t(tablename);
-    t.append(dbfield("id",      QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
+    t.append(dbfield("id",      QVariant::LongLong).setAutoInc (true));
     t.append(dbfield("aDate",   QVariant::Date));
     t.append(dbfield("anInt",   QVariant::Int));
     t.append(dbfield("aString", QVariant::String));
@@ -133,7 +134,7 @@ void test_sqlhelper::test_eSingleValueSqlPreservsValue()
 {
     QString tablename("testTable");
     dbtable t(tablename);
-    t.append(dbfield("id",      QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
+    t.append(dbfield("id",      QVariant::LongLong).setAutoInc ());
     t.append(dbfield("aDate",   QVariant::Date));
     t.append(dbfield("anInt",   QVariant::Int));
     t.append(dbfield("aString", QVariant::String));
@@ -166,7 +167,7 @@ void test_sqlhelper::test_selectQueryFromFields_noWhere()
     // preparation
     QString tname{"simpletable"};
     dbtable simple(tname);
-    simple.append(dbfield("id", QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
+    simple.append(dbfield("id", QVariant::LongLong).setAutoInc ());
     simple.append(dbfield("col"));
     ensureTable(simple);
     QSqlQuery q;
@@ -186,7 +187,7 @@ void test_sqlhelper::test_selectQueryFromFields_withWhere()
     // preparation
     QString tname{"simpletable"};
     dbtable simple(tname);
-    simple.append(dbfield("id", QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
+    simple.append(dbfield("id", QVariant::LongLong).setAutoInc ());
     simple.append(dbfield("col"));
     ensureTable(simple);
     QSqlQuery q;
@@ -204,7 +205,7 @@ void test_sqlhelper::test_selectQueryFromFields_wReference()
     // preparation
     QString tname{"t1"};
     dbtable referenced(tname);
-    referenced.append(dbfield("id", QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
+    referenced.append(dbfield("id", QVariant::LongLong).setAutoInc());
     referenced.append(dbfield("col"));
     ensureTable(referenced);
     QSqlQuery inserter;
@@ -244,7 +245,7 @@ void test_sqlhelper::test_selectQueryFromFields_wRefwWhere()
     // preparation
     QString tname{"t1"};
     dbtable referenced(tname);
-    referenced.append(dbfield("id", QVariant::LongLong, "PRIMARY KEY AUTOINCREMENT"));
+    referenced.append(dbfield("id", QVariant::LongLong).setAutoInc ());
     referenced.append(dbfield("col"));
     ensureTable(referenced);
     QSqlQuery insertQ;
@@ -279,7 +280,7 @@ void test_sqlhelper::test_executeSingleColumnSql()
 {
     QString tablename("test_executeSingleColumnSql");
     dbtable t(tablename);
-    t.append(dbfield("col_index", QVariant::LongLong, "PRIMARY KEY").setAutoInc());
+    t.append(dbfield("col_index", QVariant::LongLong).setAutoInc());
     t.append(dbfield("col_ll", QVariant::LongLong));
     t.append(dbfield("col_I", QVariant::Int));
     t.append(dbfield("col_S", QVariant::String));
@@ -337,7 +338,7 @@ void test_sqlhelper::test_variantTypeConservation()
 */
     QString tablename("testTable_variantVsDbTypes");
     dbtable t(tablename);
-    t.append(dbfield("col_index", QVariant::LongLong, "PRIMARY KEY").setAutoInc());
+    t.append(dbfield("col_index", QVariant::LongLong).setAutoInc());
     t.append(dbfield("col_ll", QVariant::LongLong));
     t.append(dbfield("col_I", QVariant::Int));
     t.append(dbfield("col_S", QVariant::String));
@@ -400,7 +401,7 @@ void test_sqlhelper::test_getHighestRowId()
 {
     QString tablename("test_getHighestRowId");
     dbtable t(tablename);
-    t.append(dbfield("col_index", QVariant::LongLong, "PRIMARY KEY").setAutoInc());
+    t.append(dbfield("col_index", QVariant::LongLong).setAutoInc());
     t.append(dbfield("col_S", QVariant::String));
     QVERIFY(ensureTable(t));
     QSqlQuery q; q.prepare("INSERT INTO "+ tablename + " (col_S) VALUES (?)");

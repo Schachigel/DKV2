@@ -48,7 +48,7 @@ bool wpFileSelection_IntroPage::validatePage()
     wizFileSelectionWiz *wiz = qobject_cast<wizFileSelectionWiz *>(wizard());
     QString file = field(qsl("selectedFile")).toString();
     QFileInfo fi(file);
-    if (fi.suffix() == qsl(""))
+    if (fi.suffix().isEmpty())
         file += qsl(".dkdb");
     if (fi.path() == qsl("."))
         file = wiz->openInFolder + qsl("/") + file;

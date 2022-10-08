@@ -3,11 +3,7 @@
 
 #include <iso646.h>
 
-#include "pch.h"
-
 #include "helper.h"
-
-struct dbtable;
 
 class dbfield : public QSqlField
 {
@@ -15,68 +11,61 @@ public: // types
     // constr. destr. & access fu
     explicit dbfield() : QSqlField(){}
     dbfield(const QString& name,
-            const QVariant::Type type=QVariant::String,
-            const QString& td=qsl(""))
-     :  QSqlField(name), SqlTypeDetails(td)
+            const QVariant::Type type=QVariant::String)
+     :  QSqlField(name, type)
     {
-        Q_ASSERT(isSupportedType(type));
+        Q_ASSERT(isSupportedDBType(type));
         Q_ASSERT( not name.contains(qsl("-")));
-        outputType = type;
         setType(type);
-        SqlTypeDetails = SqlTypeDetails.toUpper();
-        setAutoValue(SqlTypeDetails.contains(qsl("AUTOINCREMENT")));
-        SqlTypeDetails = SqlTypeDetails.replace(qsl("AUTOINCREMENT"), qsl("")).trimmed();
-        setRequired(SqlTypeDetails.contains(qsl("NOT NULL")));
-        SqlTypeDetails = SqlTypeDetails.replace(qsl("NOT NULL"), qsl("")).trimmed();
-        setPrimaryKey(SqlTypeDetails.contains(qsl("PRIMARY KEY")));
-        SqlTypeDetails = SqlTypeDetails.replace(qsl("PRIMARY KEY"), qsl("")).trimmed();
-        setUnique(SqlTypeDetails.contains(qsl("UNIQUE")));
-        SqlTypeDetails = SqlTypeDetails.replace(qsl("UNIQUE"), qsl("")).trimmed();
+        // autoinc will prevent the reuse of prim.key values after deletion
     }
     bool operator ==(const dbfield &b) const;
-    QString typeDetails()     const {return SqlTypeDetails;}
     // interface
     QString get_CreateSqlSnippet() const;
-    dbfield setUnique(const bool u=true){unique = u; return *this;}
+    // setter of field properties
+    dbfield setUnique(const bool u=true){ Q_ASSERT_X(defaultValue ().isNull (),"setUnique" , "unique values should not have a default value"); unique =u; return *this;}
     dbfield setPrimaryKey(const bool p=true){ primaryKey = p; return *this;}
     dbfield setNotNull(const bool nn=true){ setRequired(nn); return *this;}
-    dbfield setDefault(const QVariant& d){ setDefaultValue(d); return *this;}
-    dbfield setAutoInc(const bool a=true){ setAutoValue(a); return *this;}
-    dbfield setDefaultNow() {timeStamp =true; return *this;}
+    dbfield setDefault(const QVariant& d){ Q_ASSERT(unique == false); setDefaultValue(d); return *this;}
+    dbfield setAutoInc(const bool a=true){ if(a) setPrimaryKey (); setAutoValue(a); return *this;}
+    dbfield setDefaultNow() { setDefaultValue(QVariant()); timeStamp =true; return *this;}
+private:
     // somewhat a helper
-    static bool isSupportedType(const QVariant::Type t);
-    private:
+    static bool isSupportedDBType(const QVariant::Type t);
     // data
     bool unique = false;
     bool primaryKey=false;
     bool timeStamp =false;
-    QString SqlTypeDetails;
-    QVariant::Type outputType;
 };
+
+enum ODOU_Action { NO_ACTION, RESTRICT, SET_NULL, SET_DEFAULT, CASCADE};
 
 struct dbForeignKey
 {
+    static const QVector<QString> ODOU_Actions;
     // const. destr. & access fu
-    dbForeignKey(const dbfield& local, const dbfield& parent, const QString& onDelete =QString(), const QString& onUpdate=QString())
-        : onDelete(onDelete), onUpdate( onUpdate)
+    dbForeignKey(const dbfield& local, const dbfield& parent, ODOU_Action delAction =NO_ACTION, ODOU_Action updAction =NO_ACTION)
     {
         table = local.tableName();
         field = local.name();
         refTable = parent.tableName();
         refField = parent.name();
+        onDelete = qsl("ON DELETE ") +ODOU_Actions.at(delAction);
+        onUpdate = qsl("ON UPDATE ") +ODOU_Actions.at(updAction);
     }
-    dbForeignKey(const dbfield& local, const QString& parentTable, const QString& parentField, const QString& onDelete =QString(), const QString& onUpdate=QString())
-        : onDelete(onDelete), onUpdate( onUpdate)
+    dbForeignKey(const dbfield& local, const QString& parentTable, const QString& parentField, ODOU_Action delAction =NO_ACTION, ODOU_Action updAction =NO_ACTION)
     {
         table = local.tableName();
         field = local.name();
         refTable = parentTable;
         refField = parentField;
+        onDelete = qsl("ON DELETE ") +ODOU_Actions.at(delAction);
+        onUpdate = qsl("ON UPDATE ") +ODOU_Actions.at(updAction);
     }
 
     // interface
     QString get_CreateSqlSnippet();
-    QString get_SelectSqpSnippet();
+    QString get_SelectSqlWhereClause();
 
 private:
     QString table;

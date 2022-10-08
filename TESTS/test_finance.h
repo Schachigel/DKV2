@@ -33,6 +33,8 @@ private slots:
     void test_IsValidIban();
     void test_checkIban_data();
     void test_checkIban();
+    void test_euroFromCt();
+    void test_convertionFuncs();
 };
 
 #endif // TEST_FINANCE_H

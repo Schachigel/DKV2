@@ -1,11 +1,10 @@
 #ifndef DBSTRUCTURE_H
 #define DBSTRUCTURE_H
 
-#include "pch.h"
+// #include "pch.h"
 
 #include "dbtable.h"
 
-extern dbstructure dkdbstructur;
 
 class dbstructure
 {
@@ -21,6 +20,9 @@ public:
 private:
     QVector<dbtable> Tables;
 };
+////////////////////////////////
+extern dbstructure dkdbstructur;
+////////////////////////////////
 
 // THE structure of our database the single source of truth
 void init_DKDBStruct();
@@ -28,11 +30,13 @@ void init_DKDBStruct();
 bool createFileWithDatabaseStructure (const QString& targetfn, const dbstructure& dbs =dkdbstructur);
 //
 enum zinssusance {
-    zs30360,
+    zs_30360,
     zs_actact
 };
 
-bool createNewDatabaseFileWDefaultContent(const QString& filename, const zinssusance sz =zs30360, const dbstructure& dbs =dkdbstructur);
+
+
+bool createNewDatabaseFileWDefaultContent(const QString& filename, const zinssusance sz =zs_30360, const dbstructure& dbs =dkdbstructur);
 // compare current structure to an actual database
 bool hasAllTablesAndFields(const QSqlDatabase& db, const dbstructure& dbs =dkdbstructur);
 // check schema

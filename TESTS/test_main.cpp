@@ -18,6 +18,7 @@
 #include "test_booking.h"
 #include "test_statistics.h"
 #include "test_tabledatainserter.h"
+#include "test_dbtable.h"
 
 #ifndef TESTLIB_SELFCOVERAGE_START
 #define TESTLIB_SELFCOVERAGE_START(a)
@@ -46,34 +47,33 @@ int main(int argc, char *argv[])
 
     int executions =1;
     do {
-
-
-
         // in memory db
-        tests.push_back(new test_booking);
-        tests.push_back(new test_appConfig);
-        tests.push_back(new test_creditor);
-        tests.push_back(new test_contract);
-        tests.push_back(new test_statistics);
-        tests.push_back(new test_db);
-        tests.push_back(new test_dkdbhelper);
-        tests.push_back(new test_properties);
-        tests.push_back(new test_sqlhelper);
+//        tests.push_back(new test_booking);
+//        tests.push_back(new test_appConfig);
+//        tests.push_back(new test_creditor);
+//        tests.push_back(new test_contract);
+//        tests.push_back(new test_statistics);
+//        tests.push_back(new test_db);
+//        tests.push_back(new test_dkdbhelper);
+//        tests.push_back(new test_properties);
+//        tests.push_back(new test_sqlhelper);
 
         // no db
         tests.push_back(new test_finance);
-        tests.push_back(new test_csv);
+//        tests.push_back(new test_csv);
+//        tests.push_back(new test_dbfield);
 
         // on disk db
-        tests.push_back(new test_tableDataInserter);
-        tests.push_back(new test_dkdbcopy);
+//        tests.push_back(new test_tableDataInserter);
+//        tests.push_back(new test_dkdbcopy);
 
 // NO ACTIVE TESTS        tests.push_back(new test_letterTemplate);
 // NO ACTIVE TESTS        tests.push_back(new test_views);
     } while(--executions);
 
-    srand(time(0));
-    std::random_shuffle(tests.begin(), tests.end());
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(tests.begin(), tests.end(), g);
 
     {
         dbgTimer timer("overall test time");

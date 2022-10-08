@@ -71,7 +71,7 @@ void test_db::test_SimpleTableAddData()
     TableDataInserter tdi(s["Ad"]);
     tdi.setValue("vname", QVariant("Holger"));
     tdi.setValue("nname", "Mairon");
-    QVERIFY( -1 < tdi.WriteData());
+    QVERIFY( -1 < tdi.InsertRecord());
     QVERIFY(tableRecordCount("Ad") == 1);
 }
 
@@ -80,15 +80,17 @@ void test_db::test_createSimpleTable_wRefInt()
     LOG_CALL;
     dbstructure s;
     dbtable parent("p");
-    dbfield id("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT");
+    dbfield id("id", QVariant::Int);
+    id.setAutoInc (true);
     parent.append(id);
     s.appendTable(parent);
     dbtable child("c");
-    dbfield childId("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT");
-    dbfield parentId("parent", QVariant::Int, "");
+    dbfield childId("id", QVariant::Int);
+    childId.setAutoInc (true);
+    dbfield parentId("parent", QVariant::Int);
     child.append(childId);
     child.append(parentId);
-    dbForeignKey fk(childId, parent["id"], "ON DELETE CASCADE", "");
+    dbForeignKey fk(childId, parent["id"], ODOU_Action::CASCADE);
     child.append(fk);
     s.appendTable(child);
     QVERIFY2(s.createDb(), "Database was not created");
@@ -105,11 +107,11 @@ void test_db::test_createSimpleTable_wRefInt2()
     LOG_CALL;
     dbstructure s = dbstructure()
                     .appendTable(dbtable("p")
-                    .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT")));
+                    .append(dbfield("id", QVariant::Int).setAutoInc ()));
     dbtable c("c");
-    c.append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"));
+    c.append(dbfield("id", QVariant::Int).setAutoInc ());
     c.append(dbfield("pid", QVariant::Int));
-    c.append(dbForeignKey(c["pid"], s["p"]["id"], "ON DELETE CASCADE", ""));
+    c.append(dbForeignKey(c["pid"], s["p"]["id"], ODOU_Action::CASCADE));
     s.appendTable( c);
 
     QVERIFY2(s.createDb(), "Database was not created");
@@ -126,31 +128,31 @@ void test_db::test_addRecords_wDep()
     dbstructure s = dbstructure()
                         .appendTable(
                             dbtable("p")
-                                .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
+                                .append(dbfield("id", QVariant::Int).setAutoInc ())
                                 .append(dbfield("name")));
 
     dbtable c("c");
-    c.append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"));
+    c.append(dbfield("id", QVariant::Int).setAutoInc ());
     c.append(dbfield("pid", QVariant::Int));
-    c.append(dbForeignKey(c["pid"], s["p"]["id"], "ON DELETE CASCADE", ""));
+    c.append(dbForeignKey(c["pid"], s["p"]["id"], ODOU_Action::CASCADE));
     s.appendTable( c);
 
     QVERIFY2(s.createDb(), "Database was not created");
 
     TableDataInserter tdi(s["p"]);
     tdi.setValue("name", "Holger");
-    QVERIFY( 0 <= tdi.WriteData());
+    QVERIFY( 0 <= tdi.InsertRecord());
     QVERIFY(tableRecordCount("p") == 1);
 
     qDebug() << "add depending data sets" << qsl("\n");
     TableDataInserter tdiChild1(s["c"]);
     tdiChild1.setValue("pid", QVariant(1)); // should work
-    QVERIFY( 0 <= tdiChild1.WriteData());
+    QVERIFY( 0 <= tdiChild1.InsertRecord());
 
     qDebug() << "add INVALID depending data sets" << qsl("\n");
     TableDataInserter tdiChild2(s["c"]);
     tdiChild2.setValue("pid", 2); // should fail - no matching parent in table p
-    QVERIFY( -1 == tdiChild2.WriteData());
+    QVERIFY( -1 == tdiChild2.InsertRecord());
 }
 
 void test_db::test_deleteRecord_wDep()
@@ -159,28 +161,28 @@ void test_db::test_deleteRecord_wDep()
     dbstructure s = dbstructure()
                         .appendTable(
                             dbtable("p")
-                                .append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"))
+                                .append(dbfield("id", QVariant::Int).setAutoInc ())
                                 .append(dbfield("name")));
     dbtable c("c");
-    c.append(dbfield("id", QVariant::Int, "PRIMARY KEY AUTOINCREMENT"));
+    c.append(dbfield("id", QVariant::Int).setAutoInc ());
     c.append(dbfield("pid", QVariant::Int));
-    c.append(dbForeignKey(c["pid"], s["p"]["id"], "ON DELETE CASCADE", ""));
+    c.append(dbForeignKey(c["pid"], s["p"]["id"], ODOU_Action::CASCADE));
     s.appendTable( c);
 
     QVERIFY2(s.createDb(), "Database was not created");
 
     TableDataInserter tdi(s["p"]);
     tdi.setValue("name", "Holger");
-    QVERIFY( 0<= tdi.WriteData());
+    QVERIFY( 0<= tdi.InsertRecord());
     QVERIFY(tableRecordCount("p") == 1);
 
     qDebug() << "add depending data sets" << qsl("\n");
     TableDataInserter tdiChild1(s["c"]);
     tdiChild1.setValue("pid", QVariant(1)); // should work
-    QVERIFY( 0<= tdiChild1.WriteData());
+    QVERIFY( 0<= tdiChild1.InsertRecord());
     TableDataInserter tdiChild2(s["c"]);
     tdiChild2.setValue("pid", QVariant(1)); // second child to matching parent in table p
-    QVERIFY( 0<= tdiChild2.WriteData());
+    QVERIFY( 0<= tdiChild2.InsertRecord());
     QVERIFY(tableRecordCount("p") == 1);
     QVERIFY(tableRecordCount("c") == 2);
 

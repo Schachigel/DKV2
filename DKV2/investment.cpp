@@ -33,16 +33,16 @@ investment::investment(qlonglong id /*=-1*/, int Interest /*=0*/,
 QString investment::toString() const
 {
     if( end == EndOfTheFuckingWorld)
-        return d2percent_str(interest) + qsl(" (") + start.toString() + qsl(" - ohne Enddatum) : ") + type;
+        return dbInterest2_str(interest) + qsl(" (") + start.toString() + qsl(" - ohne Enddatum) : ") + type;
     else
-        return d2percent_str(interest) + qsl(" (") + start.toString() + qsl(" - ") + end.toString() + ") " + type;
+        return dbInterest2_str(interest) + qsl(" (") + start.toString() + qsl(" - ") + end.toString() + ") " + type;
 }
 
 /*static*/ const dbtable& investment::getTableDef()
 {
     static dbtable investmentTable(qsl("Geldanlagen"));
     if( 0 == investmentTable.Fields().size()){
-        investmentTable.append(dbfield(qsl("rowid"), QVariant::Int).setPrimaryKey().setAutoInc());
+        investmentTable.append(dbfield(qsl("rowid"), QVariant::Int).setAutoInc());
         investmentTable.append(dbfield(fnInvestmentInterest, QVariant::Int).setNotNull());
         investmentTable.append(dbfield(fnInvestmentStart,    QVariant::Date).setNotNull());
         investmentTable.append(dbfield(fnInvestmentEnd,      QVariant::Date).setNotNull());
@@ -61,17 +61,17 @@ QString investment::toString() const
 bool investment::matchesContract(const contract& c)
 {   LOG_CALL;
     QString msg;
-    if( d2percent(c.interestRate()) not_eq interest)
-        msg +=qsl("Interest missmatch:") +QString::number(interest) +qsl("vs.") +QString::number(d2percent(c.investment()));
+    if( c.dbInterest() not_eq interest)
+        msg +=qsl("Interest missmatch: %1 vs. %2").arg( dbInterest2_str(interest), dbInterest2_str(c.dbInterest ()));
     if( c.conclusionDate() < start)
         msg +=qsl("\nstart date missmatch;");
     if( c.conclusionDate() > end)
         msg += qsl("\nend date missmatch:");
     if( msg.isEmpty())
         return true;
-    qInfo() << "investment  -contract mismatch: \n" << msg;
-    qInfo() << toString();
-    qInfo() << c.toString();
+    qInfo().noquote () << "investment  -contract mismatch: \n" << msg;
+    qInfo().noquote () << toString();
+    qInfo().noquote () << c.toString(qsl("Mismatching contract:"));
     return false;
 }
 
@@ -165,7 +165,8 @@ qlonglong createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
     tdi.setValue(fnInvestmentInterest, ZSatz);
     tdi.setValue(fnInvestmentStart, vDate);
     tdi.setValue(fnInvestmentEnd, endDate);
-    QString type { qsl("100.tEuro pa /max. 20 (%1)").arg(ZSatz/100.)};
+    QString type { qsl("100.tEuro pa /max. 20 (%1)").arg(prozent2prozent_str(dbInterest2Interest(ZSatz)))};
+
     tdi.setValue(fnInvestmentType, type);
     tdi.setValue(fnInvestmentState, true);
     return tdi.InsertRecord();
@@ -244,9 +245,8 @@ QString redOrBlack(int i, int max)
 }
 QString redOrBlack(double d, double max)
 {
-    QLocale l;
-    if( d >= max) return qsl("<div style=\"color:red\">") +l.toCurrencyString(d) +qsl("</div>");
-    else return l.toCurrencyString(d);
+    if( d >= max) return qsl("<div style=\"color:red\">") +d2euro(d) +qsl("</div>");
+    else return d2euro(d);
 }
 
 QVector<QString> formatedStatisticData(investment::invStatisticData data, double Vertragswert)
@@ -283,7 +283,7 @@ QString investmentInfoForNewContract(qlonglong ridInvestment, const double amoun
         timeSpan =qsl("von %1 bis %2").arg(start.toString (qsl("dd.MM.yyyy")), end.toString (qsl("dd.MM.yyyy")));
 
     QString idLine1 {qsl("<tr><td colspan=2><b>Anlagedaten<b></tr>")};
-    QString idLine2 {qsl("<tr><td>Zinssatz</td><td>%1</td></tr>").arg(d2percent_str(double(invest.interest)))};
+    QString idLine2 {qsl("<tr><td>Zinssatz</td><td>%1</td></tr>").arg(dbInterest2_str (invest.interest))};
     QString idLine3 {qsl("<tr><td>Laufzeit</td><td>%1</td></tr>").arg(timeSpan)};
     QString tableInvestmentData {qsl("<table width=100%> \n %1 \n %2 \n %3 \n</table><p>").arg(idLine1, idLine2, idLine3)};
 

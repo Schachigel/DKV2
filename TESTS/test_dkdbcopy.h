@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QDebug>
 
+#include "../DKV2/helper.h"
 #include "testhelper.h"
 
 class test_dkdbcopy : public QObject{

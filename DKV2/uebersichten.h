@@ -3,8 +3,6 @@
 
 #include "pch.h"
 
-#include "helper.h"
-
 struct tablelayout
 {
 // types

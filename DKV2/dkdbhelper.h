@@ -7,7 +7,7 @@
 
 bool insertDKDB_Views( const QSqlDatabase &db =QSqlDatabase::database());
 bool insertDKDB_Indices( const QSqlDatabase& db=QSqlDatabase::database());
-bool fill_DkDbDefaultContent(const QSqlDatabase &db = QSqlDatabase::database(), bool includeViews =true, zinssusance sz =zs30360);
+bool fill_DkDbDefaultContent(const QSqlDatabase &db = QSqlDatabase::database(), bool includeViews =true, zinssusance sz =zs_30360);
 
 enum version_check_result {
     noVersion =-1,
@@ -21,7 +21,7 @@ int get_db_version(const QString &filename);
 bool treat_DbIsAlreadyInUse_File(QString filename);
 bool checkSchema_ConvertIfneeded(const QString &origDbFile);
 void closeAllDatabaseConnections();
-bool open_databaseForApplication( const QString &newDbFile=qsl(""));
+bool open_databaseForApplication( const QString &newDbFile="");
 
 bool isValidNewContractLabel( const QString& label);
 QString proposeContractLabel();

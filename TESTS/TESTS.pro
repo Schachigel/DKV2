@@ -24,7 +24,7 @@ DEFINES *= QT_USE_QSTRINGBUILDER
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 #CONFIG += c++11
-CONFIG += c++14
+CONFIG += c++17
 #win32:QMAKE_CXXFLAGS += /utf-8
 #win32:QMAKE_CXXFLAGS += /FS
 CONFIG += utf8_source
@@ -58,6 +58,7 @@ SOURCES +=  \
     test_creditor.cpp \
     test_csv.cpp \
     test_db.cpp \
+    test_dbtable.cpp \
     test_dkdbcopy.cpp \
     test_dkdbhelper.cpp \
     test_finance.cpp \
@@ -82,6 +83,7 @@ HEADERS += \
     test_creditor.h \
     test_csv.h \
     test_db.h \
+    test_dbtable.h \
     test_dkdbcopy.h \
     test_dkdbhelper.h \
     test_finance.h \

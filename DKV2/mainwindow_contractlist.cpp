@@ -91,9 +91,9 @@ void applyFilterToModel( QSqlTableModel* model, const QString filter)
 }
 }
 const QVector<tableViewColTexts> columnTextsContracts {
-    /*cp_vid,             */ {qsl(""), qsl("")},
-    /*cp_Creditor_id,     */ {qsl(""), qsl("")},
-    /*cp_Investment_id,   */ {qsl(""), qsl("")},
+    /*cp_vid,             */ {"", ""},
+    /*cp_Creditor_id,     */ {"", ""},
+    /*cp_Investment_id,   */ {"", ""},
     /*cp_Creditor,        */ {qsl("KreditorIn"), qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters")},
     /*cp_ContractLabel,   */ {qsl("Vertragskennung"), qsl("Die Vertragskennung identifiziert den Vertrag eindeutig")},
     /*cp_Comment,         */ {qsl("Anmerkung"), qsl("Freitext zum Vertrag")},
@@ -110,8 +110,8 @@ const QVector<tableViewColTexts> columnTextsContracts {
 const QString defaultVisibilityPattern_contracts {qsl("000111111111111")};
 const QString visibilityPatternMetaInfoName {qsl("VertraegeSpalten")};
 const QVector<tableViewColTexts> columnTexts_d_Contracts {
-    /*cp_d_vid,                */ {qsl(""), qsl("")},
-    /*cp_d_Creditor_id,        */ {qsl(""), qsl("")},
+    /*cp_d_vid,                */ {"", ""},
+    /*cp_d_Creditor_id,        */ {"", ""},
     /*cp_d_Creditor,           */ {qsl("KreditorIn"), qsl("Nachname, Vorname der Vertragspartnerin / des Vertragsparnters")},
     /*cp_d_ContractLabel,      */ {qsl("Vertragskennung"), qsl("Die Vertragskennung identifiziert den Vertrag eindeutig")},
     /*cp_d_ContractActivation, */ {qsl("Geldeingang"), qsl("'Wertstellung' der ersten Überweisung")},
@@ -119,9 +119,9 @@ const QVector<tableViewColTexts> columnTexts_d_Contracts {
     /*cp_d_InitialValue,       */ {qsl("Nominalwert"), qsl("Ursprünglich vereinbarter Kreditbetrag")},
     /*cp_d_InterestRate,       */ {qsl("Zinssatz"), qsl("Vereinbarter Zinssatz")},
     /*cp_d_InterestMode,       */ {qsl("Zinsmodus"), qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein")},
-    /*cp_d_Interest,           */ {qsl("Zins"), qsl("")},
+    /*cp_d_Interest,           */ {qsl("Zins"), ""},
     /*cp_d_TotalDeposit,       */ {qsl("Einzahlungen"), qsl("Summe aller Einzahlungen")},
-    /*cp_d_FinalPayout,        */ {qsl("Abschl. Auszahlung"), qsl("")}
+    /*cp_d_FinalPayout,        */ {qsl("Abschl. Auszahlung"), ""}
     /*cp_d_colCount            */
 };
 const QString defaultVisibilityPattern_deletedContracts {qsl("001111111111")};
@@ -446,7 +446,7 @@ void MainWindow::on_action_cmenu_contracts_EndLetter_triggered()
 
 void MainWindow::on_action_cmenu_assoc_investment_triggered()
 {   LOG_CALL;
-    QVector<investment> invests =openInvestments(d2percent(contractUnderMouseMenu->interestRate()), contractUnderMouseMenu->conclusionDate());
+    QVector<investment> invests =openInvestments(contractUnderMouseMenu->dbInterest (), contractUnderMouseMenu->conclusionDate());
     switch (invests.size())
     {
     case 0:
@@ -454,7 +454,7 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
         if( QMessageBox::Yes not_eq
             QMessageBox::question(this, qsl("Fehler"), qsl("Keine Geldanlage passt zu Zins und Vertragsdatum dieses Vertrags. Möchtest Du eine Anlage anlegen?")))
             return;
-        int interest{d2percent(contractUnderMouseMenu->interestRate())};
+        int interest{contractUnderMouseMenu->dbInterest ()};
         QDate from (contractUnderMouseMenu->conclusionDate().addDays(-1));
         QDate to;
         qlonglong newIId =createInvestment_matchingContract(interest, from, to);

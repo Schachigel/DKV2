@@ -1,4 +1,5 @@
 
+#include "dbstructure.h"
 #include "appconfig.h"
 #include "booking.h"
 #include "creditor.h"
@@ -529,7 +530,7 @@ void finalizeContractLetter(contract *c) {
     creditor credRecord(c->creditorId());
     printData[qsl("creditor")] = credRecord.getVariant();
     printData[qsl("Vertrag")] = c->toVariantMap();
-    printData[qsl("endBetrag")] = QLocale().toCurrencyString(c->value());
+    printData[qsl("endBetrag")] = d2euro(c->value());
     double ausbezZins =c->payedInterestAtTermination();
     printData[qsl("ausbezahlterZins")] =ausbezZins;
     printData[qsl("mitAusbezahltemZins")] = ! qFuzzyCompare (ausbezZins, 0.);

@@ -31,13 +31,13 @@ enum colPosCreditors {
 };
 
 const QVector<tableViewColTexts> columnTextsCreditors {
-    /*col_id         */ {qsl(""),         qsl("")},
-    /*col_Vorname    */ {qsl("Vorname"),  qsl("")},
-    /*col_Nachname,  */ {qsl("Nachname"), qsl("")},
-    /*col_Strasse,   */ {qsl("Strasse"),  qsl("")},
+    /*col_id         */ {"",         ""},
+    /*col_Vorname    */ {qsl("Vorname"),  ""},
+    /*col_Nachname,  */ {qsl("Nachname"), ""},
+    /*col_Strasse,   */ {qsl("Strasse"),  ""},
     /*col_Plz,       */ {qsl("PLZ"),      qsl("Postleitzahl")},
-    /*col_Stadt,     */ {qsl("Stadt"),    qsl("")},
-    /*col_Land,      */ {qsl("Land"),     qsl("")},
+    /*col_Stadt,     */ {qsl("Stadt"),    ""},
+    /*col_Land,      */ {qsl("Land"),     ""},
     /*col_Tel,       */ {qsl("Telefon Nr."), qsl("Telefonnummer für schnellen Kontakt")},
     /*col_Email      */ {qsl("E-Mail"),   qsl("E-Mail Adresse zum Zusenden von Vertragsinformation")},
     /*col_Anmerkung, */ {qsl("Anmerkung"), qsl("Allgemeine Anmerkung")},
@@ -45,7 +45,7 @@ const QVector<tableViewColTexts> columnTextsCreditors {
     /*col_BKonto,    */ {qsl("Buch.Konto"), qsl("Buchungskonto oder ähnliche Info.")},
     /*col_IBAN,      */ {qsl("IBAN"),       qsl("Bank Information für Überweisungen")},
     /*col_BIC,       */ {qsl("BIC"),        qsl("zusätzliche BI für Auslandsüberw.")},
-    /*col_Zeitstempel*/ {qsl(""), qsl("")}
+    /*col_Zeitstempel*/ {"", ""}
 };
 
 const QString creditorTableColumnVisibilityStatus {qsl("KreditorenSpalten")};
@@ -102,7 +102,7 @@ int  MainWindow::id_SelectedCreditor()
 void MainWindow::on_btn_reset_filter_creditors_clicked()
 {   LOG_CALL;
     busycursor b;
-    ui->le_CreditorsFilter->setText(qsl(""));
+    ui->le_CreditorsFilter->setText("");
     prepare_CreditorsListPage();
 }
 

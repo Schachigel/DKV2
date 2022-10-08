@@ -70,8 +70,7 @@ void wpTerminateContract_ConfirmationPage::initializePage()
                        "<tr><td>Zinsen der letzten Zinsphase</td>            <td align=right><b>%2</b> </td></tr>"
                        "<tr><td>Auszahlungsbetrag </td>                      <td align=right><b>%3</b> </td></tr>"
                        "</table>");
-    QLocale locale;
-    subtitle = subtitle.arg(locale.toCurrencyString(wiz->cont.value()), locale.toCurrencyString(interest), locale.toCurrencyString(finalValue));
+    subtitle = subtitle.arg(d2euro(wiz->cont.value()), d2euro(interest), d2euro(finalValue));
     subTitleLabel->setText(subtitle);
 }
 void wpTerminateContract_ConfirmationPage::onConfirmData_toggled(int)

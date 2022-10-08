@@ -28,7 +28,7 @@ struct creditor
     static const dbtable& getTableDef();
     // constructors
     creditor() : ti(getTableDef()) {}
-    creditor (int i) : ti(getTableDef()) { fromDb(i);}
+    creditor (qlonglong i) : ti(getTableDef()) { fromDb(i);}
     // comparison
     bool operator==(const creditor& c) const;
     // setter
@@ -61,7 +61,7 @@ struct creditor
     qlonglong id() const        {return getValue(qsl("id")).toLongLong();}
     void setId(const qlonglong i)     { ti.setValue(qsl("id"), i);}
     // interface
-    bool fromDb(const int id);
+    bool fromDb(const qlonglong id);
     QVariant getValue(const QString& f) const { return ti.getValue(f);}
     QVariant getVariant();
     bool isValid(QString &errortext) const;

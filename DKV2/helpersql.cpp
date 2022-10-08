@@ -1,7 +1,9 @@
 #include <iso646.h>
 
 #include "helper.h"
+#include "dbtable.h"
 #include "helpersql.h"
+
 
 const QString dbTypeName {qsl("QSQLITE")};
 const int SQLITE_minimalRowId =1;
@@ -21,45 +23,41 @@ autoDetachDb::~autoDetachDb()
 
 QString DbInsertableString(const QVariant& v)
 {
-    if( v.isNull() or not v.isValid())
+    // there are more types here, than there are supported DB types, because the types
+    // are input from external sources
+    if( v.isNull() or not v.isValid()){
+        qCritical() << "Data to be inserted is not valid:>" << v << "<";
         return qsl("''");
-    QString s;
+    }
     switch(v.type())
     {
+    case QVariant::String:
+    case QVariant::ByteArray:
+    case QVariant::Char:
+        return singleQuoted( v.toString().replace(qsl("'"), qsl("''")));
     case QVariant::Date: {
-        s = v.toDate().toString(Qt::ISODate);
-        break;
+        return singleQuoted(v.toDate().toString(Qt::ISODate));
     }
     case QVariant::DateTime: {
-        s =v.toDateTime().toString(qsl("yyyy-MM-dd hh:mm:ss"));
-        break;
+        return singleQuoted(v.toDateTime().toString(qsl("yyyy-MM-dd hh:mm:ss")));
     }
     case QVariant::Double: {
-        s = QString::number(v.toDouble(), 'f', 2);
-        break;
+        return singleQuoted(QString::number(v.toDouble(), 'f', 2));
     }
     case QVariant::Bool:
-        s = (v.toBool()) ? qsl("1") : qsl("0");
-        break;
+        return (v.toBool()) ? qsl("TRUE") : qsl("FALSE");;
     case QVariant::Int:
     case QVariant::UInt:
     case QVariant::LongLong:
     case QVariant::ULongLong:
-        s = QString::number(v.toInt());
-        break;
-    case QVariant::String:
-    case QVariant::ByteArray:
-    case QVariant::Char:
-        s = v.toString().replace(qsl("'"), qsl("''"));;
-        break;
+        return QString::number(v.toInt());
     default:
-        qDebug() << "switch(v.type()) DEFAULTED " << v;
-        s = v.toString();
+        qCritical() << "switch(v.type()) DEFAULTED " << v;
     }
-    return "'" + s +"'";
+    return "'" + v.toString () +"'";
 }
 
-QString dbCreateTable_type(const QVariant::Type t)
+QString dbCreatetable_type(const QVariant::Type t)
 {   // these are the strings we use in data definition
     // so that they are expressive, but are still close
     // to the actual affinity data types
@@ -252,7 +250,7 @@ QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbFo
     }
     for( auto key: keys) {
         if( calculatedWhere.size()) calculatedWhere += qsl(" AND ");
-        calculatedWhere += key.get_SelectSqpSnippet();
+        calculatedWhere += key.get_SelectSqlWhereClause();
     }
     QString Where =qsl("%1 AND %2");
     Where = Where.arg((incomingWhere.isEmpty() ? qsl("true") : incomingWhere), (calculatedWhere.isEmpty() ? qsl("true") : calculatedWhere));

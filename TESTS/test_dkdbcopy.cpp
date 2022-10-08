@@ -183,13 +183,13 @@ void test_dkdbcopy::test_convertDatabaseInplace_wNewColumn()
     // define original datastructure before the change: 2 tables
     dbstructure oldDbStructure;
     dbtable t1(qsl("t1"));
-    t1.append(dbfield(qsl("id"), QVariant::LongLong).setPrimaryKey().setAutoInc());
+    t1.append(dbfield(qsl("id"), QVariant::LongLong).setAutoInc());
     t1.append(dbfield(qsl("f1")));
     oldDbStructure.appendTable(t1);
     dbtable t2(qsl("t2"));
-    t2.append(dbfield(qsl("id"), QVariant::LongLong).setPrimaryKey().setAutoInc());
+    t2.append(dbfield(qsl("id"), QVariant::LongLong).setAutoInc());
     t2.append(dbfield(qsl("t1id"), QVariant::LongLong).setNotNull());
-    t2.append(dbForeignKey(t2[qsl("t1id")], oldDbStructure[qsl("t1")][qsl("id")], qsl("ON DELETE CASCADE")));
+    t2.append(dbForeignKey(t2[qsl("t1id")], oldDbStructure[qsl("t1")][qsl("id")], ODOU_Action::CASCADE));
     t2.append(dbfield(qsl("t2f1")));
     oldDbStructure.appendTable(t2);
     // create source db with old db structure
@@ -200,11 +200,11 @@ void test_dkdbcopy::test_convertDatabaseInplace_wNewColumn()
         QSqlDatabase db =QSqlDatabase::addDatabase(dbTypeName, closer.conName);
         db.setDatabaseName(dbfn1); db.open();
         TableDataInserter tdi1{t1};
-        tdi1.setValue("f1", "v1");    tdi1.WriteData(db);
-        tdi1.setValue("f2", "v2");    tdi1.WriteData(db);
+        tdi1.setValue("f1", "v1");    tdi1.InsertRecord(db);
+        tdi1.setValue("f2", "v2");    tdi1.InsertRecord(db);
         TableDataInserter tdi2{t2};
-        tdi2.setValue("t1id", 1); tdi2.setValue("t2f1", "v1"); tdi2.WriteData(db);
-        tdi2.setValue("t1id", 2); tdi2.setValue("t2f1", "v2"); tdi2.WriteData(db);
+        tdi2.setValue("t1id", 1); tdi2.setValue("t2f1", "v1"); tdi2.InsertRecord(db);
+        tdi2.setValue("t1id", 2); tdi2.setValue("t2f1", "v2"); tdi2.InsertRecord(db);
     }
     // define new, extended data structure
     dbstructure newDbStructure;

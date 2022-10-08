@@ -29,13 +29,13 @@
     static dbtable contractTable(tnContracts);
     if (0 == contractTable.Fields().size())
     {
-        contractTable.append(dbfield(fnId,           QVariant::LongLong).setPrimaryKey().setAutoInc());
+        contractTable.append(dbfield(fnId,           QVariant::LongLong).setAutoInc());
         contractTable.append(dbfield(fnKreditorId,   QVariant::LongLong).setNotNull());
         contractTable.append(dbForeignKey(contractTable[fnKreditorId],
-            dkdbstructur[qsl("Kreditoren")][fnId], qsl("ON DELETE CASCADE")));
+            dkdbstructur[qsl("Kreditoren")][fnId], ODOU_Action::CASCADE));
         // deleting a creditor will delete inactive contracts but not
         // contracts with existing bookings (=active or terminated contracts)
-        contractTable.append(dbfield(fnKennung,       QVariant::String, qsl("UNIQUE")));
+        contractTable.append(dbfield(fnKennung,       QVariant::String).setUnique ());
         contractTable.append(dbfield(fnAnmerkung,     QVariant::String).setDefault(""));
         contractTable.append(dbfield(fnZSatz,         QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
         contractTable.append(dbfield(fnBetrag,        QVariant::Int).setNotNull().setDefault(0)); // ct
@@ -44,7 +44,7 @@
         contractTable.append(dbfield(fnKFrist,        QVariant::Int).setNotNull().setDefault(6));
         contractTable.append(dbfield(fnAnlagenId,     QVariant::Int));
         contractTable.append(dbForeignKey(contractTable[fnAnlagenId],
-            qsl("Geldanlagen"), qsl("rowid"), qsl("ON DELETE SET NULL")));
+            qsl("Geldanlagen"), qsl("rowid"), ODOU_Action::SET_NULL));
         contractTable.append(dbfield(fnLaufzeitEnde,  QVariant::Date).setNotNull().setDefault(EndOfTheFuckingWorld_str));
         contractTable.append(dbfield(fnZAktiv,        QVariant::Bool).setDefault(true));
         contractTable.append(dbfield(fnZeitstempel,   QVariant::DateTime).setDefaultNow());
@@ -62,7 +62,7 @@
         exContractTable.append(getTableDef().Fields()[i]);
     }
     exContractTable.append(dbForeignKey(exContractTable[fnKreditorId],
-                         dkdbstructur[qsl("Kreditoren")][fnId], qsl("ON DELETE CASCADE")));
+                         dkdbstructur[qsl("Kreditoren")][fnId], ODOU_Action::CASCADE));
     return exContractTable;
 }
 
@@ -185,7 +185,7 @@ const booking contract::latestBooking()
 // write to db
 int  contract::saveNewContract()
 {   LOG_CALL;
-    int lastid =td.WriteData();
+    int lastid =td.InsertRecord();
     if( lastid >= 0) {
         setId(lastid);
         qDebug() << "Neuer Vertrag wurde eingefügt mit id:" << lastid;
@@ -637,7 +637,6 @@ QString contract::toString(const QString &title) const
 QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
 {   LOG_CALL;
     QVariantMap v;
-    QLocale l;
     booking latestB = latestBooking();
     if (fromDate == BeginingOfTime)
         fromDate = td.getValue(fnVertragsDatum).toDate();
@@ -647,9 +646,9 @@ QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
     v["strId"] = id_aS();
     v["KreditorId"] = QString::number(creditorId());
     v["VertragsNr"] = label();
-    if( not isTerminated) v["startBetrag"] = l.toCurrencyString(value(fromDate));
+    if( not isTerminated) v["startBetrag"] = d2euro(value(fromDate));
     v["startDatum"] = fromDate.toString(qsl("dd.MM.yyyy"));
-    if( not isTerminated) v["endBetrag"] = l.toCurrencyString(value(toDate));
+    if( not isTerminated) v["endBetrag"] = d2euro(value(toDate));
     v["endDatum"] = toDate.toString(qsl("dd.MM.yyyy"));
     v["Vertragsdatum"] = td.getValue(fnVertragsDatum).toDate().toString(qsl("dd.MM.yyyy"));
     v["Vertragsende"] = hasEndDate() ? td.getValue(fnLaufzeitEnde).toDate().toString(qsl("dd.MM.yyyy")) : "offen";
@@ -658,7 +657,7 @@ QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
     v["zzAusgesezt"] = QVariant(not interestActive());
     v["Anmerkung"] = comment();
     v["Betrag"] = euroFromCt(td.getValue(fnBetrag).toInt());
-    v["strBetrag"] = l.toCurrencyString(euroFromCt(td.getValue(fnBetrag).toInt()));
+    v["strBetrag"] = d2euro(euroFromCt(td.getValue(fnBetrag).toInt()));
     v["Zinsmodell"] = ::interestModelDisplayString(iModel());
     v["KFrist"] = hasEndDate() ? 0 : noticePeriod();
     v["Status"] = isTerminated ? "Laufend" : "Beendet";
@@ -672,7 +671,7 @@ QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
         QVariantMap bookMap = {};
         bookMap["Date"] = b.date.toString(qsl("dd.MM.yyyy"));
         bookMap["Text"] = bookingTypeDisplayString(b.type);
-        bookMap["Betrag"] = l.toCurrencyString(b.amount);
+        bookMap["Betrag"] = d2euro(b.amount);
 
         bl.append(bookMap);
     }
@@ -703,6 +702,33 @@ double contract::payedAnnualInterest(int year)
 // NON MEMBER FUNCTIONS
 
 // test helper
+// Vergleichsoperatoren für TESTS !!
+bool operator==(const contract& lhs, const contract& rhs)
+{   // friend functions - even in the class definition - are not member
+    bool ret =true;
+    if( lhs.td.getRecord().count() not_eq rhs.td.getRecord().count()) {
+        qInfo() << "contract comparison: field count mismatch " << lhs.td.getRecord().count() << " / " << rhs.td.getRecord().count();
+        ret =false;
+    }
+    dbtable table =contract::getTableDef();
+    for( int i =0; i < table.Fields().count(); i++){
+        QString fname =table.Fields().value(i).name();
+        if( fname == qsl("Zeitstempel"))
+            continue;
+        if( lhs.td.getValue(fname) == rhs.td.getValue(fname))
+            continue;
+        else {
+            qInfo() << "contract field missmatch " << fname << ": " << lhs.td.getValue(fname) << " / " << rhs.td.getValue(fname);
+            ret = false;
+        }
+    }
+    return ret;
+}
+bool operator!=(const contract& lhs, const contract& rhs)
+{
+    return not (lhs==rhs);
+}
+
 contract saveRandomContract(qlonglong creditorId)
 {   LOG_CALL;
     contract c;

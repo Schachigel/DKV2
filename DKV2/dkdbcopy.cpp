@@ -163,11 +163,11 @@ bool copy_mangledCreditors(const QSqlDatabase& db =QSqlDatabase::database())
         tdi.setValue(creditor::fnStrasse, creditor::fnStrasse);
         tdi.setValue(creditor::fnPlz, qsl("D-xxxxx"));
         tdi.setValue(creditor::fnStadt, qsl("Stadt"));
-        tdi.setValue(creditor::fnTel, qsl(""));
-        tdi.setValue(creditor::fnKontakt, qsl(""));
-        tdi.setValue(creditor::fnIBAN, qsl(""));
-        tdi.setValue(creditor::fnBIC, qsl(""));
-        tdi.setValue(creditor::fnBuchungskonto, qsl(""));
+        tdi.setValue(creditor::fnTel, "");
+        tdi.setValue(creditor::fnKontakt, "");
+        tdi.setValue(creditor::fnIBAN, "");
+        tdi.setValue(creditor::fnBIC, "");
+        tdi.setValue(creditor::fnBuchungskonto, "");
 
         if( tdi.InsertData_noAuto() == -1) {
             qDebug() << "Error inserting Data into deperso.Copy Table" << q.lastError() << qsl("\n") << q.record();
@@ -240,7 +240,7 @@ QString convert_database_inplace( const QString& targetFilename, const dbstructu
     }
     const QString& sourceFileName =backupFileName;
     // create a new db file with the current database structure
-    if( not createNewDatabaseFileWDefaultContent(targetFilename, zs30360, dbs)) {
+    if( not createNewDatabaseFileWDefaultContent(targetFilename, zs_30360, dbs)) {
         qCritical() << "db creation faild for database conversion -> abort";
         return QString();
     }

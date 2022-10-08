@@ -1,6 +1,7 @@
 
 #include "contract.h"
 #include "helper.h"
+#include "dbstructure.h"
 #include "appconfig.h"
 #include "tabledatainserter.h"
 #include "letterTemplate.h"
@@ -59,7 +60,7 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
         letterTable.append(dbfield(contract::fnKreditorId, QVariant::LongLong)); // NOT setNotNull !! ...
         // ... is NULL for letter elements which are the same for all creditors
         letterTable.append(dbForeignKey(letterTable[contract::fnKreditorId],
-                                        dkdbstructur[qsl("Kreditoren")][qsl("id")], qsl("ON DELETE CASCADE")));
+                                        dkdbstructur[qsl("Kreditoren")][qsl("id")], ODOU_Action::CASCADE));
 
         letterTable.append(dbfield(qsl("BriefTypenId"), QVariant::Int).setNotNull());
         letterTable.append(dbForeignKey(letterTable[qsl("BriefTypenId")],
@@ -89,7 +90,7 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
         QString value =all_templates.value (key);
         tdi.setValue(qsl("id"), int(key));
         tdi.setValue(qsl("Brieftyp"), value);
-        if (-1 == tdi.WriteData(db))
+        if (-1 == tdi.InsertRecord(db))
             return false;
     }
     return true;
@@ -122,7 +123,7 @@ bool insertLetterElementFromMap(qlonglong kreditor, letterTemplate::templId brie
         QString value =map.value(key);
         tdi.setValue(qsl("BriefElementTypenId"), int(key));
         tdi.setValue(qsl("Texte"), value);
-        if( -1 == tdi.WriteData(db)) {
+        if( -1 == tdi.InsertRecord(db)) {
             qDebug() << "Failded to insert generic letter Element " << map.value (letterTemplate::elementType(i));
             res = false;
         }

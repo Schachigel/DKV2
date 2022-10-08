@@ -4,7 +4,7 @@
 #include "dbtable.h"
 #include "dbfield.h"
 
-dbfield dbtable::operator[](const QString& s) const
+const dbfield dbtable::operator[](const QString& s) const
 {   // LOG_CALL_W(s);
     for (auto f : fields) {
         if( f.name() == s)
@@ -30,8 +30,7 @@ dbtable dbtable::append(const dbForeignKey& fk)
 void dbtable::setUnique( const QVector<dbfield>& fs)
 {   // LOG_CALL;
     QString tmp;
-    for( auto& f : qAsConst(fs))
-    {
+    for( auto& f : qAsConst(fs)) {
         if( tmp.size()) tmp = tmp + qsl(", ");
         tmp =tmp + f.name();
     }
@@ -39,7 +38,7 @@ void dbtable::setUnique( const QVector<dbfield>& fs)
 }
 
 QString dbtable::createTableSql() const
-{   //LOG_CALL;
+{
     QString sql(qsl("CREATE TABLE ") + name + qsl(" ("));
     for( int i = 0; i< Fields().count(); i++) {
         if( i>0) sql.append(qsl(", "));
@@ -57,12 +56,12 @@ QString dbtable::createTableSql() const
 }
 
 bool dbtable::create(const QSqlDatabase& db) const
-{   // LOG_CALL_W(name);
+{
     if( executeSql_wNoRecords( createTableSql(), db)) {
-        qDebug() << "Successfully created Table " << name;
+        qInfo() << "dbtable::create: Successfully created Table " << name;
         return true;
     } else {
-        qCritical() << "dbtable::create " << name << " failed";
+        qCritical() << "dbtable::create: creating table " << name << " failed";
         return false;
     }
 }

@@ -6,6 +6,8 @@
 #include "pch.h"
 
 #define qsl(x) QStringLiteral(x)
+inline const QVariant emptyStringV {qsl("")};
+inline QString singleQuoted(const QString& s) { return qsl("'%1'").arg(s);}
 
 inline void expected_error (QString MSG) {QMessageBox::information(NULL, qsl("Fehler"), MSG); qInfo() << MSG;}
 

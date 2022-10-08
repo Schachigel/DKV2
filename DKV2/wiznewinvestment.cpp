@@ -1,4 +1,5 @@
 
+#include "helper.h"
 #include "appconfig.h"
 #include "wiznewinvestment.h"
 

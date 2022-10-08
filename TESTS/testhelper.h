@@ -4,7 +4,6 @@
 #include <QString>
 #include <QSqlDatabase>
 #include <QElapsedTimer>
-#include "../DKV2/helper.h"
 
 extern const QString testDbFilename;
 extern const QString testTemplateDb;

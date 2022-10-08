@@ -2,9 +2,7 @@
 #define APPCONFIG_H
 
 #include <iso646.h>
-#include "pch.h"
-
-#include "helper.h"
+// #include "pch.h"
 
 // db config info in 'meta' table
 // init = write only if not set
@@ -33,7 +31,7 @@ struct appConfig
 
     // dynamic config data stored in memory
     static void setRuntimeData( const QString& name, const QString& value);
-    static QString getRuntimeData( const QString& name, const QString& defaultvalue =qsl(""));
+    static QString getRuntimeData( const QString& name, const QString& defaultvalue ="");
 
     // for testing only
     static void deleteUserData(const QString& name);
@@ -44,7 +42,7 @@ private:
     static QString keyLastDb;
     static QString keyCurrentDb;
     static void setUserData(const QString& name, const QString& value);
-    static QString getUserData( const QString& name, const QString& defaultvalue =qsl(""));
+    static QString getUserData( const QString& name, const QString& defaultvalue ="");
     // QString getNumUserData(QString name);
 };
 enum projectConfiguration {

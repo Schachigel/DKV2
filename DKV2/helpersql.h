@@ -3,8 +3,7 @@
 
 #include "pch.h"
 
-#include "dbfield.h"
-#include "dbstructure.h"
+#include "dbtable.h"
 
 extern const QString dbTypeName;
 extern const int SQLITE_minimalRowId;
@@ -86,7 +85,7 @@ private:
 
 // bool vTypesShareDbType( QVariant::Type t1, QVariant::Type t2);
 QString DbInsertableString(const QVariant &v);
-QString dbCreateTable_type(const QVariant::Type t);
+QString dbCreatetable_type(const QVariant::Type t);
 QString dbAffinityType(const QVariant::Type t);
 
 int rowCount(const QString& table, const QSqlDatabase& db =QSqlDatabase::database());

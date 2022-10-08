@@ -1,11 +1,11 @@
 
-#include "busycursor.h"
 #include "helperfile.h"
-#include "contract.h"
-#include "dkv2version.h"
-#include "appconfig.h"
 #include "helpersql.h"
+#include "appconfig.h"
+#include "dkv2version.h"
+#include "busycursor.h"
 #include "csvwriter.h"
+#include "contract.h"
 #include "creditor.h"
 #include "investment.h"
 #include "letterTemplate.h"
@@ -58,13 +58,13 @@ int get_db_version(const QSqlDatabase &db)
 
 bool isExistingContractLabel( const QString& newLabel)
 {
-    QVariant existingLabel =executeSingleValueSql(contract::fnKennung, contract::tnContracts, qsl("Kennung = '") +newLabel +qsl("'"));
+    QVariant existingLabel =executeSingleValueSql(contract::fnKennung, contract::tnContracts, qsl("Kennung = ") +singleQuoted (newLabel ));
     return existingLabel.isValid();
 }
 
 bool isExisting_Ex_ContractLabel( const QString& newLabel)
 {
-    QVariant existingLabel =executeSingleValueSql(contract::fnKennung, contract::tnExContracts, qsl("Kennung = '") +newLabel +qsl("'"));
+    QVariant existingLabel =executeSingleValueSql(contract::fnKennung, contract::tnExContracts, qsl("Kennung = ") +singleQuoted (newLabel));
     return existingLabel.isValid();
 }
 
@@ -163,7 +163,7 @@ bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/
         if ( not letterTemplate::insert_letterElements(db)) break;
         ret = true;
     } while (false);
-    dbConfig::writeValue (ZINSUSANCE, (sz==zs30360) ? qsl("30/360"):qsl ("act/act"), db);
+    dbConfig::writeValue (ZINSUSANCE, (sz==zs_30360) ? qsl("30/360"):qsl ("act/act"), db);
     if (ret)
         art.commit();
     return ret;
@@ -350,9 +350,9 @@ bool createCsvActiveContracts()
     }
     QStringList header;
     dbtable t(tempViewContractsCsv);
-    t.append(dbfield(contract::fnId, QVariant::Type::Int));
+    t.append(dbfield(contract::fnId, QVariant::Int));
     header.append(qsl("Vertragsnummer"));
-    t.append(dbfield(creditor::fnId, QVariant::Type::Int));
+    t.append(dbfield(creditor::fnId, QVariant::Int));
     header.append (qsl("Kundennummer"));
     t.append(dbfield(creditor::fnVorname));
     header.append (qsl("Vorname"));
@@ -371,17 +371,17 @@ bool createCsvActiveContracts()
     t.append(dbfield(creditor::fnBIC));
     header.append (qsl("BIC"));
 //    t.append(dbfield(creditor::fnStrasse));
-    t.append(dbfield(qsl("Zinssatz"), QVariant::Type::Double));
+    t.append(dbfield(qsl("Zinssatz"), QVariant::Double));
     header.append (qsl("Zinssatz"));
-    t.append(dbfield(qsl("Wert"), QVariant::Type::Double));
+    t.append(dbfield(qsl("Wert"), QVariant::Double));
     header.append (qsl("Vertragswert"));
-    t.append(dbfield(qsl("Aktivierungsdatum"), QVariant::Type::Date));
+    t.append(dbfield(qsl("Aktivierungsdatum"), QVariant::Date));
     header.append (qsl("Aktivierungsdatum"));
-    t.append(dbfield(qsl("Kuendigungsfrist"), QVariant::Type::Int));
+    t.append(dbfield(qsl("Kuendigungsfrist"), QVariant::Int));
     header.append (qsl("Kündigungsfrist"));
-    t.append(dbfield(qsl("Vertragsende"), QVariant::Type::Date));
+    t.append(dbfield(qsl("Vertragsende"), QVariant::Date));
     header.append (qsl("Vertragsende"));
-    t.append(dbfield(qsl("thesa"), QVariant::Type::Int));
+    t.append(dbfield(qsl("thesa"), QVariant::Int));
     header.append (qsl("Zinsmodus"));
 
     QString sql = selectQueryFromFields(t.Fields (), QVector<dbForeignKey>());
@@ -391,7 +391,6 @@ bool createCsvActiveContracts()
         return false;
     }
     QVector<QStringList> data;
-    QLocale locale;
     while(q.next()) {
         QStringList col;
         col.append (q.value(contract::fnId).toString());
@@ -404,8 +403,8 @@ bool createCsvActiveContracts()
         col.append (q.value(creditor::fnEmail).toString());
         col.append (q.value(creditor::fnIBAN).toString());
         col.append (q.value(creditor::fnBIC).toString());
-        col.append (d2percent_str(q.value(qsl("Zinssatz")).toDouble ()));
-        col.append (locale.toCurrencyString (q.value(qsl("Wert")).toDouble ()));
+        col.append (prozent2prozent_str (q.value(qsl("Zinssatz")).toDouble ()));
+        col.append (d2euro (q.value(qsl("Wert")).toDouble ()));
         col.append (q.value(qsl("Aktivierungsdatum")).toDate().toString ("dd.MM.yyyy"));
         col.append (q.value(qsl("Kuendigungsfrist")).toString());
         col.append (q.value(qsl("Vertragsende")).toDate().toString ("dd.MM.yyyy"));
@@ -444,13 +443,12 @@ FROM Buchungen
 QVector<QStringList> overviewShortInfo(const QString& sql)
 {
     QVector<QStringList> ret;
-    QLocale locale;
     QSqlRecord record =executeSingleRecordSql(sql);
     ret.push_back(QStringList({qsl("Anzahl DK Geber*innen"), record.value(qsl("AnzahlKreditoren")).toString()}));
     ret.push_back(QStringList({qsl("Anzahl der Verträge"), record.value(qsl("AnzahlVertraege")).toString()}));
-    ret.push_back(QStringList({qsl("Gesamtvolumen"), locale.toCurrencyString(record.value(qsl("GesamtVolumen")).toDouble())}));
-    ret.push_back(QStringList({qsl("Mittlerer Vertragswert"), locale.toCurrencyString(record.value(qsl("MittlererVertragswert")).toDouble())}));
-    ret.push_back(QStringList({qsl("Jahreszins"), locale.toCurrencyString(record.value(qsl("JahresZins")).toDouble())}));
+    ret.push_back(QStringList({qsl("Gesamtvolumen"), d2euro(record.value(qsl("GesamtVolumen")).toDouble())}));
+    ret.push_back(QStringList({qsl("Mittlerer Vertragswert"), d2euro(record.value(qsl("MittlererVertragswert")).toDouble())}));
+    ret.push_back(QStringList({qsl("Jahreszins"), d2euro(record.value(qsl("JahresZins")).toDouble())}));
     ret.push_back(QStringList({qsl("Durchschn. Zins (gew. Mittel)"), qsl("%1 %").arg(r2(record.value(qsl("ZinsRate")).toDouble()))}));
     ret.push_back(QStringList({qsl("Mittlerer Zins"), qsl("%1 %").arg(r2(record.value(qsl("MittelZins")).toDouble()))}));
 
@@ -487,20 +485,19 @@ QVector<contractRuntimeDistrib_rowData> contractRuntimeDistribution()
             SummeBisFuenfJahre += wert;
         }
     }
-    QLocale locale;
     QVector<contractRuntimeDistrib_rowData> ret;
     // .ret.push_back({"Zeitraum", "Anzahl", "Wert"});
-    ret.push_back({"Bis ein Jahr ", QString::number(AnzahlBisEinJahr), locale.toCurrencyString(SummeBisEinJahr)});
-    ret.push_back({"Ein bis fünf Jahre ", QString::number(AnzahlBisFuenfJahre), locale.toCurrencyString(SummeBisFuenfJahre)});
-    ret.push_back({"Länger als fünf Jahre ", QString::number(AnzahlLaenger), locale.toCurrencyString(SummeLaenger) });
-    ret.push_back({"Unbegrenzte Verträge ", QString::number(AnzahlUnbegrenzet), locale.toCurrencyString(SummeUnbegrenzet) });
+    ret.push_back({"Bis ein Jahr ", QString::number(AnzahlBisEinJahr), d2euro(SummeBisEinJahr)});
+    ret.push_back({"Ein bis fünf Jahre ", QString::number(AnzahlBisFuenfJahre), d2euro(SummeBisFuenfJahre)});
+    ret.push_back({"Länger als fünf Jahre ", QString::number(AnzahlLaenger), d2euro(SummeLaenger) });
+    ret.push_back({"Unbegrenzte Verträge ", QString::number(AnzahlUnbegrenzet), d2euro(SummeUnbegrenzet) });
     return ret;
 }
 
 namespace {
 QString decorateHighValues(double d)
 {
-    QString ret =QLocale().toCurrencyString (d);
+    QString ret =d2euro (d);
     if (d >=80000.) {
         if (d >=90000.) {
             if (d >=100000.) {
@@ -575,7 +572,7 @@ SELECT
   , IFNULL(BuchungsSummenInclZins, 0.) AS ly_Wert_incl_Zinsen
 FROM temp
     )str")};
-    QLocale l;
+
     QVector<QSqlRecord> rec;
     if( not executeSql (sql, rec)) {
         return QVector<QStringList>();
@@ -589,7 +586,7 @@ FROM temp
         zeile.push_back (anlage.arg(QString::number(rec[i].value(col++).toInt ()/100.))); // Anlagenbez.
         zeile.push_back (rec[i].value(col++).toDate().toString ("dd.MM.yyyy")); // Buchungsdatum
         zeile.push_back (QString::number(rec[i].value(col++).toInt())); // Anzahl Buchungen
-        zeile.push_back (l.toCurrencyString (rec[i].value(col++).toDouble ())); // buchungen zu diesem Buchungsdatum
+        zeile.push_back (d2euro(rec[i].value(col++).toDouble ())); // buchungen zu diesem Buchungsdatum
         zeile.push_back (decorateHighValues (rec[i].value(col++).toDouble ())); // Wert nur Einzahlungen
         zeile.push_back (decorateHighValues (rec[i].value(col++).toDouble ())); // Wert incl. Zinsen
         result.push_back (zeile);
@@ -636,7 +633,6 @@ QVector<QStringList> perpetualInvestmentByContracts()
     if( not executeSql (sql, rec)) {
         return QVector<QStringList>();
     }
-    QLocale l;
     QVector<QStringList> result;
     for( int i=0; i< rec.size (); i++) {
         QStringList zeile;
@@ -645,7 +641,7 @@ QVector<QStringList> perpetualInvestmentByContracts()
         zeile.push_back (rec[i].value(col++).toDate().toString("dd.MM.yyyy")); // Vertragsdatum
         zeile.push_back (rec[i].value(col++).toString());  //Kennung
         zeile.push_back (rec[i].value(col++).toString ()); // contract count
-        zeile.push_back (l.toCurrencyString (rec[i].value(col++).toDouble ())); // new contract sum by day
+        zeile.push_back (d2euro(rec[i].value(col++).toDouble ())); // new contract sum by day
         double periodSum =rec[i].value(col++).toDouble ();
         zeile.push_back (decorateHighValues (periodSum));
         result.push_back (zeile);

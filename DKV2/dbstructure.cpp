@@ -49,7 +49,7 @@ bool dbstructure::createDb(const QSqlDatabase& db) const
     switchForeignKeyHandling(db, fkh_on);
     for(dbtable& table :getTables()) {
         if( not ensureTable(table, db)) {
-            qCritical() << "could not create table " << table.name;
+            qCritical() << "could not create table " << table.Name();
             return false;
         }
     }
@@ -143,7 +143,7 @@ bool validateDbSchema(const QString& filename, const dbstructure& dbs /*=dkdbstr
 {
     LOG_CALL_W(filename);
     QString msg;
-    if( filename == qsl(""))
+    if( filename.isEmpty ())
         msg = qsl("no filename");
     else if( not QFile::exists(filename))
         msg = qsl("file not found");

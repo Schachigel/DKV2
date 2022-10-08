@@ -226,9 +226,8 @@ void MainWindow::prepare_startPage()
         messageHtml += qsl("<tr></tr><tr><td></td><td><b>DK Verwaltung für <font color=blue>%1</font></td><td></td></tr>").arg(pName);
     }
     if( allContractsValue > 0) {
-        QLocale l;
         QString valueRow = qsl("<tr><td></td><td>Die Summer aller Direktkredite und Zinsen beträgt <big><font color=red>")
-                + l.toCurrencyString(allContractsValue) + qsl("</font></big></td><td></td></tr>");
+                + d2euro(allContractsValue) + qsl("</font></big></td><td></td></tr>");
         messageHtml += valueRow;
     }
     messageHtml += qsl("<tr><td></td><td>[%1]</td><td></td></tr>").arg(ui->statusLabel->text ());
@@ -284,7 +283,7 @@ void MainWindow::on_action_menu_database_new_triggered()
 void MainWindow::on_action_menu_database_copy_triggered()
 {   LOG_CALL;
     QString dbfile = askUserFilenameForCopy(qsl("Dateiname der Kopie Datenbank angeben."));
-    if( dbfile == qsl(""))
+    if( dbfile.isEmpty ())
         return;
 
     busycursor b;
@@ -303,7 +302,7 @@ void MainWindow::on_action_menu_database_copy_triggered()
 void MainWindow::on_action_menu_database_anonymous_copy_triggered()
 {   LOG_CALL;
     QString dbfile = askUserFilenameForCopy(qsl("Dateiname der Anonymisierten Kopie angeben."));
-    if( dbfile == qsl(""))
+    if( dbfile.isEmpty ())
         return;
     busycursor b;
     if( not copy_database_mangled(dbfile)) {

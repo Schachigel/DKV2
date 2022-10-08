@@ -403,3 +403,71 @@ void test_finance::test_checkIban()
 //    dbgTimer t(qsl("checkIban"));
     QCOMPARE(checkIban(IBAN), isValid);
 }
+
+void test_finance::test_euroFromCt()
+{
+    for( int i=0; i>-1000; i--) {
+        double euro =euroFromCt(i);
+        int    ct   =ctFromEuro(euro);
+//        qInfo() << i << ", " << QString::number (euro, 'f', 2) << ", " << ct;
+        QCOMPARE(ct, i);
+    }
+    for( int i=0; i<1000; i++) {
+        double euro =euroFromCt(i);
+        int    ct   =ctFromEuro(euro);
+//        qInfo() << i << ", " << QString::number (euro, 'f', 2) << ", " << ct;
+        QCOMPARE(ct, i);
+    }
+    for( int i=9999; i<10999; i++) {
+        double euro =euroFromCt(i);
+        int    ct   =ctFromEuro(euro);
+//        qInfo() << i << ", " << QString::number (euro, 'f', 2) << ", " << ct;
+        QCOMPARE(ct, i);
+    }
+    for( int i=999000; i<1000100; i++) {
+        double euro =euroFromCt(i);
+        int    ct   =ctFromEuro(euro);
+//        qInfo() << i << ", " << QString::number (euro, 'f', 2) << ", " << ct;
+        QCOMPARE(ct, i);
+    }
+    for( int i=9999000; i<10000100; i++) {
+        double euro =euroFromCt(i);
+        int    ct   =ctFromEuro(euro);
+//        qInfo() << i << ", " << QString::number (euro, 'f', 2) << ", " << ct;
+        QCOMPARE(ct, i);
+    }
+    for( int i=99999000; i<100000100; i++) {
+        double euro =euroFromCt(i);
+        int    ct   =ctFromEuro(euro);
+//        qInfo() << i << ", " << QString::number (euro, 'f', 2) << ", " << ct;
+        QCOMPARE(ct, i);
+    }
+}
+
+void test_finance::test_convertionFuncs()
+{
+    QCOMPARE( i2s(1), qsl("1"));
+    QCOMPARE( i2s(-1), qsl("-1"));
+    QCOMPARE( i2s(-99), qsl("-99"));
+    QCOMPARE( i2s(987654321), qsl("987654321"));
+
+    QCOMPARE( d2euro(1), qsl("1,00 €"));
+    QCOMPARE( d2euro(1.234), qsl("1,23 €"));
+    QCOMPARE( d2euro(1.235), qsl("1,24 €"));
+    QCOMPARE( d2euro(1111.235), qsl("1.111,24 €"));
+    QCOMPARE( d2euro(1234567), qsl("1.234.567,00 €"));
+
+    QCOMPARE( prozent2prozent_str (1.), qsl("1,00 %"));
+    QCOMPARE( prozent2prozent_str (1.5), qsl("1,50 %"));
+    QCOMPARE( prozent2prozent_str (0.454), qsl("0,45 %"));
+    QCOMPARE( prozent2prozent_str (0.455), qsl("0,46 %"));
+    QCOMPARE( prozent2prozent_str (15.), qsl("15,00 %"));
+
+    QCOMPARE( dbInterest2_str(0),   qsl("0,00 %"));
+    QCOMPARE( dbInterest2_str(1),   qsl("0,01 %"));
+    QCOMPARE( dbInterest2_str(10),  qsl("0,10 %"));
+    QCOMPARE( dbInterest2_str(190), qsl("1,90 %"));
+    QCOMPARE( dbInterest2_str(999), qsl("9,99 %"));
+    QCOMPARE( dbInterest2_str(10000),   qsl("100,00 %"));
+
+}

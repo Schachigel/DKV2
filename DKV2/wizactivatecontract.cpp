@@ -1,7 +1,8 @@
 #include <iso646.h>
 
-#include "appconfig.h"
 #include "helper.h"
+#include "helperfin.h"
+#include "appconfig.h"
 #include "wizactivatecontract.h"
 
 wpInitialPayment_IntroPage::wpInitialPayment_IntroPage(QWidget* p) : QWizardPage(p)
@@ -112,7 +113,7 @@ void wpInitialPayment_SummaryPage::initializePage()
     wizInitialPayment* wiz = qobject_cast<wizInitialPayment*>(wizard());
 
     double amount = QLocale().toDouble (field(fnAmount).toString());
-    subt = subt.arg(wiz->label, wiz->creditorName, QLocale().toCurrencyString(amount), field(fnDate).toDate().toString(qsl("dd.MM.yyyy")));
+    subt = subt.arg(wiz->label, wiz->creditorName, d2euro(amount), field(fnDate).toDate().toString(qsl("dd.MM.yyyy")));
     if( amount not_eq wiz->expectedAmount)
         subt += qsl(" <b><small>Der Überweisungsbetrag stimmt nicht mit dem Kreditbetrag überein.</small></b>");
     subTitleLabel->setText(subt);

@@ -147,21 +147,21 @@ bool table2csv(const QString& filename, const QVector<dbfield>& fields, const QV
         for (int i = 0; i < fields.count(); i++) {
             QVariant::Type t = types.isEmpty() ? fields[i].type() : types[i];
             switch(t) {
-            case QVariant::Type::Int: {
+            case QVariant::Int: {
                 int v = q.record().value(fields[i].name()).toInt();
                 csv.appendToRow(QString::number(v));
                 break;
             }
-            case QVariant::Type::String: {
+            case QVariant::String: {
                 csv.appendToRow(q.record().value(fields[i].name()).toString());
                 break;
             }
-            case QVariant::Type::Date: {
+            case QVariant::Date: {
                 QDate d = q.record().value(fields[i].name()).toDate();
                 csv.appendToRow(d.toString(qsl("dd.MM.yyyy")));
                 break;
             }
-            case QVariant::Type::Double: {
+            case QVariant::Double: {
                 double d = q.record().value(fields[i].name()).toDouble();
                 csv.appendToRow(locale.toString(d, 'f', 2));
                 break;

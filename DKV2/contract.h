@@ -66,31 +66,8 @@ struct contract
     static const dbtable& getTableDef();
     static const dbtable& getTableDef_deletedContracts();
     // Vergleichsoperatoren für TESTS !!
-    inline friend bool operator==(const contract& lhs, const contract& rhs)
-    {   // friend functions - even in the class definition - are not member
-        bool ret =true;
-        if( lhs.td.getRecord().count() not_eq rhs.td.getRecord().count()) {
-            qInfo() << "contract comparison: field count mismatch " << lhs.td.getRecord().count() << " / " << rhs.td.getRecord().count();
-            ret =false;
-        }
-        dbtable table =getTableDef();
-        for( int i =0; i < table.Fields().count(); i++){
-            QString fname =table.Fields().value(i).name();
-            if( fname == qsl("Zeitstempel"))
-                continue;
-            if( lhs.td.getValue(fname) == rhs.td.getValue(fname))
-                continue;
-            else {
-                qInfo() << "contract field missmatch " << fname << ": " << lhs.td.getValue(fname) << " / " << rhs.td.getValue(fname);
-                ret = false;
-            }
-        }
-        return ret;
-    }
-    inline friend bool operator!=(const contract& lhs, const contract& rhs)
-    {
-        return not (lhs==rhs);
-    }
+    friend bool operator==(const contract& lhs, const contract& rhs);
+    friend bool operator!=(const contract& lhs, const contract& rhs);
 
     // construction
     contract(const qlonglong CONTRACTid =-1, bool isTerminated =false);
@@ -112,10 +89,11 @@ struct contract
         if( percent == 0) td.setValue(fnThesaurierend, toInt(interestModel::zero));
     }
     double interestRate() const {
-        QVariant p=td.getValue(fnZSatz); // stored as a int (100th percent)
-
-        double iRate = r2(double(p.toInt())/100.);
-        return iRate;
+        QVariant p {td.getValue(fnZSatz)}; // stored as a int (100th percent)
+        return dbInterest2Interest (p.toInt());;
+    }
+    int dbInterest() const {
+        return td.getValue(fnZSatz).toInt();
     }
     double actualInterestRate() const {
         if( interestActive()) return interestRate();

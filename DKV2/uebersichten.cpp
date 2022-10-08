@@ -1,7 +1,6 @@
 
-
-#include "appconfig.h"
 #include "helperfin.h"
+#include "appconfig.h"
 #include "dkdbviews.h"
 #include "dkdbhelper.h"
 #include "uebersichten.h"
@@ -242,7 +241,6 @@ void uebersichten::renderPayedInterestByYear()
     tablelayout tl(td);
     // tl.cols = QStringList...)
     tablelayout::section currentSec;
-    QLocale locale;
     for( int i=0; i <records.count(); i++) {
         QString year = records[i].value(qsl("Year")).toString();
         if( currentSec.header not_eq year) {
@@ -259,7 +257,7 @@ void uebersichten::renderPayedInterestByYear()
                     qsl("    "),
                     records[i].value(qsl("BA")).toString(),
                         records[i].value(qsl("Thesa")).toString(),
-                        locale.toCurrencyString(records[i].value(qsl("Summe")).toDouble())
+                        d2euro(records[i].value(qsl("Summe")).toDouble())
                 });
         }
     }
@@ -329,7 +327,7 @@ void uebersichten::renderContractRuntimeDistrib()
     prep( head, desc);
     QVector<contractRuntimeDistrib_rowData> data =contractRuntimeDistribution();
     tablelayout tl(td);
-    tl.cols =QStringList({qsl(""), qsl("Anzahl"), qsl("Volumen")});
+    tl.cols =QStringList({"", qsl("Anzahl"), qsl("Volumen")});
     tablelayout::section sec;
     for (int i=0; i< data.size(); i++) {
         sec.data.push_back(QStringList({data[i].text, data[i].number, data[i].value}));
