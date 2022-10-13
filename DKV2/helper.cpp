@@ -8,6 +8,8 @@ const QString EndOfTheFuckingWorld_str {qsl("9999-12-31")};
 const QDate BeginingOfTime =QDate(1900, 1, 1);
 const int daysUntilTheEndOfTheFuckingWorld =2916000;
 
+
+
 QString toString(const QBitArray& ba)
 {
     QString res;

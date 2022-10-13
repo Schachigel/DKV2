@@ -7,10 +7,11 @@
 #include "../DKV2/helper.h"
 #include "../DKV2/helperfin.h"
 #include "../DKV2/ibanvalidator.h"
+#include "financaltimespan.h"
 #include "test_finance.h"
 
 // https://stackoverflow.com/questions/30168056/what-is-the-exact-excel-days360-algorithm
-int dateDiff360(int startDay, int startMonth, int startYear, int endDay, int endMonth, int endYear, bool methodUS)
+int t_helper_dateDiff360(int startDay, int startMonth, int startYear, int endDay, int endMonth, int endYear, bool methodUS)
 {
     if (startDay == 31) {
         --startDay;
@@ -33,7 +34,7 @@ int dateDiff360(int startDay, int startMonth, int startYear, int endDay, int end
     return endDay + endMonth * 30 + endYear * 360 - startDay - startMonth * 30 - startYear * 360;
 }
 
-int dateDiff360(const QDate &StartDate, const QDate &EndDate, bool methodUS)
+int t_helper_dateDiff360(const QDate &StartDate, const QDate &EndDate, bool methodUS)
 {
    int startDay = StartDate.day();
    int startMonth = StartDate.month();
@@ -41,17 +42,17 @@ int dateDiff360(const QDate &StartDate, const QDate &EndDate, bool methodUS)
    int endDay = EndDate.day();
    int endMonth = EndDate.month();
    int endYear = EndDate.year();
-   int ret = dateDiff360(startDay, startMonth, startYear, endDay, endMonth, endYear, methodUS);
+   int ret = t_helper_dateDiff360(startDay, startMonth, startYear, endDay, endMonth, endYear, methodUS);
    return ret;
 }
 
-int lookupAnzTageZeitraum(const QDate &StartDate, const QDate &EndDate)
+int t_helper_lookupAnzTageZeitraum(const QDate &StartDate, const QDate &EndDate)
 {
-   int ret = dateDiff360(StartDate, EndDate, false);
+   int ret = t_helper_dateDiff360(StartDate, EndDate, false);
    return ret;
 }
 
-int getAnzTageUndJahreZeitraum(const QDate &dateFrom, const QDate &dateTo, int &tageBis, int &ganzeJahre, int &tageVon){
+int t_helper_getAnzTageUndJahreZeitraum(const QDate &dateFrom, const QDate &dateTo, int &tageBis, int &ganzeJahre, int &tageVon){
    int ret = 0;
    tageBis = 0;
    ganzeJahre = 0;
@@ -60,12 +61,12 @@ int getAnzTageUndJahreZeitraum(const QDate &dateFrom, const QDate &dateTo, int &
    {
        if(dateFrom.year() == dateTo.year())
        {
-           tageBis = lookupAnzTageZeitraum(dateFrom, dateTo);
+           tageBis = t_helper_lookupAnzTageZeitraum(dateFrom, dateTo);
            return 0;
        }
       if(dateFrom.year() < dateTo.year())
       {
-          tageBis = lookupAnzTageZeitraum(dateFrom, QDate(dateFrom.year(), 12, 31));
+          tageBis = t_helper_lookupAnzTageZeitraum(dateFrom, QDate(dateFrom.year(), 12, 31));
       }
       QDate startDate = dateFrom;
       QDate endDate = dateTo;
@@ -77,7 +78,7 @@ int getAnzTageUndJahreZeitraum(const QDate &dateFrom, const QDate &dateTo, int &
             ganzeJahre++;
             startDate = QDate(startDate.year()+1, 1, 1);
          }else{
-            tageVon = lookupAnzTageZeitraum(startDate, dateTo) + 1;
+            tageVon = t_helper_lookupAnzTageZeitraum(startDate, dateTo) + 1;
             break;
          }
       }
@@ -85,7 +86,7 @@ int getAnzTageUndJahreZeitraum(const QDate &dateFrom, const QDate &dateTo, int &
    return ret;
 }
 
-double computeDkZinsen(double Betrag, double Zinssatz, int anzTage)
+double t_helper_computeDkZinsen(double Betrag, double Zinssatz, int anzTage)
 {
     double Zinsen = ((Betrag * Zinssatz) / 100.0);
     Zinsen = Zinsen * anzTage / 360;
@@ -93,7 +94,7 @@ double computeDkZinsen(double Betrag, double Zinssatz, int anzTage)
     return Zinsen;
 }
 
-double computeDkZinsenZeitraum(double Betrag, double Zinssatz, const QDate &dateFrom, const QDate &dateTo)
+double t_helper_computeDkZinsenZeitraum(double Betrag, double Zinssatz, const QDate &dateFrom, const QDate &dateTo)
 {
     double Zinsen = 0;
     if( dateFrom.isValid() and dateTo.isValid() and (dateFrom <= dateTo))
@@ -101,36 +102,34 @@ double computeDkZinsenZeitraum(double Betrag, double Zinssatz, const QDate &date
         int tageBis = 0;
         int ganzeJahre = 0;
         int tageVon = 0;
-        getAnzTageUndJahreZeitraum(dateFrom, dateTo, tageBis, ganzeJahre, tageVon);
-        Zinsen += computeDkZinsen(Betrag + Zinsen, Zinssatz, tageBis);
+        t_helper_getAnzTageUndJahreZeitraum(dateFrom, dateTo, tageBis, ganzeJahre, tageVon);
+        Zinsen += t_helper_computeDkZinsen(Betrag + Zinsen, Zinssatz, tageBis);
         for(int i=0;i<ganzeJahre;i++) {
             Zinsen += (Betrag + Zinsen) * Zinssatz / 100.0;
         }
-        Zinsen += computeDkZinsen(Betrag + Zinsen, Zinssatz, tageVon);
+        Zinsen += t_helper_computeDkZinsen(Betrag + Zinsen, Zinssatz, tageVon);
     }
     return r2(Zinsen);
 }
 
-int TageImZeitraum(QDate von, QDate bis)
+int t_helper_TageImZeitraum(QDate von, QDate bis)
 {
-    if( von.year() == bis.year())
-    {
+    if (von.year() == bis.year()) {
         return TageZwischen_30_360(von, bis);
     }
-   int ret = 0;
-   int TageImErstenJahr = TageBisJahresende_lookup(von); // first day no intrest
-   int jahre(0);
-   int TageDazwischen = 0;
-   for( jahre=0; jahre < bis.year()-von.year()-1; jahre++)
-   {
-       TageDazwischen += 360;
-   }
-   int TageImLetztenJahr = TageSeitJahresAnfang_lookup(bis);
-   ret = TageImErstenJahr + TageDazwischen + TageImLetztenJahr;
-   return ret;
+    int ret = {0};
+    int TageImErstenJahr {t_helper_TageBisJahresende_lookup(von)}; // first day no intrest
+    int jahre{0};
+    int TageDazwischen{0};
+    for (jahre = 0; jahre < bis.year() - von.year() - 1; jahre++) {
+        TageDazwischen += 360;
+    }
+    int TageImLetztenJahr = t_helper_TageSeitJahresAnfang_lookup(bis);
+    ret = TageImErstenJahr + TageDazwischen + TageImLetztenJahr;
+    return ret;
 }
 
-int TageUndJahreImZeitraum(const QDate &von, const QDate &bis, int &TageImErstenJahr, int &JahreZwischen, int &TageImLetztenJahr){
+int t_helper_TageUndJahreImZeitraum(const QDate &von, const QDate &bis, int &TageImErstenJahr, int &JahreZwischen, int &TageImLetztenJahr){
     int ret = 0;
     TageImErstenJahr = 0;
     JahreZwischen = 0;
@@ -140,13 +139,13 @@ int TageUndJahreImZeitraum(const QDate &von, const QDate &bis, int &TageImErsten
         TageImErstenJahr = TageZwischen_30_360(von, bis);
         return 0;
     }
-   TageImErstenJahr = TageBisJahresende_lookup(von); // first day no intrest
+   TageImErstenJahr = t_helper_TageBisJahresende_lookup(von); // first day no intrest
    int jahre(0);
    for( jahre=0; jahre < bis.year()-von.year()-1; jahre++)
    {
       JahreZwischen++;
    }
-   TageImLetztenJahr = TageSeitJahresAnfang_lookup(bis);
+   TageImLetztenJahr = t_helper_TageSeitJahresAnfang_lookup(bis);
    return ret;
 
 }
@@ -156,20 +155,16 @@ void test_finance::test_TageBisJahresende_data()
     QTest::addColumn<QDate>("date");
     QTest::addColumn<int>("tageBisJe_excel");
     bool singleTestForDebugging = false;
-    if( singleTestForDebugging)
-    {
+    if( singleTestForDebugging) {
         QDate testDatum(2017, 1, 1);
         QTest::newRow( (QString("Bis JE vom ") + testDatum.toString()).toLocal8Bit().data())
-                << testDatum << TageBisJahresende_lookup(testDatum);
-    }
-    else
-    {
+                << testDatum << t_helper_TageBisJahresende_lookup(testDatum);
+    } else {
         QDate start(2015, 12, 30);
-        for (int i=0; i < 365+366; i++)
-        {
+        for (int i=0; i < 365+366; i++) {
             QDate testDatum(start.addDays(i));
             QTest::newRow( (QString("Bis JE vom ") + testDatum.toString()).toLocal8Bit().data())
-                    << testDatum << TageBisJahresende_lookup(testDatum);
+                << testDatum << t_helper_TageBisJahresende_lookup(testDatum);
         }
     }
 }
@@ -177,8 +172,26 @@ void test_finance::test_TageBisJahresende()
 {
     QFETCH(QDate, date);
     QFETCH(int, tageBisJe_excel);
-    // compare our calculation with the result from excel
+    // CUT: TageBisJahresende_30_360, vergleich mit Excel
     QCOMPARE( TageBisJahresende_30_360(date), tageBisJe_excel);
+}
+
+void test_finance::test_TageBisJahresendeSample() {
+    // Vertragsbeginn: erster Tag zinsfrei
+    // Jeder Monat zählt für 30 Tage, 31ter zählt nicht
+    QCOMPARE( TageBisJahresende_30_360(QDate(2015, 1,  1)), 29/*rest vom Jan.*/    +11*30/*Feb.-Dez.*/);
+    QCOMPARE( TageBisJahresende_30_360(QDate(2015, 1, 15)), 15/*rest vom Jan.*/    +11*30/*Feb.-Dez.*/);
+    QCOMPARE( TageBisJahresende_30_360(QDate(2015, 1, 30)),  0/*31. ist zinsfrei*/ +11*30/*Feb.-Dez.*/);
+    QCOMPARE( TageBisJahresende_30_360(QDate(2015, 1, 31)),  0/*31. ist zinsfrei*/ +11*30/*Feb.-Dez.*/);
+    QCOMPARE( TageBisJahresende_30_360(QDate(2015, 2,  1)), 29/*rest vom Feb.*/    +10*30/*Mär.-Dez.*/);
+    QCOMPARE( TageBisJahresende_30_360(QDate(2015, 4, 29)),  1/*rest vom Apr.*/    + 8*30/*Mai.-Dez.*/);
+    QCOMPARE( TageBisJahresende_30_360(QDate(2015, 4, 30)),  0/*rest vom Apr.*/    + 8*30/*Mai.-Dez.*/);
+
+    // 2015 ist KEIN Schaltjahr
+    QCOMPARE( TageBisJahresende_30_360(QDate(2015, 2, 28)),  2/*rest vom Feb.*/    +10*30/*Feb.-Dez.*/);
+    // 2016 IST  ein Schaltjahr
+    QCOMPARE( TageBisJahresende_30_360(QDate(2016, 2, 28)),  2/*rest vom Feb.*/    +10*30/*Feb.-Dez.*/);
+    QCOMPARE( TageBisJahresende_30_360(QDate(2016, 2, 29)),  1/*rest vom Feb.*/    +10*30/*Feb.-Dez.*/);
 }
 
 void test_finance::test_TageSeitJahresanfang_data()
@@ -190,7 +203,7 @@ void test_finance::test_TageSeitJahresanfang_data()
     {
         QDate testDatum(2017, 1, 1);
         QTest::newRow( (QString("Seit JA bis ") + testDatum.toString()).toLocal8Bit().data())
-                << testDatum << TageSeitJahresAnfang_lookup(testDatum);
+                << testDatum << t_helper_TageSeitJahresAnfang_lookup(testDatum);
     }
     else
     {
@@ -199,7 +212,7 @@ void test_finance::test_TageSeitJahresanfang_data()
         {
             QDate testDatum(start.addDays(i));
             QTest::newRow( (QString("Seit JA bis ") + testDatum.toString()).toLocal8Bit().data())
-                    << testDatum << TageSeitJahresAnfang_lookup(testDatum);
+                    << testDatum << t_helper_TageSeitJahresAnfang_lookup(testDatum);
         }
     }
 
@@ -208,9 +221,29 @@ void test_finance::test_TageSeitJahresanfang()
 {
     QFETCH(QDate, date);
     QFETCH(int, tageSeitJa_excel);
-    // compare our calculation with the result from excel
+    // CUT: TageSeitJahresAnfang_30_360: Vergleich der Berechnung mit Excel
     QCOMPARE( TageSeitJahresAnfang_30_360(date), tageSeitJa_excel);
+}
 
+void test_finance::test_TageSeitJahresanfangSample()
+{
+    // schon der erste Tag zählt, da innerhalb einer Zinsperiode
+    QCOMPARE( TageSeitJahresAnfang_30_360(QDate(2015, 1,  1)),  1);
+    // auch Monate m 31 Tagen zählen nur als 30
+    QCOMPARE( TageSeitJahresAnfang_30_360(QDate(2015, 1, 31)), 30);
+    QCOMPARE( TageSeitJahresAnfang_30_360(QDate(2015, 2,  1)), 31);
+    // Schaltjahr
+    QCOMPARE( TageSeitJahresAnfang_30_360(QDate(2016, 2, 28)), 30 +28);
+    QCOMPARE( TageSeitJahresAnfang_30_360(QDate(2016, 2, 29)), 30 +29);
+    QCOMPARE( TageSeitJahresAnfang_30_360(QDate(2016, 3,  1)), 30 +30 +1);
+    // NichtSchaltjahre
+    QCOMPARE( TageSeitJahresAnfang_30_360(QDate(2017, 2, 27)), 30 +27);
+    QCOMPARE( TageSeitJahresAnfang_30_360(QDate(2017, 2, 28)), 30 +28);
+    QCOMPARE( TageSeitJahresAnfang_30_360(QDate(2017, 3,  1)), 30 +30 +1);
+    // volles Jahr
+    QCOMPARE( TageSeitJahresAnfang_30_360(QDate(2017, 12, 29)), 11*30 +29);
+    QCOMPARE( TageSeitJahresAnfang_30_360(QDate(2017, 12, 30)), 12*30);
+    QCOMPARE( TageSeitJahresAnfang_30_360(QDate(2017, 12, 31)), 12*30);
 }
 
 void test_finance::test_ZinsesZins_data()
@@ -229,10 +262,10 @@ void test_finance::test_ZinsesZins_data()
         double ZinsThesauriert; double Zins;
     };
     testdata d[]={
-        //        // remember: last day is IN, first day is OUT
-        //        // expected test results validated with docs\\Zinsberechnung.xlsx
+        // // Der letzte Tag wird verzinst, der erste Tag NICHT !!
+        // // siehe excel Datei docs\\Zinsberechnung.xlsx
 
-        // period within the same year
+        // Zinsperioden innerhalb eines Jahres
         {QDate(2019,  1, 03), QDate(2019,  11,  04), 10., 100.,  8.36 ,  8.36 },
         {QDate(2019,  1, 31), QDate(2019,  11,  30), 10., 100.,  8.33 ,  8.33 },
         {QDate(2019,  6,  1), QDate(2019,  12,  31), 10., 100.,  5.81 ,  5.81 },
@@ -249,7 +282,6 @@ void test_finance::test_ZinsesZins_data()
         {QDate(2016, 12,  1), QDate(2018,  01,  01), 10., 100., 10.92 , 10.83 },
         // geht der Vertrag über Feb hinaus, zählt Feb er 30 Tage
         {QDate(2017, 01, 31), QDate(2018,  03,  01), 10., 100., 11.02 , 10.86 },
-
         {QDate(2016, 12, 31), QDate(2017,  12,  31), 10., 100., 10.00 , 10.00 },
         {QDate(2016, 12, 31), QDate(2018,  01,  30), 10., 100., 10.92 , 10.83 },
         // Abweichung von sparbuch-rechner: Ende Feb sind 28 nicht 30 Tage
@@ -293,7 +325,6 @@ void test_finance::test_ZinsesZins_data()
         l++;
     }while( d[l].von.isValid());
 }
-
 void test_finance::test_ZinsesZins()
 {
     QFETCH(QDate,  von);
@@ -308,20 +339,20 @@ void test_finance::test_ZinsesZins()
     // compare our calculation with the result from excel
     QCOMPARE(ZinsesZins_30_360(zinssatz, wert, von, bis, true ), ZinsThesauriert);
     QCOMPARE(ZinsesZins_30_360(zinssatz, wert, von, bis, false), Zins);
-    QCOMPARE(lookupAnzTageZeitraum(von, bis), TageImZeitraum(von, bis));
+    QCOMPARE(t_helper_lookupAnzTageZeitraum(von, bis), t_helper_TageImZeitraum(von, bis));
     int TageImErstenJahr=0;
     int JahreZwischen=0;
     int TageImLetztenJahr=0;
-    TageUndJahreImZeitraum(von, bis, TageImErstenJahr, JahreZwischen, TageImLetztenJahr);
+    t_helper_TageUndJahreImZeitraum(von, bis, TageImErstenJahr, JahreZwischen, TageImLetztenJahr);
     int tageBis = 0;
     int ganzeJahre = 0;
     int tageVon = 0;
-    getAnzTageUndJahreZeitraum(von, bis, tageBis, ganzeJahre, tageVon);
+    t_helper_getAnzTageUndJahreZeitraum(von, bis, tageBis, ganzeJahre, tageVon);
     QCOMPARE(TageImErstenJahr, tageBis);
     QCOMPARE(JahreZwischen, ganzeJahre);
     QCOMPARE(TageImLetztenJahr, tageVon);
-    QCOMPARE(r2(computeDkZinsen(wert, zinssatz, tageBis)), r2(double(TageImErstenJahr)/360. *zinssatz/100. *wert));
-    QCOMPARE(computeDkZinsenZeitraum(wert, zinssatz, von, bis ), ZinsThesauriert);
+    QCOMPARE(r2(t_helper_computeDkZinsen(wert, zinssatz, tageBis)), r2(double(TageImErstenJahr)/360. *zinssatz/100. *wert));
+    QCOMPARE(t_helper_computeDkZinsenZeitraum(wert, zinssatz, von, bis ), ZinsThesauriert);
     qInfo()<< "\n------------------------------------------------------------------------------\n";
 }
 
@@ -341,7 +372,6 @@ void test_finance::test_act_act_data()
     QTest::newRow ("ly 2 non ly thesa") << QDate(2016, 7, 1) << QDate(2017, 6,30) << r2(100000./100./366.*183 + 100500./100./365.*181) << true;
     QTest::newRow ("ly 2 non ly") << QDate(2016, 7, 1) << QDate(2017, 6,30) << r2(100000./100./366.*183 + 100000./100./365.*181) << false;
 }
-
 void test_finance::test_act_act()
 {
     QFETCH (QDate, von);
@@ -378,11 +408,11 @@ void createData()
     QTest::newRow("Iban 13") << "DE23152931057149592044" << true;
 }
 
-void test_finance::test_IsValidIban_data()
+void test_finance::test_IbanValidator_data()
 {
     createData();
 }
-void test_finance::test_IsValidIban()
+void test_finance::test_IbanValidator()
 {
     QFETCH(QString, IBAN);
     QFETCH(bool, isValid);

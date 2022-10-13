@@ -10,6 +10,10 @@ struct datediffs
     int tillEoY;
 };
 
+int t_helper_TageBisJahresende_lookup(const QDate& d);
+int t_helper_TageSeitJahresAnfang_lookup(const QDate& d);
+
+
 static QMap<QDate, datediffs> DateDiffLookup
 {
     { QDate(2017,1,1) ,{1,359}},

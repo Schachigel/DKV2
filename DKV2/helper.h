@@ -6,10 +6,15 @@
 #include "pch.h"
 
 #define qsl(x) QStringLiteral(x)
-inline const QVariant emptyStringV {qsl("")};
+inline const QVariant emptyStringV {qsl("")}; // keep the qsl to force the variant to type String!
 inline QString singleQuoted(const QString& s) { return qsl("'%1'").arg(s);}
 
 inline void expected_error (QString MSG) {QMessageBox::information(NULL, qsl("Fehler"), MSG); qInfo() << MSG;}
+
+template <typename t> t returnWithInfo( t returnvalue, QString info){
+    qInfo() << info;
+    return returnvalue;
+};
 
 QString toString(const QBitArray &ba);
 QBitArray toQBitArray(const QString& s);

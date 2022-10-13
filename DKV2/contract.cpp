@@ -1,7 +1,7 @@
 
 #include "helper.h"
 #include "helpersql.h"
-#include "appconfig.h"
+#include "helperfin.h"
 #include "dbstructure.h"
 #include "dkdbhelper.h"
 #include "contract.h"
@@ -169,13 +169,12 @@ double contract::interestBearingValue() const
     }
 }
 const booking contract::latestBooking()
-{   LOG_CALL;
+{
     QString sql {qsl("SELECT id, VertragsId, Datum, BuchungsArt, Betrag FROM %2 WHERE VertragsId=%1 ORDER BY rowid DESC LIMIT 1").
         arg(id_aS(), isTerminated ? "exBuchungen" : "Buchungen")};
     QSqlRecord rec = executeSingleRecordSql(sql);
     if( 0 == rec.count()) {
-        qInfo() << "latestBooking returns empty value";
-        return booking();
+        return returnWithInfo( booking(), "latestBooking returns empty value");
     }
     booking latestB(id(), bookingType(rec.value(qsl("BuchungsArt")).toInt()), rec.value(qsl("Datum")).toDate(), euroFromCt(rec.value(qsl("Betrag")).toInt()));
     qDebug() << "Latest Booking: " << bookingTypeDisplayString(latestB.type) << ", " << latestB.date << ", " << latestB.amount << ", cId:" << latestB.contractId;
@@ -356,7 +355,7 @@ bool contract::needsAnnualSettlement(const QDate intendedNextBooking)
 }
 int contract::annualSettlement( int year)
 {   LOG_CALL_W(QString::number(year));
-    // perform annualSettlement, recursive until 'year'
+    // es werden so lange Jahresabrechnungen durchgeführt, bis das Jahr "year" abgerechent ist
     Q_ASSERT(year);
 
     booking lastB =latestBooking ();
@@ -370,7 +369,7 @@ int contract::annualSettlement( int year)
     bool bookingSuccess =false;
     while(nextAnnualSettlementDate <= requestedSettlementDate) {
         double baseValue =interestBearingValue();
-          //////////
+          ////////// von letzter Buchung bis zum 31.12. des selben Jahres
         double zins =ZinsesZins(actualInterestRate(),
                                 baseValue, lastB.date, nextAnnualSettlementDate);
         //////////
@@ -548,15 +547,6 @@ bool contract::finalize(bool simulate, const QDate finDate,
 }
 
 // private
-double contract::ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)
-{
-    QString susance =dbConfig::readString (ZINSUSANCE);
-    qInfo() << "Zinssusance configured in database: " << susance;
-    if(  susance == qsl("act/act"))
-        return ::ZinsesZins_act_act (zins, wert, von, bis, thesa);
-    else
-        return ::ZinsesZins_30_360(zins, wert, von, bis, thesa);
-}
 bool contract::bookInBetweenInterest(const QDate nextBookingDate, bool payout)
 {   LOG_CALL;
     // booking interest in case of deposits, payouts or finalization
