@@ -268,23 +268,22 @@ bool open_databaseForApplication( const QString &newDbFile)
 
 bool isValidNewContractLabel(const QString& label)
 {
-    return ( not isExistingContractLabel(label)) and ( not isExisting_Ex_ContractLabel(label));
+    return not (isExistingContractLabel(label) or isExisting_Ex_ContractLabel(label));
 }
 
 QString proposeContractLabel()
 {   LOG_CALL;
-    static int iMaxid = dbConfig::readValue(STARTINDEX).toInt() + getHighestRowId(contract::tnContracts);
+    qlonglong nextId = dbConfig::readValue(STARTINDEX).toInt() + getHighestRowId(contract::tnContracts);
     QString kennung;
     do {
-        QString maxid = QString::number(iMaxid).rightJustified(6, '0');
+        QString maxid = QString::number(nextId).rightJustified(6, '0');
         QString PI = qsl("DK-") + dbConfig::readValue(GMBH_INITIALS).toString();
         kennung = PI + qsl("-") + QString::number(QDate::currentDate().year()) + qsl("-") + maxid;
         if( isValidNewContractLabel(kennung))
             break;
         else
-            iMaxid++;
+            nextId++;
     } while(1);
-    iMaxid++; // prepare for next contract
     return kennung;
 }
 
