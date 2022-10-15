@@ -1,7 +1,8 @@
 
 #include "helper.h"
-#include "appconfig.h"
 #include "helperfin.h"
+#include "appconfig.h"
+
 #include "wizchangecontractvalue.h"
 
 enum change_contract_pages {

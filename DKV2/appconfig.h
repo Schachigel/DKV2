@@ -2,7 +2,7 @@
 #define APPCONFIG_H
 
 #include <iso646.h>
-// #include "pch.h"
+
 
 // db config info in 'meta' table
 // init = write only if not set

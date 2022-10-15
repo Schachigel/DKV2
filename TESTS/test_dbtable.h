@@ -1,8 +1,7 @@
 #ifndef TEST_DBTABLE_H
 #define TEST_DBTABLE_H
 
-
-#include <qobject.h>
+#include <QTest>
 
 class test_dbfield : public QObject
 {

@@ -6,6 +6,7 @@
 #include "../DKV2/dbstructure.h"
 #include "../DKV2/dkdbcopy.h"
 
+#include "../DKV2/helperfin.h"
 #include "../DKV2/helpersql.h"
 #include "test_dkdbcopy.h"
 void test_dkdbcopy::init()

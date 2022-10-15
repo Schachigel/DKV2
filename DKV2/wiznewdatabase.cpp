@@ -1,8 +1,10 @@
 #include <iso646.h>
 
 #include "helper.h"
+#include "helperfin.h"
 #include "helpersql.h"
 #include "appconfig.h"
+
 #include "wiznewdatabase.h"
 
 /*

@@ -1,7 +1,6 @@
 #ifndef TEST_APPCONFIG_H
 #define TEST_APPCONFIG_H
 
-#include <QObject>
 #include <QTest>
 
 class test_appConfig : public QObject

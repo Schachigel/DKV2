@@ -1,10 +1,7 @@
 #ifndef TEST_DKDBCOPY_H
 #define TEST_DKDBCOPY_H
 
-#include <QSqlDatabase>
-#include <QObject>
-#include <QDir>
-#include <QDebug>
+#include <QTest>
 
 #include "../DKV2/helper.h"
 #include "testhelper.h"

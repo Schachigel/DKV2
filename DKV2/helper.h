@@ -3,7 +3,6 @@
 
 #include <iso646.h>
 
-#include "pch.h"
 
 #define qsl(x) QStringLiteral(x)
 inline const QVariant emptyStringV {qsl("")}; // keep the qsl to force the variant to type String!

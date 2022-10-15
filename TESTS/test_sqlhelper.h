@@ -1,7 +1,7 @@
 #ifndef TEST_SQLHELPER_H
 #define TEST_SQLHELPER_H
 
-#include <QObject>
+#include <QTest>
 
 class test_sqlhelper : public QObject
 {

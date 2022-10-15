@@ -1,8 +1,6 @@
 #ifndef VERTRAG_H
 #define VERTRAG_H
 
-#include "pch.h"
-
 #include "helper.h"
 #include "helperfin.h"
 #include "tabledatainserter.h"

@@ -1,4 +1,3 @@
-#include <QTest>
 
 #include "../DKV2/helpersql.h"
 #include "../DKV2/dbstructure.h"

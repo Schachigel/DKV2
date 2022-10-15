@@ -1,7 +1,6 @@
 #ifndef TST_CSV_H
 #define TST_CSV_H
 
-#include <QObject>
 #include <QTest>
 
 class test_csv : public QObject

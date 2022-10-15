@@ -1,7 +1,7 @@
 
 #include "helper.h"
-#include "appconfig.h"
 #include "helperfile.h"
+#include "appconfig.h"
 
 
 QString tempPathTemplateFromPath (const QString& path)

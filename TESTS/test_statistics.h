@@ -1,12 +1,9 @@
 #ifndef TEST_STATISTICS_H
 #define TEST_STATISTICS_H
 
-#include <QObject>
-#include <QSqlDatabase>
+#include <QTest>
 
 #include "../DKV2/contract.h"
-
-#include "testhelper.h"
 
 struct statSet {
     statSet(int co, int cre, double v, double i, double ai)

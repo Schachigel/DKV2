@@ -1,7 +1,7 @@
 #ifndef DBSTRUCTURE_H
 #define DBSTRUCTURE_H
 
-// #include "pch.h"
+
 
 #include "dbtable.h"
 

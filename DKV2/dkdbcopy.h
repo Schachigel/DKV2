@@ -1,10 +1,8 @@
 #ifndef DKDBCOPY_H
 #define DKDBCOPY_H
 
-#include "pch.h"
-
-#include "dbstructure.h"
 #include "helper.h"
+#include "dbstructure.h"
 
 const QString dbCopyConnection {qsl("db_copy")};
 // helper functions - exported for testability

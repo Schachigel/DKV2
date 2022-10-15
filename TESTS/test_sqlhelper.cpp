@@ -1,13 +1,8 @@
-#include <QVariant>
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QSqlError>
-#include <QString>
-#include <QtTest>
 
+#include "../DKV2/helper.h"
+#include "../DKV2/helperfin.h"
 #include "../DKV2/dbstructure.h"
 #include "../DKV2/helpersql.h"
-#include "../DKV2/helper.h"
 #include "testhelper.h"
 
 #include "test_sqlhelper.h"

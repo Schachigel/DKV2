@@ -1,7 +1,7 @@
 #ifndef WIZTERMINATECONTRACT_H
 #define WIZTERMINATECONTRACT_H
 
-#include "pch.h"
+
 
 #include "contract.h"
 

@@ -1,7 +1,7 @@
 #ifndef IBANVALIDATOR_H
 #define IBANVALIDATOR_H
 
-#include "pch.h"
+
 
 bool checkIban(QString iban);
 

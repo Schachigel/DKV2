@@ -1,6 +1,6 @@
 #ifndef INVESTMENT_H
 #define INVESTMENT_H
-#include "pch.h"
+
 #include "contract.h"
 #include "dbtable.h"
 

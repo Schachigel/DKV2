@@ -1,4 +1,4 @@
-
+#include "helper.h"
 #include "opendatabase.h"
 #include "mainwindow.h"
 

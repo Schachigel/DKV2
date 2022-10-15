@@ -1,8 +1,6 @@
 #ifndef CSVWRITER_H
 #define CSVWRITER_H
 
-#include "pch.h"
-
 #include "dbfield.h"
 
 class csvwriter

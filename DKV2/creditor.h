@@ -1,8 +1,6 @@
 #ifndef KREDITOR_H
 #define KREDITOR_H
 
-#include "pch.h"
-
 #include "helper.h"
 #include "tabledatainserter.h"
 

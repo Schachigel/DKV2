@@ -73,6 +73,7 @@ SOURCES +=  \
 
 #use precompiled header
 PRECOMPILED_HEADER  = ../DKV2/pch.h
+CONFIG += precompile_header
 
 HEADERS += \
     ../DKV2/ibanvalidator.h \

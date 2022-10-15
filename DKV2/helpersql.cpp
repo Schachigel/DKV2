@@ -1,8 +1,10 @@
 #include <iso646.h>
 
 #include "helper.h"
-#include "dbtable.h"
+#include "helperfin.h"
 #include "helpersql.h"
+
+#include "dbtable.h"
 
 
 const QString dbTypeName {qsl("QSQLITE")};

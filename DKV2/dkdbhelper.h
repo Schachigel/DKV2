@@ -1,7 +1,7 @@
 #ifndef DKDBHELPER_H
 #define DKDBHELPER_H
 
-#include "pch.h"
+
 
 #include "dbstructure.h"
 

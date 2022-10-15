@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "pch.h"
+
 
 #include "contractsheadersortingadapter.h"
 #include "booking.h"

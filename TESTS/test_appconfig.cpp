@@ -1,4 +1,3 @@
-#include <QStandardPaths>
 
 #include "../DKV2/helpersql.h"
 #include "../DKV2/appconfig.h"

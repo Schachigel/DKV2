@@ -1,5 +1,3 @@
-#include <QtTest>
-
 #include "../DKV2/helper.h"
 #include "../DKV2/helpersql.h"
 #include "../DKV2/creditor.h"

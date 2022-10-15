@@ -1,8 +1,6 @@
 #ifndef TEST_PROPERTIES_H
 #define TEST_PROPERTIES_H
 
-#include <QObject>
-#include <QSqlDatabase>
 #include <QTest>
 
 class test_properties : public QObject

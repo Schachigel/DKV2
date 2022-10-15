@@ -1,7 +1,7 @@
 #ifndef DLGINTERESTLETTERS_H
 #define DLGINTERESTLETTERS_H
 
-#include "pch.h"
+
 
 class dlgInterestLetters : public QDialog
 {

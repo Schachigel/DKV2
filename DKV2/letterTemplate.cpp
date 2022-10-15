@@ -1,6 +1,6 @@
 
-#include "contract.h"
 #include "helper.h"
+#include "contract.h"
 #include "dbstructure.h"
 #include "appconfig.h"
 #include "tabledatainserter.h"

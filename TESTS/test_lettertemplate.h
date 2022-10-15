@@ -1,9 +1,6 @@
 #ifndef TEST_LETTERTEMPLATE_H
 #define TEST_LETTERTEMPLATE_H
 
-
-#include <QObject>
-#include <QSqlDatabase>
 #include <QTest>
 
 class test_letterTemplate : public QObject

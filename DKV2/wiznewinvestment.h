@@ -1,7 +1,7 @@
 #ifndef WIZNEWINVESTMENT_H
 #define WIZNEWINVESTMENT_H
 
-#include "pch.h"
+
 
 #include "investment.h"
 

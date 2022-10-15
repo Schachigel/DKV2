@@ -1,7 +1,7 @@
 #ifndef FILEWRITER_H
 #define FILEWRITER_H
 
-#include "pch.h"
+
 
 bool extractTemplateFileFromResource(const QString& path, const QString& file);
 

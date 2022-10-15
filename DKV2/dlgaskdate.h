@@ -1,7 +1,7 @@
 #ifndef DLGASKDATE_H
 #define DLGASKDATE_H
 
-#include "pch.h"
+
 
 class dlgAskDate : public QDialog
 {

@@ -1,6 +1,4 @@
-#include <QtTest>
-
-#include "../DKV2/contract.h"
+#include "testhelper.h"
 
 #include "test_views.h"
 

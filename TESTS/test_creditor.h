@@ -1,10 +1,7 @@
 #ifndef TEST_CREDITOR_H
 #define TEST_CREDITOR_H
 
-
-#include <QSqlDatabase>
-#include <QObject>
-
+#include <QTest>
 
 class test_creditor : public QObject
 {

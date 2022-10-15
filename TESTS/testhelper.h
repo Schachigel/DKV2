@@ -1,9 +1,7 @@
 #ifndef TESTHELPER_H
 #define TESTHELPER_H
 
-#include <QString>
-#include <QSqlDatabase>
-#include <QElapsedTimer>
+#include <QTest>
 
 extern const QString testDbFilename;
 extern const QString testTemplateDb;

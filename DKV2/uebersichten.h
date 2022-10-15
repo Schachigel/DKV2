@@ -1,7 +1,7 @@
 #ifndef UEBERSICHTEN_H
 #define UEBERSICHTEN_H
 
-#include "pch.h"
+
 
 struct tablelayout
 {

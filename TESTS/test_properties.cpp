@@ -1,7 +1,5 @@
 #include "../DKV2/helper.h"
-#include "../DKV2/dbtable.h"
 #include "../DKV2/appconfig.h"
-#include "../DKV2/dkdbhelper.h"
 
 #include "testhelper.h"
 #include "test_properties.h"

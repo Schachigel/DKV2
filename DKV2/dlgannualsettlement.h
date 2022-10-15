@@ -1,7 +1,7 @@
 #ifndef DLGANNUALSETTLEMENT_H
 #define DLGANNUALSETTLEMENT_H
 
-#include "pch.h"
+
 
 class dlgAnnualsettlement : public QDialog
 {

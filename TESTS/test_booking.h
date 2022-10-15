@@ -1,8 +1,6 @@
 #ifndef TEST_BOOKING_H
 #define TEST_BOOKING_H
 
-#include <QSqlDatabase>
-#include <QObject>
 #include <QTest>
 
 class test_booking : public QObject

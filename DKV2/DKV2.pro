@@ -130,6 +130,7 @@ SOURCES += \
 
 #use precompiled header
 PRECOMPILED_HEADER  = pch.h
+CONFIG += precompile_header
 
 HEADERS += pch.h\
         appconfig.h \

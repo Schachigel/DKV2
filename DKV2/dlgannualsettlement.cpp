@@ -1,5 +1,6 @@
 
 #include "helper.h"
+#include "helperfin.h"
 #include "dlgannualsettlement.h"
 
 dlgAnnualsettlement::dlgAnnualsettlement(QWidget *parent, int year) : QDialog(parent), year(year)

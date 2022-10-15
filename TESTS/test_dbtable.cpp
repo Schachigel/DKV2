@@ -1,4 +1,3 @@
-#include <QtTest>
 
 #include "../DKV2/dbtable.h"
 #include "../DKV2/helper.h"

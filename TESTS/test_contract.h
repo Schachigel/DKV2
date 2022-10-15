@@ -1,8 +1,7 @@
 #ifndef TEST_CONTRACT_H
 #define TEST_CONTRACT_H
 
-#include <QSqlDatabase>
-#include <QObject>
+#include <QTest>
 
 class test_contract : public QObject
 {

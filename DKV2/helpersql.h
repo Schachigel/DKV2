@@ -1,7 +1,7 @@
 #ifndef SQLHELPER_H
 #define SQLHELPER_H
 
-#include "pch.h"
+
 
 #include "dbtable.h"
 

@@ -1,7 +1,7 @@
 #ifndef TEST_FINANCE_H
 #define TEST_FINANCE_H
 
-#include <QObject>
+#include <QTest>
 
 class test_finance : public QObject
 {

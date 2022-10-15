@@ -1,8 +1,9 @@
 
 #include "helper.h"
+#include "dkdbhelper.h"
 #include "appconfig.h"
 #include "dbstructure.h"
-#include "dkdbhelper.h"
+
 #include "wizopenornewdatabase.h"
 #include "wiznewdatabase.h"
 #include "opendatabase.h"

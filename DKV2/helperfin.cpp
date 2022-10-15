@@ -1,8 +1,8 @@
 #include <iso646.h>
 
 #include "helper.h"
-#include "appconfig.h"
 #include "helperfin.h"
+#include "appconfig.h"
 
 int TageZwischen_30_360(QDate von, QDate bis)
 {   // finanzmathematischer Abstand zwischen zwei Daten im selben Jahr

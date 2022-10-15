@@ -1,9 +1,3 @@
-#include <QSqlQuery>
-#include <QSqlError>
-#include <QSqlRecord>
-#include <QSqlField>
-#include <qdebug.h>
-#include <QTest>
 
 #include "../DKV2/helpersql.h"
 #include "../DKV2/dkdbhelper.h"

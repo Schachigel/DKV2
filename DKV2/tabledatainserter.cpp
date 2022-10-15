@@ -1,5 +1,6 @@
 
 #include "helper.h"
+#include "helperfin.h"
 #include "helpersql.h"
 #include "tabledatainserter.h"
 

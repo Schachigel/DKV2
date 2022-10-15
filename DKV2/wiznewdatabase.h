@@ -1,8 +1,6 @@
 #ifndef FILESELECTIONWIZ_H
 #define FILESELECTIONWIZ_H
 
-#include "pch.h"
-
 #include "helper.h"
 
 /* file selection Page  */

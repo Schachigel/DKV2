@@ -1,7 +1,7 @@
 #ifndef DLGCHANGECONTRACTTERMINATION_H
 #define DLGCHANGECONTRACTTERMINATION_H
 
-#include "pch.h"
+
 
 class dlgChangeContractTermination : public QDialog
 {

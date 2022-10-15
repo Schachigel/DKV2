@@ -1,8 +1,6 @@
 #ifndef CONTRACTSHEADERSORTINGADAPTER_H
 #define CONTRACTSHEADERSORTINGADAPTER_H
 
-#include "pch.h"
-
 class contractsHeaderSortingAdapter : public QObject
 {
     Q_OBJECT
