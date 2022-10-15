@@ -45,10 +45,17 @@
     }
 }
 
+QString booking::toString( ) const
+{
+    return qsl("%1 zum Vertrag# %2: Betrag: %3, Datum: %4")
+            .arg(bookingTypeDisplayString (type), i2s(contractId), d2euro(amount), date.toString(Qt::ISODate));
+}
+
 /////////////// BOOKING functions (friends, not family ;) )
 ///
 bool writeBookingToDB( bookingType t, const qlonglong contractId, QDate date, const double amount)
 {
+    LOG_CALL_W (booking(contractId, t, date, amount).toString());
     TableDataInserter tdi(booking::getTableDef());
     tdi.setValue(qsl("VertragsId"), contractId);
     tdi.setValue(qsl("BuchungsArt"), static_cast<int>(t));
@@ -56,11 +63,9 @@ bool writeBookingToDB( bookingType t, const qlonglong contractId, QDate date, co
     tdi.setValue(qsl("Datum"), date);
     //    "Zeitstempel" will be created by the sql default value =setDefaultNow()
     if( -1 not_eq tdi.InsertRecord()) {
-        qInfo() << "writeBookingToDB: Erfolgreiche Buchung: " << bookingTypeDisplayString(t) << " Vertrag#: " << contractId << " Betrag: " << ctFromEuro(amount) << " Datum: " << date;
-        return true;
-    }
-    qCritical() << "writeBookingToDB: Buchung fehlgeschlagen! Vertrag#: " << contractId << " Betrag: " << ctFromEuro(amount) << " Datum: " << date;;
-    return false;
+        RETURN_OK( true, qsl("Buchung erfolgreich"));
+    }  else
+        RETURN_ERR( false, qsl("Buchung gescheitert"));
 }
 bool bookDeposit(const qlonglong contractId, QDate date, const double amount)
 {

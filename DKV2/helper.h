@@ -10,10 +10,33 @@ inline QString singleQuoted(const QString& s) { return qsl("'%1'").arg(s);}
 
 inline void expected_error (QString MSG) {QMessageBox::information(NULL, qsl("Fehler"), MSG); qInfo() << MSG;}
 
-template <typename t> t returnWithInfo( t returnvalue, QString info){
-    qInfo() << info;
+inline QString cat (QString s) { return s; }
+
+template <typename T, typename ...Ts>
+inline QString cat(T s1, Ts ... rest)
+{
+    return s1 +QStringLiteral(" _ ") +cat (rest ...);
+}
+/*
+template <typename ...TS>
+void log(TS&& ... args)
+{
+    QDebug out = qInfo().noquote();
+    ((out << std::forward<TS>(args)), ...);
+}
+*/
+template <typename t, typename ... TS>
+inline t returnLog(int sev, t returnvalue, TS ...args)
+{
+    if( sev == 0)
+        qInfo().noquote ()     << cat( args...);
+    else
+        qCritical().noquote () << cat(args...);
     return returnvalue;
-};
+}
+
+#define RETURN_OK(ret, ...)  return returnLog( 0, ret, __VA_ARGS__);
+#define RETURN_ERR(ret, ...) return returnLog( 1, ret, __VA_ARGS__);
 
 QString toString(const QBitArray &ba);
 QBitArray toQBitArray(const QString& s);

@@ -452,8 +452,7 @@ bool deleteDbView(const QString& name, const QSqlDatabase& db)
         qInfo() << "dropped view: " << name;
         return true;
     }
-    qInfo() << "drop view failed: " << name;
-    return false;
+    RETURN_OK( false, "drop view failed: ", name);
 }
 
 bool createDbViews( const QMap<QString, QString>& views, const QSqlDatabase& db)

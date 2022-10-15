@@ -30,32 +30,25 @@ void initNumMetaInfo( const QString& name, const double newValue, const QSqlData
         setNumMetaInfo(name, newValue, db);
 }
 QString getMetaInfo(const QString& name, const QString& def, const QSqlDatabase& db)
-{   LOG_CALL_W(name);
-    if( not db.isValid()) {
-        qInfo() << "getMetaInfo: No database ready (yet), defaulting";
-        return def;
-    }
+{
+    if( not db.isValid())
+        RETURN_OK(def, qsl("getMetaInfo: No database ready (yet), defaulting"));
+
     QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='%1'").arg(name), db);
-    if( not value.isValid()) {
-        qInfo() << "getMetaInfo: read uninitialized property " << name << " -> using default " << def;
-        return def;
-    }
-    qInfo() << "Property " << name << " : " << value;
-    return value.toString();
+    if( not value.isValid())
+        RETURN_OK( def, qsl("getMetaInfo: read uninitialized property "), qsl(" -> using default "), def);
+
+    RETURN_OK( value.toString(), qsl("getMetaInfo: Property "), value.toString ());
 }
 double getNumMetaInfo(const QString& name, const double def, const QSqlDatabase& db)
-{   LOG_CALL_W(name);
-    if( not db.isValid()){
-        qInfo() << "no database ready (yet), defaulting";
-        return def;
-    }
+{
+    if( not db.isValid())
+        RETURN_OK( def, qsl("getNumMetaInfo: No database ready (yet), defaulting"));
+
     QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='%1'").arg(name), db);
-    if( not value.isValid()) {
-        qInfo() << "getNumProperty read empty property " << name << " -> using default";
-        return def;
-    }
-    qInfo() << "Property " << name << " : " << value.toDouble();
-    return value.toDouble();
+    if( not value.isValid())
+        RETURN_OK( def, qsl("getNumMetaInfo: Read empty property "), name, qsl( "> using default"));
+    RETURN_OK( value.toDouble(), qsl("getNumMetaInfo: "), name, value.toString());
 }
 void setMetaInfo(const QString& name, const QString& value, const QSqlDatabase& db, const QString& tblAlias /*=QString()*/)
 {   LOG_CALL_W(name);

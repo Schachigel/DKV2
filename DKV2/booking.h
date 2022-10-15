@@ -64,15 +64,11 @@ struct booking
     static const dbtable& getTableDef();
     static const dbtable& getTableDef_deletedBookings();
 
-    friend bool bookDeposit(   const qlonglong contractId, QDate date, const double amount);
-    friend bool bookPayout(    const qlonglong contractId, QDate date, const double amount);
-    friend bool bookReInvestInterest(const qlonglong contractId, QDate date, const double amount);
-    friend bool bookAnnualInterestDeposit( const qlonglong contractId, QDate date, const double amount);
-    friend bool bookInterestActive(const qlonglong contractId, QDate date);
-private:
-    friend bool writeBookingToDB( bookingType , const qlonglong contractId, QDate date, const double amount);
+    QString toString() const;
 };
 Q_DECLARE_TYPEINFO(booking, Q_PRIMITIVE_TYPE );
+
+bool writeBookingToDB(bookingType, const qlonglong, QDate, const double);
 
 bool bookDeposit(   const qlonglong contractId, QDate date, const double amount);
 bool bookPayout(    const qlonglong contractId, QDate date, const double amount);

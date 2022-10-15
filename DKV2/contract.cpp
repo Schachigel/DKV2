@@ -174,11 +174,11 @@ const booking contract::latestBooking()
         arg(id_aS(), isTerminated ? "exBuchungen" : "Buchungen")};
     QSqlRecord rec = executeSingleRecordSql(sql);
     if( 0 == rec.count()) {
-        return returnWithInfo( booking(), "latestBooking returns empty value");
+        RETURN_OK( booking(), qsl("latestBooking returns empty value"));
     }
     booking latestB(id(), bookingType(rec.value(qsl("BuchungsArt")).toInt()), rec.value(qsl("Datum")).toDate(), euroFromCt(rec.value(qsl("Betrag")).toInt()));
-    qDebug() << "Latest Booking: " << bookingTypeDisplayString(latestB.type) << ", " << latestB.date << ", " << latestB.amount << ", cId:" << latestB.contractId;
-    return latestB;
+    RETURN_OK (latestB, qsl("Latest Booking:"), bookingTypeDisplayString(latestB.type), latestB.date.toString (Qt::ISODate),
+                         d2euro(latestB.amount), qsl("cId:"), i2s(latestB.contractId));
 }
 
 // write to db
@@ -187,37 +187,34 @@ int  contract::saveNewContract()
     int lastid =td.InsertRecord();
     if( lastid >= 0) {
         setId(lastid);
-        qDebug() << "Neuer Vertrag wurde eingefügt mit id:" << lastid;
-        return lastid;
+        RETURN_OK( lastid, qsl("Neuer Vertrag wurde eingefügt mit id:"), i2s(lastid));
     }
-    qCritical() << "Fehler beim Einfügen eines neuen Vertrags";
-    return -1;
+    RETURN_ERR( -1, qsl("Fehler beim Einfügen eines neuen Vertrags"));
 }
 bool contract::updateComment(const QString &c)
-{   LOG_CALL;
-    return td.updateValue(fnAnmerkung, c, id());
+{
+    RETURN_OK( td.updateValue(fnAnmerkung, c, id()), qsl("Contract Comment updated"));
 }
 bool contract::updateTerminationDate(QDate termination, int noticePeriod)
-{   LOG_CALL;
+{
     autoRollbackTransaction art;
     bool res =td.updateValue(fnKFrist, noticePeriod, id());
     res &= td.updateValue(fnLaufzeitEnde, termination, id());
     if( res) {
         art.commit();
-        qInfo() << "successfully updated termination information";
+        RETURN_OK( res, qsl("Successfully updated termination information"));
     } else {
-        qCritical() << "failed to update termination information";
+        RETURN_ERR(res, qsl("Sailed to update termination information"));
     }
-    return res;
 }
 bool contract::updateInvestment(qlonglong investmentId)
-{   LOG_CALL;
-    return td.updateValue(fnAnlagenId, investmentId, id());
+{
+    RETURN_OK( td.updateValue(fnAnlagenId, investmentId, id()), qsl("Updated the contract investment ref"), i2s(investmentId));
 }
 bool contract::updateSetInterestActive()
-{   LOG_CALL;
+{
     // for now we only support activation but not deactivation
-    return td.updateValue(fnZAktiv, true, id());
+    RETURN_OK( td.updateValue(fnZAktiv, true, id()), qsl("activated interest payment"));
 }
 bool contract::deleteInactive() {
     QString sql=qsl("DELETE FROM Vertraege WHERE id=%1").arg( id_aS ());
