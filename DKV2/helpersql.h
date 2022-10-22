@@ -5,8 +5,8 @@
 
 #include "dbtable.h"
 
-extern const QString dbTypeName;
-extern const int SQLITE_minimalRowId;
+inline const QString dbTypeName{qsl("QSQLITE")};
+inline const int SQLITE_minimalRowId =1;
 
 struct dbCloser
 {   // RAII class for db connections
@@ -88,7 +88,7 @@ QString DbInsertableString(const QVariant &v);
 QString dbCreatetable_type(const QVariant::Type t);
 QString dbAffinityType(const QVariant::Type t);
 
-int rowCount(const QString& table, const QSqlDatabase& db =QSqlDatabase::database());
+int rowCount(const QString& table, const QString& where ="", const QSqlDatabase& db =QSqlDatabase::database());
 bool tableExists(const QString& tablename, const QSqlDatabase& db = QSqlDatabase::database());
 bool verifyTable( const dbtable& table, const QSqlDatabase& db);
 bool ensureTable(const dbtable& table, const QSqlDatabase& db =QSqlDatabase::database());

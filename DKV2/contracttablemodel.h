@@ -1,8 +1,6 @@
 #ifndef CONTRACTTABLEMODEL_H
 #define CONTRACTTABLEMODEL_H
 
-#include "pch.h"
-
 enum colmn_Pos {
     cp_vid,
     cp_Creditor_id,

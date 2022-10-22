@@ -1,14 +1,13 @@
 
-#include <QtTest>
-
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QString>
 
-#include "../DKV2/tabledatainserter.h"
-#include "../DKV2/dbtable.h"
-#include "../DKV2/dkdbhelper.h"
 #include "../DKV2/helper.h"
+#include "../DKV2/helpersql.h"
+#include "../DKV2/dkdbhelper.h"
+#include "../DKV2/dbtable.h"
+#include "../DKV2/tabledatainserter.h"
 
 #include "testhelper.h"
 #include "test_db.h"
@@ -72,7 +71,7 @@ void test_db::test_SimpleTableAddData()
     tdi.setValue("vname", QVariant("Holger"));
     tdi.setValue("nname", "Mairon");
     QVERIFY( -1 < tdi.InsertRecord());
-    QVERIFY(tableRecordCount("Ad") == 1);
+    QVERIFY(rowCount("Ad") == 1);
 }
 
 void test_db::test_createSimpleTable_wRefInt()
@@ -142,7 +141,7 @@ void test_db::test_addRecords_wDep()
     TableDataInserter tdi(s["p"]);
     tdi.setValue("name", "Holger");
     QVERIFY( 0 <= tdi.InsertRecord());
-    QVERIFY(tableRecordCount("p") == 1);
+    QVERIFY(rowCount("p") == 1);
 
     qDebug() << "add depending data sets" << qsl("\n");
     TableDataInserter tdiChild1(s["c"]);
@@ -174,7 +173,7 @@ void test_db::test_deleteRecord_wDep()
     TableDataInserter tdi(s["p"]);
     tdi.setValue("name", "Holger");
     QVERIFY( 0<= tdi.InsertRecord());
-    QVERIFY(tableRecordCount("p") == 1);
+    QVERIFY(rowCount("p") == 1);
 
     qDebug() << "add depending data sets" << qsl("\n");
     TableDataInserter tdiChild1(s["c"]);
@@ -183,14 +182,14 @@ void test_db::test_deleteRecord_wDep()
     TableDataInserter tdiChild2(s["c"]);
     tdiChild2.setValue("pid", QVariant(1)); // second child to matching parent in table p
     QVERIFY( 0<= tdiChild2.InsertRecord());
-    QVERIFY(tableRecordCount("p") == 1);
-    QVERIFY(tableRecordCount("c") == 2);
+    QVERIFY(rowCount("p") == 1);
+    QVERIFY(rowCount("c") == 2);
 
     qDebug() << "removing connected datasets" << qsl("\n");
     QSqlQuery deleteQ;
     deleteQ.exec("DELETE FROM p WHERE id = 1");
-    QVERIFY(tableRecordCount("p") == 0);
-    QVERIFY(tableRecordCount("c") == 0);
+    QVERIFY(rowCount("p") == 0);
+    QVERIFY(rowCount("c") == 0);
 }
 
 void test_db::newDbIsValid()

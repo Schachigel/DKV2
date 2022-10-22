@@ -1,7 +1,4 @@
 
-#include <QGuiApplication>
-#include <QList>
-#include <QTest>
 
 #include <vector>
 #include "../DKV2/helper.h"
@@ -48,10 +45,10 @@ int main(int argc, char *argv[])
     int executions =1;
     do {
         // in memory db
-//        tests.push_back(new test_booking);
+        tests.push_back(new test_booking);
 //        tests.push_back(new test_appConfig);
 //        tests.push_back(new test_creditor);
-//        tests.push_back(new test_contract);
+        tests.push_back(new test_contract);
 //        tests.push_back(new test_statistics);
 //        tests.push_back(new test_db);
 //        tests.push_back(new test_dkdbhelper);
@@ -59,7 +56,7 @@ int main(int argc, char *argv[])
 //        tests.push_back(new test_sqlhelper);
 
         // no db
-        tests.push_back(new test_finance);
+//        tests.push_back(new test_finance);
 //        tests.push_back(new test_csv);
 //        tests.push_back(new test_dbfield);
 

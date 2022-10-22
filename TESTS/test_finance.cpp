@@ -1,9 +1,5 @@
 #include <iso646.h>
 
-#include <qtest.h>
-#include <QString>
-#include <QDebug>
-
 #include "../DKV2/helper.h"
 #include "../DKV2/helperfin.h"
 #include "../DKV2/ibanvalidator.h"
@@ -250,10 +246,10 @@ void test_finance::test_ZinsesZins_data()
 {
     QTest::addColumn<QDate>( "von");
     QTest::addColumn<QDate>( "bis");
-    QTest::addColumn<double>("zinssatz");
-    QTest::addColumn<double>("wert");
-    QTest::addColumn<double>("ZinsThesauriert");
-    QTest::addColumn<double>("Zins");
+    QTest::addColumn<double>("dZinssatz");
+    QTest::addColumn<double>("dWert");
+    QTest::addColumn<double>("dZinsThesauriert");
+    QTest::addColumn<double>("dZins");
 
     struct testdata
     {
@@ -329,16 +325,16 @@ void test_finance::test_ZinsesZins()
 {
     QFETCH(QDate,  von);
     QFETCH(QDate,  bis);
-    QFETCH(double, zinssatz);
-    QFETCH(double, wert);
-    QFETCH(double, ZinsThesauriert);
-    QFETCH(double, Zins);
+    QFETCH(double, dZinssatz);
+    QFETCH(double, dWert);
+    QFETCH(double, dZinsThesauriert);
+    QFETCH(double, dZins);
     QString msg("%3% Zinsen von %4 euro vom %1 bis %2, ");
-    msg = msg.arg(von.toString("dd.MM.yyyy"), bis.toString("dd.MM.yyyy"), QString::number(zinssatz), QString::number(wert));
+    msg = msg.arg(von.toString("dd.MM.yyyy"), bis.toString("dd.MM.yyyy"), QString::number(dZinssatz), QString::number(dWert));
     qDebug().noquote() <<  msg;
     // compare our calculation with the result from excel
-    QCOMPARE(ZinsesZins_30_360(zinssatz, wert, von, bis, true ), ZinsThesauriert);
-    QCOMPARE(ZinsesZins_30_360(zinssatz, wert, von, bis, false), Zins);
+    QCOMPARE(ZinsesZins_30_360(dZinssatz, dWert, von, bis, true ), dZinsThesauriert);
+    QCOMPARE(ZinsesZins_30_360(dZinssatz, dWert, von, bis, false), dZins);
     QCOMPARE(t_helper_lookupAnzTageZeitraum(von, bis), t_helper_TageImZeitraum(von, bis));
     int TageImErstenJahr=0;
     int JahreZwischen=0;
@@ -351,8 +347,8 @@ void test_finance::test_ZinsesZins()
     QCOMPARE(TageImErstenJahr, tageBis);
     QCOMPARE(JahreZwischen, ganzeJahre);
     QCOMPARE(TageImLetztenJahr, tageVon);
-    QCOMPARE(r2(t_helper_computeDkZinsen(wert, zinssatz, tageBis)), r2(double(TageImErstenJahr)/360. *zinssatz/100. *wert));
-    QCOMPARE(t_helper_computeDkZinsenZeitraum(wert, zinssatz, von, bis ), ZinsThesauriert);
+    QCOMPARE(r2(t_helper_computeDkZinsen(dWert, dZinssatz, tageBis)), r2(double(TageImErstenJahr)/360. *dZinssatz/100. *dWert));
+    QCOMPARE(t_helper_computeDkZinsenZeitraum(dWert, dZinssatz, von, bis ), dZinsThesauriert);
     qInfo()<< "\n------------------------------------------------------------------------------\n";
 }
 

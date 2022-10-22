@@ -272,13 +272,13 @@ void wpContractLableInfo_Page::initializePage()
     QRandomGenerator rand = *QRandomGenerator::system();
     setField(dbConfig::paramName(GMBH_INITIALS), dbConfig::readValue(GMBH_INITIALS));
     int startindex = rand.bounded(1000, 9999);
-    setField(dbConfig::paramName(STARTINDEX), QString::number(startindex));
+    setField(dbConfig::paramName(STARTINDEX), i2s(startindex));
 }
 
 bool wpContractLableInfo_Page::validatePage()
 {
     int startindex = field(dbConfig::paramName(STARTINDEX)).toInt();
-    setField(dbConfig::paramName(STARTINDEX), QString::number(startindex));
+    setField(dbConfig::paramName(STARTINDEX), i2s(startindex));
     QString project = field(dbConfig::paramName(GMBH_INITIALS)).toString();
     if (project.length() > 5)
         setField(dbConfig::paramName(GMBH_INITIALS), project.left(5));

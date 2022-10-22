@@ -1,11 +1,13 @@
 
-#include "creditor.h"
-#include "tabledatainserter.h"
+#include "helpersql.h"
+#include "helperfin.h"
 #include "helperfile.h"
 #include "appconfig.h"
+#include "tabledatainserter.h"
 #include "dkdbviews.h"
 #include "dkdbhelper.h"
 #include "dkdbcopy.h"
+#include "creditor.h"
 
 /*
 *  locally used helper functions
@@ -158,8 +160,8 @@ bool copy_mangledCreditors(const QSqlDatabase& db =QSqlDatabase::database())
         QSqlRecord rec = q.record();
         qDebug() << "de-Pers. Copy: working on Record #" << rec;
         tdi.setValue(creditor::fnId, rec.value(creditor::fnId));
-        tdi.setValue(creditor::fnVorname,  QVariant(creditor::fnVorname + QString::number(recCount)));
-        tdi.setValue(creditor::fnNachname, QVariant(creditor::fnNachname + QString::number(recCount)));
+        tdi.setValue(creditor::fnVorname,  QVariant(creditor::fnVorname + i2s(recCount)));
+        tdi.setValue(creditor::fnNachname, QVariant(creditor::fnNachname + i2s(recCount)));
         tdi.setValue(creditor::fnStrasse, creditor::fnStrasse);
         tdi.setValue(creditor::fnPlz, qsl("D-xxxxx"));
         tdi.setValue(creditor::fnStadt, qsl("Stadt"));

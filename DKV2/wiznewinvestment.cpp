@@ -1,13 +1,8 @@
 
 #include "helper.h"
 #include "appconfig.h"
-#include "wiznewinvestment.h"
 
-const QString pnVon =qsl("von");
-const QString pnBis =qsl("bis");
-const QString pnTyp =qsl("typ");
-const QString pnZSatz =qsl("zs");
-const QString pnKorrekt =qsl("OK");
+#include "wiznewinvestment.h"
 
 /* ////////////////////////////
   wpInvestmentSummary

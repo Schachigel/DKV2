@@ -2,9 +2,10 @@
 #define TESTHELPER_H
 
 #include <QTest>
+#include "../DKV2/helper.h"
 
-extern const QString testDbFilename;
-extern const QString testTemplateDb;
+inline const QString testDbFilename {qsl("../data/testdb.sqlite")};
+inline const QString testTemplateDb {qsl("../data/template.sqlite")};
 
 void getRidOfFile(QString fn);
 void initTestDb_InMemory();
@@ -21,7 +22,7 @@ void openDbConnection_InMemory();
 void openDbConnection(QString file =testDbFilename);
 void closeDbConnection( QSqlDatabase db =QSqlDatabase::database());
 void createEmptyFile(const QString& fn);
-int tableRecordCount(const QString& table, const QSqlDatabase& db =QSqlDatabase::database());
+//int tableRecordCount(const QString& table, const QSqlDatabase& db =QSqlDatabase::database());
 bool dbHasTable(const QString& tname, const QSqlDatabase& db =QSqlDatabase::database());
 bool dbTableHasField(const QString& tname, const QString& fname, const QSqlDatabase &db =QSqlDatabase::database());
 bool dbsHaveSameTables(const QString &fn1, const QString &fn2);

@@ -276,9 +276,9 @@ QString proposeContractLabel()
     qlonglong nextId = dbConfig::readValue(STARTINDEX).toInt() + getHighestRowId(contract::tnContracts);
     QString kennung;
     do {
-        QString maxid = QString::number(nextId).rightJustified(6, '0');
+        QString maxid = i2s(nextId).rightJustified(6, '0');
         QString PI = qsl("DK-") + dbConfig::readValue(GMBH_INITIALS).toString();
-        kennung = PI + qsl("-") + QString::number(QDate::currentDate().year()) + qsl("-") + maxid;
+        kennung = PI + qsl("-") + i2s(QDate::currentDate().year()) + qsl("-") + maxid;
         if( isValidNewContractLabel(kennung))
             break;
         else
@@ -486,10 +486,10 @@ QVector<contractRuntimeDistrib_rowData> contractRuntimeDistribution()
     }
     QVector<contractRuntimeDistrib_rowData> ret;
     // .ret.push_back({"Zeitraum", "Anzahl", "Wert"});
-    ret.push_back({"Bis ein Jahr ", QString::number(AnzahlBisEinJahr), d2euro(SummeBisEinJahr)});
-    ret.push_back({"Ein bis fünf Jahre ", QString::number(AnzahlBisFuenfJahre), d2euro(SummeBisFuenfJahre)});
-    ret.push_back({"Länger als fünf Jahre ", QString::number(AnzahlLaenger), d2euro(SummeLaenger) });
-    ret.push_back({"Unbegrenzte Verträge ", QString::number(AnzahlUnbegrenzet), d2euro(SummeUnbegrenzet) });
+    ret.push_back({"Bis ein Jahr ",          i2s(AnzahlBisEinJahr), d2euro(SummeBisEinJahr)});
+    ret.push_back({"Ein bis fünf Jahre ",    i2s(AnzahlBisFuenfJahre), d2euro(SummeBisFuenfJahre)});
+    ret.push_back({"Länger als fünf Jahre ", i2s(AnzahlLaenger), d2euro(SummeLaenger) });
+    ret.push_back({"Unbegrenzte Verträge ",  i2s(AnzahlUnbegrenzet), d2euro(SummeUnbegrenzet) });
     return ret;
 }
 
@@ -580,11 +580,10 @@ FROM temp
     for( int i=0; i< rec.size (); i++) {
         QStringList zeile;
         int col =1;
-        // zeile.push_back (QString::number(rec[i].value(col++).toInt())); // AnlagenId
         QString anlage =qsl("%1 (%2%)").arg(rec[i].value(col++).toString());
-        zeile.push_back (anlage.arg(QString::number(rec[i].value(col++).toInt ()/100.))); // Anlagenbez.
+        zeile.push_back (anlage.arg(i2s(rec[i].value(col++).toInt ()/100.))); // Anlagenbez.
         zeile.push_back (rec[i].value(col++).toDate().toString ("dd.MM.yyyy")); // Buchungsdatum
-        zeile.push_back (QString::number(rec[i].value(col++).toInt())); // Anzahl Buchungen
+        zeile.push_back (i2s(rec[i].value(col++).toInt())); // Anzahl Buchungen
         zeile.push_back (d2euro(rec[i].value(col++).toDouble ())); // buchungen zu diesem Buchungsdatum
         zeile.push_back (decorateHighValues (rec[i].value(col++).toDouble ())); // Wert nur Einzahlungen
         zeile.push_back (decorateHighValues (rec[i].value(col++).toDouble ())); // Wert incl. Zinsen

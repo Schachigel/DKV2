@@ -77,7 +77,7 @@ struct contract
     // getter & setter
     void setId(qlonglong id) { td.setValue(qsl("id"), id);}
     qlonglong id() const { return td.getValue(qsl("id")).toLongLong();}
-    QString id_aS()   const { return QString::number(id());}
+    QString id_aS()   const { return i2s(id());}
     void setCreditorId(qlonglong kid) {td.setValue(fnKreditorId, kid);}
     qlonglong creditorId() const{ return td.getValue(fnKreditorId).toLongLong();}
     void setLabel(const QString &l) { td.setValue(fnKennung, l); }
@@ -132,7 +132,6 @@ struct contract
     bool updateComment(const QString&);
     bool updateTerminationDate(QDate termination, int noticePeriod);
     bool updateInvestment(qlonglong id);
-    bool updateSetInterestActive();
     bool deleteInactive();
 
     // contract activation
@@ -157,6 +156,8 @@ struct contract
     // allow contract objects from deleted contracts
     bool isTerminated =false;
 private:
+    bool updateSetInterestActive();
+
     // data
     TableDataInserter td;
     // helper
@@ -170,8 +171,6 @@ private:
 
 // contract helper
 bool deleteContractFromDB(const qlonglong id);
-
-
 
 
 // test helper

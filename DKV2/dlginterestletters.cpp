@@ -36,7 +36,7 @@ dlgInterestLetters::dlgInterestLetters(QWidget *parent, QVector<int> years) : QD
     QLabel *yearLabel = new QLabel(qsl("Jahr"));
     yearSelector = new QComboBox;
     for( const auto& year: years) {
-        yearSelector->addItem (QString::number(year), year);
+        yearSelector->addItem (i2s(year), year);
     }
 
     g->addWidget(yearLabel, row, 1);

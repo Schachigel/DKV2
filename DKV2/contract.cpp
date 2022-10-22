@@ -67,7 +67,8 @@
 }
 
 // construction
-contract::contract(qlonglong contractId, bool isTerminated) : td(getTableDef())
+contract::contract(qlonglong contractId /*=-1*/, bool isTerminated /*=false*/)
+    : td(getTableDef())
 {
     initContractDefaults();
     if( contractId < SQLITE_minimalRowId)
@@ -78,15 +79,15 @@ contract::contract(qlonglong contractId, bool isTerminated) : td(getTableDef())
         loadFromDb(contractId);
 }
 void contract::loadFromDb(qlonglong id)
-{   LOG_CALL_W(QString::number(id));
-    QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), "id=" + QString::number(id));
+{   LOG_CALL_W(i2s(id)); // id_aS() is not initialized yet!!
+    QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), qsl("id=") + i2s(id));
     if (not td.setValues(rec))
         qCritical() << "contract from id could not be created";
 }
 void contract::loadExFromDb(qlonglong id)
-{ LOG_CALL_W(QString::number(id));
+{   LOG_CALL_W(i2s(id));
     isTerminated =true;
-    QSqlRecord rec = executeSingleRecordSql(getTableDef_deletedContracts ().Fields(), "id=" + QString::number(id));
+    QSqlRecord rec = executeSingleRecordSql(getTableDef_deletedContracts ().Fields(), qsl("id=") + i2s(id));
     if (not td.setValues(rec))
         qCritical() << "exContract from id could not be created";
 }
@@ -105,15 +106,15 @@ void contract::initContractDefaults(const qlonglong CREDITORid /*=-1*/)
     isTerminated =false;
 }
 void contract::initRandom(qlonglong creditorId)
-{   //LOG_CALL_W(QString::number(creditorId));
+{
     static QRandomGenerator *rand = QRandomGenerator::system();
     setLabel(proposeContractLabel());
     setCreditorId(creditorId);
-    setInterestModel(interestModelFromInt(rand->bounded(100)%3));
+    setInterestModel(interestModelFromInt(rand->bounded(100)%4));
     if( rand->bounded (1000)%15 == 0)
         setInterestRate (0.);
     else
-        setInterestRate(rand->bounded(25)* 0.15);
+        setInterestRate( rand->bounded(25)* 0.15);
     setPlannedInvest(    rand->bounded(50)  *1000.
                        + rand->bounded(1,3) *500.
                        + rand->bounded(10)  *100.);
@@ -132,9 +133,9 @@ void contract::initRandom(qlonglong creditorId)
 double contract::value(const QDate d) const
 {
     // what is the value of the contract at a given time?
-    QString where {qsl("VertragsId=%1 AND Datum <='%2'")};
-    where =where.arg(QString::number(id()), d.toString(Qt::ISODate));
-    QVariant v = executeSingleValueSql(qsl("SUM(Betrag)"), qsl("Buchungen"), where);
+    QString where {qsl("%1=%3 AND %2<='%4'").arg(fn_bVertragsId, fn_bDatum)};
+    where =where.arg(id_aS (), d.toString(Qt::ISODate));
+    QVariant v = executeSingleValueSql(qsl("SUM(Betrag)"), tn_Buchungen, where);
     if( v.isValid())
         return euroFromCt(v.toInt());
     return 0.;
@@ -142,10 +143,10 @@ double contract::value(const QDate d) const
 double contract::investedValue(const QDate d) const
 {
     // how many money was put into the contract by the creditor?
-    QString where{ qsl("VertragsId=%1 AND Datum <='%2' AND (Buchungsart=%3 OR Buchungsart=%4) ") };
-    where = where.arg(QString::number(id()), d.toString(Qt::ISODate),
-        bookingTypeToString(bookingType::deposit),
-        bookingTypeToString(bookingType::payout));
+    QString where{ qsl("%1=%5 AND %2<='%6' AND (%3=%7 OR %3=%8) ").arg(fn_bVertragsId, fn_bDatum, fn_bBuchungsArt) };
+    where = where.arg(id_aS(), d.toString(Qt::ISODate),
+        bookingTypeToNbrString(bookingType::deposit),
+        bookingTypeToNbrString(bookingType::payout));
     QVariant v = executeSingleValueSql(qsl("SUM(Betrag)"), qsl("Buchungen"), where);
     if (v.isValid())
         return euroFromCt(v.toInt());
@@ -170,13 +171,13 @@ double contract::interestBearingValue() const
 }
 const booking contract::latestBooking()
 {
-    QString sql {qsl("SELECT id, VertragsId, Datum, BuchungsArt, Betrag FROM %2 WHERE VertragsId=%1 ORDER BY rowid DESC LIMIT 1").
-        arg(id_aS(), isTerminated ? "exBuchungen" : "Buchungen")};
+    QString sql {qsl("SELECT id, %1, %2, %3, %4 FROM %6 WHERE %1=%5 ORDER BY rowid DESC LIMIT 1").
+        arg(fn_bVertragsId, fn_bDatum, fn_bBuchungsArt, fn_bBetrag, id_aS(), isTerminated ? tn_ExBuchungen : tn_Buchungen)};
     QSqlRecord rec = executeSingleRecordSql(sql);
     if( 0 == rec.count()) {
         RETURN_OK( booking(), qsl("latestBooking returns empty value"));
     }
-    booking latestB(id(), bookingType(rec.value(qsl("BuchungsArt")).toInt()), rec.value(qsl("Datum")).toDate(), euroFromCt(rec.value(qsl("Betrag")).toInt()));
+    booking latestB(id(), bookingType(rec.value(fn_bBuchungsArt).toInt()), rec.value(fn_bDatum).toDate(), euroFromCt(rec.value(fn_bBetrag).toInt()));
     RETURN_OK (latestB, qsl("Latest Booking:"), bookingTypeDisplayString(latestB.type), latestB.date.toString (Qt::ISODate),
                          d2euro(latestB.amount), qsl("cId:"), i2s(latestB.contractId));
 }
@@ -251,47 +252,38 @@ bool contract::bookInitialPayment(const QDate date, double amount)
     } else if( amount < 0) {
         error =qsl("Invalid amount");
     }
-    if ( error.size()) {
-        qCritical() << error;
-        return false;
-    }
+    if ( error.size())
+        RETURN_ERR( false, error)
 
-    if ( bookDeposit(id(), actualBookingDate, amount)) {
-        qInfo() << "Successfully activated contract " << id_aS() << "[" << actualBookingDate << ", " << amount << " Euro]";
-        return true;
-    }
-    qCritical() << "Failed to execut activation on contract " << id_aS() << qsl(" [") << actualBookingDate.toString() << qsl(", ") << QString::number(amount) << qsl("]");
+    if ( bookDeposit(id(), actualBookingDate, amount))
+            RETURN_OK( true, qsl("Successfully activated contract "), id_aS(), qsl("["), actualBookingDate.toString (Qt::ISODate), d2euro(amount));
+
+    RETURN_ERR( false, qsl("Failed to execut activation on contract "), id_aS(), qsl(" ["), actualBookingDate.toString() , d2euro(amount), qsl("]"));
     return false;
 }
 bool contract::initialBookingReceived() const
 {
     // there should be one deposits in the bookings list
     // there might be "interest activation" bookings?
-    QString sql = qsl("SELECT count(*) FROM Buchungen WHERE VertragsId=%1 AND BuchungsArt=%2").arg(id_aS (), bookingTypeToString(bookingType::deposit));
-    return (0 < executeSingleValueSql(sql).toInt());
+    QString where= qsl("%1=%2 AND %3=%4")
+            .arg( fn_bVertragsId, id_aS (), fn_bBuchungsArt, bookingTypeToNbrString(bookingType::deposit));
+    return (0 < rowCount (tn_Buchungen, where));
 }
 bool contract::bookActivateInterest(const QDate d)
-{   LOG_CALL_W(d.toString());
-
+{
     autoRollbackTransaction art;
-    if ( latestBooking().date >= d) {
-        qCritical() << "could not activate interest on same data or after as last booking";
-        return false;
-    }
-    if( not bookInBetweenInterest(d)) {
-        qCritical() << "could not book inbetween interest on ";
-        return false;
-    }
+    if ( latestBooking().date >= d)
+        RETURN_ERR( false, qsl("could not activate interest on same data or after as last booking"));
+    if( not bookInBetweenInterest(d))
+        RETURN_ERR( false, qsl("could not book inbetween interest on "));
     if( updateSetInterestActive() // update contract
             &&
         bookInterestActive(id(), d)) // insert booking
     {
         art.commit();
-        qInfo() << "activated interest payment for contract " << id_aS() << " successfully";
-        return true;
+        RETURN_OK( true, qsl("successfully activated interest payment for contract "), id_aS())
     }
-    qCritical() << "failed to activate interest payment for contract " << id_aS();
-    return false;
+    RETURN_ERR( false, qsl("failed to activate interest payment for contract "), id_aS());
 }
 
 // booking actions
@@ -306,7 +298,7 @@ QDate contract::nextDateForAnnualSettlement()
         return QDate(lastB.date.year() +1, 12, 31);
     }
     if( lastB.type == bookingType::deposit
-            && bookings::getBookings (id()).count () == 1
+            && getBookings (id()).count () == 1
             && lastB.date.month() == 12
             && lastB.date.day () == 31) {
         {
@@ -322,36 +314,33 @@ QDate contract::nextDateForAnnualSettlement()
         if((lastB.date.month() == 1 and lastB.date.day() == 1))
             return QDate(lastB.date.addDays(-1).addYears(1));
     }
-//    Q_ASSERT( not ((lastB.date.month() == 12) and (lastB.date.day() == 31)));
     // for deposits, payouts, activations we return year end of the same year
     return QDate(lastB.date.year(), 12, 31);
 }
 bool contract::needsAnnualSettlement(const QDate intendedNextBooking)
-{   LOG_CALL_W(intendedNextBooking.toString());
-
+{
     const booking lastB =latestBooking();
     if( lastB.type == bookingType::non) // inactive contract
-        return false;
+        RETURN_OK( false, __FUNCTION__, qsl("inactive contract: no annual settlement needed"));
 
-    if(  lastB.date >= intendedNextBooking) {
-        qInfo() << "Latest booking date too young for this settlement " << lastB.date;
-        return false;
-    }
+    if(  lastB.date >= intendedNextBooking)
+        RETURN_OK( false, __FUNCTION__, qsl("Latest booking date too young for this settlement "),
+                   lastB.date.toString (Qt::ISODate));
     // annualInvestments are at the last day of the year
     // we need a settlement if the latest booking was in the last year
     // or it was the settlement of the last year
-    if( lastB.date.year() == intendedNextBooking.year()) {
-        qInfo() << "intended Next booking is not in the same year as next booking " << lastB.date << " / " << intendedNextBooking;
-        return false;
-    }
-    if( lastB.date.addDays(1).year() == intendedNextBooking.year()) {
-        qInfo() << "intended Next booking is on jan 1st of next year after latest booking " << lastB.date << " / " << intendedNextBooking;
-        return false;
-    }
-    return true;
+    if( lastB.date.year() == intendedNextBooking.year())
+        RETURN_OK( false, __FUNCTION__, qsl("intended Next booking is not in the same year as next booking "),
+                   lastB.date.toString (Qt::ISODate), intendedNextBooking.toString (Qt::ISODate));
+
+    if( lastB.date.addDays(1).year() == intendedNextBooking.year())
+        RETURN_OK( false, __FUNCTION__, qsl("intended Next booking is on jan 1st of next year after latest booking "),
+                   lastB.date.toString (Qt::ISODate), intendedNextBooking.toString (Qt::ISODate));
+
+    RETURN_OK( true, __FUNCTION__, qsl("OK"));
 }
 int contract::annualSettlement( int year)
-{   LOG_CALL_W(QString::number(year));
+{   LOG_CALL_W(i2s(year));
     // es werden so lange Jahresabrechnungen durchgeführt, bis das Jahr "year" abgerechent ist
     Q_ASSERT(year);
 
@@ -431,6 +420,7 @@ bool contract::deposit(const QDate d, double amount, bool payoutInterest)
         return false;
     }
     if( not bookDeposit(id(), actualD, actualAmount)) {
+        qCritical() << "booking deposit failed -> rollback";
         QSqlDatabase::database().rollback();
         return false;
     }
@@ -618,7 +608,7 @@ QString contract::toString(const QString &title) const
     }
     stream << "Wert:     " << value() << qsl("\n");
     stream << "Zinssatz: " << interestRate() << qsl("\n");
-    stream << "Buchungen:" << bookings::getBookings(id()).count() << qsl("\n");
+    stream << "Buchungen:" << getNbrOfBookings (id()) << qsl("\n");
     return ret;
 }
 QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
@@ -631,7 +621,7 @@ QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
         toDate = latestB.date;
     v["id"] = id();
     v["strId"] = id_aS();
-    v["KreditorId"] = QString::number(creditorId());
+    v["KreditorId"] = i2s(creditorId());
     v["VertragsNr"] = label();
     if( not isTerminated) v["startBetrag"] = d2euro(value(fromDate));
     v["startDatum"] = fromDate.toString(qsl("dd.MM.yyyy"));
@@ -649,7 +639,7 @@ QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
     v["KFrist"] = hasEndDate() ? 0 : noticePeriod();
     v["Status"] = isTerminated ? "Laufend" : "Beendet";
     // get the relevant bookings for period
-    QVector<booking> bookVector = bookings::getBookings (id(), fromDate, toDate, qsl("Datum ASC"), isTerminated);
+    QVector<booking> bookVector = getBookings (id(), fromDate, toDate, qsl("Datum ASC"), isTerminated);
 
     QVariantList bl;
 
@@ -673,7 +663,7 @@ double contract::payedInterestAtTermination()
 {
     if( not isTerminated) return 0.;
     QString sql(qsl("SELECT Betrag FROM exBuchungen WHERE VertragsId=%1 AND BuchungsArt=%2 ORDER BY id DESC LIMIT 1"));
-    sql =sql.arg(id_aS (), bookingTypeToString(bookingType::reInvestInterest));
+    sql =sql.arg(id_aS (), bookingTypeToNbrString(bookingType::reInvestInterest));
     return euroFromCt(executeSingleValueSql(sql).toInt());
 }
 double contract::payedAnnualInterest(int year)
@@ -682,7 +672,7 @@ double contract::payedAnnualInterest(int year)
         return 0;
 
     QString sql{qsl("SELECT SUM(Betrag) FROM Buchungen WHERE VertragsId=%1 AND BuchungsArt=%2 AND substr(Buchungen.Datum, 1, 4)='%3'")};
-    sql =sql.arg(id_aS(), bookingTypeToString(bookingType::annualInterestDeposit), QString::number(year));
+    sql =sql.arg(id_aS(), bookingTypeToNbrString(bookingType::annualInterestDeposit), i2s(year));
     return euroFromCt(executeSingleValueSql (sql).toInt());
 }
 
@@ -702,7 +692,10 @@ bool operator==(const contract& lhs, const contract& rhs)
         QString fname =table.Fields().value(i).name();
         if( fname == qsl("Zeitstempel"))
             continue;
-        if( lhs.td.getValue(fname) == rhs.td.getValue(fname))
+        if( (lhs.td.getValue(fname) == rhs.td.getValue(fname))
+                &&
+           (lhs.td.getValue(fname).type () == rhs.td.getValue(fname).type ()))
+            // QVariant comparison might convert QString to numbers
             continue;
         else {
             qInfo() << "contract field missmatch " << fname << ": " << lhs.td.getValue(fname) << " / " << rhs.td.getValue(fname);
@@ -740,6 +733,8 @@ QDate activateRandomContracts(const int percent)
     if( percent < 0 or percent > 100) return minimumActivationDate;
 
     QVector<QSqlRecord> contractData = executeSql(contract::getTableDef().Fields());
+// todo: read only the ids!
+// all data will be availabel in the loop from the contract object!!
     int activations = contractData.count() * percent / 100;
     static QRandomGenerator* rand = QRandomGenerator::system();
 

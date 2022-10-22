@@ -13,15 +13,15 @@ struct statSet {
         QString msg;
         do {
             if( nbrContracts not_eq b.nbrContracts)
-                msg +=qsl("\nNbr of contracts differ: %1 / %2").arg(QString::number(nbrContracts), QString::number(b.nbrContracts));
+                msg +=qsl("\nNbr of contracts differ: %1 / %2").arg(i2s(nbrContracts), i2s(b.nbrContracts));
             if( nbrCreditors not_eq b.nbrCreditors)
-                msg +=qsl("\nNbr of creditors differ: %1 / %2").arg(QString::number(nbrCreditors), QString::number(b.nbrCreditors));
+                msg +=qsl("\nNbr of creditors differ: %1 / %2").arg(i2s(nbrCreditors), i2s(b.nbrCreditors));
             if( volume not_eq b.volume)
-                msg +=qsl("\nCredit volumes differ: %1 / %2").arg(QString::number(volume), QString::number(b.volume));
+                msg +=qsl("\nCredit volumes differ: %1 / %2").arg(i2s(volume), i2s(b.volume));
             if( interest not_eq b.interest)
-                msg +=qsl("\nInterest values differ: %1 / %2").arg(QString::number(interest), QString::number(b.interest));
+                msg +=qsl("\nInterest values differ: %1 / %2").arg(i2s(interest), i2s(b.interest));
             if( avgInterest not_eq b.avgInterest)
-                msg +=qsl("\navgInterest values differ: %1 / %2").arg(QString::number(avgInterest), QString::number(b.avgInterest));
+                msg +=qsl("\navgInterest values differ: %1 / %2").arg(i2s(avgInterest), i2s(b.avgInterest));
         } while(false);
         if( msg.isEmpty())
             return true;

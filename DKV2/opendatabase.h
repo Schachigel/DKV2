@@ -1,8 +1,6 @@
 #ifndef OPENDATABASE_H
 #define OPENDATABASE_H
 
-#include "pch.h"
-
 bool askUserForNextDb();
 
 bool openDB_atStartup();

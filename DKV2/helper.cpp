@@ -3,12 +3,6 @@
 
 QFile* outFile_p{nullptr};
 int functionlogging::depth =0;
-const QDate EndOfTheFuckingWorld =QDate(9999, 12, 31);
-const QString EndOfTheFuckingWorld_str {qsl("9999-12-31")};
-const QDate BeginingOfTime =QDate(1900, 1, 1);
-const int daysUntilTheEndOfTheFuckingWorld =2916000;
-
-
 
 QString toString(const QBitArray& ba)
 {
@@ -60,7 +54,7 @@ void logger(QtMsgType type, const QMessageLogContext &, const QString &msg)
             abort();
     }
 
-    static QHash<QtMsgType, QString> msgLevelHash({{QtDebugMsg, qsl("DBuG")}, {QtInfoMsg, qsl("INFo")}, {QtWarningMsg, qsl("WaRN")}, {QtCriticalMsg, qsl("ERRo")}, {QtFatalMsg, qsl("FaTl")}});
+    static QHash<QtMsgType, QString> msgLevelHash({{QtDebugMsg, qsl("DBuG")}, {QtInfoMsg, qsl("INFo")}, {QtWarningMsg, qsl("WaRN")}, {QtCriticalMsg, qsl("ERRo")}, {QtFatalMsg, qsl("FaIl")}});
 
     QString endlCorrectedMsg (msg);
     int lfCount = 0;

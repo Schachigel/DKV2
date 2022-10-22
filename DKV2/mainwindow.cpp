@@ -5,11 +5,9 @@
 #include <stdlib.h>
 #endif
 
-// the qt header for preCompiled Header feature
-#include "pch.h"
-
 #include "busycursor.h"
 #include "helperfile.h"
+#include "helpersql.h"
 #include "appconfig.h"
 #include "creditor.h"
 #include "investment.h"
@@ -400,9 +398,9 @@ void MainWindow::on_btnCreateFromContracts_clicked()
     if( newInvestments) {
         int i =automatchInvestmentsToContracts();
         if( i not_eq newInvestments)
-            qCritical() << qsl("nicht alle Verträgen (%1) konnten Anlagen (%2) zugeordnet werden").arg(QString::number(i), QString::number(newInvestments));
+            qCritical() << qsl("nicht alle Verträgen (%1) konnten Anlagen (%2) zugeordnet werden").arg(i2s(i), i2s(newInvestments));
 
-        QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden ") +QString::number(newInvestments) +qsl(" Anlage(n) angelegt."));
+        QMessageBox::information(this, qsl("Neue Anlageformen"), qsl("Es wurden ") +i2s(newInvestments) +qsl(" Anlage(n) angelegt."));
         prepare_investmentsListView();
     }
     else
@@ -437,7 +435,7 @@ void MainWindow::on_btnAutoMatch_clicked()
     int i =automatchInvestmentsToContracts();
     b.finish ();
     QMessageBox::information(this, qsl("Zugeordnete Verträge"),
-                             qsl("Es wurden %1 Verträge passenden Geldanlagen zugeordnet.").arg(QString::number(i)));
+                             qsl("Es wurden %1 Verträge passenden Geldanlagen zugeordnet.").arg(i2s(i)));
     b.set();
     prepare_investmentsListView();
 }
@@ -603,7 +601,7 @@ void MainWindow::updateUebersichtView(int uebersichtIndex)
 }
 
 void MainWindow::on_comboUebersicht_currentIndexChanged(int i)
-{   LOG_CALL_W(QString::number(i));
+{   LOG_CALL_W(i2s(i));
     if(i == -1)
         return;
     busycursor b;
@@ -654,7 +652,7 @@ QString bookingDateDesc( const BookingDateData &bdd)
     else {
         QString line {qsl("%1  <small>(%2, und %3 weitere)  </small>")};
         return line.arg(date, descriptionFromType(bdd.type),
-                        QString::number(bdd.count-1));
+                        i2s(bdd.count-1));
     }
 }
 
@@ -866,7 +864,7 @@ void MainWindow::on_actionTEST_triggered()
     LOG_CALL;
 //    // input nec. to display the dialog: a Vector of bookings
 //    toBePrinted.clear();
-//    toBePrinted = bookings::getAnnualSettelments(2019);
+//    toBePrinted = getAnnualSettelments(2019);
 //    if ( not toBePrinted.size()) {
 //        qWarning() << "nothing to be printed";
 //        return;
@@ -885,7 +883,7 @@ QString letterName(const booking &b)
     contract cont(b.contractId);
     creditor cred(cont.creditorId());
     QString lettertype = bookingTypeDisplayString(b.type) +qsl(" ");
-    lettertype += (b.type == bookingType::annualInterestDeposit) ? QString::number(b.date.year() - 1) : b.date.toString();
+    lettertype += (b.type == bookingType::annualInterestDeposit) ? i2s(b.date.year() - 1) : b.date.toString();
 
     txt = txt.arg(cred.lastname(), cred.firstname(), cont.label(), lettertype);
     return txt;

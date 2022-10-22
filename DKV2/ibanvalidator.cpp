@@ -1,5 +1,6 @@
 
 #include "helper.h"
+#include "helperfin.h"
 #include "ibanvalidator.h"
 
 IbanValidator* IbanValidator::globalValidator =nullptr;
@@ -46,7 +47,7 @@ bool checkIban(QString iban)
         if (character.isDigit())
             ibanNumeric.append(character);
         else
-            ibanNumeric.append(QString::number(character.toLatin1() - QChar(QLatin1Char('A')).toLatin1() + 10));}
+            ibanNumeric.append(i2s(character.toLatin1() - QChar(QLatin1Char('A')).toLatin1() + 10));}
     if (IbanValidator::mod97(ibanNumeric) == 1)
         return true;
     else
@@ -81,7 +82,7 @@ IbanValidator::State IbanValidator::validate(QString& input, int& pos) const
         if (character.isDigit())
             ibanNumeric.append(character);
         else
-            ibanNumeric.append(QString::number(character.toLatin1() - QChar(QLatin1Char('A')).toLatin1() + 10));}
+            ibanNumeric.append(i2s(character.toLatin1() - QChar(QLatin1Char('A')).toLatin1() + 10));}
     if (mod97(ibanNumeric) == 1)
         return QValidator::Acceptable;
     else

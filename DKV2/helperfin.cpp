@@ -11,8 +11,8 @@ int TageZwischen_30_360(QDate von, QDate bis)
         qCritical() << __FUNCTION__ << " ungültige Argumente: " << von << " - " << bis;
         return -1;
     }
-    Q_ASSERT(bis > von);
     if( bis == von) return 0;
+    Q_ASSERT(bis > von);
     if( bis.day() == 31)
         return TageZwischen_30_360(von, QDate(bis.year(), bis.month(), 30));
     if( von.day() == 31)

@@ -26,7 +26,6 @@ void wpInitialPayment_IntroPage::initializePage()
     subTitleLabel->setText(subtitle.arg(wiz->label, wiz->creditorName));
 }
 
-QString fnDate {qsl("date")};
 wpInitialPayment_DatePage::wpInitialPayment_DatePage(QWidget* p) : QWizardPage(p)
 {
     subTitleLabel = new QLabel(qsl("Keine Daten!"));
@@ -59,7 +58,6 @@ bool wpInitialPayment_DatePage::validatePage()
     return true;
 }
 
-QString fnAmount {qsl("amount")};
 wpInitialPayment_AmountPage::wpInitialPayment_AmountPage(QWidget* p) : QWizardPage(p)
 {
     setTitle(qsl("Eingegangener Kreditbetrag"));

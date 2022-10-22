@@ -1,12 +1,15 @@
 
-#include "dbstructure.h"
-#include "appconfig.h"
-#include "booking.h"
-#include "creditor.h"
-#include "csvwriter.h"
 #include "helper.h"
 #include "helperfile.h"
 #include "helpersql.h"
+#include "appconfig.h"
+
+#include "csvwriter.h"
+#include "dbstructure.h"
+#include "filewriter.h"
+
+#include "booking.h"
+#include "creditor.h"
 #include "investment.h"
 
 #include "wizactivatecontract.h"
@@ -19,7 +22,6 @@
 #include "dlgaskdate.h"
 #include "dlgchangecontracttermination.h"
 #include "dlginterestletters.h"
-#include "filewriter.h"
 #include "transaktionen.h"
 #include "wiznew.h"
 #include "wiznewinvestment.h"
@@ -277,13 +279,13 @@ void print_as_csv( const QDate& bookingDate,  const QVector<contract>& changedCo
     }
     QString filename{qsl("%1_Jahresabrechnung-%2.csv")};
     filename = filename.arg(QDate::currentDate().toString(Qt::ISODate),
-                            QString::number(bookingDate.year ()));
+                            i2s(bookingDate.year ()));
     csv.saveAndShowInExplorer(filename);
 }
 }
 void annualSettlement() {
     LOG_CALL;
-    QDate bookingDate = bookings::dateOfnextSettlement();
+    QDate bookingDate = dateOfnextSettlement();
     if (not bookingDate.isValid() or bookingDate.isNull()) {
         QMessageBox::information(nullptr, qsl("Fehler"),
               qsl("Ein Jahr für die nächste Zinsberechnung "
@@ -345,7 +347,7 @@ void createInitialLetterTemplates() {
 
 int askUserForYearOfPrintouts() {
     LOG_CALL;
-    QVector<int> years = bookings::yearsWithAnnualBookings();
+    QVector<int> years = yearsWithAnnualBookings();
     if (years.size() == 0) {
         QMessageBox::information(
                     getMainWindow(), qsl("Keine Daten"),
@@ -371,7 +373,7 @@ void annualSettlementLetters() {
 
     busycursor bc;
     QVector<booking> annualBookings =
-            bookings::getAnnualSettelments(yearOfSettlement);
+            getAnnualSettelments(yearOfSettlement);
 
     if (annualBookings.size() == 0) {
         bc.finish();
@@ -408,7 +410,7 @@ void annualSettlementLetters() {
         QVector<QVariant> ids = executeSingleColumnSql(
                     dkdbstructur[contract::tnContracts][contract::fnId],
                 qsl(" %1=%2 GROUP BY id")
-                .arg(contract::fnKreditorId, QString::number(cred.first)));
+                .arg(contract::fnKreditorId, i2s(cred.first)));
 
         QVariantList vl;
         double payedInterest = 0.;
@@ -423,9 +425,9 @@ void annualSettlementLetters() {
         printData[qsl("Vertraege")] = vl;
 
         QString fileName = qsl("Jahresinfo ")
-                .append(QString::number(yearOfSettlement))
+                .append(i2s(yearOfSettlement))
                 .append(qsl("_"))
-                .append(QString::number(credRecord.id()))
+                .append(i2s(credRecord.id()))
                 .append(qsl("_"))
                 .append(credRecord.lastname())
                 .append(qsl(", "))
@@ -504,7 +506,7 @@ void cancelContract(contract &c) {
     wiz.c = c;
     wiz.creditorName = executeSingleValueSql(
                 qsl("Vorname || ' ' || Nachname"), qsl("Kreditoren"),
-                qsl("id=") + QString::number(c.creditorId()))
+                qsl("id=") + i2s(c.creditorId()))
             .toString();
     wiz.contractualEnd = QDate::currentDate().addMonths(c.noticePeriod());
     wiz.exec();

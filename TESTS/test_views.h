@@ -1,13 +1,7 @@
 #ifndef TEST_VIEWS_H
 #define TEST_VIEWS_H
 
-#include <QSqlDatabase>
-#include <QObject>
-
-#include "../DKV2/creditor.h"
-#include "../DKV2/contract.h"
-
-#include "testhelper.h"
+#include <QTest>
 
 class test_views : public QObject
 {

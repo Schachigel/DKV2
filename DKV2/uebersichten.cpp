@@ -1,4 +1,5 @@
 
+#include "helpersql.h"
 #include "helperfin.h"
 #include "appconfig.h"
 #include "dkdbviews.h"
@@ -126,7 +127,7 @@ int tablelayout::fillSectionData(QTextTable* table, const int secIndex, const in
 }
 
 int tablelayout::fillEmptyRow(QTextTable* table, const int row)
-{   LOG_CALL_W(QString::number(row));
+{   // LOG_CALL_W(i2s(row));
     QTextTableCell cell =table->cellAt(row, 0);
     setCellFormat( cell, emptyLine);
     table->mergeCells(row, 0, 1, table->columns());
@@ -180,7 +181,7 @@ void uebersichten::prep( const QString& head, const QString& desc)
 }
 
 void uebersichten::renderDocument( uebersichten::uetype t)
-{   LOG_CALL_W(QString::number(t));
+{   // LOG_CALL_W(i2s(t));
     switch (t){
     case uetype::SHORTINFO:
         renderShortInfo();
@@ -279,8 +280,8 @@ void uebersichten::renderContractsByContractEnd()
     calc_contractEnd(data);
     tablelayout::section sec;
     for( int i =0; i < data.count(); i++) {
-        sec.data.push_back(QStringList({QString::number(data[i].year),
-                                        QString::number(data[i].count),
+        sec.data.push_back(QStringList({i2s(data[i].year),
+                                        i2s(data[i].count),
                                        d2euro(data[i].value)}));
     }
     if( sec.data.count())

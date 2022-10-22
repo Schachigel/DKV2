@@ -14,7 +14,7 @@
 
 #include "mustache.h"
 
-#include "pch.h"
+
 //#include <QtCore/QDebug>
 //#include <QtCore/QFile>
 //#include <QtCore/QStringList>

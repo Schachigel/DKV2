@@ -64,7 +64,7 @@ bool creditor::operator==(const creditor& c) const
 bool creditor::fromDb( const qlonglong id)
 {   LOG_CALL;
 
-    QSqlRecord rec = executeSingleRecordSql(dkdbstructur[qsl("Kreditoren")].Fields(), qsl("id=")+QString::number(id));
+    QSqlRecord rec = executeSingleRecordSql(dkdbstructur[qsl("Kreditoren")].Fields(), qsl("id=")+i2s(id));
     if( rec.isEmpty()) return false;
 
     for(int i=0; i<rec.count(); i++)
@@ -167,7 +167,7 @@ bool creditor::remove()
     // [ creditor <-> contract ] On Delete Cascade
     // deletion with active contracts will fail due to ref. integrity contracts <> bookings
     // [ contract <-> booking ] On Delete Restrict
-    if( executeSql_wNoRecords(qsl("DELETE FROM Kreditoren WHERE Id=") +QString::number(index)))
+    if( executeSql_wNoRecords(qsl("DELETE FROM Kreditoren WHERE Id=") +i2s(index)))
         return true;
     else
         return false;
@@ -238,7 +238,7 @@ INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id
 INNER JOIN Kreditoren ON Vertraege.KreditorId = Kreditoren.id
 WHERE Buchungen.BuchungsArt = %1 AND SUBSTR(Buchungen.Datum, 1, 4) = '%2')
 ORDER BY Nachname ASC, Vorname ASC
-)str").arg(bookingTypeToString(bookingType::annualInterestDeposit), QString::number (bookingYear));
+)str").arg(bookingTypeToNbrString(bookingType::annualInterestDeposit), i2s(bookingYear));
 
     qDebug() << sql;
     if( not query.exec(sql)) {
@@ -298,7 +298,7 @@ creditor saveRandomCreditor()
     creditor c;
     c.setFirstname(Vornamen [rand->bounded(Vornamen.count ())]);
     c.setLastname(Nachnamen [rand->bounded(Nachnamen.count ())]);
-    c.setStreet(Strassen[rand->bounded(Strassen.count())] +QString::number(count++));
+    c.setStreet(Strassen[rand->bounded(Strassen.count())] +i2s(count++));
     int indexCity = rand->bounded(Cities.count());
     c.setPostalCode(Cities[indexCity].first);
     c.setCity(Cities[indexCity].second);

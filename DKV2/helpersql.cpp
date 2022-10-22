@@ -7,8 +7,8 @@
 #include "dbtable.h"
 
 
-const QString dbTypeName {qsl("QSQLITE")};
-const int SQLITE_minimalRowId =1;
+//const QString dbTypeName {qsl("QSQLITE")};
+//const int SQLITE_minimalRowId =1;
 
 bool autoDetachDb::attachDb(const QString& filename)
 {
@@ -52,7 +52,7 @@ QString DbInsertableString(const QVariant& v)
     case QVariant::UInt:
     case QVariant::LongLong:
     case QVariant::ULongLong:
-        return QString::number(v.toInt());
+        return i2s(v.toInt());
     default:
         qCritical() << "switch(v.type()) DEFAULTED " << v;
     }
@@ -112,25 +112,19 @@ QString dbAffinityType(const QVariant::Type t)
     }
 }
 
-int rowCount(const QString& table, const QSqlDatabase& db /* =QSqlDatabase::database() */)
+int rowCount(const QString& table, const QString& where, const QSqlDatabase& db /* =QSqlDatabase::database() */)
 {
-    QString sql;
-    if( table.startsWith(qsl("SELECT"), Qt::CaseInsensitive))
-        sql =qsl("SELECT count(*) FROM (%1)").arg(table);
-    else
-        sql =qsl("SELECT count(*) FROM ") +table;
+    QString sql {qsl("SELECT count(*) FROM [%1]").arg(table)};
+    if( not where.isEmpty ())
+        sql += qsl(" WHERE %1").arg(where);
 
     QSqlQuery q(sql, db);
-    if( q.first()){
-       int ret =q.value(0).toInt();
-       qDebug() << sql << " returned " << ret;
-       return ret;
-    }
-    else {
-        qCritical() << "row counting query failed" << q.lastError() << "\n" << q.lastQuery();
-        return -1;
-    }
+    if( q.first())
+        RETURN_OK( q.value(0).toInt(), qsl("rowCount"), sql)
+    else
+        RETURN_ERR(-1, qsl("rowCount"), q.lastError ().text (), q.lastQuery ());
 }
+
 bool tableExists(const QString& tablename, const QSqlDatabase& db)
 {
     return db.tables().contains(tablename);
@@ -280,7 +274,7 @@ QVector<QVariant> executeSingleColumnSql( const dbfield& field, const QString& w
         return QVector<QVariant>();
     }
     QString sql {qsl("SELECT %1 FROM %2 %3")};
-    sql = sql.arg(field.name(), field.tableName(), (where.isEmpty() ? qsl("") : (qsl(" WHERE ") + where)));
+    sql = sql.arg(field.name(), field.tableName(), (where.isEmpty() ? QString() : (qsl(" WHERE %1").arg( where))));
     QSqlQuery q;
     QVector<QVariant> result;
     if( q.exec(sql)){
@@ -355,15 +349,15 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
     qInfo() << "executeSql returns " << result;
     return result;
 }
-bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result, const QSqlDatabase& db /*= ...*/ )
+bool executeSql(const QString& sql, const QVariant& params, QVector<QSqlRecord>& result, const QSqlDatabase& db /*= ...*/ )
 {
     QSqlQuery q(db); q.setForwardOnly(true);
     if( not q.prepare(sql)) {
         qDebug() << "Faild to prep Query. Error:" << sql << q.lastError();
         return false;
     }
-    if( v.isValid())
-        q.bindValue(0, v);
+    if( params.isValid())
+        q.bindValue(0, params);
     if( q.exec()) {
         while(q.next()) {
             result.push_back(q.record());
@@ -421,7 +415,7 @@ bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& v, const
     }
     if( q.exec()) {
         qInfo().noquote () << "Successfully executed query " << q.lastQuery() << " with "
-        << (q.numRowsAffected() ? QString::number(q.numRowsAffected()) : qsl("no")) << qsl(" affected Rows");
+        << (q.numRowsAffected() ? i2s(q.numRowsAffected()) : qsl("no")) << qsl(" affected Rows");
         return true;
     }
     qDebug() << "Failed to execute query. Error: " << q.lastError() << "\n" << q.lastQuery() ;
@@ -472,7 +466,7 @@ bool createIndicesFromSQL( const QStringList Sqls, const QSqlDatabase& db)
         if( tablename.startsWith (qsl("sqlite"), Qt::CaseInsensitive))
             continue;
         else
-            executeSql_wNoRecords (qsl("DROP INDEX %1").arg(tablename), db);
+            executeSql_wNoRecords (qsl("DROP INDEX [%1]").arg(tablename), db);
     }
     for(int i=0; i < Sqls.count (); i++) {
         if( not executeSql_wNoRecords (Sqls[i], db))

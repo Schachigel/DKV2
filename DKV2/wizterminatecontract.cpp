@@ -20,7 +20,8 @@ wpTerminateContract_DatePage::wpTerminateContract_DatePage(QWidget* p) : QWizard
 void wpTerminateContract_DatePage::initializePage()
 {
     wizTerminateContract* wiz = qobject_cast<wizTerminateContract*>(wizard());
-    QString creditorName =executeSingleValueSql(qsl("Vorname || ' ' || Nachname"), qsl("Kreditoren"), qsl("id=") + QString::number(wiz->cont.creditorId())).toString();
+    QString creditorName =executeSingleValueSql(qsl("Vorname || ' ' || Nachname"), qsl("Kreditoren"), qsl("id=")
+                                                +i2s(wiz->cont.creditorId())).toString();
     QString Kennung =wiz->cont.label();
     QString subt {qsl("Mit dieser Dialogfolge kannst Du den Vertrag <p><b>%1</b> von <b>%2</b><p> beenden.<p>"
                 "Gib das Datum an, zu dem der Vertrag ausgezahlt wird. "

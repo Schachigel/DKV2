@@ -1,9 +1,6 @@
 #ifndef FINANCALTIMESPAN_H
 #define FINANCALTIMESPAN_H
 
-#include <QDate>
-#include <QMap>
-
 struct datediffs
 {
     int sinceBoY;

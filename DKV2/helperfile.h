@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #endif
 
-#include "pch.h"
+
 
 QString tempPathTemplateFromPath (const QString& path);
 QString getUniqueTempFilename(const QString& templateFileName);

@@ -6,10 +6,6 @@
 
 #include "testhelper.h"
 
-
-const QString testDbFilename {qsl("../data/testdb.sqlite")};
-const QString testTemplateDb {qsl("../data/template.sqlite")};
-
 void getRidOfFile(QString filename)
 {
     if( QFile::exists(filename))
@@ -107,18 +103,18 @@ void createEmptyFile(const QString& path)
     f.close();
 }
 
-int tableRecordCount( const QString& tname, const QSqlDatabase& db /*=QSqlDatabase::database()*/)
-{   // LOG_CALL_W(tname);
-    QSqlQuery q(db);
-    if (q.exec("SELECT COUNT(*) FROM " + tname)) {
-        q.first();
-        qDebug() << "#Datensätze: " << q.record().value(0).toInt();
-        return q.record().value(0).toInt();
-    } else {
-        qCritical() << "tableRecordCount: SELECT failed " << q.lastError() << "\n" << q.lastQuery() << qsl("\n");
-        return -1;
-    }
-}
+//int tableRecordCount( const QString& tname, const QSqlDatabase& db /*=QSqlDatabase::database()*/)
+//{   // LOG_CALL_W(tname);
+//    QSqlQuery q(db);
+//    if (q.exec("SELECT COUNT(*) FROM " + tname)) {
+//        q.first();
+//        qDebug() << "#Datensätze: " << q.record().value(0).toInt();
+//        return q.record().value(0).toInt();
+//    } else {
+//        qCritical() << "tableRecordCount: SELECT failed " << q.lastError() << "\n" << q.lastQuery() << qsl("\n");
+//        return -1;
+//    }
+//}
 
 bool dbHasTable(const QString& tname, const QSqlDatabase& db /*=QSqlDatabase::database()*/)
 {   LOG_CALL_W(tname);
@@ -161,8 +157,8 @@ bool dbsHaveSameTables(const QSqlDatabase &db1, const QSqlDatabase &db2)
     for (auto table: tl1) {
         if( tl2.contains(table)){
             qInfo() << "common table: " << table;
-            int rc1 =rowCount(table, db1);
-            int rc2 =rowCount(table, db2);
+            int rc1 =rowCount(table, "", db1);
+            int rc2 =rowCount(table, "", db2);
             if( rc1 not_eq rc2) {
                 qCritical() << "Tables " << table << " differ in rowCount: " << rc1 << " / " << rc2;
                 ret =false;

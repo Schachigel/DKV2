@@ -1,17 +1,18 @@
 
-#include "creditor.h"
-#include "contract.h"
-#include "booking.h"
-#include "investment.h"
-#include "letterTemplate.h"
-
 #include "helper.h"
 #include "helperfile.h"
 #include "helpersql.h"
 #include "dbstructure.h"
 #include "dkdbhelper.h"
 
-dbstructure dkdbstructur;
+#include "creditor.h"
+#include "contract.h"
+#include "booking.h"
+#include "investment.h"
+#include "letterTemplate.h"
+
+
+// dbstructure dkdbstructur;
 
 dbstructure dbstructure::appendTable(const dbtable& t)
 {   // LOG_CALL;

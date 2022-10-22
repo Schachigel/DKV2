@@ -1,8 +1,8 @@
 
 #include "helper.h"
-#include "appconfig.h"
-#include "helpersql.h"
 #include "helperfin.h"
+#include "helpersql.h"
+#include "appconfig.h"
 #include "tabledatainserter.h"
 #include "investment.h"
 
@@ -18,7 +18,7 @@ investment::investment(qlonglong id /*=-1*/, int Interest /*=0*/,
     : rowid(id), interest(Interest), start (Start), end (End), type(Type), state(State)
 {
     if( id >= 0) {
-        QSqlRecord rec =executeSingleRecordSql (getTableDef().Fields (), qsl("rowid=%1").arg(QString::number(id)));
+        QSqlRecord rec =executeSingleRecordSql (getTableDef().Fields (), qsl("rowid=%1").arg(i2s(id)));
         if( rec.isEmpty ()) {
             return;
         }
@@ -82,7 +82,7 @@ investment::invStatisticData investment::getStatisticData(const QDate newContrac
             ? newContractDate.addYears (-1).toString(Qt::ISODate) : start.toString(Qt::ISODate);
     QString pEnd   = isContinouse ()
             ? newContractDate.toString(Qt::ISODate) : end.toString(Qt::ISODate);
-    QString id =QString::number(rowid);
+    QString id =i2s(rowid);
 
     // anzahlAlleVertraege, summeAlleVertraege
     // (! Betrachtung der Vertragswerte (ohne nachträgliche Ein- oder Auszahlungen)
@@ -128,7 +128,7 @@ WHERE
   AND Buchungen.Datum <= '%2'
 )str");
     double allBookingsInclInterest =euroFromCt(executeSingleValueSql ( sqlAllBookings
-                                           .arg(QString::number(rowid), pStart, pEnd)).toInt ());
+                                           .arg(i2s(rowid), pStart, pEnd)).toInt ());
     ret.ZzglZins =valuePassiveContracts + allBookingsInclInterest;
 
     return ret;
@@ -158,7 +158,7 @@ qlonglong createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
         sql =qsl("SELECT * FROM Geldanlagen WHERE ZSatz =%1 AND Ende == date('9999-12-31')");
         endDate =EndOfTheFuckingWorld;
     }
-    if( 0 < rowCount(sql.arg(QString::number(ZSatz), vDate.toString(Qt::ISODate), vDate.toString(Qt::ISODate)))) {
+    if( 0 < rowCount(sql.arg(i2s(ZSatz), vDate.toString(Qt::ISODate), vDate.toString(Qt::ISODate)))) {
         return -1;
     }
     TableDataInserter tdi(investment::getTableDef());
@@ -174,7 +174,7 @@ qlonglong createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
 
 bool deleteInvestment(const qlonglong rowid)
 {   LOG_CALL;
-    QString sql{qsl("DELETE FROM Geldanlagen WHERE rowid=%1").arg(QString::number(rowid))};
+    QString sql{qsl("DELETE FROM Geldanlagen WHERE rowid=%1").arg(i2s(rowid))};
     return executeSql_wNoRecords (sql);
 }
 
@@ -182,7 +182,7 @@ bool setInvestment(const qlonglong rowid, bool state)
 {   LOG_CALL;
     QString sql{qsl("UPDATE  Geldanlagen  SET Offen = %1 WHERE rowid == %2")};
 
-    sql =sql.arg(state ? qsl("true") : qsl("false"), QString::number(rowid));
+    sql =sql.arg(state ? qsl("true") : qsl("false"), i2s(rowid));
     return executeSql_wNoRecords(sql);
 }
 bool closeInvestment(const qlonglong rowid)
@@ -234,14 +234,14 @@ QVector<QPair<qlonglong, QString>> activeInvestments(const QDate cDate)
 int interestOfInvestmentByRowId(qlonglong rid)
 {   LOG_CALL;
     const dbfield& dbf =investment::getTableDef()[fnInvestmentInterest];
-    QString where =qsl("rowid=")+QString::number(rid);
+    QString where =qsl("rowid=")+i2s(rid);
     return executeSingleValueSql(dbf,  where).toInt();
 }
 
 QString redOrBlack(int i, int max)
 {
-    if( i >= max) return qsl("<div style=\"color:red\">") +QString::number(i) +qsl("</div>");
-    else return QString::number(i);
+    if( i >= max) return qsl("<div style=\"color:red\">") +i2s(i) +qsl("</div>");
+    else return i2s(i);
 }
 QString redOrBlack(double d, double max)
 {
@@ -305,7 +305,7 @@ QVector<investment> openInvestments(int rate, QDate conclusionDate)
 
     QString sql{qsl("SELeCT * FROM Geldanlagen WHERE Offen AND ZSatz = %1 AND Anfang <= date('%2')  AND Ende >= date('%2')")};
     QVector<QSqlRecord> records;
-    if( not executeSql(sql.arg(QString::number(rate), conclusionDate.toString(Qt::ISODate)), records))
+    if( not executeSql(sql.arg(i2s(rate), conclusionDate.toString(Qt::ISODate)), records))
         return QVector<investment>();
 
     QVector<investment> result;

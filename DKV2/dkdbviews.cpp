@@ -1,5 +1,7 @@
 #include "helper.h"
+#include "helpersql.h"
 #include "dkdbviews.h"
+
 //////////////////////////////////////
 // VIEWs to be created temporarily in the database
 //////////////////////////////////////
@@ -304,12 +306,12 @@ const QMap<QString, QString> views ={
 
 const QStringList getIndexSql() {
     return {
-        qsl("CREATE INDEX 'Buchungen-vId'        ON 'Buchungen' ( 'VertragsId')"),
-        qsl("CREATE INDEX 'Buchungen-vid-bdatum' ON 'Buchungen' ( 'VertragsId', 'Datum' )"),
-        qsl("CREATE INDEX 'Buchungen-BArt'       ON 'Buchungen' ( 'BuchungsArt' )"),
-        qsl("CREATE INDEX 'Vertraege-aId'    ON 'Vertraege'   ( 'AnlagenId' )"),
-        qsl("CREATE INDEX 'Vertraege-Datum'  ON 'Vertraege'   ('Vertragsdatum' )"),
-        qsl("CREATE INDEX 'Geldanlagen-Ende' ON 'Geldanlagen' ( 'Ende' )")
+        qsl("CREATE INDEX 'Buchungen_vId'        ON 'Buchungen' ( 'VertragsId')"),
+        qsl("CREATE INDEX 'Buchungen_vid-bdatum' ON 'Buchungen' ( 'VertragsId', 'Datum' )"),
+        qsl("CREATE INDEX 'Buchungen_BArt'       ON 'Buchungen' ( 'BuchungsArt' )"),
+        qsl("CREATE INDEX 'Vertraege_aId'    ON 'Vertraege'   ( 'AnlagenId' )"),
+        qsl("CREATE INDEX 'Vertraege_Datum'  ON 'Vertraege'   ('Vertragsdatum' )"),
+        qsl("CREATE INDEX 'Geldanlagen_Ende' ON 'Geldanlagen' ( 'Ende' )")
     };
 }
 

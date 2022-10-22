@@ -1,10 +1,6 @@
 #ifndef DKDBVIEWS_H
 #define DKDBVIEWS_H
 
-#include "pch.h"
-
-#include "helpersql.h"
-
 // dynamic view creatrion
 extern const QString vnContractView;
 extern const QString sqlContractView;
@@ -41,6 +37,5 @@ extern const QString sqlStat_activeContracts_byIMode_toDate;
 extern const QString sqlStat_inactiveContracts_byIMode_toDate;
 extern const QString sqlStat_finishedContracts_toDate;
 extern const QString sqlStat_allContracts_byIMode_toDate;
-
 
 #endif // DKDBVIEWS_H

@@ -141,7 +141,7 @@ void MainWindow::on_action_cmenu_delete_creditor_triggered()
 
     creditor c (id_SelectedCreditor());
     QString msg( qsl("Soll der Kreditgeber %1 %2 (id %3) gelöscht werden?"));
-    msg =msg.arg(c.getValue(creditor::fnVorname).toString(), c.getValue(creditor::fnNachname).toString(), QString::number(id_SelectedCreditor()));
+    msg =msg.arg(c.getValue(creditor::fnVorname).toString(), c.getValue(creditor::fnNachname).toString(), i2s(id_SelectedCreditor()));
 
     if( QMessageBox::Yes not_eq QMessageBox::question(this, qsl("Kreditgeber löschen?"), msg))
         return;
@@ -155,7 +155,7 @@ void MainWindow::on_action_cmenu_delete_creditor_triggered()
 void MainWindow::on_action_cmenu_go_contracts_triggered()
 {   LOG_CALL;
     busycursor b;
-    ui->le_ContractsFilter->setText(qsl("kreditor:") +QString::number(id_SelectedCreditor()));
+    ui->le_ContractsFilter->setText(qsl("kreditor:") +i2s(id_SelectedCreditor()));
     on_action_menu_contracts_listview_triggered();
 }
 

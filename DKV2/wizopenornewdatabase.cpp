@@ -1,6 +1,7 @@
 
 #include "helper.h"
 #include "appconfig.h"
+
 #include "wizopenornewdatabase.h"
 
 /*

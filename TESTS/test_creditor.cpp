@@ -32,7 +32,7 @@ void test_creditor::test_createCreditor()
     c.setBic("BYLADEM1001");
     c.setAccount("80123");
     QVERIFY2(0 <= c.save(), "creating creditor failed");
-    QCOMPARE(tableRecordCount("Kreditoren"), 1);
+    QCOMPARE(rowCount("Kreditoren"), 1);
 }
 
 void test_creditor::test_CreditorFromDb()

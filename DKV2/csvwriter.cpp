@@ -1,6 +1,7 @@
 
 #include "helper.h"
 #include "helpersql.h"
+#include "helperfin.h"
 #include "helperfile.h"
 #include "appconfig.h"
 #include "csvwriter.h"
@@ -149,7 +150,7 @@ bool table2csv(const QString& filename, const QVector<dbfield>& fields, const QV
             switch(t) {
             case QVariant::Int: {
                 int v = q.record().value(fields[i].name()).toInt();
-                csv.appendToRow(QString::number(v));
+                csv.appendToRow(i2s(v));
                 break;
             }
             case QVariant::String: {

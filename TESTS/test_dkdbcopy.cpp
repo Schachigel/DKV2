@@ -1,7 +1,4 @@
 
-#include <QtSql>
-#include <QtTest>
-
 #include "../DKV2/tabledatainserter.h"
 #include "../DKV2/dbstructure.h"
 #include "../DKV2/dkdbcopy.h"
@@ -127,7 +124,7 @@ bool insertData(const QString& dbfn, const QString& table, const QString& field)
     if( not db.open())
         return false;
     QString sql (qsl("INSERT INTO %1 (%2) VALUES ('%3')"));
-    return executeSql_wNoRecords(sql.arg(table).arg(field).arg(QString::number(i)), QVector<QVariant>(), db);
+    return executeSql_wNoRecords(sql.arg(table).arg(field).arg(i2s(i)), QVector<QVariant>(), db);
 }
 
 void test_dkdbcopy::test_dbsHaveSameTables_fails_diffRowCount()
@@ -221,6 +218,6 @@ void test_dkdbcopy::test_convertDatabaseInplace_wNewColumn()
     verifyDb.setDatabaseName(dbfn1); verifyDb.open();
     QVERIFY(QFile::exists(dbfn1));
     QVERIFY(hasAllTablesAndFields(verifyDb, newDbStructure));
-    QCOMPARE(rowCount("t1", verifyDb), 2);
-    QCOMPARE(rowCount("t2", verifyDb), 2);
+    QCOMPARE(rowCount("t1", "", verifyDb), 2);
+    QCOMPARE(rowCount("t2", "", verifyDb), 2);
 }

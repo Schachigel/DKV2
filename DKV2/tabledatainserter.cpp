@@ -14,7 +14,7 @@ TableDataInserter::TableDataInserter(const dbtable& t)
 }
 
 bool TableDataInserter::setValue(const QString& n, const QVariant& v, treatNull allowNull)
-{//   LOG_CALL_W(n +qsl(", ") +v.toString());
+{
     if( not record.contains(n)) {
         qCritical() << "wrong field name for insertion " << n;
         return false;
@@ -81,7 +81,7 @@ bool TableDataInserter::updateValue(const QString& n, const QVariant& v, qlonglo
     bool whereDone =false;
     for( int i=0; i<record.count(); i++) {
         if( record.field(i).isAutoValue()) {
-            where =where.arg(record.field(i).name(), QString::number(index));
+            where =where.arg(record.field(i).name(), i2s(index));
             whereDone =true;
             break;
         }

@@ -1,12 +1,11 @@
 #ifndef LETTER_H
 #define LETTER_H
 
-#include "pch.h"
-
-#include "dbtable.h"
 #include "helper.h"
 #include "helpersql.h"
 #include "appconfig.h"
+
+#include "dbtable.h"
 
 class letterTemplate
 {

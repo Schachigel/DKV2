@@ -1,7 +1,7 @@
 #ifndef ACTIVATECONTRACTWIZ_H
 #define ACTIVATECONTRACTWIZ_H
 
-
+#include "helper.h"
 
 struct wpInitialPayment_IntroPage : public QWizardPage {
     wpInitialPayment_IntroPage(QWidget* w =nullptr);
@@ -12,7 +12,7 @@ private:
     QLabel *subTitleLabel = nullptr;
 };
 
-extern QString fnDate;
+inline const QString fnDate{qsl("date")};
 struct wpInitialPayment_DatePage : public QWizardPage {
     wpInitialPayment_DatePage(QWidget* w=nullptr);
     void cleanupPage() override  {};
@@ -25,7 +25,7 @@ private:
     QLabel *subTitleLabel = nullptr;
 };
 
-extern QString fnAmount;
+inline const QString fnAmount{qsl("amount")};
 struct wpInitialPayment_AmountPage : public QWizardPage {
     wpInitialPayment_AmountPage(QWidget* w=nullptr);
     void cleanupPage() override  {};

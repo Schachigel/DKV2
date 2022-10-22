@@ -91,10 +91,10 @@ public:
 #define LOG_CALL functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(__func__, __FILE__)
 #define LOG_CALL_W(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger( __func__ + qsl("(\"") + (x) + qsl("\")"), __FILE__)
 
-extern const QDate EndOfTheFuckingWorld;
-extern const QString EndOfTheFuckingWorld_str;
-extern const int daysUntilTheEndOfTheFuckingWorld;
-extern const QDate BeginingOfTime;
+inline const QDate EndOfTheFuckingWorld{QDate(9999, 12, 31)};
+inline const QString EndOfTheFuckingWorld_str{qsl("9999-12-31")};
+inline const int daysUntilTheEndOfTheFuckingWorld{2916000};
+inline const QDate BeginingOfTime{QDate(1900, 1, 1)};
 
 void logger(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 QString logFilePath();

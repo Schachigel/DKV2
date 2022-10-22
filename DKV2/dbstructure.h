@@ -21,7 +21,7 @@ private:
     QVector<dbtable> Tables;
 };
 ////////////////////////////////
-extern dbstructure dkdbstructur;
+inline dbstructure dkdbstructur;
 ////////////////////////////////
 
 // THE structure of our database the single source of truth

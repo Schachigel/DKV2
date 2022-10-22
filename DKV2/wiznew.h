@@ -5,7 +5,6 @@
 
 #include "creditor.h"
 #include "contract.h"
-#include "helper.h"
 
 enum { page_new_or_existing,
        page_address,
@@ -21,8 +20,31 @@ enum { page_new_or_existing,
        page_interest_payment_mode,
        page_confirm_contract};
 
-extern const QString pnNew;
-extern const QString pnCreditor;
+
+inline const QString pnNew{qsl("create_new")};
+inline const QString pnCreditor{qsl("creditor")};
+inline const QString pnFName{qsl("firstname")};
+inline const QString pnLName{qsl("lastname")};
+inline const QString pnStreet{qsl("street")};
+inline const QString pnCity{qsl("city")};
+inline const QString pnPcode{qsl("pcode")};
+inline const QString pnCountry{qsl("country")};
+inline const QString pnEMail{qsl("e-mail")};
+inline const QString pnPhone{qsl("phone")};
+inline const QString pnContact{qsl("contact")};
+inline const QString pnComment{qsl("comment")};
+inline const QString pnConfirmCreditor{qsl("confirmCreateContract")};
+inline const QString pnCreateContract{qsl("createContract")};
+inline const QString pnLabel{qsl("label")};
+inline const QString pnAmount{qsl("amount")};
+inline const QString pnContractComment{qsl("contractComment")};
+inline const QString pnCDate{qsl("startD")};
+inline const QString pnEDate{qsl("endD")};
+inline const QString pnPeriod{qsl("noticePeriod")};
+inline const QString pnConfirmContract{qsl("confirmContract")};
+inline const QString pnIMode{qsl("imode")};
+inline const QString pnIPaymentDelayed{qsl("ipnd")};
+
 /*
  * wpNewOrExisting - ask new or use existing
  */
@@ -48,13 +70,6 @@ private:
 /*
  * wpNewCreditorAddress -
  */
-extern const QString pnFName;
-extern const QString pnLName;
-extern const QString pnStreet;
-extern const QString pnCity;
-extern const QString pnPcode;
-extern const QString pnCountry;
-
 struct wpNewCreditorAddress : public QWizardPage{
     wpNewCreditorAddress(QWidget* p);
     void cleanupPage() override {};
@@ -64,11 +79,6 @@ private:
     Q_OBJECT;
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
-
-extern const QString pnEMail;
-extern const QString pnPhone;
-extern const QString pnContact;
-extern const QString pnComment;
 
 struct wpEmail : public QWizardPage {
     wpEmail (QWidget* p);
@@ -80,9 +90,9 @@ private:
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
-extern const QString pnIban;
-extern const QString pnBic;
-extern const QString pnAccount;
+inline const QString pnIban{qsl("iban")};
+inline const QString pnBic{qsl("bic")};
+inline const QString pnAccount{qsl("account")};
 
 struct wpBankAccount : public QWizardPage{
     wpBankAccount(QWidget* p);
@@ -94,7 +104,6 @@ private:
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
-extern const QString pnConfirmCreditor;
 
 class wpConfirmCreditor : public QWizardPage{
     Q_OBJECT
@@ -118,9 +127,6 @@ CONTRACT creation wiz starts here
 /*
  * wpLableAndAmount - ask basic contract data
 */
-extern const QString pnLabel;
-extern const QString pnAmount;
-
 struct wpLableAndAmount : public QWizardPage{
     wpLableAndAmount(QWidget* p);
     void initializePage() override;
@@ -137,11 +143,6 @@ private:
  * wpContractTimeFrame - we have to ask contract date first,
  * so that we can list proper investments later
  */
-extern const QString pnCDate;
-extern const QString pnEDate;
-extern const QString pnPeriod;
-extern const QString pnContractComment;
-
 class wpContractTimeframe : public QWizardPage{
     Q_OBJECT
 public:
@@ -205,7 +206,6 @@ private:
 /*
  * wpInterestPayoutMode select payout mode for the interest
  */
-extern const QString pnIPaymentDelayed;
 struct wpInterestPayoutMode : public QWizardPage {
     wpInterestPayoutMode(QWidget* p);
     bool validatePage() override;
@@ -219,8 +219,6 @@ private:
 /*
  * wpContractConfirmation get users confirmation
  */
-extern const QString pnConfirmContract;
-
 class wpConfirmContract : public QWizardPage
 {
     Q_OBJECT;

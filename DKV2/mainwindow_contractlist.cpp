@@ -1,15 +1,19 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+
+#include "helper.h"
 
 #include "busycursor.h"
+#include "csvwriter.h"
 #include "contracttablemodel.h"
 #include "uiitemformatter.h"
+#include "dlgdisplaycolumns.h"
+
 #include "dkdbviews.h"
 #include "investment.h"
 #include "transaktionen.h"
-#include "dlgdisplaycolumns.h"
-#include "csvwriter.h"
-#include "helper.h"
+
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
 
 /////////////////////////////////////////////////
 // Contracts List & deleted contracts list
@@ -60,7 +64,7 @@ QString nbrFromRight(const QString& input, const QString& flag)
     if( 0)
         return QString();
     else
-        return QString::number(nbr);
+        return i2s(nbr);
 }
 QString filterFromFilterphrase(const QString &fph)
 {
@@ -318,11 +322,11 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
     int index =ui->contractsTableView->model()->data(indexIndex).toInt();
     QSqlTableModel* model = new QSqlTableModel(this);
     if( showDeletedContracts) {
-        model->setTable(qsl("exBuchungen"));
-        model->setFilter(qsl("exBuchungen.VertragsId=") + QString::number(index));
+        model->setTable(tn_ExBuchungen);
+        model->setFilter(qsl("%1.%2=%3").arg(tn_ExBuchungen, fn_bVertragsId, i2s(index)));
     } else {
-        model->setTable(qsl("Buchungen"));
-        model->setFilter(qsl("Buchungen.VertragsId=") + QString::number(index));
+        model->setTable(tn_Buchungen);
+        model->setFilter(qsl("%1.%2=%3").arg(tn_Buchungen, fn_bVertragsId, i2s(index)));
     }
     model->setSort(0, Qt::SortOrder::DescendingOrder);
 

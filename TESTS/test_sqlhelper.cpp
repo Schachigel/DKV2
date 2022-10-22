@@ -27,7 +27,7 @@ void test_sqlhelper::test_rowCount()
     for( int i=1; i<=maxRows; i++)
         QVERIFY( q.exec(QString() + "INSERT INTO testRowCount01 (s) VALUES ('Hallo Welt')"));
     for( int i=1; i<=maxRows; i += 2)
-        QVERIFY( q.exec(QString() + "DELETE FROM testRowCount01 WHERE (id=" + QString::number(i) +")"));
+        QVERIFY( q.exec(QString() + "DELETE FROM testRowCount01 WHERE (id=" + i2s(i) +")"));
     QCOMPARE(rowCount("testRowCount01"), maxRows/2);
     QVERIFY (q.exec("DROP TABLE testRowCount01"));
     QSqlQuery("DROP TABLE testRowCount01");
@@ -110,7 +110,7 @@ void test_sqlhelper::test_eSingleValueSql_not_PreservsValue()
     QString createSql{ QString("INSERT INTO " +tablename+  " VALUES( "
                  + "NULL, "
                  + "'" + date.toString(Qt::ISODate) + "', "
-                 + QString::number(i) + ", "
+                 + i2s(i) + ", "
                  +  "'" + string + "', "
                  +  (b ? "1" : "0")
                  + ")")};
@@ -289,7 +289,7 @@ void test_sqlhelper::test_executeSingleColumnSql()
     for ( int i = 0; i < 16; i++) {
         insertQ.addBindValue(i);
         insertQ.addBindValue(-i);
-        insertQ.addBindValue(QString::number(i));
+        insertQ.addBindValue(i2s(i));
         insertQ.addBindValue(QDate::currentDate());
         insertQ.addBindValue(i%2==0);
         insertQ.exec();
@@ -402,13 +402,13 @@ void test_sqlhelper::test_getHighestRowId()
     QSqlQuery q; q.prepare("INSERT INTO "+ tablename + " (col_S) VALUES (?)");
     int maxrow = 100;
     for( int i = 0; i<maxrow; i++) {
-        q.addBindValue(QString::number(i));
+        q.addBindValue(i2s(i));
         if( not q.exec()) qDebug() << q.lastError() << "\n" << q.lastQuery();
     }
     QCOMPARE( getHighestRowId(tablename), maxrow);
     q.prepare("DELETE FROM " + tablename + " WHERE col_S=?");
     for( int i = 0; i<maxrow; i+=2) {
-        q.addBindValue(QString::number(i));
+        q.addBindValue(i2s(i));
         if( not q.exec()) qDebug() << q.lastError() << "\n" << q.lastQuery();
     }
     QCOMPARE( getHighestRowId(tablename), maxrow);

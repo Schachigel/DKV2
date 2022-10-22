@@ -1,5 +1,6 @@
 
 #include "helper.h"
+#include "helperfin.h"
 #include "dlgchangecontracttermination.h"
 
 dlgChangeContractTermination::dlgChangeContractTermination(QWidget *parent) : QDialog(parent)
@@ -24,11 +25,11 @@ dlgChangeContractTermination::dlgChangeContractTermination(QWidget *parent) : QD
     notPeriod =new QComboBox();
     notPeriod->addItem(qsl("festes Vertragsende"), QVariant(-1));
     for (int i=3; i<12; i++)
-        notPeriod->addItem(QString::number(i) + qsl(" Monate"), QVariant(i));
+        notPeriod->addItem(i2s(i) + qsl(" Monate"), QVariant(i));
     notPeriod->addItem(qsl("1 Jahr"), QVariant(12));
     notPeriod->addItem(qsl("1 Jahr und 1 Monat"), QVariant(13));
     for (int i=14; i<24; i++)
-        notPeriod->addItem(qsl("1 Jahr und ") + QString::number( i-12) + qsl(" Monate"), QVariant(i));
+        notPeriod->addItem(qsl("1 Jahr und ") + i2s( i-12) + qsl(" Monate"), QVariant(i));
     notPeriod->addItem(qsl("2 Jahre"), QVariant(24));
     connect(notPeriod, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &dlgChangeContractTermination::onNoticePeriod_currentIndexChanged);

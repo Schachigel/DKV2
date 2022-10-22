@@ -11,9 +11,6 @@
  * wizNewOrExistingPage - ask user if a new user should be created or an existing
  * one should be used
 */
-const QString pnNew{qsl("create_new")};
-const QString pnCreditor{qsl("creditor")};
-
 wpNewOrExisting::wpNewOrExisting(QWidget *p) : QWizardPage(p)
 {
     LOG_CALL;
@@ -109,12 +106,6 @@ int wpNewOrExisting::nextId() const
         return page_label_and_amount;
 }
 
-const QString pnFName{qsl("firstname")};
-const QString pnLName{qsl("lastname")};
-const QString pnStreet{qsl("street")};
-const QString pnCity{qsl("city")};
-const QString pnPcode{qsl("pcode")};
-const QString pnCountry{qsl("country")};
 /*
  * wizNewCreditorAddressPage - ask address data for the new creditor
 */
@@ -212,11 +203,6 @@ int wpNewCreditorAddress::nextId() const
 /*
  * wizEmailPage - ask e-mail and comment for the new creditor
 */
-const QString pnEMail{qsl("e-mail")};
-const QString pnPhone{qsl("phone")};
-const QString pnContact{qsl("contact")};
-const QString pnComment{qsl("comment")};
-
 wpEmail::wpEmail(QWidget *p) : QWizardPage(p)
 {
     LOG_CALL;
@@ -301,10 +287,6 @@ int wpEmail::nextId() const
 /*
  * wpBankAccount - ask bank account data
 */
-const QString pnIban{qsl("iban")};
-const QString pnBic{qsl("bic")};
-const QString pnAccount{qsl("account")};
-
 wpBankAccount::wpBankAccount(QWidget *p) : QWizardPage(p)
 {
     LOG_CALL;
@@ -368,9 +350,6 @@ int wpBankAccount::nextId() const
 /*
  * wizConfirmCreditorData : ask if creditor data is OK and if a contract should be created
 */
-const QString pnConfirmCreditor{qsl("confirmCreateContract")};
-const QString pnCreateContract{qsl("createContract")};
-
 wpConfirmCreditor::wpConfirmCreditor(QWidget *p) : QWizardPage(p)
 {
     LOG_CALL;
@@ -474,9 +453,6 @@ void wpConfirmCreditor::onConfirmCreateContract_toggled(int state)
  *
  * wizNewContractData - ask basic contract data
 */
-const QString pnLabel{qsl("label")};
-const QString pnAmount{qsl("amount")};
-const QString pnContractComment{qsl("contractComment")};
 
 wpLableAndAmount::wpLableAndAmount(QWidget *p) : QWizardPage(p)
 {
@@ -576,10 +552,6 @@ int wpLableAndAmount::nextId() const
 /*
  * wpContractTimeframe - contract date, notice period, termination date
 */
-const QString pnCDate{qsl("startD")};
-const QString pnEDate{qsl("endD")};
-const QString pnPeriod{qsl("noticePeriod")};
-
 wpContractTimeframe::wpContractTimeframe(QWidget *p) : QWizardPage(p)
 {
     LOG_CALL;
@@ -596,11 +568,11 @@ wpContractTimeframe::wpContractTimeframe(QWidget *p) : QWizardPage(p)
     registerField(pnPeriod, cbNoticePeriod);
     cbNoticePeriod->addItem(qsl("festes Vertragsende"), QVariant(-1));
     for (int i = 3; i < 12; i++)
-        cbNoticePeriod->addItem(QString::number(i) + qsl(" Monate"), QVariant(i));
+        cbNoticePeriod->addItem(i2s(i) + qsl(" Monate"), QVariant(i));
     cbNoticePeriod->addItem(qsl("1 Jahr"), QVariant(12));
     cbNoticePeriod->addItem(qsl("1 Jahr und 1 Monat"), QVariant(13));
     for (int i = 14; i < 24; i++)
-        cbNoticePeriod->addItem(qsl("1 Jahr und ") + QString::number(i - 12) + qsl(" Monate"), QVariant(i));
+        cbNoticePeriod->addItem(qsl("1 Jahr und ") + i2s(i - 12) + qsl(" Monate"), QVariant(i));
     cbNoticePeriod->addItem(qsl("2 Jahre"), QVariant(24));
 
     connect(cbNoticePeriod, SIGNAL(currentIndexChanged(int)), this, SLOT(onNoticePeriod_currentIndexChanged(int)));
@@ -823,8 +795,6 @@ int wpInterestSelection::nextId() const
 /*
  * wpInterestMode - kein Zins? thesaurierend? Auszahlend? Fix?
 */
-const QString pnIMode{qsl("imode")};
-const QString pnIPaymentDelayed{qsl("ipnd")};
 wpInterestPayoutMode::wpInterestPayoutMode(QWidget *p) : QWizardPage(p)
 {
     setTitle(qsl("Zinsmodus"));
@@ -872,8 +842,6 @@ int wpInterestPayoutMode::nextId() const
 /*
 * wizConfirmContract  -confirm the contract data before contract creation
 */
-const QString pnConfirmContract{qsl("confirmContract")};
-
 wpConfirmContract::wpConfirmContract(QWidget *p) : QWizardPage(p)
 {
     LOG_CALL;
@@ -907,7 +875,7 @@ void wpConfirmContract::initializePage()
         interestModel iMode{wiz->iPaymentMode};
         QString interestMode = interestModelDisplayString(iMode);
         subTitleLabel->setText(
-            summary.arg(field(pnFName).toString(), field(pnLName).toString(), field(pnLabel).toString(), d2euro(l.toDouble (field(pnAmount).toString())), QString::number(wiz->interest / 100., 'f', 2), interestMode, field(pnCDate).toDate().toString(qsl("dd.MM.yyyy")), (wiz->noticePeriod == -1) ? wiz->field(pnEDate).toDate().toString(qsl("dd.MM.yyyy")) : QString::number(wiz->noticePeriod) + qsl(" Monate nach Kündigung"), field(pnIPaymentDelayed).toBool() ? qsl("Zinszahlung nicht ab Geldeingang") : qsl("Verzinsung ab Geldeingang")));
+            summary.arg(field(pnFName).toString(), field(pnLName).toString(), field(pnLabel).toString(), d2euro(l.toDouble (field(pnAmount).toString())), QString::number(wiz->interest / 100., 'f', 2), interestMode, field(pnCDate).toDate().toString(qsl("dd.MM.yyyy")), (wiz->noticePeriod == -1) ? wiz->field(pnEDate).toDate().toString(qsl("dd.MM.yyyy")) : i2s(wiz->noticePeriod) + qsl(" Monate nach Kündigung"), field(pnIPaymentDelayed).toBool() ? qsl("Zinszahlung nicht ab Geldeingang") : qsl("Verzinsung ab Geldeingang")));
     }
     else
         Q_ASSERT(false);

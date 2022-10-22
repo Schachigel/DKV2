@@ -5,11 +5,11 @@
 
 #include "investment.h"
 
-extern const QString pnVon /*=qsl("von*")*/;
-extern const QString pnBis /*=qsl("bis*")*/;
-extern const QString pnTyp /*=qsl("typ*")*/;
-extern const QString pnZSatz /*=qsl("zs*")*/;
-extern const QString pnKorrekt /*=qsl("OK*")*/;
+inline const QString pnVon =qsl("von");
+inline const QString pnBis =qsl("bis");
+inline const QString pnTyp =qsl("typ");
+inline const QString pnZSatz =qsl("zs");
+inline const QString pnKorrekt =qsl("OK");
 
 class wpInvestmentSummary : public QWizardPage
 {

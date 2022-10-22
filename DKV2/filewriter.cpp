@@ -1,6 +1,6 @@
 
-#include "helperfile.h"
 #include "helper.h"
+#include "helperfile.h"
 #include "appconfig.h"
 #include "mustache.h"
 #include "filewriter.h"

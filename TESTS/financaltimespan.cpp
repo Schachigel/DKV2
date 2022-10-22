@@ -1,4 +1,3 @@
-#include <QDate>
 
 #include "financaltimespan.h"
 

@@ -22,7 +22,6 @@ private slots:
     void test_randomContract();
     void test_randomContracts();
     void test_write_read_contract();
-    void test_get_set_interest();
     void deposit_inactive_contract_fails();
     void too_high_payout_fails();
     void unsequenced_bookings_fail();
@@ -45,6 +44,7 @@ private slots:
     void test_contract_cv_wInterestPayout();
     void test_contract_cv_reInvesting();
     void test_finalize();
+    void test_readExContract();
 };
 
 #endif // TEST_CONTRACT_H

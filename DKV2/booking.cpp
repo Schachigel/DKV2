@@ -1,4 +1,5 @@
-
+#include "helper.h"
+#include "helpersql.h"
 #include "contract.h"
 #include "dkdbviews.h"
 #include "dbstructure.h"
@@ -6,27 +7,27 @@
 
 /* static */ const dbtable& booking::getTableDef()
 {
-    static dbtable bookingsTable(qsl("Buchungen"));
+    static dbtable bookingsTable(tn_Buchungen);
     if( 0 == bookingsTable.Fields().size()) {
         bookingsTable.append(dbfield(qsl("id"),          QVariant::LongLong).setAutoInc());
-        bookingsTable.append(dbfield(qsl("VertragsId"),  QVariant::LongLong).setNotNull());
-        bookingsTable.append(dbForeignKey(bookingsTable[qsl("VertragsId")], dkdbstructur[contract::tnContracts][contract::fnId], ODOU_Action::RESTRICT));
-        bookingsTable.append(dbfield(qsl("Datum"),       QVariant::Date).setDefault(EndOfTheFuckingWorld_str).setNotNull());
-        bookingsTable.append(dbfield(qsl("BuchungsArt"), QVariant::Int).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
-        bookingsTable.append(dbfield(qsl("Betrag"),      QVariant::Int).setNotNull()); // in cent
+        bookingsTable.append(dbfield(fn_bVertragsId,  QVariant::LongLong).setNotNull());
+        bookingsTable.append(dbForeignKey(bookingsTable[fn_bVertragsId], dkdbstructur[contract::tnContracts][contract::fnId], ODOU_Action::RESTRICT));
+        bookingsTable.append(dbfield(fn_bDatum,       QVariant::Date).setDefault(EndOfTheFuckingWorld_str).setNotNull());
+        bookingsTable.append(dbfield(fn_bBuchungsArt, QVariant::Int).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
+        bookingsTable.append(dbfield(fn_bBetrag,      QVariant::Int).setNotNull()); // in cent
         bookingsTable.append(dbfield(qsl("Zeitstempel"),  QVariant::DateTime).setDefaultNow());
     }
     return bookingsTable;
 }
 /* static */ const dbtable& booking::getTableDef_deletedBookings()
 {
-    static dbtable deletedBookings(qsl("exBuchungen"));
+    static dbtable deletedBookings(tn_ExBuchungen);
     if( 0 == deletedBookings.Fields().size()) {
         deletedBookings.append(dbfield(qsl("id"), QVariant::LongLong).setPrimaryKey());
-        for( int i =1 /* not 0 */ ; i < getTableDef().Fields().count(); i++) {
+        for( int i =1 /* not 0 */; i < getTableDef().Fields().count(); i++) {
             deletedBookings.append(getTableDef().Fields()[i]);
         }
-        deletedBookings.append(dbForeignKey(deletedBookings[qsl("VertragsId")],
+        deletedBookings.append(dbForeignKey(deletedBookings[fn_bVertragsId],
                                dkdbstructur[contract::tnExContracts][contract::fnId],ODOU_Action::RESTRICT));
     }
     return deletedBookings;
@@ -41,6 +42,7 @@
     case bookingType::annualInterestDeposit: return qsl("Jahreszins");
     case bookingType::setInterestActive:     return qsl("Aktivierung d. Zinszahlung");
     default:
+        Q_ASSERT(not "Ungültigen Buchungstyp");
         return qsl("FEHLER: ungültiger Buchungstyp");
     }
 }
@@ -53,98 +55,122 @@ QString booking::toString( ) const
 
 /////////////// BOOKING functions (friends, not family ;) )
 ///
-bool writeBookingToDB( bookingType t, const qlonglong contractId, QDate date, const double amount)
+bool bookingToDB( bookingType t, const qlonglong contractId, QDate date, const double amount)
 {
     LOG_CALL_W (booking(contractId, t, date, amount).toString());
+    if( not date.isValid ())
+        RETURN_ERR(false, qsl(">> invalid booking date <<"));
     TableDataInserter tdi(booking::getTableDef());
-    tdi.setValue(qsl("VertragsId"), contractId);
-    tdi.setValue(qsl("BuchungsArt"), static_cast<int>(t));
-    tdi.setValue(qsl("Betrag"), ctFromEuro(amount));
-    tdi.setValue(qsl("Datum"), date);
+    tdi.setValue(fn_bVertragsId,  contractId);
+    tdi.setValue(fn_bBuchungsArt, static_cast<int>(t));
+    tdi.setValue(fn_bBetrag,      ctFromEuro(amount));
+    tdi.setValue(fn_bDatum,       date);
     //    "Zeitstempel" will be created by the sql default value =setDefaultNow()
     if( -1 not_eq tdi.InsertRecord()) {
-        RETURN_OK( true, qsl("Buchung erfolgreich"));
+        RETURN_OK( true, qsl(">> Buchung erfolgreich <<"));
     }  else
-        RETURN_ERR( false, qsl("Buchung gescheitert"));
+        RETURN_ERR( false, qsl(">> Buchung gescheitert <<"));
 }
 bool bookDeposit(const qlonglong contractId, QDate date, const double amount)
 {
-    Q_ASSERT( amount > 0.);
-    return writeBookingToDB( bookingType::deposit, contractId, date, amount);
+    if( amount <= 0)
+        RETURN_ERR(false, qsl(">> Einzahlungen müssen einen Wert größer als 0 haben <<"))
+    return bookingToDB( bookingType::deposit, contractId, date, amount);
 }
 bool bookPayout(const qlonglong contractId, QDate date, const double amount)
 {
     // contract has to check that a payout is possible
-    return writeBookingToDB(bookingType::payout, contractId, date, -1*qFabs(amount));
+    return bookingToDB(bookingType::payout, contractId, date, -1*qFabs(amount));
 }
 bool bookReInvestInterest(const qlonglong contractId, QDate date, const double amount)
 {
-    Q_ASSERT( amount >= 0.);
-    return writeBookingToDB(bookingType::reInvestInterest, contractId, date, amount);
+    if( amount < 0)
+        RETURN_ERR(false, qsl(">> booking ReInvestInterest failed due to negative amount <<"))
+    return bookingToDB(bookingType::reInvestInterest, contractId, date, amount);
 }
 bool bookAnnualInterestDeposit(const qlonglong contractId, QDate date, const double amount)
 {
-    Q_ASSERT( amount >= 0.);
-    return writeBookingToDB(bookingType::annualInterestDeposit, contractId, date, amount);
+    if( amount < 0)
+        RETURN_ERR(false, qsl(">> booking Annual Interest Deposit failed due to negative amount <<"))
+    return bookingToDB(bookingType::annualInterestDeposit, contractId, date, amount);
 }
 bool bookInterestActive(const qlonglong contractId, QDate date)
 {
-    return writeBookingToDB(bookingType::setInterestActive, contractId, date, 0.);
+    return bookingToDB(bookingType::setInterestActive, contractId, date, 0.);
 }
 
 ///////////// bookingS start here
 
-/* static */ QDate bookings::dateOfnextSettlement()
+QDate dateOfnextSettlement()
 {
     /*
      * Man sollte eine Jahresendbuchung auch mehrmals machen können, für den Fall, dass es nachträglich
      * gebuchte Geldeingänge für Neuverträge (=Aktivierungen) gab
     */
     QDate ret =executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(sqlNextAnnualSettlement)).toDate();
-    qInfo() << "DateOfnextSettlement: Date of next Settlement was found as " << ret;
-    return ret;
+    RETURN_OK(ret, qsl("DateOfnextSettlement: Date of next Settlement was found as "), ret.toString (Qt::ISODate));
 }
-/*static */ QVector<booking> bookings::bookingsFromSql(const QString& where, const QString& order, bool terminated)
+int getNbrOfBookings(const qlonglong contract, const QDate from, const QDate to, const bool terminated)
 {
-    qInfo() << "Where: "<< where << "\n" << "Order: " << order << "terminated: " << (terminated ? "true" : "false");
+    QString where {qsl(" VertragsId=%1").arg(contract)};
+    if( from > BeginingOfTime)
+        where += qsl(" AND Datum >='%1'").arg(from.toString(Qt::ISODate));
+    if( to < EndOfTheFuckingWorld)
+        where += qsl(" AND Datum <='%1'").arg(to.toString(Qt::ISODate));
+    return rowCount((terminated ? tn_ExBuchungen : tn_Buchungen), where);
+}
+int getNbrOfExBookings(const qlonglong contract, const QDate from, const QDate to)
+{
+    return getNbrOfBookings(contract, from, to, true);
+}
+
+QVector<booking> bookingsFromDB(const QString& where, const QString& order ="", bool terminated =false)
+{
+    qInfo().noquote () << __FUNCTION__ << qsl(" Where: %1\n").arg( where) << qsl("Order: %1\n").arg( order) << qsl("terminated: %1").arg((terminated ? "true" : "false"));
     QVector<QSqlRecord> records = terminated ?
                executeSql( booking::getTableDef_deletedBookings ().Fields (), where, order)
              : executeSql( booking::getTableDef().Fields(), where, order);
 
     QVector<booking> vRet;
     for (auto& rec : qAsConst(records)) {
-        qlonglong cid = rec.value(qsl("VertragsId")).toLongLong();
-        bookingType t = bookingType(rec.value(qsl("BuchungsArt")).toInt());
-        QDate d = rec.value(qsl("Datum")).toDate();
-        double amount = euroFromCt(rec.value(qsl("Betrag")).toInt());
-        qInfo() << "bookingsFromSql: Buchung: cid=" << cid << "; type=" << bookingTypeDisplayString(t) << "; Datum=" << d.toString() << "; Betrag=" << amount;
-        vRet.push_back(booking(cid, t, d, amount));
+        booking b (rec.value(fn_bVertragsId).toLongLong(),
+                   bookingType(rec.value(fn_bBuchungsArt).toInt()),
+                   rec.value(fn_bDatum).toDate(),
+                   euroFromCt(rec.value(fn_bBetrag).toInt()));
+        qInfo() << "bookingFromDB: " << b.toString ();
+        vRet.push_back(b);
     }
     return vRet;
 }
-/* static */ QVector<booking> bookings::getBookings(const qlonglong cid, QDate from, const QDate to,
+QVector<booking> getBookings(const qlonglong cid, QDate from, const QDate to,
                     QString order, bool terminated)
 {
-    QString tablename = terminated ? qsl("ExBuchungen") : qsl("Buchungen");
+    QString tablename = terminated ? tn_ExBuchungen : tn_Buchungen;
     // used in tests
-    QString where = qsl("%4.VertragsId=%1 "
-                  "AND %4.Datum >='%2' "
-                  "AND %4.Datum <='%3'");
-    where = where.arg(QString::number(cid), from.toString(Qt::ISODate), to.toString(Qt::ISODate), tablename);
+    QString where = qsl("%9.%1=%6 "
+                  "AND %9.%2 >='%7' "
+                  "AND %9.%2 <='%8'").arg(fn_bVertragsId, fn_bDatum);
+    where = where.arg(i2s(cid), from.toString(Qt::ISODate), to.toString(Qt::ISODate), tablename);
 
-    return bookingsFromSql(where, order, terminated);
+    return bookingsFromDB(where, order, terminated);
 }
-/* static */ QVector<booking> bookings::getAnnualSettelments(const int year)
+QVector<booking> getExBookings(const qlonglong cid, QDate from, const QDate to,
+                    QString order)
 {
-    QString where = qsl("Buchungen.BuchungsArt = %1 AND Buchungen.Datum = '%2'");
-    where = where.arg(QString::number(static_cast<int>(bookingType::annualInterestDeposit)), QDate(year, 12, 31).toString(Qt::ISODate));
-    return bookingsFromSql(where);
+    return getBookings(cid, from, to, order, true);
 }
-/*static */ QVector<int> bookings::yearsWithAnnualBookings()
+
+QVector<booking> getAnnualSettelments(const int year)
+{
+    QString where = qsl("%1.%2 = %4 AND %1.%3 = '%5'").arg(tn_Buchungen, fn_bBuchungsArt, fn_bDatum);
+    where = where.arg(bookingTypeToNbrString(bookingType::annualInterestDeposit), QDate(year, 12, 31).toString(Qt::ISODate));
+    return bookingsFromDB(where);
+}
+QVector<int> yearsWithAnnualBookings()
 {   LOG_CALL;
     QVector<int> years;
     QString sql{qsl("SELECT DISTINCT SUBSTR(Datum, 1, 4) AS year FROM Buchungen WHERE BuchungsArt =%1 ORDER BY year DESC")
-                .arg (bookingTypeToString(bookingType::annualInterestDeposit))};
+                .arg (bookingTypeToNbrString(bookingType::annualInterestDeposit))};
     QVector<QSqlRecord> vYears;
     if( executeSql (sql, QVariant(), vYears)) {
         for (const QSqlRecord& year : qAsConst(vYears)) {

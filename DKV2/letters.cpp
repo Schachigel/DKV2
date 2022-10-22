@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include"helper.h"
 #include "letters.h"
@@ -45,7 +45,6 @@ void printTerminationLetter( const contract& , QDate kDate, int )
 //    tlate.setPlaceholder(GMBH_URL, getMetaInfo(GMBH_URL));
 Q_ASSERT( not "repair");
 //    tlate.setPlaceholder("vertraege.kennung", v.Kennung());
-//    tlate.setPlaceholder("vertraege.kfrist", QString::number(kMonate));
 //    tlate.setPlaceholder("vertraege.laufzeitende", v.LaufzeitEnde().toString("dd.MM.yyyy"));
 //    tlate.setPlaceholder("kreditoren.vorname", v.Vorname());
 //    tlate.setPlaceholder("kreditoren.nachname", v.Nachname());
