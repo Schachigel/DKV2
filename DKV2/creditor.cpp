@@ -179,7 +179,7 @@ bool creditor::remove()
     // WHERE Buchungen.VertragsId IN (SELECT Vertraege.id FROM Vertraege WHERE Vertraege.KreditorId = 14)
     QString where = qsl("Buchungen.VertragsId IN (SELECT Vertraege.id FROM Vertraege WHERE Vertraege.KreditorId = %1)");
     where = where.arg(i);
-    QVariant a = executeSingleValueSql(qsl("SUM(Buchungen.Betrag)"), qsl("Buchungen"), where);
+    QVariant a = executeSingleValueSql(qsl("SUM(%1.%2)").arg(tn_Buchungen, fn_bBetrag), tn_Buchungen, where);
     if( a.toDouble() > 0)
         return true;
     return false;

@@ -5,7 +5,7 @@
 
 
 #define qsl(x) QStringLiteral(x)
-inline const QVariant emptyStringV {qsl("")}; // keep the qsl to force the variant to type String!
+inline const QVariant emptyStringV {QString()}; // keep the qsl to force the variant to type String!
 inline QString singleQuoted(const QString& s) { return qsl("'%1'").arg(s);}
 
 inline void expected_error (QString MSG) {QMessageBox::information(NULL, qsl("Fehler"), MSG); qInfo() << MSG;}
@@ -35,8 +35,8 @@ inline t returnLog(int sev, t returnvalue, TS ...args)
     return returnvalue;
 }
 
-#define RETURN_OK(ret, ...)  return returnLog( 0, ret, __VA_ARGS__);
-#define RETURN_ERR(ret, ...) return returnLog( 1, ret, __VA_ARGS__);
+#define RETURN_OK(ret, ...)  return returnLog( 0, ret, __VA_ARGS__)
+#define RETURN_ERR(ret, ...) return returnLog( 1, ret, __VA_ARGS__)
 
 QString toString(const QBitArray &ba);
 QBitArray toQBitArray(const QString& s);

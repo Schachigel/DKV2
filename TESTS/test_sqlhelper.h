@@ -17,8 +17,8 @@ private slots:
     void test_ensureTable_existingTable_tableSizeMismatch();
     void test_ensureTable_existingtable_fieldTypeMismatch();
     void test_ensureTable_nonexistingTable();
-    void test_eSingleValueSql_not_PreservsValue();
-    void test_eSingleValueSqlPreservsValue();
+    void test_eSingleValueSql_field_table_PreservesValues();
+    void test_eSingleValueSql_dbfield_PreservsValue();
     void test_selectQueryFromFields_noWhere();
     void test_selectQueryFromFields_withWhere();
     void test_selectQueryFromFields_wReference();

@@ -98,7 +98,7 @@ bool ensureTable(const dbtable& table, const QSqlDatabase& db =QSqlDatabase::dat
 bool switchForeignKeyHandling(const QSqlDatabase& db, const QString& alias, bool OnOff =fkh_on);
 bool switchForeignKeyHandling(const QSqlDatabase& db =QSqlDatabase::database(), bool OnOff =fkh_on);
 
-QVariant executeSingleValueSql(const QString& sql, const QSqlDatabase& db = QSqlDatabase::database());
+QVariant execute_SingleValue_Sql(const QString& sql, const QSqlDatabase& db = QSqlDatabase::database());
 QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where =QString(), const QSqlDatabase& db = QSqlDatabase::database());
 QVariant executeSingleValueSql(const dbfield&, const QString& where, const QSqlDatabase& db=QSqlDatabase::database());
 

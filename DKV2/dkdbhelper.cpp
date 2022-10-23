@@ -428,12 +428,12 @@ SELECT SUM(Betrag)/100. AS Gesamtbetrag
 FROM Vertraege
 WHERE id NOT IN (SELECT DISTINCT VertragsId FROM Buchungen)
 )str")};
-    double inactiveSum =executeSingleValueSql(sqlInactive).toDouble();
+    double inactiveSum =execute_SingleValue_Sql(sqlInactive).toDouble();
     QString sqlActive {qsl(R"str(
 SELEcT SUM(Betrag) /100. as Gesamtbetrag
 FROM Buchungen
 )str")};
-    double activeSum =executeSingleValueSql(sqlActive).toDouble();
+    double activeSum =execute_SingleValue_Sql(sqlActive).toDouble();
     return inactiveSum + activeSum;
 }
 
@@ -776,4 +776,10 @@ UNION ALL
   ORDER BY Datum DESC
 )str")};
     return getBookingDateInfoBySql(sql, dates);
+}
+
+QString Vor_Nachname_Kreditor(qlonglong id)
+{
+    return executeSingleValueSql(qsl("Vorname || ' ' || Nachname"), qsl("Kreditoren"),
+                                 qsl("id=%1").arg(id)).toString ();
 }

@@ -105,7 +105,7 @@ WHERE Vertraege.id NOT IN (SELECT DISTINCT VertragsId FROM Buchungen)
   AND Vertraege.Vertragsdatum >  '%1'
   AND Vertraege.Vertragsdatum <= '%2'
 )str");
-    double valuePassiveContracts =euroFromCt(executeSingleValueSql (sqlContractsWithNoPayment
+    double valuePassiveContracts =euroFromCt(execute_SingleValue_Sql (sqlContractsWithNoPayment
                                                          .arg(id, pStart, pEnd)).toInt ());
 
     QString sqlPayments =qsl(R"str(
@@ -116,7 +116,7 @@ WHERE
   AND Buchungen.Datum >  '%1'
   AND Buchungen.Datum <= '%2'
 )str");
-    double valuePaymentsActiveContracts =euroFromCt(executeSingleValueSql (sqlPayments
+    double valuePaymentsActiveContracts =euroFromCt(execute_SingleValue_Sql (sqlPayments
                                                                 .arg(id, pStart, pEnd)).toInt ());
     ret.EinAuszahlungen =valuePassiveContracts +valuePaymentsActiveContracts;
 
@@ -127,7 +127,7 @@ WHERE
   AND Buchungen.Datum >  '%1'
   AND Buchungen.Datum <= '%2'
 )str");
-    double allBookingsInclInterest =euroFromCt(executeSingleValueSql ( sqlAllBookings
+    double allBookingsInclInterest =euroFromCt(execute_SingleValue_Sql ( sqlAllBookings
                                            .arg(i2s(rowid), pStart, pEnd)).toInt ());
     ret.ZzglZins =valuePassiveContracts + allBookingsInclInterest;
 

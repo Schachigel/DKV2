@@ -46,23 +46,23 @@ int main(int argc, char *argv[])
     do {
         // in memory db
         tests.push_back(new test_booking);
-//        tests.push_back(new test_appConfig);
-//        tests.push_back(new test_creditor);
+        tests.push_back(new test_appConfig);
+        tests.push_back(new test_creditor);
         tests.push_back(new test_contract);
-//        tests.push_back(new test_statistics);
-//        tests.push_back(new test_db);
-//        tests.push_back(new test_dkdbhelper);
-//        tests.push_back(new test_properties);
-//        tests.push_back(new test_sqlhelper);
+        tests.push_back(new test_statistics);
+        tests.push_back(new test_db);
+        tests.push_back(new test_dkdbhelper);
+        tests.push_back(new test_properties);
+        tests.push_back(new test_sqlhelper);
 
         // no db
-//        tests.push_back(new test_finance);
-//        tests.push_back(new test_csv);
-//        tests.push_back(new test_dbfield);
+        tests.push_back(new test_finance);
+        tests.push_back(new test_csv);
+        tests.push_back(new test_dbfield);
 
         // on disk db
-//        tests.push_back(new test_tableDataInserter);
-//        tests.push_back(new test_dkdbcopy);
+        tests.push_back(new test_tableDataInserter);
+        tests.push_back(new test_dkdbcopy);
 
 // NO ACTIVE TESTS        tests.push_back(new test_letterTemplate);
 // NO ACTIVE TESTS        tests.push_back(new test_views);

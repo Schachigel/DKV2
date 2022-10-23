@@ -120,7 +120,7 @@ int rowCount(const QString& table, const QString& where, const QSqlDatabase& db 
 
     QSqlQuery q(sql, db);
     if( q.first())
-        RETURN_OK( q.value(0).toInt(), qsl("rowCount"), sql)
+        RETURN_OK( q.value(0).toInt(), qsl("rowCount"), sql);
     else
         RETURN_ERR(-1, qsl("rowCount"), q.lastError ().text (), q.lastQuery ());
 }
@@ -136,24 +136,20 @@ bool VarTypes_share_DbType( const QVariant::Type t1, const QVariant::Type t2)
 bool verifyTable(const dbtable& tableDef, const QSqlDatabase &db)
 {
     QSqlRecord recordFromDb = db.record(tableDef.Name());
-    if( recordFromDb.count() not_eq tableDef.Fields().count()) {
-        qDebug() << "verifyTable(" << tableDef.Name() <<  ") failed: number of fields mismatch. expected / actual: " << tableDef.Fields().count() << " / " << recordFromDb.count();
-        return false;
-    }
+    if( recordFromDb.count() not_eq tableDef.Fields().count())
+        RETURN_OK( false, __FUNCTION__, tableDef.Name(), qsl("number of fields mismatch: %1 vs. %2")
+               .arg( i2s(tableDef.Fields().count()), i2s(recordFromDb.count())));
+
     for( auto& field: tableDef.Fields()) {
         QSqlField FieldFromDb = recordFromDb.field(field.name());
-        if( not FieldFromDb.isValid()) {
-            qDebug() << "verifyTable() failed: table exists but field is missing" << field.name();
-            return false;
-        }
+        if( not FieldFromDb.isValid())
+            RETURN_OK( false, __FUNCTION__, qsl("failed: table exists but field is missing"), field.name());
+
         if( not VarTypes_share_DbType(field.type(), recordFromDb.field(field.name()).type()))
-        {
-            qDebug() << "ensureTable() failed: field " << field.name() <<
-                        " type mismatch. expected / actual: " << field.type() << " / " << recordFromDb.field(field.name()).type();
-            return false;
-        }
+            RETURN_OK( false, __FUNCTION__, qsl("failed: field "), field.name (), qsl(" type mismatch: %1 vs. %2")
+                       .arg(field.type (), recordFromDb.field(field.name()).type()));
     }
-    return true;
+    RETURN_OK( true, __FUNCTION__, qsl("verified table %1").arg(tableDef.Name ()));
 }
 bool ensureTable( const dbtable& table,const QSqlDatabase& db)
 {   LOG_CALL_W(table.Name());
@@ -179,46 +175,42 @@ bool switchForeignKeyHandling(const QSqlDatabase& db /*def. DB*/, bool OnOff /*=
         return executeSql_wNoRecords(qsl("PRAGMA FOREIGN_KEYS = OFF"), db);
 }
 
-QVariant executeSingleValueSql(const QString& sql, const QSqlDatabase& db)
+QVariant execute_SingleValue_Sql(const QString& sql, const QSqlDatabase& db)
 {
     QSqlQuery q(db);
-    if( not q.exec(sql)) {
-        qCritical() << "SingleValueSql failed to execute: " << q.lastError() << "\n" << q.lastQuery();
-        return QVariant();
-    }
+    if( not q.exec(sql))
+        RETURN_ERR( QVariant(), __FUNCTION__, qsl("failed to execute"), q.lastError().text (), q.lastQuery());
+
     q.last();
-    if(q.at() > 0) {
-        qDebug() << "SingleValueSql returned more than one value\n" << q.lastQuery();
-        return QVariant();
-    }
-    if(q.at() < 0) {
-        // qDebug() << "SingleValueSql returned no value\n" << q.lastQuery() << qsl("\n");;
-        return QVariant();
-    }
-    qInfo() << "sql " << sql << " returned " << q.value(0);
-    return q.value(0);
+    if(q.at() > 0)
+        RETURN_ERR( QVariant(), __FUNCTION__, qsl("returned more than one value"), q.lastQuery ());
+
+    if(q.at() < 0)
+        RETURN_ERR( QVariant(), __FUNCTION__, qsl("returned no value"), q.lastError ().text (), q.lastQuery());
+
+    QVariant returnvalue =q.value(0);
+    RETURN_OK( returnvalue, __FUNCTION__, qsl("returned value"), returnvalue.toString (), q.lastQuery ());
 }
 QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where, const QSqlDatabase& db)
 {
-    QString sql = qsl("SELECT ") + fieldName + qsl(" FROM ") + tableName + (where.isEmpty() ? qsl("") : (qsl(" WHERE ") + where));
-    return executeSingleValueSql(sql, db);
+    QString sql = qsl("SELECT %1 FROM %2").arg( fieldName, tableName);
+    sql += (where.isEmpty() ? QString("") : (qsl(" WHERE %1").arg(where)));
+    return execute_SingleValue_Sql(sql, db);
 }
 QVariant executeSingleValueSql(const dbfield& field, const QString& where, const QSqlDatabase& db)
 {
     if( field.name().isEmpty() or field.tableName().isEmpty())
-        return QVariant();
+        RETURN_ERR( QVariant(), __FUNCTION__, qsl("invalid parameters"));
+
     QVariant result = executeSingleValueSql(field.name(), field.tableName(), where, db);
 
-    if( not result.isValid()) {
-//        qDebug() << "executeSingleValueSql found no value";
-        return result;
-    }
+    if( not result.isValid())
+        RETURN_OK( result, __FUNCTION__, qsl("found no result"));
+
     if(result.convert(field.type()))
-        return result;
-    else {
-        qCritical() << "executeSingleValueSql(): variant type conversion failed";
-        return QVariant();
-    }
+        RETURN_OK( result, __FUNCTION__, qsl("single valid value found"));
+    else
+        RETURN_ERR( QVariant(), qsl("executeSingleValueSql(): variant type conversion failed"));
 }
 
 QString selectQueryFromFields(const QVector<dbfield>& fields, const QVector<dbForeignKey>& keys, const QString& incomingWhere, const QString& order)

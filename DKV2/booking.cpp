@@ -74,7 +74,7 @@ bool bookingToDB( bookingType t, const qlonglong contractId, QDate date, const d
 bool bookDeposit(const qlonglong contractId, QDate date, const double amount)
 {
     if( amount <= 0)
-        RETURN_ERR(false, qsl(">> Einzahlungen müssen einen Wert größer als 0 haben <<"))
+        RETURN_ERR(false, qsl(">> Einzahlungen müssen einen Wert größer als 0 haben <<"));
     return bookingToDB( bookingType::deposit, contractId, date, amount);
 }
 bool bookPayout(const qlonglong contractId, QDate date, const double amount)
@@ -85,13 +85,13 @@ bool bookPayout(const qlonglong contractId, QDate date, const double amount)
 bool bookReInvestInterest(const qlonglong contractId, QDate date, const double amount)
 {
     if( amount < 0)
-        RETURN_ERR(false, qsl(">> booking ReInvestInterest failed due to negative amount <<"))
+        RETURN_ERR(false, qsl(">> booking ReInvestInterest failed due to negative amount <<"));
     return bookingToDB(bookingType::reInvestInterest, contractId, date, amount);
 }
 bool bookAnnualInterestDeposit(const qlonglong contractId, QDate date, const double amount)
 {
     if( amount < 0)
-        RETURN_ERR(false, qsl(">> booking Annual Interest Deposit failed due to negative amount <<"))
+        RETURN_ERR(false, qsl(">> booking Annual Interest Deposit failed due to negative amount <<"));
     return bookingToDB(bookingType::annualInterestDeposit, contractId, date, amount);
 }
 bool bookInterestActive(const qlonglong contractId, QDate date)
@@ -107,7 +107,7 @@ QDate dateOfnextSettlement()
      * Man sollte eine Jahresendbuchung auch mehrmals machen können, für den Fall, dass es nachträglich
      * gebuchte Geldeingänge für Neuverträge (=Aktivierungen) gab
     */
-    QDate ret =executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(sqlNextAnnualSettlement)).toDate();
+    QDate ret =execute_SingleValue_Sql(qsl("SELECT date FROM (%1)").arg(sqlNextAnnualSettlement)).toDate();
     RETURN_OK(ret, qsl("DateOfnextSettlement: Date of next Settlement was found as "), ret.toString (Qt::ISODate));
 }
 int getNbrOfBookings(const qlonglong contract, const QDate from, const QDate to, const bool terminated)

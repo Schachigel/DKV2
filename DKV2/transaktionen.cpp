@@ -2,6 +2,7 @@
 #include "helper.h"
 #include "helperfile.h"
 #include "helpersql.h"
+#include "dkdbhelper.h"
 #include "appconfig.h"
 
 #include "csvwriter.h"
@@ -504,10 +505,8 @@ void cancelContract(contract &c) {
     LOG_CALL;
     wizCancelContract wiz(getMainWindow());
     wiz.c = c;
-    wiz.creditorName = executeSingleValueSql(
-                qsl("Vorname || ' ' || Nachname"), qsl("Kreditoren"),
-                qsl("id=") + i2s(c.creditorId()))
-            .toString();
+    wiz.creditorName =Vor_Nachname_Kreditor(c.creditorId ());
+
     wiz.contractualEnd = QDate::currentDate().addMonths(c.noticePeriod());
     wiz.exec();
     if (not wiz.field(qsl("confirmed")).toBool()) {

@@ -1,8 +1,6 @@
 #ifndef DKDBHELPER_H
 #define DKDBHELPER_H
 
-
-
 #include "dbstructure.h"
 
 bool insertDKDB_Views( const QSqlDatabase &db =QSqlDatabase::database());
@@ -69,5 +67,6 @@ struct contractEnd_rowData
 Q_DECLARE_TYPEINFO(contractEnd_rowData, Q_PRIMITIVE_TYPE);
 void calc_contractEnd(QVector<contractEnd_rowData>& ce);
 
+QString Vor_Nachname_Kreditor(qlonglong id);
 
 #endif // DKDBHELPER_H

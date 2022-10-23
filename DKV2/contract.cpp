@@ -147,7 +147,7 @@ double contract::investedValue(const QDate d) const
     where = where.arg(id_aS(), d.toString(Qt::ISODate),
         bookingTypeToNbrString(bookingType::deposit),
         bookingTypeToNbrString(bookingType::payout));
-    QVariant v = executeSingleValueSql(qsl("SUM(Betrag)"), qsl("Buchungen"), where);
+    QVariant v = executeSingleValueSql(qsl("SUM(Betrag)"), tn_Buchungen, where);
     if (v.isValid())
         return euroFromCt(v.toInt());
     return 0.;
@@ -253,7 +253,7 @@ bool contract::bookInitialPayment(const QDate date, double amount)
         error =qsl("Invalid amount");
     }
     if ( error.size())
-        RETURN_ERR( false, error)
+        RETURN_ERR( false, error);
 
     if ( bookDeposit(id(), actualBookingDate, amount))
             RETURN_OK( true, qsl("Successfully activated contract "), id_aS(), qsl("["), actualBookingDate.toString (Qt::ISODate), d2euro(amount));
@@ -281,7 +281,7 @@ bool contract::bookActivateInterest(const QDate d)
         bookInterestActive(id(), d)) // insert booking
     {
         art.commit();
-        RETURN_OK( true, qsl("successfully activated interest payment for contract "), id_aS())
+        RETURN_OK( true, qsl("successfully activated interest payment for contract "), id_aS());
     }
     RETURN_ERR( false, qsl("failed to activate interest payment for contract "), id_aS());
 }
@@ -664,16 +664,18 @@ double contract::payedInterestAtTermination()
     if( not isTerminated) return 0.;
     QString sql(qsl("SELECT Betrag FROM exBuchungen WHERE VertragsId=%1 AND BuchungsArt=%2 ORDER BY id DESC LIMIT 1"));
     sql =sql.arg(id_aS (), bookingTypeToNbrString(bookingType::reInvestInterest));
-    return euroFromCt(executeSingleValueSql(sql).toInt());
+    return euroFromCt(execute_SingleValue_Sql(sql).toInt());
 }
 double contract::payedAnnualInterest(int year)
 {
     if( iModel() not_eq interestModel::payout)
         return 0;
 
-    QString sql{qsl("SELECT SUM(Betrag) FROM Buchungen WHERE VertragsId=%1 AND BuchungsArt=%2 AND substr(Buchungen.Datum, 1, 4)='%3'")};
-    sql =sql.arg(id_aS(), bookingTypeToNbrString(bookingType::annualInterestDeposit), i2s(year));
-    return euroFromCt(executeSingleValueSql (sql).toInt());
+    QString where{qsl("VertragsId=%1 AND BuchungsArt=%2 AND substr(Buchungen.Datum, 1, 4)=%3")};
+    where =where.arg(DbInsertableString (id()), DbInsertableString (bookingTypeToNbrString(bookingType::annualInterestDeposit)),
+                     DbInsertableString (i2s(year))); // conversion to string is needed as this is not a integer but part of a date string
+
+    return euroFromCt(executeSingleValueSql (qsl("SUM(Betrag)"), tn_Buchungen, where).toInt());
 }
 
 // NON MEMBER FUNCTIONS
