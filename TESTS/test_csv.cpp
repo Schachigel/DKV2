@@ -1,6 +1,87 @@
 #include "test_csv.h"
 #include "../DKV2/csvwriter.h"
 
+void test_csv::test_sql_with_parameter_binding()
+{
+    {
+        QSqlDatabase::addDatabase("QSQLITE");
+        QSqlDatabase::database().setDatabaseName(qsl(":memory:"));
+        QSqlDatabase::database(/*QSqlDatabase::defaultConnection, true*/);
+        QString sqlCreateTable =QStringLiteral("CREATE TABLE testt (s TEXT, i INTEGER)");
+        QSqlQuery qCreate{sqlCreateTable};
+    }
+    // positional binding works
+    {
+        QString sqlInsertData =QStringLiteral("INSERT INTO testt (s, i) VALUES (?, ?)");
+        QSqlQuery q;
+        q.prepare (sqlInsertData);
+        q.addBindValue (QVariant("text1"));
+        q.addBindValue (QVariant(13));
+        if( not q.exec ())
+            qDebug() << sqlInsertData << q.boundValues () << q.lastError () << q.lastQuery ();
+        q.addBindValue (QVariant("text2"));
+        q.addBindValue (QVariant(14));
+        if( not q.exec ())
+            qDebug() << sqlInsertData << q.boundValues () << q.lastError () << q.lastQuery ();
+    }
+    // How about named binding?
+    {
+        QString sqlSelect =QStringLiteral("SELECT * FROM testt WHERE s=:val1 AND i=:val2");
+        QSqlQuery qSelect;
+        qSelect.prepare (sqlSelect);
+        qSelect.bindValue (":val1", QVariant("text2"));
+        qSelect.bindValue (":val2", QVariant(14));
+        qDebug() << qSelect.boundValues ();
+        if( qSelect.exec ()) {
+            qDebug() << qSelect.lastQuery ();
+            qSelect.first();
+            qDebug() << qSelect.record ().value (0);
+        } else
+            qDebug() << sqlSelect << qSelect.boundValues () << qSelect.lastError () << qSelect.lastQuery ();
+    }
+    // change order: OK!
+    {
+        QString sqlSelect =QStringLiteral("SELECT * FROM testt WHERE s=:val1 AND i=:val2");
+        QSqlQuery qSelect;
+        qSelect.prepare (sqlSelect);
+        qSelect.bindValue (":val2", QVariant(14));
+        qSelect.bindValue (":val1", QVariant("text2"));
+        qDebug() << qSelect.boundValues ();
+        if( qSelect.exec ()) {
+            qSelect.first();
+            qDebug() << qSelect.record ().value (0);
+        } else
+            qDebug() << sqlSelect << qSelect.boundValues () << qSelect.lastError () << qSelect.lastQuery ();
+    }
+    // change placeholder mark to @ -> will not work
+    {
+        QString sqlSelect =QStringLiteral("SELECT * FROM testt WHERE s=@val1 AND i=@val2");
+        QSqlQuery qSelect;
+        qSelect.prepare (sqlSelect);
+        qSelect.bindValue ("@val1", QVariant("text2"));
+        qSelect.bindValue ("@val2", QVariant(14));
+        qDebug() << qSelect.boundValues ();
+        if( qSelect.exec ()) {
+            qSelect.first();
+            qDebug() << qSelect.record ().value (0);
+        } else
+            qDebug() << sqlSelect << qSelect.boundValues () << qSelect.lastError () << qSelect.lastQuery ();
+    }
+    // change placeholder mark to $ -> will not work
+    {
+        QString sqlSelect =QStringLiteral("SELECT * FROM testt WHERE s=$val1 AND i=$val2");
+        QSqlQuery qSelect;
+        qSelect.prepare (sqlSelect);
+        qSelect.bindValue ("$val1", QVariant("text2"));
+        qSelect.bindValue ("$val2", QVariant(14));
+        qDebug() << qSelect.boundValues ();
+        if( qSelect.exec ()) {
+            qSelect.first();
+            qDebug() << qSelect.record ().value (0);
+        } else
+            qDebug() << sqlSelect << qSelect.boundValues () << qSelect.lastError () << qSelect.lastQuery ();
+    }
+}
 void test_csv::test_empty_csv()
 {
     csvwriter csv;

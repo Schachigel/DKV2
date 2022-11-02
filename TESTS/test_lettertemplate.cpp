@@ -18,13 +18,13 @@ void test_letterTemplate::initTestCase()
 
 void test_letterTemplate::init()
 {   LOG_CALL;
-    initTestDb();
+    initTestDkDb();
     fill_DkDbDefaultContent(QSqlDatabase::database(), false);
 }
 
 void test_letterTemplate::cleanup()
 {   LOG_CALL;
-    cleanupTestDb();
+    cleanupTestDkDb();
 }
 
 void test_letterTemplate::test_save_letter_template()

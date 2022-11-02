@@ -236,7 +236,7 @@ void uebersichten::renderPayedInterestByYear()
     QString desc {qsl("Die Liste zeigt für jedes Jahr, welche Zinsen ausbezahlt oder, für thesaurierende Verträge und Verträge ohne Zinsauszahlung, angerechnet wurden.")};
     prep(head, desc);
     QVector<QSqlRecord> records;
-    if( not executeSql( sqlInterestByYearOverview, QVariant(), records)) {
+    if( not executeSql( sqlInterestByYearOverview, records)) {
         return;
     }
     tablelayout tl(td);
@@ -296,7 +296,7 @@ void uebersichten::renderInterestDistribution()
     prep( head, desc);
 
     QVector<QSqlRecord> records;
-    if( not executeSql(sqlContractsByYearByInterest, QVariant(), records))
+    if( not executeSql(sqlContractsByYearByInterest, records))
         return;
     tablelayout tl(td);
     tl.cols =QStringList({qsl("Zinssatz"), qsl("Summe"), qsl("Anzahl")});

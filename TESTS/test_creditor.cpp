@@ -8,7 +8,7 @@
 
 void test_creditor::init()
 {
-    initTestDb_InMemory();
+    initTestDkDb_InMemory();
 }
 
 void test_creditor::cleanup()

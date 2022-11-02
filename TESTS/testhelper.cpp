@@ -13,52 +13,54 @@ void getRidOfFile(QString filename)
     QVERIFY(not QFile::exists(filename));
 }
 
-void initTestDb_InMemory()
+void initTestDkDb_InMemory()
 {   LOG_CALL;
     init_DKDBStruct();
-    openDbConnection_InMemory();
+    openDefaultDbConnection_InMemory();
     QVERIFY(dkdbstructur.createDb());
 }
 
-void initTestDb()
+void initTestDkDb()
 {   LOG_CALL;
     init_DKDBStruct();
-    QDir().mkdir(QString("../data"));
+    QDir().mkdir(QString("./data"));
     if (QFile::exists(testDbFilename))
         QFile::remove(testDbFilename);
     if (QFile::exists(testDbFilename))
         QFAIL("test db still in use");
-    openDbConnection();
+    openDefaultDbConnection();
     QVERIFY(dkdbstructur.createDb());
     QVERIFY2( QFile::exists(testDbFilename), "create database failed." );
 }
-void createTestDb()
+
+void createTestDkDb_wData()
 {   LOG_CALL;
-    initTestDb();
+    initTestDkDb();
     QVERIFY(fill_DkDbDefaultContent());
 }
-void createTestDbTemplate()
+
+void createTestDkDbTemplate()
 {
-    createTestDb();
+    createTestDkDb_wData();
     closeAllDatabaseConnections();
     QFile::copy(testDbFilename, testTemplateDb);
 }
-void cleanupTestDbTemplate()
+void cleanupTestDkDbTemplate()
 {
     getRidOfFile(testDbFilename);
     getRidOfFile(testTemplateDb);
 }
-void initTestDbFromTemplate()
+void initTestDkDbFromTemplate()
 {
     getRidOfFile(testDbFilename);
     QFile::copy(testTemplateDb, testDbFilename);
-    openDbConnection();
-    switchForeignKeyHandling();
+    openDefaultDbConnection();
+    switchForeignKeyHandling(fkh_on);
 }
 void createTestDb_withRandomData()
 {   LOG_CALL;
     dbgTimer t(qsl("createTestDb_wRandomData"));
-    createTestDb();
+    createTestDkDb_wData();
     saveRandomCreditors(10);
     saveRandomContracts(8);
     activateRandomContracts(100 /* % */);
@@ -67,7 +69,7 @@ void cleanupTestDb_InMemory()
 {   LOG_CALL;
     closeAllDatabaseConnections();
 }
-void cleanupTestDb()
+void cleanupTestDkDb()
 {   LOG_CALL;
     closeAllDatabaseConnections();
     if (QFile::exists(testDbFilename))
@@ -75,22 +77,29 @@ void cleanupTestDb()
 //    QDir().rmdir("../data");
     QVERIFY2( (QFile::exists(testDbFilename) == false), "destroy database failed." );
 }
-void openDbConnection_InMemory()
+void openDefaultDbConnection_InMemory()
 {
+//    QSqlDatabase::addDatabase(dbTypeName);
+//    QSqlDatabase db;
+//    db.setDatabaseName(qsl(":memory:"));
+//    db.open();
     QSqlDatabase::addDatabase(dbTypeName);
     QSqlDatabase::database().setDatabaseName(qsl(":memory:"));
-    QVERIFY(QSqlDatabase::database().open());
+    QSqlDatabase::database();
 }
-void openDbConnection(QString file /*testDbFilename*/)
+void openDefaultDbConnection(QString file /*testDbFilename*/)
 {
     QSqlDatabase::addDatabase(dbTypeName);
     QSqlDatabase::database().setDatabaseName(file);
-    QVERIFY(QSqlDatabase::database().open());
+    QSqlDatabase::database().open ();
 }
-void closeDbConnection( QSqlDatabase db /*=QSqlDatabase::database()*/)
+void closeDefaultDbConnection( )
 {
-    QSqlDatabase::database(db.connectionName()).close();
-    QSqlDatabase::removeDatabase(db.connectionName());
+    QSqlDatabase::database().close();
+    //QSqlDatabase::database().connectionName () is no longer available
+    QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
+    qDebug() << "connections: " << QSqlDatabase::connectionNames ();
+    Q_ASSERT( QSqlDatabase::connectionNames ().isEmpty ());
 }
 
 void createEmptyFile(const QString& path)

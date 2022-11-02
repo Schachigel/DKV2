@@ -9,7 +9,7 @@
 
 void test_booking::init()
 {   LOG_CALL;
-    initTestDb_InMemory ();
+    initTestDkDb_InMemory ();
 }
 void test_booking::cleanup()
 {   LOG_CALL;
@@ -94,12 +94,12 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings02()
 }
 void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings03()
 {
-    QDate miniActDate/* =EndOfTheFuckingWorld*/;
-        saveRandomCreditors(70);
-        saveRandomContracts(100);    // contract date: 2 years back or less
-        miniActDate = activateRandomContracts(90);// activation date: > contract date
+    /* =EndOfTheFuckingWorld*/;
+    saveRandomCreditors(70);
+    saveRandomContracts(100);    // contract date: 2 years back or less
+    QDate minimalActivationDate =activateRandomContracts(90);// activation date: > contract date
 
-        QCOMPARE( dateOfnextSettlement(), QDate(miniActDate.year(), 12, 31));
+    QCOMPARE( dateOfnextSettlement(), QDate(minimalActivationDate.year(), 12, 31));
 }
 
 void test_booking::test_bookDeposit()

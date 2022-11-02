@@ -15,12 +15,12 @@ void test_tableDataInserter::initTestCase()
 
 void test_tableDataInserter::init()
 {   LOG_CALL;
-    initTestDb();
+    initTestDkDb();
 }
 
 void test_tableDataInserter::cleanup()
 {   LOG_CALL;
-    cleanupTestDb();
+    cleanupTestDkDb();
 
 }
 
@@ -33,14 +33,14 @@ const QString fnBool   {qsl("type_bool")};
 const QString fnDate   {qsl("type_date")};
 
 const QVariant val_int    (42);
-const QVariant val_string ("Hallo Welt");
+const QVariant val_string {qsl("Hallo Welt")};
 const QVariant val_bool   (true);
 const QVariant val_date   (QDate(1995, 5, 6));
 
 dbtable defineTestTable()
 {
     dbtable t(tname);
-    t.append(dbfield(fnId,     QVariant::LongLong).setPrimaryKey().setNotNull().setAutoInc());
+    t.append(dbfield(fnId,     QVariant::LongLong).setAutoInc());
     t.append(dbfield(fnInt,    QVariant::Int).setNotNull());
     t.append(dbfield(fnString, QVariant::String).setNotNull());
     t.append(dbfield(fnBool,   QVariant::Bool).setNotNull());
@@ -51,7 +51,6 @@ dbtable defineTestTable()
 
 void test_tableDataInserter::test_insert_and_retreive()
 {
-
     dbtable t =defineTestTable();
     QVERIFY(t.create());
     {/// CUT ->

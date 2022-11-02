@@ -7,10 +7,13 @@ class test_csv : public QObject
 {
     Q_OBJECT
 private slots:
-    //    void initTestCase();
-    //    void cleanupTestCase();
-    //    void init(){}
-    //    void cleanup(){}
+    void initTestCase(){};
+    void cleanupTestCase(){};
+    void init(){};
+    void cleanup(){};
+
+    void test_sql_with_parameter_binding();
+
     void test_empty_csv();
     void test_csv_oneHeader();
     void test_csv_twoHeader();

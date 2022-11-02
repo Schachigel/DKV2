@@ -9,7 +9,7 @@
 
 void test_dkdbhelper::init()
 {   LOG_CALL;
-    initTestDb_InMemory();
+    initTestDkDb_InMemory();
 }
 
 void test_dkdbhelper::cleanup()
@@ -22,15 +22,17 @@ void test_dkdbhelper::test_selectQueryFromFields()
     but as the dkdbstructur is useful for this
     the test was moved here */
     QString sql = selectQueryFromFields(dkdbstructur["Buchungen"].Fields(), dkdbstructur["Buchungen"].ForeignKeys());
-    qInfo() << sql << qsl("\n");
-    QCOMPARE(sql,  "SELECT Buchungen.id, Buchungen.VertragsId, Buchungen.Datum, Buchungen.BuchungsArt, Buchungen.Betrag, Buchungen.Zeitstempel FROM Buchungen WHERE true AND Buchungen.VertragsId=Vertraege.id");
+//    qInfo() << sql << qsl("\n");
+    QCOMPARE(sql,  "SELECT Buchungen.id, Buchungen.VertragsId, Buchungen.Datum, Buchungen.BuchungsArt, "
+                   "Buchungen.Betrag, Buchungen.Zeitstempel "
+                   "FROM Buchungen WHERE Buchungen.VertragsId=Vertraege.id");
 }
 
 void test_dkdbhelper::test_querySingleValueInvalidQuery()
 {   LOG_CALL;
     QString sql ("SELECT NOTEXISTINGFIELD FROM NOTEXISTINGTABLE WHERE NOTEXISTINGFIELD='0'");
     QVariant result;
-    result = execute_SingleValue_Sql(sql);
+    result = executeSingleValueSql(sql);
     QVERIFY2(QVariant::Invalid == result.type(),
              "Invalid single value sql has poditiv result");
 }
@@ -46,7 +48,7 @@ void test_dkdbhelper::test_querySingleValue()
     tdi.setValue("id", 1);
     tdi.setValue("f", "Hallo");
     tdi.InsertRecord();
-    QVariant hallo = execute_SingleValue_Sql("SELECT [f] FROM [t] WHERE id=1");
+    QVariant hallo = executeSingleValueSql("SELECT [f] FROM [t] WHERE id=1");
     QVERIFY2(hallo.toString() == "Hallo", "ExecuteSingleValueSql failed");
 }
 
@@ -64,7 +66,7 @@ void test_dkdbhelper::test_querySingleValue_multipleResults()
     tdi.setValue("id", 1);
     tdi.setValue("f", "Hallo1");
     tdi.InsertRecord();
-    QVariant hallo = execute_SingleValue_Sql("SELECT [f] FROM [t] WHERE id=1");
+    QVariant hallo = executeSingleValueSql("SELECT [f] FROM [t] WHERE id=1");
     QVERIFY2(hallo.type() == QVariant::Invalid , "ExecuteSingleValueSql failed");
 }
 

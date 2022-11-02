@@ -321,8 +321,9 @@ const QStringList getIndexSql() {
 bool remove_all_views(const QSqlDatabase& db /*=QSqlDatabase::database()*/)
 {   LOG_CALL;
     QVector<QSqlRecord> views;
-    if( executeSql(qsl("SELECT name FROM sqlite_master WHERE type = ?"), QVariant(qsl("view")), views, db)) {
+    if( executeSql(qsl("SELECT name FROM sqlite_master WHERE type ='view'"), views, db)) {
         for( const auto& rec : qAsConst(views)) {
+// TODO: use deleteView helper from helpersql
             if( executeSql_wNoRecords(qsl("DROP view %1").arg(rec.value(0).toString()), db))
                 continue;
             else

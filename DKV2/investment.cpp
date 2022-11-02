@@ -42,7 +42,7 @@ QString investment::toString() const
 {
     static dbtable investmentTable(qsl("Geldanlagen"));
     if( 0 == investmentTable.Fields().size()){
-        investmentTable.append(dbfield(qsl("rowid"), QVariant::Int).setAutoInc());
+        investmentTable.append(dbfield(qsl("rowid"), QVariant::LongLong).setAutoInc());
         investmentTable.append(dbfield(fnInvestmentInterest, QVariant::Int).setNotNull());
         investmentTable.append(dbfield(fnInvestmentStart,    QVariant::Date).setNotNull());
         investmentTable.append(dbfield(fnInvestmentEnd,      QVariant::Date).setNotNull());
@@ -105,7 +105,7 @@ WHERE Vertraege.id NOT IN (SELECT DISTINCT VertragsId FROM Buchungen)
   AND Vertraege.Vertragsdatum >  '%1'
   AND Vertraege.Vertragsdatum <= '%2'
 )str");
-    double valuePassiveContracts =euroFromCt(execute_SingleValue_Sql (sqlContractsWithNoPayment
+    double valuePassiveContracts =euroFromCt(executeSingleValueSql (sqlContractsWithNoPayment
                                                          .arg(id, pStart, pEnd)).toInt ());
 
     QString sqlPayments =qsl(R"str(
@@ -116,7 +116,7 @@ WHERE
   AND Buchungen.Datum >  '%1'
   AND Buchungen.Datum <= '%2'
 )str");
-    double valuePaymentsActiveContracts =euroFromCt(execute_SingleValue_Sql (sqlPayments
+    double valuePaymentsActiveContracts =euroFromCt(executeSingleValueSql (sqlPayments
                                                                 .arg(id, pStart, pEnd)).toInt ());
     ret.EinAuszahlungen =valuePassiveContracts +valuePaymentsActiveContracts;
 
@@ -127,7 +127,7 @@ WHERE
   AND Buchungen.Datum >  '%1'
   AND Buchungen.Datum <= '%2'
 )str");
-    double allBookingsInclInterest =euroFromCt(execute_SingleValue_Sql ( sqlAllBookings
+    double allBookingsInclInterest =euroFromCt(executeSingleValueSql ( sqlAllBookings
                                            .arg(i2s(rowid), pStart, pEnd)).toInt ());
     ret.ZzglZins =valuePassiveContracts + allBookingsInclInterest;
 
@@ -220,7 +220,7 @@ QVector<QPair<qlonglong, QString>> activeInvestments(const QDate cDate)
 
     QString sql {(qsl("SELECT rowid, ZSatz, Typ FROM Geldanlagen WHERE %1 ORDER BY %2").arg(where, fnInvestmentInterest))};
     QVector<QSqlRecord> result;
-    if( not executeSql(sql, QVariant(), result)) {
+    if( not executeSql(sql, result)) {
         qInfo() << "no investments";
         return QVector<QPair<qlonglong, QString>>();
     }

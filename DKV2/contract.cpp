@@ -42,7 +42,7 @@
         contractTable.append(dbfield(fnThesaurierend, QVariant::Int).setNotNull().setDefault(1));
         contractTable.append(dbfield(fnVertragsDatum, QVariant::Date).setNotNull());
         contractTable.append(dbfield(fnKFrist,        QVariant::Int).setNotNull().setDefault(6));
-        contractTable.append(dbfield(fnAnlagenId,     QVariant::Int));
+        contractTable.append(dbfield(fnAnlagenId,     QVariant::LongLong));
         contractTable.append(dbForeignKey(contractTable[fnAnlagenId],
             qsl("Geldanlagen"), qsl("rowid"), ODOU_Action::SET_NULL));
         contractTable.append(dbfield(fnLaufzeitEnde,  QVariant::Date).setNotNull().setDefault(EndOfTheFuckingWorld_str));
@@ -664,16 +664,16 @@ double contract::payedInterestAtTermination()
     if( not isTerminated) return 0.;
     QString sql(qsl("SELECT Betrag FROM exBuchungen WHERE VertragsId=%1 AND BuchungsArt=%2 ORDER BY id DESC LIMIT 1"));
     sql =sql.arg(id_aS (), bookingTypeToNbrString(bookingType::reInvestInterest));
-    return euroFromCt(execute_SingleValue_Sql(sql).toInt());
+    return euroFromCt(executeSingleValueSql(sql).toInt());
 }
 double contract::payedAnnualInterest(int year)
 {
     if( iModel() not_eq interestModel::payout)
         return 0;
 
-    QString where{qsl("VertragsId=%1 AND BuchungsArt=%2 AND substr(Buchungen.Datum, 1, 4)=%3")};
+    QString where{qsl("VertragsId=%1 AND BuchungsArt=%2 AND SUBSTR(Buchungen.Datum, 1, 4)=%3")};
     where =where.arg(DbInsertableString (id()), DbInsertableString (bookingTypeToNbrString(bookingType::annualInterestDeposit)),
-                     DbInsertableString (i2s(year))); // conversion to string is needed as this is not a integer but part of a date string
+                     DbInsertableString (i2s(year))); // conversion to string is needed as this is not an integer but part of a date string
 
     return euroFromCt(executeSingleValueSql (qsl("SUM(Betrag)"), tn_Buchungen, where).toInt());
 }

@@ -4,16 +4,16 @@
 #include "appconfig.h"
 
 
-QString tempPathTemplateFromPath (const QString& path)
+QString tempPathTemplateFromPath (const QString& path, const QString &purpose)
 {
     QFileInfo fi(path);
     QString ext =fi.suffix ();
-    return path.left(path.size ()-fi.suffix ().size ()-1).append ("_XXXXXX.").append (ext);
+    return path.left(path.size ()-fi.suffix ().size ()-1).append(qsl(".")).append(purpose).append ("_XXXXXX.").append (ext);
 }
 
-QString getUniqueTempFilename(const QString &templateFileName)
+QString getUniqueTempFilename(const QString &templateFileName, const QString& purpose)
 {
-    QTemporaryFile temp {tempPathTemplateFromPath(templateFileName +qsl("-preconversion"))};
+    QTemporaryFile temp {tempPathTemplateFromPath(templateFileName, purpose)};
     temp.open();
     return temp.fileName();
 }

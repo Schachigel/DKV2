@@ -124,7 +124,7 @@ bool insertData(const QString& dbfn, const QString& table, const QString& field)
     if( not db.open())
         return false;
     QString sql (qsl("INSERT INTO %1 (%2) VALUES ('%3')"));
-    return executeSql_wNoRecords(sql.arg(table).arg(field).arg(i2s(i)), QVector<QVariant>(), db);
+    return executeSql_wNoRecords(sql.arg(table, field, i2s(i)), QVector<QVariant>(), db);
 }
 
 void test_dkdbcopy::test_dbsHaveSameTables_fails_diffRowCount()
@@ -151,9 +151,6 @@ void test_dkdbcopy::test_copyDatabase()
 {
     // setup
     createTestDb_withRandomData();
-//    QSqlDatabase::database().close();
-//    QSqlDatabase::database().removeDatabase(QSqlDatabase::database().connectionName());
-
     // code under test
     copy_database(testDbFilename, tempFileName);
     // verification
@@ -167,7 +164,7 @@ void test_dkdbcopy::test_convertDatabaseInplace() {
 
     // setup
     createTestDb_withRandomData();
-    closeDbConnection();
+    closeDefaultDbConnection();
     // code under test
     QString temp =convert_database_inplace(testDbFilename);
     // verification
@@ -190,6 +187,10 @@ void test_dkdbcopy::test_convertDatabaseInplace_wNewColumn()
     t2.append(dbForeignKey(t2[qsl("t1id")], oldDbStructure[qsl("t1")][qsl("id")], ODOU_Action::CASCADE));
     t2.append(dbfield(qsl("t2f1")));
     oldDbStructure.appendTable(t2);
+    dbtable meta(qsl("Meta"));
+    meta.append (dbfield(qsl("Name"), QVariant::String));
+    meta.append (dbfield(qsl("Wert"), QVariant::String));
+    oldDbStructure.appendTable(meta);
     // create source db with old db structure
     oldDbStructure.createDb(dbfn1);
     // fill the "old" database file with some data
@@ -199,7 +200,7 @@ void test_dkdbcopy::test_convertDatabaseInplace_wNewColumn()
         db.setDatabaseName(dbfn1); db.open();
         TableDataInserter tdi1{t1};
         tdi1.setValue("f1", "v1");    tdi1.InsertRecord(db);
-        tdi1.setValue("f2", "v2");    tdi1.InsertRecord(db);
+        tdi1.setValue("f1", "v2");    tdi1.InsertRecord(db);
         TableDataInserter tdi2{t2};
         tdi2.setValue("t1id", 1); tdi2.setValue("t2f1", "v1"); tdi2.InsertRecord(db);
         tdi2.setValue("t1id", 2); tdi2.setValue("t2f1", "v2"); tdi2.InsertRecord(db);
@@ -209,6 +210,7 @@ void test_dkdbcopy::test_convertDatabaseInplace_wNewColumn()
     t2.append(dbfield(qsl("newField")));
     newDbStructure.appendTable(t1);
     newDbStructure.appendTable(t2);
+    newDbStructure.appendTable(meta);
     // Code under TEST:
     // convert the old file into a file with the new datastructure
     QVERIFY( convert_database_inplace(dbfn1, newDbStructure).size());

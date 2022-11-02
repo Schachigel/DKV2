@@ -10,8 +10,8 @@
 
 
 
-QString tempPathTemplateFromPath (const QString& path);
-QString getUniqueTempFilename(const QString& templateFileName);
+QString tempPathTemplateFromPath (const QString& path, const QString& purpose =QString());
+QString getUniqueTempFilename(const QString& templateFileName, const QString &purpose);
 
 bool moveToBackup(const QString &fn);
 

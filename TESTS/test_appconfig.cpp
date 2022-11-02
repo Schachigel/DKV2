@@ -12,7 +12,7 @@ void test_appConfig::initTestCase()
     QVERIFY( appConfig::LastDb().size());
     appConfig::setOutDir("C:/temp/output");
     QVERIFY( appConfig::Outdir().size());
-    initTestDb_InMemory();
+    initTestDkDb_InMemory();
     fill_DkDbDefaultContent(QSqlDatabase::database(), false);
 
 }

@@ -5,7 +5,6 @@
 #include "appconfig.h"
 #include "tabledatainserter.h"
 #include "dkdbviews.h"
-#include "dkdbhelper.h"
 #include "dkdbcopy.h"
 #include "creditor.h"
 
@@ -15,10 +14,9 @@
 QString moveToPreConversionCopy( const QString& file)
 {
     QFileInfo fi(file);
-    QString fullFile =fi.canonicalFilePath();
-    QString newFile = getUniqueTempFilename(fullFile +qsl(".preconversion"));
-
-    QFile f(fullFile);
+    QString newFile = getUniqueTempFilename(fi.absoluteFilePath (), qsl("preconversion"));
+    Q_ASSERT( newFile.size() >0);
+    QFile f(fi.absoluteFilePath ());
     if( f.rename( newFile))
         return newFile;
     else {
@@ -107,8 +105,8 @@ bool copy_database( const QString& sourceFName,
     if ( not ad.attachDb(sourceFName))
         return false;
 
-    switchForeignKeyHandling(autoTarget.db, false);
-    switchForeignKeyHandling(autoTarget.db, ad.alias(), false);
+    switchForeignKeyHandling(false, autoTarget.db);
+    switchForeignKeyHandling(false, ad.alias(), autoTarget.db);
 
     QVector<dbtable> tables = targetDbStructure.getTables();
     for (auto& table : qAsConst(tables)) {
@@ -249,12 +247,12 @@ QString convert_database_inplace( const QString& targetFilename, const dbstructu
     // copy the data  - but if fields are missing: use only the available fields, leave the new fields to their default
     autoDb db(sourceFileName, qsl("convert"));
     // if foreign_keys are not enforced we can copy the tables in any order
-    switchForeignKeyHandling(db, fkh_off);
+    switchForeignKeyHandling(fkh_off, db);
 
     autoRollbackTransaction transact(db.conName());
     autoDetachDb autodetatch( qsl("targetDb"), db.conName());
     autodetatch.attachDb(targetFilename);
-    switchForeignKeyHandling(db, autodetatch.alias(), fkh_off);
+    switchForeignKeyHandling(fkh_off, autodetatch.alias(), db);
 
     // there are tables with default content but w/o primIndex -> replace will not work
     // so they must be deleted first

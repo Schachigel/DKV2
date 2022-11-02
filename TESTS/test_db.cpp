@@ -20,7 +20,7 @@ void test_db::initTestCase()
 
 void test_db::init()
 {   LOG_CALL;
-    initTestDb_InMemory();
+    initTestDkDb_InMemory();
 }
 
 void test_db::cleanup()

@@ -91,7 +91,7 @@ bool csvwriter::saveAndShowInExplorer(const QString& filename) const
     if( not file.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
         qCritical() << "could not open csv file for writing: " << filename;
         // check if we could get another filename to work with...
-        p_tf =std::make_unique<QTemporaryFile>(tempPathTemplateFromPath(path));
+        p_tf =std::make_unique<QTemporaryFile>(tempPathTemplateFromPath(path, qsl("bakupCsv")));
         if( p_tf->open())
             qDebug() << "falling back to temporary file: " << p_tf->fileName ();
         else{

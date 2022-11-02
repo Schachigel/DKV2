@@ -4,19 +4,19 @@
 
 void test_views::initTestCase()
 {
-    createTestDbTemplate();
+    createTestDkDbTemplate();
 }
 void test_views::cleanupTestCase()
 {
-    cleanupTestDbTemplate();
+    cleanupTestDkDbTemplate();
 }
 void test_views::init()
 {
-    initTestDbFromTemplate();
+    initTestDkDbFromTemplate();
 }
 void test_views::cleanup()
 {
-    cleanupTestDb();
+    cleanupTestDkDb();
 }
 
 //void test_views::test_stat_activateContract_reinvesting()

@@ -93,26 +93,34 @@ bool tableExists(const QString& tablename, const QSqlDatabase& db = QSqlDatabase
 bool verifyTable( const dbtable& table, const QSqlDatabase& db);
 bool ensureTable(const dbtable& table, const QSqlDatabase& db =QSqlDatabase::database());
 
+bool executeSql(const QString& sql, QVector<QSqlRecord>& result, const QSqlDatabase& db =QSqlDatabase::database());
+bool executeSql(const QString& sql, const QVector<QPair<QString, QVariant>>& params, QVector<QSqlRecord>& result, const QSqlDatabase& db =QSqlDatabase::database());
+bool executeSql(const QString& sql, const QVector<QVariant>& params,                 QVector<QSqlRecord>& result, const QSqlDatabase& db =QSqlDatabase::database());
+
+
+QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString(), const QSqlDatabase& db =QSqlDatabase::database());
+
 #define fkh_on  true
 #define fkh_off false
-bool switchForeignKeyHandling(const QSqlDatabase& db, const QString& alias, bool OnOff =fkh_on);
-bool switchForeignKeyHandling(const QSqlDatabase& db =QSqlDatabase::database(), bool OnOff =fkh_on);
+bool getForeignKeyHandlingStatus(const QString& alias =QString(), const QSqlDatabase& db =QSqlDatabase::database());
+//bool switchForeignKeyHandling(const QSqlDatabase& db, const QString& alias, bool OnOff =fkh_on);
+bool switchForeignKeyHandling(bool OnOff =fkh_on, const QSqlDatabase& db =QSqlDatabase::database());
+bool switchForeignKeyHandling(bool OnOff, const QString& alias, const QSqlDatabase& db=QSqlDatabase::database ());
 
-QVariant execute_SingleValue_Sql(const QString& sql, const QSqlDatabase& db = QSqlDatabase::database());
+QVariant executeSingleValueSql(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database());
+QVariant executeSingleValueSql(const QString& sql, const QVector<QVariant> params, const QSqlDatabase& db =QSqlDatabase::database());
 QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where =QString(), const QSqlDatabase& db = QSqlDatabase::database());
 QVariant executeSingleValueSql(const dbfield&, const QString& where, const QSqlDatabase& db=QSqlDatabase::database());
 
 QString selectQueryFromFields(const QVector<dbfield>& fields,
                               const QVector<dbForeignKey>& keys =QVector<dbForeignKey>(),
                               const QString& where =QString(), const QString& order =QString());
-// QVector<QVariant> executeSingleColumnSql( const QString field, const QString table, const QString& where);
-QVector<QVariant> executeSingleColumnSql( const dbfield& field, const QString& where =QString());
-QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString());
-QSqlRecord executeSingleRecordSql(const QString& sql);
 
-QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString());
-bool executeSql(const QString& sql, const QVariant& v, QVector<QSqlRecord>& result, const QSqlDatabase& db =QSqlDatabase::database());
-bool executeSql(const QString& sql, QVector<QSqlRecord>& result);
+// QVector<QVariant> executeSingleColumnSql( const QString field, const QString table, const QString& where);
+QVector<QVariant> executeSingleColumnSql(const dbfield& dbField, const QString& where =QString());
+
+QSqlRecord executeSingleRecordSql(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database ());
+QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString(), const QSqlDatabase& db=QSqlDatabase::database());
 
 bool executeSql_wNoRecords(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database());
 bool executeSql_wNoRecords(const QString& sql, const QVariant& v, const QSqlDatabase& db = QSqlDatabase::database());
@@ -125,9 +133,30 @@ struct dbViewDev{
     const QString sql;
 };
 
+bool deleteDbView(const QString& name, const QSqlDatabase& db = QSqlDatabase::database());
+bool createDbViews( const QMap<QString, QString>& views, const QSqlDatabase& db);
+
+bool createIndicesFromSQL( const QStringList Sqls, const QSqlDatabase& db);
+
+namespace
+{
 const bool persistentView =false;
 const bool temporaryView  =true;
-bool createDbView(const QString& name, const QString& sql, bool temporary =false, const QSqlDatabase& db = QSqlDatabase::database());
+inline bool createDbView(const QString& name, const QString& sql, bool temporary =false, const QSqlDatabase& db = QSqlDatabase::database())
+{   LOG_CALL_W(name);
+
+    deleteDbView (name, db);
+    QString createViewSql = "CREATE %1 VIEW %2 AS " + sql;
+    createViewSql = createViewSql.arg((temporary ? qsl("TEMP") : QString()), name);
+    if( executeSql_wNoRecords(createViewSql, db)) {
+        return true;
+    }
+    qCritical() << "Faild to create view " << name;
+    return false;
+}
+
+}
+
 inline bool createTemporaryDbView(const QString& name, const QString& sql, const QSqlDatabase& db = QSqlDatabase::database())
 {
     return createDbView(name, sql, temporaryView, db);
@@ -137,9 +166,5 @@ inline bool createPersistentDbView(const QString& name, const QString& sql, cons
     return createDbView(name, sql, persistentView, db);
 }
 
-bool deleteDbView(const QString& name, const QSqlDatabase& db = QSqlDatabase::database());
-bool createDbViews( const QMap<QString, QString>& views, const QSqlDatabase& db);
-
-bool createIndicesFromSQL( const QStringList Sqls, const QSqlDatabase& db);
 
 #endif // SQLHELPER_H

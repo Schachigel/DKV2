@@ -4,23 +4,23 @@
 #include <QTest>
 #include "../DKV2/helper.h"
 
-inline const QString testDbFilename {qsl("../data/testdb.sqlite")};
-inline const QString testTemplateDb {qsl("../data/template.sqlite")};
+inline const QString testDbFilename {qsl("./data/testdb.sqlite")};
+inline const QString testTemplateDb {qsl("./data/template.sqlite")};
 
 void getRidOfFile(QString fn);
-void initTestDb_InMemory();
-void initTestDb();
-void createTestDb();
-void createTestDbTemplate();
-void cleanupTestDbTemplate();
-void initTestDbFromTemplate();
+void initTestDkDb_InMemory();
+void initTestDkDb();
+void createTestDkDb_wData();
+void createTestDkDbTemplate();
+void cleanupTestDkDbTemplate();
+void initTestDkDbFromTemplate();
 
 void createTestDb_withRandomData();
 void cleanupTestDb_InMemory();
-void cleanupTestDb();
-void openDbConnection_InMemory();
-void openDbConnection(QString file =testDbFilename);
-void closeDbConnection( QSqlDatabase db =QSqlDatabase::database());
+void cleanupTestDkDb();
+void openDefaultDbConnection_InMemory();
+void openDefaultDbConnection(QString file =testDbFilename);
+void closeDefaultDbConnection();
 void createEmptyFile(const QString& fn);
 //int tableRecordCount(const QString& table, const QSqlDatabase& db =QSqlDatabase::database());
 bool dbHasTable(const QString& tname, const QSqlDatabase& db =QSqlDatabase::database());

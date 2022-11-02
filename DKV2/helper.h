@@ -5,19 +5,20 @@
 
 
 #define qsl(x) QStringLiteral(x)
-inline const QVariant emptyStringV {QString()}; // keep the qsl to force the variant to type String!
+inline const QVariant emptyStringV {""}; // keep the qsl to force the variant to type String!
 inline QString singleQuoted(const QString& s) { return qsl("'%1'").arg(s);}
 
 inline void expected_error (QString MSG) {QMessageBox::information(NULL, qsl("Fehler"), MSG); qInfo() << MSG;}
 
 inline QString cat (QString s) { return s; }
 
+/*
 template <typename T, typename ...Ts>
 inline QString cat(T s1, Ts ... rest)
 {
     return s1 +QStringLiteral(" _ ") +cat (rest ...);
 }
-/*
+ODER
 template <typename ...TS>
 void log(TS&& ... args)
 {
@@ -28,10 +29,14 @@ void log(TS&& ... args)
 template <typename t, typename ... TS>
 inline t returnLog(int sev, t returnvalue, TS ...args)
 {
-    if( sev == 0)
-        qInfo().noquote ()     << cat( args...);
-    else
-        qCritical().noquote () << cat(args...);
+    if( sev == 0) {
+        QDebug out =qInfo().noquote ();
+        (( out << std::forward<TS>(args)), ...);
+    }
+    else {
+        QDebug out =qCritical().noquote ();
+        (( out << std::forward<TS>(args)), ...);
+    }
     return returnvalue;
 }
 

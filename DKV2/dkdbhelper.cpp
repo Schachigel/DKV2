@@ -151,7 +151,7 @@ bool insertDKDB_Indices( const QSqlDatabase& db)
 bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/, zinssusance sz /*=zs30360*/)
 {
     LOG_CALL;
-    switchForeignKeyHandling(db, true);
+    switchForeignKeyHandling(true, db);
     bool ret = false;
     autoRollbackTransaction art(db.connectionName());
     do {
@@ -262,7 +262,7 @@ bool open_databaseForApplication( const QString &newDbFile)
         qCritical() << "update views on " << newDbFile << " failed";
         return false;
     }
-    switchForeignKeyHandling(db, fkh_on);
+    switchForeignKeyHandling(fkh_on, db);
     return true;
 }
 
@@ -428,12 +428,12 @@ SELECT SUM(Betrag)/100. AS Gesamtbetrag
 FROM Vertraege
 WHERE id NOT IN (SELECT DISTINCT VertragsId FROM Buchungen)
 )str")};
-    double inactiveSum =execute_SingleValue_Sql(sqlInactive).toDouble();
+    double inactiveSum =executeSingleValueSql(sqlInactive).toDouble();
     QString sqlActive {qsl(R"str(
 SELEcT SUM(Betrag) /100. as Gesamtbetrag
 FROM Buchungen
 )str")};
-    double activeSum =execute_SingleValue_Sql(sqlActive).toDouble();
+    double activeSum =executeSingleValueSql(sqlActive).toDouble();
     return inactiveSum + activeSum;
 }
 

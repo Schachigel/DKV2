@@ -8,7 +8,7 @@
 
 void test_contract::init()
 {   LOG_CALL;
-    initTestDb_InMemory ();
+    initTestDkDb_InMemory ();
 }
 
 void test_contract::cleanup()
