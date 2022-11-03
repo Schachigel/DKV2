@@ -20,6 +20,7 @@ private slots:
     void test_ensureTable_existingtable_fieldTypeMismatch();
     void test_ensureTable_nonexistingTable();
 
+    void test_executeSql_noParams();
     void test_executeSql_namedParams();
     void test_executeSql_posParams();
 

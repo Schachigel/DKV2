@@ -236,7 +236,7 @@ QSqlQuery prepQuery( const QString sql, const QSqlDatabase& db =QSqlDatabase::da
     if( q.prepare (sql))
         RETURN_OK( q, __FUNCTION__, qsl("Successfully prepared query: %1").arg(q.lastQuery ()));
     else
-        RETURN_ERR(QSqlQuery(), __FUNCTION__, qsl("Failed to prep Query:"), q.lastError ().text (), qsl("\n"), q.lastQuery ());
+        RETURN_ERR(q, __FUNCTION__, qsl("Failed to prep Query:"), q.lastError ().text (), qsl("\n"), q.lastQuery ());
 }
 bool executeQuery( QSqlQuery& q, QVector<QSqlRecord>& records)
 {
@@ -289,7 +289,10 @@ bool bindPositionalParams(QSqlQuery& q , const QVector<QVariant> params)
 bool executeSql(const QString& sql, QVector<QSqlRecord>& result, const QSqlDatabase& db /*= ...*/ )
 {
     QSqlQuery q =prepQuery(sql, db);
-    return executeQuery(q, result);
+    if( q.lastError ().type ()== QSqlError::NoError)
+        return executeQuery(q, result);
+    else
+        return false;
 }
 // named parameters
 bool executeSql(const QString& sql, const QVector<QPair<QString, QVariant>>& params, QVector<QSqlRecord>& result, const QSqlDatabase& db)
@@ -338,16 +341,13 @@ QSqlRecord executeSingleRecordSql(const QString& sql, const QSqlDatabase& db)
 {
     QVector<QSqlRecord> records;
     if( executeSql(sql, records, db)) {
-        if( records.size () == 0)
-            RETURN_OK(QSqlRecord(), __FUNCTION__, qsl("Result set is empty"));
-        if( records.size () > 1) {
-            qInfo() << records;
-            RETURN_OK(QSqlRecord(), __FUNCTION__, qsl("Result set is too big"));
-        }
-        RETURN_OK( records[0], __FUNCTION__, qsl("returned one value"));
+        if( records.size () == 0 or records.size () > 1)
+            return QSqlRecord(); // error handling in called function
+        else
+            RETURN_OK( records[0], __FUNCTION__, qsl("returned one value: %1").arg(records[0].value (0).toString ()));
     }
     else
-        RETURN_ERR( QSqlRecord(), __FUNCTION__, qsl("Qurey execution failed"));
+        return QSqlRecord(); // error handling in called function
 }
 
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where, const QString& order, const QSqlDatabase& db)
@@ -359,29 +359,25 @@ QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString&
 QVariant executeSingleValueSql(const QString& sql, const QSqlDatabase& db)
 {
     QSqlRecord v =executeSingleRecordSql (sql, db);
-    if( v.isEmpty ())
-        RETURN_OK( QVariant(), __FUNCTION__, qsl("No Record"));
-    if( v.count () > 1)
-        RETURN_ERR( QVariant(), __FUNCTION__, qsl("Query returned more then one value"), sql);
-    RETURN_OK( v.value(0), __FUNCTION__, qsl( "Success: "), v.value(0).toString());
+    // error handling is done in executeSingleRecordSql
+    if( v.isEmpty () or v.count () > 1)
+        return QVariant();
+    else
+        return v.value(0);
 }
 QVariant executeSingleValueSql(const QString& sql, const QVector<QVariant> params, const QSqlDatabase& db /*=QSqlDatabase::database()*/)
 {
-    QSqlQuery q =prepQuery (sql, db);
-    if( not bindPositionalParams(q, params))
-        RETURN_ERR( QVariant(), __FUNCTION__, qsl( "Parameter binding failed"));
-
-    QVector<QSqlRecord> records;
-    if( not executeQuery(q, records))
-        RETURN_ERR( QVariant(), __FUNCTION__, qsl("Query execution failed"));
-
-    if( records.size () > 1){
-        qCritical() << records;
-        RETURN_ERR( QVariant(), __FUNCTION__, qsl("Query returned too many records"));
+    QVector<QSqlRecord> result;
+    if( executeSql(sql, params, result, db))
+    {
+        if( result.count() > 1)
+            RETURN_ERR( QVariant(), __FUNCTION__, qsl("Query returned too many records"));
+        if( result.count() == 0)
+            RETURN_OK( QVariant(), __FUNCTION__, qsl("Query returned no record"));
+        RETURN_OK( result[0].value(0), __FUNCTION__);
     }
-    if( records.isEmpty())
-        RETURN_OK( QVariant(), __FUNCTION__, qsl("Query returned no record"));
-    RETURN_OK( records[0].value(0), __FUNCTION__);
+    else
+        RETURN_ERR( QVariant(), __FUNCTION__, qsl("Query execution failed"));
 }
 
 QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where, const QSqlDatabase& db)

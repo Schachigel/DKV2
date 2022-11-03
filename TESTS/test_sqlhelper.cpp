@@ -27,7 +27,7 @@ void test_sqlhelper::test_rowCount()
 {   LOG_CALL;
     QString table {qsl("tablename")};
     QString field {qsl("fieldname")};
-
+    qInfo() << "expect error";
     QCOMPARE( rowCount(qsl("notexistingTable")), -1); // non existing table
 
     QSqlQuery q;
@@ -127,19 +127,20 @@ void test_sqlhelper::test_ensureTable_nonexistingTable()
     QVERIFY(ensureTable(t));
 }
 
-void test_sqlhelper::test_executeSql_namedParams()
+void test_sqlhelper::test_executeSql_noParams()
 {
-    QVector<QPair<QString, QVariant>> noparams;
     {
         // no sql
+        qInfo() << "expect error (no sql)";
         QVector<QSqlRecord> result;
-        QVERIFY (not executeSql( QString(), noparams, result));
+        QVERIFY (not executeSql( QString(), result));
         QVERIFY (result.isEmpty ());
     }
     {
         // no table
+        qInfo() << "expect error (no table)";
         QVector<QSqlRecord> result;
-        QVERIFY (not executeSql(qsl("SELECT * FROM nonexisting"), noparams, result));
+        QVERIFY (not executeSql(qsl("SELECT * FROM nonexisting"), result));
         QVERIFY (result.isEmpty ());
     }
     // perp
@@ -149,22 +150,38 @@ void test_sqlhelper::test_executeSql_namedParams()
     {
         // empty table
         QVector<QSqlRecord> result;
-        QVERIFY (executeSql (qsl("SELECT * FROM %1").arg(tname), noparams, result));
+        QVERIFY (executeSql (qsl("SELECT * FROM %1").arg(tname), result));
         QVERIFY (result.isEmpty ());
     }
     {
         QVERIFY (QSqlQuery().exec (qsl("INSERT INTO %1 (s, i) VALUES ('string', 42)").arg(tname)));
         // one record
         QVector<QSqlRecord> result;
-        QVERIFY (executeSql (qsl("SELECT * FROM %1").arg(tname), noparams, result));
+        QVERIFY (executeSql (qsl("SELECT * FROM %1").arg(tname), result));
         QCOMPARE (result.size(), 1);
     }
     {
         // w single value in result
         QVector<QSqlRecord> result;
-        QVERIFY (executeSql (qsl("SELECT count(*) FROM %1").arg(tname), noparams, result));
+        QVERIFY (executeSql (qsl("SELECT count(*) FROM %1").arg(tname), result));
         QCOMPARE (result.size(), 1);
         QCOMPARE( result.at(0).value (0), QVariant(1));
+    }
+
+}
+void test_sqlhelper::test_executeSql_namedParams()
+{
+    // perp
+    QString tname {qsl("t1")};
+    QVERIFY( QSqlQuery().exec("CREATE TABLE " + tname
+               + " (id integer PRIMARY KEY AUTOINCREMENT, s STRING, i INTEGER)"));
+    {
+        QVERIFY (executeSql_wNoRecords (qsl("INSERT INTO %1 (s, i) VALUES ('string', :param)").arg(tname), QVariant(42)));
+        QVERIFY (rowCount(tname) == 1);
+        // one record
+        QVector<QSqlRecord> result;
+        QVERIFY (executeSql (qsl("SELECT * FROM %1 WHERE i=:param").arg(tname), {QPair(qsl(":param"), QVariant(42))}, result));
+        QCOMPARE (result.size(), 1);
     }
     {
         // params in where clause

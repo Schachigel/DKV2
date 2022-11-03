@@ -24,6 +24,20 @@ void test_csv::test_sql_with_parameter_binding()
         if( not q.exec ())
             qDebug() << sqlInsertData << q.boundValues () << q.lastError () << q.lastQuery ();
     }
+    // positional binding works with named parameter
+    {
+        QString sqlInsertData =QStringLiteral("INSERT INTO testt (s, i) VALUES (:p1, :p2)");
+        QSqlQuery q;
+        q.prepare (sqlInsertData);
+        q.addBindValue (QVariant("text1"));
+        q.addBindValue (QVariant(13));
+        if( not q.exec ())
+            qDebug() << sqlInsertData << q.boundValues () << q.lastError () << q.lastQuery ();
+        q.addBindValue (QVariant("text2"));
+        q.addBindValue (QVariant(14));
+        if( not q.exec ())
+            qDebug() << sqlInsertData << q.boundValues () << q.lastError () << q.lastQuery ();
+    }
     // How about named binding?
     {
         QString sqlSelect =QStringLiteral("SELECT * FROM testt WHERE s=:val1 AND i=:val2");
