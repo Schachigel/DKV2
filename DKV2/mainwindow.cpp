@@ -230,7 +230,6 @@ void MainWindow::prepare_startPage()
     }
     messageHtml += qsl("<tr><td></td><td>[%1]</td><td></td></tr>").arg(ui->statusLabel->text ());
     messageHtml += qsl("</table>");
-    qDebug() <<"welcome Screen html: " << "\n" << messageHtml << qsl("\n");
     ui->lblInfo->setText(messageHtml);
 }
 void MainWindow::on_action_menu_database_start_triggered()
@@ -737,7 +736,6 @@ void MainWindow::fillStatisticsTableView()
     } else
         Q_ASSERT (not "never reach this point");
     sql.replace(qsl(":date"), dates[currentDateIndex].date.toString(Qt::ISODate)).replace(qsl("\n"), qsl(" "));
-    qDebug() << sql;
 
     QSqlQueryModel *mod =new QSqlQueryModel();
     mod->setQuery(sql);

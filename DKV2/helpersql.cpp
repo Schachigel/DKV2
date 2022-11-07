@@ -234,18 +234,18 @@ QSqlQuery prepQuery( const QString sql, const QSqlDatabase& db =QSqlDatabase::da
     QSqlQuery q(db);
     q.setForwardOnly (true);
     if( q.prepare (sql))
-        RETURN_OK( q, __FUNCTION__, qsl("Successfully prepared query: %1").arg(q.lastQuery ()));
+        RETURN_OK( q, qsl("prepQuery"), qsl("Successfully prepared query: %1").arg(q.lastQuery ()));
     else
-        RETURN_ERR(q, __FUNCTION__, qsl("Failed to prep Query:"), q.lastError ().text (), qsl("\n"), q.lastQuery ());
+        RETURN_ERR(q, qsl("prepQuery"), qsl("Failed to prep Query:"), q.lastError ().text (), qsl("\n"), q.lastQuery ());
 }
 bool executeQuery( QSqlQuery& q, QVector<QSqlRecord>& records)
 {
     if( q.exec()) {
         while(q.next())
             records.push_back(q.record());
-        RETURN_OK( true, __FUNCTION__, qsl("Successfully returned %1 records").arg(records.count ()));
+        RETURN_OK( true, qsl("executeQuery"), qsl("Successfully returned %1 records").arg(records.count ()));
     } else
-        RETURN_ERR( false, __FUNCTION__, qsl("Faild to execute Query"), q.lastError ().text (), qsl("\n"), q.lastQuery ());
+        RETURN_ERR( false, qsl("executeQuery"), qsl("Faild to execute Query"), q.lastError ().text (), qsl("\n"), q.lastQuery ());
 }
 bool bindNamedParams(QSqlQuery &q, const QVector<QPair<QString, QVariant>>& params)
 {
@@ -259,8 +259,9 @@ bool bindNamedParams(QSqlQuery &q, const QVector<QPair<QString, QVariant>>& para
     if( params.size () not_eq q.boundValues ().size())
         RETURN_ERR(false, qsl("Not all parameters were consumed by the query (bound: %1, given: %2)").arg(i2s(q.boundValues ().size ()), i2s(params.size())));
 
-    if( q.boundValues ().size()){
-        qDebug() << "bound values: " << q.boundValues ();
+    if( q.boundValues ().size())
+    {
+        qInfo() << "bound values: " << /*QStringList*/q.boundValues ();
         return true;
     }
     else
@@ -273,11 +274,11 @@ bool bindPositionalParams(QSqlQuery& q , const QVector<QVariant> params)
             q.addBindValue(param);
         } else
             RETURN_ERR(false, qsl("invalid sql parameter"), param.toString ());
-    }
+    } // eo for
     if( q.boundValues ().size () not_eq params.size ())
         RETURN_ERR(false, __FUNCTION__, qsl("not all parameters were consumed by the query"));
     if( q.boundValues ().size()){
-        qDebug() << "bound values: " << q.boundValues ();
+        qInfo() << "bound values: " << /*QStringList*/q.boundValues ();
         return true;
     }
     else

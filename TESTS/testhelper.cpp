@@ -98,7 +98,7 @@ void closeDefaultDbConnection( )
     QSqlDatabase::database().close();
     //QSqlDatabase::database().connectionName () is no longer available
     QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
-    qDebug() << "connections: " << QSqlDatabase::connectionNames ();
+    qInfo() << "connections: " << QSqlDatabase::connectionNames ();
     Q_ASSERT( QSqlDatabase::connectionNames ().isEmpty ());
 }
 
@@ -117,7 +117,7 @@ void createEmptyFile(const QString& path)
 //    QSqlQuery q(db);
 //    if (q.exec("SELECT COUNT(*) FROM " + tname)) {
 //        q.first();
-//        qDebug() << "#Datensätze: " << q.record().value(0).toInt();
+//        qInfo() << "#Datensätze: " << q.record().value(0).toInt();
 //        return q.record().value(0).toInt();
 //    } else {
 //        qCritical() << "tableRecordCount: SELECT failed " << q.lastError() << "\n" << q.lastQuery() << qsl("\n");

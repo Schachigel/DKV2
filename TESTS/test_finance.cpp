@@ -331,7 +331,7 @@ void test_finance::test_ZinsesZins()
     QFETCH(double, dZins);
     QString msg("%3% Zinsen von %4 euro vom %1 bis %2, ");
     msg = msg.arg(von.toString("dd.MM.yyyy"), bis.toString("dd.MM.yyyy"), QString::number(dZinssatz), QString::number(dWert));
-    qDebug().noquote() <<  msg;
+    qInfo().noquote() <<  msg;
     // compare our calculation with the result from excel
     QCOMPARE(ZinsesZins_30_360(dZinssatz, dWert, von, bis, true ), dZinsThesauriert);
     QCOMPARE(ZinsesZins_30_360(dZinssatz, dWert, von, bis, false), dZins);

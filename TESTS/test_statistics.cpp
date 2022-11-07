@@ -22,7 +22,7 @@ stats getStatsFromSql(QString sql, QDate date)
     int recordCount =0;
     while( q.next()) {
         QSqlRecord rec =q.record();
-        qDebug() << rec;
+        qInfo() << rec;
         recordCount++;
         interestModel key =rec.value(0).toString() == qsl("all") ? interestModel::maxId : interestModelFromInt(rec.value(0).toInt());
         statSet set;

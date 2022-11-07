@@ -503,7 +503,7 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
         }
         int rowId =cb->itemData(cb->currentIndex()).toInt();
         if( not contractUnderMouseMenu->updateInvestment(rowId)) {
-            qDebug() << "failed to save investment to contract" << contractUnderMouseMenu->toString() << "\n" << rowId;
+            qCritical() << "failed to save investment to contract" << contractUnderMouseMenu->toString() << "\n" << rowId;
         }
         break;
     }

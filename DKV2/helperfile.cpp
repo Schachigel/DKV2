@@ -7,8 +7,9 @@
 QString tempPathTemplateFromPath (const QString& path, const QString &purpose)
 {
     QFileInfo fi(path);
-    QString ext =fi.suffix ();
-    return path.left(path.size ()-fi.suffix ().size ()-1).append(qsl(".")).append(purpose).append ("_XXXXXX.").append (ext);
+    QString result =path.left(path.size ()-fi.suffix ().size ()-1);
+    result = result.append(purpose).append(qsl("XXXXXX.")).append (fi.suffix ());
+    return result;
 }
 
 QString getUniqueTempFilename(const QString &templateFileName, const QString& purpose)
@@ -17,7 +18,6 @@ QString getUniqueTempFilename(const QString &templateFileName, const QString& pu
     temp.open();
     return temp.fileName();
 }
-
 
 bool moveToBackup(const QString &fn)
 {
@@ -37,10 +37,9 @@ bool moveToBackup(const QString &fn)
 
 bool backupFile(const QString&  fn, const QString& subfolder)
 {
-    if (not QFile::exists(fn)) {
-        qDebug() << "No need to backup not existing file: " << fn;
-        return true;
-    }
+    if (not QFile::exists(fn))
+        RETURN_OK( true, "No need to backup not existing file: ", fn);
+
     QString backupname{fn};
     QFileInfo fi{fn};
     QString suffix = fi.completeSuffix();
@@ -52,10 +51,9 @@ bool backupFile(const QString&  fn, const QString& subfolder)
     backupname.chop(suffix.size()+1/*dot*/);
     backupname += "_" + QDateTime::currentDateTime().toString(qsl("yyyyMMdd_hhmmss")) + qsl(".") + suffix;
     // copy the file
-    if( not QFile().copy(fn, backupname)) {
-        qDebug() << "Backup copy failed. File to be copied: " << backupname;
-        return false;
-    }
+    if( not QFile().copy(fn, backupname))
+        RETURN_ERR(false, qsl("Backup copy failed. File to be copied: "), backupname);
+
     qInfo() << qsl("Backup succeeded from %1 to %2").arg(fn, backupname);
     QString names(fi.baseName() + qsl("_????????_??????.") + suffix);
     QDir backups(fi.absolutePath(), names, QDir::Name | QDir::Reversed, QDir::Files);
@@ -120,9 +118,7 @@ void printHtmlToPdf( const QString &html, const QString &css, const QString &fn)
 
     pdfw.setPageLayout(pl);
     QPainter painter(&pdfw);
-    qDebug() << td.size();
     td.adjustSize();
-    qDebug() << td.size();
     td.drawContents(&painter);
 
     td.print( &pdfw);

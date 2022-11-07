@@ -79,9 +79,9 @@ int main(int argc, char *argv[])
         }
     }
 
-    if( errCount == 1) qDebug() << "\n>>>   There was an error   <<< ";
-    else if (errCount > 1) qDebug() << "\n>>>   There were " << errCount << " errors   <<<";
-    else qDebug() << "\n>>>   There were no errors   <<<";
+    if( errCount == 1) qInfo() << "\n>>>   There was an error   <<< ";
+    else if (errCount > 1) qInfo() << "\n>>>   There were " << errCount << " errors   <<<";
+    else qInfo() << "\n>>>   There were no errors   <<<";
 
     return errCount;
 }

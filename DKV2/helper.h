@@ -30,12 +30,10 @@ template <typename t, typename ... TS>
 inline t returnLog(int sev, t returnvalue, TS ...args)
 {
     if( sev == 0) {
-        QDebug out =qInfo().noquote ();
-        (( out << std::forward<TS>(args)), ...);
+        (( qInfo().noquote () << std::forward<TS>(args)), ...);
     }
     else {
-        QDebug out =qCritical().noquote ();
-        (( out << std::forward<TS>(args)), ...);
+        (( qCritical().noquote () << std::forward<TS>(args)), ...);
     }
     return returnvalue;
 }
@@ -91,8 +89,6 @@ public:
 
 // create a log entry for entry and exit of function call
 
-//#define LOG_ENTRY_EXIT_FOR(x) // ;functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
-//#define LOG_ENTRY_EXIT_FOR(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(x)
 #define LOG_CALL functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger(__func__, __FILE__)
 #define LOG_CALL_W(x) functionlogging  SomeLongNameThatIsNotLikelyToBeUsedInTheFunctionlogger( __func__ + qsl("(\"") + (x) + qsl("\")"), __FILE__)
 

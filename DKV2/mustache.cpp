@@ -14,12 +14,6 @@
 
 #include "mustache.h"
 
-
-//#include <QtCore/QDebug>
-//#include <QtCore/QFile>
-//#include <QtCore/QStringList>
-//#include <QtCore/QTextStream>
-
 using namespace Mustache;
 
 QString Mustache::renderTemplate(const QString& templateString, const QVariantHash& args)

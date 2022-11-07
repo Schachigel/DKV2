@@ -18,11 +18,11 @@ void test_csv::test_sql_with_parameter_binding()
         q.addBindValue (QVariant("text1"));
         q.addBindValue (QVariant(13));
         if( not q.exec ())
-            qDebug() << sqlInsertData << q.boundValues () << q.lastError () << q.lastQuery ();
+            qInfo() << sqlInsertData << q.boundValues () << q.lastError () << q.lastQuery ();
         q.addBindValue (QVariant("text2"));
         q.addBindValue (QVariant(14));
         if( not q.exec ())
-            qDebug() << sqlInsertData << q.boundValues () << q.lastError () << q.lastQuery ();
+            qInfo() << sqlInsertData << q.boundValues () << q.lastError () << q.lastQuery ();
     }
     // positional binding works with named parameter
     {
@@ -32,11 +32,11 @@ void test_csv::test_sql_with_parameter_binding()
         q.addBindValue (QVariant("text1"));
         q.addBindValue (QVariant(13));
         if( not q.exec ())
-            qDebug() << sqlInsertData << q.boundValues () << q.lastError () << q.lastQuery ();
+            qInfo() << sqlInsertData << q.boundValues () << q.lastError () << q.lastQuery ();
         q.addBindValue (QVariant("text2"));
         q.addBindValue (QVariant(14));
         if( not q.exec ())
-            qDebug() << sqlInsertData << q.boundValues () << q.lastError () << q.lastQuery ();
+            qInfo() << sqlInsertData << q.boundValues () << q.lastError () << q.lastQuery ();
     }
     // How about named binding?
     {
@@ -45,13 +45,13 @@ void test_csv::test_sql_with_parameter_binding()
         qSelect.prepare (sqlSelect);
         qSelect.bindValue (":val1", QVariant("text2"));
         qSelect.bindValue (":val2", QVariant(14));
-        qDebug() << qSelect.boundValues ();
+        qInfo() << qSelect.boundValues ();
         if( qSelect.exec ()) {
-            qDebug() << qSelect.lastQuery ();
+            qInfo() << qSelect.lastQuery ();
             qSelect.first();
-            qDebug() << qSelect.record ().value (0);
+            qInfo() << qSelect.record ().value (0);
         } else
-            qDebug() << sqlSelect << qSelect.boundValues () << qSelect.lastError () << qSelect.lastQuery ();
+            qInfo() << sqlSelect << qSelect.boundValues () << qSelect.lastError () << qSelect.lastQuery ();
     }
     // change order: OK!
     {
@@ -60,12 +60,12 @@ void test_csv::test_sql_with_parameter_binding()
         qSelect.prepare (sqlSelect);
         qSelect.bindValue (":val2", QVariant(14));
         qSelect.bindValue (":val1", QVariant("text2"));
-        qDebug() << qSelect.boundValues ();
+        qInfo() << qSelect.boundValues ();
         if( qSelect.exec ()) {
             qSelect.first();
-            qDebug() << qSelect.record ().value (0);
+            qInfo() << qSelect.record ().value (0);
         } else
-            qDebug() << sqlSelect << qSelect.boundValues () << qSelect.lastError () << qSelect.lastQuery ();
+            qInfo() << sqlSelect << qSelect.boundValues () << qSelect.lastError () << qSelect.lastQuery ();
     }
     // change placeholder mark to @ -> will not work
     {
@@ -74,12 +74,12 @@ void test_csv::test_sql_with_parameter_binding()
         qSelect.prepare (sqlSelect);
         qSelect.bindValue ("@val1", QVariant("text2"));
         qSelect.bindValue ("@val2", QVariant(14));
-        qDebug() << qSelect.boundValues ();
+        qInfo() << qSelect.boundValues ();
         if( qSelect.exec ()) {
             qSelect.first();
-            qDebug() << qSelect.record ().value (0);
+            qInfo() << qSelect.record ().value (0);
         } else
-            qDebug() << sqlSelect << qSelect.boundValues () << qSelect.lastError () << qSelect.lastQuery ();
+            qInfo() << sqlSelect << qSelect.boundValues () << qSelect.lastError () << qSelect.lastQuery ();
     }
     // change placeholder mark to $ -> will not work
     {
@@ -88,12 +88,12 @@ void test_csv::test_sql_with_parameter_binding()
         qSelect.prepare (sqlSelect);
         qSelect.bindValue ("$val1", QVariant("text2"));
         qSelect.bindValue ("$val2", QVariant(14));
-        qDebug() << qSelect.boundValues ();
+        qInfo() << qSelect.boundValues ();
         if( qSelect.exec ()) {
             qSelect.first();
-            qDebug() << qSelect.record ().value (0);
+            qInfo() << qSelect.record ().value (0);
         } else
-            qDebug() << sqlSelect << qSelect.boundValues () << qSelect.lastError () << qSelect.lastQuery ();
+            qInfo() << sqlSelect << qSelect.boundValues () << qSelect.lastError () << qSelect.lastQuery ();
     }
 }
 void test_csv::test_empty_csv()

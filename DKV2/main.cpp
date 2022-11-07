@@ -1,7 +1,6 @@
 
 
 #include "dbstructure.h"
-#include "helperfile.h"
 #include "mainwindow.h"
 
 #include "dkv2version.h"
@@ -12,12 +11,10 @@
 #define ERROR_FILE_NOT_FOUND 5
 #endif
 
-#include <helper.h>
+#include "helper.h"
 
 void initLogging()
 {
-    if( backupFile(logFilePath()))
-        QFile::remove(logFilePath());
     qInstallMessageHandler(logger);
 }
 
@@ -43,7 +40,7 @@ void installTranslateFile(const QString& translationFile)
 }
 
 void setGermanUi()
-{   LOG_CALL;
+{
     QString translationFolder = QApplication::applicationDirPath() + qsl("/translations/%1");
     installTranslateFile(translationFolder.arg(qsl("qtbase_de.qm")));
 }
@@ -56,11 +53,11 @@ int main(int argc, char *argv[])
     a.setApplicationName(qsl("DKV2"));
     a.setApplicationVersion(qsl(DKV2_VERSION_STRING));
 
+    initLogging();
+
     QLocale locale(QLocale::German, QLocale::LatinScript, QLocale::Germany);
     QLocale::setDefault(locale); // do before starting the event loop
     setGermanUi();
-
-    initLogging();
 
     LOG_CALL;
     qInfo() << "************************************************";

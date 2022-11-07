@@ -135,9 +135,10 @@ void changeContractComment(contract *pc) {
     else
         qCritical() << "update comment failed";
 }
-void changeContractTermination(contract *pc) {
+void changeContractTermination(contract *pc)
+{
     LOG_CALL;
-    qDebug() << pc->toString();
+    qInfo() << pc->toString();
     creditor cred(pc->creditorId());
     dlgChangeContractTermination dlg(getMainWindow());
 
@@ -230,12 +231,11 @@ void changeContractValue(contract *pc) {
     wiz.setField(fnDeposit_notPayment, QVariant(true));
 
     wiz.exec();
-    qDebug() << wiz.field(fnPayoutInterest);
+    qInfo() << wiz.field(fnPayoutInterest);
     if (wiz.field(qsl("confirmed")).toBool()) {
         double amount{QLocale().toDouble(wiz.field(qsl("amount")).toString())};
         QDate date{wiz.field(qsl("date")).toDate()};
-        qDebug() << wiz.field(fnDeposit_notPayment) << ", " << amount << ", "
-                 << date;
+
         if (wiz.field(qsl("deposit_notPayment")).toBool()) {
             pc->deposit(date, amount, wiz.field(fnPayoutInterest).toBool());
         } else {
@@ -305,7 +305,7 @@ void annualSettlement() {
     busycursor bc;
     QVector<QVariant> ids = executeSingleColumnSql(
                 dkdbstructur[contract::tnContracts][contract::fnId]);
-    qDebug() << "contracts to try execute annual settlement for: " << ids;
+    qInfo() << "going to try annual settlement for contracts w ids:" << ids;
     QVector<contract> changedContracts;
     QVector<QDate> startOfInterrestCalculation;
     QVector<booking> asBookings;
@@ -392,7 +392,7 @@ void annualSettlementLetters() {
     QList<QPair<int, QString>> creditors;
     fillCreditorsListForLetters(creditors, yearOfSettlement);
     if (creditors.size() <= 0) {
-        qDebug() << "no creditors to create letters for";
+        qInfo() << "no creditors to create letters for";
         return;
     }
 
@@ -491,7 +491,7 @@ void terminateContract_Final(contract &c) {
         QMessageBox::warning(nullptr, qsl("Fehler"),
                              qsl("Die Geldanlage konnte nicht beendet "
                                  "werden.\nDetails findest Du in der LOG Datei!"));
-        qDebug() << "failed to terminate contract";
+        qInfo() << "failed to terminate contract";
         return;
     }
     if (wiz.field(qsl("print")).toBool()) {

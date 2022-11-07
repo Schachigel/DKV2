@@ -143,20 +143,18 @@ bool copy_dkdb_database( const QString& sourceFName,
 */
 bool copy_mangledCreditors(const QSqlDatabase& db =QSqlDatabase::database())
 {   LOG_CALL;
-    bool success = true;
     int recCount = 0;
     QSqlQuery q(db); // default database connection -> active database
     q.setForwardOnly(true);
-    if( not q.exec(qsl("SELECT * FROM Kreditoren"))) {
-        qInfo() << "no data returned from creditor table";
-        return false;
-    }
+    if( not q.exec(qsl("SELECT * FROM Kreditoren")))
+        RETURN_OK(false, qsl( "no data returned from creditor table"));
+
     TableDataInserter tdi(dkdbstructur[qsl("Kreditoren")]);
     tdi.overrideTablename(qsl("targetDb.Kreditoren"));
     while( q.next()) {
         recCount++;
         QSqlRecord rec = q.record();
-        qDebug() << "de-Pers. Copy: working on Record #" << rec;
+        qInfo() << "de-Pers. Copy: working on Record #" << rec;
         tdi.setValue(creditor::fnId, rec.value(creditor::fnId));
         tdi.setValue(creditor::fnVorname,  QVariant(creditor::fnVorname + i2s(recCount)));
         tdi.setValue(creditor::fnNachname, QVariant(creditor::fnNachname + i2s(recCount)));
@@ -169,13 +167,10 @@ bool copy_mangledCreditors(const QSqlDatabase& db =QSqlDatabase::database())
         tdi.setValue(creditor::fnBIC, "");
         tdi.setValue(creditor::fnBuchungskonto, "");
 
-        if( tdi.InsertData_noAuto() == -1) {
-            qDebug() << "Error inserting Data into deperso.Copy Table" << q.lastError() << qsl("\n") << q.record();
-            success = false;
-            break;
-        }
+        if( tdi.InsertData_noAuto() == -1)
+            RETURN_ERR(false, qsl("Error inserting Data into deperso.Copy Table"), q.lastError ().text ());
     }
-    return success;
+    return true;
 }
 
 bool copy_database_mangled(const QString& targetfn, const QString& source)

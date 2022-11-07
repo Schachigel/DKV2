@@ -124,7 +124,7 @@ bool insertLetterElementFromMap(qlonglong kreditor, letterTemplate::templId brie
         tdi.setValue(qsl("BriefElementTypenId"), int(key));
         tdi.setValue(qsl("Texte"), value);
         if( -1 == tdi.InsertRecord(db)) {
-            qDebug() << "Failded to insert generic letter Element " << map.value (letterTemplate::elementType(i));
+            qInfo() << "Failded to insert generic letter Element " << map.value (letterTemplate::elementType(i));
             res = false;
         }
     }
@@ -321,7 +321,7 @@ bool letterTemplate::loadTemplate(letterTemplate::templId /*id*/, qlonglong /*kr
 {   LOG_CALL;
     //if( not tableExists("Briefvorlagen"))
     //{
-    //    qDebug() << "Tabelle mit Briefvorlagen existiert nicht, Template Daten können nicht gespeichert werden";
+    //    qInfo() << "Tabelle mit Briefvorlagen existiert nicht, Template Daten können nicht gespeichert werden";
     //    return false;
     //}
     //tid = id;
@@ -330,13 +330,13 @@ bool letterTemplate::loadTemplate(letterTemplate::templId /*id*/, qlonglong /*kr
     //query.prepare(q);
     //if( not query.exec())
     //{
-    //    qDebug() << "reading template from DB failed: " << query.lastError();
+    //    qInfo() << "reading template from DB failed: " << query.lastError();
     //    return false;
     //}
     //query.last();
     //if( query.at() <= 0)
     //{
-    //    qDebug() << "reading template from DB failed: " << "result size was " << query.size();
+    //    qInfo() << "reading template from DB failed: " << "result size was " << query.size();
     //    return false;
     //}
     //query.first();
@@ -582,7 +582,7 @@ bool letterTemplate::createDocument(QTextDocument& )
 //    QFile::remove(file);
 //    if( QFile::exists(file))
 //    {
-//        qDebug() << "pdf file creation failed";
+//        qInfo() << "pdf file creation failed";
 //        return false;
 //    }
 //
@@ -596,7 +596,7 @@ bool letterTemplate::createDocument(QTextDocument& )
 //#ifdef QT_DEBUG
 //    int written = htmlfile.write(testhtml.toUtf8());
 //    if( written <1)
-//        qDebug() << "html not written" << htmlfile.errorString();
+//        qInfo() << "html not written" << htmlfile.errorString();
 //#endif
 //    doc.print(printer);
     return true;
@@ -608,6 +608,6 @@ QString letterTemplate::fileNameFromId(const QString& contractId)
     QString outputfile = appConfig::Outdir();
     outputfile += "/";
     outputfile += QDate::currentDate().toString("yyyy-MM-dd_") + all_templates[tid] + "_" +contractId.trimmed() +".pdf";
-    qDebug() << "printing to " << outputfile;
+    qInfo() << "printing to " << outputfile;
     return outputfile;
 }

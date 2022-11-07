@@ -62,12 +62,12 @@ void test_tableDataInserter::test_insert_and_retreive()
         QVERIFY(-1 not_eq tdi.InsertRecord());
     }/// <- CUT
     QSqlRecord r = executeSingleRecordSql( t.Fields());
-    qDebug() << r;
+    qInfo() << r;
     QVERIFY( r.value("id").type() == QVariant::LongLong
              or r.value("id").type() == QVariant::Int);
     QCOMPARE( r.value("id"), 1);
     QVariant v = r.value(fnInt);
-    qDebug() << v << " (" << v.type() << ")";
+    qInfo() << v << " (" << v.type() << ")";
     QCOMPARE( v.type(), QVariant::Int);
     QCOMPARE( v, val_int);
     QCOMPARE( r.value(fnBool).type(), QVariant::Bool);

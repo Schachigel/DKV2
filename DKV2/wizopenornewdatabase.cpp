@@ -132,7 +132,7 @@ bool wpNewDb::validatePage()
         qobject_cast<wizOpenOrNewDb*>( wizard())->selectedFile = path;
         return true;
     }
-    qDebug() << "new DB file / folder validation failed";
+    qCritical() << "new DB file / folder validation failed";
     QMessageBox::information(this, qsl("Ungültige Eingabedaten"),
                              qsl("Die Datei kann nicht angelegt werden. Bitte stelle sicher, dass in dem "
                              "Verzeichnis geschrieben werden darf und dass es keine gleichnamige Datei in dem Verzeichnis gibt."));

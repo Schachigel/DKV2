@@ -78,7 +78,7 @@ void MainWindow::create_MRU_Menue()
     clear_MRU(addedActions);
 
     if( not findMRU(this->menuBar ())) {
-        qDebug() << "MRU Menu not found";
+        qCritical() << "MRU Menu not found";
         return;
     }
 

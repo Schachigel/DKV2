@@ -119,7 +119,7 @@ QString appConfig::LastDb()
 {
     static QString defaultDb = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/Dkv2.dkdb");
     QString ldb = getUserData(keyLastDb, defaultDb);
-    qDebug() << "lastDb read as " << ldb;
+    qInfo() << "lastDb read as " << ldb;
     return ldb;
 }
 /* static */ /* for testing puropose */

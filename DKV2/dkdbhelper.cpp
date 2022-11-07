@@ -290,16 +290,14 @@ QString proposeContractLabel()
 int createNewInvestmentsFromContracts( bool fortlaufend)
 {   LOG_CALL;
     QString sql{qsl("SELECT ZSatz, Vertragsdatum FROM Vertraege WHERE AnlagenId IS NULL OR AnlagenId <= 0 ORDER BY Vertragsdatum ASC ")};
-    QSqlQuery q; q.setForwardOnly(true);
-    if( not q.exec(sql)) {
-        qCritical() << "query execute faild with error " << q.lastError();
-        qDebug() << q.lastQuery();
-        return -1;
-    }
+    QVector<QSqlRecord> res;
+    if( not executeSql (sql, res))
+        RETURN_ERR( -1, __FUNCTION__, qsl("Info aus Verträgen konnte nicht gelesen werden"));
+
     int ret =0;
-    while(q.next()) {
-        int ZSatz =q.record().value(qsl("ZSatz")).toInt();
-        QDate vDate =q.record().value(qsl("Vertragsdatum")).toDate();
+    for( const QSqlRecord& rec : qAsConst(res)) {
+        int ZSatz =rec.value(qsl("ZSatz")).toInt();
+        QDate vDate =rec.value(qsl("Vertragsdatum")).toDate();
         if( fortlaufend)
             vDate =BeginingOfTime;
         if( 0 < createInvestmentFromContractIfNeeded(ZSatz, vDate))
@@ -311,23 +309,22 @@ int createNewInvestmentsFromContracts( bool fortlaufend)
 int automatchInvestmentsToContracts()
 {   LOG_CALL;
     QString sql{qsl("SELEcT id, ZSatz, Vertragsdatum, AnlagenId FROM Vertraege WHERE AnlagenId =0 OR AnlagenId IS NULL")};
-    QSqlQuery q;
-    if( not q.exec(sql)) {
-        qDebug() << "failed to exec query";
-        return -1;
-    }
+    QVector<QSqlRecord> res;
+    if( not executeSql (sql, res))
+        RETURN_ERR( -1, __FUNCTION__, qsl("Info aus Verträgen konnte nicht gelesen werden"));
+
     int successcount =0;
-    while(q.next()) {
-        int interestRate   =q.record().value(qsl("ZSatz")).toInt();
-        QDate contractDate =q.record().value(qsl("Vertragsdatum")).toDate();
+    for( const QSqlRecord& rec : qAsConst(res)) {
+        int interestRate   =rec.value(qsl("ZSatz")).toInt();
+        QDate contractDate =rec.value(qsl("Vertragsdatum")).toDate();
         QVector<investment> suitableInvestments =openInvestments(interestRate, contractDate);
         if( suitableInvestments.length() not_eq 1)
             continue;
-        contract c(q.record().value(qsl("id")).toLongLong());
+        contract c(rec.value(qsl("id")).toLongLong());
         if( c.updateInvestment(suitableInvestments[0].rowid))
             successcount++;
         else
-            qDebug() << "contract update failed";
+            qCritical() << "contract update failed";
     }
     return successcount;
 }
@@ -415,7 +412,7 @@ bool createCsvActiveContracts()
 //    bool res =table2csv( filename, t.Fields());
     bool res =StringLists2csv( filename, header, data);
     if( not res)
-        qDebug() << "failed to print table";
+        qCritical() << "failed to print table";
 
     return res;
 }

@@ -61,13 +61,15 @@ void test_sqlhelper::test_getHighestRowId()
     int maxrow = 15;
     for( int i = 0; i<maxrow; i++) {
         q.addBindValue(i2s(i));
-        if( not q.exec()) qDebug() << q.lastError() << "\n" << q.lastQuery();
+        if( not q.exec())
+            qInfo() << q.lastError() << "\n" << q.lastQuery();
     }
     QCOMPARE( getHighestRowId(tablename), maxrow);
     q.prepare("DELETE FROM " + tablename + " WHERE col_index=?");
     for( int i = 1; i<=3; i++) { // deleting any row will not change max rowid
         q.addBindValue(i);
-        if( not q.exec()) qDebug() << q.lastError() << "\n" << q.lastQuery();
+        if( not q.exec())
+            qInfo() << q.lastError() << "\n" << q.lastQuery();
     }
     QCOMPARE( getHighestRowId(tablename), maxrow);
     QCOMPARE(rowCount(tablename), maxrow-3);
@@ -468,7 +470,7 @@ void test_sqlhelper::test_selectQueryFromFields_wReference()
     referencing.append(dbfield("other"));
     ensureTable(referencing);
     inserter.exec("INSERT INTO " + tname2 + " VALUES( 1, 'Hut')");
-    qDebug() << inserter.lastError() << "\n" << inserter.lastQuery();
+    qInfo() << inserter.lastError() << "\n" << inserter.lastQuery();
     inserter.exec("INSERT INTO " + tname2 + " VALUES( 1, 'Schuh')");
     inserter.exec("INSERT INTO " + tname2 + " VALUES( 2, 'Hemd')");
     // test
@@ -479,7 +481,7 @@ void test_sqlhelper::test_selectQueryFromFields_wReference()
     QSqlQuery probe;
     QVERIFY(probe.exec(sql));
     probe.first();
-    qDebug() << probe.record();
+    qInfo() << probe.record();
     QCOMPARE( probe.record().value("t1.col").toString(), "Hugo");
     QCOMPARE( probe.record().value("t2.other").toString(), "Hut");
     probe.next();
@@ -508,7 +510,7 @@ void test_sqlhelper::test_selectQueryFromFields_wRefwWhere()
     referencing.append(dbfield("other"));
     ensureTable(referencing);
     insertQ.exec("INSERT INTO " + tname2 + " VALUES( 1, 'Hut')");
-    qDebug() << insertQ.lastError() << "\n" << insertQ.lastQuery();
+    qInfo() << insertQ.lastError() << "\n" << insertQ.lastQuery();
     insertQ.exec("INSERT INTO " + tname2 + " VALUES( 1, 'Schuh')");
     insertQ.exec("INSERT INTO " + tname2 + " VALUES( 2, 'Hemd')");
     // test
@@ -635,7 +637,7 @@ void test_sqlhelper::test_variantTypeConservation()
 
     QSqlQuery q;
     if( not q.exec(sql)) {
-        qDebug() << q.lastError() << "\n" << q.lastQuery();
+        qInfo() << q.lastError() << "\n" << q.lastQuery();
         QFAIL("query execution failed");
     }
 //    this is how the record looks:
@@ -648,7 +650,7 @@ void test_sqlhelper::test_variantTypeConservation()
 
     // TEST: will this record contain the right data AND right types?
     QSqlRecord record = executeSingleRecordSql(t.Fields());
-    qDebug() << record;
+    qInfo() << record;
 
     // data types are back to what we put in
     QCOMPARE( ll, record.value("col_ll"));

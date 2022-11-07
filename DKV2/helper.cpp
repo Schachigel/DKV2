@@ -1,4 +1,5 @@
-
+#include <windows.h>
+#include <iostream>
 #include "helper.h"
 
 QFile* outFile_p{nullptr};
@@ -39,48 +40,56 @@ void centerDlg(QWidget* parent, QWidget* child, int minWidth /*=300*/, int minHe
     }
 }
 
-#ifdef QT_DEBUG
-void logger(QtMsgType type, const QMessageLogContext &, const QString &msg)
-#else
-void logger(QtMsgType type, const QMessageLogContext &, const QString &msg)
-#endif
+void logger(QtMsgType type, const QMessageLogContext& c, const QString &msg)
 {
+    Q_UNUSED(c);
     // secure this code with a critical section in case we start logging from multiple threads
-    if( not outFile_p)
-    {
+    if( not outFile_p) {
         outFile_p = new QFile(logFilePath());
         // this file will only be closed by the system at process end
-        if ( not outFile_p->open(QIODevice::WriteOnly | QIODevice::Append))
+        if ( not outFile_p->open(QIODevice::WriteOnly | QIODevice::Truncate)) {
             abort();
+        }
     }
+    if( outFile_p) {
+        static QHash<QtMsgType, QString> msgLevelHash({{QtDebugMsg, qsl("DBuG")}, {QtInfoMsg, qsl("INFo")}, {QtWarningMsg, qsl("WaRN")}, {QtCriticalMsg, qsl("ERRo")}, {QtFatalMsg, qsl("FaIl")}});
 
-    static QHash<QtMsgType, QString> msgLevelHash({{QtDebugMsg, qsl("DBuG")}, {QtInfoMsg, qsl("INFo")}, {QtWarningMsg, qsl("WaRN")}, {QtCriticalMsg, qsl("ERRo")}, {QtFatalMsg, qsl("FaIl")}});
-
-    QString endlCorrectedMsg (msg);
-    int lfCount = 0;
-    while( endlCorrectedMsg.endsWith(QChar::LineFeed) or endlCorrectedMsg.endsWith(QChar::CarriageReturn) )
+        QString endlCorrectedMsg (msg);
+        int lfCount = 0;
+        while( endlCorrectedMsg.endsWith(QChar::LineFeed) or endlCorrectedMsg.endsWith(QChar::CarriageReturn) )
         {lfCount++; endlCorrectedMsg.chop(1);}
 
-//    static QMutex mutex;
-//    QMutexLocker lock(&mutex);
+        //    static QMutex mutex;
+        //    QMutexLocker lock(&mutex);
+//        QString code {qsl("%1 %2 %3").arg(QString(c.file), QString::number (c.line), QString(c.function))};
+        QString out {qsl("%1 %2 %3").arg(QTime::currentTime().toString(qsl("hh:mm:ss.zzz")), msgLevelHash[type], /*code, */endlCorrectedMsg)};
+#ifdef Q_OS_WIN
+        if( out.length () < 32765)
+            OutputDebugString(reinterpret_cast<const wchar_t *>(out.utf16()));
+#endif
+        QTextStream ts(outFile_p);
+        ts << out;
+        while(lfCount-->=0) ts << qsl("\n");
 
-    QTextStream ts(outFile_p);
-    ts << QTime::currentTime().toString(qsl("hh:mm:ss.zzz")) << " " << msgLevelHash[type] << " : " << endlCorrectedMsg;
-//#ifdef QT_DEBUG
-//    ts << " (" << context.file << ")";
-//#endif
-    while(lfCount-->=0) ts << qsl("\n");
+        if (type == QtFatalMsg)
+            abort();
+    }
+}
 
-    if (type == QtFatalMsg)
-        abort();
+QString getLogFileName()
+{
+    QFileInfo fi(QCoreApplication::applicationFilePath ());
+#ifdef QT_DEBUG
+    return qsl("%1/%2.log").arg(QDir::tempPath (), fi.completeBaseName ());
+#else
+    return getUniqueTempFilename (qsl("%1/%2.log").arg(QDir::tempPath(), fi.completeBaseName ()),
+                                             QDateTime::currentDateTime ().toString(qsl("_yyyy_MM_dd_hhmmss_")));
+#endif
 }
 
 QString logFilePath()
 {
-    QString filename(QCoreApplication::applicationFilePath());
-    QFileInfo fi(filename);
-    filename = fi.completeBaseName() + ".log";
-    static QString logFilePath(QDir::toNativeSeparators(QDir::tempPath()) + QDir::separator() + filename);
+    static QString logFilePath{getLogFileName()};
     return logFilePath;
 }
 
@@ -95,7 +104,7 @@ QMainWindow* getMainWindow()
 }
 
 QString getDbFileFromCommandline()
-{//   LOG_CALL;
+{
     // command line argument 1 has precedence
     QStringList args =QApplication::instance()->arguments();
     QString dbfileFromCmdline = args.size() > 1 ? args.at(1) : QString();

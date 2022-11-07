@@ -382,7 +382,7 @@ int contract::annualSettlement( int year)
             lastB =latestBooking ();
             continue;
         } else {
-            qDebug() << "Failed annual settlement: Vertrag " << id_aS() << ": " << nextAnnualSettlementDate << " Zins: " << zins;
+            qCritical() << "Failed annual settlement: Vertrag " << id_aS() << ": " << nextAnnualSettlementDate << " Zins: " << zins;
             executeSql_wNoRecords(qsl("ROLLBACK"));
             return 0;
         }
@@ -476,14 +476,16 @@ bool contract::finalize(bool simulate, const QDate finDate,
                         double& finInterest, double& finPayout)
 {   LOG_CALL;
     booking lastB =latestBooking();
-    if( not finDate.isValid() or finDate < lastB.date or id() == -1) {
-        qDebug() << "invalid date to finalize contract:" << finDate;
-        return false;
-    }
-    if( not initialBookingReceived()) {
-        qDebug() << "could not finalize inactive contract";
-        return false;
-    }
+    if( not finDate.isValid())
+        RETURN_ERR( false, qsl("invalid date to finalize contract"));
+    if( finDate < lastB.date)
+        RETURN_ERR( false, qsl("finalize date before last booking"));
+    if( id() == -1)
+        RETURN_ERR( false, qsl("invalid contract id"));
+
+    if( not initialBookingReceived())
+        RETURN_ERR( false, qsl("could not finalize inactive contract"));
+
     qlonglong id_to_be_deleted = id();
     qInfo() << "Finalization startet at value " << interestBearingValue ();
     executeSql_wNoRecords(qsl("SAVEPOINT fin"));
@@ -723,7 +725,7 @@ void saveRandomContracts(int count)
     Q_ASSERT(count>0);
     QVector<QVariant> creditorIds = executeSingleColumnSql(dkdbstructur[qsl("Kreditoren")][contract::fnId]);
     if( creditorIds.size() == 0)
-        qDebug() << "No Creditors to create contracts for";
+        qCritical() << "No Creditors to create contracts for";
 
     static QRandomGenerator* rand = QRandomGenerator::system();
     for (int i = 0; i<count; i++)

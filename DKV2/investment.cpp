@@ -324,9 +324,7 @@ int closeInvestmentsPriorTo(QDate d)
 {   LOG_CALL_W(d.toString());
     QString sql{qsl("UPDATE Geldanlagen SET Offen = false WHERE Offen AND Ende < date('%1')")};
     QSqlQuery q;
-    if( not q.exec(sql.arg(d.toString(Qt::ISODate)))) {
-        qDebug() << "failed to update investments " << q.lastError() << "\n" << q.lastQuery();
-        return -1;
-    }
+    if( not q.exec(sql.arg(d.toString(Qt::ISODate))))
+    RETURN_ERR( -1, qsl("failed to update investments "), q.lastError ().text (), qsl("\n"), q.lastQuery ());
     return q.numRowsAffected();
 }

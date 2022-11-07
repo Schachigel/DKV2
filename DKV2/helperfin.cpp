@@ -23,7 +23,7 @@ int TageZwischen_30_360(QDate von, QDate bis)
     int tageErsterMonat = 30-von.day();
     int tageVolleMonate = 30* (bis.month() -von.month() -1);
     int tageLetzterMonat = bis.day();
-    qDebug() << "TageZwischen (" << von << ") und (" << bis << "): "
+    qInfo() << "TageZwischen (" << von << ") und (" << bis << "): "
              << tageErsterMonat << " + " << tageVolleMonate << " + " << tageLetzterMonat
              << " =" << tageErsterMonat+tageVolleMonate+tageLetzterMonat;
     return tageErsterMonat + tageVolleMonate + tageLetzterMonat;
@@ -52,7 +52,7 @@ int TageSeitJahresAnfang_30_360(QDate d)
 }
 double ZinsesZins_30_360(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)
 {
-    qDebug().noquote() << "\n\nZinsberechnung (30/360) von " << von << " bis " << bis << ((thesa) ? (" thesaurierend\n") : ("ausschüttend\n"))
+    qInfo().noquote() << "\n\nZinsberechnung (30/360) von " << von << " bis " << bis << ((thesa) ? (" thesaurierend\n") : ("ausschüttend\n"))
                        << "Wert: " << d2euro(wert) << " Zinssatz: " << prozent2prozent_str (zins) << "\n";
     if( not (von.isValid() and bis.isValid())
             or ( von > bis)
@@ -83,7 +83,7 @@ double ZinsesZins_30_360(const double zins, const double wert,const QDate von, c
     double ZinsRestjahr = TageImLetztenJahr/360. *zins/100. *zwischenWert;
     gesamtZins += ZinsRestjahr;
     gesamtZins = r2(gesamtZins);
-    qDebug().noquote()
+    qInfo().noquote()
         << "\nErstes Jahr : " << ZinsImErstenJahr << "(" << TageImErstenJahr << " Tage)"
         << "\nVolle Jahre : " << ZinsVolleJahre << "(" << jahre << " Jahre)"
         << "\nLetztes Jahr: " << ZinsRestjahr << "(" << TageImLetztenJahr << " Tage)"
@@ -111,7 +111,7 @@ int TageSeitJahresAnfang_act_act(QDate date)
 
 double ZinsesZins_act_act(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)
 {
-    qDebug().noquote() << "\n\nZinsberechnung (act/act) von " << von << " bis " << bis << ((thesa) ? (" thesaurierend\n") : ("ausschüttend\n"));
+    qInfo().noquote() << "\n\nZinsberechnung (act/act) von " << von << " bis " << bis << ((thesa) ? (" thesaurierend\n") : ("ausschüttend\n"));
     if( not (von.isValid() and bis.isValid()) or ( von > bis)) {
         qCritical() << "Zinseszins kann nicht berechnet werden - ungültige Parameter";
         return -1.;
@@ -143,7 +143,7 @@ double ZinsesZins_act_act(const double zins, const double wert,const QDate von, 
     double ZinsRestjahr = TageImLetztenJahr/dp_final_y *zins/100. *zwischenWert;
     gesamtZins += ZinsRestjahr;
     gesamtZins = r2(gesamtZins);
-    qDebug().noquote()
+    qInfo().noquote()
         << "\nverzl.Guthaben:" << wert
         << "\nErstes Jahr : " << ZinsImErstenJahr << "(" << TageImErstenJahr << "/" << dpy << ") Tage)"
         << "\nVolle Jahre : " << ZinsVolleJahre << "(" << jahre << " Jahre)"

@@ -98,7 +98,7 @@ bool createFileWithDatabaseStructure (const QString& targetfn, const dbstructure
     QSqlDatabase newDb = QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     newDb.setDatabaseName(targetfn);
     if( not newDb.open()) {
-        qDebug() << "faild to open new database";
+        qCritical() << "faild to open new database";
         return false;
     }
     bool ret =dbs.createDb(newDb);

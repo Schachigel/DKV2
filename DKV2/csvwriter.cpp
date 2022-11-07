@@ -93,7 +93,7 @@ bool csvwriter::saveAndShowInExplorer(const QString& filename) const
         // check if we could get another filename to work with...
         p_tf =std::make_unique<QTemporaryFile>(tempPathTemplateFromPath(path, qsl("bakupCsv")));
         if( p_tf->open())
-            qDebug() << "falling back to temporary file: " << p_tf->fileName ();
+            qInfo() << "falling back to temporary file: " << p_tf->fileName ();
         else{
             qCritical() << "could not open any file for writing csv";
             return false;
@@ -119,10 +119,10 @@ bool StringLists2csv(const QString& filename, const QStringList& header, const Q
     LOG_CALL;
     int numColumns =header.size();
     csvwriter csv (qsl(";"));
-    qDebug() << header;
+//    qDebug() << header;
     csv.addColumns(header);
     for( auto& line : qAsConst(data)) {
-        qDebug() << line;
+//        qDebug() << line;
         if(line.size() not_eq numColumns){
             qWarning() << "csv file not created due to wrong number of elements in " << line;
             return false;

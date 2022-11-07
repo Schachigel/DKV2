@@ -69,7 +69,7 @@ bool creditor::fromDb( const qlonglong id)
 
     for(int i=0; i<rec.count(); i++)
     {
-        qDebug() << "reading Kreditor from db; Field:" << rec.field(i).name() << "-value:" << rec.field(i).value() << "(" << rec.field(i).value().type() << ")";
+        qInfo() << "reading Kreditor from db; Field:" << rec.field(i).name() << "-value:" << rec.field(i).value() << "(" << rec.field(i).value().type() << ")";
         if( dkdbstructur[tablename][rec.field(i).name()].type() == QVariant::String)
             ti.setValue(rec.field(i).name(), rec.field(i).value().toString());
         else if( dkdbstructur[tablename][rec.field(i).name()].type() == QVariant::LongLong)
@@ -220,7 +220,7 @@ void fillCreditorsListForLetters(QList<QPair<int,QString>>& entries, int booking
     QSqlQuery query; query.setForwardOnly(true);
     QString sql;
     if( bookingYear == -1)
-        sql =         sql =qsl(R"str(
+        sql =qsl(R"str(
 SELECT id
   , Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse
 FROM Kreditoren
@@ -240,7 +240,7 @@ WHERE Buchungen.BuchungsArt = %1 AND SUBSTR(Buchungen.Datum, 1, 4) = '%2')
 ORDER BY Nachname ASC, Vorname ASC
 )str").arg(bookingTypeToNbrString(bookingType::annualInterestDeposit), i2s(bookingYear));
 
-    qDebug() << sql;
+//    qDebug() << sql;
     if( not query.exec(sql)) {
         qCritical() << "Error reading DKGeber while creating a contract: " << query.lastError().text();
         return;
