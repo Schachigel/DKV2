@@ -1,6 +1,9 @@
+#ifdef Q_OS_WIN
 #include <windows.h>
+#endif
 #include <iostream>
 #include "helper.h"
+#include "helperfile.h"
 
 QFile* outFile_p{nullptr};
 int functionlogging::depth =0;
