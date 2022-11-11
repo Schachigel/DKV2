@@ -175,7 +175,9 @@ bool deleteContractFromDB(const qlonglong id);
 
 // test helper
 contract saveRandomContract(const qlonglong creditorId);
+void saveRandomContractPerCreditor();
 void saveRandomContracts(const int count);
+int activateAllContracts(int year);
 QDate activateRandomContracts(const int percent);
 
 #endif // VERTRAG_H

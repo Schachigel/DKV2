@@ -219,3 +219,16 @@ bool dbTablesHaveSameFields(const QString& table1, const QString& table2, const 
     return ret;
 }
 
+int doAnnualSettlementAllContracts (int year)
+{   LOG_CALL_W(i2s(year));
+    QVector<QVariant> ids =executeSingleColumnSql (dkdbstructur["Vertraege"].Fields ()[0]);
+    int executedSettlements =0;
+    for( const auto& id : qAsConst(ids)) {
+        contract c(id.toLongLong ());
+        if( year == c.annualSettlement (year)){
+            executedSettlements++;
+            qInfo().noquote ().nospace ()<< c.toString ();
+        }
+    }
+    return executedSettlements;
+}

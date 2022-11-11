@@ -3,7 +3,9 @@
 #endif
 #include <iostream>
 #include "helper.h"
+#ifndef QT_DEBUG
 #include "helperfile.h"
+#endif
 
 QFile* outFile_p{nullptr};
 int functionlogging::depth =0;
@@ -64,7 +66,6 @@ void logger(QtMsgType type, const QMessageLogContext& c, const QString &msg)
 
         //    static QMutex mutex;
         //    QMutexLocker lock(&mutex);
-//        QString code {qsl("%1 %2 %3").arg(QString(c.file), QString::number (c.line), QString(c.function))};
         QString out {qsl("%1 %2 %3").arg(QTime::currentTime().toString(qsl("hh:mm:ss.zzz")), msgLevelHash[type], /*code, */endlCorrectedMsg)};
 #ifdef Q_OS_WIN
         if( out.length () < 32765)

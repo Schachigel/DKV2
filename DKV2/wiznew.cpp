@@ -42,9 +42,9 @@ void wpNewOrExisting::initializePage()
     if (init)
     {
         setField(pnNew, true);
-        QList<QPair<int, QString>> Personen;
+        QList<QPair<qlonglong, QString>> Personen;
         cbCreditors->clear();
-        fillCreditorsListForLetters(Personen);
+        getAllCreditorInfoSorted(Personen);
         if (Personen.count())
         {
             for (auto &Entry : qAsConst(Personen))

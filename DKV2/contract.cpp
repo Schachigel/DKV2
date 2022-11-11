@@ -602,7 +602,7 @@ QString contract::toString(const QString &title) const
     if( id() <=0)
         stream << qsl("[contract was not saved or loaded from DB]") << qsl("\n");
     else
-        stream << qsl("[id:") << id_aS() << qsl("]") << qsl("\n");
+        stream << qsl("[id, cred.Id:") << id_aS() << qsl(", ") << i2s(creditorId()) << qsl("]") << qsl("\n");
     if( not initialBookingReceived()) {
         stream << "Wert (gepl.):     " << plannedInvest() << qsl("\n");
         stream << "Zinssatz (gepl.): " << interestRate() << qsl("\n");
@@ -720,6 +720,15 @@ contract saveRandomContract(qlonglong creditorId)
     c.saveNewContract();
     return c;
 }
+
+void saveRandomContractPerCreditor()
+{
+    QVector<QVariant> creditorIds = executeSingleColumnSql(dkdbstructur[qsl("Kreditoren")][contract::fnId]);
+    for( const QVariant& creditorId: creditorIds) {
+        saveRandomContract (creditorId.toLongLong ());
+    }
+}
+
 void saveRandomContracts(int count)
 {   LOG_CALL;
     Q_ASSERT(count>0);
@@ -731,6 +740,24 @@ void saveRandomContracts(int count)
     for (int i = 0; i<count; i++)
         saveRandomContract(creditorIds[rand->bounded(creditorIds.size())].toLongLong());
 }
+// test helper ?!
+int activateAllContracts(int year)
+{
+    QVector<dbfield> idField {contract::getTableDef().Fields()[0]};
+    QVector<QSqlRecord> ids= executeSql(idField);
+    int res =0;
+    for( const auto& id : ids) {
+        contract c(id.value (0).toLongLong ());
+        if( not c.interestActive ())
+            c.bookActivateInterest (QDate(year, 1, 1).addYears (-1));
+        c.bookInitialPayment (QDate(year, 1, 1).addYears (-1).addDays (10), c.plannedInvest ());
+        if(year == c.annualSettlement (year))  res++;
+    }
+    return res;
+}
+
+// test helper ^
+
 QDate activateRandomContracts(const int percent)
 {   LOG_CALL;
     QDate minimumActivationDate =EndOfTheFuckingWorld; // needed for tests

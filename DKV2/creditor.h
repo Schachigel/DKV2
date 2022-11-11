@@ -76,7 +76,8 @@ private:
     // helper
 };
 
-void fillCreditorsListForLetters(QList<QPair<int,QString>> &entries, int bookingYear =-1);
+void getAllCreditorInfoSorted(QList<QPair<qlonglong, QString> > &entries);
+void creditorsWithAnnualSettlement(QList<qlonglong> &entries, int bookingYear =-1);
 
 
 // for testing

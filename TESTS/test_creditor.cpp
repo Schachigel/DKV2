@@ -137,3 +137,31 @@ void test_creditor::test_deleteCreditor_wTerminatedContractFails()
     co.finalize(false, QDate(2020, 5, 31), interestPayout, payout);
     QCOMPARE(c.remove(), false);
 }
+
+void test_creditor::test_getAllCreditorInfoSorted ()
+{
+    int numberOfCreditors =2;
+    saveRandomCreditors (numberOfCreditors);
+    QList<QPair<qlonglong, QString>> allCreditorsWithNames;
+    // function under test
+    getAllCreditorInfoSorted (allCreditorsWithNames);
+    // test: all creditors
+    QCOMPARE( allCreditorsWithNames.size (), numberOfCreditors);
+
+    QList<qlonglong> creditorIds;
+    int yearOfAnnualSettlement =QDate::currentDate ().year () +2;
+    // function under test
+    creditorsWithAnnualSettlement(creditorIds, yearOfAnnualSettlement);
+    // test no creditors
+    QCOMPARE( creditorIds.size (), 0);
+
+
+    saveRandomContractPerCreditor();
+    activateAllContracts (yearOfAnnualSettlement);
+    // function under test
+    creditorsWithAnnualSettlement(creditorIds, yearOfAnnualSettlement);
+    QFile::remove("./data/test_db.db");
+    QSqlDatabase::database().exec("VACUUM INTO './data/test_db.db'");
+    // test some creditors
+    QCOMPARE( creditorIds.size (), numberOfCreditors);
+}

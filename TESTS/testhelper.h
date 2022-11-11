@@ -28,4 +28,7 @@ bool dbTableHasField(const QString& tname, const QString& fname, const QSqlDatab
 bool dbsHaveSameTables(const QString &fn1, const QString &fn2);
 bool dbsHaveSameTables(const QSqlDatabase& db1, const QSqlDatabase& db2);
 bool dbTablesHaveSameFields(const QString& table1, const QString& table2, const QSqlDatabase& db =QSqlDatabase::database());
+
+int doAnnualSettlementAllContracts (int year);
+
 #endif // TESTHELPER_H

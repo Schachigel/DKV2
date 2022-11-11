@@ -215,21 +215,32 @@ bool creditor::remove()
     return creditortable;
 }
 
-void fillCreditorsListForLetters(QList<QPair<int,QString>>& entries, int bookingYear)
+void getAllCreditorInfoSorted(QList<QPair<qlonglong,QString>>& entries)
 {   LOG_CALL;
-    QSqlQuery query; query.setForwardOnly(true);
     QString sql;
-    if( bookingYear == -1)
         sql =qsl(R"str(
 SELECT id
   , Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse
 FROM Kreditoren
 ORDER BY Nachname ASC, Vorname ASC
 )str");
-    else
-        sql =qsl(R"str(
+    QVector<QSqlRecord> result;
+    if( not executeSql(sql, result)) {
+        qCritical() << "Error reading DKGeber while creating a contract";
+        return;
+    }
+    for( const auto& record: qAsConst( result))
+        entries.append({record.value(0).toLongLong (), record.value(1).toString ()});
+}
+void creditorsWithAnnualSettlement(QList<qlonglong>& entries, int bookingYear)
+{   LOG_CALL;
+    if( bookingYear < 1950) {
+        qCritical() << "invalid booking year reading DKGeber";
+        return;
+    }
+
+    QString sql {qsl(R"str(
 SELECT id
-  , Nachname || ', ' || Vorname || ' '||  Plz || '-' || Stadt || ' ' || Strasse
 FROM Kreditoren
 WHERE id IN (
 SELECT DISTINCT Kreditoren.Id AS kid
@@ -238,18 +249,15 @@ INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id
 INNER JOIN Kreditoren ON Vertraege.KreditorId = Kreditoren.id
 WHERE Buchungen.BuchungsArt = %1 AND SUBSTR(Buchungen.Datum, 1, 4) = '%2')
 ORDER BY Nachname ASC, Vorname ASC
-)str").arg(bookingTypeToNbrString(bookingType::annualInterestDeposit), i2s(bookingYear));
+)str").arg(bookingTypeToNbrString(bookingType::annualInterestDeposit), i2s(bookingYear))};
 
-//    qDebug() << sql;
-    if( not query.exec(sql)) {
-        qCritical() << "Error reading DKGeber while creating a contract: " << query.lastError().text();
+    QVector<QSqlRecord> result;
+    if( not executeSql(sql, result)) {
+        qCritical() << "error getting creditors";
         return;
     }
-    while(query.next()){
-        QString Entry = query.value(1).toString();
-        QPair<int,QString> entry {query.value(qsl("id")).toInt(), Entry};
-        entries.append(entry);
-    }
+    for(const auto& record : qAsConst(result))
+        entries.append (record.value(0).toLongLong ());
 }
 
 namespace {

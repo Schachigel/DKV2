@@ -389,9 +389,9 @@ void annualSettlementLetters() {
 
     createInitialLetterTemplates();
 
-    QList<QPair<int, QString>> creditors;
-    fillCreditorsListForLetters(creditors, yearOfSettlement);
-    if (creditors.size() <= 0) {
+    QList<qlonglong> creditorIds;
+    creditorsWithAnnualSettlement(creditorIds, yearOfSettlement);
+    if (creditorIds.size() <= 0) {
         qInfo() << "no creditors to create letters for";
         return;
     }
@@ -404,14 +404,14 @@ void annualSettlementLetters() {
             QVariant(appConfig::Outdir() + qsl("/vorlagen/brieflogo.png"));
     printData[qsl("meta")] = getMetaTableAsMap();
 
-    for (auto &cred : qAsConst(creditors)) {
-        creditor credRecord(cred.first);
+    for (const auto & cred : qAsConst(creditorIds)) {
+        creditor credRecord(cred);
         printData["creditor"] = credRecord.getVariant();
 
         QVector<QVariant> ids = executeSingleColumnSql(
                     dkdbstructur[contract::tnContracts][contract::fnId],
                 qsl(" %1=%2 GROUP BY id")
-                .arg(contract::fnKreditorId, i2s(cred.first)));
+                .arg(contract::fnKreditorId, i2s(cred)));
 
         QVariantList vl;
         double payedInterest = 0.;

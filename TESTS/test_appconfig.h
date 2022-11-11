@@ -22,6 +22,7 @@ private slots:
     void test_overwrite_value();
     void test_dbConfig_RuntimeData();
     void test_dbConfig_Db();
+    void test_getMetaTableAsMap();
 };
 
 #endif // TEST_APPCONFIG_H

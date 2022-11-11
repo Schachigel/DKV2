@@ -131,25 +131,17 @@ void appConfig::delLastDb()
 
 QVariantMap getMetaTableAsMap(const QSqlDatabase &db)
 {
-    LOG_CALL;
     QVariantMap vm;
-    QSqlQuery q(db); // default database connection -> active database
-    q.setForwardOnly(true);
-    if (not q.exec(qsl("SELECT * FROM Meta")))
-    {
-        qInfo() << "no data returned from Meta table";
-        return vm;
-    }
+    QVector<QSqlRecord> table;
+    if( not executeSql(qsl("SELECT * FROM Meta"), table, db))
+        RETURN_ERR(QVariantMap(), __FUNCTION__, qsl("Failed to read meta table"));
 
-    QString name;
-    QString value;
+    QString name, value;
     QRegularExpression re("[/\\.]");
-    while (q.next())
-    {
-        QSqlRecord rec = q.record();
-        name = rec.value("name").toString().replace(re,"");
-        value = rec.value("Wert").toString();
-        vm[name] = value;
+    for( const QSqlRecord& record: qAsConst(table))  {
+        name  =record.value("name").toString().replace(re, "");
+        value =record.value("Wert").toString();
+        vm[name] =value;
     }
     return vm;
 }

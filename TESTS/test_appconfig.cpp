@@ -82,3 +82,10 @@ void test_appConfig::test_dbConfig_Db()
     QSqlDatabase::removeDatabase(qsl("newdb"));
     QFile::remove(newDbFilename);
 }
+
+void test_appConfig::test_getMetaTableAsMap()
+{
+    auto map =getMetaTableAsMap ();
+    QCOMPARE( map.value ("gmbhprojekt"), "Esperanza");
+    QCOMPARE( map.size (), projectConfiguration::MAX_PC_INDEX);
+}
