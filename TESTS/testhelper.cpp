@@ -232,3 +232,15 @@ int doAnnualSettlementAllContracts (int year)
     }
     return executedSettlements;
 }
+
+void dbgDumpDatabase(QString testname)
+{
+    QString filename { qsl("./data/%1.db").arg(testname).replace (':', '#')};
+
+    QDir().mkdir(qsl("./data"));
+    QFile::remove(filename);
+    QVERIFY( not QFile::exists(filename));
+    QString sql{qsl("VACUUM INTO '%1'").arg(filename)};
+    QSqlDatabase::database().exec(sql);
+    QVERIFY( QFile::exists(filename));
+}

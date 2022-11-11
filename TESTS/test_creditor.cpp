@@ -160,8 +160,7 @@ void test_creditor::test_getAllCreditorInfoSorted ()
     activateAllContracts (yearOfAnnualSettlement);
     // function under test
     creditorsWithAnnualSettlement(creditorIds, yearOfAnnualSettlement);
-    QFile::remove("./data/test_db.db");
-    QSqlDatabase::database().exec("VACUUM INTO './data/test_db.db'");
+    dbgDumpDB();
     // test some creditors
     QCOMPARE( creditorIds.size (), numberOfCreditors);
 }

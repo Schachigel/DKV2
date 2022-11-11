@@ -80,7 +80,7 @@ void test_appConfig::test_dbConfig_Db()
         newDb.close();
     }
     QSqlDatabase::removeDatabase(qsl("newdb"));
-    QFile::remove(newDbFilename);
+    QVERIFY(QFile::remove(newDbFilename));
 }
 
 void test_appConfig::test_getMetaTableAsMap()

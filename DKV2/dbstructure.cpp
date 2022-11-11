@@ -111,9 +111,9 @@ bool createNewDatabaseFileWDefaultContent(const QString& filename, zinssusance z
     Q_ASSERT( filename.size());
 
     // create file an schema
-    if( not createFileWithDatabaseStructure (filename, dbs)) {
+    if( not createFileWithDatabaseStructure (filename, dbs))
         return false;
-    }
+
     // create content
     dbCloser closer{qsl("conCreateDb")};
     QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName, closer.conName);

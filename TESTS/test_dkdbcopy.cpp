@@ -29,6 +29,7 @@ void test_dkdbcopy::test_moveToPreconversionBackup()
     QVERIFY( result.size());
     QVERIFY( not QFile::exists(testDbFilename));
     QVERIFY( QFile::exists(result));
+    QVERIFY( QFile::remove(result));
 }
 
 void test_dkdbcopy::test_moveToPreconversionBackup_tmpfn()
@@ -169,7 +170,7 @@ void test_dkdbcopy::test_convertDatabaseInplace() {
     QString temp =convert_database_inplace(testDbFilename);
     // verification
     QVERIFY(dbsHaveSameTables(testDbFilename, temp));
-    QFile::remove (temp);
+    QVERIFY(QFile::remove (temp));
 }
 
 void test_dkdbcopy::test_convertDatabaseInplace_wNewColumn()

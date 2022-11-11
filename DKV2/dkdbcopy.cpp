@@ -17,8 +17,9 @@ QString moveToPreConversionCopy( const QString& file)
     QString newFile = getUniqueTempFilename(fi.absoluteFilePath (), qsl("preconversion"));
     Q_ASSERT( newFile.size() >0);
     QFile f(fi.absoluteFilePath ());
-    if( f.rename( newFile))
-        return newFile;
+    if( f.rename( newFile)){
+        RETURN_OK( newFile, __FUNCTION__, file, newFile);
+    }
     else {
         qCritical() << "file rename failed " << f.error() << ": " << f.errorString();
         Q_ASSERT( not "Faild to rename temporary file");

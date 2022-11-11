@@ -31,4 +31,7 @@ bool dbTablesHaveSameFields(const QString& table1, const QString& table2, const 
 
 int doAnnualSettlementAllContracts (int year);
 
+#define dbgDumpDB() dbgDumpDatabase(__FUNCTION__);
+void dbgDumpDatabase(QString testname);
+
 #endif // TESTHELPER_H
