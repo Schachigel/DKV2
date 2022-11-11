@@ -89,52 +89,17 @@ bool copycreate_views(const QSqlDatabase& db, const QString& alias)
 }
 
 /*
-*  copy_database will create a 1 : 1 copy of the currently opened database to a new file
+*  copy_database will create a 1 : 1 copy of "sourceFName"
+*  to a new file "targetFName"
 */
-bool copy_database( const QString& sourceFName,
-                    const QString& targetFName,
-                    const dbstructure& targetDbStructure/*=dkdbstructur*/)
-{
-    qInfo() << "copy_database(" << sourceFName << ", " << targetFName << ")";
-
-    if( not createFileWithDatabaseStructure(targetFName))
-        return false;
-
-    autoDb autoTarget(targetFName, qsl("copyDbTarget"));
-    autoRollbackTransaction transaction(autoTarget.db.connectionName());
-    autoDetachDb ad(qsl("SourceDb"), autoTarget.conName());
-    if ( not ad.attachDb(sourceFName))
-        return false;
-
-    switchForeignKeyHandling(false, autoTarget.db);
-    switchForeignKeyHandling(false, ad.alias(), autoTarget.db);
-
-    QVector<dbtable> tables = targetDbStructure.getTables();
-    for (auto& table : qAsConst(tables)) {
-        if ( not replace_TableContent(ad.alias() + qsl(".") + table.Name(), table.Name(), autoTarget.db))
-            return false;
-    }
-    if ( not replace_TableContent(ad.alias() +qsl(".sqlite_sequence"), qsl("sqlite_sequence"), autoTarget.db))
-        return false;
-    if( not copycreate_views(autoTarget.db, ad.alias()))
-        return false;
-    // if we had indices which do not come from table creation, they should also be copied
-    /////////// all done
-    transaction.commit();
-    /////////////////////
-    return true;
+bool vacuum_copy_database( const QString& targetFName)
+{   LOG_CALL_W(targetFName);
+    return executeSql_wNoRecords (qsl("VACUUM INTO '%1'").arg(targetFName));
 }
 
-bool copy_dkdb_database( const QString& sourceFName,
-                         const QString& targetFName)
+bool copy_open_DkDatabase( const QString& targetFName)
 {
-    copy_database(sourceFName, targetFName);
-    // force views creation on next startup
-    autoDb target(targetFName, qsl("copy_dkdb"));
-    if( executeSql_wNoRecords(qsl("DELETE FROM meta WHERE Name='dkv2.exe.Version'"), target.db))
-        if( remove_all_views( target.db))
-            return true;
-    return false;
+    return vacuum_copy_database( targetFName);
 }
 
 

@@ -284,7 +284,7 @@ void MainWindow::on_action_menu_database_copy_triggered()
         return;
 
     busycursor b;
-    if( copy_dkdb_database(QSqlDatabase::database().databaseName(), dbfile)){
+    if( copy_open_DkDatabase(dbfile)){
         b.finish ();
         QMessageBox::information(this, qsl("Kopie angelegt"), qsl("Die Kopie ") +dbfile +qsl(" wurde erfolgreich angelegt"));
     }
