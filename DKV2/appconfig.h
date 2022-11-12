@@ -2,7 +2,7 @@
 #define APPCONFIG_H
 
 #include <iso646.h>
-
+#include "dbtable.h"
 
 // db config info in 'meta' table
 // init = write only if not set
@@ -18,6 +18,10 @@ void setNumMetaInfo(const QString& name, const double Wert, const QSqlDatabase& 
 
 struct appConfig
 {
+    static const QString tnMeta;
+    static const QString fnName;
+    static const QString fnWert;
+    static dbtable getTableDef();
     // global (on program / system level, stored in system registry)
     static void setOutDir(const QString& od);
     static void setOutDirInteractive(QWidget* parent =nullptr);

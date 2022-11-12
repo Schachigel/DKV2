@@ -4,7 +4,6 @@
 #include "helperfile.h"
 #include "appconfig.h"
 #include "tabledatainserter.h"
-#include "dkdbviews.h"
 #include "dkdbcopy.h"
 #include "creditor.h"
 

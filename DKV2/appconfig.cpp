@@ -15,6 +15,18 @@ QString appConfig::keyLastDb = qsl("db/last");
 QString appConfig::keyOutdir = qsl("dbg-outdir");
 QString appConfig::keyLastDb = qsl("dbg-db/last");
 #endif
+const QString appConfig::tnMeta { qsl("Meta")};
+const QString appConfig::fnName { qsl("Name")};
+const QString appConfig::fnWert { qsl("Wert")};
+
+dbtable appConfig::getTableDef()
+{
+    static dbtable table(tnMeta);
+    table.append(dbfield(qsl("Name"), QVariant::String).setPrimaryKey());
+    table.append(dbfield(qsl("Wert"), QVariant::String).setNotNull());
+
+    return table;
+}
 
 // db config info in 'meta' table
 void initMetaInfo( const QString& name, const QString& initialValue, const QSqlDatabase& db)

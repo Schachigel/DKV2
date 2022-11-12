@@ -49,42 +49,29 @@ bool dbstructure::createDb(const QSqlDatabase& db) const
 {   // LOG_CALL;
     switchForeignKeyHandling(fkh_on, db);
     for(dbtable& table :getTables()) {
-        if( not ensureTable(table, db)) {
-            qCritical() << "could not create table " << table.Name();
-            return false;
-        }
-    }
+        if( not ensureTable(table, db))
+            RETURN_ERR(false, qsl("could not create table "), table.Name());
+    } // for
     return true;
 }
 
 void init_DKDBStruct()
 {   LOG_CALL_W("Setting up internal database structures");
-    static bool done = false;
-    if( done) return; // for tests
+    if( dkdbstructur.getTables ().size ())
+        return; // init only once
     // DB date -> Variant String
     // DB bool -> Variant int
 
     dkdbstructur.appendTable(creditor::getTableDef());
-
     dkdbstructur.appendTable(investment::getTableDef());
-
     dkdbstructur.appendTable(contract::getTableDef());
     dkdbstructur.appendTable(contract::getTableDef_deletedContracts());
-
     dkdbstructur.appendTable(booking::getTableDef());
     dkdbstructur.appendTable(booking::getTableDef_deletedBookings());
-
-
-    dbtable meta(qsl("Meta"));
-    meta.append(dbfield(qsl("Name"), QVariant::String).setPrimaryKey());
-    meta.append(dbfield(qsl("Wert"), QVariant::String).setNotNull());
-    dkdbstructur.appendTable(meta);
-
+    dkdbstructur.appendTable(appConfig::getTableDef());
     dkdbstructur.appendTable(letterTemplate::getTableDef_letterTypes());
     dkdbstructur.appendTable(letterTemplate::getTableDef_elementTypes());
     dkdbstructur.appendTable(letterTemplate::getTableDef_letterElements());
-
-    done = true;
 }
 
 // db creation for newDb and copy (w & w/o de-personalisation)
