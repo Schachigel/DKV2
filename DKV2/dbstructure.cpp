@@ -77,19 +77,17 @@ void init_DKDBStruct()
 // db creation for newDb and copy (w & w/o de-personalisation)
 bool createFileWithDatabaseStructure (const QString& targetfn, const dbstructure& dbs/* =dkdbstructu*/)
 {   LOG_CALL_W(targetfn);
-    if( not moveToBackup(targetfn)) {
+    if( not moveToBackup(targetfn))
         return false;
-    }
+
     dbCloser closer(qsl("createDbFile"));
 
     QSqlDatabase newDb = QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     newDb.setDatabaseName(targetfn);
-    if( not newDb.open()) {
-        qCritical() << "faild to open new database";
-        return false;
-    }
-    bool ret =dbs.createDb(newDb);
-    return ret;
+    if( not newDb.open())
+    RETURN_ERR(false, qsl("faild to open new database"));
+
+    return dbs.createDb(newDb);
 }
 
 // database creation
@@ -106,10 +104,8 @@ bool createNewDatabaseFileWDefaultContent(const QString& filename, zinssusance z
     QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     db.setDatabaseName(filename);
 
-    if( not db.open()) {
-        qCritical() << "DkDatenbankAnlegen failed in db.open";
-        return false;
-    }
+    if( not db.open())
+        RETURN_ERR(false, qsl("DkDatenbankAnlegen failed in db.open"));
     if( &dbs == &dkdbstructur)
         return fill_DkDbDefaultContent(db, true, zs);
     else
@@ -128,8 +124,7 @@ bool hasAllTablesAndFields(const QSqlDatabase& db, const dbstructure& dbs /*=dkd
 }
 
 bool validateDbSchema(const QString& filename, const dbstructure& dbs /*=dkdbstructur*/)
-{
-    LOG_CALL_W(filename);
+{   LOG_CALL_W(filename);
     QString msg;
     if( filename.isEmpty ())
         msg = qsl("no filename");

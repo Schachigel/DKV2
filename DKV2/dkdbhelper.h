@@ -18,10 +18,10 @@ int get_db_version(const QString &filename);
 
 bool treat_DbIsAlreadyInUse_File(QString filename);
 bool checkSchema_ConvertIfneeded(const QString &origDbFile);
-void closeAllDatabaseConnections();
+
 bool open_databaseForApplication( const QString &newDbFile="");
 
-bool isValidNewContractLabel( const QString& label);
+bool isValidNewContractLabel(const QString& newLabel);
 QString proposeContractLabel();
 void create_sampleData(int datensaetze =20);
 

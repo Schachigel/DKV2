@@ -82,6 +82,7 @@ private:
     QString _conname;
 };
 
+void closeAllDatabaseConnections();
 
 // bool vTypesShareDbType( QVariant::Type t1, QVariant::Type t2);
 QString DbInsertableString(const QVariant &v);

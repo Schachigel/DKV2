@@ -56,18 +56,6 @@ int get_db_version(const QSqlDatabase &db)
     return d;
 }
 
-bool isExistingContractLabel( const QString& newLabel)
-{
-    QVariant existingLabel =executeSingleValueSql(contract::fnKennung, contract::tnContracts, qsl("Kennung = ") +singleQuoted (newLabel ));
-    return existingLabel.isValid();
-}
-
-bool isExisting_Ex_ContractLabel( const QString& newLabel)
-{
-    QVariant existingLabel =executeSingleValueSql(contract::fnKennung, contract::tnExContracts, qsl("Kennung = ") +singleQuoted (newLabel));
-    return existingLabel.isValid();
-}
-
 void getBookingDateInfoBySql(const QString &sql, QVector<BookingDateData>& dates)
 {
     QVector<QSqlRecord> records;
@@ -192,56 +180,31 @@ bool checkSchema_ConvertIfneeded(const QString &origDbFile)
     {
         qInfo() << "lower version -> converting";
         bc.finish (); // normal cursor during message box
-        if (QMessageBox::Yes not_eq QMessageBox::question(getMainWindow(), qsl("Achtung"), qsl("Das Format der Datenbank \n%1\nist veraltet.\nSoll die Datenbank konvertiert werden?").arg(origDbFile))) {
-            qInfo() << "conversion rejected by user";
-            return false;
-        }
+        if (QMessageBox::Yes not_eq QMessageBox::question(getMainWindow(), qsl("Achtung"), qsl("Das Format der Datenbank \n%1\nist veraltet.\nSoll die Datenbank konvertiert werden?").arg(origDbFile)))
+            RETURN_OK(false, qsl("conversion rejected by user"));
+
         QString backup = convert_database_inplace(origDbFile);
         if (backup.isEmpty()) {
             bc.finish (); // normal cursor during message box
             QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Bei der Konvertierung ist ein Fehler aufgetreten. Die Ausführung muss beendet werden."));
-            qCritical() << "db converstion of older DB failed";
-            return false;
+            RETURN_ERR(false, qsl("db converstion of older DB failed"));
         }
         // actions which depend on the source version of the db
         if (not postDB_UpgradeActions(version_of_original_file, origDbFile)) {
             bc.finish (); // normal cursor during message box
             QMessageBox::critical(getMainWindow(), qsl("Fehler"), qsl("Bei der Konvertierung ist ein Fehler aufgetreten. Die Ausführung muss beendet werden."));
-            qCritical() << "db converstion of older DB failed";
-            return false;
+            RETURN_ERR(false, qsl("db converstion of older DB failed"));
         }
         bc.finish ();
         QMessageBox::information(nullptr, qsl("Erfolgsmeldung"), qsl("Die Konvertierung ware erfolgreich. Eine Kopie der ursprünglichen Datei liegt unter \n") + backup);
         return true;
     }
-    else if (version_of_original_file == CURRENT_DB_VERSION)
-    {
+
+    if (version_of_original_file == CURRENT_DB_VERSION)
         return validateDbSchema(origDbFile, dkdbstructur);
-    }
-    else
-    {
-        qInfo() << "higher version ? there is no way back";
-        return false;
-    }
-}
 
-
-// manage the app wide used database
-void closeAllDatabaseConnections()
-{   LOG_CALL;
-    QList<QString> cl = QSqlDatabase::connectionNames();
-    if( cl.count())
-        qInfo()<< "Found " << cl.count() << "connections open";
-
-    for( const auto &s : qAsConst(cl)) {
-        QSqlDatabase::database(s).close();
-        QSqlDatabase::removeDatabase(s);
-    }
-    cl.clear();
-    cl = QSqlDatabase::connectionNames();
-    if( cl.size())
-        qInfo() << "not all connection to the database could be closed";
-    qInfo() << "All Database connections were removed";
+    // VERSION is higher?!
+    RETURN_ERR(false, qsl("higher version ? there is no way back"));
 }
 
 bool open_databaseForApplication( const QString &newDbFile)
@@ -254,21 +217,20 @@ bool open_databaseForApplication( const QString &newDbFile)
     // setting the default database for the application
     QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName);
     db.setDatabaseName(newDbFile);
-    if( not db.open()) {
-        qCritical() << "open database file " << newDbFile << " failed";
-        return false;
-    }
-    if( not updateViewsAndIndices_if_needed (db)) {
-        qCritical() << "update views on " << newDbFile << " failed";
-        return false;
-    }
+    if( not db.open())
+        RETURN_ERR(false, qsl("open database file failed:"), newDbFile);
+    if( not updateViewsAndIndices_if_needed (db))
+        RETURN_ERR(false, qsl("update views failed on "), newDbFile);
     switchForeignKeyHandling(fkh_on, db);
     return true;
 }
 
-bool isValidNewContractLabel(const QString& label)
+bool isValidNewContractLabel(const QString& newLabel)
 {
-    return not (isExistingContractLabel(label) or isExisting_Ex_ContractLabel(label));
+    QVariant existingLabel =executeSingleValueSql(contract::fnKennung, contract::tnContracts, qsl("Kennung = ") +singleQuoted (newLabel ));
+    QVariant existingExLabel =executeSingleValueSql(contract::fnKennung, contract::tnExContracts, qsl("Kennung = ") +singleQuoted (newLabel));
+
+    return not (existingLabel.isValid () or existingExLabel.isValid ());
 }
 
 QString proposeContractLabel()
@@ -319,7 +281,7 @@ int automatchInvestmentsToContracts()
         QDate contractDate =rec.value(qsl("Vertragsdatum")).toDate();
         QVector<investment> suitableInvestments =openInvestments(interestRate, contractDate);
         if( suitableInvestments.length() not_eq 1)
-            continue;
+            continue; // no match if ambiguous or not existing
         contract c(rec.value(qsl("id")).toLongLong());
         if( c.updateInvestment(suitableInvestments[0].rowid))
             successcount++;
@@ -340,10 +302,9 @@ void create_sampleData(int datensaetze)
 bool createCsvActiveContracts()
 {   LOG_CALL;
     QString tempViewContractsCsv {qsl("tvActiveContractsCsv")};
-    if( not createTemporaryDbView(tempViewContractsCsv, sqlContractsActiveDetailsView)) {
-        qCritical() << "failed to create view " << tempViewContractsCsv;
-        return false;
-    }
+    if( not createTemporaryDbView(tempViewContractsCsv, sqlContractsActiveDetailsView))
+        RETURN_ERR( false, qsl("failed to create view "), tempViewContractsCsv);
+
     QStringList header;
     dbtable t(tempViewContractsCsv);
     t.append(dbfield(contract::fnId, QVariant::Int));
@@ -366,7 +327,6 @@ bool createCsvActiveContracts()
     header.append (qsl("IBAN"));
     t.append(dbfield(creditor::fnBIC));
     header.append (qsl("BIC"));
-//    t.append(dbfield(creditor::fnStrasse));
     t.append(dbfield(qsl("Zinssatz"), QVariant::Double));
     header.append (qsl("Zinssatz"));
     t.append(dbfield(qsl("Wert"), QVariant::Double));
@@ -380,41 +340,34 @@ bool createCsvActiveContracts()
     t.append(dbfield(qsl("thesa"), QVariant::Int));
     header.append (qsl("Zinsmodus"));
 
-    QString sql = selectQueryFromFields(t.Fields (), QVector<dbForeignKey>());
-    QSqlQuery q;
-    if( not q.exec(sql)) {
-        qCritical() << "sql faild to execute" << q.lastError() << "\nSQL: " << q.lastQuery();
-        return false;
-    }
+    QVector<QSqlRecord> qResult =executeSql (t.Fields ());
+
     QVector<QStringList> data;
-    while(q.next()) {
+    for(const auto& record : qAsConst( qResult)) {
         QStringList col;
-        col.append (q.value(contract::fnId).toString());
-        col.append (q.value(creditor::fnId).toString());
-        col.append (q.value(creditor::fnVorname).toString());
-        col.append (q.value(creditor::fnNachname).toString());
-        col.append (q.value(creditor::fnStrasse).toString());
-        col.append (q.value(creditor::fnPlz).toString());
-        col.append (q.value(creditor::fnStadt).toString());
-        col.append (q.value(creditor::fnEmail).toString());
-        col.append (q.value(creditor::fnIBAN).toString());
-        col.append (q.value(creditor::fnBIC).toString());
-        col.append (prozent2prozent_str (q.value(qsl("Zinssatz")).toDouble ()));
-        col.append (d2euro (q.value(qsl("Wert")).toDouble ()));
-        col.append (q.value(qsl("Aktivierungsdatum")).toDate().toString ("dd.MM.yyyy"));
-        col.append (q.value(qsl("Kuendigungsfrist")).toString());
-        col.append (q.value(qsl("Vertragsende")).toDate().toString ("dd.MM.yyyy"));
-        col.append (interestModelDisplayString(interestModelFromInt(q.value(qsl("thesa")).toInt())));
+        col.append (record.value(contract::fnId).toString());
+        col.append (record.value(creditor::fnId).toString());
+        col.append (record.value(creditor::fnVorname).toString());
+        col.append (record.value(creditor::fnNachname).toString());
+        col.append (record.value(creditor::fnStrasse).toString());
+        col.append (record.value(creditor::fnPlz).toString());
+        col.append (record.value(creditor::fnStadt).toString());
+        col.append (record.value(creditor::fnEmail).toString());
+        col.append (record.value(creditor::fnIBAN).toString());
+        col.append (record.value(creditor::fnBIC).toString());
+        col.append (prozent2prozent_str (record.value(qsl("Zinssatz")).toDouble ()));
+        col.append (d2euro (record.value(qsl("Wert")).toDouble ()));
+        col.append (record.value(qsl("Aktivierungsdatum")).toDate().toString ("dd.MM.yyyy"));
+        col.append (record.value(qsl("Kuendigungsfrist")).toString());
+        col.append (record.value(qsl("Vertragsende")).toDate().toString ("dd.MM.yyyy"));
+        col.append (interestModelDisplayString(interestModelFromInt(record.value(qsl("thesa")).toInt())));
         data.append(col);
     }
 
     QString filename(QDate::currentDate().toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
-//    bool res =table2csv( filename, t.Fields());
-    bool res =StringLists2csv( filename, header, data);
-    if( not res)
-        qCritical() << "failed to print table";
-
-    return res;
+    if( StringLists2csv( filename, header, data))
+        return true;
+    RETURN_ERR(false, "failed to print table");
 }
 
 // calculate data for start page
@@ -455,18 +408,22 @@ QVector<contractRuntimeDistrib_rowData> contractRuntimeDistribution()
 {   LOG_CALL;
     int AnzahlBisEinJahr=0, AnzahlBisFuenfJahre=0, AnzahlLaenger=0, AnzahlUnbegrenzet = 0;
     double SummeBisEinJahr=0., SummeBisFuenfJahre=0., SummeLaenger=0., SummeUnbegrenzet = 0.;
-    QString sql = qsl("SELECT Wert, Aktivierungsdatum, Vertragsende "
-                  "FROM (%1)").arg(sqlContractsActiveView);
-    QSqlQuery q; q.setForwardOnly(true);
-    if( not q.exec(sql)) {
-        qCritical() << "calculation of runtime distribution failed: " << q.lastError() << "\n" << q.lastQuery();
-        return QVector<contractRuntimeDistrib_rowData>();
-    }
 
-    while( q.next()) {
-        double wert =   q.value(qsl("Wert")).toReal();
-        QDate von = q.value(qsl("Datum")).toDate();
-        QDate bis = q.value(qsl("Vertragsende")).toDate();
+    QString tname {qsl("activeContracts")};
+    createTemporaryDbView (tname, sqlContractsActiveView);
+    dbtable t(tname);
+    t.append (dbfield(qsl("Wert"), QVariant::Type::Double));
+    t.append (dbfield(qsl("Aktivierungsdatum"), QVariant::Date));
+    t.append (dbfield(qsl("Vertragsende"), QVariant::Date));
+
+    QVector<QSqlRecord> records =executeSql(t.Fields ());
+    if( records.empty ())
+        RETURN_ERR(QVector<contractRuntimeDistrib_rowData>(), qsl("calculation of runtime distribution failed"));
+
+    for( const auto& record : records) {
+        double wert =record.value(qsl("Wert")).toReal();
+        QDate   von =record.value(qsl("Datum")).toDate();
+        QDate   bis =record.value(qsl("Vertragsende")).toDate();
         if( not bis.isValid() or bis == EndOfTheFuckingWorld) {
             AnzahlUnbegrenzet++;
             SummeUnbegrenzet += wert;

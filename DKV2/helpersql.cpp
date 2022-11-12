@@ -108,6 +108,24 @@ QString dbAffinityType(const QVariant::Type t)
     }
 }
 
+// manage the app wide used database
+void closeAllDatabaseConnections()
+{   LOG_CALL;
+    QList<QString> cl = QSqlDatabase::connectionNames();
+    if( cl.count())
+        qInfo() << "Found open connections" << cl;
+
+    for( const auto &s : qAsConst(cl)) {
+        QSqlDatabase::database(s).close();
+        QSqlDatabase::removeDatabase(s);
+    }
+    cl.clear();
+    cl = QSqlDatabase::connectionNames();
+    if( cl.size())
+        qInfo() << "not all connection to the database could be closed" << cl;
+    qInfo() << "All Database connections were removed";
+}
+
 int rowCount(const QString& table, const QString& where, const QSqlDatabase& db /* =QSqlDatabase::database() */)
 {
     QString sql {qsl("SELECT count(*) FROM [%1]").arg(table)};
