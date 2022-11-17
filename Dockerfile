@@ -27,4 +27,5 @@ ENV QML_IMPORT_PATH="/qt/qml:/app/DKV2"
 ENV QML2_IMPORT_PATH="/qt/qml:/app/DKV2"
 # Run build script
 WORKDIR /app
+RUN git config --global --add safe.directory /app
 CMD /app/dist_linux.sh
