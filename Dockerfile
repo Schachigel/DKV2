@@ -5,7 +5,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Install basics
 RUN apt update && \
-      apt install --assume-yes wget fuse binutils libglib2.0-0 software-properties-common git
+      apt install --assume-yes wget fuse binutils libglib2.0-0 software-properties-common git curl qt5-default qt5-qmake make g++
 
 
 # Install libraries
