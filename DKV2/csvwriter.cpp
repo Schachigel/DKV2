@@ -5,6 +5,7 @@
 #include "helperfile.h"
 #include "appconfig.h"
 #include "csvwriter.h"
+#include <memory>
 
 void csvwriter::addColumn(const QString& header)
 {   LOG_CALL_W(header);
