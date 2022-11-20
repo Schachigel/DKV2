@@ -65,7 +65,7 @@ QVariant ContractTableModel::data(const QModelIndex& index, int role) const
             return QVariant::fromValue(f);
         }
     }
-    if( role == Qt::TextColorRole) {
+    if( role == Qt::ForegroundRole) {
         int days =data(index, Qt::UserRole).toInt();
         if( 30 > days)
             return QVariant::fromValue(QColor(Qt::red));
