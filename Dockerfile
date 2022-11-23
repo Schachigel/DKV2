@@ -1,7 +1,6 @@
 FROM ubuntu:20.04
 ENV TZ=Europe/Berlin
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-# FROM mhitza/linuxdeployqt:5.11.3
 
 # Install basics
 RUN apt update && \
@@ -17,15 +16,15 @@ RUN apt-get update && \
 RUN wget https://github.com/probonopd/linuxdeployqt/releases/download/7/linuxdeployqt-7-x86_64.AppImage \
       --quiet --output-document=/usr/bin/linuxdeployqt && \
     chmod +x /usr/bin/linuxdeployqt
-    
+
 # Install more things
 RUN apt-get install -y libfontconfig1 libegl1-mesa libcups2 libodbc1 libpq5 libgtk-3-0
 
 # Set QTDIR variable
-ENV QTDIR /qt
+ENV QTDIR /usr/lib/x86_64-linux-gnu/qt5
 ENV QML_IMPORT_PATH="/qt/qml:/app/DKV2"
 ENV QML2_IMPORT_PATH="/qt/qml:/app/DKV2"
+RUN git config --global --add safe.directory /app
 # Run build script
 WORKDIR /app
-RUN git config --global --add safe.directory /app
 CMD /app/dist_linux.sh

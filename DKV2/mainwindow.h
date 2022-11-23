@@ -6,7 +6,6 @@
 #include "contractsheadersortingadapter.h"
 #include "booking.h"
 #include "appconfig.h"
-#include <memory>
 
 class InvestmentsTableModel : public QSqlTableModel
 {
