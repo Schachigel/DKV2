@@ -138,7 +138,7 @@ WHERE
 ///////////////////////////////////////////////////////
 // related functions
 ///////////////////////////////////////////////////////
-qlonglong saveNewInvestment(int ZSatz, QDate start, QDate end, const QString &type)
+tableindex_t saveNewInvestment(int ZSatz, QDate start, QDate end, const QString &type)
 {   LOG_CALL;
     TableDataInserter tdi(investment::getTableDef());
     tdi.setValue(fnInvestmentInterest, ZSatz);
@@ -149,7 +149,7 @@ qlonglong saveNewInvestment(int ZSatz, QDate start, QDate end, const QString &ty
     return tdi.InsertRecord();
 }
 
-qlonglong createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
+tableindex_t createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
 {   LOG_CALL;
 
     QString sql{qsl("SELECT * FROM Geldanlagen WHERE ZSatz =%1 AND Anfang <= date('%2') AND Ende >= date('%3')")};

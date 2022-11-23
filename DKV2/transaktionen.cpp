@@ -349,7 +349,7 @@ void createInitialLetterTemplates() {
 int askUserForYearOfPrintouts() {
     LOG_CALL;
     QVector<int> years = yearsWithAnnualBookings();
-    if (years.size() == 0) {
+    if (years.isEmpty()) {
         QMessageBox::information(
                     getMainWindow(), qsl("Keine Daten"),
                     qsl("Es liegen keine Abrechnungen zum Ausdruck vor"));
@@ -376,7 +376,7 @@ void annualSettlementLetters() {
     QVector<booking> annualBookings =
             getAnnualSettelments(yearOfSettlement);
 
-    if (annualBookings.size() == 0) {
+    if (annualBookings.isEmpty()) {
         bc.finish();
         QMessageBox::information(
                     nullptr, qsl("Fehler"),

@@ -59,7 +59,7 @@ void test_tableDataInserter::test_insert_and_retreive()
         tdi.setValue(fnString, val_string);
         tdi.setValue(fnBool, val_bool);
         tdi.setValue(fnDate, val_date);
-        QVERIFY(-1 not_eq tdi.InsertRecord());
+        QVERIFY(isValidRowId( tdi.InsertRecord()));
     }/// <- CUT
     QSqlRecord r = executeSingleRecordSql( t.Fields());
     qInfo() << r;
@@ -84,7 +84,7 @@ void test_tableDataInserter::test_insert_and_retreive()
         tdi_more.setValue (fnString, "hi!");
         tdi_more.setValue (fnBool, false);
         tdi_more.setValue (fnDate, QDate(1965, 5, 7));
-        QVERIFY( -1 not_eq tdi_more.InsertRecord ());
+        QVERIFY( isValidRowId(tdi_more.InsertRecord ()));
     }
     {   /// CUT ->
         TableDataInserter tdi_update(t);

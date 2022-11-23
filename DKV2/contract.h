@@ -128,7 +128,7 @@ struct contract
     const booking latestBooking();
 
     // write to db
-    int saveNewContract();
+    tableindex_t saveNewContract();
     bool updateComment(const QString&);
     bool updateTerminationDate(QDate termination, int noticePeriod);
     bool updateInvestment(qlonglong id);

@@ -139,18 +139,18 @@ QVariant creditor::getVariant()
     return v;
 }
 
-int creditor::save()
+tableindex_t creditor::save()
 {   LOG_CALL;
     if( ti.getRecord().isEmpty() )
-        return -1;
+        return SQLITE_invalidRowId;
     setId(ti.InsertRecord());
     return id();
 }
 
-int creditor::update() const
+tableindex_t creditor::update() const
 {   LOG_CALL;
     if( ti.getRecord().isEmpty())
-        return -1;
+        return SQLITE_invalidRowId;
     return ti.UpdateRecord();
 }
 

@@ -346,7 +346,7 @@ void uebersichten::renderPerpetualInvestmentsCheckContracts()
     tl.cols =QStringList{qsl("Vert.\nDatum"), qsl("Vertrags-\nkennung"), qsl("Anzahl"), qsl("Vertragswert(e)"), qsl("Summe der\nletzten 12M") };
 
     QVector<QStringList> data =perpetualInvestmentByContracts ();
-    if( data.size () == 0)
+    if( data.isEmpty())
         return;
     QString investment;
     tablelayout::section curSec;
@@ -380,7 +380,7 @@ void uebersichten::renderPerpetualInvestmentsCheckBookings()
     tl.cols =QStringList{qsl("Buchungs-\ndatum"), qsl("# Buchungen\nzu diesem\nDatum"), qsl("Wert d. Buchungen\nzu diesem\nDatum"), qsl("Gesamtwert\nincl. Zinsen"), qsl("Gesamtwert der\nEinzahlungen\no. Zinsen")};
 
     QVector<QStringList> data =perpetualInvestment_bookings();
-    if( data.size () == 0)
+    if( data.isEmpty())
         return;
     QString investment;
     tablelayout::section curSec;

@@ -27,7 +27,7 @@
 /*static*/ const dbtable& contract::getTableDef()
 {
     static dbtable contractTable(tnContracts);
-    if (0 == contractTable.Fields().size())
+    if (contractTable.Fields().isEmpty ())
     {
         contractTable.append(dbfield(fnId,           QVariant::LongLong).setAutoInc());
         contractTable.append(dbfield(fnKreditorId,   QVariant::LongLong).setNotNull());
@@ -51,18 +51,18 @@
     }
     return contractTable;
 }
-/*static*/const dbtable& contract::getTableDef_deletedContracts()
+/*static*/ const dbtable& contract::getTableDef_deletedContracts()
 {
+    Q_ASSERT(getTableDef().Fields().size());
     static dbtable exContractTable(tnExContracts);
-    if( 0 not_eq exContractTable.Fields().size())
-        return exContractTable;
-
-    exContractTable.append(dbfield(fnId, QVariant::LongLong).setPrimaryKey());
-    for(int i= 1 /* not 0 */; i < getTableDef().Fields().count(); i++) {
-        exContractTable.append(getTableDef().Fields()[i]);
+    if (exContractTable.Fields().isEmpty()) {
+        exContractTable.append(dbfield(fnId, QVariant::LongLong).setPrimaryKey());
+        for(int i= 1 /* not 0 */; i < getTableDef().Fields().count(); i++) {
+            exContractTable.append(getTableDef().Fields()[i]);
+        }
+        exContractTable.append(dbForeignKey(exContractTable[fnKreditorId],
+                                            dkdbstructur[qsl("Kreditoren")][fnId], ODOU_Action::CASCADE));
     }
-    exContractTable.append(dbForeignKey(exContractTable[fnKreditorId],
-                         dkdbstructur[qsl("Kreditoren")][fnId], ODOU_Action::CASCADE));
     return exContractTable;
 }
 
@@ -78,16 +78,17 @@ contract::contract(qlonglong contractId /*=-1*/, bool isTerminated /*=false*/)
      else
         loadFromDb(contractId);
 }
+
 void contract::loadFromDb(qlonglong id)
-{   LOG_CALL_W(i2s(id)); // id_aS() is not initialized yet!!
-    QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), qsl("id=") + i2s(id));
+{   LOG_CALL_W(i2s(id)); // id_aS() might not be initialized yet!!
+    QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), qsl("id=%1").arg( i2s(id)));
     if (not td.setValues(rec))
         qCritical() << "contract from id could not be created";
 }
 void contract::loadExFromDb(qlonglong id)
 {   LOG_CALL_W(i2s(id));
     isTerminated =true;
-    QSqlRecord rec = executeSingleRecordSql(getTableDef_deletedContracts ().Fields(), qsl("id=") + i2s(id));
+    QSqlRecord rec = executeSingleRecordSql(getTableDef_deletedContracts ().Fields(), qsl("id=%1").arg(i2s(id)));
     if (not td.setValues(rec))
         qCritical() << "exContract from id could not be created";
 }
@@ -125,7 +126,7 @@ void contract::initRandom(qlonglong creditorId)
     else
         setPlannedEndDate(conclusionDate().addYears(rand->bounded(3)).addMonths(rand->bounded(12)));
 
-    if( not (rand->bounded(100)%5 > 0))
+    if(rand->bounded(100)%5 == 0)
         setInterestActive(false);
 }
 
@@ -183,14 +184,14 @@ const booking contract::latestBooking()
 }
 
 // write to db
-int  contract::saveNewContract()
+tableindex_t contract::saveNewContract()
 {   LOG_CALL;
-    int lastid =td.InsertRecord();
+    tableindex_t lastid =td.InsertRecord();
     if( lastid >= 0) {
         setId(lastid);
         RETURN_OK( lastid, qsl("Neuer Vertrag wurde eingefügt mit id:"), i2s(lastid));
     }
-    RETURN_ERR( -1, qsl("Fehler beim Einfügen eines neuen Vertrags"));
+    RETURN_ERR( SQLITE_invalidRowId, qsl("Fehler beim Einfügen eines neuen Vertrags"));
 }
 bool contract::updateComment(const QString &c)
 {
@@ -733,7 +734,7 @@ void saveRandomContracts(int count)
 {   LOG_CALL;
     Q_ASSERT(count>0);
     QVector<QVariant> creditorIds = executeSingleColumnSql(dkdbstructur[qsl("Kreditoren")][contract::fnId]);
-    if( creditorIds.size() == 0)
+    if( creditorIds.isEmpty ())
         qCritical() << "No Creditors to create contracts for";
 
     static QRandomGenerator* rand = QRandomGenerator::system();

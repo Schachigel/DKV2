@@ -34,8 +34,8 @@ struct investment
 };
 
 
-qlonglong createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate);
-qlonglong saveNewInvestment(int ZSatz, QDate start, QDate end, const QString &type);
+tableindex_t createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate);
+tableindex_t saveNewInvestment(int ZSatz, QDate start, QDate end, const QString &type);
 
 bool deleteInvestment(const qlonglong rowid);
 //bool closeInvestment(const int ZSatz, const QDate v, const QDate b, const QString& t);

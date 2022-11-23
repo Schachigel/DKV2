@@ -3,7 +3,7 @@
 #include <iso646.h>
 
 
-
+#include "helpersql.h"
 #include "dbtable.h"
 
 struct TableDataInserter
@@ -20,10 +20,10 @@ struct TableDataInserter
     QVariant getValue(const QString& fieldName) const { return record.field(fieldName).value();}
     QSqlRecord getRecord() const {return record;}
     // interface
-    qlonglong InsertRecord(const QSqlDatabase &db = QSqlDatabase::database()) const;
-    qlonglong InsertData_noAuto(const QSqlDatabase &db = QSqlDatabase::database()) const;
-    qlonglong InsertOrReplaceData(const QSqlDatabase &db = QSqlDatabase::database()) const;
-    qlonglong UpdateRecord() const;
+    tableindex_t InsertRecord(const QSqlDatabase &db = QSqlDatabase::database()) const;
+    tableindex_t InsertData_noAuto(const QSqlDatabase &db = QSqlDatabase::database()) const;
+    tableindex_t InsertOrReplaceData(const QSqlDatabase &db = QSqlDatabase::database()) const;
+    tableindex_t UpdateRecord() const;
     void reset() {tablename =QString(); record =QSqlRecord();}
     void overrideTablename(const QString& tn) {tablename =tn;};
 private:
@@ -35,7 +35,7 @@ private:
     QString getInsertRecordSQL() const;
     QString getInsertOrReplaceRecordSQL() const;
     QString getInsert_noAuto_RecordSQL() const;
-    QString getUpdateRecordSQL(qlonglong& autovalue) const;
+    QString getUpdateRecordSQL(tableindex_t &autovalue) const;
 
 };
 

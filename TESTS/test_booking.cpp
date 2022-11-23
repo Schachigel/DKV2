@@ -254,7 +254,7 @@ void test_booking::test_getBookings()
         QVERIFY ( getBookings(cont.id(), d1, d2).size() == 2);
         QVERIFY ( getBookings(cont.id(), d2, d3).size() == 2);
         QVERIFY ( getBookings(cont.id(), d3).size() == 1);
-        QVERIFY ( getBookings(cont.id(), d3.addDays (1)).size() == 0);
+        QVERIFY ( getBookings(cont.id(), d3.addDays (1)).isEmpty());
     }
 }
 

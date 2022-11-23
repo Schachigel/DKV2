@@ -9,9 +9,10 @@
 {
     static dbtable bookingsTable(tn_Buchungen);
     if( 0 == bookingsTable.Fields().size()) {
-        bookingsTable.append(dbfield(qsl("id"),          QVariant::LongLong).setAutoInc());
+        bookingsTable.append(dbfield(qsl("id"),       QVariant::LongLong).setAutoInc());
         bookingsTable.append(dbfield(fn_bVertragsId,  QVariant::LongLong).setNotNull());
-        bookingsTable.append(dbForeignKey(bookingsTable[fn_bVertragsId], dkdbstructur[contract::tnContracts][contract::fnId], ODOU_Action::RESTRICT));
+        bookingsTable.append(dbForeignKey(bookingsTable[fn_bVertragsId],
+                                          dkdbstructur[contract::tnContracts][contract::fnId], ODOU_Action::RESTRICT));
         bookingsTable.append(dbfield(fn_bDatum,       QVariant::Date).setDefault(EndOfTheFuckingWorld_str).setNotNull());
         bookingsTable.append(dbfield(fn_bBuchungsArt, QVariant::Int).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
         bookingsTable.append(dbfield(fn_bBetrag,      QVariant::Int).setNotNull()); // in cent
@@ -56,8 +57,7 @@ QString booking::toString( ) const
 /////////////// BOOKING functions (friends, not family ;) )
 ///
 bool bookingToDB( bookingType t, const qlonglong contractId, QDate date, const double amount)
-{
-    LOG_CALL_W (booking(contractId, t, date, amount).toString());
+{   LOG_CALL_W (booking(contractId, t, date, amount).toString());
     if( not date.isValid ())
         RETURN_ERR(false, qsl(">> invalid booking date <<"));
     TableDataInserter tdi(booking::getTableDef());
@@ -66,9 +66,9 @@ bool bookingToDB( bookingType t, const qlonglong contractId, QDate date, const d
     tdi.setValue(fn_bBetrag,      ctFromEuro(amount));
     tdi.setValue(fn_bDatum,       date);
     //    "Zeitstempel" will be created by the sql default value =setDefaultNow()
-    if( -1 not_eq tdi.InsertRecord()) {
+    if( isValidRowId(tdi.InsertRecord()))
         RETURN_OK( true, qsl(">> Buchung erfolgreich <<"));
-    }  else
+    else
         RETURN_ERR( false, qsl(">> Buchung gescheitert <<"));
 }
 bool bookDeposit(const qlonglong contractId, QDate date, const double amount)

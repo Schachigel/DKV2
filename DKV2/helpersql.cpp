@@ -360,7 +360,7 @@ QSqlRecord executeSingleRecordSql(const QString& sql, const QSqlDatabase& db)
 {
     QVector<QSqlRecord> records;
     if( executeSql(sql, records, db)) {
-        if( records.size () == 0 or records.size () > 1)
+        if( records.isEmpty() or records.size () > 1)
             return QSqlRecord(); // error handling in called function
         else
             RETURN_OK( records[0], __FUNCTION__, qsl("returned one value: %1").arg(records[0].value (0).toString ()));
@@ -391,7 +391,7 @@ QVariant executeSingleValueSql(const QString& sql, const QVector<QVariant> param
     {
         if( result.count() > 1)
             RETURN_ERR( QVariant(), __FUNCTION__, qsl("Query returned too many records"));
-        if( result.count() == 0)
+        if( result.isEmpty())
             RETURN_OK( QVariant(), __FUNCTION__, qsl("Query returned no record"));
         RETURN_OK( result[0].value(0), __FUNCTION__);
     }

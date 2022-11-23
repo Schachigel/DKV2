@@ -15,10 +15,8 @@ TableDataInserter::TableDataInserter(const dbtable& t)
 
 bool TableDataInserter::setValue(const QString& n, const QVariant& v, treatNull allowNull)
 {
-    if( not record.contains(n)) {
-        qCritical() << "wrong field name for insertion " << n;
-        return false;
-    }
+    if( not record.contains(n))
+        RETURN_ERR(false, qsl("wrong field name for insertion %1").arg(n));
     if( allowNull and (v.isNull () or not v.isValid ())) {
         setValueToDefault(n);
         return true;
@@ -29,12 +27,11 @@ bool TableDataInserter::setValue(const QString& n, const QVariant& v, treatNull 
     }
     qInfo() << "TDI::setValue: Wrong field type for insertion -> converting" << v.type() << " -> " << record.field(n).type();
     QVariant vf (v);
-    if( vf.convert(record.field(n).type())){
+    if( vf.convert(record.field(n).type())) {
         record.setValue(n, vf);
         return true;
     }
-    qCritical() << "TDI::setValue: type conversion failed, no data inserted " << n;
-    return false;
+    RETURN_ERR( false, qsl("TDI::setValue: type conversion failed, no data inserted ").arg(n));
 }
 
 bool TableDataInserter::setValueToDefault(const QString &n)
@@ -43,26 +40,21 @@ bool TableDataInserter::setValueToDefault(const QString &n)
         record.field(n).value () = record.field(n).defaultValue ();
         return true;
     }
-    qCritical() << "TDI::setValueToDefault: Wrong field name for insertion of default value" << n;
-    return false;
+    RETURN_ERR(false, qsl("TDI::setValueToDefault: Wrong field name for insertion of default value"), n);
 }
 
 bool TableDataInserter::setValues(const QSqlRecord &input)
 {
-    if( input.count() not_eq record.count()) {
-        qCritical() << "TableDataInserter setValues faild: wrong sqlRecord size (actual / expected): " << input.count() << " / " << record.count();
-        return false;
-    }
+    if( input.count() not_eq record.count())
+        RETURN_ERR( false, qsl("TableDataInserter setValues faild: wrong sqlRecord size (actual / expected): %1 / %2").arg(i2s(input.count ()),i2s(record.count())) );
     qInfo() << "Tdi: setting Values from QSqlRecord";
     for( int i=0; i< input.count(); i++) {
-        if( setValue(input.fieldName(i), input.value(i))){
+        if( setValue(input.fieldName(i), input.value(i))) {
             qInfo() << "TDI::setValues: Value set: " << input.fieldName(i) << " : " << input.value(i);
             continue;
         }
-        else {
-            qCritical() << "TDI::setValues: setValues failed in " << input.fieldName(i);
-            return false;
-        }
+        else
+            RETURN_ERR(false, qsl("TDI::setValues: setValues failed in "), input.fieldName(i));
     }
     return true;
 }
@@ -112,28 +104,26 @@ QString TableDataInserter::getInsertRecordSQL() const
             ValueList += qsl("NULL");
         else if(record.field(i).isNull())
             ValueList += qsl("NULL");
-        else {
+        else
             ValueList += DbInsertableString(record.field(i).value());
-        }
     }
     QString sql =qsl("INSERT INTO %1 (%2) VALUES (%3) ");
     sql = sql.arg(tablename, FieldList, ValueList);
-    qInfo() << "getInsertRecordSQL: " << sql;
-    return sql;
+    RETURN_OK( sql, qsl("getInsertRecordSQL: "), sql);
 }
-qlonglong TableDataInserter::InsertRecord(const QSqlDatabase &db) const
+
+tableindex_t TableDataInserter::InsertRecord(const QSqlDatabase &db) const
 {   // LOG_CALL;
-    if( record.isEmpty()) return -1;
+    if( record.isEmpty())
+        RETURN_ERR( SQLITE_invalidRowId, qsl("tdi has an empty record"));
 
     QSqlQuery q(db);
     bool ret = q.exec(getInsertRecordSQL());
-    qlonglong lastRecord = q.lastInsertId().toLongLong();
-    if( ret) {
-        qInfo() << "TDI::WriteData: Successfully inserted Data into " << tablename << " at index " << q.lastInsertId().toLongLong()<< qsl(" (InsertData)")  << "\n" <<  q.lastQuery() << qsl("\n");
-        return lastRecord;
-    }
-    qCritical() << "TDI::WriteData: Insert record failed: " << q.lastError() << "\n" << q.lastQuery() << qsl("\n");
-    return -1;
+    tableindex_t lastRecord = q.lastInsertId().toLongLong();
+    if( ret)
+        RETURN_OK( lastRecord, qsl("TDI::WriteData: Successfully inserted Data into %1 at rowid %2").arg( tablename, i2s(q.lastInsertId().toLongLong())));
+
+    RETURN_ERR(SQLITE_invalidRowId, qsl("TDI::WriteData: Insert record failed: "), q.lastError ().text (), q.lastQuery ());
 }
 
 QString TableDataInserter::getInsert_noAuto_RecordSQL() const
@@ -153,18 +143,17 @@ QString TableDataInserter::getInsert_noAuto_RecordSQL() const
     }
     QString sql(qsl("INSERT OR REPLACE INTO %1 (%2) VALUES (%3)"));
     sql = sql.arg(tablename, fieldnames, values);
-    qInfo() << "getInsert_noAuto_RecordSQL: " << sql;
-    return sql;
+    RETURN_OK( sql, qsl("getInsert_noAuto_RecordSQL: "), sql);
 }
-qlonglong TableDataInserter::InsertData_noAuto(const QSqlDatabase &db) const
+tableindex_t TableDataInserter::InsertData_noAuto(const QSqlDatabase &db) const
 {
     if( record.isEmpty()) return false;
     QSqlQuery q(db);
     bool ret = q.exec(getInsert_noAuto_RecordSQL());
-    qlonglong lastRecord = q.lastInsertId().toLongLong();
+    tableindex_t lastRecord = q.lastInsertId().toLongLong();
     if( ret)
         RETURN_OK( lastRecord, qsl("InsertData_noAuto: successfully inserted Data at index %1").arg(q.lastInsertId().toLongLong()));
-    RETURN_ERR(-1, qsl("InsertData_noAuto: Insert/replace record failed: "), q.lastError ().text (), qsl("\n"), q.lastQuery ());
+    RETURN_ERR( SQLITE_invalidRowId, qsl("InsertData_noAuto: Insert/replace record failed: "), q.lastError ().text (), qsl("\n"), q.lastQuery ());
 }
 
 QString TableDataInserter::getInsertOrReplaceRecordSQL() const
@@ -185,22 +174,22 @@ QString TableDataInserter::getInsertOrReplaceRecordSQL() const
             values += DbInsertableString(record.field(i).value());
     }
     sql = sql.arg(fieldnames, values);
-    qInfo() << "getInsertOrReplaceRecordSQL: " << sql;
-    return sql;
+    RETURN_OK( sql, qsl("getInsertOrReplaceRecordSQL: "), sql);
 }
-qlonglong TableDataInserter::InsertOrReplaceData(const QSqlDatabase &db) const
+
+tableindex_t TableDataInserter::InsertOrReplaceData(const QSqlDatabase &db) const
 {
     if( record.isEmpty()) return false;
     QSqlQuery q(db);
     bool ret = q.exec(getInsertOrReplaceRecordSQL());
-    qlonglong lastRecord = q.lastInsertId().toLongLong();
+    tableindex_t lastRecord = q.lastInsertId().toLongLong();
     if( ret)
         RETURN_OK( lastRecord, qsl("InsertOrReplaceData: Successfully inserted Data at index %1").arg( q.lastInsertId().toLongLong()));
 
-    RETURN_ERR( -1, qsl("InsertOrReplaceData: Insert/replace record failed: "), q.lastError ().text ());
+    RETURN_ERR( SQLITE_invalidRowId, qsl("InsertOrReplaceData: Insert/replace record failed: "), q.lastError ().text ());
 }
 
-QString TableDataInserter::getUpdateRecordSQL(qlonglong& OUT_index) const
+QString TableDataInserter::getUpdateRecordSQL(tableindex_t& OUT_index) const
 {//    LOG_CALL;
     if( record.isEmpty()) return QString();
     QString sql(qsl("UPDATE %1 SET ").arg(tablename));
@@ -221,20 +210,20 @@ QString TableDataInserter::getUpdateRecordSQL(qlonglong& OUT_index) const
             else
                 sql += record.field(i).name() +qsl("= %1").arg(DbInsertableString (record.field (i).defaultValue ()));
         }
-        else {
+        else
             sql += record.field(i).name() + qsl("=") + DbInsertableString(record.field(i).value());
-        }
     }
     sql += where;
-    qInfo() << "getUpdateRecordSQL: " << sql;
-    return sql;
+    RETURN_OK( sql, qsl("getUpdateRecordSQL: "), sql);
 }
-qlonglong TableDataInserter::UpdateRecord() const
+
+tableindex_t TableDataInserter::UpdateRecord() const
 {
-    if( record.isEmpty()) return false;
-    qlonglong changedRecordId =0;
+    if( record.isEmpty())
+        return false;
+    tableindex_t changedRecordId =0;
     bool ret = executeSql_wNoRecords (getUpdateRecordSQL(changedRecordId));
     if( ret)
         RETURN_OK( changedRecordId, qsl("TDI.UpdateData: successfull at index %1").arg(changedRecordId));
-    RETURN_ERR( -1, qsl("TDI.UpdateData: update record failed"));
+    RETURN_ERR( SQLITE_invalidRowId, qsl("TDI.UpdateData: update record failed"));
 }

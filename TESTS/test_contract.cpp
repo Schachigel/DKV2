@@ -722,6 +722,8 @@ void test_contract::test_finalize()
     QCOMPARE(executeSingleValueSql(
              contract::getTableDef_deletedContracts()["LaufzeitEnde"],
              "id=" +i2s(contractId)), QDate(aDate.addMonths(2)));
+    contract ex(contractId, true);
+    QCOMPARE(ex.value (), 0.);
 }
 
 void test_contract::test_readExContract()

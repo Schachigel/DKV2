@@ -64,8 +64,8 @@ struct creditor
     QVariant getVariant();
     bool isValid(QString &errortext) const;
     bool isValid() const;
-    int save();
-    int update() const;
+    tableindex_t save();
+    tableindex_t update() const;
     bool hasActiveContracts(){return hasActiveContracts(id());};
     static bool hasActiveContracts(const qlonglong i);
     bool remove();

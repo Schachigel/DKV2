@@ -70,7 +70,7 @@ void test_db::test_SimpleTableAddData()
     TableDataInserter tdi(s["Ad"]);
     tdi.setValue("vname", QVariant("Holger"));
     tdi.setValue("nname", "Mairon");
-    QVERIFY( -1 < tdi.InsertRecord());
+    QVERIFY( isValidRowId(tdi.InsertRecord()));
     QVERIFY(rowCount("Ad") == 1);
 }
 
@@ -140,18 +140,18 @@ void test_db::test_addRecords_wDep()
 
     TableDataInserter tdi(s["p"]);
     tdi.setValue("name", "Holger");
-    QVERIFY( 0 <= tdi.InsertRecord());
+    QVERIFY( isValidRowId(tdi.InsertRecord()));
     QVERIFY(rowCount("p") == 1);
 
     qInfo() << "add depending data sets" << qsl("\n");
     TableDataInserter tdiChild1(s["c"]);
     tdiChild1.setValue("pid", QVariant(1)); // should work
-    QVERIFY( 0 <= tdiChild1.InsertRecord());
+    QVERIFY( isValidRowId (tdiChild1.InsertRecord()));
 
     qInfo() << "add INVALID depending data sets" << qsl("\n");
     TableDataInserter tdiChild2(s["c"]);
     tdiChild2.setValue("pid", 2); // should fail - no matching parent in table p
-    QVERIFY( -1 == tdiChild2.InsertRecord());
+    QVERIFY( not isValidRowId( tdiChild2.InsertRecord()));
 }
 
 void test_db::test_deleteRecord_wDep()
@@ -172,16 +172,16 @@ void test_db::test_deleteRecord_wDep()
 
     TableDataInserter tdi(s["p"]);
     tdi.setValue("name", "Holger");
-    QVERIFY( 0<= tdi.InsertRecord());
+    QVERIFY( isValidRowId(tdi.InsertRecord()));
     QVERIFY(rowCount("p") == 1);
 
     qInfo() << "add depending data sets" << qsl("\n");
     TableDataInserter tdiChild1(s["c"]);
     tdiChild1.setValue("pid", QVariant(1)); // should work
-    QVERIFY( 0<= tdiChild1.InsertRecord());
+    QVERIFY( isValidRowId( tdiChild1.InsertRecord()));
     TableDataInserter tdiChild2(s["c"]);
     tdiChild2.setValue("pid", QVariant(1)); // second child to matching parent in table p
-    QVERIFY( 0<= tdiChild2.InsertRecord());
+    QVERIFY( isValidRowId( tdiChild2.InsertRecord()));
     QVERIFY(rowCount("p") == 1);
     QVERIFY(rowCount("c") == 2);
 

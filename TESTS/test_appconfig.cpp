@@ -14,7 +14,6 @@ void test_appConfig::initTestCase()
     QVERIFY( appConfig::Outdir().size());
     initTestDkDb_InMemory();
     fill_DkDbDefaultContent(QSqlDatabase::database(), false);
-
 }
 void test_appConfig::cleanupTestCase()
 {

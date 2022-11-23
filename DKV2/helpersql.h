@@ -1,12 +1,15 @@
 #ifndef SQLHELPER_H
 #define SQLHELPER_H
 
-
-
 #include "dbtable.h"
 
 inline const QString dbTypeName{qsl("QSQLITE")};
-inline const int SQLITE_minimalRowId =1;
+typedef qlonglong tableindex_t;
+inline const tableindex_t SQLITE_minimalRowId =1;
+inline const tableindex_t SQLITE_invalidRowId =-1;
+inline bool isValidRowId(tableindex_t i) {
+    return i not_eq SQLITE_invalidRowId; // id / rowid could have other values, if not autoinc
+}
 
 struct dbCloser
 {   // RAII class for db connections
