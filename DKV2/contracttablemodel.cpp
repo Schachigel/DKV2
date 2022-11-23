@@ -1,7 +1,7 @@
 
 #include "helper.h"
 #include "contracttablemodel.h"
-#include <memory>
+
 namespace {
 QDate dateFromNP(const QString& s)
 {
@@ -13,9 +13,11 @@ QDate dateFromNP(const QString& s)
      * (x Monate) /n dd.mm.yyy
      */
 
-
+#if QT_VERSION_CHECK(5, 14, 0)
+    QStringList lines =s.split(qsl("\xA"), Qt::SkipEmptyParts);
+#else
     QStringList lines =s.split(qsl("\xA"), QString::SkipEmptyParts);
-
+#endif
 
     QString dateStr;
     if( 0 == lines.count()) {
@@ -63,7 +65,7 @@ QVariant ContractTableModel::data(const QModelIndex& index, int role) const
             return QVariant::fromValue(f);
         }
     }
-    if( role == Qt::TextColorRole) {
+    if( role == Qt::ForegroundRole) {
         int days =data(index, Qt::UserRole).toInt();
         if( 30 > days)
             return QVariant::fromValue(QColor(Qt::red));

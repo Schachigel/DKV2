@@ -20,7 +20,7 @@ if [ -z ${QTDIR+x} ]; then
 	exit 1
 fi
 
-QMAKE=/usr/bin/qmake
+QMAKE=${QTDIR}/bin/qmake
 MAKE=make
 
 GIT_VERSION=`git rev-parse --short HEAD`

@@ -1,5 +1,4 @@
 #include <QtGlobal>
-#include <memory>
 
 #if defined(Q_OS_WIN)
 #else
