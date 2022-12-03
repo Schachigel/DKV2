@@ -1,6 +1,6 @@
 #!/bin/sh
 
-{{#creditors}}
+{{#Kreditoren}}
 {{#Email}}
 
 ./vorlagen/dkv2mail "{{Email}}" "Zinsabrechnung" "{{Attachment}}" "
@@ -18,4 +18,4 @@ Die Direktkredit-Verwaltung"
 {{^Email}}
 echo "############ {{Vorname}} {{Nachname}} hat keine Email!"
 {{/Email}}
-{{/creditors}}
+{{/Kreditoren}}
