@@ -1,0 +1,32 @@
+<head>
+    <!-- {{{meta.commonText}}}<br/><br/>-->
+    <!-- for use in a classic browser -->
+    <link rel="stylesheet" href="zinsbrief.css">
+</head>
+
+<body>
+    <table width=90%>
+        <tr>
+            <td class="headLine">Zinsabrechnung für das Jahr {{Zinsjahr}} </td>
+        </tr>
+        <tr><td class="invisible"><p><p></td>
+            <td></td>
+        </tr>
+    </table>
+
+    <table width=90%>
+        <tr><td>Name/Vertrag</td><td class="colBuchungsBetrag">Zinsen</td><td class="colBuchungsBetrag">Saldo neu</td></tr>
+        
+{{#Kreditoren}}
+<tr><td>{{Vorname}} {{Nachname}}</td></tr>
+{{#Vertraege}}
+<tr><td>{{VertragsNr}} ({{strZSatz}})</td><td class="colBuchungsBetrag">{{strJahreszins}}</td><td class="colBuchungsBetrag">{{endBetrag}}</td></tr>
+{{/Vertraege}} 
+<tr><td>Gesamt</td><td class="colBuchungsBetrag">{{ausbezahlterZins}}</td><td class="colBuchungsBetrag">{{totalBetrag}}</td></tr>
+{{/Kreditoren}}
+<tr></tr>
+<tr><td>Gesamt</td><td></td><td class="colBuchungsBetrag">{{ausbezahlterZins2}}</td><td class="colBuchungsBetrag">{{totalBetrag}}</td></tr>
+</table>
+
+</body>
+

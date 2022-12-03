@@ -117,3 +117,10 @@ table {
 footer {
     font-size:5pt;
 }
+
+.headLine {
+    text-align: left;
+    font-size: 12pt;
+    font-weight: bold;
+
+}

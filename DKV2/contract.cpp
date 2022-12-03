@@ -614,7 +614,7 @@ QString contract::toString(const QString &title) const
     stream << "Buchungen:" << getNbrOfBookings (id()) << qsl("\n");
     return ret;
 }
-QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
+QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
 {   LOG_CALL;
     QVariantMap v;
     booking latestB = latestBooking();
@@ -626,9 +626,17 @@ QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
     v["strId"] = id_aS();
     v["KreditorId"] = i2s(creditorId());
     v["VertragsNr"] = label();
-    if( not isTerminated) v["startBetrag"] = d2euro(value(fromDate));
+    if( not isTerminated) {
+        double d = value(fromDate);
+        v["dStartBetrag"] = d;
+        v["startBetrag"] = d2euro(d);
+    }
     v["startDatum"] = fromDate.toString(qsl("dd.MM.yyyy"));
-    if( not isTerminated) v["endBetrag"] = d2euro(value(toDate));
+    if( not isTerminated) {
+        double d = value(toDate);
+        v["dEndBetrag"] = d;
+        v["endBetrag"] = d2euro(d);
+    }
     v["endDatum"] = toDate.toString(qsl("dd.MM.yyyy"));
     v["Vertragsdatum"] = td.getValue(fnVertragsDatum).toDate().toString(qsl("dd.MM.yyyy"));
     v["Vertragsende"] = hasEndDate() ? td.getValue(fnLaufzeitEnde).toDate().toString(qsl("dd.MM.yyyy")) : "offen";

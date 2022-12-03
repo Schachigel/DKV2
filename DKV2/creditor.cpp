@@ -118,7 +118,7 @@ bool creditor::isValid( QString& errortext) const
     return false;
 }
 
-QVariant creditor::getVariant()
+QVariantMap creditor::getVariantMap()
 {
     QVariantMap v;
     v["id"] = ti.getValue(fnId);

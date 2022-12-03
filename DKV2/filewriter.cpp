@@ -51,7 +51,10 @@ QString mustachReplace(const QString &templateFileName, const QVariantMap &data)
 bool writeRenderedTemplate(const QString &templateFileName, const QString &outputFileName, const QVariantMap &data)
 {   LOG_CALL;
     // get file extension from templateName
-    QFileInfo fi(templateFileName);
+    QFileInfo fi(outputFileName);
+    QString fullOutputFileName{outputFileName};
+    if (fi.isRelative())
+        fullOutputFileName = appConfig::Outdir() + qsl("/") + outputFileName;
 
     // render the content.
     QString renderedText = mustachReplace(templateFileName, data);
