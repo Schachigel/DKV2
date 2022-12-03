@@ -42,11 +42,13 @@ void newCreditorAndContract()
     /*auto wizRes =*/wiz.exec();
     // !!!!
     if (wiz.field(pnNew).toBool())
+   
     {
 
         // one can only come here, if the users accepted the creation of the
         // creditor
         if (not wiz.cred.isValid())
+       
         {
             // the user was checked during validation of the wizard -> very wrong
             QMessageBox::critical(getMainWindow(), qsl("Eingabefehler"),
@@ -59,6 +61,7 @@ void newCreditorAndContract()
         if (cred.save() >= 0)
             qInfo() << "creditor created successfully";
         else
+       
         {
             QMessageBox::critical(
                 getMainWindow(), qsl("Programm Fehler"),
@@ -67,13 +70,16 @@ void newCreditorAndContract()
             return;
         }
     }
+   
     else
+   
     {
         wiz.cred.setId(wiz.existingCreditorId);
         qInfo() << "contract for existing creditor will be created";
     }
 
     if (not wiz.field(pnConfirmContract).toBool())
+   
     {
         qInfo() << "user decided not to save the contract";
         return;
@@ -91,6 +97,7 @@ void newCreditorAndContract()
     cont.setComment(wiz.field(pnContractComment).toString());
     cont.setInterestActive(not wiz.field(pnIPaymentDelayed).toBool());
     if (-1 == cont.saveNewContract())
+   
     {
         qCritical() << "New contract could not be saved";
         QMessageBox::critical(
@@ -113,12 +120,14 @@ void editCreditor(qlonglong creditorId)
     wiz.setStartId(page_address);
 
     if (QDialog::Accepted == wiz.exec())
+   
     {
         busycursor bc;
         wiz.cred.setId(creditorId);
         if (wiz.cred.update())
             qInfo() << "successfully updated creditor";
         else
+       
         {
             bc.finish();
             QMessageBox::critical(
@@ -142,6 +151,7 @@ void changeContractComment(contract *pc)
                      cred.firstname() + qsl(" ") + cred.lastname());
     ipd.setOption(QInputDialog::UsePlainTextEditForTextInput, true);
     if (ipd.exec() not_eq QDialog::Accepted)
+   
     {
         qInfo() << "inpud dlg canceled";
         return;
@@ -173,6 +183,7 @@ void changeContractTermination(contract *pc)
 }
 
 void receiveInitialBooking(contract *v) {
+
     LOG_CALL;
     creditor cred(v->creditorId());
 
@@ -186,6 +197,7 @@ void receiveInitialBooking(contract *v) {
     wiz.delayedInterest = not v->interestActive();
     wiz.exec();
     if (not wiz.field(qsl("confirmed")).toBool())
+   
     {
         qInfo() << "contract activation canceled by the user";
         return;
@@ -211,13 +223,16 @@ void activateInterest(contract *v)
     dlg.setMsg(qsl("Gib das Datum an, zu dem die Zinszahlung des Vertrags "
                    "aktiviert werden soll"));
     do
+   
     {
         if (QDialog::Rejected == dlg.exec())
+       
         {
             qInfo() << "interest activation was canceled by the user";
             return;
         }
         if (dlg.date() < earlierstActivation)
+       
         {
             QString msg{
                 qsl("Das Datum kann nicht vor dem letzten Buchungsdatum (%1) sein!")
@@ -228,6 +243,7 @@ void activateInterest(contract *v)
         break;
     } while (true);
     if (not v->bookActivateInterest(dlg.date()))
+   
     {
         QString msg{qsl("Beim der Buchung ist ein Fehler eingetreten - bitte "
                         "schaue in die LOG Datei für weitere Informationen")};
@@ -239,6 +255,7 @@ void changeContractValue(contract *pc)
 {
     LOG_CALL;
     if (not pc->initialBookingReceived())
+   
     {
         qCritical() << "tried to changeContractValue of an inactive contract";
         Q_ASSERT(false);
@@ -258,19 +275,24 @@ void changeContractValue(contract *pc)
     wiz.exec();
     qInfo() << wiz.field(fnPayoutInterest);
     if (wiz.field(qsl("confirmed")).toBool())
+   
     {
         double amount{QLocale().toDouble(wiz.field(qsl("amount")).toString())};
         QDate date{wiz.field(qsl("date")).toDate()};
 
         if (wiz.field(qsl("deposit_notPayment")).toBool())
+       
         {
             pc->deposit(date, amount, wiz.field(fnPayoutInterest).toBool());
         }
+       
         else
+       
         {
             pc->payout(date, amount, wiz.field(fnPayoutInterest).toBool());
         }
     }
+   
     else
         qInfo() << "contract change was cancled by the user";
 }
@@ -296,12 +318,12 @@ namespace
             csv.appendToRow(cont.postalCode());
             csv.appendToRow(cont.city());
 
-            csv.appendToRow(cont.iban());
-            csv.appendToRow(c.label());
-            csv.appendToRow(interestModelDisplayString(c.iModel()));
-            csv.appendToRow(startOfInterrestCalculation[i].toString(qsl("dd.MM.yyyy")));
-            csv.appendToRow(bookingDate.toString(qsl("dd.MM.yyyy")));
-            csv.appendToRow(l.toString(c.interestRate(), 'f', 2));
+                csv.appendToRow(cont.iban());
+                csv.appendToRow(c.label());
+                csv.appendToRow(interestModelDisplayString(c.iModel()));
+                csv.appendToRow(startOfInterrestCalculation[i].toString(qsl("dd.MM.yyyy")));
+                csv.appendToRow(bookingDate.toString(qsl("dd.MM.yyyy")));
+                csv.appendToRow(l.toString(c.interestRate(), 'f', 2));
 
             if (c.iModel() == interestModel::reinvest)
                 csv.appendToRow(l.toString(c.value() - b.amount, 'f', 2));
@@ -321,12 +343,13 @@ void annualSettlement()
     LOG_CALL;
     QDate bookingDate = dateOfnextSettlement();
     if (not bookingDate.isValid() or bookingDate.isNull())
+   
     {
         QMessageBox::information(nullptr, qsl("Fehler"),
-                                 qsl("Ein Jahr für die nächste Zinsberechnung "
-                                     "konnte nicht gefunden werden."
-                                     "Es gibt keine Verträge für die eine "
-                                     "Abrechnung gemacht werden kann."));
+                                                    qsl("Ein Jahr für die nächste Zinsberechnung "
+                                                            "konnte nicht gefunden werden."
+                                                            "Es gibt keine Verträge für die eine "
+                                                            "Abrechnung gemacht werden kann."));
         return;
     }
     int yearOfSettlement = bookingDate.year();
@@ -345,12 +368,15 @@ void annualSettlement()
     QVector<booking> asBookings;
     // try execute annualSettlement for all contracts
     for (const auto &id : qAsConst(ids))
+   
     {
         contract c(id.toLongLong());
         QDate startDate = c.latestBooking().date;
         if (0 not_eq c.annualSettlement(yearOfSettlement))
+       
         {
             if (dlg.print_csv())
+           
             {
                 changedContracts.push_back(c);
                 asBookings.push_back(c.latestBooking());
@@ -402,11 +428,11 @@ namespace
         }
         dlgInterestLetters dlg(getMainWindow(), years);
 
-        if (QDialog::Rejected == dlg.exec())
-            return -1;
+            if (QDialog::Rejected == dlg.exec())
+                return -1;
 
-        return dlg.getYear();
-    }
+            return dlg.getYear();
+        }
 }
 
 QVariantList getContractList(qlonglong creditorId, QDate startDate, QDate endDate, bool isTerminated)
@@ -434,6 +460,7 @@ void annualSettlementLetters()
     LOG_CALL;
     int yearOfSettlement = askUserForYearOfPrintouts();
     if (yearOfSettlement <= 0)
+   
     {
         qInfo() << "print out canceled by user";
         return;
@@ -445,6 +472,7 @@ void annualSettlementLetters()
         getAnnualSettlements(yearOfSettlement);
 
     if (annualBookings.isEmpty())
+   
     {
         bc.finish();
         QMessageBox::information(
@@ -560,6 +588,19 @@ void annualSettlementLetters()
     }
     // Create the eMail Batch file.
     printData[qsl("Kreditoren")] = Kreditoren;
+    printData[qsl("totalBetrag2")] = d2euro(totalBetrag2);
+    printData[qsl("ausbezahlterZins2")] = d2euro(payedInterest2);
+
+    writeRenderedTemplate(qsl("zinsmails.bat"),
+                          qsl("zinsmails").append(i2s(yearOfSettlement)).append(qsl(".bat")),
+                          printData);
+
+    savePdfFromHtmlTemplate(qsl("zinsliste.html"), 
+        qsl("Zinsliste-").append(i2s(yearOfSettlement)).append(qsl(".pdf")), 
+        printData);
+
+    // Create the eMail Batch file.
+    printData[qsl("Kreditoren")] = Kreditoren;
     printData[qsl("Auszahlungen")] = Auszahlungen;
     printData[qsl("Sum2Betrag")] = d2euro(totalBetrag2);
     printData[qsl("Sum2JahresZinsen")] = d2euro(annualInterest2);
@@ -605,13 +646,13 @@ void deleteInactiveContract(contract *c)
 void terminateContract(contract *pc)
 {
     /* Contract termination is a 2 step process:
-     * - Cancel the contract
-     *      -> set an end date
-     * - terminate contract
-     *      -> set actual end date
-     *      -> calculate interest and payout value
-     *      -> move contract from Vertraege to exVertraege table
-     */
+       * - Cancel the contract
+       *      -> set an end date
+       * - terminate contract
+       *      -> set actual end date
+       *      -> calculate interest and payout value
+       *      -> move contract from Vertraege to exVertraege table
+       */
     LOG_CALL;
     if (pc->hasEndDate())
         terminateContract_Final(*pc);
@@ -629,6 +670,7 @@ void terminateContract_Final(contract &c)
     double interest = 0., finalValue = 0.;
     if (not c.finalize(false, wiz.field(qsl("date")).toDate(), interest,
                        finalValue))
+   
     {
         QMessageBox::warning(nullptr, qsl("Fehler"),
                              qsl("Die Geldanlage konnte nicht beendet "
@@ -637,6 +679,7 @@ void terminateContract_Final(contract &c)
         return;
     }
     if (wiz.field(qsl("print")).toBool())
+   
     {
         // todo        printFinalizedContractAsCsv(c.id ());
     }
@@ -654,6 +697,7 @@ void cancelContract(contract &c)
     wiz.contractualEnd = QDate::currentDate().addMonths(c.noticePeriod());
     wiz.exec();
     if (not wiz.field(qsl("confirmed")).toBool())
+   
     {
         qInfo() << "cancel wizard canceled by user";
         return;
@@ -689,7 +733,7 @@ void finalizeContractLetter(contract *c)
     if (printData[qsl("mitAusbezahltemZins")].toBool())
         savePdfFromHtmlTemplate(qsl("endabr-Zinsnachw.html"), qsl("FinalerZinsnachweis-") + filenamepattern + qsl(".pdf"), printData);
 
-    writeRenderedTemplate(qsl("Endabrechnung.csv"), qsl("Endabrechnung-") + filenamepattern + qsl(".csv"),
+    writeRenderedTemplate(qsl("Endabrechnung.csv"), qsl("Endabrechnung-") +  filenamepattern +  qsl(".csv"),
                           printData);
     showInExplorer(appConfig::Outdir(), showFolder);
     qInfo() << "Vertragsabschlussdokument erfolgreich angelegt";
@@ -711,6 +755,7 @@ qlonglong createInvestment_matchingContract(int &interest, QDate &from,
     wiz.setField(pnBis, QVariant(from.addYears(1).addDays(-1)));
     wiz.exec();
     if (not wiz.field(pnKorrekt).toBool())
+   
     {
         qInfo() << "investment wiz was canceled";
         return 0;
@@ -739,13 +784,15 @@ void createInvestment()
     wiz.initStartDate(QDate::currentDate());
     wiz.exec();
     if (not wiz.field(pnKorrekt).toBool())
+   
     {
         qInfo() << "investment wiz was canceled";
         return;
     }
     if (0 >= saveNewInvestment(
-                 wiz.field(pnZSatz).toInt(), wiz.field(pnVon).toDate(),
-                 wiz.field(pnBis).toDate(), wiz.field(pnTyp).toString()))
+                  wiz.field(pnZSatz).toInt(), wiz.field(pnVon).toDate(),
+                  wiz.field(pnBis).toDate(), wiz.field(pnTyp).toString()))
+   
     {
         qCritical() << "Investment could not be saved";
         QMessageBox::warning(nullptr, qsl("Fehler"),

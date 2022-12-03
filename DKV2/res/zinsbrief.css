@@ -122,14 +122,5 @@ footer {
     text-align: left;
     font-size: 12pt;
     font-weight: bold;
-}
 
-.rowFirst {
-    border-top: solid;
-    border-style: solid none none none;
-    page-break-before: auto;
-}
-
-.rowSum {
-    font-weight: bold;
 }
