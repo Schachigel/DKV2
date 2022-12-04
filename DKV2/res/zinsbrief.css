@@ -122,5 +122,9 @@ footer {
     text-align: left;
     font-size: 12pt;
     font-weight: bold;
+}
 
+.rowFirst {
+    border-top: 2px;
+    page-break-before: auto;
 }
