@@ -92,7 +92,7 @@ int getNbrOfBookings(const qlonglong contract, const QDate from =BeginingOfTime,
 int getNbrOfExBookings(const qlonglong contract, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld);
 
 
-QVector<booking> getAnnualSettelments(const int year);
+QVector<booking> getAnnualSettlements(const int year);
 QVector<int> yearsWithAnnualBookings();
 
 #endif // BOOKING_H

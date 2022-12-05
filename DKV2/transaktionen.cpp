@@ -423,7 +423,7 @@ void annualSettlementLetters()
 
     busycursor bc;
     QVector<booking> annualBookings =
-        getAnnualSettelments(yearOfSettlement);
+        getAnnualSettlements(yearOfSettlement);
 
     if (annualBookings.isEmpty())
     {

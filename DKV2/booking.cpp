@@ -160,7 +160,7 @@ QVector<booking> getExBookings(const qlonglong cid, QDate from, const QDate to,
     return getBookings(cid, from, to, order, true);
 }
 
-QVector<booking> getAnnualSettelments(const int year)
+QVector<booking> getAnnualSettlements(const int year)
 {
     QString where = qsl("%1.%2 = %4 AND %1.%3 = '%5'").arg(tn_Buchungen, fn_bBuchungsArt, fn_bDatum);
     where = where.arg(bookingTypeToNbrString(bookingType::annualInterestDeposit), QDate(year, 12, 31).toString(Qt::ISODate));
