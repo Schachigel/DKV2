@@ -422,6 +422,7 @@ void annualSettlementLetters()
     }
 
     busycursor bc;
+#if 0
     QVector<booking> annualBookings =
         getAnnualSettlements(yearOfSettlement);
 
@@ -436,6 +437,7 @@ void annualSettlementLetters()
                 .arg(yearOfSettlement));
         return;
     }
+#endif
 
     createInitialLetterTemplates();
 
@@ -459,12 +461,18 @@ void annualSettlementLetters()
     QVariantList Kreditoren;
 
     double totalBetrag2 = 0.;
-    double payedInterest2 = 0;
+    double annualInterest2 = 0;
+    double terminationInterest2 = 0;
     for (const auto &cred : qAsConst(creditorIds))
     {
         creditor credRecord(cred);
         QVariantMap currCreditorMap = credRecord.getVariantMap();
         printData["creditor"] = currCreditorMap;
+
+        QVariantList vl;
+        double terminationInterest = 0.;
+        double annualInterest = 0.;
+        double totalBetrag = 0;
 
         QVector<QVariant>
             ids = executeSingleColumnSql(
@@ -472,26 +480,69 @@ void annualSettlementLetters()
                 qsl(" %1=%2 GROUP BY id")
                     .arg(contract::fnKreditorId, i2s(cred)));
 
-        QVariantList vl;
-        double payedInterest = 0.;
-        double totalBetrag = 0;
         for (const auto &id : qAsConst(ids))
         {
             contract contr(id.toLongLong());
             QVariantMap contractMap = contr.toVariantMap(QDate(yearOfSettlement, 1, 1),
                                          QDate(yearOfSettlement, 12, 31));
-            double yearlyInterest = contr.payedAnnualInterest(yearOfSettlement);
-            contractMap["strJahreszins"] = d2euro(yearlyInterest);
+            double contractAnnualInterest = contr.getAnnualInterest(yearOfSettlement, bookingType::annualInterestDeposit);
+            if (contractAnnualInterest != 0.) {
+                contractMap["VertragJahreszins"] = d2euro(contractAnnualInterest);
+            }
+            double contractTerminationInterest = contr.getAnnualInterest(yearOfSettlement, bookingType::reInvestInterest);
+            if (contractTerminationInterest != 0.)
+            {
+                contractMap["VertragSonstigerZins"] = d2euro(contractTerminationInterest);
+            }
             vl.append(contractMap);
-            payedInterest += yearlyInterest;
+            annualInterest += contractAnnualInterest;
+            terminationInterest += contractTerminationInterest;
             totalBetrag += contractMap["dEndBetrag"].toDouble();
-            payedInterest2 += yearlyInterest;
+            annualInterest2 += contractAnnualInterest;
+            terminationInterest2 += contractTerminationInterest;
             totalBetrag2 += contractMap["dEndBetrag"].toDouble();
         }
-        printData[qsl("mitAusbezahltemZins")] = payedInterest > 0.;
-        printData[qsl("ausbezahlterZins")] = d2euro(payedInterest);
+
+        QVector<QVariant>
+            exIds = executeSingleColumnSql(
+                dkdbstructur[contract::tnExContracts][contract::fnId],
+                qsl(" %1=%2 GROUP BY id")
+                    .arg(contract::fnKreditorId, i2s(cred)));
+
+        /* collect terminated contracts */
+        for (const auto &exId : qAsConst(exIds))
+        {
+            /* get data from exVertraege table */
+            contract contr(exId.toLongLong(), true);
+            QVariantMap contractMap = contr.toVariantMap(QDate(yearOfSettlement, 1, 1),
+                                                         QDate(yearOfSettlement, 12, 31));
+            double contractAnnualInterest = contr.getAnnualInterest(yearOfSettlement);
+            if (contractAnnualInterest != 0.) {
+                contractMap["strJahreszins"] = d2euro(contractAnnualInterest);
+            }
+            double contractTerminationInterest = contr.getAnnualInterest(yearOfSettlement, bookingType::reInvestInterest);
+            if (contractTerminationInterest != 0.)
+            {
+                contractMap["strSonstigerzins"] = d2euro(contractTerminationInterest);
+            }
+            //TODO: if (contractMap["Buchungen"].Size() > 0)
+                vl.append(contractMap);
+            annualInterest += contractAnnualInterest;
+            terminationInterest += contractTerminationInterest;
+            totalBetrag += contractMap["dEndBetrag"].toDouble();
+            annualInterest2 += contractAnnualInterest;
+            terminationInterest2 += contractTerminationInterest;
+            totalBetrag2 += contractMap["dEndBetrag"].toDouble();
+        }
+
+        printData[qsl("mitAusbezahltemZins")] = annualInterest > 0.;
+        printData[qsl("ausbezahlterZins")] = annualInterest == 0. ? "" : d2euro(annualInterest);
+
+        printData[qsl("sonstigerZins")] = terminationInterest == 0. ? "" : d2euro(terminationInterest);
+
         printData[qsl("Vertraege")] = vl;
-        printData[qsl("totalBetrag")] = d2euro(totalBetrag2);
+
+        printData[qsl("totalBetrag")] = d2euro(totalBetrag);
 
         QString fileName = qsl("Jahresinfo ")
                                .append(i2s(yearOfSettlement))
@@ -505,8 +556,12 @@ void annualSettlementLetters()
         /* save data for eMail batch file */
         currCreditorMap["totalBetrag"] = d2euro(totalBetrag);
         currCreditorMap[qsl("Attachment")] = fileName;
-        if (payedInterest > 0.) {
-            currCreditorMap[qsl("ausbezahlterZins")] = d2euro(payedInterest);
+        if (annualInterest > 0.) {
+            currCreditorMap[qsl("ausbezahlterZins")] = d2euro(annualInterest);
+        }
+
+        if (terminationInterest > 0.) {
+            currCreditorMap[qsl("sonstigerZins")] = d2euro(terminationInterest);
         }
 
         if (currCreditorMap[qsl("Email")] == "") {
@@ -523,7 +578,8 @@ void annualSettlementLetters()
     // Create the eMail Batch file.
     printData[qsl("Kreditoren")] = Kreditoren;
     printData[qsl("totalBetrag2")] = d2euro(totalBetrag2);
-    printData[qsl("ausbezahlterZins2")] = d2euro(payedInterest2);
+    printData[qsl("ausbezahlterZins2")] = d2euro(annualInterest2);
+    printData[qsl("sonstigerZins2")] = d2euro(terminationInterest2);
 
     writeRenderedTemplate(qsl("zinsmails.bat"),
                           qsl("zinsmails").append(i2s(yearOfSettlement)).append(qsl(".bat")),

@@ -151,7 +151,7 @@ struct contract
     QString toString(const QString &name =QString()) const;
     QVariantMap toVariantMap(QDate fromDate = BeginingOfTime, QDate toDate = EndOfTheFuckingWorld);
     double payedInterestAtTermination();
-    double payedAnnualInterest(int year);
+    double getAnnualInterest(int year, bookingType interestType = bookingType::annualInterestDeposit);
 
     // allow contract objects from deleted contracts
     bool isTerminated =false;
