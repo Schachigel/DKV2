@@ -125,6 +125,11 @@ footer {
 }
 
 .rowFirst {
-    border-top: 2px;
+    border-top: solid;
+    border-style: solid none none none;
     page-break-before: auto;
+}
+
+.rowSum {
+    font-weight: bold;
 }

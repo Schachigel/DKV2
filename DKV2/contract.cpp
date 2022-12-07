@@ -646,9 +646,25 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
     v["strBetrag"] = d2euro(euroFromCt(td.getValue(fnBetrag).toInt()));
     v["Zinsmodell"] = ::interestModelDisplayString(iModel());
     v["KFrist"] = hasEndDate() ? 0 : noticePeriod();
-    v["Status"] = isTerminated ? "Laufend" : "Beendet";
+    v["Status"] = isTerminated ? "Beendet" : "Laufend";
+    if (isTerminated) {
+        v["Beendet"] = "Beendet";
+    }
     // get the relevant bookings for period
     QVector<booking> bookVector = getBookings (id(), fromDate, toDate, qsl("Datum ASC"), isTerminated);
+    v["dSonstigeZinsen"] = getBookingsSum(bookVector, bookingType::reInvestInterest);
+    v["dJahresZinsen"] = getBookingsSum(bookVector, bookingType::annualInterestDeposit);
+    v["dAuszahlung"] = 0.;
+    if (v["dSonstigeZinsen"] != 0.)
+        v["strSonstigeZinsen"] = d2euro(v["dSonstigeZinsen"].toDouble());
+
+    if (v["dJahresZinsen"] != 0.) {
+        v["strJahresZinsen"] = d2euro(v["dJahresZinsen"].toDouble());
+        if (iModel() == interestModel::payout) {
+            v["dAuszahlung"] = v["dJahresZinsen"];
+            v["strAuszahlung"] = v["strJahresZinsen"];
+        }
+    }
 
     QVariantList bl;
 
@@ -662,7 +678,9 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
         bl.append(bookMap);
     }
 
-    v["Buchungen"] = bl;
+    if (bl.size() > 0) {
+        v["Buchungen"] = bl;
+    }
 
     return v;
 }

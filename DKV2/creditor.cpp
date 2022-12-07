@@ -232,6 +232,7 @@ ORDER BY Nachname ASC, Vorname ASC
     for( const auto& record: qAsConst( result))
         entries.append({record.value(0).toLongLong (), record.value(1).toString ()});
 }
+
 void creditorsWithAnnualSettlement(QList<qlonglong>& entries, int bookingYear)
 {   LOG_CALL;
     if( bookingYear < 1950) {

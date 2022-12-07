@@ -91,6 +91,7 @@ QDate dateOfnextSettlement();
 int getNbrOfBookings(const qlonglong contract, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld, const bool terminated =false);
 int getNbrOfExBookings(const qlonglong contract, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld);
 
+double getBookingsSum(QVector<booking> bl, bookingType bt);
 
 QVector<booking> getAnnualSettlements(const int year);
 QVector<int> yearsWithAnnualBookings();

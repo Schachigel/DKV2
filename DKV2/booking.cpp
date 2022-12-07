@@ -159,6 +159,17 @@ QVector<booking> getExBookings(const qlonglong cid, QDate from, const QDate to,
 {
     return getBookings(cid, from, to, order, true);
 }
+double getBookingsSum(QVector<booking> bl, bookingType bt)
+{
+    double sum = 0.;
+    for (const auto &b : qAsConst(bl)) {
+        if (b.type == bt) {
+            sum = euroFromCt(b.amount);
+        }
+    }
+
+    return sum;
+}
 
 QVector<booking> getAnnualSettlements(const int year)
 {
