@@ -164,7 +164,7 @@ double getBookingsSum(QVector<booking> bl, bookingType bt)
     double sum = 0.;
     for (const auto &b : qAsConst(bl)) {
         if (b.type == bt) {
-            sum = euroFromCt(b.amount);
+            sum += b.amount;
         }
     }
 

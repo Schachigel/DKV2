@@ -479,10 +479,12 @@ void annualSettlementLetters()
 
     /* storage for data of all Kreditoren */
     QVariantList Kreditoren;
+    QVariantList Auszahlungen;
 
     double totalBetrag2 = 0.;
     double annualInterest2 = 0;
     double otherInterest2 = 0;
+    double interestForPayout2 = 0.;
     for (const auto &cred : qAsConst(creditorIds))
     {
         creditor credRecord(cred);
@@ -511,7 +513,7 @@ void annualSettlementLetters()
             }
 
             printData[qsl("mitAusbezahltemZins")] = interestForPayout > 0.;
-            printData[qsl("strKSumAuszahlung")] = interestForPayout == 0. ? "" : d2euro(interestForPayout);
+            printData[qsl("KSumAuszahlung")] = interestForPayout == 0. ? "" : d2euro(interestForPayout);
             printData[qsl("dKSumJahresZinsen")] = annualInterest;
 
             printData[qsl("sonstigerZins")] = otherInterest == 0. ? "" : d2euro(otherInterest);
@@ -524,21 +526,31 @@ void annualSettlementLetters()
                                 .arg(i2s(yearOfSettlement), i2s(credRecord.id()), 
                                     credRecord.lastname(), credRecord.firstname().append(qsl(".pdf")));
              /* save data for eMail batch file */
-            currCreditorMap["totalBetrag"] = d2euro(totalBetrag);
+            currCreditorMap[qsl("Vertraege")] = vl;
+            currCreditorMap["SumBetrag"] = d2euro(totalBetrag);
             currCreditorMap[qsl("Attachment")] = fileName;
             if (annualInterest > 0.) {
-                currCreditorMap[qsl("JahresZins")] = d2euro(annualInterest);
+                currCreditorMap[qsl("SumJahresZinsen")] = d2euro(annualInterest);
             }
 
             if (otherInterest > 0.) {
-                currCreditorMap[qsl("SonstigerZins")] = d2euro(otherInterest);
+                currCreditorMap[qsl("SumSonstigeZinsen")] = d2euro(otherInterest);
             }
 
             if (currCreditorMap[qsl("Email")] == "") {
                 currCreditorMap.remove(qsl("Email"));
             }
             
-            currCreditorMap[qsl("Vertraege")] = printData[qsl("Vertraege")];
+            if (interestForPayout > 0.)
+            {
+                currCreditorMap[qsl("SumAuszahlung")] = d2euro(interestForPayout);
+                Auszahlungen.append(currCreditorMap);
+            }
+
+            annualInterest2 += annualInterest;
+            otherInterest2 += otherInterest;
+            interestForPayout2 += interestForPayout;
+            totalBetrag2 += totalBetrag;
             Kreditoren.append(currCreditorMap);
         /////////////////////////////////////////////////
             savePdfFromHtmlTemplate(qsl("zinsbrief.html"), fileName, printData);
@@ -547,9 +559,11 @@ void annualSettlementLetters()
     }
     // Create the eMail Batch file.
     printData[qsl("Kreditoren")] = Kreditoren;
-    printData[qsl("totalBetrag2")] = d2euro(totalBetrag2);
-    printData[qsl("ausbezahlterZins2")] = d2euro(annualInterest2);
-    printData[qsl("sonstigerZins2")] = d2euro(otherInterest2);
+    printData[qsl("Auszahlungen")] = Auszahlungen;
+    printData[qsl("Sum2Betrag")] = d2euro(totalBetrag2);
+    printData[qsl("Sum2JahresZinsen")] = d2euro(annualInterest2);
+    printData[qsl("Sum2SonstigeZinsen")] = d2euro(otherInterest2);
+    printData[qsl("Sum2Auszahlung")] = d2euro(interestForPayout2);
 
     writeRenderedTemplate(qsl("zinsmails.bat"),
                           qsl("zinsmails").append(i2s(yearOfSettlement)).append(qsl(".bat")),

@@ -5,43 +5,81 @@
 </head>
 
 <body>
-    <table width=90%>
-        <tr>
-            <td class="headLine">Zinsabrechnung für das Jahr {{Zinsjahr}} </td>
-        </tr>
-        <tr><td class="invisible"><p><p></td>
-            <td></td>
-        </tr>
-    </table>
+<table width=90%>
+    <tr>
+        <td class="headLine">Zinsabrechnung für das Jahr {{Zinsjahr}} </td>
+    </tr>
+    <tr><td class="invisible"><p><p></td>
+        <td></td>
+    </tr>
+</table>
 
-    <table width=90%>
-        <tr><td>Name/Vertrag</td><td class="colBuchungsBetrag">Sonstige<br/>Zinsen</td><td class="colBuchungsBetrag">Jahres-<br/>Zinsen</td><td class="colBuchungsBetrag">Saldo neu</td></tr>
+<table width=90%>
+    <tr  class="rowSum"><td>Name/Vertragsnummer</td><td class="colBuchungsBetrag">Sonstige</td><td class="colBuchungsBetrag">Jahres-</td><td class="colBuchungsBetrag">Saldo neu</td></tr>
+    <tr  class="rowSum"><td></td><td class="colBuchungsBetrag">Zinsen</td>
+        <td class="colBuchungsBetrag">Zinsen</td>
+        <td class="colBuchungsBetrag">Saldo neu</td></tr>
         
 {{#Kreditoren}}
-<tr><td><hr/>{{Vorname}} {{Nachname}}</td></tr>
+<tr><td><hr/>{{Vorname}} {{Nachname}}</td><td><hr/></td><td><hr/></td><td><hr/></td></tr>
 {{#Vertraege}}
 
-<tr><td>{{VertragsNr}} ({{strZSatz}}) {{Status}}</td>
-    <td class="colBuchungsBetrag">{{strSonstigeZinsen}}</td>
-    <td class="colBuchungsBetrag">{{strJahresZinsen}}</td>
+<tr><td>{{#Beendet}}<i>[{{/Beendet}}{{VertragsNr}}{{#Beendet}}]</i>{{/Beendet}} ({{strZSatz}}) </td>
+    <td class="colBuchungsBetrag">{{SonstigeZinsen}}</td>
+    <td class="colBuchungsBetrag">{{JahresZinsen}}</td>
     <td class="colBuchungsBetrag">{{endBetrag}}</td></tr>
 {{/Vertraege}} 
-{{#Auszahlung}}
+{{#SumAuszahlung}}
 <tr class="rowSum"><td>Auszahlung</td>
     <td class="colBuchungsBetrag"></td>
-    <td class="colBuchungsBetrag">{{KSumAuszahlung}}</td>
+    <td class="colBuchungsBetrag">{{SumAuszahlung}}</td>
     <td class="colBuchungsBetrag"></td></tr>
-{{/Auszahlung}}
+{{/SumAuszahlung}}
 <tr class="rowSum"><td>Gesamt</td>
-    <td class="colBuchungsBetrag">{{strSonstigeZinsen}}</td>
-    <td class="colBuchungsBetrag">{{strJahresZinsen}}</td>
-    <td class="colBuchungsBetrag">{{totalBetrag}}</td></tr>
+    <td class="colBuchungsBetrag">{{SumSonstigeZinsen}}</td>
+    <td class="colBuchungsBetrag">{{SumJahresZinsen}}</td>
+    <td class="colBuchungsBetrag">{{SumBetrag}}</td></tr>
 {{/Kreditoren}}
-<tr><td><hr/></td></tr>
+<tr><td><hr/></td><td><hr/></td><td><hr/></td><td><hr/></td></tr>
+
 <tr class="rowSum"><td>Gesamt</td>
-    <td class="colBuchungsBetrag">{{sonstigerZins2}}</td>
-    <td class="colBuchungsBetrag">{{ausbezahlterZins2}}</td>
-    <td class="colBuchungsBetrag">{{totalBetrag2}}</td></tr>
+    <td class="colBuchungsBetrag">{{Sum2SonstigeZinsen}}</td>
+    <td class="colBuchungsBetrag">{{Sum2JahresZinsen}}</td>
+    <td class="colBuchungsBetrag">{{Sum2Betrag}}</td></tr>
+<tr class="rowSum"><td>Gesamtauszahlung</td>
+    <td class="colBuchungsBetrag"></td>
+    <td class="colBuchungsBetrag">{{Sum2Auszahlung}}</td>
+    <td class="colBuchungsBetrag"></td></tr>    
+</table>
+
+<p style="page-break-after: always;">&nbsp;</p>
+<table width=90%>
+    <tr>
+        <td class="headLine">Auszahlungsliste für das Jahr {{Zinsjahr}} </td>
+    </tr>
+    <tr><td class="invisible"><p><p></td>
+        <td></td>
+    </tr>
+</table>
+
+<table width=90%>
+    <tr class="rowSum"><td>Name/IBAN/Vertrags-Nr</td><td class="colBuchungsBetrag">Auszahlung</td></tr>
+{{#Auszahlungen}}
+<tr><td><hr/><br/>{{Vorname}} {{Nachname}}<br/>{{IBAN}}</td><td><hr/></td></tr>
+
+{{#Vertraege}}
+<tr><td>{{VertragsNr}}</td><td class="colBuchungsBetrag">{{Auszahlung}}</td>
+{{/Vertraege}} 
+{{#SumAuszahlung}}
+<tr class="rowSum"><td>Auszahlung</td>
+    <td class="colBuchungsBetrag">{{SumAuszahlung}}</td>
+{{/SumAuszahlung}}
+
+{{/Auszahlungen}}
+<tr><td><hr/></td><td><hr/></td></tr>
+
+<tr class="rowSum"><td>Gesamtauszahlung</td>
+    <td class="colBuchungsBetrag">{{Sum2Auszahlung}}</td>
 </table>
 
 </body>
