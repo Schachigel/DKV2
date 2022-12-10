@@ -445,87 +445,11 @@ void test_sqlhelper::test_selectQueryFromFields_withWhere()
     QSqlQuery().exec(sqltemp.arg(qsl("'Hallo '")));
     QSqlQuery().exec(sqltemp.arg(qsl("'Welt!'")));
     // test
-    QString sql = selectQueryFromFields(simple.Fields(), QVector<dbForeignKey>(), "id=2");
+    QString sql = selectQueryFromFields(simple.Fields(), "id=2");
     QSqlQuery probe;
     QVERIFY( probe.exec(sql));
     probe.first();
     QCOMPARE( probe.record().value("col").toString(), "Welt!");
-}
-void test_sqlhelper::test_selectQueryFromFields_wReference()
-{
-    // preparation
-    QString tname{"t1"};
-    dbtable referenced(tname);
-    referenced.append(dbfield("id", QVariant::LongLong).setAutoInc());
-    referenced.append(dbfield("col"));
-    ensureTable(referenced);
-    QSqlQuery inserter;
-    inserter.exec("INSERT INTO " + tname + " VALUES( NULL, 'Hugo')");
-    inserter.exec("INSERT INTO " + tname + " VALUES( NULL, 'Franz')");
-
-    QString tname2{"t2"};
-    dbtable referencing(tname2);
-    referencing.append(dbfield("refId", QVariant::LongLong));
-    referencing.append(dbForeignKey(referencing["refId"], referenced["id"]));
-    referencing.append(dbfield("other"));
-    ensureTable(referencing);
-    inserter.exec("INSERT INTO " + tname2 + " VALUES( 1, 'Hut')");
-    qInfo() << inserter.lastError() << "\n" << inserter.lastQuery();
-    inserter.exec("INSERT INTO " + tname2 + " VALUES( 1, 'Schuh')");
-    inserter.exec("INSERT INTO " + tname2 + " VALUES( 2, 'Hemd')");
-    // test
-    QVector<dbfield> selected{referenced.Fields()};
-    selected.append(referencing["refId"]);
-    selected.append(referencing["other"]);
-    QString sql = selectQueryFromFields(selected, referencing.ForeignKeys());
-    QSqlQuery probe;
-    QVERIFY(probe.exec(sql));
-    probe.first();
-    qInfo() << probe.record();
-    QCOMPARE( probe.record().value("t1.col").toString(), "Hugo");
-    QCOMPARE( probe.record().value("t2.other").toString(), "Hut");
-    probe.next();
-    QCOMPARE( probe.record().value("t1.col").toString(), "Hugo");
-    QCOMPARE( probe.record().value("t2.other").toString(), "Schuh");
-    probe.next();
-    QCOMPARE( probe.record().value("t1.col").toString(), "Franz");
-    QCOMPARE( probe.record().value("t2.other").toString(), "Hemd");
-}
-void test_sqlhelper::test_selectQueryFromFields_wRefwWhere()
-{
-    // preparation
-    QString tname{"t1"};
-    dbtable referenced(tname);
-    referenced.append(dbfield("id", QVariant::LongLong).setAutoInc ());
-    referenced.append(dbfield("col"));
-    ensureTable(referenced);
-    QSqlQuery insertQ;
-    insertQ.exec("INSERT INTO " + tname + " VALUES( NULL, 'Hugo')");
-    insertQ.exec("INSERT INTO " + tname + " VALUES( NULL, 'Franz')");
-
-    QString tname2{"t2"};
-    dbtable referencing(tname2);
-    referencing.append(dbfield("refId", QVariant::LongLong));
-    referencing.append(dbForeignKey(referencing["refId"], referenced["id"]));
-    referencing.append(dbfield("other"));
-    ensureTable(referencing);
-    insertQ.exec("INSERT INTO " + tname2 + " VALUES( 1, 'Hut')");
-    qInfo() << insertQ.lastError() << "\n" << insertQ.lastQuery();
-    insertQ.exec("INSERT INTO " + tname2 + " VALUES( 1, 'Schuh')");
-    insertQ.exec("INSERT INTO " + tname2 + " VALUES( 2, 'Hemd')");
-    // test
-    QVector<dbfield> selected{referenced.Fields()};
-    selected.append(referencing["refId"]);
-    selected.append(referencing["other"]);
-    QString sql = selectQueryFromFields(selected, referencing.ForeignKeys(), "t1.id=2");
-    QSqlQuery probe;
-    QVERIFY(probe.exec(sql));
-    probe.first();
-    QCOMPARE( probe.record().value("t1.col").toString(), "Franz");
-    QCOMPARE( probe.record().value("t2.other").toString(), "Hemd");
-    // cleanup
-    QSqlQuery("DROP TABLE IF ExISTS" + tname);
-    QSqlQuery("DROP TABLE IF ExISTS" + tname2);
 }
 
 void test_sqlhelper::test_executeSingleColumnSql()

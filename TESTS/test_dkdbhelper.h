@@ -18,8 +18,6 @@ private slots:
     void init();
     void cleanup();
 
-    void test_selectQueryFromFields();
-
     void test_querySingleValueInvalidQuery();
     void test_querySingleValue();
     void test_querySingleValue_multipleResults();

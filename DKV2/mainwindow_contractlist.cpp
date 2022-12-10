@@ -408,7 +408,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
 }
 void MainWindow::on_action_cmenu_activate_contract_triggered()
 {   LOG_CALL;
-    bookInitialPaymentReceived(contractUnderMouseMenu);
+    receiveInitialBooking(contractUnderMouseMenu);
     updateViews();
 }
 void MainWindow::on_action_cmenu_terminate_contract_triggered()

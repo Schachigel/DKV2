@@ -17,17 +17,6 @@ void test_dkdbhelper::cleanup()
     cleanupTestDb_InMemory();
 }
 
-void test_dkdbhelper::test_selectQueryFromFields()
-{   /* this test should be in test_sqlhelper
-    but as the dkdbstructur is useful for this
-    the test was moved here */
-    QString sql = selectQueryFromFields(dkdbstructur["Buchungen"].Fields(), dkdbstructur["Buchungen"].ForeignKeys());
-//    qInfo() << sql << qsl("\n");
-    QCOMPARE(sql,  "SELECT Buchungen.id, Buchungen.VertragsId, Buchungen.Datum, Buchungen.BuchungsArt, "
-                   "Buchungen.Betrag, Buchungen.Zeitstempel "
-                   "FROM Buchungen WHERE Buchungen.VertragsId=Vertraege.id");
-}
-
 void test_dkdbhelper::test_querySingleValueInvalidQuery()
 {   LOG_CALL;
     QString sql ("SELECT NOTEXISTINGFIELD FROM NOTEXISTINGTABLE WHERE NOTEXISTINGFIELD='0'");

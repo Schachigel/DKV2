@@ -155,7 +155,7 @@ void changeContractTermination(contract *pc)
     return;
 }
 
-void bookInitialPaymentReceived(contract *v) {
+void receiveInitialBooking(contract *v) {
     LOG_CALL;
     creditor cred(v->creditorId());
 
@@ -176,7 +176,7 @@ void bookInitialPaymentReceived(contract *v) {
     if (not v->bookInitialPayment(
                 wiz.field(fnDate).toDate(),
                 QLocale().toDouble(wiz.field(fnAmount).toString()))) {
-        qCritical() << "activation failed";
+        qCritical() << "contract activation failed";
         Q_ASSERT(false);
     }
     return;

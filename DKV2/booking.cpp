@@ -107,8 +107,10 @@ QDate dateOfnextSettlement()
      * Man sollte eine Jahresendbuchung auch mehrmals machen können, für den Fall, dass es nachträglich
      * gebuchte Geldeingänge für Neuverträge (=Aktivierungen) gab
     */
-    QDate ret =executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(sqlNextAnnualSettlement)).toDate();
-    RETURN_OK(ret, qsl("DateOfnextSettlement: Date of next Settlement was found as "), ret.toString (Qt::ISODate));
+    QVariant ret =executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(sqlNextAnnualSettlement));
+    bool canC = ret.convert(QMetaType::QDate);
+    QDate retDate = canC ? ret.toDate () : QDate();
+    RETURN_OK(retDate, qsl("DateOfnextSettlement: Date of next Settlement was found as %1").arg(retDate.toString (Qt::ISODate)));
 }
 int getNbrOfBookings(const qlonglong contract, const QDate from, const QDate to, const bool terminated)
 {

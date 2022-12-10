@@ -96,6 +96,7 @@ inline const QDate EndOfTheFuckingWorld{QDate(9999, 12, 31)};
 inline const QString EndOfTheFuckingWorld_str{qsl("9999-12-31")};
 inline const int daysUntilTheEndOfTheFuckingWorld{2916000};
 inline const QDate BeginingOfTime{QDate(1900, 1, 1)};
+inline bool isLastDayOfTheYear(QDate d) { return (d.month() == 12 && d.day() == 31);}
 
 void logger(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 QString logFilePath();
