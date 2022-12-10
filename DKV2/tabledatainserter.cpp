@@ -68,7 +68,7 @@ bool TableDataInserter::updateValue(const QString& n, const QVariant& v, qlonglo
     }
     QString sql{qsl("UPDATE %1 SET %2=%3 ").arg( tablename, n, DbInsertableString(record.field(n).value()))};
 
-    QString where {qsl(" WHERE %4=%5")};
+    QString where { qsl(" WHERE %4=%5")};
     bool whereDone =false;
     for( int i=0; i<record.count(); i++) {
         if( record.field(i).isAutoValue()) {

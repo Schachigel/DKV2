@@ -41,6 +41,20 @@ void test_booking::test_dateONSettlement_noContracts()
     // kein aktiver Vertrag -> keine Jahresabrechnung
     QCOMPARE( QDate(), dateOfnextSettlement());
 }
+void test_booking::test_dateONSettlement_nextSettlement()
+{
+    creditor c(saveRandomCreditor());
+    contract cont1(saveRandomContract(c.id()));
+    cont1.bookInitialPayment(QDate( 2000,6,1), 1000.);
+    cont1.annualSettlement (2000);
+    cont1.annualSettlement (2001);
+
+    contract cont2(saveRandomContract(c.id()));
+    cont2.bookInitialPayment(QDate( 2001,6,1), 1000.);
+    cont2.annualSettlement (2001);
+    cont2.annualSettlement (2002);
+    QCOMPARE( QDate(2002,12,31), dateOfnextSettlement());
+}
 void test_booking::test_dateONSettlement_activatedContracts()
 {
     creditor c(saveRandomCreditor());

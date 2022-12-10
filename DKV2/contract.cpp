@@ -74,26 +74,26 @@ contract::contract(qlonglong contractId /*=-1*/, bool isTerminated /*=false*/)
     if( contractId < SQLITE_minimalRowId)
         return;
     if( isTerminated)
-        loadExFromDb (contractId);
+        loadExFromDb( contractId);
      else
-        loadFromDb(contractId);
+        loadFromDb( contractId);
 }
 
-void contract::loadFromDb(qlonglong id)
+void contract::loadFromDb( qlonglong id)
 {   LOG_CALL_W(i2s(id)); // id_aS() might not be initialized yet!!
     isTerminated = false;
-    QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), qsl("id=%1").arg(i2s(id)));
+    QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), qsl("id=%1").arg(id));
     if (not td.setValues(rec))
         qCritical() << "contract from id could not be created";
 }
-void contract::loadExFromDb(qlonglong id)
+void contract::loadExFromDb( qlonglong id)
 {   LOG_CALL_W(i2s(id));
     isTerminated =true;
-    QSqlRecord rec = executeSingleRecordSql(getTableDef_deletedContracts ().Fields(), qsl("id=%1").arg(i2s(id)));
+    QSqlRecord rec = executeSingleRecordSql(getTableDef_deletedContracts ().Fields(), qsl("id=%1").arg(id));
     if (not td.setValues(rec))
         qCritical() << "exContract from id could not be created";
 }
-void contract::initContractDefaults(const qlonglong CREDITORid /*=-1*/)
+void contract::initContractDefaults( const qlonglong CREDITORid /*=-1*/)
 {
     setId(-1);
     setCreditorId(CREDITORid);
@@ -159,12 +159,10 @@ double contract::interestBearingValue() const
 {
     switch (iModel())
     {
-    case interestModel::payout:
-        return value();
     case interestModel::fixed:
         return investedValue();
+    case interestModel::payout:
     case interestModel::reinvest:
-        return value();
     case interestModel::zero:
         return value();
     default:
@@ -189,9 +187,9 @@ const booking contract::latestBooking()
 tableindex_t contract::saveNewContract()
 {   LOG_CALL;
     tableindex_t lastid =td.InsertRecord();
-    if( lastid >= 0) {
+    if( lastid >= SQLITE_minimalRowId) {
         setId(lastid);
-        RETURN_OK( lastid, qsl("Neuer Vertrag wurde eingefügt mit id:"), i2s(lastid));
+        RETURN_OK( lastid, qsl("Neuer Vertrag wurde eingefügt mit id: %1").arg(i2s(lastid)));
     }
     RETURN_ERR( SQLITE_invalidRowId, qsl("Fehler beim Einfügen eines neuen Vertrags"));
 }
@@ -246,11 +244,11 @@ bool contract::bookInitialPayment(const QDate date, double amount)
 
     // QDate actualBookingDate =avoidYearEndBookings(date);
     // INITIAL payments may be on YearEnd, others not (because this is the date for
-    // annual settlements
-    QDate actualBookingDate {date};
+    // annual settlements ONLY
+
     if (initialBookingReceived()) {
         error = qsl("Already active contract can not be activated");
-    } else if ( not actualBookingDate.isValid()) {
+    } else if ( not date.isValid()) {
         error = qsl("Invalid Date");
     } else if( amount < 0) {
         error =qsl("Invalid amount");
@@ -258,10 +256,10 @@ bool contract::bookInitialPayment(const QDate date, double amount)
     if ( error.size())
         RETURN_ERR( false, error);
 
-    if ( bookDeposit(id(), actualBookingDate, amount))
-            RETURN_OK( true, qsl("Successfully activated contract "), id_aS(), qsl("["), actualBookingDate.toString (Qt::ISODate), d2euro(amount));
+    if ( bookDeposit(id(), date, amount))
+            RETURN_OK( true, qsl("Successfully activated contract "), id_aS(), qsl("["), date.toString (Qt::ISODate), d2euro(amount));
 
-    RETURN_ERR( false, qsl("Failed to execut activation on contract "), id_aS(), qsl(" ["), actualBookingDate.toString() , d2euro(amount), qsl("]"));
+    RETURN_ERR( false, qsl("Failed to execut activation on contract "), id_aS(), qsl(" ["), date.toString() , d2euro(amount), qsl("]"));
     return false;
 }
 bool contract::initialBookingReceived() const
@@ -354,6 +352,9 @@ int contract::annualSettlement( int year)
     executeSql_wNoRecords(qsl("SAVEPOINT as_savepoint"));
     QDate requestedSettlementDate(year, 12, 31);
     QDate nextAnnualSettlementDate =nextDateForAnnualSettlement();
+    if( nextAnnualSettlementDate == EndOfTheFuckingWorld) {
+        RETURN_ERR(0, qsl("contract has no booking -> no settlement"));
+    }
 
     bool bookingSuccess =false;
     while(nextAnnualSettlementDate <= requestedSettlementDate) {

@@ -30,8 +30,6 @@ private slots:
     void test_eSingleValueSql_dbfield_PreservsValue();
     void test_selectQueryFromFields_noWhere();
     void test_selectQueryFromFields_withWhere();
-    void test_selectQueryFromFields_wReference();
-    void test_selectQueryFromFields_wRefwWhere();
     void test_executeSingleColumnSql();
     void test_variantTypeConservation();
     void test_createDbViews();

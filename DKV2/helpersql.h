@@ -111,14 +111,13 @@ bool getForeignKeyHandlingStatus(const QString& alias =QString(), const QSqlData
 bool switchForeignKeyHandling(bool OnOff =fkh_on, const QSqlDatabase& db =QSqlDatabase::database());
 bool switchForeignKeyHandling(bool OnOff, const QString& alias, const QSqlDatabase& db=QSqlDatabase::database ());
 
+QString selectQueryFromFields(const QVector<dbfield>& fields,
+                              const QString& where =QString(), const QString& order =QString());
+
 QVariant executeSingleValueSql(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database());
 QVariant executeSingleValueSql(const QString& sql, const QVector<QVariant> params, const QSqlDatabase& db =QSqlDatabase::database());
 QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where =QString(), const QSqlDatabase& db = QSqlDatabase::database());
 QVariant executeSingleValueSql(const dbfield&, const QString& where, const QSqlDatabase& db=QSqlDatabase::database());
-
-QString selectQueryFromFields(const QVector<dbfield>& fields,
-                              const QVector<dbForeignKey>& keys =QVector<dbForeignKey>(),
-                              const QString& where =QString(), const QString& order =QString());
 
 // QVector<QVariant> executeSingleColumnSql( const QString field, const QString table, const QString& where);
 QVector<QVariant> executeSingleColumnSql(const dbfield& dbField, const QString& where =QString());

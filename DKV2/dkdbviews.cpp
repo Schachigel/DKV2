@@ -348,7 +348,7 @@ bool remove_all_views(const QSqlDatabase& db /*=QSqlDatabase::database()*/)
 const QString sqlNextAnnualSettlement_firstAS {qsl(
 R"str(
 SELECT
-  STRFTIME('%Y-%m-%d', Min(Datum) , '1 day', '1 year', 'start of year', '-1 day')  as nextInterestDate
+  STRFTIME('%Y-%m-%d', MIN(Datum), '1 day', '1 year', 'start of year', '-1 day')  as nextInterestDate
 FROM Buchungen INNER JOIN Vertraege ON Vertraege.id = buchungen.VertragsId
 WHERE
   (SELECT count(*)
@@ -374,13 +374,13 @@ ORDER BY Datum ASC LIMIT 1
 )};
 const QString sqlNextAnnualSettlement {qsl(
 R"str(
-SELECT MIN(nextInterestDate) AS date
+SELECT nextInterestDate AS date
 FROM
   (SELECT nextInterestDate FROM (%1)
      UNION
   SELECT nextInterestDate FROM (%2))
+ORDER BY date ASC LIMIT 1
 )str").arg(sqlNextAnnualSettlement_firstAS, sqlNextAnnualSettlement_nextAS)};
-
 // Listenausdruck createCsvActiveContracts
 const QString sqlContractsActiveDetailsView{ qsl(
 R"str(

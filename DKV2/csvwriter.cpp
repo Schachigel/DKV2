@@ -137,7 +137,7 @@ bool table2csv(const QString& filename, const QVector<dbfield>& fields, const QV
     csvwriter csv (qsl(";"));
     for(auto& f : qAsConst(fields))
         csv.addColumn(f.name());
-    QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where);
+    QString sql = selectQueryFromFields(fields, where);
     QSqlQuery q;
     if( not q.exec(sql)) {
         qCritical() << "sql faild to execute" << q.lastError() << "\nSQL: " << q.lastQuery();

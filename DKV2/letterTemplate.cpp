@@ -323,7 +323,7 @@ bool letterTemplate::loadTemplate(letterTemplate::templId /*id*/, qlonglong /*kr
     //    return false;
     //}
     //tid = id;
-    //QString q = selectQueryFromFields( dkdbstructur["Briefvorlagen"].Fields(), QVector<dbForeignKey>(), "templateId ='" + templName(tid) + qsl("'"));
+    //QString q = selectQueryFromFields( dkdbstructur["Briefvorlagen"].Fields(), "templateId ='" + templName(tid) + qsl("'"));
     //QSqlQuery query;
     //query.prepare(q);
     //if( not query.exec())

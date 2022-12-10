@@ -129,14 +129,14 @@ void closeAllDatabaseConnections()
 int rowCount(const QString& table, const QString& where, const QSqlDatabase& db /* =QSqlDatabase::database() */)
 {
     QString sql {qsl("SELECT count(*) FROM [%1]").arg(table)};
-    if( not where.isEmpty ())
+    if( where.size())
         sql += qsl(" WHERE %1").arg(where);
 
     QSqlQuery q(sql, db);
     if( q.first())
-        RETURN_OK( q.value(0).toInt(), qsl("rowCount"), sql);
+        RETURN_OK( q.value(0).toInt(), qsl("rowCount %1").arg(q.value(0).toInt()), sql);
     else
-        RETURN_ERR(-1, qsl("rowCount"), q.lastError ().text (), q.lastQuery ());
+        RETURN_ERR(-1, qsl("rowCount failed"), q.lastError ().text (), q.lastQuery ());
 }
 
 bool tableExists(const QString& tablename, const QSqlDatabase& db)
@@ -199,15 +199,6 @@ void sqlSnippetsFromFieldlist(const QVector<dbfield>& fields, QSet<QString>& use
         usedTables.insert(f.tableName());
         maintainTableList(f.tableName (), TableList);
     }
-}
-QString sqlSnippetFromForeignKeyRef( const QVector<dbForeignKey>& keys)
-{
-    QString WHERE;
-    for( auto key: keys) {
-        if( WHERE.size()) WHERE += qsl(" AND ");
-        WHERE += key.get_SelectSqlWhereClause();
-    }
-    return WHERE;
 }
 QString sqlSnippetWHERE(const QString& where1, const QString& where2)
 {
@@ -328,7 +319,7 @@ bool executeSql(const QString& sql, const QVector<QVariant>& params, QVector<QSq
 //
 QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where, const QString& order, const QSqlDatabase& db)
 {
-    QString sql = selectQueryFromFields(fields, QVector<dbForeignKey>(), where, order);
+    QString sql = selectQueryFromFields(fields, where, order);
     QVector<QSqlRecord> tmpResult;
     if( not executeSql( sql, tmpResult, db))
         RETURN_ERR(QVector<QSqlRecord>(), __FUNCTION__, "execSql failed");
@@ -356,6 +347,22 @@ bool switchForeignKeyHandling(bool OnOff, const QSqlDatabase& db )
     return switchForeignKeyHandling (OnOff, QString(), db);
 }
 
+QString selectQueryFromFields(const QVector<dbfield>& dbField, const QString& incomingWhere, const QString& order)
+{   LOG_CALL;
+
+    QString FieldSnippet;
+    QString TablesSnippet;
+    QSet<QString> usedTables;
+    sqlSnippetsFromFieldlist(dbField, usedTables, FieldSnippet, TablesSnippet);
+
+    const QString orderBy {order.size() ? qsl(" ORDER BY %1").arg(order) : QString()};
+    const QString where =incomingWhere.size() ? qsl(" WHERE %1").arg(incomingWhere) : "";
+
+    QString Query =qsl("SELECT %1 FROM %2 %3 %4")
+            .arg(FieldSnippet, TablesSnippet, where, orderBy);
+    RETURN_OK(Query, qsl("selectQueryFromFields created Query: %1").arg( Query));
+}
+
 QSqlRecord executeSingleRecordSql(const QString& sql, const QSqlDatabase& db)
 {
     QVector<QSqlRecord> records;
@@ -371,7 +378,7 @@ QSqlRecord executeSingleRecordSql(const QString& sql, const QSqlDatabase& db)
 
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where, const QString& order, const QSqlDatabase& db)
 {
-    QString sql =selectQueryFromFields(fields, QVector<dbForeignKey>(), where, order);
+    QString sql =selectQueryFromFields(fields, where, order);
     return adjustSqlRecordTypesToDbFieldTypes (fields, executeSingleRecordSql (sql, db));
 }
 
@@ -380,6 +387,8 @@ QVariant executeSingleValueSql(const QString& sql, const QSqlDatabase& db)
     QSqlRecord v =executeSingleRecordSql (sql, db);
     // error handling is done in executeSingleRecordSql
     if( v.isEmpty () or v.count () > 1)
+        return QVariant();
+    else if( v.value (0).isNull ())
         return QVariant();
     else
         return v.value(0);
@@ -404,7 +413,8 @@ QVariant executeSingleValueSql(const QString& fieldName, const QString& tableNam
     if( fieldName.isEmpty() or tableName.isEmpty ())
         RETURN_ERR(QVariant(), __FUNCTION__, qsl("invalid field- or tablename %1, %2").arg( fieldName, tableName));
     QString sql = qsl("SELECT %1 FROM %2").arg( fieldName, tableName);
-    sql += (where.isEmpty() ? QString("") : (qsl(" WHERE %1").arg(where)));
+    if( where.size())
+        sql += (qsl(" WHERE %1").arg(where));
     return executeSingleValueSql(sql, db);
 }
 QVariant executeSingleValueSql(const dbfield& field, const QString& where, const QSqlDatabase& db)
@@ -421,24 +431,6 @@ QVariant executeSingleValueSql(const dbfield& field, const QString& where, const
         RETURN_OK( result, __FUNCTION__, qsl("single valid value found"));
     else
         RETURN_ERR( QVariant(), qsl("executeSingleValueSql(): variant type conversion failed"));
-}
-
-QString selectQueryFromFields(const QVector<dbfield>& dbField, const QVector<dbForeignKey>& keys, const QString& incomingWhere, const QString& order)
-{   LOG_CALL;
-
-    QString FieldSnippet;
-    QString TablesSnippet;
-    QSet<QString> usedTables;
-    sqlSnippetsFromFieldlist(dbField, usedTables, FieldSnippet, TablesSnippet);
-
-    QString WHEREFromReferences {sqlSnippetFromForeignKeyRef(keys)};
-    QString combinedWHEREclause {sqlSnippetWHERE(incomingWhere, WHEREFromReferences)};
-
-    QString orderBy {order.size() ? qsl(" ORDER BY %1").arg(order) : QString()};
-
-    QString Query =qsl("SELECT %1 FROM %2%3%4")
-            .arg(FieldSnippet, TablesSnippet, combinedWHEREclause, orderBy);
-    RETURN_OK(Query, qsl("selectQueryFromFields created Query: %1").arg( Query));
 }
 
 QVector<QVariant> executeSingleColumnSql( const dbfield& dbField, const QString& where)
