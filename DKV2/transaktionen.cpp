@@ -504,15 +504,18 @@ void annualSettlementLetters()
                         QDate(yearOfSettlement, 12, 31), true));
 
         if (vl.size() > 0 ) {
-            for (QVariant v :  qAsConst(vl) ) {
+            double payedInterest = 0;
+            for (QVariant v : qAsConst(vl))
+            {
                 QVariantMap vm = v.toMap() ;
                 otherInterest += vm["dSonstigeZinsen"].toDouble();
                 annualInterest += vm["dJahresZinsen"].toDouble();
                 interestForPayout += vm["dAuszahlung"].toDouble();
                 totalBetrag += vm["dEndBetrag"].toDouble();
             }
-
-            printData[qsl("mitAusbezahltemZins")] = interestForPayout > 0.;
+            payedInterest = otherInterest + annualInterest;
+            printData[qsl("ausbezahlterZins")] = d2euro(payedInterest);
+            printData[qsl("mitAusbezahltemZins")] = payedInterest > 0.;
             printData[qsl("KSumAuszahlung")] = interestForPayout == 0. ? "" : d2euro(interestForPayout);
             printData[qsl("dKSumJahresZinsen")] = annualInterest;
 
