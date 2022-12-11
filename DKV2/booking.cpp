@@ -167,7 +167,6 @@ double getBookingsSum(QVector<booking> bl, bookingType bt)
             sum += b.amount;
         }
     }
-
     return sum;
 }
 
