@@ -589,7 +589,7 @@ void annualSettlementLetters()
     // Create the eMail Batch file.
     printData[qsl("Kreditoren")] = Kreditoren;
     printData[qsl("totalBetrag2")] = d2euro(totalBetrag2);
-    printData[qsl("ausbezahlterZins2")] = d2euro(payedInterest2);
+    printData[qsl("ausbezahlterZins2")] = d2euro(interestForPayout2);
 
     writeRenderedTemplate(qsl("zinsmails.bat"),
                           qsl("zinsmails").append(i2s(yearOfSettlement)).append(qsl(".bat")),
