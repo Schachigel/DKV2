@@ -82,7 +82,7 @@ contract::contract(qlonglong contractId /*=-1*/, bool isTerminated /*=false*/)
 void contract::loadFromDb( qlonglong id)
 {   LOG_CALL_W(i2s(id)); // id_aS() might not be initialized yet!!
     isTerminated = false;
-    QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), qsl("id=%1").arg(id));
+    QSqlRecord rec = executeSingleRecordSql( getTableDef().Fields(), qsl("id=%1").arg( id));
     if (not td.setValues(rec))
         qCritical() << "contract from id could not be created";
 }
@@ -291,32 +291,16 @@ bool contract::bookActivateInterest(const QDate d)
 QDate contract::nextDateForAnnualSettlement()
 {
     const booking lastB=latestBooking();
-
-    if( lastB.type == bookingType::annualInterestDeposit) {
-        // the last booking was a annual one - next one should be after 1 year
-        Q_ASSERT(lastB.date.month() == 12);
-        Q_ASSERT(lastB.date.day() == 31);
-        return QDate(lastB.date.year() +1, 12, 31);
+    // todo: !better error handling than magic number
+    if( lastB.date == EndOfTheFuckingWorld)
+        return EndOfTheFuckingWorld;
+    qInfo() << "nD4aS searched for " << lastB.toString ();
+    if( isLastDayOfTheYear (lastB.date)) {
+        return lastB.date.addYears(1);
     }
-    if( lastB.type == bookingType::deposit
-            && getBookings (id()).count () == 1
-            && lastB.date.month() == 12
-            && lastB.date.day () == 31) {
-        {
-            qInfo() << "contract activation at years end -> no annualSettlement this year";
-            return QDate(lastB.date.year () +1, 12, 31);
-        }
-    }
-
-    if(lastB.type == bookingType::payout) {
-        // in early versions payouts of annual interests could be after the annualInterestDeposits
-        if((lastB.date.month() == 12 and lastB.date.day() == 31))
-            return QDate(lastB.date.addYears(1));
-        if((lastB.date.month() == 1 and lastB.date.day() == 1))
-            return QDate(lastB.date.addDays(-1).addYears(1));
-    }
-    // for deposits, payouts, activations we return year end of the same year
-    return QDate(lastB.date.year(), 12, 31);
+    else
+        // for deposits, payouts, activations we return year end of the same year
+        return QDate(lastB.date.year(), 12, 31);
 }
 bool contract::needsAnnualSettlement(const QDate intendedNextBooking)
 {

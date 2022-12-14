@@ -183,7 +183,6 @@ void changeContractTermination(contract *pc)
 }
 
 void receiveInitialBooking(contract *v) {
-
     LOG_CALL;
     creditor cred(v->creditorId());
 
