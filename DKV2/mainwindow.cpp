@@ -264,7 +264,6 @@ QString askUserFilenameForCopy(const QString& title, bool onlyExistingFiles=fals
 void MainWindow::on_action_menu_database_new_triggered()
 {   LOG_CALL;
     if( askUserForNextDb()) {
-        busycursor b;
         useDb(appConfig::LastDb ());
         return;
     }

@@ -81,6 +81,7 @@ contract::contract(qlonglong contractId /*=-1*/, bool isTerminated /*=false*/)
 
 void contract::loadFromDb( qlonglong id)
 {   LOG_CALL_W(i2s(id)); // id_aS() might not be initialized yet!!
+    isTerminated = false;
     QSqlRecord rec = executeSingleRecordSql( getTableDef().Fields(), qsl("id=%1").arg( id));
     if (not td.setValues(rec))
         qCritical() << "contract from id could not be created";
@@ -136,7 +137,8 @@ double contract::value(const QDate d) const
     // what is the value of the contract at a given time?
     QString where {qsl("%1=%3 AND %2<='%4'").arg(fn_bVertragsId, fn_bDatum)};
     where =where.arg(id_aS (), d.toString(Qt::ISODate));
-    QVariant v = executeSingleValueSql(qsl("SUM(Betrag)"), tn_Buchungen, where);
+    QVariant v = executeSingleValueSql(qsl("SUM(Betrag)"), 
+        isTerminated ? tn_ExBuchungen : tn_Buchungen, where);
     if( v.isValid())
         return euroFromCt(v.toInt());
     return 0.;
@@ -599,7 +601,7 @@ QString contract::toString(const QString &title) const
     stream << "Buchungen:" << getNbrOfBookings (id()) << qsl("\n");
     return ret;
 }
-QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
+QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
 {   LOG_CALL;
     QVariantMap v;
     booking latestB = latestBooking();
@@ -611,9 +613,19 @@ QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
     v["strId"] = id_aS();
     v["KreditorId"] = i2s(creditorId());
     v["VertragsNr"] = label();
-    if( not isTerminated) v["startBetrag"] = d2euro(value(fromDate));
+    if (not isTerminated)
+    {
+        double d = value(toDate);
+        v["dEndBetrag"] = d;
+        v["endBetrag"] = d2euro(d);
+    }
     v["startDatum"] = fromDate.toString(qsl("dd.MM.yyyy"));
-    if( not isTerminated) v["endBetrag"] = d2euro(value(toDate));
+    if (not isTerminated)
+    {
+        double d = value(toDate);
+        v["dEndBetrag"] = d;
+        v["endBetrag"] = d2euro(d);
+    }
     v["endDatum"] = toDate.toString(qsl("dd.MM.yyyy"));
     v["Vertragsdatum"] = td.getValue(fnVertragsDatum).toDate().toString(qsl("dd.MM.yyyy"));
     v["Vertragsende"] = hasEndDate() ? td.getValue(fnLaufzeitEnde).toDate().toString(qsl("dd.MM.yyyy")) : "offen";
@@ -625,9 +637,25 @@ QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
     v["strBetrag"] = d2euro(euroFromCt(td.getValue(fnBetrag).toInt()));
     v["Zinsmodell"] = ::interestModelDisplayString(iModel());
     v["KFrist"] = hasEndDate() ? 0 : noticePeriod();
-    v["Status"] = isTerminated ? "Laufend" : "Beendet";
+    v["Status"] = isTerminated ? "Beendet" : "Laufend";
+    if (isTerminated) {
+        v["Beendet"] = "Beendet";
+    }
     // get the relevant bookings for period
     QVector<booking> bookVector = getBookings (id(), fromDate, toDate, qsl("Datum ASC"), isTerminated);
+    v["dSonstigeZinsen"] = getBookingsSum(bookVector, bookingType::reInvestInterest);
+    v["dJahresZinsen"] = getBookingsSum(bookVector, bookingType::annualInterestDeposit);
+    v["dAuszahlung"] = 0.;
+    if (v["dSonstigeZinsen"] != 0.)
+        v["SonstigeZinsen"] = d2euro(v["dSonstigeZinsen"].toDouble());
+
+    if (v["dJahresZinsen"] != 0.) {
+        v["JahresZinsen"] = d2euro(v["dJahresZinsen"].toDouble());
+        if (iModel() == interestModel::payout) {
+            v["dAuszahlung"] = v["dJahresZinsen"];
+            v["Auszahlung"] = v["JahresZinsen"];
+        }
+    }
 
     QVariantList bl;
 
@@ -641,7 +669,9 @@ QVariant contract::toVariantMap(QDate fromDate, QDate toDate)
         bl.append(bookMap);
     }
 
-    v["Buchungen"] = bl;
+    if (bl.size() > 0) {
+        v["Buchungen"] = bl;
+    }
 
     return v;
 }
@@ -654,13 +684,13 @@ double contract::payedInterestAtTermination()
     sql =sql.arg(id_aS (), bookingTypeToNbrString(bookingType::reInvestInterest));
     return euroFromCt(executeSingleValueSql(sql).toInt());
 }
-double contract::payedAnnualInterest(int year)
+double contract::getAnnualInterest(int year, bookingType interestType)
 {
     if( iModel() not_eq interestModel::payout)
         return 0;
 
     QString where{qsl("VertragsId=%1 AND BuchungsArt=%2 AND SUBSTR(Buchungen.Datum, 1, 4)=%3")};
-    where =where.arg(DbInsertableString (id()), DbInsertableString (bookingTypeToNbrString(bookingType::annualInterestDeposit)),
+    where =where.arg(DbInsertableString (id()), DbInsertableString (bookingTypeToNbrString(interestType)),
                      DbInsertableString (i2s(year))); // conversion to string is needed as this is not an integer but part of a date string
 
     return euroFromCt(executeSingleValueSql (qsl("SUM(Betrag)"), tn_Buchungen, where).toInt());

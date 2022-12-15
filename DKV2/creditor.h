@@ -61,7 +61,7 @@ struct creditor
     // interface
     bool fromDb(const qlonglong id);
     QVariant getValue(const QString& f) const { return ti.getValue(f);}
-    QVariant getVariant();
+    QVariantMap getVariantMap();
     bool isValid(QString &errortext) const;
     bool isValid() const;
     tableindex_t save();

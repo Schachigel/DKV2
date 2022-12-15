@@ -149,9 +149,9 @@ struct contract
     bool finalize(const bool simulate, const QDate finDate, double& finInterest, double& finPayout);
     // helper
     QString toString(const QString &name =QString()) const;
-    QVariant toVariantMap(QDate fromDate = BeginingOfTime, QDate toDate = EndOfTheFuckingWorld);
+    QVariantMap toVariantMap(QDate fromDate = BeginingOfTime, QDate toDate = EndOfTheFuckingWorld);
     double payedInterestAtTermination();
-    double payedAnnualInterest(int year);
+    double getAnnualInterest(int year, bookingType interestType = bookingType::annualInterestDeposit);
 
     // allow contract objects from deleted contracts
     bool isTerminated =false;

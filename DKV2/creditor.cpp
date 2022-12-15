@@ -118,7 +118,7 @@ bool creditor::isValid( QString& errortext) const
     return false;
 }
 
-QVariant creditor::getVariant()
+QVariantMap creditor::getVariantMap()
 {
     QVariantMap v;
     v["id"] = ti.getValue(fnId);
@@ -232,6 +232,7 @@ ORDER BY Nachname ASC, Vorname ASC
     for( const auto& record: qAsConst( result))
         entries.append({record.value(0).toLongLong (), record.value(1).toString ()});
 }
+
 void creditorsWithAnnualSettlement(QList<qlonglong>& entries, int bookingYear)
 {   LOG_CALL;
     if( bookingYear < 1950) {
@@ -239,17 +240,30 @@ void creditorsWithAnnualSettlement(QList<qlonglong>& entries, int bookingYear)
         return;
     }
 
-    QString sql {qsl(R"str(
-SELECT id
-FROM Kreditoren
-WHERE id IN (
-SELECT DISTINCT Kreditoren.Id AS kid
-FROM Buchungen
-INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id
-INNER JOIN Kreditoren ON Vertraege.KreditorId = Kreditoren.id
-WHERE Buchungen.BuchungsArt = %1 AND SUBSTR(Buchungen.Datum, 1, 4) = '%2')
-ORDER BY Nachname ASC, Vorname ASC
-)str").arg(bookingTypeToNbrString(bookingType::annualInterestDeposit), i2s(bookingYear))};
+    QString sql{qsl(R"str(
+SELECT DISTINCT id FROM 
+    (
+    SELECT id, Nachname, Vorname
+    FROM Kreditoren
+    WHERE id IN (
+        SELECT DISTINCT Kreditoren.Id AS kid
+        FROM Buchungen
+        INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id
+        INNER JOIN Kreditoren ON Vertraege.KreditorId = Kreditoren.id
+        WHERE (Buchungen.BuchungsArt = %1 OR Buchungen.BuchungsArt = %2) AND SUBSTR(Buchungen.Datum, 1, 4) = '%3' 
+        UNION
+        SELECT DISTINCT Kreditoren.Id AS kid
+        FROM exBuchungen
+        INNER JOIN exVertraege ON exBuchungen.VertragsId = exVertraege.id
+        INNER JOIN Kreditoren ON exVertraege.KreditorId = Kreditoren.id
+        WHERE (exBuchungen.BuchungsArt = %1 OR exBuchungen.BuchungsArt = %2) AND SUBSTR(exBuchungen.Datum, 1, 4) = '%3' 
+        )
+        ORDER BY Nachname ASC, Vorname ASC
+    )
+)str")
+                    .arg(bookingTypeToNbrString(bookingType::annualInterestDeposit),
+                         bookingTypeToNbrString(bookingType::reInvestInterest),
+                         i2s(bookingYear))};
 
     QVector<QSqlRecord> result;
     if( not executeSql(sql, result)) {
