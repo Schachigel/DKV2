@@ -473,9 +473,9 @@ void annualSettlementLetters() {
       payedInterest = otherInterest + annualInterest;
       printData[qsl("ausbezahlterZins")] = d2euro(payedInterest);
       printData[qsl("mitAusbezahltemZins")] = payedInterest > 0.;
-      printData[qsl("KSumAuszahlung")] =
+      printData[qsl("SumAuszahlung")] =
           interestForPayout == 0. ? "" : d2euro(interestForPayout);
-      printData[qsl("dKSumJahresZinsen")] = annualInterest;
+      printData[qsl("SumJahresZinsen")] = annualInterest;
 
       printData[qsl("sonstigerZins")] =
           otherInterest == 0. ? "" : d2euro(otherInterest);
