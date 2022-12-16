@@ -539,7 +539,7 @@ void MainWindow::on_btnSave2Csv_clicked()
                 QVariant v =recSingleRow.value (j);
                 QVariant tmp(v);
                 if( tmp.canConvert (QVariant::Double) && tmp.convert (QVariant::Double))
-                    csv.appendToRow( QLocale().toString(tmp.toDouble ()));
+                    csv.appendToRow( QLocale().toString(tmp.toDouble (), 'f', 2));
                 else
                     csv.appendToRow(recSingleRow.value(j).toString());
             }

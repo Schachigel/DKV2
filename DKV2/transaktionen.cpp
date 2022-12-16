@@ -162,7 +162,7 @@ void receiveInitialBooking(contract *v) {
   wiz.label = v->label();
   wiz.creditorName = cred.firstname() + qsl(" ") + cred.lastname();
   wiz.expectedAmount = v->plannedInvest();
-  wiz.setField(fnAmount, QLocale().toString(v->plannedInvest()));
+  wiz.setField(fnAmount, QLocale().toString(v->plannedInvest(), 'f', 2));
   wiz.setField(fnDate, v->conclusionDate());
   wiz.minimalActivationDate = v->conclusionDate();
   wiz.delayedInterest = not v->interestActive();
