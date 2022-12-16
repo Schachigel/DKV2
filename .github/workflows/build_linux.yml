@@ -21,6 +21,8 @@ jobs:
       run:  wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
     - name: Make linuxdeployqt executable
       run: chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+    - name: Install libfuse2
+      run: sudo apt-get install libfuse2
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
       with:
@@ -28,7 +30,7 @@ jobs:
     - name: Build and package for Linux
       run: ./dist_linux.sh
     - name: Save artificat
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Appimage
         path: build-dist-linux/DKV2-*-x86_64.tar.gz
