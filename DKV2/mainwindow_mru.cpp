@@ -1,4 +1,5 @@
 #include "helper.h"
+#include "busycursor.h"
 #include "opendatabase.h"
 #include "mainwindow.h"
 
@@ -106,8 +107,8 @@ void MainWindow::onMRU_MenuItem()
         return;
     QString file =action->data ().toString();
     if( openDB_MRU (file)) {
-        useDb(appConfig::LastDb ());
-        return;
+        busycursor b;
+        return useDb(appConfig::LastDb ());
     }
     //if we come here the file does not exist
 }
