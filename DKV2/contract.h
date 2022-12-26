@@ -100,7 +100,7 @@ struct contract
         else return 0.;
     }
 
-    void setInvestmentId(tableindex_t rId) { td.setValue(fnAnlagenId, (isValidRowId (rId)?QVariant(rId):QVariant()));}
+    void setInvestmentId(tableindex_t rId) { td.setValue(fnAnlagenId, (isValidRowId (rId)?QVariant(rId):QVariant::fromValue((nullptr))));}
     tableindex_t investmentId() const { return td.getValue(fnAnlagenId).toLongLong();}
 
     void setPlannedInvest(const double d) { td.setValue(fnBetrag, ctFromEuro(d));}

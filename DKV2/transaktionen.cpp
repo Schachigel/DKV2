@@ -73,7 +73,9 @@ void newCreditorAndContract() {
   cont.setCreditorId(wiz.cred.id());
   cont.setPlannedInvest(QLocale().toDouble(wiz.field(pnAmount).toString()));
   cont.setInterestRate(wiz.interest / 100.);
-  cont.setInvestmentId(wiz.investmentId);
+
+  if( isValidRowId (wiz.investmentId))
+      cont.setInvestmentId(wiz.investmentId);
   cont.setLabel(wiz.field(pnLabel).toString());
   cont.setConclusionDate(wiz.field(pnCDate).toDate());
   cont.setNoticePeriod(wiz.noticePeriod);

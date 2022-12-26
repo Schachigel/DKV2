@@ -17,7 +17,7 @@ investment::investment(qlonglong id /*=-1*/, int Interest /*=0*/,
                        const QString& Type /*=qsl("")*/, const bool State)
     : rowid(id), interest(Interest), start (Start), end (End), type(Type), state(State)
 {
-    if( id >= 0) {
+    if( isValidRowId (id)) {
         QSqlRecord rec =executeSingleRecordSql (getTableDef().Fields (), qsl("rowid=%1").arg(i2s(id)));
         if( rec.isEmpty ()) {
             return;

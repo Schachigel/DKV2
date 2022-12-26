@@ -37,8 +37,12 @@ bool TableDataInserter::setValue(const QString& n, const QVariant& v, treatNull 
 bool TableDataInserter::setValueToDefault(const QString &n)
 {
     if( record.contains(n)) {
-        record.field(n).value () = record.field(n).defaultValue ();
-        return true;
+        QVariant defaultvalue =record.field(n).defaultValue ();
+        record.field(n).value () = defaultvalue;
+        if( defaultvalue.isNull ())
+            RETURN_OK(true, qsl("field value set to default (null)"), n, qsl("/"), defaultvalue.toString ());
+        else
+            RETURN_OK(true, qsl("field value set to default:"), n, qsl("/"), defaultvalue.toString ());
     }
     RETURN_ERR(false, qsl("TDI::setValueToDefault: Wrong field name for insertion of default value"), n);
 }

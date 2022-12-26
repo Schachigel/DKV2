@@ -240,7 +240,7 @@ struct wizNew : public QWizard
     wizNew(creditor& c, QWidget* p =nullptr);
     tableindex_t existingCreditorId =SQLITE_invalidRowId;
     int interest =-1;
-    tableindex_t investmentId =0;
+    tableindex_t investmentId =SQLITE_invalidRowId;
     int noticePeriod =-1;
     interestModel iPaymentMode =interestModel::maxId;
     bool createCreditor =false; // the corresponding field becomes false on cancel during contract dialog
