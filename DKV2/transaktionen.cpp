@@ -344,7 +344,11 @@ void createInitialLetterTemplates() {
   extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.css"));
   extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.html"));
   extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsliste.html"));
-  extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsmails.bat"));
+  #ifdef Q_OS_WIN
+  extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsmails-win.bat"), qsl("zinsmails.bat"));
+  #else
+  extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsmails-linux.bat"), qsl("zinsmails.bat"));
+  #endif
   extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("dkv2mail.bat"));
   extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("dkv2mail"));
   extractTemplateFileFromResource(vorlagenVerzeichnis,
