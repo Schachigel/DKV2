@@ -5,11 +5,11 @@
 #include "dbstructure.h"
 #include "dkdbhelper.h"
 
+#include "appconfig.h"
 #include "creditor.h"
 #include "contract.h"
 #include "booking.h"
 #include "investment.h"
-#include "letterTemplate.h"
 
 
 // dbstructure dkdbstructur;
@@ -69,9 +69,6 @@ void init_DKDBStruct()
     dkdbstructur.appendTable(booking::getTableDef());
     dkdbstructur.appendTable(booking::getTableDef_deletedBookings());
     dkdbstructur.appendTable(appConfig::getTableDef());
-    dkdbstructur.appendTable(letterTemplate::getTableDef_letterTypes());
-    dkdbstructur.appendTable(letterTemplate::getTableDef_elementTypes());
-    dkdbstructur.appendTable(letterTemplate::getTableDef_letterElements());
 }
 
 // db creation for newDb and copy (w & w/o de-personalisation)

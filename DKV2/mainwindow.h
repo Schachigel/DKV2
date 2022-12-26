@@ -117,13 +117,6 @@ private slots:
 
     void on_action_Neu_triggered();
 
-    void on_actionTEST_triggered();
-
-    void on_btnNextBooking_clicked();
-    void on_btnPrevBooking_clicked();
-    void on_btnUpdatePreview_clicked();
-    void doPaint(QPrinter*);
-
     void on_btnCreateFromContracts_clicked();
 
     void on_btnNewInvestment_clicked();
@@ -189,7 +182,6 @@ private:
     void fillStatisticsTableView();
     void prepare_investmentsListView();
     void prepare_startPage();
-    void prepare_printPreview();
 
     // letter editing
     QVector<booking> toBePrinted;

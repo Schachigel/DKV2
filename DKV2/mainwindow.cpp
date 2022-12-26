@@ -118,13 +118,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->InvestmentsTableView->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
     ui->InvestmentsTableView->setStyleSheet(tableCellStyle);
 
-    ui->fontComboBox->setEditable(false);
-    ui->fontComboBox->setWritingSystem(QFontDatabase::Latin);
-    ui->fontComboBox->setFontFilters(QFontComboBox::ScalableFonts | QFontComboBox::ProportionalFonts);
-    ui->spinFontSize->setMinimum(8);
-    ui->spinFontSize->setMaximum(11);
-    connect(ui->wPreview, &QPrintPreviewWidget::paintRequested, this, &MainWindow::doPaint);
-
     QSettings settings;
     restoreGeometry(settings.value(qsl("geometry")).toByteArray());
     restoreState(settings.value(qsl("windowState")).toByteArray());
@@ -857,87 +850,6 @@ void MainWindow::on_action_about_DKV2_triggered()
     msg += qsl("Viel Spaß mit DKV2 !");
     QMessageBox::information(this, qsl("I n f o"), msg);
 }
-void MainWindow::on_actionTEST_triggered()
-{
-    LOG_CALL;
-//    // input nec. to display the dialog: a Vector of bookings
-//    toBePrinted.clear();
-//    toBePrinted = getAnnualSettelments(2019);
-//    if ( not toBePrinted.size()) {
-//        qWarning() << "nothing to be printed";
-//        return;
-//    }
-//    currentBooking = toBePrinted.begin();
-
-//    prepare_printPreview();
-//    ui->stackedWidget->setCurrentIndex(printPreviewPageIndex);
-}
-/////////////////////////////////////////////////
-//              PRINTING wprev.                //
-/////////////////////////////////////////////////
-QString letterName(const booking &b)
-{
-    QString txt = qsl("<table width=100%><tr><td align=center style='padding-top:5px;padding-bottom:5px;'>%1, %2; %3<br><b>%4</b></td></tr></table>");
-    contract cont(b.contractId);
-    creditor cred(cont.creditorId());
-    QString lettertype = bookingTypeDisplayString(b.type) +qsl(" ");
-    lettertype += (b.type == bookingType::annualInterestDeposit) ? i2s(b.date.year() - 1) : b.date.toString();
-
-    txt = txt.arg(cred.lastname(), cred.firstname(), cont.label(), lettertype);
-    return txt;
-}
-
-void MainWindow::prepare_printPreview()
-{
-    LOG_CALL;
-    ui->btnPrevBooking->setEnabled(currentBooking not_eq toBePrinted.cbegin());
-    ui->btnNextBooking->setEnabled((currentBooking +1) not_eq toBePrinted.cend());
-
-    ui->lblLetter->setText (letterName(*currentBooking));
-
-    QFont f(qsl("Verdana"));
-    ui->fontComboBox->setCurrentFont(f);
-    ui->spinFontSize->setValue(10);
-}
-
-void MainWindow::on_btnNextBooking_clicked()
-{
-    LOG_CALL;
-    if ((currentBooking+1) == toBePrinted.cend())
-        return;
-    else
-        currentBooking = currentBooking +1;
-    prepare_printPreview();
-}
-
-void MainWindow::on_btnPrevBooking_clicked()
-{
-    LOG_CALL;
-    if (currentBooking == toBePrinted.cbegin())
-        return;
-    else
-        currentBooking = currentBooking -1;
-    prepare_printPreview();
-}
-
-void MainWindow::on_btnUpdatePreview_clicked()
-{
-    ui->wPreview->updatePreview();
-}
-
-void MainWindow::doPaint(QPrinter* pri)
-{
-    QPainter p(dynamic_cast<QPaintDevice*>(pri));
-    p.drawText(QPoint(100, 100), qsl("Hallo World"));
-
-    // Logo
-    // Adresse
-    // Datum
-    // Anrede
-    // Fußzeile
-    // text(e)
-}
-
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     QSettings settings;

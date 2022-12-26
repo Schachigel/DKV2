@@ -31,7 +31,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>5</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <property name="font">
@@ -451,219 +451,6 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="PrintLetters">
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <layout class="QHBoxLayout" name="hlayout_topButtons">
-          <item>
-           <widget class="QPushButton" name="btnUpdatePreview">
-            <property name="text">
-             <string>Ansicht aktualisieren</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnPrint">
-            <property name="text">
-             <string>als PDF speichern</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnPrintAll">
-            <property name="text">
-             <string>alle als PDF speichern</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QSplitter" name="splitter_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <widget class="QWidget" name="layoutWidget">
-           <layout class="QVBoxLayout" name="vLayout_splitterLeft">
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_3">
-              <item>
-               <widget class="QPushButton" name="btnPrevBooking">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>1</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>&lt;</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="lblLetter">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                  <horstretch>10</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">background-color:powderblue;</string>
-                </property>
-                <property name="text">
-                 <string>DK Brief an DK Geber</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="btnNextBooking">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>1</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>&gt;</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="hlayout_FontInfo" stretch="0,4,1,1">
-              <item>
-               <widget class="QLabel" name="lblFont">
-                <property name="text">
-                 <string>Schriftart</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QFontComboBox" name="fontComboBox"/>
-              </item>
-              <item>
-               <widget class="QLabel" name="lblFSize">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>Größe</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSpinBox" name="spinFontSize"/>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QLabel" name="lblAnrede">
-              <property name="text">
-               <string>Anrede</string>
-              </property>
-              <property name="buddy">
-               <cstring>txtAnrede</cstring>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPlainTextEdit" name="txtAnrede">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>1</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>50</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="lblText1">
-              <property name="text">
-               <string>Text 1</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPlainTextEdit" name="txtText1">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>4</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="lblText2">
-              <property name="text">
-               <string>Text 2</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPlainTextEdit" name="txtText2">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>4</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="lblGruss">
-              <property name="text">
-               <string>Grußformel</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPlainTextEdit" name="txtGruss">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>50</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QPrintPreviewWidget" name="wPreview" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>2</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
-         </widget>
-        </item>
-       </layout>
-      </widget>
      </widget>
     </item>
    </layout>
@@ -674,7 +461,7 @@
      <x>0</x>
      <y>0</y>
      <width>1073</width>
-     <height>21</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_database">
@@ -733,9 +520,10 @@
     </property>
     <addaction name="action_menu_debug_create_sample_data"/>
     <addaction name="action_menu_debug_show_log"/>
-    <addaction name="action_about_DKV2"/>
+    <addaction name="separator"/>
     <addaction name="actionDatenbank_Views_schreiben"/>
-    <addaction name="actionTEST"/>
+    <addaction name="separator"/>
+    <addaction name="action_about_DKV2"/>
    </widget>
    <addaction name="menu_database"/>
    <addaction name="manu_creditors"/>
@@ -1027,14 +815,6 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <customwidgets>
-  <customwidget>
-   <class>QPrintPreviewWidget</class>
-   <extends>QWidget</extends>
-   <header location="global">qprintpreviewwidget.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <tabstops>
   <tabstop>le_CreditorsFilter</tabstop>
   <tabstop>comboUebersicht</tabstop>
@@ -1061,17 +841,6 @@
   <tabstop>btnAutoMatch</tabstop>
   <tabstop>btnAutoClose</tabstop>
   <tabstop>InvestmentsTableView</tabstop>
-  <tabstop>btnUpdatePreview</tabstop>
-  <tabstop>btnPrint</tabstop>
-  <tabstop>btnPrintAll</tabstop>
-  <tabstop>btnPrevBooking</tabstop>
-  <tabstop>btnNextBooking</tabstop>
-  <tabstop>fontComboBox</tabstop>
-  <tabstop>spinFontSize</tabstop>
-  <tabstop>txtAnrede</tabstop>
-  <tabstop>txtText1</tabstop>
-  <tabstop>txtText2</tabstop>
-  <tabstop>txtGruss</tabstop>
   <tabstop>pbPrint</tabstop>
  </tabstops>
  <resources>

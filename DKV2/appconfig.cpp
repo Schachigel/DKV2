@@ -149,7 +149,7 @@ QVariantMap getMetaTableAsMap(const QSqlDatabase &db)
         RETURN_ERR(QVariantMap(), qsl(__FUNCTION__), qsl("Failed to read meta table"));
 
     QString name, value;
-    QRegularExpression re("[/\\.]");
+    static QRegularExpression re("[/\\.]");
     for( const QSqlRecord& record: qAsConst(table))  {
         name  =record.value("name").toString().replace(re, "");
         value =record.value("Wert").toString();

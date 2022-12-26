@@ -8,7 +8,6 @@
 #include "contract.h"
 #include "creditor.h"
 #include "investment.h"
-#include "letterTemplate.h"
 #include "dkdbviews.h"
 #include "dkdbcopy.h"
 #include "dkdbhelper.h"
@@ -146,9 +145,6 @@ bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/
         if( includeViews) if ( not insertDKDB_Views(db)) break;
         if( includeViews) if (not insertDKDB_Indices(db)) break;
         insert_DbProperties(db);
-        if ( not letterTemplate::insert_letterTypes(db)) break;
-        if ( not letterTemplate::insert_elementTypes(db)) break;
-        if ( not letterTemplate::insert_letterElements(db)) break;
         ret = true;
     } while (false);
     dbConfig::writeValue (ZINSUSANCE, (sz==zs_30360) ? qsl("30/360"):qsl ("act/act"), db);

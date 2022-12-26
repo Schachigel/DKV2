@@ -42,7 +42,6 @@ SOURCES +=  \
     ../DKV2/helperfin.cpp \
     ../DKV2/ibanvalidator.cpp \
     ../DKV2/investment.cpp \
-    ../DKV2/letterTemplate.cpp \
     ../DKV2/helpersql.cpp \
     ../DKV2/csvwriter.cpp \
     ../DKV2/dbfield.cpp \
@@ -62,7 +61,6 @@ SOURCES +=  \
     test_dkdbcopy.cpp \
     test_dkdbhelper.cpp \
     test_finance.cpp \
-    test_lettertemplate.cpp \
     test_main.cpp \
     test_properties.cpp \
     test_sqlhelper.cpp \
@@ -88,7 +86,6 @@ HEADERS += \
     test_dkdbcopy.h \
     test_dkdbhelper.h \
     test_finance.h \
-    test_lettertemplate.h \
     test_properties.h \
     test_sqlhelper.h \
     test_statistics.h \
