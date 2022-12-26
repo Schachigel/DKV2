@@ -56,10 +56,10 @@ struct creditor
     void setIban(const QString& i)     { ti.setValue(qsl("IBAN"), i);}
     QString bic() const        {return getValue(qsl("BIC")).toString();}
     void setBic(const QString& b)      { ti.setValue(qsl("BIC"), b);}
-    qlonglong id() const        {return getValue(qsl("id")).toLongLong();}
-    void setId(const qlonglong i)     { ti.setValue(qsl("id"), i);}
+    tableindex_t id() const        {return getValue(qsl("id")).toLongLong();}
+    void setId(const tableindex_t i)     { ti.setValue(qsl("id"), i);}
     // interface
-    bool fromDb(const qlonglong id);
+    bool fromDb(const tableindex_t id);
     QVariant getValue(const QString& f) const { return ti.getValue(f);}
     QVariantMap getVariantMap();
     bool isValid(QString &errortext) const;
@@ -69,19 +69,19 @@ struct creditor
     bool hasActiveContracts(){return hasActiveContracts(id());};
     static bool hasActiveContracts(const qlonglong i);
     bool remove();
-    static bool remove(const int index);
+    static bool remove(const tableindex_t index);
 private:
     // data
     TableDataInserter ti;
     // helper
 };
 
-void getAllCreditorInfoSorted(QList<QPair<qlonglong, QString> > &entries);
-void creditorsWithAnnualSettlement(QList<qlonglong> &entries, int bookingYear =-1);
+void getAllCreditorInfoSorted(QList<QPair<tableindex_t, QString> > &entries);
+void creditorsWithAnnualSettlement(QList<tableindex_t> &entries, int bookingYear =-1);
 
 
 // for testing
 creditor saveRandomCreditor();
-void saveRandomCreditors( const int i);
+void saveRandomCreditors( const int count);
 
 #endif // KREDITOR_H

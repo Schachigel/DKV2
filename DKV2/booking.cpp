@@ -56,7 +56,7 @@ QString booking::toString( ) const
 
 /////////////// BOOKING functions (friends, not family ;) )
 ///
-bool bookingToDB( bookingType t, const qlonglong contractId, QDate date, const double amount)
+bool bookingToDB(bookingType t, const tableindex_t contractId, QDate date, const double amount)
 {   LOG_CALL_W (booking(contractId, t, date, amount).toString());
     if( not date.isValid ())
         RETURN_ERR(false, qsl(">> invalid booking date <<"));
@@ -71,30 +71,30 @@ bool bookingToDB( bookingType t, const qlonglong contractId, QDate date, const d
     else
         RETURN_ERR( false, qsl(">> Buchung gescheitert <<"));
 }
-bool bookDeposit(const qlonglong contractId, QDate date, const double amount)
+bool bookDeposit(const tableindex_t contractId, QDate date, const double amount)
 {
     if( amount <= 0)
         RETURN_ERR(false, qsl(">> Einzahlungen müssen einen Wert größer als 0 haben <<"));
     return bookingToDB( bookingType::deposit, contractId, date, amount);
 }
-bool bookPayout(const qlonglong contractId, QDate date, const double amount)
+bool bookPayout(const tableindex_t contractId, QDate date, const double amount)
 {
     // contract has to check that a payout is possible
     return bookingToDB(bookingType::payout, contractId, date, -1*qFabs(amount));
 }
-bool bookReInvestInterest(const qlonglong contractId, QDate date, const double amount)
+bool bookReInvestInterest(const tableindex_t contractId, QDate date, const double amount)
 {
     if( amount < 0)
         RETURN_ERR(false, qsl(">> booking ReInvestInterest failed due to negative amount <<"));
     return bookingToDB(bookingType::reInvestInterest, contractId, date, amount);
 }
-bool bookAnnualInterestDeposit(const qlonglong contractId, QDate date, const double amount)
+bool bookAnnualInterestDeposit(const tableindex_t contractId, QDate date, const double amount)
 {
     if( amount < 0)
         RETURN_ERR(false, qsl(">> booking Annual Interest Deposit failed due to negative amount <<"));
     return bookingToDB(bookingType::annualInterestDeposit, contractId, date, amount);
 }
-bool bookInterestActive(const qlonglong contractId, QDate date)
+bool bookInterestActive(const tableindex_t contractId, QDate date)
 {
     return bookingToDB(bookingType::setInterestActive, contractId, date, 0.);
 }
@@ -128,7 +128,7 @@ int getNbrOfExBookings(const qlonglong contract, const QDate from, const QDate t
 
 QVector<booking> bookingsFromDB(const QString& where, const QString& order ="", bool terminated =false)
 {
-    qInfo().noquote () << __FUNCTION__ << qsl(" Where: %1\n").arg( where) << qsl("Order: %1\n").arg( order) << qsl("terminated: %1").arg((terminated ? "true" : "false"));
+    qInfo().noquote () << qsl(__FUNCTION__) << qsl(" Where: %1\n").arg( where) << qsl("Order: %1\n").arg( order) << qsl("terminated: %1").arg((terminated ? "true" : "false"));
     QVector<QSqlRecord> records = terminated ?
                executeSql( booking::getTableDef_deletedBookings ().Fields (), where, order)
              : executeSql( booking::getTableDef().Fields(), where, order);
@@ -144,7 +144,7 @@ QVector<booking> bookingsFromDB(const QString& where, const QString& order ="", 
     }
     return vRet;
 }
-QVector<booking> getBookings(const qlonglong cid, QDate from, const QDate to,
+QVector<booking> getBookings(const tableindex_t contractId, QDate from, const QDate to,
                     QString order, bool terminated)
 {
     QString tablename = terminated ? tn_ExBuchungen : tn_Buchungen;
@@ -152,7 +152,7 @@ QVector<booking> getBookings(const qlonglong cid, QDate from, const QDate to,
     QString where = qsl("%9.%1=%6 "
                   "AND %9.%2 >='%7' "
                   "AND %9.%2 <='%8'").arg(fn_bVertragsId, fn_bDatum);
-    where = where.arg(i2s(cid), from.toString(Qt::ISODate), to.toString(Qt::ISODate), tablename);
+    where = where.arg(i2s(contractId), from.toString(Qt::ISODate), to.toString(Qt::ISODate), tablename);
 
     return bookingsFromDB(where, order, terminated);
 }

@@ -105,7 +105,7 @@ QMap<letterTemplate::templId, QString> letterTemplate::all_templates
         QString value =all_elementTypes.value(key);
         tdi.setValue(qsl("id"), int(key));
         tdi.setValue(qsl("ElementName"), value);
-        if (-1 == tdi.InsertOrReplaceData(db))
+        if (SQLITE_invalidRowId == tdi.InsertOrReplaceData(db))
             return false;
     }
     return true;
@@ -124,7 +124,7 @@ bool insertLetterElementFromMap(qlonglong kreditor, letterTemplate::templId brie
         tdi.setValue(qsl("BriefElementTypenId"), int(key));
         tdi.setValue(qsl("Texte"), value);
         if( not isValidRowId (tdi.InsertRecord(db)))
-            RETURN_ERR( false, "Failded to insert generic letter Element ");
+            RETURN_ERR( false, qsl("Failded to insert generic letter Element "));
     }
     return res;
 

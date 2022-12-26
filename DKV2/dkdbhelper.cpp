@@ -254,7 +254,7 @@ int createNewInvestmentsFromContracts( bool fortlaufend)
     QString sql{qsl("SELECT ZSatz, Vertragsdatum FROM Vertraege WHERE AnlagenId IS NULL OR AnlagenId <= 0 ORDER BY Vertragsdatum ASC ")};
     QVector<QSqlRecord> res;
     if( not executeSql (sql, res))
-        RETURN_ERR( -1, __FUNCTION__, qsl("Info aus Verträgen konnte nicht gelesen werden"));
+        RETURN_ERR( -1, qsl(__FUNCTION__), qsl("Info aus Verträgen konnte nicht gelesen werden"));
 
     int ret =0;
     for( const QSqlRecord& rec : qAsConst(res)) {
@@ -273,7 +273,7 @@ int automatchInvestmentsToContracts()
     QString sql{qsl("SELEcT id, ZSatz, Vertragsdatum, AnlagenId FROM Vertraege WHERE AnlagenId =0 OR AnlagenId IS NULL")};
     QVector<QSqlRecord> res;
     if( not executeSql (sql, res))
-        RETURN_ERR( -1, __FUNCTION__, qsl("Info aus Verträgen konnte nicht gelesen werden"));
+        RETURN_ERR( -1, qsl(__FUNCTION__), qsl("Info aus Verträgen konnte nicht gelesen werden"));
 
     int successcount =0;
     for( const QSqlRecord& rec : qAsConst(res)) {
@@ -367,7 +367,7 @@ bool createCsvActiveContracts()
     QString filename(QDate::currentDate().toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
     if( StringLists2csv( filename, header, data))
         return true;
-    RETURN_ERR(false, "failed to print table");
+    RETURN_ERR(false, qsl("failed to print table"));
 }
 
 // calculate data for start page

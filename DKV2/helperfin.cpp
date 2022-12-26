@@ -8,7 +8,7 @@ int TageZwischen_30_360(QDate von, QDate bis)
 {   // finanzmathematischer Abstand zwischen zwei Daten im selben Jahr
     Q_ASSERT( von.year() == bis.year());
     if( von.year() not_eq bis.year()) {
-        qCritical() << __FUNCTION__ << " ungültige Argumente: " << von << " - " << bis;
+        qCritical() << qsl(__FUNCTION__) << " ungültige Argumente: " << von << " - " << bis;
         return -1;
     }
     if( bis == von) return 0;

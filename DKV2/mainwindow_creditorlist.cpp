@@ -97,7 +97,7 @@ int  MainWindow::id_SelectedCreditor()
         return data.toInt();
     }
     qCritical() << "Index der Personenliste konnte nicht bestimmt werden";
-    return -1;
+    return SQLITE_invalidRowId;
 }
 void MainWindow::on_btn_reset_filter_creditors_clicked()
 {   LOG_CALL;

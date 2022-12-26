@@ -4,6 +4,7 @@
 
 #include "helper.h"
 #include "helperfin.h"
+#include "helpersql.h"
 #include "dbtable.h"
 
 inline const QString tn_Buchungen {qsl("Buchungen")};
@@ -45,12 +46,12 @@ inline QString bookingTypeToNbrString( const bookingType t) {return i2s(bookingT
 
 struct booking
 {
-    qlonglong contractId =-1;
+    tableindex_t contractId =SQLITE_invalidRowId;
     bookingType type =bookingType::non;
     QDate date =EndOfTheFuckingWorld;
     double amount =0.;
     // construction
-    booking(const qlonglong cId =-1, const bookingType t = bookingType::non,
+    booking(const tableindex_t cId =SQLITE_invalidRowId, const bookingType t = bookingType::non,
             const QDate d =EndOfTheFuckingWorld, const double a =0.)
         : contractId(cId), type(t), date(d), amount(a) {};
     // statics
@@ -74,22 +75,22 @@ struct booking
 };
 Q_DECLARE_TYPEINFO(booking, Q_PRIMITIVE_TYPE );
 
-bool bookingToDB(bookingType, const qlonglong, QDate, const double);
+bool bookingToDB(bookingType, const tableindex_t contrId, QDate date, const double);
 
-bool bookDeposit(   const qlonglong contractId, QDate date, const double amount);
-bool bookPayout(    const qlonglong contractId, QDate date, const double amount);
-bool bookReInvestInterest(const qlonglong contractId, QDate date, const double amount);
-bool bookAnnualInterestDeposit( const qlonglong contractId, QDate date, const double amount);
-bool bookInterestActive(const qlonglong contractId, QDate date);
+bool bookDeposit(   const tableindex_t contractId, QDate date, const double amount);
+bool bookPayout(    const tableindex_t contractId, QDate date, const double amount);
+bool bookReInvestInterest(const tableindex_t contractId, QDate date, const double amount);
+bool bookAnnualInterestDeposit( const tableindex_t contractId, QDate date, const double amount);
+bool bookInterestActive(const tableindex_t contractId, QDate date);
 
 //QVector<booking> bookingsFromDB(const QString& where, const QString& order ="", bool terminated =false);
-QVector<booking> getBookings(   const qlonglong cid,  const QDate from = BeginingOfTime, const QDate to = EndOfTheFuckingWorld,
+QVector<booking> getBookings(   const tableindex_t contractId,  const QDate from = BeginingOfTime, const QDate to = EndOfTheFuckingWorld,
                                 const QString order = qsl("Datum DESC"), bool terminatedContract =false);
-QVector<booking> getExBookings(   const qlonglong cid,  const QDate from = BeginingOfTime, const QDate to = EndOfTheFuckingWorld,
+QVector<booking> getExBookings(   const tableindex_t contractId,  const QDate from = BeginingOfTime, const QDate to = EndOfTheFuckingWorld,
                                 const QString order = qsl("Datum DESC"));
 QDate dateOfnextSettlement();
-int getNbrOfBookings(const qlonglong contract, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld, const bool terminated =false);
-int getNbrOfExBookings(const qlonglong contract, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld);
+int getNbrOfBookings(const tableindex_t contract, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld, const bool terminated =false);
+int getNbrOfExBookings(const tableindex_t contract, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld);
 
 double getBookingsSum(QVector<booking> bl, bookingType bt);
 

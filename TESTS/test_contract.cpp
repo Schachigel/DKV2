@@ -714,7 +714,7 @@ void test_contract::test_finalize()
     double fi =0., fp =0.;
     QVERIFY(cont.finalize(false, aDate.addMonths(2), fi, fp));
     // finalize should reset the cont object
-    QCOMPARE(cont.id(), -1);
+    QCOMPARE(cont.id(), SQLITE_invalidRowId);
     QCOMPARE(rowCount("Vertraege"), 0);
     QCOMPARE(getNbrOfBookings(contractId), 0);
     QCOMPARE(rowCount("exVertraege"), 1);

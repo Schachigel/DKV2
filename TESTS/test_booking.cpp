@@ -21,7 +21,7 @@ void test_booking::test_defaults()
     {
         booking b;
         QCOMPARE(b.amount, 0.);
-        QCOMPARE(b.contractId, -1);
+        QCOMPARE(b.contractId, SQLITE_invalidRowId);
         QCOMPARE(b.type, bookingType::non);
         QCOMPARE(b.date, EndOfTheFuckingWorld);
     }

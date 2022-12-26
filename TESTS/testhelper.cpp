@@ -112,19 +112,6 @@ void createEmptyFile(const QString& path)
     f.close();
 }
 
-//int tableRecordCount( const QString& tname, const QSqlDatabase& db /*=QSqlDatabase::database()*/)
-//{   // LOG_CALL_W(tname);
-//    QSqlQuery q(db);
-//    if (q.exec("SELECT COUNT(*) FROM " + tname)) {
-//        q.first();
-//        qInfo() << "#Datensätze: " << q.record().value(0).toInt();
-//        return q.record().value(0).toInt();
-//    } else {
-//        qCritical() << "tableRecordCount: SELECT failed " << q.lastError() << "\n" << q.lastQuery() << qsl("\n");
-//        return -1;
-//    }
-//}
-
 bool dbHasTable(const QString& tname, const QSqlDatabase& db /*=QSqlDatabase::database()*/)
 {   LOG_CALL_W(tname);
     return db.tables().contains(tname);
@@ -234,11 +221,14 @@ int doAnnualSettlementAllContracts (int year)
 }
 
 void dbgDumpDatabase(QString testname)
-{
+{   LOG_CALL;
     QString filename { qsl("./data/%1.db").arg(testname).replace (':', '#')};
+    filename.replace('<', '#');
+    filename.replace('>', '#');
 
     QDir().mkdir(qsl("./data"));
     QFile::remove(filename);
+    qInfo() << "removing file for replacement: " << filename;
     QVERIFY( not QFile::exists(filename));
     QString sql{qsl("VACUUM INTO '%1'").arg(filename)};
     QSqlDatabase::database().exec(sql);

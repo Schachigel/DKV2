@@ -187,7 +187,7 @@ private:
     Q_OBJECT
     QComboBox* cbInvestments =nullptr; // to read itemData on validation
     QLabel* lblInvestmentInfo =nullptr;
-    qlonglong rowid_investment =-1;
+    tableindex_t rowid_investment =SQLITE_invalidRowId;
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
@@ -238,9 +238,9 @@ private:
 struct wizNew : public QWizard
 {
     wizNew(creditor& c, QWidget* p =nullptr);
-    qlonglong existingCreditorId =-1;
+    tableindex_t existingCreditorId =SQLITE_invalidRowId;
     int interest =-1;
-    qlonglong investmentId =0;
+    tableindex_t investmentId =0;
     int noticePeriod =-1;
     interestModel iPaymentMode =interestModel::maxId;
     bool createCreditor =false; // the corresponding field becomes false on cancel during contract dialog

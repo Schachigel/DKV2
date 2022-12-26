@@ -26,6 +26,8 @@ void log(TS&& ... args)
     ((out << std::forward<TS>(args)), ...);
 }
 */
+
+/*
 template <typename t, typename ... TS>
 inline t returnLog(int sev, t returnvalue, TS ...args)
 {
@@ -36,6 +38,29 @@ inline t returnLog(int sev, t returnvalue, TS ...args)
         (( qCritical().noquote () << std::forward<TS>(args)), ...);
     }
     return returnvalue;
+}
+*/
+
+inline QString qCat(QString s)
+{
+    return s;
+}
+
+template<typename t, typename ... args>
+inline QString qCat(t first, args... rest)
+{
+    return first +qsl(" ") +qCat(rest...);
+}
+
+template <typename ret_t, typename ... TS>
+inline ret_t returnLog(int sev, ret_t ret, TS ...args)
+{
+    if( sev == 0) {
+        qInfo().noquote() << qCat(args...);
+    } else {
+        qCritical().noquote() << qCat(args...);
+    }
+    return ret;
 }
 
 #define RETURN_OK(ret, ...)  return returnLog( 0, ret, __VA_ARGS__)

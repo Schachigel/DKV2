@@ -463,7 +463,7 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
         QDate to;
         qlonglong newIId =createInvestment_matchingContract(interest, from, to);
         if(newIId <= 0) break;
-        if( investment(-1, interest, from, to).matchesContract(*contractUnderMouseMenu)) {
+        if( investment(SQLITE_invalidRowId, interest, from, to).matchesContract(*contractUnderMouseMenu)) {
             if( not contractUnderMouseMenu->updateInvestment(newIId))
                 QMessageBox::information(this, qsl("Fehler"), qsl("Die Geldanlage konnte dem Vertrag nicht zugewiesen werden! \n Weiterführende Info können in der LoG Datei gefunden werden."));
         } else
@@ -472,7 +472,7 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
     }
     case 1:
     {
-        if( contractUnderMouseMenu->investment () > 0)
+        if(isValidRowId (contractUnderMouseMenu->investmentId ()))
             QMessageBox::information(this, qsl("Erfolg"), qsl("Die Geldanlage mit dem passenden Zins und Vertragsdatum ist bereits zugewiesen"));
         else if( contractUnderMouseMenu->updateInvestment(invests[0].rowid))
             QMessageBox::information(this, qsl("Erfolg"), qsl("Die Geldanlage mit dem passenden Zins und Vertragsdatum wurde zugewiesen"));

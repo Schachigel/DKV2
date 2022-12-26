@@ -159,7 +159,7 @@ tableindex_t createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
         endDate =EndOfTheFuckingWorld;
     }
     if( 0 < rowCount(sql.arg(i2s(ZSatz), vDate.toString(Qt::ISODate), vDate.toString(Qt::ISODate)))) {
-        return -1;
+        return SQLITE_invalidRowId;
     }
     TableDataInserter tdi(investment::getTableDef());
     tdi.setValue(fnInvestmentInterest, ZSatz);

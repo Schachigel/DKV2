@@ -157,11 +157,11 @@ tableindex_t creditor::update() const
 bool creditor::remove()
 {
     bool ret = creditor::remove(id());
-    if( ret) setId( -1);
+    if( ret) setId( SQLITE_invalidRowId);
     return ret;
 }
 
-/* static */ bool creditor::remove(const int index)
+/* static */ bool creditor::remove(const tableindex_t index)
 {   LOG_CALL;
     // referential integrity will delete [inactive] contracts (this is w/o bookings)
     // [ creditor <-> contract ] On Delete Cascade
@@ -233,7 +233,7 @@ ORDER BY Nachname ASC, Vorname ASC
         entries.append({record.value(0).toLongLong (), record.value(1).toString ()});
 }
 
-void creditorsWithAnnualSettlement(QList<qlonglong>& entries, int bookingYear)
+void creditorsWithAnnualSettlement(QList<tableindex_t> &entries, int bookingYear)
 {   LOG_CALL;
     if( bookingYear < 1950) {
         qCritical() << "invalid booking year reading DKGeber";
@@ -241,7 +241,7 @@ void creditorsWithAnnualSettlement(QList<qlonglong>& entries, int bookingYear)
     }
 
     QString sql{qsl(R"str(
-SELECT DISTINCT id FROM 
+SELECT DISTINCT id FROM
     (
     SELECT id, Nachname, Vorname
     FROM Kreditoren
@@ -250,13 +250,13 @@ SELECT DISTINCT id FROM
         FROM Buchungen
         INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id
         INNER JOIN Kreditoren ON Vertraege.KreditorId = Kreditoren.id
-        WHERE (Buchungen.BuchungsArt = %1 OR Buchungen.BuchungsArt = %2) AND SUBSTR(Buchungen.Datum, 1, 4) = '%3' 
+        WHERE (Buchungen.BuchungsArt = %1 OR Buchungen.BuchungsArt = %2) AND SUBSTR(Buchungen.Datum, 1, 4) = '%3'
         UNION
         SELECT DISTINCT Kreditoren.Id AS kid
         FROM exBuchungen
         INNER JOIN exVertraege ON exBuchungen.VertragsId = exVertraege.id
         INNER JOIN Kreditoren ON exVertraege.KreditorId = Kreditoren.id
-        WHERE (exBuchungen.BuchungsArt = %1 OR exBuchungen.BuchungsArt = %2) AND SUBSTR(exBuchungen.Datum, 1, 4) = '%3' 
+        WHERE (exBuchungen.BuchungsArt = %1 OR exBuchungen.BuchungsArt = %2) AND SUBSTR(exBuchungen.Datum, 1, 4) = '%3'
         )
         ORDER BY Nachname ASC, Vorname ASC
     )

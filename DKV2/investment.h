@@ -15,7 +15,7 @@ struct investment
         double ZzglZins;
     };
 // interface
-    investment(qlonglong id =-1, const int interest =0, const QDate start =EndOfTheFuckingWorld,
+    investment(qlonglong id =SQLITE_invalidRowId, const int interest =0, const QDate start =EndOfTheFuckingWorld,
                const QDate end =EndOfTheFuckingWorld, const QString& type =QLatin1String(""), const bool state =true);
     QString toString() const;
     static const dbtable& getTableDef();

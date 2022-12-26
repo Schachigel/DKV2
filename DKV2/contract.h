@@ -68,27 +68,29 @@ struct contract
     friend bool operator!=(const contract& lhs, const contract& rhs);
 
     // construction
-    contract(const qlonglong CONTRACTid =-1, bool isTerminated =false);
-    void loadFromDb(const qlonglong id);
-    void loadExFromDb(const qlonglong id);
-    void initContractDefaults(const qlonglong creditorId =-1);
-    void initRandom(const qlonglong creditorId =-1);
+    contract(const tableindex_t CONTRACTid =SQLITE_invalidRowId, bool isTerminated =false);
+    void loadFromDb(const tableindex_t id);
+    void loadExFromDb(const tableindex_t id);
+    void initContractDefaults(const tableindex_t creditorId =SQLITE_invalidRowId);
+    void initRandom(const tableindex_t creditorId =SQLITE_invalidRowId);
 
     // getter & setter
-    void setId(qlonglong id) { td.setValue(qsl("id"), id);}
-    qlonglong id() const { return td.getValue(qsl("id")).toLongLong();}
-    QString id_aS()   const { return i2s(id());}
-    void setCreditorId(qlonglong kid) {td.setValue(fnKreditorId, kid);}
-    qlonglong creditorId() const{ return td.getValue(fnKreditorId).toLongLong();}
+    void setId(tableindex_t id) { td.setValue(qsl("id"), id);}
+    tableindex_t id() const { return td.getValue(qsl("id")).toLongLong();}
+    QString id_aS()   const { Q_ASSERT( id() >= SQLITE_minimalRowId); return i2s(id());}
+    void setCreditorId(tableindex_t kid) {td.setValue(fnKreditorId, kid);}
+    tableindex_t creditorId() const{ return td.getValue(fnKreditorId).toLongLong();}
+
     void setLabel(const QString &l) { td.setValue(fnKennung, l); }
     QString label() const { return td.getValue(fnKennung).toString();};
+
     void setInterestRate( const double percent) {
         td.setValue(fnZSatz, QVariant (qRound(percent * 100.)));
         if( percent == 0) td.setValue(fnThesaurierend, toInt(interestModel::zero));
     }
     double interestRate() const {
         QVariant p {td.getValue(fnZSatz)}; // stored as a int (100th percent)
-        return dbInterest2Interest (p.toInt());;
+        return dbInterest2Interest (p.toInt());
     }
     int dbInterest() const {
         return td.getValue(fnZSatz).toInt();
@@ -97,24 +99,32 @@ struct contract
         if( interestActive()) return interestRate();
         else return 0.;
     }
-    void setInvestment(qlonglong rId) { td.setValue(fnAnlagenId, (rId>0?QVariant(rId):QVariant()));}
-    qlonglong investment() const { return td.getValue(fnAnlagenId).toLongLong();}
+
+    void setInvestmentId(tableindex_t rId) { td.setValue(fnAnlagenId, (isValidRowId (rId)?QVariant(rId):QVariant()));}
+    tableindex_t investmentId() const { return td.getValue(fnAnlagenId).toLongLong();}
+
     void setPlannedInvest(const double d) { td.setValue(fnBetrag, ctFromEuro(d));}
     double plannedInvest() const { return euroFromCt( td.getValue(fnBetrag).toInt());}
+
     void setInterestModel( const interestModel b =interestModel::reinvest) {
         td.setValue(fnThesaurierend, toInt(b));
         if( b == interestModel::zero) td.setValue(fnZSatz, 0);
     }
     interestModel iModel() const { return interestModelFromInt(td.getValue(fnThesaurierend).toInt());}
+
     void setNoticePeriod(const int m) { td.setValue(fnKFrist, m); if( -1 not_eq m) setPlannedEndDate( EndOfTheFuckingWorld);}
     int noticePeriod() const { return td.getValue(fnKFrist).toInt();}
+
     bool hasEndDate() const {return -1 == td.getValue(fnKFrist);}
     void setPlannedEndDate( const QDate d) { td.setValue(fnLaufzeitEnde, d); if( d not_eq EndOfTheFuckingWorld) setNoticePeriod(-1);}
     QDate plannedEndDate() const { return td.getValue(fnLaufzeitEnde).toDate();}
+
     void setConclusionDate(const QDate d) { td.setValue(fnVertragsDatum, d);}
     QDate conclusionDate() const { return td.getValue(fnVertragsDatum).toDate();}
+
     void setInterestActive(bool active){ td.setValue(fnZAktiv, active);}
     bool interestActive() const { return td.getValue(fnZAktiv).toBool();}
+
     void setComment(const QString& q) {td.setValue(fnAnmerkung, q);}
     QString comment() const {return td.getValue(fnAnmerkung).toString();}
 
@@ -131,7 +141,7 @@ struct contract
     tableindex_t saveNewContract();
     bool updateComment(const QString&);
     bool updateTerminationDate(QDate termination, int noticePeriod);
-    bool updateInvestment(qlonglong id);
+    bool updateInvestment(tableindex_t id);
     bool deleteInactive();
 
     // contract activation
@@ -169,12 +179,8 @@ private:
     void reset() {initContractDefaults();}
 };
 
-// contract helper
-bool deleteContractFromDB(const qlonglong id);
-
-
 // test helper
-contract saveRandomContract(const qlonglong creditorId);
+contract saveRandomContract(const tableindex_t creditorId);
 void saveRandomContractPerCreditor();
 void saveRandomContracts(const int count);
 int activateAllContracts(int year);

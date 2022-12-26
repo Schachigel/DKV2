@@ -86,7 +86,7 @@ void contract::loadFromDb( qlonglong id)
     if (not td.setValues(rec))
         qCritical() << "contract from id could not be created";
 }
-void contract::loadExFromDb( qlonglong id)
+void contract::loadExFromDb(const tableindex_t id)
 {   LOG_CALL_W(i2s(id));
     isTerminated =true;
     QSqlRecord rec = executeSingleRecordSql(getTableDef_deletedContracts ().Fields(), qsl("id=%1").arg(id));
@@ -95,7 +95,7 @@ void contract::loadExFromDb( qlonglong id)
 }
 void contract::initContractDefaults( const qlonglong CREDITORid /*=-1*/)
 {
-    setId(-1);
+    setId(SQLITE_invalidRowId);
     setCreditorId(CREDITORid);
     setNoticePeriod(6);
     //setPlannedEndDate(EndOfTheFuckingWorld); - implicit
@@ -103,11 +103,11 @@ void contract::initContractDefaults( const qlonglong CREDITORid /*=-1*/)
     setConclusionDate(QDate::currentDate());
     setInterestRate(1.50);
     setPlannedInvest(1000000);
-    setInvestment(0);
+    setInvestmentId(SQLITE_invalidRowId);
     setInterestActive(true);
     isTerminated =false;
 }
-void contract::initRandom(qlonglong creditorId)
+void contract::initRandom(const tableindex_t creditorId)
 {
     static QRandomGenerator *rand = QRandomGenerator::system();
     setLabel(proposeContractLabel());
@@ -137,7 +137,7 @@ double contract::value(const QDate d) const
     // what is the value of the contract at a given time?
     QString where {qsl("%1=%3 AND %2<='%4'").arg(fn_bVertragsId, fn_bDatum)};
     where =where.arg(id_aS (), d.toString(Qt::ISODate));
-    QVariant v = executeSingleValueSql(qsl("SUM(Betrag)"), 
+    QVariant v = executeSingleValueSql(qsl("SUM(Betrag)"),
         isTerminated ? tn_ExBuchungen : tn_Buchungen, where);
     if( v.isValid())
         return euroFromCt(v.toInt());
@@ -179,8 +179,8 @@ const booking contract::latestBooking()
         RETURN_OK( booking(), qsl("latestBooking returns empty value"));
     }
     booking latestB(id(), bookingType(rec.value(fn_bBuchungsArt).toInt()), rec.value(fn_bDatum).toDate(), euroFromCt(rec.value(fn_bBetrag).toInt()));
-    RETURN_OK (latestB, qsl("Latest Booking:"), bookingTypeDisplayString(latestB.type), latestB.date.toString (Qt::ISODate),
-                         d2euro(latestB.amount), qsl("cId:"), i2s(latestB.contractId));
+    RETURN_OK (latestB, qsl("Latest Booking:"), qsl("Typ: "), bookingTypeDisplayString(latestB.type), qsl("/"), latestB.date.toString (Qt::ISODate), qsl("/"),
+                         d2euro(latestB.amount), qsl("/"), qsl("cId:"), i2s(latestB.contractId));
 }
 
 // write to db
@@ -209,7 +209,7 @@ bool contract::updateTerminationDate(QDate termination, int noticePeriod)
         RETURN_ERR(res, qsl("Sailed to update termination information"));
     }
 }
-bool contract::updateInvestment(qlonglong investmentId)
+bool contract::updateInvestment(tableindex_t investmentId)
 {
     RETURN_OK( td.updateValue(fnAnlagenId, investmentId, id()), qsl("Updated the contract investment ref"), i2s(investmentId));
 }
@@ -306,23 +306,23 @@ bool contract::needsAnnualSettlement(const QDate intendedNextBooking)
 {
     const booking lastB =latestBooking();
     if( lastB.type == bookingType::non) // inactive contract
-        RETURN_OK( false, __FUNCTION__, qsl("inactive contract: no annual settlement needed"));
+        RETURN_OK( false, qsl(__FUNCTION__), qsl("inactive contract: no annual settlement needed"));
 
     if(  lastB.date >= intendedNextBooking)
-        RETURN_OK( false, __FUNCTION__, qsl("Latest booking date too young for this settlement "),
+        RETURN_OK( false, qsl(__FUNCTION__), qsl("Latest booking date too young for this settlement "),
                    lastB.date.toString (Qt::ISODate));
     // annualInvestments are at the last day of the year
     // we need a settlement if the latest booking was in the last year
     // or it was the settlement of the last year
     if( lastB.date.year() == intendedNextBooking.year())
-        RETURN_OK( false, __FUNCTION__, qsl("intended Next booking is not in the same year as next booking "),
+        RETURN_OK( false, qsl(__FUNCTION__), qsl("intended Next booking is not in the same year as next booking "),
                    lastB.date.toString (Qt::ISODate), intendedNextBooking.toString (Qt::ISODate));
 
     if( lastB.date.addDays(1).year() == intendedNextBooking.year())
-        RETURN_OK( false, __FUNCTION__, qsl("intended Next booking is on jan 1st of next year after latest booking "),
+        RETURN_OK( false, qsl(__FUNCTION__), qsl("intended Next booking is on jan 1st of next year after latest booking "),
                    lastB.date.toString (Qt::ISODate), intendedNextBooking.toString (Qt::ISODate));
 
-    RETURN_OK( true, __FUNCTION__, qsl("OK"));
+    RETURN_OK( true, qsl(__FUNCTION__), qsl("OK"));
 }
 int contract::annualSettlement( int year)
 {   LOG_CALL_W(i2s(year));
@@ -468,9 +468,8 @@ bool contract::finalize(bool simulate, const QDate finDate,
         RETURN_ERR( false, qsl("invalid date to finalize contract"));
     if( finDate < lastB.date)
         RETURN_ERR( false, qsl("finalize date before last booking"));
-    if( id() == -1)
+    if( not isValidRowId(id()))
         RETURN_ERR( false, qsl("invalid contract id"));
-
     if( not initialBookingReceived())
         RETURN_ERR( false, qsl("could not finalize inactive contract"));
 
@@ -495,7 +494,7 @@ bool contract::finalize(bool simulate, const QDate finDate,
     finInterest = ZinsesZins(actualInterestRate(), preFinValue, lastB.date, finDate);
     finPayout = value() +finInterest;
     if( simulate) {
-        qInfo() << "sumulation will stop here";
+        qInfo() << "simulation will stop here";
         executeSql_wNoRecords(qsl("ROLLBACK"));
         loadFromDb(id());
         return  true;
@@ -729,7 +728,7 @@ bool operator!=(const contract& lhs, const contract& rhs)
     return not (lhs==rhs);
 }
 
-contract saveRandomContract(qlonglong creditorId)
+contract saveRandomContract(const tableindex_t creditorId)
 {   LOG_CALL;
     contract c;
     c.initRandom(creditorId);

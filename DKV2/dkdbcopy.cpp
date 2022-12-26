@@ -17,7 +17,7 @@ QString moveToPreConversionCopy( const QString& file)
     Q_ASSERT( newFile.size() >0);
     QFile f(fi.absoluteFilePath ());
     if( f.rename( newFile)){
-        RETURN_OK( newFile, __FUNCTION__, file, newFile);
+        RETURN_OK( newFile, qsl(__FUNCTION__), file, newFile);
     }
     else {
         qCritical() << "file rename failed " << f.error() << ": " << f.errorString();
@@ -61,7 +61,7 @@ bool copy_TableContent_byRecord( const QString& srcTbl, const QString& dstTbl, c
     }
     while(q.next()) {
         TableDataInserter tdi(dstTbl, q.record());
-        if( tdi.InsertOrReplaceData(db) == -1) {
+        if( tdi.InsertOrReplaceData(db) == SQLITE_invalidRowId) {
             qCritical() << "could not insert Date to converted db" << tdi.getRecord();
             return false;
         }
@@ -132,7 +132,7 @@ bool copy_mangledCreditors(const QSqlDatabase& db =QSqlDatabase::database())
         tdi.setValue(creditor::fnBIC, "");
         tdi.setValue(creditor::fnBuchungskonto, "");
 
-        if( tdi.InsertData_noAuto() == -1)
+        if( tdi.InsertData_noAuto() == SQLITE_invalidRowId)
             RETURN_ERR(false, qsl("Error inserting Data into deperso.Copy Table"), q.lastError ().text ());
     }
     return true;

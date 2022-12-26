@@ -73,7 +73,7 @@ void newCreditorAndContract() {
   cont.setCreditorId(wiz.cred.id());
   cont.setPlannedInvest(QLocale().toDouble(wiz.field(pnAmount).toString()));
   cont.setInterestRate(wiz.interest / 100.);
-  cont.setInvestment(wiz.investmentId);
+  cont.setInvestmentId(wiz.investmentId);
   cont.setLabel(wiz.field(pnLabel).toString());
   cont.setConclusionDate(wiz.field(pnCDate).toDate());
   cont.setNoticePeriod(wiz.noticePeriod);
@@ -81,7 +81,7 @@ void newCreditorAndContract() {
   cont.setInterestModel(wiz.iPaymentMode);
   cont.setComment(wiz.field(pnContractComment).toString());
   cont.setInterestActive(not wiz.field(pnIPaymentDelayed).toBool());
-  if (-1 == cont.saveNewContract()) {
+  if (SQLITE_invalidRowId == cont.saveNewContract()) {
     qCritical() << "New contract could not be saved";
     QMessageBox::critical(
         getMainWindow(), qsl("Fehler"),

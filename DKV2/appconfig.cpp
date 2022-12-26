@@ -146,7 +146,7 @@ QVariantMap getMetaTableAsMap(const QSqlDatabase &db)
     QVariantMap vm;
     QVector<QSqlRecord> table;
     if( not executeSql(qsl("SELECT * FROM Meta"), table, db))
-        RETURN_ERR(QVariantMap(), __FUNCTION__, qsl("Failed to read meta table"));
+        RETURN_ERR(QVariantMap(), qsl(__FUNCTION__), qsl("Failed to read meta table"));
 
     QString name, value;
     QRegularExpression re("[/\\.]");
