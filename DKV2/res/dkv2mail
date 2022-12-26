@@ -2,7 +2,7 @@
 # Dies ist die Linux-Version für das Senden von eMails
 # Es wird das Programm mailx aus den mailutils genutzt.
 
-cat "$4" | mailx -aFrom:mymail@mailbox.org -s "$2" -A "$3" "$1"
+cat "$4" | mailx -aFrom:mymail@mailbox.org -b mymail@mailbox.org -s "$2" -A "$3" "$1"
 if [ $? -ne 0 ]
 then
     echo "############### Fehler beim Senden: $1"

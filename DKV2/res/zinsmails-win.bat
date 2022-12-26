@@ -18,7 +18,7 @@ echo.
 echo Die Direktkredit-Verwaltung
 ) >mailtext.txt
 
-./vorlagen/dkv2mail "{{Email}}" "Zinsabrechnung" "{{Attachment}}" mailtext.txt
+.\vorlagen\dkv2mail "{{Email}}" "Zinsabrechnung" "{{Attachment}}" mailtext.txt
 
 {{/Email}}
 {{^Email}}
