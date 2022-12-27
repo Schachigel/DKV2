@@ -486,8 +486,11 @@ void annualSettlementLetters() {
       printData[qsl("mitZins")] = payedInterest + interestCredit > 0.;
       printData[qsl("SumAuszahlung")] =
           interestForPayout == 0. ? "" : d2euro(interestForPayout);
-      printData[qsl("SumJahresZinsen")] = annualInterest;
-      
+      printData[qsl("dSumJahresZinsen")] = annualInterest;
+
+      printData[qsl("SumJahresZinsen")] =
+          annualInterest == 0. ? "" : d2euro(annualInterest);
+
       printData[qsl("sonstigerZins")] =
           otherInterest == 0. ? "" : d2euro(otherInterest);
 
@@ -506,17 +509,14 @@ void annualSettlementLetters() {
       currCreditorMap[qsl("Vertraege")] = vl;
       currCreditorMap["SumBetrag"] = d2euro(totalBetrag);
       currCreditorMap[qsl("Attachment")] = fileName;
-      if (annualInterest > 0.) {
-        currCreditorMap[qsl("SumJahresZinsen")] = d2euro(annualInterest);
-      }
+      currCreditorMap[qsl("SumJahresZinsen")] = 
+          annualInterest == 0. ? "" : d2euro(annualInterest);
 
-      if (otherInterest > 0.) {
-        currCreditorMap[qsl("SumSonstigeZinsen")] = d2euro(otherInterest);
-      }
+      currCreditorMap[qsl("SumSonstigeZinsen")] = 
+          otherInterest == 0. ? "" : d2euro(otherInterest);
 
-      if (interestCredit > 0.) {
-        currCreditorMap[qsl("SumZinsgutschrift")] = d2euro(interestCredit);
-      }
+      currCreditorMap[qsl("SumZinsgutschrift")] = 
+          interestCredit == 0. ? "" : d2euro(interestCredit);
 
       if (currCreditorMap[qsl("Email")] == "")
       {
@@ -526,6 +526,9 @@ void annualSettlementLetters() {
       if (interestForPayout > 0.) {
         currCreditorMap[qsl("SumAuszahlung")] = d2euro(interestForPayout);
         Auszahlungen.append(currCreditorMap);
+      }
+      else {
+        currCreditorMap[qsl("SumAuszahlung")] = "";
       }
 
       annualInterest2 += annualInterest;
