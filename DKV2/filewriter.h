@@ -3,7 +3,7 @@
 
 
 
-bool extractTemplateFileFromResource(const QString& path, const QString& file, const QString& outname = NULL);
+bool extractTemplateFileFromResource(const QString& path, const QString& file, const QString& outname =QString());
 
 QString renderTemplate(const QString &templateName, const QVariantMap &data);
 

@@ -7,7 +7,7 @@
 
 bool extractTemplateFileFromResource(const QString& path, const QString& file, const QString& outname)
 {   LOG_CALL_W(file);
-    QFileInfo fi( QDir(path), outname == NULL ? file : outname);
+    QFileInfo fi( QDir(path), outname.isEmpty() ? file : outname);
     if( fi.exists ())
         return true;
 
