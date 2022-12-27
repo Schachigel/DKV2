@@ -128,7 +128,7 @@ int getNbrOfExBookings(const qlonglong contract, const QDate from, const QDate t
 
 QVector<booking> bookingsFromDB(const QString& where, const QString& order ="", bool terminated =false)
 {
-    qInfo().noquote () << qsl(__FUNCTION__) << qsl(" Where: %1\n").arg( where) << qsl("Order: %1\n").arg( order) << qsl("terminated: %1").arg((terminated ? "true" : "false"));
+    qInfo().noquote () << QString(__FUNCTION__) << qsl(" Where: %1\n").arg( where) << qsl("Order: %1\n").arg( order) << qsl("terminated: %1").arg((terminated ? "true" : "false"));
     QVector<QSqlRecord> records = terminated ?
                executeSql( booking::getTableDef_deletedBookings ().Fields (), where, order)
              : executeSql( booking::getTableDef().Fields(), where, order);

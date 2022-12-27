@@ -306,23 +306,23 @@ bool contract::needsAnnualSettlement(const QDate intendedNextBooking)
 {
     const booking lastB =latestBooking();
     if( lastB.type == bookingType::non) // inactive contract
-        RETURN_OK( false, qsl(__FUNCTION__), qsl("inactive contract: no annual settlement needed"));
+        RETURN_OK( false, QString(__FUNCTION__), qsl("inactive contract: no annual settlement needed"));
 
     if(  lastB.date >= intendedNextBooking)
-        RETURN_OK( false, qsl(__FUNCTION__), qsl("Latest booking date too young for this settlement "),
+        RETURN_OK( false, QString(__FUNCTION__), qsl("Latest booking date too young for this settlement "),
                    lastB.date.toString (Qt::ISODate));
     // annualInvestments are at the last day of the year
     // we need a settlement if the latest booking was in the last year
     // or it was the settlement of the last year
     if( lastB.date.year() == intendedNextBooking.year())
-        RETURN_OK( false, qsl(__FUNCTION__), qsl("intended Next booking is not in the same year as next booking "),
+        RETURN_OK( false, QString(__FUNCTION__), qsl("intended Next booking is not in the same year as next booking "),
                    lastB.date.toString (Qt::ISODate), intendedNextBooking.toString (Qt::ISODate));
 
     if( lastB.date.addDays(1).year() == intendedNextBooking.year())
-        RETURN_OK( false, qsl(__FUNCTION__), qsl("intended Next booking is on jan 1st of next year after latest booking "),
+        RETURN_OK( false, QString(__FUNCTION__), qsl("intended Next booking is on jan 1st of next year after latest booking "),
                    lastB.date.toString (Qt::ISODate), intendedNextBooking.toString (Qt::ISODate));
 
-    RETURN_OK( true, qsl(__FUNCTION__), qsl("OK"));
+    RETURN_OK( true, QString(__FUNCTION__), qsl("OK"));
 }
 int contract::annualSettlement( int year)
 {   LOG_CALL_W(i2s(year));

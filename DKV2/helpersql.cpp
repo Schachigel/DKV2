@@ -151,19 +151,19 @@ bool verifyTable(const dbtable& tableDef, const QSqlDatabase &db)
 {
     QSqlRecord recordFromDb = db.record(tableDef.Name());
     if( recordFromDb.count() not_eq tableDef.Fields().count())
-        RETURN_OK( false, qsl(__FUNCTION__), tableDef.Name(), qsl("number of fields mismatch: %1 vs. %2")
+        RETURN_OK( false, QString(__FUNCTION__), tableDef.Name(), qsl("number of fields mismatch: %1 vs. %2")
                .arg( i2s(tableDef.Fields().count()), i2s(recordFromDb.count())));
 
     for( auto& field: tableDef.Fields()) {
         QSqlField FieldFromDb = recordFromDb.field(field.name());
         if( not FieldFromDb.isValid())
-            RETURN_OK( false, qsl(__FUNCTION__), qsl("failed: table exists but field is missing"), field.name());
+            RETURN_OK( false, QString(__FUNCTION__), qsl("failed: table exists but field is missing"), field.name());
 
         if( not VarTypes_share_DbType(field.type(), recordFromDb.field(field.name()).type()))
-            RETURN_OK( false, qsl(__FUNCTION__), qsl("failed: field "), field.name (), qsl(" type mismatch: %1 vs. %2")
+            RETURN_OK( false, QString(__FUNCTION__), qsl("failed: field "), field.name (), qsl(" type mismatch: %1 vs. %2")
                        .arg(field.type (), recordFromDb.field(field.name()).type()));
     }
-    RETURN_OK( true, qsl(__FUNCTION__), qsl("verified table %1").arg(tableDef.Name ()));
+    RETURN_OK( true, QString(__FUNCTION__), qsl("verified table %1").arg(tableDef.Name ()));
 }
 bool ensureTable( const dbtable& table,const QSqlDatabase& db)
 {   LOG_CALL_W(table.Name());
@@ -191,7 +191,7 @@ void sqlSnippetsFromFieldlist(const QVector<dbfield>& fields, QSet<QString>& use
 {
     for( const auto& f : qAsConst(fields)) {
         if( f.tableName().isEmpty() or f.name().isEmpty())
-            qCritical().noquote () << qsl(__FUNCTION__) << ": missing table or field name";
+            qCritical().noquote () << QString(__FUNCTION__) << ": missing table or field name";
         maintainFieldList (f.name(), f.tableName (), FieldList);
 
         if( usedTables.contains(f.tableName()))
@@ -207,10 +207,10 @@ QSqlField adjustTypeOfField(const QSqlField& f, QVariant::Type t)
     QVariant tmpV = f.value();
     tmpV.convert(t); // adjust content of field to expected type
     if( f.value().isNull ()) {
-        qInfo() << qsl(__FUNCTION__) << "incoming value is NULL" << f;
+        qInfo() << QString(__FUNCTION__) << "incoming value is NULL" << f;
     } else {
         if( tmpV.isNull ()){
-            qCritical() << qsl(__FUNCTION__) << "field conversion failed" << f << " -> " << tmpV;
+            qCritical() << QString(__FUNCTION__) << "field conversion failed" << f << " -> " << tmpV;
             Q_ASSERT( "data field conversion should not fail");
         }
     }
@@ -221,7 +221,7 @@ QSqlField adjustTypeOfField(const QSqlField& f, QVariant::Type t)
 QSqlRecord adjustSqlRecordTypesToDbFieldTypes(const QVector<dbfield>& fields, const QSqlRecord& record)
 {
     if( fields.size () != record.count ())
-        RETURN_ERR(QSqlRecord(), qsl(__FUNCTION__), qsl("Anzahl der Felder stimmt nicht überein"));
+        RETURN_ERR(QSqlRecord(), QString(__FUNCTION__), qsl("Anzahl der Felder stimmt nicht überein"));
 
     QSqlRecord result;
     for( const auto& field: qAsConst(fields))
@@ -253,7 +253,7 @@ bool bindNamedParams(QSqlQuery &q, const QVector<QPair<QString, QVariant>>& para
         QString paramName =param.first;
         QVariant paramValue =param.second;
         if( paramName.isEmpty ())
-            RETURN_ERR( false, qsl(__FUNCTION__), qsl("Empty param name"));
+            RETURN_ERR( false, QString(__FUNCTION__), qsl("Empty param name"));
         q.bindValue (paramName, paramValue);
     }
     if( params.size () not_eq q.boundValues ().size())
@@ -276,7 +276,7 @@ bool bindPositionalParams(QSqlQuery& q , const QVector<QVariant> params)
             RETURN_ERR(false, qsl("invalid sql parameter"), param.toString ());
     } // eo for
     if( q.boundValues ().size () not_eq params.size ())
-        RETURN_ERR(false, qsl(__FUNCTION__), qsl("not all parameters were consumed by the query"));
+        RETURN_ERR(false, QString(__FUNCTION__), qsl("not all parameters were consumed by the query"));
     if( q.boundValues ().size()){
         qInfo() << "bound values: " << /*QStringList*/q.boundValues ();
         return true;
@@ -313,7 +313,7 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
     QString sql = selectQueryFromFields(fields, where, order);
     QVector<QSqlRecord> tmpResult;
     if( not executeSql( sql, tmpResult, db))
-        RETURN_ERR(QVector<QSqlRecord>(), qsl(__FUNCTION__), qsl("execSql failed"));
+        RETURN_ERR(QVector<QSqlRecord>(), QString(__FUNCTION__), qsl("execSql failed"));
     QVector<QSqlRecord> result;
     for( const QSqlRecord& record: qAsConst(tmpResult))
         // adjust the database types to the expected types
@@ -361,7 +361,7 @@ QSqlRecord executeSingleRecordSql(const QString& sql, const QSqlDatabase& db)
         if( records.isEmpty() or records.size () > 1)
             return QSqlRecord(); // error handling in called function
         else
-            RETURN_OK( records[0], qsl(__FUNCTION__), qsl("returned one value: %1").arg(records[0].value (0).toString ()));
+            RETURN_OK( records[0], QString(__FUNCTION__), qsl("returned one value: %1").arg(records[0].value (0).toString ()));
     }
     else
         return QSqlRecord(); // error handling in called function
@@ -390,19 +390,19 @@ QVariant executeSingleValueSql(const QString& sql, const QVector<QVariant> param
     if( executeSql(sql, params, result, db))
     {
         if( result.count() > 1)
-            RETURN_ERR( QVariant(), qsl(__FUNCTION__), qsl("Query returned too many records"));
+            RETURN_ERR( QVariant(), QString(__FUNCTION__), qsl("Query returned too many records"));
         if( result.isEmpty())
-            RETURN_OK( QVariant(), qsl(__FUNCTION__), qsl("Query returned no record"));
-        RETURN_OK( result[0].value(0), qsl(__FUNCTION__));
+            RETURN_OK( QVariant(), QString(__FUNCTION__), qsl("Query returned no record"));
+        RETURN_OK( result[0].value(0), QString(__FUNCTION__));
     }
     else
-        RETURN_ERR( QVariant(), qsl(__FUNCTION__), qsl("Query execution failed"));
+        RETURN_ERR( QVariant(), QString(__FUNCTION__), qsl("Query execution failed"));
 }
 
 QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where, const QSqlDatabase& db)
 {
     if( fieldName.isEmpty() or tableName.isEmpty ())
-        RETURN_ERR(QVariant(), qsl(__FUNCTION__), qsl("invalid field- or tablename %1, %2").arg( fieldName, tableName));
+        RETURN_ERR(QVariant(), QString(__FUNCTION__), qsl("invalid field- or tablename %1, %2").arg( fieldName, tableName));
     QString sql = qsl("SELECT %1 FROM %2").arg( fieldName, tableName);
     if( where.size())
         sql += (qsl(" WHERE %1").arg(where));
@@ -411,15 +411,15 @@ QVariant executeSingleValueSql(const QString& fieldName, const QString& tableNam
 QVariant executeSingleValueSql(const dbfield& field, const QString& where, const QSqlDatabase& db)
 {
     if( field.name().isEmpty() or field.tableName().isEmpty())
-        RETURN_ERR( QVariant(), qsl(__FUNCTION__), qsl("invalid parameters"));
+        RETURN_ERR( QVariant(), QString(__FUNCTION__), qsl("invalid parameters"));
 
     QVariant result = executeSingleValueSql(field.name(), field.tableName(), where, db);
 
     if( not result.isValid())
-        RETURN_OK( result, qsl(__FUNCTION__), qsl("found no result"));
+        RETURN_OK( result, QString(__FUNCTION__), qsl("found no result"));
 
     if(result.convert(field.type()))
-        RETURN_OK( result, qsl(__FUNCTION__), qsl("single valid value found"));
+        RETURN_OK( result, QString(__FUNCTION__), qsl("single valid value found"));
     else
         RETURN_ERR( QVariant(), qsl("executeSingleValueSql(): variant type conversion failed"));
 }
@@ -436,7 +436,7 @@ QVector<QVariant> executeSingleColumnSql( const dbfield& dbField, const QString&
 
     QVector<QSqlRecord> queryReturn;
     if( not executeSql(sql, queryReturn))
-        RETURN_ERR(QVector<QVariant>(), qsl(__FUNCTION__), qsl("Query execution failed"));
+        RETURN_ERR(QVector<QVariant>(), QString(__FUNCTION__), qsl("Query execution failed"));
 
     QVector<QVariant> result;
     for( const QSqlRecord& record: queryReturn)

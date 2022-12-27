@@ -250,7 +250,7 @@ int createNewInvestmentsFromContracts( bool fortlaufend)
     QString sql{qsl("SELECT ZSatz, Vertragsdatum FROM Vertraege WHERE AnlagenId IS NULL OR AnlagenId <= 0 ORDER BY Vertragsdatum ASC ")};
     QVector<QSqlRecord> res;
     if( not executeSql (sql, res))
-        RETURN_ERR( -1, qsl(__FUNCTION__), qsl("Info aus Verträgen konnte nicht gelesen werden"));
+        RETURN_ERR( -1, QString(__FUNCTION__), qsl("Info aus Verträgen konnte nicht gelesen werden"));
 
     int ret =0;
     for( const QSqlRecord& rec : qAsConst(res)) {
@@ -269,7 +269,7 @@ int automatchInvestmentsToContracts()
     QString sql{qsl("SELEcT id, ZSatz, Vertragsdatum, AnlagenId FROM Vertraege WHERE AnlagenId =0 OR AnlagenId IS NULL")};
     QVector<QSqlRecord> res;
     if( not executeSql (sql, res))
-        RETURN_ERR( -1, qsl(__FUNCTION__), qsl("Info aus Verträgen konnte nicht gelesen werden"));
+        RETURN_ERR( -1, QString(__FUNCTION__), qsl("Info aus Verträgen konnte nicht gelesen werden"));
 
     int successcount =0;
     for( const QSqlRecord& rec : qAsConst(res)) {

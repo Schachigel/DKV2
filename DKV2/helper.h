@@ -5,6 +5,7 @@
 
 
 #define qsl(x) QStringLiteral(x)
+
 inline const QVariant emptyStringV {""}; // keep the qsl to force the variant to type String!
 inline QString singleQuoted(const QString& s) { return qsl("'%1'").arg(s);}
 

@@ -17,7 +17,7 @@ QString moveToPreConversionCopy( const QString& file)
     Q_ASSERT( newFile.size() >0);
     QFile f(fi.absoluteFilePath ());
     if( f.rename( newFile)){
-        RETURN_OK( newFile, qsl(__FUNCTION__), file, newFile);
+        RETURN_OK( newFile, QString(__FUNCTION__), file, newFile);
     }
     else {
         qCritical() << "file rename failed " << f.error() << ": " << f.errorString();
