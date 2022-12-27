@@ -13,6 +13,7 @@
         <file>res/zinsmails.bat</file>
         <file>res/zinsmails-win.bat</file>
         <file>res/zinsmails-linux.bat</file>
+        <file>res/zinsbuchungen.csv</file>
         <file>res/dkv2mail.bat</file>
         <file>res/dkv2mail</file>
         <file>res/endabrechnung.html</file>

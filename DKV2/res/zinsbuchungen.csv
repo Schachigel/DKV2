@@ -1,0 +1,2 @@
+{{#Kreditoren}}{{#Vertraege}}{{#JahresZinsen}}12;7321;;;;;{{Buchungskonto}};{{dJahresZinsen}};{{dJahresZinsen}};;;;31.12.{{Zinsjahr}};;;;;Zinsen {{Zinsjahr}} {{Vorname}} {{Nachname}} {{VertragsNr}}
+{{/JahresZinsen}}{{/Vertraege}}{{/Kreditoren}}

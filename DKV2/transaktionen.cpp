@@ -344,7 +344,8 @@ void createInitialLetterTemplates() {
   extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.css"));
   extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.html"));
   extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsliste.html"));
-  #ifdef Q_OS_WIN
+  extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbuchungen.csv"));
+#ifdef Q_OS_WIN
   extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsmails-win.bat"), qsl("zinsmails.bat"));
   #else
   extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsmails-linux.bat"), qsl("zinsmails.bat"));
@@ -523,20 +524,6 @@ void annualSettlementLetters() {
     }
     /////////////////////////////////////////////////
   }
-  // Create the eMail Batch file.
-  printData[qsl("Kreditoren")] = Kreditoren;
-  printData[qsl("totalBetrag2")] = d2euro(totalBetrag2);
-  printData[qsl("ausbezahlterZins2")] = d2euro(interestForPayout2);
-
-  writeRenderedTemplate(
-      qsl("zinsmails.bat"),
-      qsl("zinsmails").append(i2s(yearOfSettlement)).append(qsl(".bat")),
-      printData);
-
-  savePdfFromHtmlTemplate(
-      qsl("zinsliste.html"),
-      qsl("Zinsliste-").append(i2s(yearOfSettlement)).append(qsl(".pdf")),
-      printData);
 
   // Create the eMail Batch file.
   printData[qsl("Kreditoren")] = Kreditoren;
@@ -551,9 +538,16 @@ void annualSettlementLetters() {
       qsl("zinsmails").append(i2s(yearOfSettlement)).append(qsl(".bat")),
       printData);
 
+  // Create the list of yearly bookings 
   savePdfFromHtmlTemplate(
       qsl("zinsliste.html"),
       qsl("Zinsliste-").append(i2s(yearOfSettlement)).append(qsl(".pdf")),
+      printData);
+
+  // Create the csv of annual interest bookings
+  writeRenderedTemplate(
+      qsl("zinsbuchungen.csv"),
+      qsl("zinsbuchungen").append(i2s(yearOfSettlement)).append(qsl(".csv")),
       printData);
 
   bc.finish();
