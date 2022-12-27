@@ -449,7 +449,9 @@ void annualSettlementLetters() {
   double annualInterest2 = 0;
   double otherInterest2 = 0;
   double interestForPayout2 = 0.;
-  for (const auto &cred : qAsConst(creditorIds)) {
+  double interestCredit2 = 0. ;
+  for (const auto &cred : qAsConst(creditorIds))
+  {
     creditor credRecord(cred);
     QVariantMap currCreditorMap = credRecord.getVariantMap();
     printData["creditor"] = currCreditorMap;
@@ -458,6 +460,7 @@ void annualSettlementLetters() {
     double otherInterest = 0.;
     double annualInterest = 0.;
     double interestForPayout = 0.;
+    double interestCredit = 0.;
     double totalBetrag = 0;
     /* get active contracts */
     vl = getContractList(cred, QDate(yearOfSettlement, 1, 1),
@@ -473,17 +476,23 @@ void annualSettlementLetters() {
         otherInterest += vm["dSonstigeZinsen"].toDouble();
         annualInterest += vm["dJahresZinsen"].toDouble();
         interestForPayout += vm["dAuszahlung"].toDouble();
+        interestCredit += vm["dZinsgutschrift"].toDouble();
         totalBetrag += vm["dEndBetrag"].toDouble();
       }
-      payedInterest = otherInterest + annualInterest;
-      printData[qsl("ausbezahlterZins")] = d2euro(payedInterest);
+      payedInterest = otherInterest + interestForPayout;
+      printData[qsl("ausbezahlterZins")] = 
+          payedInterest == 0. ? "" : d2euro(payedInterest);
       printData[qsl("mitAusbezahltemZins")] = payedInterest > 0.;
+      printData[qsl("mitZins")] = payedInterest + interestCredit > 0.;
       printData[qsl("SumAuszahlung")] =
           interestForPayout == 0. ? "" : d2euro(interestForPayout);
       printData[qsl("SumJahresZinsen")] = annualInterest;
-
+      
       printData[qsl("sonstigerZins")] =
           otherInterest == 0. ? "" : d2euro(otherInterest);
+
+      printData["SumZinsgutschrift"] = 
+          interestCredit == 0. ? "" : d2euro(interestCredit);
 
       printData[qsl("Vertraege")] = vl;
 
@@ -505,7 +514,12 @@ void annualSettlementLetters() {
         currCreditorMap[qsl("SumSonstigeZinsen")] = d2euro(otherInterest);
       }
 
-      if (currCreditorMap[qsl("Email")] == "") {
+      if (interestCredit > 0.) {
+        currCreditorMap[qsl("SumZinsgutschrift")] = d2euro(interestCredit);
+      }
+
+      if (currCreditorMap[qsl("Email")] == "")
+      {
         currCreditorMap.remove(qsl("Email"));
       }
 
@@ -517,6 +531,7 @@ void annualSettlementLetters() {
       annualInterest2 += annualInterest;
       otherInterest2 += otherInterest;
       interestForPayout2 += interestForPayout;
+      interestCredit2 += interestCredit;
       totalBetrag2 += totalBetrag;
       Kreditoren.append(currCreditorMap);
       /////////////////////////////////////////////////
@@ -532,6 +547,7 @@ void annualSettlementLetters() {
   printData[qsl("Sum2JahresZinsen")] = d2euro(annualInterest2);
   printData[qsl("Sum2SonstigeZinsen")] = d2euro(otherInterest2);
   printData[qsl("Sum2Auszahlung")] = d2euro(interestForPayout2);
+  printData[qsl("Sum2Zinsgutschrift")] = d2euro(interestCredit2);
 
   writeRenderedTemplate(
       qsl("zinsmails.bat"),

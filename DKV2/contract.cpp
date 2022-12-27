@@ -646,6 +646,7 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
     v["dSonstigeZinsen"] = getBookingsSum(bookVector, bookingType::reInvestInterest);
     v["dJahresZinsen"] = getBookingsSum(bookVector, bookingType::annualInterestDeposit);
     v["dAuszahlung"] = 0.;
+    v["dZinsgutschrift"] = 0.;
     if (v["dSonstigeZinsen"] != 0.)
         v["SonstigeZinsen"] = d2euro(v["dSonstigeZinsen"].toDouble());
 
@@ -654,6 +655,10 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
         if (iModel() == interestModel::payout) {
             v["dAuszahlung"] = v["dJahresZinsen"];
             v["Auszahlung"] = v["JahresZinsen"];
+        }
+        else {
+            v["dZinsgutschrift"] = v["dJahresZinsen"];
+            v["Zinsgutschrift"] = v["Zinsgutschrift"];
         }
     }
 
