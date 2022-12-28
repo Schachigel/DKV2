@@ -108,7 +108,7 @@ Empfehle uns daher bitte weiter an Freund*innen, Bekannte und Verwandte!
     <td>
     </tr>
   </table>
-{{#mitAusbezahltemZins}}
+{{#mitZins}}
 <p style="page-break-after: always;">&nbsp;</p>
     <table width=98%>
         <tr>
@@ -145,7 +145,11 @@ Empfehle uns daher bitte weiter an Freund*innen, Bekannte und Verwandte!
     Sehr geehrte Damen und Herren,
     <p>{{creditor.Vorname}} {{creditor.Nachname}} hat der {{meta.gmbhaddress1}} einen zinsgünstigen Direktkredit zur Unterstützung des sozialen, selbstorganisierten Miethausprojekts
     {{meta.gmbhprojekt}} gewährt.
-    Die Zinsen für das Jahr {{Zinsjahr}} in Höhe von {{ausbezahlterZins}} Euro wurden ausbezahlt.
+    Für das Jahr {{Zinsjahr}} wurden Zinsen<br/> 
+    {{#ausbezahlterZins}}in Höhe von {{ausbezahlterZins}} ausbezahlt{{^SumZinsgutschrift}}.{{/SumZinsgutschrift}}<br/>{{/ausbezahlterZins}}
+    {{#SumZinsgutschrift}}in Höhe von {{SumZinsgutschrift}} gutgeschrieben.{{/SumZinsgutschrift}}
+    
+
 <p><p>Mit freundlichen Grüßen<br>
 <p>{{meta.gmbhdkv}}<p>
 <small>DK Verwaltung<p></small>
@@ -159,7 +163,7 @@ Empfehle uns daher bitte weiter an Freund*innen, Bekannte und Verwandte!
     </tr>
   </table>
     </div>
-{{/mitAusbezahltemZins}}
+{{/mitZins}}
 
 </body>
 

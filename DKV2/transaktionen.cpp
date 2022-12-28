@@ -346,7 +346,12 @@ void createInitialLetterTemplates() {
   extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.css"));
   extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.html"));
   extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsliste.html"));
-  extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsmails.bat"));
+  extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbuchungen.csv"));
+#ifdef Q_OS_WIN
+  extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsmails-win.bat"), qsl("zinsmails.bat"));
+  #else
+  extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsmails-linux.bat"), qsl("zinsmails.bat"));
+  #endif
   extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("dkv2mail.bat"));
   extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("dkv2mail"));
   extractTemplateFileFromResource(vorlagenVerzeichnis,
@@ -446,7 +451,9 @@ void annualSettlementLetters() {
   double annualInterest2 = 0;
   double otherInterest2 = 0;
   double interestForPayout2 = 0.;
-  for (const auto &cred : qAsConst(creditorIds)) {
+  double interestCredit2 = 0. ;
+  for (const auto &cred : qAsConst(creditorIds))
+  {
     creditor credRecord(cred);
     QVariantMap currCreditorMap = credRecord.getVariantMap();
     printData["creditor"] = currCreditorMap;
@@ -455,6 +462,7 @@ void annualSettlementLetters() {
     double otherInterest = 0.;
     double annualInterest = 0.;
     double interestForPayout = 0.;
+    double interestCredit = 0.;
     double totalBetrag = 0;
     /* get active contracts */
     vl = getContractList(cred, QDate(yearOfSettlement, 1, 1),
@@ -470,17 +478,26 @@ void annualSettlementLetters() {
         otherInterest += vm["dSonstigeZinsen"].toDouble();
         annualInterest += vm["dJahresZinsen"].toDouble();
         interestForPayout += vm["dAuszahlung"].toDouble();
+        interestCredit += vm["dZinsgutschrift"].toDouble();
         totalBetrag += vm["dEndBetrag"].toDouble();
       }
-      payedInterest = otherInterest + annualInterest;
-      printData[qsl("ausbezahlterZins")] = d2euro(payedInterest);
+      payedInterest = otherInterest + interestForPayout;
+      printData[qsl("ausbezahlterZins")] = 
+          payedInterest == 0. ? "" : d2euro(payedInterest);
       printData[qsl("mitAusbezahltemZins")] = payedInterest > 0.;
+      printData[qsl("mitZins")] = payedInterest + interestCredit > 0.;
       printData[qsl("SumAuszahlung")] =
           interestForPayout == 0. ? "" : d2euro(interestForPayout);
-      printData[qsl("SumJahresZinsen")] = annualInterest;
+      printData[qsl("dSumJahresZinsen")] = annualInterest;
+
+      printData[qsl("SumJahresZinsen")] =
+          annualInterest == 0. ? "" : d2euro(annualInterest);
 
       printData[qsl("sonstigerZins")] =
           otherInterest == 0. ? "" : d2euro(otherInterest);
+
+      printData["SumZinsgutschrift"] = 
+          interestCredit == 0. ? "" : d2euro(interestCredit);
 
       printData[qsl("Vertraege")] = vl;
 
@@ -494,15 +511,17 @@ void annualSettlementLetters() {
       currCreditorMap[qsl("Vertraege")] = vl;
       currCreditorMap["SumBetrag"] = d2euro(totalBetrag);
       currCreditorMap[qsl("Attachment")] = fileName;
-      if (annualInterest > 0.) {
-        currCreditorMap[qsl("SumJahresZinsen")] = d2euro(annualInterest);
-      }
+      currCreditorMap[qsl("SumJahresZinsen")] = 
+          annualInterest == 0. ? "" : d2euro(annualInterest);
 
-      if (otherInterest > 0.) {
-        currCreditorMap[qsl("SumSonstigeZinsen")] = d2euro(otherInterest);
-      }
+      currCreditorMap[qsl("SumSonstigeZinsen")] = 
+          otherInterest == 0. ? "" : d2euro(otherInterest);
 
-      if (currCreditorMap[qsl("Email")] == "") {
+      currCreditorMap[qsl("SumZinsgutschrift")] = 
+          interestCredit == 0. ? "" : d2euro(interestCredit);
+
+      if (currCreditorMap[qsl("Email")] == "")
+      {
         currCreditorMap.remove(qsl("Email"));
       }
 
@@ -510,10 +529,14 @@ void annualSettlementLetters() {
         currCreditorMap[qsl("SumAuszahlung")] = d2euro(interestForPayout);
         Auszahlungen.append(currCreditorMap);
       }
+      else {
+        currCreditorMap[qsl("SumAuszahlung")] = "";
+      }
 
       annualInterest2 += annualInterest;
       otherInterest2 += otherInterest;
       interestForPayout2 += interestForPayout;
+      interestCredit2 += interestCredit;
       totalBetrag2 += totalBetrag;
       Kreditoren.append(currCreditorMap);
       /////////////////////////////////////////////////
@@ -521,20 +544,6 @@ void annualSettlementLetters() {
     }
     /////////////////////////////////////////////////
   }
-  // Create the eMail Batch file.
-  printData[qsl("Kreditoren")] = Kreditoren;
-  printData[qsl("totalBetrag2")] = d2euro(totalBetrag2);
-  printData[qsl("ausbezahlterZins2")] = d2euro(interestForPayout2);
-
-  writeRenderedTemplate(
-      qsl("zinsmails.bat"),
-      qsl("zinsmails").append(i2s(yearOfSettlement)).append(qsl(".bat")),
-      printData);
-
-  savePdfFromHtmlTemplate(
-      qsl("zinsliste.html"),
-      qsl("Zinsliste-").append(i2s(yearOfSettlement)).append(qsl(".pdf")),
-      printData);
 
   // Create the eMail Batch file.
   printData[qsl("Kreditoren")] = Kreditoren;
@@ -543,15 +552,23 @@ void annualSettlementLetters() {
   printData[qsl("Sum2JahresZinsen")] = d2euro(annualInterest2);
   printData[qsl("Sum2SonstigeZinsen")] = d2euro(otherInterest2);
   printData[qsl("Sum2Auszahlung")] = d2euro(interestForPayout2);
+  printData[qsl("Sum2Zinsgutschrift")] = d2euro(interestCredit2);
 
   writeRenderedTemplate(
       qsl("zinsmails.bat"),
       qsl("zinsmails").append(i2s(yearOfSettlement)).append(qsl(".bat")),
       printData);
 
+  // Create the list of yearly bookings 
   savePdfFromHtmlTemplate(
       qsl("zinsliste.html"),
       qsl("Zinsliste-").append(i2s(yearOfSettlement)).append(qsl(".pdf")),
+      printData);
+
+  // Create the csv of annual interest bookings
+  writeRenderedTemplate(
+      qsl("zinsbuchungen.csv"),
+      qsl("zinsbuchungen").append(i2s(yearOfSettlement)).append(qsl(".csv")),
       printData);
 
   bc.finish();

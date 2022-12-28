@@ -5,9 +5,9 @@
 #include "mustache.h"
 #include "filewriter.h"
 
-bool extractTemplateFileFromResource(const QString& path, const QString& file)
+bool extractTemplateFileFromResource(const QString& path, const QString& file, const QString& outname)
 {   LOG_CALL_W(file);
-    QFileInfo fi( QDir(path), file);
+    QFileInfo fi( QDir(path), outname.isEmpty() ? file : outname);
     if( fi.exists ())
         return true;
 
