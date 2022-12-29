@@ -10,7 +10,6 @@
         <file>res/zinsbrief.css</file>
         <file>res/zinsbrief.html</file>
         <file>res/zinsliste.html</file>
-        <file>res/zinsmails.bat</file>
         <file>res/zinsmails-win.bat</file>
         <file>res/zinsmails-linux.bat</file>
         <file>res/zinsbuchungen.csv</file>
