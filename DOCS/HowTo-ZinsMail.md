@@ -239,7 +239,7 @@ sudo chmod ugo+x vorlagen/dkv2mail
 cd /home/wilhelm/DKV2/Ausgabe
 ```
 
-9. Gib in der Befehlskonsole folgenden Befehl an, um die Dattei ```zinsmails2022.bat``` als ausführbares Programm zu deklarieren:
+9. Gib in der Befehlskonsole folgenden Befehl an, um die Datei ```zinsmails2022.bat``` als ausführbares Programm zu deklarieren:
 
 ```
 chmod ugo+x zinsmails2022.bat
@@ -258,7 +258,7 @@ Jetzt solltest du auf deine eigene eMail-Adresse eine Mail mit dem gewünschten 
 Wenn du an dieser Stelle hängen bleibst und nicht weißt, wie du weiter kommst, kannst du mich per eMail kontaktieren:
 mailto:Wilhelm.Pflueger@mailbox.org
 
-11. Wenn die eMail wie gewünscht bei dir angekommen ist, kannst du die Erzeugung der Zinsbriefe noch einmal starten (siehe Punkt 7.). Nun kannst du den Befehl zum Senden aller Mails geben, indem du wie in Punkt 8. die erzeugte Batchdatei zinsmails2022.bat wie in Schritt 9. und 10. als ausführbar deklarierst und jetzt unverändert startest.
+11. Wenn die eMail wie gewünscht bei dir angekommen ist, kannst du die Erzeugung der Zinsbriefe noch einmal starten (siehe Punkt 6.). Nun kannst du den Befehl zum Senden aller Mails geben, indem du die erzeugte Batchdatei zinsmails2022.bat wie in Schritt 8. und 9. als ausführbar deklarierst und jetzt unverändert startest.
 
 ## Anpassen der Batchdateien für Windows
 
