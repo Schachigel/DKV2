@@ -618,7 +618,7 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
     v["startBetrag"] = d2euro(d);
     v["startDatum"] = fromDate.toString(qsl("dd.MM.yyyy"));
 
-    double d = value(toDate);
+    d = value(toDate);
     v["dEndBetrag"] = d;
     v["endBetrag"] = d2euro(d);
     v["endDatum"] = toDate.toString(qsl("dd.MM.yyyy"));
