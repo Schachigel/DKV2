@@ -612,20 +612,17 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
     v["strId"] = id_aS();
     v["KreditorId"] = i2s(creditorId());
     v["VertragsNr"] = label();
-    if (not isTerminated)
-    {
-        double d = value(toDate);
-        v["dEndBetrag"] = d;
-        v["endBetrag"] = d2euro(d);
-    }
+
+    double d = value(fromDate);
+    v["dStartBetrag"] = d;
+    v["startBetrag"] = d2euro(d);
     v["startDatum"] = fromDate.toString(qsl("dd.MM.yyyy"));
-    if (not isTerminated)
-    {
-        double d = value(toDate);
-        v["dEndBetrag"] = d;
-        v["endBetrag"] = d2euro(d);
-    }
+
+    double d = value(toDate);
+    v["dEndBetrag"] = d;
+    v["endBetrag"] = d2euro(d);
     v["endDatum"] = toDate.toString(qsl("dd.MM.yyyy"));
+
     v["Vertragsdatum"] = td.getValue(fnVertragsDatum).toDate().toString(qsl("dd.MM.yyyy"));
     v["Vertragsende"] = hasEndDate() ? td.getValue(fnLaufzeitEnde).toDate().toString(qsl("dd.MM.yyyy")) : "offen";
     v["ZSatz"] = interestRate();
