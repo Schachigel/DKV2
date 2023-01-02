@@ -439,7 +439,7 @@ QVector<QVariant> executeSingleColumnSql( const dbfield& dbField, const QString&
         RETURN_ERR(QVector<QVariant>(), QString(__FUNCTION__), qsl("Query execution failed"));
 
     QVector<QVariant> result;
-    for( const QSqlRecord& record: queryReturn)
+    for( const QSqlRecord& record: qAsConst(queryReturn))
             result.push_back(adjustTypeOfField(record.field(0), dbField.type()).value());
     return result;
 }

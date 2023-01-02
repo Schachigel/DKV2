@@ -120,7 +120,7 @@ void contract::initRandom(const tableindex_t creditorId)
     setPlannedInvest(    rand->bounded(50)  *1000.
                        + rand->bounded(1,3) *500.
                        + rand->bounded(10)  *100.);
-    setConclusionDate(QDate::currentDate().addYears(-2).addDays(rand->bounded(720)));
+    setConclusionDate(QDate::currentDate().addYears(-3).addDays(rand->bounded(720)));
     if( rand->bounded(100)%5 > 0)
         // in 4 von 5 Fällen
         setNoticePeriod(3 + rand->bounded(21));
@@ -237,7 +237,7 @@ QDate avoidYearEndBookings(const QDate d)
 
 // contract activation
 // First payment may or may not start interest payment
-bool contract::bookInitialPayment(const QDate date, double amount)
+bool contract::bookInitialPayment(const QDate date, const double amount)
 {   LOG_CALL;
     Q_ASSERT(id() >= 0);
     QString error;
@@ -257,7 +257,7 @@ bool contract::bookInitialPayment(const QDate date, double amount)
         RETURN_ERR( false, error);
 
     if ( bookDeposit(id(), date, amount))
-            RETURN_OK( true, qsl("Successfully activated contract "), id_aS(), qsl("["), date.toString (Qt::ISODate), d2euro(amount));
+            RETURN_OK( true, qsl("Successfully activated contract %1 [%2, %3]").arg( id_aS(), date.toString (Qt::ISODate), d2euro(amount)));
 
     RETURN_ERR( false, qsl("Failed to execut activation on contract "), id_aS(), qsl(" ["), date.toString() , d2euro(amount), qsl("]"));
     return false;
@@ -783,25 +783,26 @@ QDate activateRandomContracts(const int percent)
     QDate minimumActivationDate =EndOfTheFuckingWorld; // needed for tests
     if( percent < 0 or percent > 100) return minimumActivationDate;
 
-    QVector<QSqlRecord> contractData = executeSql(contract::getTableDef().Fields());
-// todo: read only the ids!
-// all data will be availabel in the loop from the contract object!!
+    QVector<QVariant> contractData = executeSingleColumnSql (contract::getTableDef ().Fields ()[0]);
+
     int activations = contractData.count() * percent / 100;
     static QRandomGenerator* rand = QRandomGenerator::system();
 
     for (int i=0; i < activations; i++) {
-        // contractData -> from database all amounts are in ct
-        double amount = euroFromCt(contractData[i].value(contract::fnBetrag).toInt());
+        contract c(contractData[i].toLongLong ());
+
+        double amount = c.plannedInvest ();
         if( rand->bounded(100)%10 == 0) {
             // some contracts get activated with a different amount
             amount = amount * rand->bounded(90, 110) / 100;
         }
-        QDate activationDate(contractData[i].value(contract::fnVertragsDatum).toDate());
-        activationDate = activationDate.addDays(rand->bounded(100));
-        if( activationDate < minimumActivationDate)
-            minimumActivationDate =activationDate;
-        contract c(contractData[i].value(contract::fnId).toInt());
-        c.bookInitialPayment(activationDate, amount);
+        QDate activationDate(c.conclusionDate ().addDays(rand->bounded(50)));
+        if( c.bookInitialPayment(activationDate, amount)) {
+            if( activationDate < minimumActivationDate)
+                minimumActivationDate =activationDate;
+        } else {
+            qInfo() << "failed contract activation on " << c.toString ();
+        }
     }
-    return minimumActivationDate;
+    RETURN_OK( minimumActivationDate, minimumActivationDate.toString());
 }

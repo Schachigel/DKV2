@@ -145,7 +145,7 @@ struct contract
     bool deleteInactive();
 
     // contract activation
-    bool bookInitialPayment(const QDate aDate, double amount);
+    bool bookInitialPayment(const QDate aDate, const double amount);
     bool initialBookingReceived() const;
     bool bookActivateInterest(const QDate d);
 

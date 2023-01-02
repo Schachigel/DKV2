@@ -109,11 +109,21 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings02()
 void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings03()
 {
     /* =EndOfTheFuckingWorld*/;
-    saveRandomCreditors(70);
-    saveRandomContracts(100);    // contract date: 2 years back or less
-    QDate minimalActivationDate =activateRandomContracts(90);// activation date: > contract date
 
-    QCOMPARE( dateOfnextSettlement(), QDate(minimalActivationDate.year(), 12, 31));
+//    for( int i=0; i<100; i++) {
+        saveRandomCreditors(70);
+        saveRandomContracts(100);    // contract date: 3 to 1 years back
+        QDate minimalActivationDate =activateRandomContracts(90);// activation date: > contract date
+        if( minimalActivationDate.month () == 12 and minimalActivationDate.day() == 31){
+            minimalActivationDate =minimalActivationDate.addYears (1);
+            qInfo() << "fixed minimalActivationDate for year end";
+        }
+        QDate dateOfNextS =dateOfnextSettlement();
+        if( dateOfNextS not_eq QDate(minimalActivationDate.year(), 12, 31)) {
+            dbgDumpDB ();
+            QCOMPARE(dateOfNextS, QDate(minimalActivationDate.year(), 12, 31));
+        }
+//    }
 }
 
 void test_booking::test_bookDeposit()

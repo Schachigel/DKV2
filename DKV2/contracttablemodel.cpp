@@ -82,8 +82,8 @@ bool ContractProxyModel::lessThan(const QModelIndex &left, const QModelIndex &ri
         QString leftString = sourceModel()->data(left, Qt::DisplayRole).toString();
         QString rightString = sourceModel()->data(right, Qt::DisplayRole).toString();
 
+        static QRegularExpression re("\\((\\d+) *Monate\\)");
         if (leftDtce == rightDtce) {
-            QRegularExpression re("\\((\\d+) *Monate\\)");
             int leftMonth = re.match(leftString).captured(1).toInt();
             int rightMonth = re.match(rightString).captured(1).toInt();
             return leftMonth < rightMonth;
