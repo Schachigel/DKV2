@@ -122,5 +122,8 @@ footer {
     text-align: left;
     font-size: 12pt;
     font-weight: bold;
+}
 
+.rowSum {
+    font-weight: bold;
 }

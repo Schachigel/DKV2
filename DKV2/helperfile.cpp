@@ -183,7 +183,7 @@ void createSignalFile(const QString& filename)
 #else
     QString indicatorfilename{filename + indicatorfilenameExtension};
     if (openDbIndicationFile)
-        delete openDbIndicationFile;
+        deleteSignalFile();
     openDbIndicationFile = new QFile(indicatorfilename);
     bool ok = openDbIndicationFile->open(QIODevice::WriteOnly | QIODevice::NewOnly);
     if (ok) {

@@ -612,20 +612,17 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
     v["strId"] = id_aS();
     v["KreditorId"] = i2s(creditorId());
     v["VertragsNr"] = label();
-    if (not isTerminated)
-    {
-        double d = value(toDate);
-        v["dEndBetrag"] = d;
-        v["endBetrag"] = d2euro(d);
-    }
+
+    double d = value(fromDate);
+    v["dStartBetrag"] = d;
+    v["startBetrag"] = d2euro(d);
     v["startDatum"] = fromDate.toString(qsl("dd.MM.yyyy"));
-    if (not isTerminated)
-    {
-        double d = value(toDate);
-        v["dEndBetrag"] = d;
-        v["endBetrag"] = d2euro(d);
-    }
+
+    d = value(toDate);
+    v["dEndBetrag"] = d;
+    v["endBetrag"] = d2euro(d);
     v["endDatum"] = toDate.toString(qsl("dd.MM.yyyy"));
+
     v["Vertragsdatum"] = td.getValue(fnVertragsDatum).toDate().toString(qsl("dd.MM.yyyy"));
     v["Vertragsende"] = hasEndDate() ? td.getValue(fnLaufzeitEnde).toDate().toString(qsl("dd.MM.yyyy")) : "offen";
     v["ZSatz"] = interestRate();
@@ -640,12 +637,34 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
     if (isTerminated) {
         v["Beendet"] = "Beendet";
     }
-    // get the relevant bookings for period
-    QVector<booking> bookVector = getBookings (id(), fromDate, toDate, qsl("Datum ASC"), isTerminated);
-    v["dSonstigeZinsen"] = getBookingsSum(bookVector, bookingType::reInvestInterest);
-    v["dJahresZinsen"] = getBookingsSum(bookVector, bookingType::annualInterestDeposit);
+
+    QVector<booking> yearBookings = getBookings (id(), fromDate, toDate, qsl("Datum ASC"), isTerminated);
     v["dAuszahlung"] = 0.;
     v["dZinsgutschrift"] = 0.;
+    v["dJahresZinsen"] = 0.;
+    v["dSonstigeZinsen"] = 0.;
+   
+    if (isTerminated)
+    {
+        QVector<booking> allBookings = getBookings(id(), BeginingOfTime, toDate, qsl("Datum ASC"), isTerminated);
+
+        if (iModel() == interestModel::reinvest || iModel() == interestModel::fixed)
+        {
+            v["dSonstigeZinsen"] = getBookingsSum(allBookings, bookingType::reInvestInterest) +
+                                    getBookingsSum(allBookings, bookingType::annualInterestDeposit);
+        }
+        else
+        {
+            v["dSonstigeZinsen"] = getBookingsSum(yearBookings, bookingType::reInvestInterest) +
+                                    getBookingsSum(yearBookings, bookingType::annualInterestDeposit);
+        }
+    }
+    else {
+        // get the relevant bookings for period
+        v["dJahresZinsen"] = getBookingsSum(yearBookings, bookingType::annualInterestDeposit) +
+                                getBookingsSum(yearBookings, bookingType::reInvestInterest);
+    }
+
     if (v["dSonstigeZinsen"] != 0.)
         v["SonstigeZinsen"] = d2euro(v["dSonstigeZinsen"].toDouble());
 
@@ -657,13 +676,13 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
         }
         else {
             v["dZinsgutschrift"] = v["dJahresZinsen"];
-            v["Zinsgutschrift"] = v["Zinsgutschrift"];
+            v["Zinsgutschrift"] = v["JahresZinsen"];
         }
     }
 
     QVariantList bl;
 
-    for (const auto &b : qAsConst(bookVector))
+    for (const auto &b : qAsConst(yearBookings))
     {
         QVariantMap bookMap = {};
         bookMap["Date"] = b.date.toString(qsl("dd.MM.yyyy"));

@@ -143,7 +143,7 @@ Die Datei dkv2mail (ohne Dateinamen-Erweiterung) wird ausschließlich unter Linu
 # Dies ist die Linux-Version für das Senden von eMails
 # Es wird das Programm mailx aus den mailutils genutzt.
 
-cat "$4" | mailx -aFrom:mymail@mailbox.org -b mymail@mailbox.org -s "$2" -A "$3" "$1"
+cat "$4" | mailx -aFrom:mymail@mailbox.org -aBCC:mymail@mailbox.org -s "$2" -A "$3" "$1"
 if [ $? -ne 0 ]
 then
     echo "############### Fehler beim Senden: $1"
@@ -152,7 +152,7 @@ fi
 ```
 
 Die erste Zeile (```#!/bin/sh```) muss auf jeden Fall stehen bleiben, damit diese Datei als Batchdatei aufführbar ist.
-Die weiteren Zeilen, die mit ```#``` beginnen, sind lediglich Kommentare. Wesentlich ist die Zeile, die mit ```echo "$4" | mailx``` beginnt. Hier muss auf jeden Fall der Text ```"mymail@mailbox.org"``` zweimal durch die eigene Sende-eMail-Adresse ersetzt werden. Die Anweisung ```-b mymail@mailbox.org``` sorgt dafür, dass die eigene Mailadresse eine Kopie der eMail bekommt - dies kann natürlich auch gelöscht werden.
+Die weiteren Zeilen, die mit ```#``` beginnen, sind lediglich Kommentare. Wesentlich ist die Zeile, die mit ```echo "$4" | mailx``` beginnt. Hier muss auf jeden Fall der Text ```"mymail@mailbox.org"``` zweimal durch die eigene Sende-eMail-Adresse ersetzt werden. Die Anweisung ```-aBCC:mymail@mailbox.org``` sorgt dafür, dass die eigene Mailadresse eine Kopie der eMail bekommt - dies kann natürlich auch gelöscht werden.
 
 Falls nicht das Programm ```mailx``` verwendet werden soll, muss natürlich die gesamte Befehlszeile an das genutzte Programm angepasst werden.
 
