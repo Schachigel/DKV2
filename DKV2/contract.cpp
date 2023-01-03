@@ -637,12 +637,34 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
     if (isTerminated) {
         v["Beendet"] = "Beendet";
     }
-    // get the relevant bookings for period
-    QVector<booking> bookVector = getBookings (id(), fromDate, toDate, qsl("Datum ASC"), isTerminated);
-    v["dSonstigeZinsen"] = getBookingsSum(bookVector, bookingType::reInvestInterest);
-    v["dJahresZinsen"] = getBookingsSum(bookVector, bookingType::annualInterestDeposit);
+
+    QVector<booking> yearBookings = getBookings (id(), fromDate, toDate, qsl("Datum ASC"), isTerminated);
     v["dAuszahlung"] = 0.;
     v["dZinsgutschrift"] = 0.;
+    v["dJahresZinsen"] = 0.;
+    v["dSonstigeZinsen"] = 0.;
+   
+    if (isTerminated)
+    {
+        QVector<booking> allBookings = getBookings(id(), BeginingOfTime, toDate, qsl("Datum ASC"), isTerminated);
+
+        if (iModel() == interestModel::reinvest || iModel() == interestModel::fixed)
+        {
+            v["dSonstigeZinsen"] = getBookingsSum(allBookings, bookingType::reInvestInterest) +
+                                    getBookingsSum(allBookings, bookingType::annualInterestDeposit);
+        }
+        else
+        {
+            v["dSonstigeZinsen"] = getBookingsSum(yearBookings, bookingType::reInvestInterest) +
+                                    getBookingsSum(yearBookings, bookingType::annualInterestDeposit);
+        }
+    }
+    else {
+        // get the relevant bookings for period
+        v["dJahresZinsen"] = getBookingsSum(yearBookings, bookingType::annualInterestDeposit) +
+                                getBookingsSum(yearBookings, bookingType::reInvestInterest);
+    }
+
     if (v["dSonstigeZinsen"] != 0.)
         v["SonstigeZinsen"] = d2euro(v["dSonstigeZinsen"].toDouble());
 
@@ -654,13 +676,13 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
         }
         else {
             v["dZinsgutschrift"] = v["dJahresZinsen"];
-            v["Zinsgutschrift"] = v["Zinsgutschrift"];
+            v["Zinsgutschrift"] = v["JahresZinsen"];
         }
     }
 
     QVariantList bl;
 
-    for (const auto &b : qAsConst(bookVector))
+    for (const auto &b : qAsConst(yearBookings))
     {
         QVariantMap bookMap = {};
         bookMap["Date"] = b.date.toString(qsl("dd.MM.yyyy"));
