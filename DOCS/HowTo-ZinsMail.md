@@ -20,7 +20,7 @@ Der eMail-Text bzw. die genaue Funktion der eMail-Sendebefehle wird in der Datei
 ## eMails Versenden mit DKV2
 Aus der Vorlage Ausgabe/vorlagen/zinsmails.bat wird in DKV2 die Batchdatei Ausgabe/zinsmailsXXXX.bat erzeugt.
 
-(Anm. "Batchdatei" bezeichnet eine Datei, die eine Reihe von Befehlen enthält, die dann durch einfaches Eingeben des Dateinamens in der Eingabeaufforderung ausgeführt werden.)
+*(Anm. "Batchdatei" bezeichnet eine Datei, die eine Reihe von Befehlen enthält, die dann durch einfaches Eingeben des Dateinamens in der Eingabeaufforderung ausgeführt werden.)*
 
 Zum Verständnis der Funktion hilft ein Blick in die mitgelieferte Vorlage (hier in der Version für Linux):
 
@@ -42,8 +42,9 @@ Mit freundlichen Grüßen
 
 Die Direktkredit-Verwaltung" >mailtext.txt
 
+echo "{{Vorname}} {{Nachname}} -> {{Email}}"
 ./vorlagen/dkv2mail "{{Email}}" "Zinsabrechnung" "{{Attachment}}" mailtext.txt
-
+sleep 20
 {{/Email}}
 {{^Email}}
 echo "############ {{Vorname}} {{Nachname}} hat keine Email!"
@@ -82,7 +83,7 @@ Mit der folgenden Zeile wird die eMail versendet:
 
 Hier wird die Batchdatei dkv2mail.bat (unter Windows) bzw. dkv2mail (unter Linux) im Pfad Ausgabe/vorlagen aufgerufen. Diese Batchdatei versendet eine einzige eMail.
 
-(Anm. Unter Windows muss nicht die Erweiterung '.bat' angegeben werden. Windows sucht automatisch nach Dateien mit dieser Dateinamen-Erweiterung.)
+*(Anm. Unter Windows muss nicht die Erweiterung '.bat' angegeben werden. Windows sucht automatisch nach Dateien mit dieser Dateinamen-Erweiterung.)*
 
 Der Befehl braucht folgende Angaben in dieser Reihenfolge:
 
@@ -93,7 +94,9 @@ Der Befehl braucht folgende Angaben in dieser Reihenfolge:
 
 Insbesondere der Betreff-Text (hier "Zinsabrechnung") und der eMail-Text können natürlich angepasst werden.
 
-Hier ein Beispiel der fertig ausgegebenen Datei zinsmailXXXX.bat:
+Die Zeile ```sleep 20``` sorgt für 20 Sekunden Pause nach dem Senden der eMail. Diese Pause sorgt (hoffentlich) dafür, dass dein eMail-Provider dich weiter lieb hat und deinen Account nicht als üble Spam-Schleuder deklariert.
+
+Hier ein Beispiel der fertig ausgegebenen Datei zinsmailXXXX.bat (für Linux):
 
 ```
 #!/bin/sh
@@ -111,7 +114,9 @@ Mit freundlichen Grüßen
 
 Die Direktkredit-Verwaltung" >mailtext.txt
 
+echo "Ruth Adams -> ruth.adams@aol.de"
 ./vorlagen/dkv2mail "ruth.adams@aol.de" "Zinsabrechnung" "Jahresinfo 2021_19_Adams, Ruth.pdf" mailtext.txt
+sleep 20
 
 rm mailtext.txt
 
@@ -126,7 +131,9 @@ Mit freundlichen Grüßen
 
 Die Direktkredit-Verwaltung" >mailtext.txt
 
+echo "Benno Hurgedue -> benno.hurgedue@telekom.de"
 ./vorlagen/dkv2mail "benno.hurgedue@telekom.de" "Zinsabrechnung" "Jahresinfo 2021_15_Hurgedue, Benno.pdf" mailtext.txt
+sleep 20
 
 echo "############ Rupert Naseweis hat keine Email!"
 ```
@@ -297,6 +304,7 @@ https://www.tbare.com/software/swithmail/ .
 6. Passe die Datei ```Ausgabe/vorlagen/zinsmails.bat``` an deine Wünsche an:
 - Betreff-Text
 - eMail-Text, hierbei auf die beiden Zeilen mit ```(``` und ```) > mailtext.txt``` am Anfang und am Ende achten! Leerzeilen müssen durch ```echo.``` angegeben werden und vor dem Text muss jeweils ```echo``` stehen.
+- den Wartebefehl zum Verringern der eMail-Frequenz. In der Vorlage sind drei Alternativen angegeben. Entferne das 'rem' bei dem Befehl, der auf deinem Computer eine 20-Sekunden-Pause einlegt. Du musst das unter Windows leider selbst ausprobieren, weil je nach Version ein anderer Befehl funktioniert.
 
 7. Jetzt kannst du DKV2 starten und unter ```Verträge/Listen drucken/Zinsbriefe``` die Erstellung von Zinsbriefen anwerfen. Du solltest danach in deinem Ausgabe-Verzeichnis alle PDF-Dateien mit den Zinsbriefen haben und außerdem auch die Datei zinsmails2022.bat (als Beispiel).
 

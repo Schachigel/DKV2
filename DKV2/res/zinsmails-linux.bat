@@ -15,8 +15,9 @@ Mit freundlichen Grüßen
 
 Die Direktkredit-Verwaltung" >mailtext.txt
 
+echo "{{Vorname}} {{Nachname}} -> {{Email}}"
 ./vorlagen/dkv2mail "{{Email}}" "Zinsabrechnung" "{{Attachment}}" mailtext.txt
-
+sleep 20
 {{/Email}}
 {{^Email}}
 echo "############ {{Vorname}} {{Nachname}} hat keine Email!"
