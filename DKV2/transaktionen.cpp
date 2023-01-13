@@ -482,7 +482,7 @@ void annualSettlementLetters() {
         totalBetrag += vm["dEndBetrag"].toDouble();
       }
       payedInterest = otherInterest + interestForPayout;
-      printData[qsl("ausbezahlterZins")] = 
+      printData[qsl("ausbezahlterZins")] =
           payedInterest == 0. ? "" : d2euro(payedInterest);
       printData[qsl("mitAusbezahltemZins")] = payedInterest > 0.;
       printData[qsl("mitZins")] = payedInterest + interestCredit > 0.;
@@ -496,28 +496,28 @@ void annualSettlementLetters() {
       printData[qsl("sonstigerZins")] =
           otherInterest == 0. ? "" : d2euro(otherInterest);
 
-      printData["SumZinsgutschrift"] = 
+      printData["SumZinsgutschrift"] =
           interestCredit == 0. ? "" : d2euro(interestCredit);
 
       printData[qsl("Vertraege")] = vl;
 
       printData[qsl("totalBetrag")] = d2euro(totalBetrag);
 
-      QString fileName = qsl("Jahresinfo %1_%2_%3, %4")
-                             .arg(i2s(yearOfSettlement), i2s(credRecord.id()),
+      QString fileName = qsl("Jahresinfo %1_%3, %4")
+                             .arg(i2s(yearOfSettlement),
                                   credRecord.lastname(),
                                   credRecord.firstname().append(qsl(".pdf")));
       /* save data for eMail batch file */
       currCreditorMap[qsl("Vertraege")] = vl;
       currCreditorMap["SumBetrag"] = d2euro(totalBetrag);
       currCreditorMap[qsl("Attachment")] = fileName;
-      currCreditorMap[qsl("SumJahresZinsen")] = 
+      currCreditorMap[qsl("SumJahresZinsen")] =
           annualInterest == 0. ? "" : d2euro(annualInterest);
 
-      currCreditorMap[qsl("SumSonstigeZinsen")] = 
+      currCreditorMap[qsl("SumSonstigeZinsen")] =
           otherInterest == 0. ? "" : d2euro(otherInterest);
 
-      currCreditorMap[qsl("SumZinsgutschrift")] = 
+      currCreditorMap[qsl("SumZinsgutschrift")] =
           interestCredit == 0. ? "" : d2euro(interestCredit);
 
       if (currCreditorMap[qsl("Email")] == "")
@@ -559,7 +559,7 @@ void annualSettlementLetters() {
       qsl("zinsmails").append(i2s(yearOfSettlement)).append(qsl(".bat")),
       printData);
 
-  // Create the list of yearly bookings 
+  // Create the list of yearly bookings
   savePdfFromHtmlTemplate(
       qsl("zinsliste.html"),
       qsl("Zinsliste-").append(i2s(yearOfSettlement)).append(qsl(".pdf")),
