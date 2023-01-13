@@ -91,6 +91,7 @@ void openDefaultDbConnection(QString file /*testDbFilename*/)
 {
     QSqlDatabase::addDatabase(dbTypeName);
     QSqlDatabase::database().setDatabaseName(file);
+    QSqlDatabase::database().setConnectOptions ("QSQLITE_OPEN_URI;QSQLITE_ENABLE_SHARED_CACHE");
     QSqlDatabase::database().open ();
 }
 void closeDefaultDbConnection( )
@@ -220,7 +221,28 @@ int doAnnualSettlementAllContracts (int year)
     return executedSettlements;
 }
 
-void dbgDumpDatabase(QString testname)
+enum DB_COMPARE_MODE
+{
+    compareTables,
+    compareFields,
+    compareData
+};
+
+//bool dbCompare(const QString& left_file, const QString& right_file, DB_COMPARE_MODE compareMode)
+//{
+//    autoDb left_db(left_file, qsl("left_con"), autoDb::read_only);
+//    autoDb right_db(right_file, qsl("right_con"), autoDb::read_only);
+
+//    // compare tables
+//    QStringList left_T, right_T;
+//    left_T
+
+//    // compare fields
+
+//    // compare content
+//}
+
+void dbgDumpDatabase(const QString& testname)
 {   LOG_CALL;
     QString filename { qsl("./data/%1.db").arg(testname).replace (':', '#')};
     filename.replace('<', '#');
@@ -234,3 +256,4 @@ void dbgDumpDatabase(QString testname)
     QSqlDatabase::database().exec(sql);
     QVERIFY( QFile::exists(filename));
 }
+

@@ -114,7 +114,6 @@ void test_dkdbcopy::test_dbsHaveSameTables_more_fields()
     QVERIFY( not dbTablesHaveSameFields(t1.Name(), qsl("db2.") +t1.Name(), db));
 }
 
-
 bool insertData(const QString& dbfn, const QString& table, const QString& field)
 {
     static int i =0;
@@ -153,9 +152,10 @@ void test_dkdbcopy::test_copyDatabase()
     // setup
     createTestDb_withRandomData();
     // code under test
-    copy_open_DkDatabase(tempFileName);
+    QVERIFY(copy_open_DkDatabase(tempFileName));
     // verification
     QVERIFY(dbsHaveSameTables(testDbFilename, tempFileName));
+
     // cleanup
     QSqlDatabase::database().close();
     QSqlDatabase::removeDatabase(QSqlDatabase::database().connectionName());
@@ -223,4 +223,17 @@ void test_dkdbcopy::test_convertDatabaseInplace_wNewColumn()
     QVERIFY(hasAllTablesAndFields(verifyDb, newDbStructure));
     QCOMPARE(rowCount("t1", "", verifyDb), 2);
     QCOMPARE(rowCount("t2", "", verifyDb), 2);
+}
+
+void test_dkdbcopy::test_copyDb_anonymous()
+{
+    // setup
+    createTestDb_withRandomData ();
+    QString outputFile {"out.db"};
+    QFile::remove (outputFile);
+
+    // code under test & verification
+    QVERIFY( copy_database_mangled(outputFile));
+    QVERIFY (dbsHaveSameTables( QSqlDatabase::database ().databaseName (), outputFile));
+    closeDefaultDbConnection ();
 }

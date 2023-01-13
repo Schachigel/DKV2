@@ -17,7 +17,6 @@ bool copy_open_DkDatabase( const QString& targetFName);
 *  copy_database_anonymous will create a 1 : 1 copy of the currently opened database to a new file
 *  with all personal data replaced by random data
 */
-bool copy_database_mangled(const QString &targetfn, const QString &file);
 bool copy_database_mangled(const QString& targetfn, const QSqlDatabase& db =QSqlDatabase::database());
 
 /*

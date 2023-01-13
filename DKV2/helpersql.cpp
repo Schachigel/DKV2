@@ -241,6 +241,8 @@ QSqlQuery prepQuery( const QString sql, const QSqlDatabase& db =QSqlDatabase::da
 bool executeQuery( QSqlQuery& q, QVector<QSqlRecord>& records)
 {
     if( q.exec()) {
+        if( q.numRowsAffected () >0)
+            qInfo() << __FUNCTION__ << qsl("affected %1 rows").arg(q.numRowsAffected ());
         while(q.next())
             records.push_back(q.record());
         RETURN_OK( true, qsl("executeQuery"), qsl("Successfully returned %1 records").arg(records.count ()));

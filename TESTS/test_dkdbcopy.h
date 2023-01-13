@@ -29,6 +29,7 @@ private slots:
     void test_copyDatabase();
     void test_convertDatabaseInplace();
     void test_convertDatabaseInplace_wNewColumn();
+    void test_copyDb_anonymous();
 };
 
 #endif // TEST_DKDBCOPY_H

@@ -13,7 +13,7 @@ inline bool isValidRowId(tableindex_t i) {
 
 struct dbCloser
 {   // RAII class for db connections
-    dbCloser(const QString& c) : conName (c){}
+    dbCloser(const QString& connectionString) : conName (connectionString){}
     dbCloser(const dbCloser&) =delete;
     ~dbCloser(){
         if( QSqlDatabase::database(conName).isValid()){

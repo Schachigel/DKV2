@@ -1,31 +1,15 @@
 
 #include "helpersql.h"
-#include "helperfin.h"
 #include "helperfile.h"
 #include "appconfig.h"
 #include "tabledatainserter.h"
 #include "dkdbcopy.h"
-#include "creditor.h"
 
 /*
 *  locally used helper functions
 */
-QString moveToPreConversionCopy( const QString& file)
+namespace
 {
-    QFileInfo fi(file);
-    QString newFile = getUniqueTempFilename(fi.absoluteFilePath (), qsl("preconversion"));
-    Q_ASSERT( newFile.size() >0);
-    QFile f(fi.absoluteFilePath ());
-    if( f.rename( newFile)){
-        RETURN_OK( newFile, QString(__FUNCTION__), file, newFile);
-    }
-    else {
-        qCritical() << "file rename failed " << f.error() << ": " << f.errorString();
-        Q_ASSERT( not "Faild to rename temporary file");
-        return QString();
-    }
-}
-
 bool copy_TableContent( const QString& srcTbl, const QString& dstTbl, const QSqlDatabase& db=QSqlDatabase::database())
 {
     LOG_CALL_W( srcTbl +qsl(", ") +dstTbl);
@@ -68,122 +52,88 @@ bool copy_TableContent_byRecord( const QString& srcTbl, const QString& dstTbl, c
     }
     return true;
 }
-
-bool copycreate_views(const QSqlDatabase& db, const QString& alias)
-{   LOG_CALL;
-     QSqlQuery q(db); q.setForwardOnly(true);
-     QString sql {qsl("SELECT name, sql FROM %1.sqlite_master WHERE type='view'").arg(alias)};
-     if( not q.exec(sql)) {
-         qCritical() << "could not read views from database";
-         return false;
-     }
-     while( q.next()) {
-         QString viewSql  = q.record().value(qsl("sql")).toString(); //.replace(qsl("\n"), qsl(" "));
-         if( not executeSql_wNoRecords(viewSql, db)) {
-             qCritical() << "could not create view using " << viewSql;
-             return false;
-         }
-     }
-     return true;
+}
+QString moveToPreConversionCopy( const QString& file)
+{
+    QFileInfo fi(file);
+    QString newFile = getUniqueTempFilename(fi.absoluteFilePath (), qsl("preconversion"));
+    Q_ASSERT( newFile.size() >0);
+    QFile f(fi.absoluteFilePath ());
+    if( f.rename( newFile)){
+        RETURN_OK( newFile, QString(__FUNCTION__), file, newFile);
+    }
+    else {
+        qCritical() << "file rename failed " << f.error() << ": " << f.errorString();
+        Q_ASSERT( not "Faild to rename temporary file");
+        return QString();
+    }
 }
 
 /*
 *  copy_database will create a 1 : 1 copy of "sourceFName"
 *  to a new file "targetFName"
 */
-bool vacuum_copy_database( const QString& targetFName)
+
+bool copy_open_DkDatabase( const QString& targetFName)
 {   LOG_CALL_W(targetFName);
     return executeSql_wNoRecords (qsl("VACUUM INTO '%1'").arg(targetFName));
 }
 
-bool copy_open_DkDatabase( const QString& targetFName)
+bool depersonalize(QString connection)
 {
-    return vacuum_copy_database( targetFName);
-}
-
-
-/*
-*  copy_database_mangled will create a 1 : 1 copy of the currently opened database to a new file
-*  with all personal data replaced by random data
-*/
-bool copy_mangledCreditors(const QSqlDatabase& db =QSqlDatabase::database())
-{   LOG_CALL;
-    int recCount = 0;
-    QSqlQuery q(db); // default database connection -> active database
-    q.setForwardOnly(true);
-    if( not q.exec(qsl("SELECT * FROM Kreditoren")))
-        RETURN_OK(false, qsl( "no data returned from creditor table"));
-
-    TableDataInserter tdi(dkdbstructur[qsl("Kreditoren")]);
-    tdi.overrideTablename(qsl("targetDb.Kreditoren"));
-    while( q.next()) {
-        recCount++;
-        QSqlRecord rec = q.record();
-        qInfo() << "de-Pers. Copy: working on Record #" << rec;
-        tdi.setValue(creditor::fnId, rec.value(creditor::fnId));
-        tdi.setValue(creditor::fnVorname,  QVariant(creditor::fnVorname + i2s(recCount)));
-        tdi.setValue(creditor::fnNachname, QVariant(creditor::fnNachname + i2s(recCount)));
-        tdi.setValue(creditor::fnStrasse, creditor::fnStrasse);
-        tdi.setValue(creditor::fnPlz, qsl("D-xxxxx"));
-        tdi.setValue(creditor::fnStadt, qsl("Stadt"));
-        tdi.setValue(creditor::fnTel, "");
-        tdi.setValue(creditor::fnKontakt, "");
-        tdi.setValue(creditor::fnIBAN, "");
-        tdi.setValue(creditor::fnBIC, "");
-        tdi.setValue(creditor::fnBuchungskonto, "");
-
-        if( tdi.InsertData_noAuto() == SQLITE_invalidRowId)
-            RETURN_ERR(false, qsl("Error inserting Data into deperso.Copy Table"), q.lastError ().text ());
+    QVector<QString> updateSql ={
+        {qsl("UPDATE Kreditoren SET Vorname = 'vorname_' || CAST(rowid as TEXT)")},
+        {qsl("UPDATE Kreditoren SET Nachname = 'nachname_' || CAST(rowid as TEXT)")},
+        {qsl("UPDATE Kreditoren SET Strasse = 'Strasse_' || CAST(rowid as TEXT)")},
+        {qsl("UPDATE Kreditoren SET Plz = printf('%04d', abs(random()%10000))")},
+        {qsl("UPDATE Kreditoren SET Stadt = 'Stadt_' || CAST(rowid as TEXT)")},
+        {qsl("UPDATE Kreditoren SET Email = 'email@server.fun'")},
+        {qsl("UPDATE Kreditoren SET Telefon = '01234567890'")},
+        {qsl("UPDATE Kreditoren SET Land = ''")},
+        {qsl("UPDATE Kreditoren SET Anmerkung = ''")},
+        {qsl("UPDATE Kreditoren SET Kontakt = ''")},
+        {qsl("UPDATE Kreditoren SET IBAN = ''")},
+        {qsl("UPDATE Kreditoren SET BIC = ''")},
+        {qsl("UPDATE Kreditoren SET Buchungskonto = ''")},
+        {qsl("UPDATE Vertraege SET Kennung = printf('Vertrag_%04d', rowid)")},
+        {qsl("UPDATE Vertraege SET Anmerkung = ''")},
+        {qsl("UPDATE exVertraege SET Kennung = printf('Vertrag_%04d', rowid)")},
+        {qsl("UPDATE exVertraege SET Anmerkung = ''")}
+    };
+    //QSqlQuery q(QSqlDatabase::database (connection));
+    for( const auto &sql : qAsConst(updateSql)) {
+        if( not executeSql_wNoRecords (sql, QSqlDatabase::database (connection)))
+            RETURN_ERR(false, qsl("depersonilize sql failed"));
     }
-    return true;
+    RETURN_OK( true, QString(__FUNCTION__));
 }
 
-bool copy_database_mangled(const QString& targetfn, const QString& source)
+bool copy_database_mangled(const QString& targetfn, const QSqlDatabase& db /*=QSqlDatabase::database()*/)
 {
-//    QString con {};
-    dbCloser closer(qsl("copy_db"));
-    QSqlDatabase db =QSqlDatabase::addDatabase(dbTypeName, closer.conName);
-    db.setDatabaseName(source);
-    if( not db.open()) {
-        qCritical() << "create_DB_copy could not open " << source;
-        return false;
-    } else {
-        qInfo() << "opened " << source << " as db to copy";
+    if( QFile::exists(targetfn)) {
+        backupFile(targetfn, qsl("db-bak"));
+        QFile::remove (targetfn);
     }
-    return copy_database_mangled(targetfn, db);
-}
+    // vacuum copy db into memory
+    dbCloser closer(qsl("inMemoryDbConnection"));
+    QSqlDatabase inMemoryDb =QSqlDatabase::addDatabase ( dbTypeName, closer.conName);
+    inMemoryDb.setConnectOptions (qsl("QSQLITE_OPEN_URI;QSQLITE_ENABLE_SHARED_CACHE"));
+    QString inMemoryDbName {qsl("file::memory:")};
+    inMemoryDb.setDatabaseName (inMemoryDbName);
 
-bool copy_database_mangled(const QString& targetfn, const QSqlDatabase& dbToBeCopied)
-{   LOG_CALL_W(targetfn);
-    QString alias{qsl("targetDb")};
-    autoRollbackTransaction trans( dbToBeCopied.connectionName());
-    autoDetachDb ad( alias, dbToBeCopied.connectionName());
-    if( not createFileWithDatabaseStructure (targetfn))
-        return false;
-    // Attach the new file to the current connection
-    if( not ad.attachDb(targetfn))
-        return false;
+    if( not inMemoryDb.open())
+        qCritical() << "db open failed on in memory db " << inMemoryDb.lastError ();
 
-    QVector<dbtable> tables = dkdbstructur.getTables();
-    for( auto& table : qAsConst(tables)) {
-        if( table.Name() == qsl("Kreditoren")) {
-            if( not copy_mangledCreditors( dbToBeCopied))
-                return false;
-        }
-        else if (table.Name() == qsl("BriefElemente")) {
-            if( not replace_TableContent(table.Name(), alias +qsl(".") +table.Name(), dbToBeCopied))
-                return false;
-        }
-        else
-            if( not copy_TableContent(table.Name(), alias +qsl(".") +table.Name(), dbToBeCopied))
-                return false;
+    if( not executeSql_wNoRecords( qsl("VACUUM INTO '%1'").arg(inMemoryDbName), db))
+        RETURN_ERR( false, qsl("Vacuum into in memory db failed"));
+
+    if( not depersonalize(closer.conName)){
+        qCritical() <<  qsl("failed to replace personal data");
+        return false;
     }
-    // copy the values from sqlite_sequence, so that autoinc works the same in both databases
-    if( not replace_TableContent(qsl("sqlite_sequence"), alias +qsl(".sqlite_sequence")))
-        return false;
-    // force views creation on next startup
-    executeSql_wNoRecords(qsl("DELETE FROM %1.meta WHERE Name='dkv2.exe.Version'").arg(alias), dbToBeCopied);
-    trans.commit();
+    if( not executeSql_wNoRecords (qsl("VACUUM INTO '%1'").arg(targetfn), inMemoryDb))
+        RETURN_ERR( false, qsl("Vacuum into disk db failed"));
+
     return true;
 }
 
