@@ -9,7 +9,6 @@
 #include "helperfile.h"
 #include "helpersql.h"
 #include "appconfig.h"
-#include "creditor.h"
 #include "investment.h"
 #include "opendatabase.h"
 #include "wiznewdatabase.h"

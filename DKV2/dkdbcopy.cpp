@@ -14,14 +14,14 @@ bool copy_TableContent( const QString& srcTbl, const QString& dstTbl, const QSql
 {
     LOG_CALL_W( srcTbl +qsl(", ") +dstTbl);
     // usually used from "table" to "targetScheema.table"
-    QString sql(qsl("INSERT OR REPLACE INTO %1 SELECT * FROM %2"));
-    return executeSql_wNoRecords(sql.arg(dstTbl, srcTbl), db);
+    QString sql(qsl("INSERT OR REPLACE INTO %1 SELECT * FROM %2").arg(dstTbl, srcTbl));
+    return executeSql_wNoRecords(sql, db);
 }
 
 bool replace_TableContent(const QString& srcTbl, const QString& destTbl, const QSqlDatabase& db =QSqlDatabase::database())
 {
     LOG_CALL_W( srcTbl +qsl(", ") +destTbl);
-    executeSql_wNoRecords( qsl("DELETE FROM ") + destTbl, db);
+    executeSql_wNoRecords( qsl("DELETE FROM %1").arg( destTbl), db);
     return copy_TableContent(srcTbl, destTbl, db);
 }
 
@@ -35,20 +35,16 @@ bool copy_TableContent_byRecord( const QString& srcTbl, const QString& dstTbl, c
         copyableFields += rec.field(i).name();
     }
     QSqlQuery q(db); q.setForwardOnly(true);
-    if( not q.prepare(qsl("SELECT * FROM ") + srcTbl)) {
-        qCritical() << "Could not prepare query to enumerate table";
-        return false;
-    }
-    if( not q.exec()) {
-        qCritical() << "Could not enumerate source table";
-        return false;
-    }
+    if( not q.prepare(qsl("SELECT * FROM ") + srcTbl))
+        RETURN_ERR(false, qsl("Could not prepare query to enumerate table"));
+
+    if( not q.exec())
+        RETURN_ERR(false, qsl("Could not enumerate source table"));
+
     while(q.next()) {
         TableDataInserter tdi(dstTbl, q.record());
-        if( tdi.InsertOrReplaceData(db) == SQLITE_invalidRowId) {
-            qCritical() << "could not insert Date to converted db" << tdi.getRecord();
-            return false;
-        }
+        if( tdi.InsertOrReplaceData(db) == SQLITE_invalidRowId)
+            RETURN_ERR(false, qsl("could not insert Date to converted db"));
     }
     return true;
 }
@@ -76,6 +72,12 @@ QString moveToPreConversionCopy( const QString& file)
 
 bool copy_open_DkDatabase( const QString& targetFName)
 {   LOG_CALL_W(targetFName);
+    if( QFile::exists(targetFName)) {
+        if( backupFile( targetFName, qsl("db-bak")) && QFile::remove (targetFName))
+            qInfo() << "target file backup created & target file deleted";
+        else
+            RETURN_ERR(false, qsl("copy target could not be removed"));
+    }
     return executeSql_wNoRecords (qsl("VACUUM INTO '%1'").arg(targetFName));
 }
 
@@ -122,15 +124,14 @@ bool copy_database_mangled(const QString& targetfn, const QSqlDatabase& db /*=QS
     inMemoryDb.setDatabaseName (inMemoryDbName);
 
     if( not inMemoryDb.open())
-        qCritical() << "db open failed on in memory db " << inMemoryDb.lastError ();
+        RETURN_ERR(false, qsl("db open failed on in memory db "), inMemoryDb.lastError ().text ());
 
     if( not executeSql_wNoRecords( qsl("VACUUM INTO '%1'").arg(inMemoryDbName), db))
-        RETURN_ERR( false, qsl("Vacuum into in memory db failed"));
+        RETURN_ERR(false, qsl("Vacuum into in memory db failed"));
 
-    if( not depersonalize(closer.conName)){
-        qCritical() <<  qsl("failed to replace personal data");
-        return false;
-    }
+    if( not depersonalize(closer.conName))
+        RETURN_ERR(false, qsl("failed to replace personal data"));
+
     if( not executeSql_wNoRecords (qsl("VACUUM INTO '%1'").arg(targetfn), inMemoryDb))
         RETURN_ERR( false, qsl("Vacuum into disk db failed"));
 
@@ -144,16 +145,14 @@ bool copy_database_mangled(const QString& targetfn, const QSqlDatabase& db /*=QS
 QString convert_database_inplace( const QString& targetFilename, const dbstructure& dbs)
 {   LOG_CALL_W(targetFilename);
     QString backupFileName =moveToPreConversionCopy(targetFilename);
-    if( backupFileName.isEmpty()) {
-        qCritical() << "Could not create backup copy - abort " << backupFileName << " of " << targetFilename;
-        return QString();
-    }
+    if( backupFileName.isEmpty())
+        RETURN_ERR(QString(), qsl( "Could not create backup copy %1 from %2 - abort ").arg(backupFileName, targetFilename));
+
     const QString& sourceFileName =backupFileName;
     // create a new db file with the current database structure
-    if( not createNewDatabaseFileWDefaultContent(targetFilename, zs_30360, dbs)) {
-        qCritical() << "db creation faild for database conversion -> abort";
-        return QString();
-    }
+    if( not createNewDatabaseFileWDefaultContent(targetFilename, zs_30360, dbs))
+        RETURN_ERR(QString(), qsl("db creation faild for database conversion -> abort"));
+
     // copy the data  - but if fields are missing: use only the available fields, leave the new fields to their default
     autoDb db(sourceFileName, qsl("convert"));
     // if foreign_keys are not enforced we can copy the tables in any order
@@ -179,25 +178,19 @@ QString convert_database_inplace( const QString& targetFilename, const dbstructu
         const int destFields = table.Fields().count();
         const int srcFields  = QSqlDatabase(db).record(table.Name()).count();
         if( destFields < srcFields) {
-            qCritical() << "destianation Table misses fields " << table.Name();
-            return QString();
+            RETURN_ERR(QString(), qsl("destianation Table misses fields "), table.Name ());
         } else if( destFields == srcFields) {
-            if( not copy_TableContent(table.Name(), autodetatch.alias() +"."+table.Name(), db)) {
-                qCritical() << "could not copy table while converting " << table.Name();
-                return QString();
-            }
+            if( not copy_TableContent(table.Name(), autodetatch.alias() +"."+table.Name(), db))
+                RETURN_ERR(QString(), qsl("could not copy table while converting "), table.Name ());
         } else if( destFields > srcFields) {
-            if( not copy_TableContent_byRecord(table.Name(), autodetatch.alias() +"."+table.Name(), db)) {
-                qCritical() << "could not copy table by record while converting " << table.Name();
-                return QString();
-            }
+            if( not copy_TableContent_byRecord(table.Name(), autodetatch.alias() +"."+table.Name(), db))
+                RETURN_ERR(QString(), qsl("could not copy table by record while converting "), table.Name ());
         }
     }
     // now we need to update sqlite_sequence, so that autoincrement index fields will be initialized correctly
-    if( not replace_TableContent(qsl("sqlite_sequence"), autodetatch.alias() +qsl(".sqlite_sequence"), db)) {
-            qCritical() << "could not update sqlite_sequence table";
-            return QString();
-    }
+    if( not replace_TableContent(qsl("sqlite_sequence"), autodetatch.alias() +qsl(".sqlite_sequence"), db))
+        RETURN_ERR(QString(), qsl("could not update sqlite_sequence table"));
+
     dbConfig::write_DBVersion(db, autodetatch.alias());
     transact.commit();
     return backupFileName;
