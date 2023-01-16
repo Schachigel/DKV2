@@ -70,7 +70,7 @@ QString moveToPreConversionCopy( const QString& file)
 *  to a new file "targetFName"
 */
 
-bool copy_open_DkDatabase( const QString& targetFName)
+bool copy_Database_fromDefaultConnection( const QString& targetFName)
 {   LOG_CALL_W(targetFName);
     if( QFile::exists(targetFName)) {
         if( backupFile( targetFName, qsl("db-bak")) && QFile::remove (targetFName))
@@ -148,8 +148,9 @@ QString convert_database_inplace( const QString& targetFilename, const dbstructu
     if( backupFileName.isEmpty())
         RETURN_ERR(QString(), qsl( "Could not create backup copy %1 from %2 - abort ").arg(backupFileName, targetFilename));
 
+    // the newly created copy will be the source for the following data copy
     const QString& sourceFileName =backupFileName;
-    // create a new db file with the current database structure
+    // create a new db file with the current database structure. This might be slightly different but compatible (no field deleted)
     if( not createNewDatabaseFileWDefaultContent(targetFilename, zs_30360, dbs))
         RETURN_ERR(QString(), qsl("db creation faild for database conversion -> abort"));
 
@@ -162,15 +163,6 @@ QString convert_database_inplace( const QString& targetFilename, const dbstructu
     autoDetachDb autodetatch( qsl("targetDb"), db.conName());
     autodetatch.attachDb(targetFilename);
     switchForeignKeyHandling(fkh_off, autodetatch.alias(), db);
-
-    // there are tables with default content but w/o primIndex -> replace will not work
-    // so they must be deleted first
-    if( &dbs == &dkdbstructur) {
-        QStringList tablesToBeDeleted {"Briefelemente"};
-        for( auto& table : qAsConst(tablesToBeDeleted)) {
-            executeSql_wNoRecords(qsl("DELETE FROM ") +autodetatch.alias() +qsl(".") +table, db);
-        }
-    }
 
     QVector<dbtable> tables =dbs.getTables();
     for(auto& table : qAsConst(tables))

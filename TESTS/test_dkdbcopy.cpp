@@ -152,7 +152,7 @@ void test_dkdbcopy::test_copyDatabase()
     // setup
     createTestDb_withRandomData();
     // code under test
-    QVERIFY(copy_open_DkDatabase(tempFileName));
+    QVERIFY(copy_Database_fromDefaultConnection(tempFileName));
     // verification
     QVERIFY(dbsHaveSameTables(testDbFilename, tempFileName));
 
