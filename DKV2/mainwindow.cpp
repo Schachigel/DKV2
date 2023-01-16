@@ -294,7 +294,7 @@ void MainWindow::on_action_menu_database_anonymous_copy_triggered()
     if( dbfile.isEmpty ())
         return;
     busycursor b;
-    if( not copy_database_mangled(dbfile)) {
+    if( not copy_database_fDC_mangled(dbfile)) {
         b.finish ();
         QMessageBox::information(this, qsl("Fehler beim Kopieren"),
                                  qsl("Die anonymisierte Datenbankkopie konnte nicht angelegt werden. "

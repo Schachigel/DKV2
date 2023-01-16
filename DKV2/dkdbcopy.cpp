@@ -48,7 +48,39 @@ bool copy_TableContent_byRecord( const QString& srcTbl, const QString& dstTbl, c
     }
     return true;
 }
+
+bool depersonalize(QString connection)
+{
+    QVector<QString> updateSql ={
+        {qsl("UPDATE Kreditoren SET Vorname = 'vorname_' || CAST(rowid as TEXT)")},
+        {qsl("UPDATE Kreditoren SET Nachname = 'nachname_' || CAST(rowid as TEXT)")},
+        {qsl("UPDATE Kreditoren SET Strasse = 'Strasse_' || CAST(rowid as TEXT)")},
+        {qsl("UPDATE Kreditoren SET Plz = printf('%04d', abs(random()%10000))")},
+        {qsl("UPDATE Kreditoren SET Stadt = 'Stadt_' || CAST(rowid as TEXT)")},
+        {qsl("UPDATE Kreditoren SET Email = 'email@server.fun'")},
+        {qsl("UPDATE Kreditoren SET Telefon = '01234567890'")},
+        {qsl("UPDATE Kreditoren SET Land = ''")},
+        {qsl("UPDATE Kreditoren SET Anmerkung = ''")},
+        {qsl("UPDATE Kreditoren SET Kontakt = ''")},
+        {qsl("UPDATE Kreditoren SET IBAN = ''")},
+        {qsl("UPDATE Kreditoren SET BIC = ''")},
+        {qsl("UPDATE Kreditoren SET Buchungskonto = ''")},
+        {qsl("UPDATE Vertraege SET Kennung = printf('Vertrag_%04d', rowid)")},
+        {qsl("UPDATE Vertraege SET Anmerkung = ''")},
+        {qsl("UPDATE exVertraege SET Kennung = printf('Vertrag_%04d', rowid)")},
+        {qsl("UPDATE exVertraege SET Anmerkung = ''")}
+    };
+    //QSqlQuery q(QSqlDatabase::database (connection));
+    for( const auto &sql : qAsConst(updateSql)) {
+        if( not executeSql_wNoRecords (sql, QSqlDatabase::database (connection)))
+            RETURN_ERR(false, qsl("depersonilize sql failed"));
+    }
+    RETURN_OK( true, QString(__FUNCTION__));
 }
+
+}
+
+// exported for testing
 QString moveToPreConversionCopy( const QString& file)
 {
     QFileInfo fi(file);
@@ -81,36 +113,7 @@ bool copy_Database_fromDefaultConnection( const QString& targetFName)
     return executeSql_wNoRecords (qsl("VACUUM INTO '%1'").arg(targetFName));
 }
 
-bool depersonalize(QString connection)
-{
-    QVector<QString> updateSql ={
-        {qsl("UPDATE Kreditoren SET Vorname = 'vorname_' || CAST(rowid as TEXT)")},
-        {qsl("UPDATE Kreditoren SET Nachname = 'nachname_' || CAST(rowid as TEXT)")},
-        {qsl("UPDATE Kreditoren SET Strasse = 'Strasse_' || CAST(rowid as TEXT)")},
-        {qsl("UPDATE Kreditoren SET Plz = printf('%04d', abs(random()%10000))")},
-        {qsl("UPDATE Kreditoren SET Stadt = 'Stadt_' || CAST(rowid as TEXT)")},
-        {qsl("UPDATE Kreditoren SET Email = 'email@server.fun'")},
-        {qsl("UPDATE Kreditoren SET Telefon = '01234567890'")},
-        {qsl("UPDATE Kreditoren SET Land = ''")},
-        {qsl("UPDATE Kreditoren SET Anmerkung = ''")},
-        {qsl("UPDATE Kreditoren SET Kontakt = ''")},
-        {qsl("UPDATE Kreditoren SET IBAN = ''")},
-        {qsl("UPDATE Kreditoren SET BIC = ''")},
-        {qsl("UPDATE Kreditoren SET Buchungskonto = ''")},
-        {qsl("UPDATE Vertraege SET Kennung = printf('Vertrag_%04d', rowid)")},
-        {qsl("UPDATE Vertraege SET Anmerkung = ''")},
-        {qsl("UPDATE exVertraege SET Kennung = printf('Vertrag_%04d', rowid)")},
-        {qsl("UPDATE exVertraege SET Anmerkung = ''")}
-    };
-    //QSqlQuery q(QSqlDatabase::database (connection));
-    for( const auto &sql : qAsConst(updateSql)) {
-        if( not executeSql_wNoRecords (sql, QSqlDatabase::database (connection)))
-            RETURN_ERR(false, qsl("depersonilize sql failed"));
-    }
-    RETURN_OK( true, QString(__FUNCTION__));
-}
-
-bool copy_database_mangled(const QString& targetfn, const QSqlDatabase& db /*=QSqlDatabase::database()*/)
+bool copy_database_fDC_mangled(const QString& targetfn, const QSqlDatabase& db /*=QSqlDatabase::database()*/)
 {
     if( QFile::exists(targetfn)) {
         backupFile(targetfn, qsl("db-bak"));

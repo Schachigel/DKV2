@@ -233,7 +233,7 @@ void test_dkdbcopy::test_copyDb_anonymous()
     QFile::remove (outputFile);
 
     // code under test & verification
-    QVERIFY( copy_database_mangled(outputFile));
+    QVERIFY( copy_database_fDC_mangled(outputFile));
     QVERIFY (dbsHaveSameTables( QSqlDatabase::database ().databaseName (), outputFile));
     closeDefaultDbConnection ();
 }
