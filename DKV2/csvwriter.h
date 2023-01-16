@@ -26,7 +26,6 @@ private:
     QList<QString> currentRow;
 };
 
-bool table2csv(const QString& filename, const QVector<dbfield>& fields, const QVector<QVariant::Type>& types =QVector<QVariant::Type>(), const QString& where =QString());
 bool StringLists2csv(const QString& filename, const QStringList& header, const QVector<QStringList>& lists);
 
 #endif // CSVWRITER_H

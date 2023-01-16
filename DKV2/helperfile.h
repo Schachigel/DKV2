@@ -8,9 +8,6 @@
 #include <stdlib.h>
 #endif
 
-
-
-QString tempPathTemplateFromPath (const QString& path, const QString& purpose =QString());
 QString getUniqueTempFilename(const QString& templateFileName, const QString &purpose);
 
 bool moveToBackup(const QString &fn);

@@ -3,18 +3,14 @@
 #include "helperfile.h"
 #include "appconfig.h"
 
-
-QString tempPathTemplateFromPath (const QString& path, const QString &purpose)
-{
-    QFileInfo fi(path);
-    QString result =path.left(path.size ()-fi.suffix ().size ()-1);
-    result = result.append(purpose).append(qsl("XXXXXX.")).append (fi.suffix ());
-    return result;
-}
-
 QString getUniqueTempFilename(const QString &templateFileName, const QString& purpose)
 {
-    QTemporaryFile temp {tempPathTemplateFromPath(templateFileName, purpose)};
+    // create a unique filename that indicates the purpose of the file
+    QFileInfo fi(templateFileName);
+    QString result =templateFileName.left(templateFileName.size ()-fi.suffix ().size ()-1);
+    result = result.append(purpose).append(qsl("_XXXXXX.")).append (fi.suffix ());
+    // make sure the file can be used
+    QTemporaryFile temp {result};
     temp.open();
     return temp.fileName();
 }
