@@ -83,6 +83,7 @@ struct contract
 
     void setLabel(const QString &l) { td.setValue(fnKennung, l); }
     QString label() const { return td.getValue(fnKennung).toString();};
+    bool updateLabel(const QString& newLabel);
 
     void setInterestRate( const double percent) {
         td.setValue(fnZSatz, QVariant (qRound(percent * 100.)));

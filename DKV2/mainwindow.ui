@@ -461,7 +461,7 @@
      <x>0</x>
      <y>0</y>
      <width>1073</width>
-     <height>28</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_database">
@@ -811,6 +811,11 @@
    </property>
    <property name="visible">
     <bool>true</bool>
+   </property>
+  </action>
+  <action name="action_cmenu_change_label">
+   <property name="text">
+    <string>Vertragskennung ändern</string>
    </property>
   </action>
  </widget>

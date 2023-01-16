@@ -193,6 +193,15 @@ tableindex_t contract::saveNewContract()
     }
     RETURN_ERR( SQLITE_invalidRowId, qsl("Fehler beim Einfügen eines neuen Vertrags"));
 }
+
+bool contract::updateLabel( const QString& newLabel)
+{   LOG_CALL;
+    if( isValidNewContractLabel(newLabel)) {
+        return td.updateValue (fnKennung, newLabel, id());
+    }
+    return false;
+}
+
 bool contract::updateComment(const QString &c)
 {
     RETURN_OK( td.updateValue(fnAnmerkung, c, id()), qsl("Contract Comment updated"));
