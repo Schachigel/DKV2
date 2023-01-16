@@ -23,6 +23,7 @@
 #include "dlgaskdate.h"
 #include "dlgchangecontracttermination.h"
 #include "dlginterestletters.h"
+#include "dlgaskcontractlabel.h"
 #include "transaktionen.h"
 #include "wiznew.h"
 #include "wiznewinvestment.h"
@@ -154,6 +155,22 @@ void changeContractTermination(contract *pc) {
   if (QDialog::Accepted == dlg.exec())
     pc->updateTerminationDate(dlg.endDate(), dlg.noticePeriod());
   return;
+}
+
+void changeContractLabel(contract* v)
+{   LOG_CALL;
+    QString oldLabel =v->label ();
+    dlgAskContractLabel dlg(oldLabel);
+    if( QDialog::Accepted == dlg.exec()){
+        if( oldLabel == dlg.newLabel ())
+            return;
+        // update the label in the database
+        if( not v->updateLabel (dlg.newLabel ())) {
+            QMessageBox::information (getMainWindow(), qsl("Aktualisierung fehlgeschlagen"), qsl("Die Kennung konnte nicht aktualisiert werden. Genaueres findest Du in der LOG Datei"));
+        }
+        return;
+    }
+    qInfo() << "change of contract label was cancled by the user";
 }
 
 void receiveInitialBooking(contract *v) {

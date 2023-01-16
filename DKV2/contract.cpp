@@ -193,6 +193,15 @@ tableindex_t contract::saveNewContract()
     }
     RETURN_ERR( SQLITE_invalidRowId, qsl("Fehler beim Einfügen eines neuen Vertrags"));
 }
+
+bool contract::updateLabel( const QString& newLabel)
+{   LOG_CALL;
+    if( isValidNewContractLabel(newLabel)) {
+        return td.updateValue (fnKennung, newLabel, id());
+    }
+    return false;
+}
+
 bool contract::updateComment(const QString &c)
 {
     RETURN_OK( td.updateValue(fnAnmerkung, c, id()), qsl("Contract Comment updated"));
@@ -643,7 +652,7 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
     v["dZinsgutschrift"] = 0.;
     v["dJahresZinsen"] = 0.;
     v["dSonstigeZinsen"] = 0.;
-   
+
     if (isTerminated)
     {
         QVector<booking> allBookings = getBookings(id(), BeginingOfTime, toDate, qsl("Datum ASC"), isTerminated);

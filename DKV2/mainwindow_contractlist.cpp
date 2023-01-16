@@ -375,11 +375,10 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
         menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
     } else {
         c.loadFromDb (contractId);
-        bool gotTerminationDate = (c.noticePeriod() == -1);
-
         if(c.initialBookingReceived())
         {
-            if( gotTerminationDate)
+            menu.addAction (ui->action_cmenu_change_label);
+            if( c.hasEndDate ())
                 ui->action_cmenu_terminate_contract->setText(qsl("Vertrag beenden"));
             else
                 ui->action_cmenu_terminate_contract->setText(qsl("Vertrag kündigen"));
@@ -405,6 +404,12 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
     return;
 //////////////////////////////////////
 
+}
+
+void MainWindow::on_action_cmenu_change_label_triggered()
+{   LOG_CALL;
+    changeContractLabel(contractUnderMouseMenu);
+    updateViews();
 }
 void MainWindow::on_action_cmenu_activate_contract_triggered()
 {   LOG_CALL;

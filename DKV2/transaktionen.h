@@ -9,6 +9,7 @@ void editCreditor(qlonglong creditorId);
 void changeContractComment(contract* c);
 void changeContractTermination(contract* c);
 
+void changeContractLabel(contract* v);
 void receiveInitialBooking(contract* v);
 void activateInterest(contract* v);
 void changeContractValue(contract* v);

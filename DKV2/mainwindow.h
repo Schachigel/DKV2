@@ -171,6 +171,8 @@ private slots:
 
     void on_btnAlleLoeschen_clicked();
 
+    void on_action_cmenu_change_label_triggered();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();
