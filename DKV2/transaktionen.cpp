@@ -160,19 +160,29 @@ void changeContractTermination(contract *pc)
 }
 
 void changeContractLabel(contract* v)
-{   LOG_CALL;
-    QString oldLabel =v->label ();
-    dlgAskContractLabel dlg(oldLabel);
-    if( QDialog::Accepted == dlg.exec()){
-        if( oldLabel == dlg.newLabel ())
+{
+    QString currentLabel =v->label ();
+    dlgAskContractLabel dlg(currentLabel);
+
+    while(QDialog::Accepted == dlg.exec()) {
+        if( currentLabel == dlg.newLabel ()) {
+            qInfo() << "label was not changed";
             return;
-        // update the label in the database
-        if( not v->updateLabel (dlg.newLabel ())) {
-            QMessageBox::information (getMainWindow(), qsl("Aktualisierung fehlgeschlagen"), qsl("Die Kennung konnte nicht aktualisiert werden. Genaueres findest Du in der LOG Datei"));
         }
-        return;
+        if( not isValidNewContractLabel (dlg.newLabel ())) {
+            qInfo() << "label is already in use: " << dlg.newLabel ();
+            QMessageBox::information (getMainWindow(), qsl("Aktualisierung fehlgeschlagen"), qsl("Die Kennung wird bereits verwendet. Bitte wähle eine andere."));
+            continue;
+        }
+        if( v->updateLabel (dlg.newLabel ())) {
+            return;
+        } else {
+            qInfo() << "update of label failed";
+            QMessageBox::information (getMainWindow(), qsl("Aktualisierung fehlgeschlagen"), qsl("Die Kennung konnte nicht aktualisiert werden. Genaueres findest Du in der LOG Datei"));
+            continue;
+        }
     }
-    qInfo() << "change of contract label was cancled by the user";
+    qInfo() << __FUNCTION__ << "Dialog was canceld";
 }
 
 void receiveInitialBooking(contract *v) {
