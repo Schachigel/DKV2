@@ -818,6 +818,11 @@
     <string>Vertragskennung ändern</string>
    </property>
   </action>
+  <action name="action_cmenu_change_conclusion_date">
+   <property name="text">
+    <string>Vertragsdatum ändern</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>

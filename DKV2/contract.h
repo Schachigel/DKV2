@@ -122,6 +122,7 @@ struct contract
 
     void setConclusionDate(const QDate d) { td.setValue(fnVertragsDatum, d);}
     QDate conclusionDate() const { return td.getValue(fnVertragsDatum).toDate();}
+    bool updateConclusionDate( const QDate& newD);
 
     void setInterestActive(bool active){ td.setValue(fnZAktiv, active);}
     bool interestActive() const { return td.getValue(fnZAktiv).toBool();}
@@ -145,10 +146,11 @@ struct contract
     bool updateInvestment(tableindex_t id);
     bool deleteInactive();
 
-    // contract activation
+    // contract activation / initial deposit
     bool bookInitialPayment(const QDate aDate, const double amount);
     bool initialBookingReceived() const;
     bool bookActivateInterest(const QDate d);
+    QDate initialPaymentDate();
 
     // other booking actions
     QDate nextDateForAnnualSettlement();

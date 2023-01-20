@@ -173,6 +173,8 @@ private slots:
 
     void on_action_cmenu_change_label_triggered();
 
+    void on_action_cmenu_change_conclusion_date_triggered();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();
