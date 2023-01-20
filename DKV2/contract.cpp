@@ -201,7 +201,9 @@ bool contract::updateLabel( const QString& newLabel)
     }
     return false;
 }
-
+bool contract::updateConclusionDate( const QDate& newD) {
+    return td.updateValue(fnVertragsDatum, QVariant(newD), id());
+}
 bool contract::updateComment(const QString &c)
 {
     RETURN_OK( td.updateValue(fnAnmerkung, c, id()), qsl("Contract Comment updated"));
@@ -279,6 +281,13 @@ bool contract::initialBookingReceived() const
             .arg( fn_bVertragsId, id_aS (), fn_bBuchungsArt, bookingTypeToNbrString(bookingType::deposit));
     return (0 < rowCount (tn_Buchungen, where));
 }
+QDate contract::initialPaymentDate()
+{
+    QVariant ipd =executeSingleValueSql (qsl("SELECT MIN(Datum) FROM Buchungen WHERE %1 = %2 AND %3 = %4")
+                                         .arg(fn_bVertragsId, id_aS (), fn_bBuchungsArt, bookingTypeToNbrString( bookingType::deposit)));
+    return ipd.toDate ();
+}
+
 bool contract::bookActivateInterest(const QDate d)
 {
     autoRollbackTransaction art;

@@ -158,7 +158,38 @@ void changeContractTermination(contract *pc)
         pc->updateTerminationDate(dlg.endDate(), dlg.noticePeriod());
     return;
 }
+void changeContractDate(contract* v)
+{
+    QDate actD  =v->initialPaymentDate ();
+    if( not actD.isValid ())
+        actD =QDate( EndOfTheFuckingWorld);
+    QDate oldCD =v->conclusionDate ();
+    dlgAskDate dlg;
+    dlg.setDate (oldCD);
+    dlg.setHeader (qsl("Vertragsdatum ändern"));
+    dlg.setMsg (qsl("Gib ein neues Datum für den Vertrag ein. <br>Es kann nicht vor dem ersten Zahlungseingang %1 liegen").arg(actD.toString("dd.MM.yyyy")));
 
+    while( QDialog::Accepted == dlg.exec()) {
+        if( dlg.date () == oldCD) {
+            qInfo() << __FUNCTION__ << " contract date was not changed";
+            return;
+        }
+        if( dlg.date () > actD) {
+            qInfo() << __FUNCTION__ << " date is too late";
+            QMessageBox::information (getMainWindow(), qsl("Ungültiges Datum"), qsl("Das Vertragsdatum muss vor dem ersten Geldeingang liegen."));
+            continue;
+        }
+        if( v->updateConclusionDate( dlg.date ())) {
+            qInfo() << __FUNCTION__ << " contract date was changed successfully to " << dlg.date ();
+            return;
+        } else {
+            qInfo() << __FUNCTION__ << " update of conclusion date was not successful";
+            QMessageBox::information (getMainWindow(), qsl("Aktualisierung fehlgeschlagen"), qsl("Das Vertragsdatum konnte nicht aktualisiert werden. Genaueres findest Du in der LOG Datei"));
+            continue;
+        }
+    }
+    qInfo() << __FUNCTION__ << " Dialog was canceled";
+}
 void changeContractLabel(contract* v)
 {
     QString currentLabel =v->label ();
@@ -175,6 +206,7 @@ void changeContractLabel(contract* v)
             continue;
         }
         if( v->updateLabel (dlg.newLabel ())) {
+            qInfo() << "Label was changed to " << dlg.newLabel ();
             return;
         } else {
             qInfo() << "update of label failed";
@@ -182,7 +214,7 @@ void changeContractLabel(contract* v)
             continue;
         }
     }
-    qInfo() << __FUNCTION__ << "Dialog was canceld";
+    qInfo() << __FUNCTION__ << " Dialog was canceld";
 }
 
 void receiveInitialBooking(contract *v) {

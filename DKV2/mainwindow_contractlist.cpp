@@ -352,7 +352,7 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
 
 // this ugly global makes the contract, on which the context menu was called,
 // available in the handler functions
-namespace{
+namespace {
 contract* contractUnderMouseMenu =nullptr;
 }
 
@@ -378,6 +378,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
         if(c.initialBookingReceived())
         {
             menu.addAction (ui->action_cmenu_change_label);
+            menu.addAction (ui->action_cmenu_change_conclusion_date);
             if( c.hasEndDate ())
                 ui->action_cmenu_terminate_contract->setText(qsl("Vertrag beenden"));
             else
@@ -390,6 +391,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
         }
         else
         {
+            menu.addAction (ui->action_cmenu_change_conclusion_date);
             menu.addAction(ui->action_cmenu_activate_contract);
             menu.addAction(ui->action_cmenu_delete_inactive_contract); // passive Verträge können gelöscht werden
         }
@@ -404,6 +406,12 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
     return;
 //////////////////////////////////////
 
+}
+
+void MainWindow::on_action_cmenu_change_conclusion_date_triggered()
+{   LOG_CALL;
+    changeContractDate(contractUnderMouseMenu);
+    updateViews();
 }
 
 void MainWindow::on_action_cmenu_change_label_triggered()
