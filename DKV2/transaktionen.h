@@ -11,6 +11,7 @@ void changeContractTermination(contract* c);
 
 void changeContractDate(contract* v);
 void changeContractLabel(contract* v);
+void changeInitialPaymentDate(contract* v);
 void receiveInitialBooking(contract* v);
 void activateInterest(contract* v);
 void changeContractValue(contract* v);

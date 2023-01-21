@@ -40,12 +40,12 @@ void test_contract::test_activateContract()
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
 
-    QVERIFY(cont.initialBookingReceived() == false);
+    QVERIFY(cont.initialPaymentReceived() == false);
     QVERIFY( not cont.bookInitialPayment(QDate(), 1000.)); // invalid date
     double amount =cont.plannedInvest();
     QVERIFY(cont.bookInitialPayment(QDate::currentDate(), amount)); // valid date
     // Vertragsabschluss ist innerhalb der letzten 2 Jahre in zufälligen Verträgen
-    QVERIFY(cont.initialBookingReceived() == true);
+    QVERIFY(cont.initialPaymentReceived() == true);
     booking latest =cont.latestBooking ();
     QCOMPARE(latest.date, QDate::currentDate());
     QCOMPARE(latest.amount, amount);

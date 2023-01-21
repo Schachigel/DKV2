@@ -9,7 +9,8 @@ dlgAskDate::dlgAskDate(QWidget *parent) : QDialog(parent)
     header =new QLabel( qsl("Abgelaufene Geldanlagen beenden"));
 
     msg =new QLabel(qsl("Wähle das Datum bis zu dem Geldanlagen geschlossen werden sollen.<p>Alle Geldanlagen, deren Endedatum vor diesem Datum liegt, werden geschlossen."));
-    msg->setWordWrap(true);
+    msg->setWordWrap(false);
+    msg->setTextFormat (Qt::RichText);
 
     dateEdit =new QDateEdit(QDate::currentDate(), this);
     dateEdit->setDisplayFormat(qsl("dd.MM.yyyy"));

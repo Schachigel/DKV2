@@ -208,6 +208,14 @@ bool contract::updateComment(const QString &c)
 {
     RETURN_OK( td.updateValue(fnAnmerkung, c, id()), qsl("Contract Comment updated"));
 }
+bool contract::updateInitialPaymentDate(const QDate& newD)
+{
+    QString sql { qsl("UPDATE Buchungen SET  Datum = '%1' "
+                   "WHERE id == ("
+                   "SELECT MIN(rowid) FROM Buchungen WHERE VertragsId = %2 AND BuchungsArt = 1)").arg (newD.toString (Qt::ISODate), id_aS())
+                };
+    return executeSql_wNoRecords (sql);
+}
 bool contract::updateTerminationDate(QDate termination, int noticePeriod)
 {
     autoRollbackTransaction art;
@@ -257,7 +265,7 @@ bool contract::bookInitialPayment(const QDate date, const double amount)
     // INITIAL payments may be on YearEnd, others not (because this is the date for
     // annual settlements ONLY
 
-    if (initialBookingReceived()) {
+    if (initialPaymentReceived()) {
         error = qsl("Already active contract can not be activated");
     } else if ( not date.isValid()) {
         error = qsl("Invalid Date");
@@ -273,7 +281,7 @@ bool contract::bookInitialPayment(const QDate date, const double amount)
     RETURN_ERR( false, qsl("Failed to execut activation on contract "), id_aS(), qsl(" ["), date.toString() , d2euro(amount), qsl("]"));
     return false;
 }
-bool contract::initialBookingReceived() const
+bool contract::initialPaymentReceived() const
 {
     // there should be one deposits in the bookings list
     // there might be "interest activation" bookings?
@@ -286,6 +294,13 @@ QDate contract::initialPaymentDate()
     QVariant ipd =executeSingleValueSql (qsl("SELECT MIN(Datum) FROM Buchungen WHERE %1 = %2 AND %3 = %4")
                                          .arg(fn_bVertragsId, id_aS (), fn_bBuchungsArt, bookingTypeToNbrString( bookingType::deposit)));
     return ipd.toDate ();
+}
+bool contract::noBookingButInitial()
+{
+    QString sql {qsl("SELECT count(*) FROM %1 WHERE %2 = %3 AND %4 < %5")
+                .arg(tn_Buchungen, fn_bVertragsId, id_aS (), fn_bBuchungsArt,
+                     bookingTypeToNbrString(bookingType::setInterestActive))};
+    return 1 == executeSingleValueSql (sql).toInt ();
 }
 
 bool contract::bookActivateInterest(const QDate d)
@@ -464,7 +479,7 @@ bool contract::payout(const QDate d, double amount, bool payoutInterest)
 }
 bool contract::cancel(const QDate d)
 {   LOG_CALL;
-    if( not initialBookingReceived()) {
+    if( not initialPaymentReceived()) {
         qInfo() << "an inactive contract can not be canceled. It should be deleted.";
         return false;
     }
@@ -488,7 +503,7 @@ bool contract::finalize(bool simulate, const QDate finDate,
         RETURN_ERR( false, qsl("finalize date before last booking"));
     if( not isValidRowId(id()))
         RETURN_ERR( false, qsl("invalid contract id"));
-    if( not initialBookingReceived())
+    if( not initialPaymentReceived())
         RETURN_ERR( false, qsl("could not finalize inactive contract"));
 
     qlonglong id_to_be_deleted = id();
@@ -608,7 +623,7 @@ QString contract::toString(const QString &title) const
         stream << qsl("[contract was not saved or loaded from DB]") << qsl("\n");
     else
         stream << qsl("[id, cred.Id:") << id_aS() << qsl(", ") << i2s(creditorId()) << qsl("]") << qsl("\n");
-    if( not initialBookingReceived()) {
+    if( not initialPaymentReceived()) {
         stream << "Wert (gepl.):     " << plannedInvest() << qsl("\n");
         stream << "Zinssatz (gepl.): " << interestRate() << qsl("\n");
         return ret;
