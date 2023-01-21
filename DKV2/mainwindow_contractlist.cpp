@@ -375,10 +375,12 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
         menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
     } else {
         c.loadFromDb (contractId);
-        if(c.initialBookingReceived())
+        if(c.initialPaymentReceived())
         {
             menu.addAction (ui->action_cmenu_change_label);
             menu.addAction (ui->action_cmenu_change_conclusion_date);
+            if( c.noBookingButInitial ())
+                menu.addAction (ui->action_cmenu_change_initialPayment_date);
             if( c.hasEndDate ())
                 ui->action_cmenu_terminate_contract->setText(qsl("Vertrag beenden"));
             else
@@ -417,6 +419,11 @@ void MainWindow::on_action_cmenu_change_conclusion_date_triggered()
 void MainWindow::on_action_cmenu_change_label_triggered()
 {   LOG_CALL;
     changeContractLabel(contractUnderMouseMenu);
+    updateViews();
+}
+void MainWindow::on_action_cmenu_change_initialPayment_date_triggered()
+{   LOG_CALL;
+    changeInitialPaymentDate(contractUnderMouseMenu);
     updateViews();
 }
 void MainWindow::on_action_cmenu_activate_contract_triggered()

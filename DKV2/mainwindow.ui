@@ -823,6 +823,11 @@
     <string>Vertragsdatum ändern</string>
    </property>
   </action>
+  <action name="action_cmenu_change_initialPayment_date">
+   <property name="text">
+    <string>Datum Geldeingang ändern</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>

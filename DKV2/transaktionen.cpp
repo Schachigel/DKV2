@@ -144,7 +144,7 @@ void changeContractTermination(contract *pc) {
   creditor cred(pc->creditorId());
   dlgChangeContractTermination dlg(getMainWindow());
 
-  if (pc->initialBookingReceived())
+  if (pc->initialPaymentReceived())
     dlg.setMinContractTerminationDate(pc->latestBooking().date);
   else
     dlg.setMinContractTerminationDate(pc->conclusionDate().addDays(1));
@@ -160,12 +160,13 @@ void changeContractDate(contract* v)
 {
     QDate actD  =v->initialPaymentDate ();
     if( not actD.isValid ())
-        actD =QDate( EndOfTheFuckingWorld);
+        actD =QDate( EndOfTheFuckingWorld); // any contract conclusion date should be valid, if initial booking was not made
     QDate oldCD =v->conclusionDate ();
     dlgAskDate dlg;
     dlg.setDate (oldCD);
     dlg.setHeader (qsl("Vertragsdatum ändern"));
-    dlg.setMsg (qsl("Gib ein neues Datum für den Vertrag ein. <br>Es kann nicht vor dem ersten Zahlungseingang %1 liegen").arg(actD.toString("dd.MM.yyyy")));
+    dlg.setMsg (qsl("Gib ein neues Datum für den Vertrag ein. <p>Es muss vor dem ersten Zahlungseingang %1 liegen")
+                .arg(actD.toString("dd.MM.yyyy")));
 
     while( QDialog::Accepted == dlg.exec()) {
         if( dlg.date () == oldCD) {
@@ -174,7 +175,8 @@ void changeContractDate(contract* v)
         }
         if( dlg.date () > actD) {
             qInfo() << __FUNCTION__ << " date is too late";
-            QMessageBox::information (getMainWindow(), qsl("Ungültiges Datum"), qsl("Das Vertragsdatum muss vor dem ersten Geldeingang liegen."));
+            QMessageBox::information (getMainWindow(), qsl("Ungültiges Datum"),
+                                      qsl("Das Vertragsdatum muss vor dem ersten Geldeingang liegen."));
             continue;
         }
         if( v->updateConclusionDate( dlg.date ())) {
@@ -182,7 +184,8 @@ void changeContractDate(contract* v)
             return;
         } else {
             qInfo() << __FUNCTION__ << " update of conclusion date was not successful";
-            QMessageBox::information (getMainWindow(), qsl("Aktualisierung fehlgeschlagen"), qsl("Das Vertragsdatum konnte nicht aktualisiert werden. Genaueres findest Du in der LOG Datei"));
+            QMessageBox::information (getMainWindow(), qsl("Aktualisierung fehlgeschlagen"),
+                         qsl("Das Vertragsdatum konnte nicht aktualisiert werden. Genaueres findest Du in der LOG Datei"));
             continue;
         }
     }
@@ -214,7 +217,45 @@ void changeContractLabel(contract* v)
     }
     qInfo() << __FUNCTION__ << " Dialog was canceld";
 }
+void changeInitialPaymentDate(contract* v)
+{
+    QDate currentIPDate {v->initialPaymentDate ()};
+    if( not currentIPDate.isValid ()) {
+        qCritical() << "Contract has no initial payment -> one should not come here";
+        return;
+    }
 
+    QDate conclusionDate { v->conclusionDate ()}; // b-date has to be > conclusion
+    dlgAskDate dlg;
+    dlg.setDate (currentIPDate);
+    dlg.setHeader (qsl("Datum des Geldeingangs ändern"));
+    dlg.setMsg (qsl("Gib das aktualisierte Datum für den Geldeingang ein.<p>Es muss nach dem "
+                    "Vertragsdatum %1 liegen.").arg(conclusionDate.toString( "dd.MM.yyyy")));
+    while( QDialog::Accepted == dlg.exec ()) {
+        if(dlg.date() == currentIPDate) {
+            qInfo() << __FUNCTION__ << " initial payment date was not changed";
+            return;
+        }
+        if( dlg.date() < conclusionDate) {
+            qInfo() << __FUNCTION__ << " date is too early";
+            QMessageBox::information (getMainWindow(), qsl("Ungültiges Datum"),
+                                      qsl("Das Datum des Geldeingangs muss nach dem Vertragsdatum %1 liegen.")
+                                      .arg(conclusionDate.toString(qsl("dd.MM.yyyy"))));
+            continue;
+        }
+        if( v->updateInitialPaymentDate(dlg.date())) {
+            qInfo() << __FUNCTION__ << " initial payment date successfully changed";
+            return;
+        } else  {
+            qInfo() << __FUNCTION__ << " update of initial payment date was not successful";
+            QMessageBox::information (getMainWindow(), qsl("Aktualisierung fehlgeschlagen"),
+                         qsl("Das Datum des Geldeingangs konnte nicht aktualisiert werden. "
+                             "Genaueres findest Du in der LOG Datei"));
+            continue;
+        }
+    }
+    qInfo() << __FUNCTION__ << " dialog was canceled";
+}
 void receiveInitialBooking(contract *v) {
   LOG_CALL;
   creditor cred(v->creditorId());
@@ -274,7 +315,7 @@ void activateInterest(contract *v) {
 
 void changeContractValue(contract *pc) {
   LOG_CALL;
-  if (not pc->initialBookingReceived()) {
+  if (not pc->initialPaymentReceived()) {
     qCritical() << "tried to changeContractValue of an inactive contract";
     Q_ASSERT(false);
     return;
