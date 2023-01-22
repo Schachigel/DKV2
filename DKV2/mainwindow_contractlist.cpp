@@ -18,10 +18,6 @@
 /////////////////////////////////////////////////
 // Contracts List & deleted contracts list
 /////////////////////////////////////////////////
-namespace {
-bool showDeletedContracts =false;
-}
-
 void MainWindow::on_action_menu_contracts_listview_triggered()
 {   LOG_CALL;
     showDeletedContracts =false;
@@ -371,6 +367,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
     if (showDeletedContracts) {
         c.loadExFromDb (contractId);
         menu.addAction(ui->action_cmenu_contracts_EndLetter);
+        menu.addAction (ui->action_cmenu_contracts_delete_deleted);
         bc.finish ();
         menu.exec(ui->CreditorsTableView->mapToGlobal(pos));
     } else {
@@ -465,6 +462,11 @@ void MainWindow::on_action_cmenu_contracts_EndLetter_triggered()
 {
     LOG_CALL;
     finalizeContractLetter(contractUnderMouseMenu);
+    updateViews();
+}
+void MainWindow::on_action_cmenu_contracts_delete_deleted_triggered()
+{   LOG_CALL;
+    deleteFinalizedContract(contractUnderMouseMenu);
     updateViews();
 }
 
