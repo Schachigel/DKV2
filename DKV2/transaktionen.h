@@ -19,6 +19,7 @@ void annualSettlement();
 QVariantList getContractList(qlonglong creditorId, QDate startDate, QDate endDate, bool isTerminated);
 void annualSettlementLetters();
 void finalizeContractLetter(contract *c);
+void deleteFinalizedContract(contract *c);
 
 void deleteInactiveContract(contract *c);
 void terminateContract(contract* c);

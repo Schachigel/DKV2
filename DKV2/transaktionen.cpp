@@ -814,6 +814,20 @@ void finalizeContractLetter(contract *c)
     qInfo() << "Vertragsabschlussdokument erfolgreich angelegt";
 }
 
+void deleteFinalizedContract( contract *c)
+{
+    if( QMessageBox::Yes != QMessageBox::question(getMainWindow (), qsl("Beendeten Vertrag löschen"),
+                          qsl("Soll der Vertrag %1 entgültig aus der Datenbank gelöscht werden?").arg(c->label ()),
+                          QMessageBox::Yes|QMessageBox::No)) {
+        return;
+    }
+    autoRollbackTransaction arbt;
+    executeSql_wNoRecords (qsl("DELETE FROM exBuchungen WHERE VertragsId = %1").arg(c->id_aS ()));
+    executeSql_wNoRecords (qsl("DELETE FROM exVertraege WHERE id = %1").arg(c->id_aS ()));
+    executeSql_wNoRecords (qsl("DELETE FROM Kreditoren  WHERE id = %1").arg(c->creditorId ()));
+    arbt.commit ();
+}
+
 /*************************/
 /*** investments        **/
 /*************************/

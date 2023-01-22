@@ -177,9 +177,12 @@ private slots:
 
     void on_action_cmenu_change_initialPayment_date_triggered();
 
+    void on_action_cmenu_contracts_delete_deleted_triggered();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();
+    bool showDeletedContracts =false;
     void prepare_deleted_contracts_list_view();
     void prepare_valid_contracts_list_view();
     void prepare_contracts_list_view();

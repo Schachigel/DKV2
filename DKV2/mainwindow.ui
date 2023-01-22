@@ -828,6 +828,11 @@
     <string>Datum Geldeingang ändern</string>
    </property>
   </action>
+  <action name="action_cmenu_contracts_delete_deleted">
+   <property name="text">
+    <string>Aus der Datenbank entfernen</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>

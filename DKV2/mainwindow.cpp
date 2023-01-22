@@ -179,20 +179,25 @@ void MainWindow::updateViews()
             temp->select();
     }
     if( ui->stackedWidget->currentIndex() == contractsListPageIndex) {
-        ContractProxyModel *contractsTableProxy_ptr = qobject_cast<ContractProxyModel *>(ui->contractsTableView->model());
-        QSqlTableModel *bookingsTableModel_ptr = qobject_cast<QSqlTableModel *>(ui->bookingsTableView->model());
-        ContractTableModel *contractsTableModel_ptr = nullptr;
-        if (contractsTableProxy_ptr)
-            contractsTableModel_ptr = qobject_cast<ContractTableModel *>(contractsTableProxy_ptr->sourceModel());
-        if (contractsTableModel_ptr)
-            contractsTableModel_ptr->select();
-        if (bookingsTableModel_ptr)
-            bookingsTableModel_ptr->select();
-        ui->contractsTableView->resizeColumnsToContents();
-        ui->contractsTableView->resizeRowsToContents();
-        ui->bookingsTableView->resizeColumnsToContents();
-        if (contractsTableModel_ptr)
-            contractsTableModel_ptr->setCol13ExtraData();
+        if( showDeletedContracts) {
+            prepare_deleted_contracts_list_view ();
+        } else {
+            prepare_contracts_list_view ();
+//            ContractProxyModel *contractsTableProxy_ptr = qobject_cast<ContractProxyModel *>(ui->contractsTableView->model());
+//            QSqlTableModel *bookingsTableModel_ptr = qobject_cast<QSqlTableModel *>(ui->bookingsTableView->model());
+//            ContractTableModel *contractsTableModel_ptr = nullptr;
+//            if (contractsTableProxy_ptr)
+//                contractsTableModel_ptr = qobject_cast<ContractTableModel *>(contractsTableProxy_ptr->sourceModel());
+//            if (contractsTableModel_ptr)
+//                contractsTableModel_ptr->select();
+//            if (bookingsTableModel_ptr)
+//                bookingsTableModel_ptr->select();
+//            ui->contractsTableView->resizeColumnsToContents();
+//            ui->contractsTableView->resizeRowsToContents();
+//            ui->bookingsTableView->resizeColumnsToContents();
+//            if (contractsTableModel_ptr)
+//                contractsTableModel_ptr->setCol13ExtraData();
+        }
     }
     if( ui->stackedWidget->currentIndex() == investmentsPageIndex) {
         prepare_investmentsListView();
