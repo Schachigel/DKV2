@@ -643,8 +643,10 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
     v["dZinsgutschrift"] = 0.;
     v["dJahresZinsen"] = 0.;
     v["dSonstigeZinsen"] = 0.;
-   
-    if (isTerminated)
+
+    /* special handling for contracts terminated in requested period to
+       calculate the overall payed interest */
+    if (isTerminated && plannedEndDate() >= fromDate && plannedEndDate() <= toDate)
     {
         QVector<booking> allBookings = getBookings(id(), BeginingOfTime, toDate, qsl("Datum ASC"), isTerminated);
 
