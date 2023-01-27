@@ -393,8 +393,15 @@ QVariantList getContractList(qlonglong creditorId, QDate startDate,
 
   for (const auto &id : qAsConst(ids)) {
     contract contr(id.toLongLong(), isTerminated);
+    /* Forget contracts that don't exist in the period.
+       i.e. conclusionDate must be before end of period
+       and contract must not have been finalized before start of period */
+    bool oldFinalizedContract = isTerminated && (contr.plannedEndDate() < startDate);
+    if (contr.conclusionDate() <= endDate && oldFinalizedContract == false)
+    {
     QVariantMap contractMap = contr.toVariantMap(startDate, endDate);
     vl.append(contractMap);
+    }
   }
   return vl;
 }
