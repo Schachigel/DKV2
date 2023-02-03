@@ -623,6 +623,7 @@ void annualSettlementLetters()
             QString fileName = qsl("Jahresinfo %1_%3, %4")
                                .arg(i2s(yearOfSettlement), credRecord.lastname(),
                                     credRecord.firstname().append(qsl(".pdf")));
+            fileName =fileName.replace("/", "-").replace("*", "#").replace (":", "#");
             /* save data for eMail batch file */
             currCreditorMap[qsl("Vertraege")] = vl;
             currCreditorMap["SumBetrag"] = d2euro(totalBetrag);
