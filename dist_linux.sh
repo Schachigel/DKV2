@@ -45,8 +45,7 @@ mkdir -p ${BUILDDIR}
 pushd ${BUILDDIR}
 
 ${QMAKE} ${SOURCEDIR}/${PROJECTFILE} \
-    -spec linux-g++ \
-    CONFIG+=qtquickcompiler
+    -spec linux-g++ 
 
 ${MAKE} -j6
 
@@ -60,7 +59,7 @@ mv ${BUILDDIR}/DKV2 .
 popd
 
 unset LD_LIBRARY_PATH # Remove too old Qt from the search path
-LINUXDEPLOYQT_OPTS=-unsupported-bundle-everything
+#LINUXDEPLOYQT_OPTS=-unsupported-bundle-everything
 # PATH=${QTDIR}/bin:${PATH} ${LINUXDEPLOYQT} app/DKV2 -bundle-non-qt-libs ${LINUXDEPLOYQT_OPTS}
 EXTRA_PLUGINS="platforms/libqxcb.so,platformthemes/libqgtk3.so,styles/libqgtk3style.so"
 PATH=${QTDIR}/bin:${PATH} ${LINUXDEPLOYQT} app/DKV2 \
