@@ -113,32 +113,24 @@ bool copy_Database_fromDefaultConnection( const QString& targetFName)
     return executeSql_wNoRecords (qsl("VACUUM INTO '%1'").arg(targetFName));
 }
 
-bool copy_database_fDC_mangled(const QString& targetfn, const QSqlDatabase& db /*=QSqlDatabase::database()*/)
-{
+bool copy_database_fDC_mangled(const QString& targetfn)
+{   LOG_CALL_W(targetfn);
     if( QFile::exists(targetfn)) {
-        backupFile(targetfn, qsl("db-bak"));
-        QFile::remove (targetfn);
+        if( backupFile( targetfn, qsl("db-bak")) && QFile::remove (targetfn))
+            qInfo() << "target file backup created & target file deleted";
+        else
+            RETURN_ERR(false, qsl("copy target could not be removed"));
     }
-    // vacuum copy db into memory
-    dbCloser closer(qsl("inMemoryDbConnection"));
-    QSqlDatabase inMemoryDb =QSqlDatabase::addDatabase ( dbTypeName, closer.conName);
-    inMemoryDb.setConnectOptions (qsl("QSQLITE_OPEN_URI;QSQLITE_ENABLE_SHARED_CACHE"));
-    QString inMemoryDbName {qsl("file::memory:")};
-    inMemoryDb.setDatabaseName (inMemoryDbName);
-
-    if( not inMemoryDb.open())
-        RETURN_ERR(false, qsl("db open failed on in memory db "), inMemoryDb.lastError ().text ());
-
-    if( not executeSql_wNoRecords( qsl("VACUUM INTO '%1'").arg(inMemoryDbName), db))
-        RETURN_ERR(false, qsl("Vacuum into in memory db failed"));
-
-    if( not depersonalize(closer.conName))
-        RETURN_ERR(false, qsl("failed to replace personal data"));
-
-    if( not executeSql_wNoRecords (qsl("VACUUM INTO '%1'").arg(targetfn), inMemoryDb))
-        RETURN_ERR( false, qsl("Vacuum into disk db failed"));
-
-    return true;
+    if( not executeSql_wNoRecords (qsl("VACUUM INTO '%1'").arg(targetfn)))
+        RETURN_ERR(false, qsl("failed to vacuum into target db"));
+  { // scope of autoDb
+        autoDb targetDb(targetfn, dbCopyConnection);
+        if( depersonalize (dbCopyConnection))
+            return true;
+  } // EO scope of autoDb
+    // get rid of the file, if private data was not deleted
+    QFile::remove (targetfn);
+    RETURN_ERR( false, qsl("anonymouse copy failed"));
 }
 
 /*
