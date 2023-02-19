@@ -20,16 +20,15 @@
 // #include "wizannualsettlement.h"
 #include "busycursor.h"
 #include "dlgannualsettlement.h"
+#include "dlgaskcontractlabel.h"
 #include "dlgaskdate.h"
 #include "dlgchangecontracttermination.h"
 #include "dlginterestletters.h"
-#include "dlgaskcontractlabel.h"
 #include "transaktionen.h"
 #include "wiznew.h"
 #include "wiznewinvestment.h"
 
-void newCreditorAndContract()
-{
+void newCreditorAndContract() {
     LOG_CALL;
     creditor cred;
     wizNew wiz(cred, getMainWindow());
@@ -95,8 +94,7 @@ void newCreditorAndContract()
     return;
 }
 
-void editCreditor(qlonglong creditorId)
-{
+void editCreditor(qlonglong creditorId) {
     LOG_CALL;
     creditor cred(creditorId);
     wizNew wiz(cred, getMainWindow());
@@ -117,8 +115,7 @@ void editCreditor(qlonglong creditorId)
         }
     }
 }
-void changeContractComment(contract *pc)
-{
+void changeContractComment(contract *pc) {
     LOG_CALL;
     creditor cred(pc->creditorId());
     QInputDialog ipd(getMainWindow());
@@ -139,17 +136,16 @@ void changeContractComment(contract *pc)
     else
         qCritical() << "update comment failed";
 }
-void changeContractTermination(contract *pc)
-{
+void changeContractTermination(contract *pc) {
     LOG_CALL;
     qInfo() << pc->toString();
     creditor cred(pc->creditorId());
     dlgChangeContractTermination dlg(getMainWindow());
 
-  if (pc->initialPaymentReceived())
-    dlg.setMinContractTerminationDate(pc->latestBooking().date);
-  else
-    dlg.setMinContractTerminationDate(pc->conclusionDate().addDays(1));
+    if (pc->initialPaymentReceived())
+        dlg.setMinContractTerminationDate(pc->latestBooking().date);
+    else
+        dlg.setMinContractTerminationDate(pc->conclusionDate().addDays(1));
 
     dlg.setEndDate(pc->plannedEndDate());
     dlg.setNoticePeriod(pc->noticePeriod());
@@ -158,109 +154,126 @@ void changeContractTermination(contract *pc)
         pc->updateTerminationDate(dlg.endDate(), dlg.noticePeriod());
     return;
 }
-void changeContractDate(contract* v)
-{
-    QDate actD  =v->initialPaymentDate ();
-    if( not actD.isValid ())
-        actD =QDate( EndOfTheFuckingWorld); // any contract conclusion date should be valid, if initial booking was not made
-    QDate oldCD =v->conclusionDate ();
+void changeContractDate(contract *v) {
+    QDate actD = v->initialPaymentDate();
+    if (not actD.isValid())
+        actD =
+                QDate(EndOfTheFuckingWorld); // any contract conclusion date should be
+    // valid, if initial booking was not made
+    QDate oldCD = v->conclusionDate();
     dlgAskDate dlg;
-    dlg.setDate (oldCD);
-    dlg.setHeader (qsl("Vertragsdatum ändern"));
-    dlg.setMsg (qsl("Gib ein neues Datum für den Vertrag ein. <p>Es muss vor dem ersten Zahlungseingang %1 liegen")
-                .arg(actD.toString("dd.MM.yyyy")));
+    dlg.setDate(oldCD);
+    dlg.setHeader(qsl("Vertragsdatum ändern"));
+    dlg.setMsg(qsl("Gib ein neues Datum für den Vertrag ein. <p>Es muss vor dem "
+                   "ersten Zahlungseingang %1 liegen")
+               .arg(actD.toString("dd.MM.yyyy")));
 
-    while( QDialog::Accepted == dlg.exec()) {
-        if( dlg.date () == oldCD) {
+    while (QDialog::Accepted == dlg.exec()) {
+        if (dlg.date() == oldCD) {
             qInfo() << __FUNCTION__ << " contract date was not changed";
             return;
         }
-        if( dlg.date () > actD) {
+        if (dlg.date() > actD) {
             qInfo() << __FUNCTION__ << " date is too late";
-            QMessageBox::information (getMainWindow(), qsl("Ungültiges Datum"),
-                                      qsl("Das Vertragsdatum muss vor dem ersten Geldeingang liegen."));
+            QMessageBox::information(
+                        getMainWindow(), qsl("Ungültiges Datum"),
+                        qsl("Das Vertragsdatum muss vor dem ersten Geldeingang liegen."));
             continue;
         }
-        if( v->updateConclusionDate( dlg.date ())) {
-            qInfo() << __FUNCTION__ << " contract date was changed successfully to " << dlg.date ();
+        if (v->updateConclusionDate(dlg.date())) {
+            qInfo() << __FUNCTION__ << " contract date was changed successfully to "
+                    << dlg.date();
             return;
         } else {
-            qInfo() << __FUNCTION__ << " update of conclusion date was not successful";
-            QMessageBox::information (getMainWindow(), qsl("Aktualisierung fehlgeschlagen"),
-                         qsl("Das Vertragsdatum konnte nicht aktualisiert werden. Genaueres findest Du in der LOG Datei"));
+            qInfo() << __FUNCTION__
+                    << " update of conclusion date was not successful";
+            QMessageBox::information(
+                        getMainWindow(), qsl("Aktualisierung fehlgeschlagen"),
+                        qsl("Das Vertragsdatum konnte nicht aktualisiert werden. Genaueres "
+                            "findest Du in der LOG Datei"));
             continue;
         }
     }
     qInfo() << __FUNCTION__ << " Dialog was canceled";
 }
-void changeContractLabel(contract* v)
-{
-    QString currentLabel =v->label ();
+void changeContractLabel(contract *v) {
+    QString currentLabel = v->label();
     dlgAskContractLabel dlg(currentLabel);
 
-    while(QDialog::Accepted == dlg.exec()) {
-        if( currentLabel == dlg.newLabel ()) {
+    while (QDialog::Accepted == dlg.exec()) {
+        if (currentLabel == dlg.newLabel()) {
             qInfo() << "label was not changed";
             return;
         }
-        if( not isValidNewContractLabel (dlg.newLabel ())) {
-            qInfo() << "label is already in use: " << dlg.newLabel ();
-            QMessageBox::information (getMainWindow(), qsl("Aktualisierung fehlgeschlagen"), qsl("Die Kennung wird bereits verwendet. Bitte wähle eine andere."));
+        if (not isValidNewContractLabel(dlg.newLabel())) {
+            qInfo() << "label is already in use: " << dlg.newLabel();
+            QMessageBox::information(
+                        getMainWindow(), qsl("Aktualisierung fehlgeschlagen"),
+                        qsl("Die Kennung wird bereits verwendet. Bitte wähle eine andere."));
             continue;
         }
-        if( v->updateLabel (dlg.newLabel ())) {
-            qInfo() << "Label was changed to " << dlg.newLabel ();
+        if (v->updateLabel(dlg.newLabel())) {
+            qInfo() << "Label was changed to " << dlg.newLabel();
             return;
         } else {
             qInfo() << "update of label failed";
-            QMessageBox::information (getMainWindow(), qsl("Aktualisierung fehlgeschlagen"), qsl("Die Kennung konnte nicht aktualisiert werden. Genaueres findest Du in der LOG Datei"));
+            QMessageBox::information(
+                        getMainWindow(), qsl("Aktualisierung fehlgeschlagen"),
+                        qsl("Die Kennung konnte nicht aktualisiert werden. Genaueres findest "
+                            "Du in der LOG Datei"));
             continue;
         }
     }
     qInfo() << __FUNCTION__ << " Dialog was canceld";
 }
-void changeInitialPaymentDate(contract* v)
-{
-    QDate currentIPDate {v->initialPaymentDate ()};
-    if( not currentIPDate.isValid ()) {
-        qCritical() << "Contract has no initial payment -> one should not come here";
+void changeInitialPaymentDate(contract *v) {
+    QDate currentIPDate{v->initialPaymentDate()};
+    if (not currentIPDate.isValid()) {
+        qCritical()
+                << "Contract has no initial payment -> one should not come here";
         return;
     }
 
-    QDate conclusionDate { v->conclusionDate ()}; // b-date has to be > conclusion
+    QDate conclusionDate{v->conclusionDate()}; // b-date has to be > conclusion
     dlgAskDate dlg;
-    dlg.setDate (currentIPDate);
-    dlg.setHeader (qsl("Datum des Geldeingangs ändern"));
-    dlg.setMsg (qsl("Gib das aktualisierte Datum für den Geldeingang ein.<p>Es muss nach dem "
-                    "Vertragsdatum %1 liegen.").arg(conclusionDate.toString( "dd.MM.yyyy")));
-    while( QDialog::Accepted == dlg.exec ()) {
-        if(dlg.date() == currentIPDate) {
+    dlg.setDate(currentIPDate);
+    dlg.setHeader(qsl("Datum des Geldeingangs ändern"));
+    dlg.setMsg(qsl("Gib das aktualisierte Datum für den Geldeingang ein.<p>Es "
+                   "muss nach dem "
+                   "Vertragsdatum %1 liegen.")
+               .arg(conclusionDate.toString("dd.MM.yyyy")));
+    while (QDialog::Accepted == dlg.exec()) {
+        if (dlg.date() == currentIPDate) {
             qInfo() << __FUNCTION__ << " initial payment date was not changed";
             return;
         }
-        if( dlg.date() < conclusionDate) {
+        if (dlg.date() < conclusionDate) {
             qInfo() << __FUNCTION__ << " date is too early";
-            QMessageBox::information (getMainWindow(), qsl("Ungültiges Datum"),
-                                      qsl("Das Datum des Geldeingangs muss nach dem Vertragsdatum %1 liegen.")
-                                      .arg(conclusionDate.toString(qsl("dd.MM.yyyy"))));
+            QMessageBox::information(
+                        getMainWindow(), qsl("Ungültiges Datum"),
+                        qsl("Das Datum des Geldeingangs muss nach dem Vertragsdatum %1 "
+                            "liegen.")
+                        .arg(conclusionDate.toString(qsl("dd.MM.yyyy"))));
             continue;
         }
-        if( v->updateInitialPaymentDate(dlg.date())) {
+        if (v->updateInitialPaymentDate(dlg.date())) {
             qInfo() << __FUNCTION__ << " initial payment date successfully changed";
             return;
-        } else  {
-            qInfo() << __FUNCTION__ << " update of initial payment date was not successful";
-            QMessageBox::information (getMainWindow(), qsl("Aktualisierung fehlgeschlagen"),
-                         qsl("Das Datum des Geldeingangs konnte nicht aktualisiert werden. "
-                             "Genaueres findest Du in der LOG Datei"));
+        } else {
+            qInfo() << __FUNCTION__
+                    << " update of initial payment date was not successful";
+            QMessageBox::information(
+                        getMainWindow(), qsl("Aktualisierung fehlgeschlagen"),
+                        qsl("Das Datum des Geldeingangs konnte nicht aktualisiert werden. "
+                            "Genaueres findest Du in der LOG Datei"));
             continue;
         }
     }
     qInfo() << __FUNCTION__ << " dialog was canceled";
 }
 void receiveInitialBooking(contract *v) {
-  LOG_CALL;
-  creditor cred(v->creditorId());
+    LOG_CALL;
+    creditor cred(v->creditorId());
 
     wizInitialPayment wiz(getMainWindow());
     wiz.label = v->label();
@@ -284,8 +297,7 @@ void receiveInitialBooking(contract *v) {
     }
     return;
 }
-void activateInterest(contract *v)
-{
+void activateInterest(contract *v) {
     LOG_CALL;
     booking lastB = v->latestBooking();
     Q_ASSERT(lastB.type != bookingType::non);
@@ -316,13 +328,12 @@ void activateInterest(contract *v)
     }
 }
 
-void changeContractValue(contract *pc)
-{
+void changeContractValue(contract *pc) {
     LOG_CALL;
     if (not pc->initialPaymentReceived()) {
-      qCritical() << "tried to changeContractValue of an inactive contract";
-      Q_ASSERT(false);
-      return;
+        qCritical() << "tried to changeContractValue of an inactive contract";
+        Q_ASSERT(false);
+        return;
     }
 
     creditor cre(pc->creditorId());
@@ -353,8 +364,7 @@ namespace {
 void print_as_csv(const QDate &bookingDate,
                   const QVector<contract> &changedContracts,
                   const QVector<QDate> &startOfInterrestCalculation,
-                  const QVector<booking> &asBookings)
-{
+                  const QVector<booking> &asBookings) {
     csvwriter csv(qsl(";"));
     csv.addColumns(
                 qsl("Vorname; Nachname; Email; Strasse; Plz; Stadt; IBAN; Kennung; "
@@ -393,8 +403,7 @@ void print_as_csv(const QDate &bookingDate,
     csv.saveAndShowInExplorer(filename);
 }
 } // namespace
-void annualSettlement()
-{
+void annualSettlement() {
     LOG_CALL;
     QDate bookingDate = dateOfnextSettlement();
     if (not bookingDate.isValid() or bookingDate.isNull()) {
@@ -441,8 +450,7 @@ void annualSettlement()
 /*** Ausdrucke Jahresend Briefe *******/
 /*************************/
 namespace {
-void createInitialLetterTemplates()
-{
+void createInitialLetterTemplates() {
     LOG_CALL;
     QDir outDir(appConfig::Outdir());
     outDir.mkdir(qsl("vorlagen"));
@@ -473,8 +481,7 @@ void createInitialLetterTemplates()
                                     qsl("zinsbrief.css"));
 }
 
-int askUserForYearOfPrintouts()
-{
+int askUserForYearOfPrintouts() {
     LOG_CALL;
     QVector<int> years = yearsWithAnnualBookings();
     if (years.isEmpty()) {
@@ -493,8 +500,7 @@ int askUserForYearOfPrintouts()
 } // namespace
 
 QVariantList getContractList(qlonglong creditorId, QDate startDate,
-                             QDate endDate, bool isTerminated)
-{
+                             QDate endDate, bool isTerminated) {
     QVariantList vl;
     /* get list of contracts */
     QVector<QVariant> ids = executeSingleColumnSql(
@@ -516,8 +522,7 @@ and contract must not have been finalized before start of period */
     }
     return vl;
 }
-void annualSettlementLetters()
-{
+void annualSettlementLetters() {
     LOG_CALL;
     int yearOfSettlement = askUserForYearOfPrintouts();
     if (yearOfSettlement <= 0) {
@@ -623,7 +628,7 @@ void annualSettlementLetters()
             QString fileName = qsl("Jahresinfo %1_%3, %4")
                                .arg(i2s(yearOfSettlement), credRecord.lastname(),
                                     credRecord.firstname().append(qsl(".pdf")));
-            fileName =fileName.replace("/", "-").replace("*", "#").replace (":", "#");
+            fileName = fileName.replace("/", "-").replace("*", "#").replace(":", "#");
             /* save data for eMail batch file */
             currCreditorMap[qsl("Vertraege")] = vl;
             currCreditorMap["SumBetrag"] = d2euro(totalBetrag);
@@ -695,8 +700,7 @@ void annualSettlementLetters()
 /*** contract endings   **/
 /*************************/
 
-void deleteInactiveContract(contract *c)
-{
+void deleteInactiveContract(contract *c) {
     LOG_CALL;
     // contracts w/o bookings can be deleted
     // todo: if creditor has no other (active or deleted) contracts: propose
@@ -716,8 +720,7 @@ void deleteInactiveContract(contract *c)
         creditor::remove(c->creditorId());
     }
 }
-void terminateContract(contract *pc)
-{
+void terminateContract(contract *pc) {
     /* Contract termination is a 2 step process:
    * - Cancel the contract
    *      -> set an end date
@@ -732,8 +735,7 @@ void terminateContract(contract *pc)
     else
         cancelContract(*pc);
 }
-void terminateContract_Final(contract &c)
-{
+void terminateContract_Final(contract &c) {
     LOG_CALL;
     wizTerminateContract wiz(getMainWindow(), c);
     wiz.exec();
@@ -756,8 +758,7 @@ void terminateContract_Final(contract &c)
 
     return;
 }
-void cancelContract(contract &c)
-{
+void cancelContract(contract &c) {
     LOG_CALL;
     wizCancelContract wiz(getMainWindow());
     wiz.c = c;
@@ -773,8 +774,7 @@ void cancelContract(contract &c)
     }
     c.cancel(wiz.field(qsl("date")).toDate());
 }
-void finalizeContractLetter(contract *c)
-{
+void finalizeContractLetter(contract *c) {
     LOG_CALL;
 
     busycursor bc;
@@ -815,18 +815,23 @@ void finalizeContractLetter(contract *c)
     qInfo() << "Vertragsabschlussdokument erfolgreich angelegt";
 }
 
-void deleteFinalizedContract( contract *c)
-{
-    if( QMessageBox::Yes != QMessageBox::question(getMainWindow (), qsl("Beendeten Vertrag löschen"),
-                          qsl("Soll der Vertrag %1 entgültig aus der Datenbank gelöscht werden?").arg(c->label ()),
-                          QMessageBox::Yes|QMessageBox::No)) {
+void deleteFinalizedContract(contract *c) {
+    if (QMessageBox::Yes !=
+            QMessageBox::question(getMainWindow(), qsl("Beendeten Vertrag löschen"),
+                                  qsl("Soll der Vertrag %1 entgültig aus der "
+                                      "Datenbank gelöscht werden?")
+                                  .arg(c->label()),
+                                  QMessageBox::Yes | QMessageBox::No)) {
         return;
     }
     autoRollbackTransaction arbt;
-    executeSql_wNoRecords (qsl("DELETE FROM exBuchungen WHERE VertragsId = %1").arg(c->id_aS ()));
-    executeSql_wNoRecords (qsl("DELETE FROM exVertraege WHERE id = %1").arg(c->id_aS ()));
-    executeSql_wNoRecords (qsl("DELETE FROM Kreditoren  WHERE id = %1").arg(c->creditorId ()));
-    arbt.commit ();
+    executeSql_wNoRecords(
+                qsl("DELETE FROM exBuchungen WHERE VertragsId = %1").arg(c->id_aS()));
+    executeSql_wNoRecords(
+                qsl("DELETE FROM exVertraege WHERE id = %1").arg(c->id_aS()));
+    executeSql_wNoRecords(
+                qsl("DELETE FROM Kreditoren  WHERE id = %1").arg(c->creditorId()));
+    arbt.commit();
 }
 
 /*************************/
@@ -834,8 +839,7 @@ void deleteFinalizedContract( contract *c)
 /*************************/
 
 qlonglong createInvestment_matchingContract(int &interest, QDate &from,
-                                            QDate &to)
-{
+                                            QDate &to) {
     LOG_CALL;
     // give the user a UI to create a investment which will match a certain set of
     // contract data
@@ -864,8 +868,7 @@ qlonglong createInvestment_matchingContract(int &interest, QDate &from,
 
     return newId;
 }
-void createInvestment()
-{
+void createInvestment() {
     LOG_CALL;
     wizNewInvestment wiz;
     wiz.initStartDate(QDate::currentDate());
