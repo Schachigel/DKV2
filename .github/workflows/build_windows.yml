@@ -1,13 +1,13 @@
-- name: Install Qt
+- name: Windows build
   uses: jurplel/install-qt-action@v3
   with:
     version: '5.15.2'
     host: 'windows'
     target: 'desktop'
     arch: 'win64_msvc2019_64'
-    dir: '${{ github.workspace }}/DKV2/'
+    dir: '${{ github.workspace }}/example/'
     install-deps: 'true'
-#    modules: 'qtcharts qtwebengine'
+    modules: 'qtcharts qtwebengine'
     archives: 'qtbase qtsvg'
     cache: 'false'
     cache-key-prefix: 'install-qt-action'
