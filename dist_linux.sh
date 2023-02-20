@@ -36,7 +36,7 @@ echo "Building with QTDIR: \`${QTDIR}\`"
 ##### download linuxdeployqt
 
 if [ ! -f $LINUXDEPLOYQT ]; then
-	curl -o "$LINUXDEPLOYQT" ""https://github.com/probonopd/linuxdeployqt/releases/download/5/$_LINUXDEPLOYQT"
+	curl -o "$LINUXDEPLOYQT" "https://github.com/probonopd/linuxdeployqt/releases/download/5/linuxdeployqt-5-x86_64.AppImage"
 fi
 
 ##### build #####
@@ -59,7 +59,7 @@ mv ${BUILDDIR}/DKV2 .
 popd
 
 unset LD_LIBRARY_PATH # Remove too old Qt from the search path
-#LINUXDEPLOYQT_OPTS=-unsupported-bundle-everything
+LINUXDEPLOYQT_OPTS=-unsupported-bundle-everything
 # PATH=${QTDIR}/bin:${PATH} ${LINUXDEPLOYQT} app/DKV2 -bundle-non-qt-libs ${LINUXDEPLOYQT_OPTS}
 EXTRA_PLUGINS="platforms/libqxcb.so,platformthemes/libqgtk3.so,styles/libqgtk3style.so"
 PATH=${QTDIR}/bin:${PATH} ${LINUXDEPLOYQT} app/DKV2 \
