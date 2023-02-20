@@ -28,7 +28,7 @@ VERSION=`git describe --tags 2> /dev/null || echo $GIT_VERSION`
 
 LINUXDEPLOYQT="linuxdeployqt"
 if ! command -v $LINUXDEPLOYQT &> /dev/null; then
-	LINUXDEPLOYQT=`pwd`/linuxdeployqt-continuous-x86_64.AppImage
+	LINUXDEPLOYQT=`pwd`/linuxdeployqt-5-x86_64.AppImage
 fi
 
 echo "Building with QTDIR: \`${QTDIR}\`"
@@ -36,7 +36,7 @@ echo "Building with QTDIR: \`${QTDIR}\`"
 ##### download linuxdeployqt
 
 if [ ! -f $LINUXDEPLOYQT ]; then
-	curl -o "$LINUXDEPLOYQT" "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+	curl -o "$LINUXDEPLOYQT" ""https://github.com/probonopd/linuxdeployqt/releases/download/5/$_LINUXDEPLOYQT"
 fi
 
 ##### build #####
@@ -45,7 +45,7 @@ mkdir -p ${BUILDDIR}
 pushd ${BUILDDIR}
 
 ${QMAKE} ${SOURCEDIR}/${PROJECTFILE} \
-    -spec linux-g++ 
+    -spec linux-g++
 
 ${MAKE} -j6
 

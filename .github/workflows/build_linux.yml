@@ -18,15 +18,13 @@ jobs:
     - name: Check out
       uses: actions/checkout@v3
     - name: Get linuxdeployqt
-      run:  wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+      run:  wget -c -nv ""https://github.com/probonopd/linuxdeployqt/releases/download/5/$_LINUXDEPLOYQT"
     - name: Make linuxdeployqt executable
       run: chmod a+x linuxdeployqt-continuous-x86_64.AppImage
     - name: Install libfuse2
       run: sudo apt-get install libfuse2
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
-      with:
-        modules: 'qtcharts'
     - name: Build and package for Linux
       run: ./dist_linux.sh
     - name: Save artificat
