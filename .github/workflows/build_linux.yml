@@ -25,6 +25,8 @@ jobs:
       run: sudo apt-get install libfuse2
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
+    - name: Add missing libraries
+      run: sudo apt-get libxkbcommon-x11-0
     - name: Build and package for Linux
       run: ./dist_linux.sh
     - name: Save artificat
