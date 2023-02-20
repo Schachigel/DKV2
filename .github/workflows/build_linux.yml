@@ -20,7 +20,7 @@ jobs:
     - name: Get linuxdeployqt
       run:  wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/5/linuxdeployqt-5-x86_64.AppImage"
     - name: Make linuxdeployqt executable
-      run: chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+      run: chmod a+x linuxdeployqt-5-x86_64.AppImage
     - name: Install libfuse2
       run: sudo apt-get install libfuse2
     - name: Install Qt
