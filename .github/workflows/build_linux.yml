@@ -25,8 +25,13 @@ jobs:
       run: sudo apt-get install libfuse2
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
+<<<<<<< HEAD
       with:
         modules: 'qtcharts'
+=======
+    - name: Add missing libraries
+      run: sudo apt-get install libxkbcommon-x11-0
+>>>>>>> 817c064 (Make Linux build Great Again  (#100))
     - name: Build and package for Linux
       run: ./dist_linux.sh
     - name: Save artificat

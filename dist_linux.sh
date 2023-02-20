@@ -60,9 +60,14 @@ mv ${BUILDDIR}/DKV2 .
 popd
 
 unset LD_LIBRARY_PATH # Remove too old Qt from the search path
+<<<<<<< HEAD
+=======
+#LINUXDEPLOYQT_OPTS=-unsupported-bundle-everything
+>>>>>>> 817c064 (Make Linux build Great Again  (#100))
 LINUXDEPLOYQT_OPTS=-unsupported-allow-new-glibc
 # PATH=${QTDIR}/bin:${PATH} ${LINUXDEPLOYQT} app/DKV2 -bundle-non-qt-libs ${LINUXDEPLOYQT_OPTS}
-EXTRA_PLUGINS="platforms/libqxcb.so,platformthemes/libqgtk3.so,styles/libqgtk3style.so"
+# EXTRA_PLUGINS="platforms/libqxcb.so,platformthemes/libqgtk3.so,styles/libqgtk3style.so"
+EXTRA_PLUGINS="platforms/libqxcb.so,platformthemes/libqgtk3.so"
 PATH=${QTDIR}/bin:${PATH} ${LINUXDEPLOYQT} app/DKV2 \
 	-extra-plugins=${EXTRA_PLUGINS} \
 	-appimage ${LINUXDEPLOYQT_OPTS}
