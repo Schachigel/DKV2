@@ -833,6 +833,14 @@
     <string>Aus der Datenbank entfernen</string>
    </property>
   </action>
+  <action name="action_cmenu_undo_last_booking">
+   <property name="text">
+    <string>Letzte Buchung löschen</string>
+   </property>
+   <property name="toolTip">
+    <string>Die letzte Buchung wird gelöscht und der Vertragswert angepasst</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>

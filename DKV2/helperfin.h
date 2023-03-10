@@ -29,6 +29,10 @@ inline QString d2euro(double x) {
     static QLocale locale;
     return locale.toCurrencyString(x);
 }
+inline QString ct2euro(int ct) {
+    static QLocale locale;
+    return locale.toCurrencyString (euroFromCt (ct));
+}
 
 inline QString prozent2prozent_str(double x) {
     static QLocale locale;

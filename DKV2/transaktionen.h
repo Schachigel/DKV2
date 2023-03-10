@@ -15,6 +15,7 @@ void changeInitialPaymentDate(contract* v);
 void receiveInitialBooking(contract* v);
 void activateInterest(contract* v);
 void changeContractValue(contract* v);
+void undoLastBooking(contract* v);
 void annualSettlement();
 QVariantList getContractList(qlonglong creditorId, QDate startDate, QDate endDate, bool isTerminated);
 void annualSettlementLetters();

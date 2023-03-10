@@ -179,6 +179,8 @@ private slots:
 
     void on_action_cmenu_contracts_delete_deleted_triggered();
 
+    void on_action_cmenu_undo_last_booking_triggered();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();
