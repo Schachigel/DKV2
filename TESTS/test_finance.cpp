@@ -6,45 +6,54 @@
 #include "financaltimespan.h"
 #include "test_finance.h"
 
-// https://stackoverflow.com/questions/30168056/what-is-the-exact-excel-days360-algorithm
-int t_helper_dateDiff360(int startDay, int startMonth, int startYear, int endDay, int endMonth, int endYear, bool methodUS)
+bool lastDayOfMonth(const QDate d)
 {
-    if (startDay == 31) {
-        --startDay;
-    } else if (methodUS and (startMonth == 2 and (startDay == 29 or (startDay == 28 and not QDate::isLeapYear(startYear))))) {
-        startDay = 30;
+    switch (d.month())
+    {
+    case 1:
+    case 3:
+    case 5:
+    case 7:
+    case 8:
+    case 10:
+    case 12:
+        return d.day() == 31;
+        break;
+    case 4:
+    case 6:
+    case 9:
+    case 11:
+        return d.day() == 30;
     }
-    if (endDay == 31) {
-        if (methodUS and startDay not_eq 30) {
-            endDay = 1;
-            if (endMonth == 12) {
-                ++endYear;
-                endMonth = 1;
-            } else {
-                ++endMonth;
-            }
-        } else {
-            endDay = 30;
-        }
-    }
-    return endDay + endMonth * 30 + endYear * 360 - startDay - startMonth * 30 - startYear * 360;
+    // month == 2
+    if( QDate::isLeapYear (d.year()))
+        return d.day() == 29;
+    else
+        return d.day() == 28;
 }
 
-int t_helper_dateDiff360(const QDate &StartDate, const QDate &EndDate, bool methodUS)
+// https://stackoverflow.com/questions/30168056/what-is-the-exact-excel-days360-algorithm
+int t_helper_dateDiff360( QDate StartDate, QDate EndDate/*, bool methodUS*/)
 {
    int startDay = StartDate.day();
-   int startMonth = StartDate.month();
-   int startYear = StartDate.year();
+//   int startMonth = StartDate.month();
+//   int startYear = StartDate.year();
    int endDay = EndDate.day();
-   int endMonth = EndDate.month();
-   int endYear = EndDate.year();
-   int ret = t_helper_dateDiff360(startDay, startMonth, startYear, endDay, endMonth, endYear, methodUS);
-   return ret;
+//   int endMonth = EndDate.month();
+//   int endYear = EndDate.year();
+
+   if (startDay == 31) {
+        startDay =30;
+   }
+   if (endDay == 31)
+        endDay = 30;
+
+   return endDay + EndDate.month() * 30 + EndDate.year() * 360 - startDay - StartDate.month() * 30 - StartDate.year() * 360;
 }
 
 int t_helper_lookupAnzTageZeitraum(const QDate &StartDate, const QDate &EndDate)
 {
-   int ret = t_helper_dateDiff360(StartDate, EndDate, false);
+   int ret = t_helper_dateDiff360(StartDate, EndDate/*, false*/);
    return ret;
 }
 
