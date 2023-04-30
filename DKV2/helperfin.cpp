@@ -4,7 +4,7 @@
 #include "helperfin.h"
 #include "appconfig.h"
 
-int TageZwischen_30_360(QDate von, QDate bis)
+int TageZwischen_30_360( const QDate von, const QDate bis)
 {   // finanzmathematischer Abstand zwischen zwei Daten im selben Jahr
     Q_ASSERT( von.year() == bis.year());
     if( von.year() not_eq bis.year()) {
@@ -28,8 +28,7 @@ int TageZwischen_30_360(QDate von, QDate bis)
              << " =" << tageErsterMonat+tageVolleMonate+tageLetzterMonat;
     return tageErsterMonat + tageVolleMonate + tageLetzterMonat;
 }
-
-int TageBisJahresende_30_360(QDate d)
+int TageBisJahresende_30_360( const QDate d)
 {
     if( not d.isValid ())
         qCritical() << "Invalid date for interest calculation";
@@ -46,11 +45,13 @@ int TageBisJahresende_30_360(QDate d)
     int days { 30 -d.day()};
     return 30*month +days;
 }
-int TageSeitJahresAnfang_30_360(QDate d)
+int TageSeitJahresAnfang_30_360( const QDate d)
 {
-    return 30* (d.month()-1) + ((d.day() == 31) ? 30 : d.day());
+    int kompletteMonateSeitJahresanfang =(d.month()-1);
+    return 30* kompletteMonateSeitJahresanfang + ((d.day() == 31) ? 30 : d.day());
 }
-double ZinsesZins_30_360(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)
+double ZinsesZins_30_360( const double zins, const double wert,
+                         const QDate von, const QDate bis, const bool thesa)
 {
     qInfo().noquote() << "\n\nZinsberechnung (30/360) von " << von << " bis " << bis << ((thesa) ? (" thesaurierend\n") : ("ausschüttend\n"))
                        << "Wert: " << d2euro(wert) << " Zinssatz: " << prozent2prozent_str (zins) << "\n";
@@ -91,7 +92,7 @@ double ZinsesZins_30_360(const double zins, const double wert,const QDate von, c
     return r2(gesamtZins);
 }
 
-int TageZwischen_act_act(QDate von, QDate bis)
+int TageZwischen_act_act( const QDate von, const QDate bis)
 {
     Q_ASSERT(von.year () == bis.year());
     Q_ASSERT (bis >= von);
@@ -100,16 +101,16 @@ int TageZwischen_act_act(QDate von, QDate bis)
     qInfo() << "Tage(a/a) von " << von << " bis " << bis << ": " << days;
     return days;
 }
-int TageBisJahresende_act_act(QDate date)
+int TageBisJahresende_act_act( const QDate date)
 {
     return date.daysTo (QDate(date.year(), 12, 31));
 }
-int TageSeitJahresAnfang_act_act(QDate date)
+int TageSeitJahresAnfang_act_act( const QDate date)
 {
     return QDate(date.year()-1, 12, 31).daysTo (date);
 }
-
-double ZinsesZins_act_act(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)
+double ZinsesZins_act_act( const double zins, const double wert,
+                          const QDate von, const QDate bis, const bool thesa)
 {
     qInfo().noquote() << "\n\nZinsberechnung (act/act) von " << von << " bis " << bis << ((thesa) ? (" thesaurierend\n") : ("ausschüttend\n"));
     if( not (von.isValid() and bis.isValid()) or ( von > bis)) {
@@ -155,7 +156,7 @@ double ZinsesZins_act_act(const double zins, const double wert,const QDate von, 
 
 double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)
 {
-    QString susance =dbConfig::readString (ZINSUSANCE);
+   QString susance =dbConfig::readString (ZINSUSANCE);
     qInfo() << "Zinssusance configured in database: " << susance;
     if(  susance == qsl("act/act"))
         return ::ZinsesZins_act_act (zins, wert, von, bis, thesa);

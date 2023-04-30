@@ -35,20 +35,11 @@ bool lastDayOfMonth(const QDate d)
 // https://stackoverflow.com/questions/30168056/what-is-the-exact-excel-days360-algorithm
 int t_helper_dateDiff360( QDate StartDate, QDate EndDate/*, bool methodUS*/)
 {
-   int startDay = StartDate.day();
-//   int startMonth = StartDate.month();
-//   int startYear = StartDate.year();
-   int endDay = EndDate.day();
-//   int endMonth = EndDate.month();
-//   int endYear = EndDate.year();
-
-   if (startDay == 31) {
-        startDay =30;
-   }
-   if (endDay == 31)
-        endDay = 30;
-
-   return endDay + EndDate.month() * 30 + EndDate.year() * 360 - startDay - StartDate.month() * 30 - StartDate.year() * 360;
+   return (EndDate.day() == 31 ? 30 : EndDate.day())
+            +EndDate.month() * 30
+            +EndDate.year() * 360
+            -(StartDate.day() == 31 ? 30 : StartDate.day())
+            -StartDate.month() * 30 - StartDate.year() * 360;
 }
 
 int t_helper_lookupAnzTageZeitraum(const QDate &StartDate, const QDate &EndDate)
@@ -157,6 +148,7 @@ int t_helper_TageUndJahreImZeitraum(const QDate &von, const QDate &bis, int &Tag
 
 void test_finance::test_TageBisJahresende_data()
 {
+   // create test data with test helper functions and excel lookup table
     QTest::addColumn<QDate>("date");
     QTest::addColumn<int>("tageBisJe_excel");
     bool singleTestForDebugging = false;
