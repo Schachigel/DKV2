@@ -359,7 +359,7 @@ void changeContractValue(contract *pc) {
             pc->payout(date, amount, wiz.field(fnPayoutInterest).toBool());
         }
     } else
-        qInfo() << "contract change was cancled by the user";
+        qInfo() << "contract change was canceld by the user";
 }
 
 void undoLastBooking(contract* v)
@@ -763,9 +763,9 @@ void deleteInactiveContract(contract *c) {
     }
 }
 void terminateContract(contract *pc) {
-    /* Contract termination is a 2 step process:
+   /* Contract termination is a 2 step process:
    * - Cancel the contract
-   *      -> set an end date
+   *      -> set planned end date
    * - terminate contract
    *      -> set actual end date
    *      -> calculate interest and payout value

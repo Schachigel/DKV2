@@ -43,12 +43,16 @@ inline auto dbInterest2_str(int p) {
     return prozent2prozent_str(dbInterest2Interest (p));
 }
 
-int TageZwischen_30_360(QDate von, QDate bis);
-int TageBisJahresende_30_360(QDate d);
+int TageZwischen_30_360( const QDate von, const QDate bis);
+int TageBisJahresende_30_360( const QDate d);
+int TageSeitJahresAnfang_30_360( const QDate d);
 
-int TageSeitJahresAnfang_30_360(QDate d);
+double ZinsesZins_30_360( const double zins, const double wert,const QDate von, const QDate bis, const bool thesa=true);
 
-double ZinsesZins_30_360(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa=true);
+int TageZwischen_act_act( const QDate von, const QDate bis);
+int TageBisJahresende_act_act( const QDate d);
+int TageSeitJahresAnfang_act_act( const QDate d);
+
 double ZinsesZins_act_act(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa=true);
 double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa=true);
 
