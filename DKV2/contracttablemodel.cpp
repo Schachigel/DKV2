@@ -1,5 +1,6 @@
 
 #include "helper.h"
+#include "contract.h"
 #include "contracttablemodel.h"
 
 namespace {
@@ -36,19 +37,27 @@ QDate dateFromNP(const QString& s)
 int daysToContractEnd(const QString& s)
 {
     QDate d =dateFromNP(s);
+    int retval =-1;
     if( d.isValid())
-        return QDate::currentDate().daysTo(d);
+        retval= QDate::currentDate().daysTo(d);
     else
-        return daysUntilTheEndOfTheFuckingWorld;
+        retval= daysUntilTheEndOfTheFuckingWorld;
+    qDebug() << "daysToContractEnd: " << s << ", " << retval;
+    return retval;
 }
 } // namespace
 
 void ContractTableModel::setCol13ExtraData()
 {
-    for( int row=0; row< rowCount(); row++) {
+    qlonglong maxRow =rowCount();
+    if( maxRow ==256)
+        while (canFetchMore()) fetchMore();
+    maxRow =rowCount();
+    for( qlonglong row =0; row < maxRow; row++) {
         int cid =data(index( row, 0), Qt::DisplayRole).toInt();
         int dtce =daysToContractEnd(data(index(row, cp_ContractEnd), Qt::DisplayRole).toString());
         extraData.insert(cid, dtce);
+        qDebug() << "extra data: " << cid << ", " << dtce;
     }
 }
 
@@ -97,7 +106,7 @@ bool ContractProxyModel::lessThan(const QModelIndex &left, const QModelIndex &ri
     {
         QString leftString = sourceModel()->data(left, Qt::DisplayRole).toString();
         QString rightString = sourceModel()->data(right, Qt::DisplayRole).toString();
-        QRegularExpression re("([\\.,\\d]+)");
+        static QRegularExpression re("([\\.,\\d]+)");
         double leftValue = re.match(leftString).captured(1).toDouble();
         double rightValue = re.match(rightString).captured(1).toDouble();
 
