@@ -443,38 +443,42 @@ ORDER BY Year DESC
 )str")};
 // Übersicht ausgezahlte Zinsen
 const QString sqlInterestByYearOverview {qsl(R"str(
+with xBuchungen AS ( SELECT * FROM Buchungen UNION SELECT * FROM exBuchungen),
+
+xVertraege AS (SELECT * FROM Vertraege UNION SELECT * FROM exVertraege)
+
 SELECT
   STRFTIME('%Y', Datum) as Year,
-  SUM(Buchungen.Betrag) /100. as Summe,
+  SUM(xBuchungen.Betrag) /100. as Summe,
   'Jahreszins' as BA,
-  CASE WHEN Vertraege.thesaurierend = 0 THEN 'ausbezahlt'
-   WHEN Vertraege.thesaurierend = 1 THEN 'angerechnet'
-   WHEN Vertraege.thesaurierend = 2 THEN 'einbehalten'
+  CASE WHEN xVertraege.thesaurierend = 0 THEN 'ausbezahlt'
+   WHEN xVertraege.thesaurierend = 1 THEN 'angerechnet'
+   WHEN xVertraege.thesaurierend = 2 THEN 'einbehalten'
   END  as Thesa
-FROM Buchungen INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id
-WHERE Buchungen.BuchungsArt = 8
-GROUP BY Year, Buchungen.BuchungsArt, thesaurierend
+FROM xBuchungen INNER JOIN xVertraege ON xBuchungen.VertragsId = xVertraege.id
+WHERE xBuchungen.BuchungsArt = 8
+GROUP BY Year, xBuchungen.BuchungsArt, thesaurierend
 
 UNION
 
 SELECT
   STRFTIME('%Y', Datum) as Year,
-  SUM(Buchungen.Betrag) /100. as Summe,
+  SUM(xBuchungen.Betrag) /100. as Summe,
   'Jahreszins' as BA,
   '(gesamt)' AS Thesa
-FROM Buchungen INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id
-WHERE Buchungen.BuchungsArt = 8
-GROUP BY Year, Buchungen.BuchungsArt
+FROM xBuchungen INNER JOIN xVertraege ON xBuchungen.VertragsId = xVertraege.id
+WHERE xBuchungen.BuchungsArt = 8
+GROUP BY Year, xBuchungen.BuchungsArt
 
 UNION
 
 SELECT
   STRFTIME('%Y', Datum) as Year,
-  SUM(Buchungen.Betrag) /100. as Summe,
+  SUM(xBuchungen.Betrag) /100. as Summe,
   'unterjähriger Zins' as BA,
   '(gesamt)' as Thesa
-FROM Buchungen INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id
-WHERE Buchungen.BuchungsArt = 4
+FROM xBuchungen INNER JOIN xVertraege ON xBuchungen.VertragsId = xVertraege.id
+WHERE xBuchungen.BuchungsArt = 4
 GROUP BY Year
 
 ORDER BY YEAR DESC, Thesa DESC
