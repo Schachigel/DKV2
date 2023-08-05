@@ -443,45 +443,74 @@ ORDER BY Year DESC
 )str")};
 // Übersicht ausgezahlte Zinsen
 const QString sqlInterestByYearOverview {qsl(R"str(
-with xBuchungen AS ( SELECT * FROM Buchungen UNION SELECT * FROM exBuchungen),
+WITH xBuchungen AS ( SELECT * FROM Buchungen UNION SELECT * FROM exBuchungen),
+xVertraege AS (SELECT * FROM Vertraege UNION SELECT * FROM exVertraege),
+xTemp AS (
+SELECT
+  Datum as date,
+  STRFTIME('%Y', Datum) as Year,
+  SUM(xBuchungen.Betrag) /100. as Summe,
+  'Unterjährig Zinsen' as BA,
+  'ausgezahlt ' as Thesa
+FROM xBuchungen INNER JOIN xVertraege ON xBuchungen.VertragsId = xVertraege.id
+WHERE xBuchungen.BuchungsArt = 4 AND (SELECT COUNT(*) FROM xBuchungen WHERE Datum = date) = 3
+GROUP BY Year
 
-xVertraege AS (SELECT * FROM Vertraege UNION SELECT * FROM exVertraege)
+UNION
+
+SELECT
+  Datum as date,
+  STRFTIME('%Y', Datum) as Year,
+  SUM(xBuchungen.Betrag) /100. as Summe,
+  'Unterjährig Zinsen' as BA,
+  'angefallen' as Thesa
+FROM xBuchungen INNER JOIN xVertraege ON xBuchungen.VertragsId = xVertraege.id
+WHERE xBuchungen.BuchungsArt = 4 AND (SELECT COUNT(*) FROM xBuchungen WHERE Datum = date) = 2
+GROUP BY Year
+
+UNION
+
+SELECT
+  Datum as date,
+  STRFTIME('%Y', Datum) as Year,
+  SUM(xBuchungen.Betrag) /100. as Summe,
+  'Unterjährig Zinsen' as BA,
+  'gesamt' as Thesa
+FROM xBuchungen INNER JOIN xVertraege ON xBuchungen.VertragsId = xVertraege.id
+WHERE xBuchungen.BuchungsArt = 4
+GROUP BY Year
+
+)
 
 SELECT
   STRFTIME('%Y', Datum) as Year,
   SUM(xBuchungen.Betrag) /100. as Summe,
-  'Jahreszins' as BA,
+  'Zins aus Jahresendabrechnungen' as BA,
   CASE WHEN xVertraege.thesaurierend = 0 THEN 'ausbezahlt'
    WHEN xVertraege.thesaurierend = 1 THEN 'angerechnet'
    WHEN xVertraege.thesaurierend = 2 THEN 'einbehalten'
   END  as Thesa
 FROM xBuchungen INNER JOIN xVertraege ON xBuchungen.VertragsId = xVertraege.id
 WHERE xBuchungen.BuchungsArt = 8
-GROUP BY Year, xBuchungen.BuchungsArt, thesaurierend
+GROUP BY Year, thesaurierend
 
 UNION
 
 SELECT
   STRFTIME('%Y', Datum) as Year,
   SUM(xBuchungen.Betrag) /100. as Summe,
-  'Jahreszins' as BA,
-  '(gesamt)' AS Thesa
+  'Zins aus Jahresendabrechnungen' as BA,
+  'gesamt' AS Thesa
 FROM xBuchungen INNER JOIN xVertraege ON xBuchungen.VertragsId = xVertraege.id
 WHERE xBuchungen.BuchungsArt = 8
 GROUP BY Year, xBuchungen.BuchungsArt
 
 UNION
 
-SELECT
-  STRFTIME('%Y', Datum) as Year,
-  SUM(xBuchungen.Betrag) /100. as Summe,
-  'unterjähriger Zins' as BA,
-  '(gesamt)' as Thesa
-FROM xBuchungen INNER JOIN xVertraege ON xBuchungen.VertragsId = xVertraege.id
-WHERE xBuchungen.BuchungsArt = 4
-GROUP BY Year
+SELECT Year, Summe, BA, Thesa
+FROM xTemp
 
-ORDER BY YEAR DESC, Thesa DESC
+ORDER BY YEAR DESC, BA DESC, Thesa ASC
 )str"
 )};
 // Übersichten "Kurz info"
