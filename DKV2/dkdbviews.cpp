@@ -463,7 +463,7 @@ SELECT
   STRFTIME('%Y', Datum) as Year,
   SUM(xBuchungen.Betrag) /100. as Summe,
   'Unterjährig Zinsen' as BA,
-  'angefallen' as Thesa
+  'angerechnet' as Thesa
 FROM xBuchungen INNER JOIN xVertraege ON xBuchungen.VertragsId = xVertraege.id
 WHERE xBuchungen.BuchungsArt = 4 AND (SELECT COUNT(*) FROM xBuchungen WHERE Datum = date) = 2
 GROUP BY Year

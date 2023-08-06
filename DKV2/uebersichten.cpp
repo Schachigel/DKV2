@@ -243,19 +243,19 @@ void uebersichten::renderPayedInterestByYear()
     // tl.cols = QStringList...)
     tablelayout::section currentSec;
     for( int i=0; i <records.count(); i++) {
-        QString year = records[i].value(qsl("Year")).toString();
-        if( currentSec.header not_eq year) {
-            // save complte section
+        QString curYear = records[i].value(qsl("Year")).toString();
+        if( currentSec.header not_eq curYear) {
+            // change of year -> save complte section, ...
             if( i not_eq 0) tl.sections.push_back(currentSec);
-            // start new section
-            currentSec.header =year;
+            // ... and start new section
+            currentSec.header =curYear;
             currentSec.data.clear();
         }
 
         if (records[i].value(qsl("Summe")).toDouble() != 0.0) {
             currentSec.data.push_back(
                 {
-                    qsl("    "),
+//                    qsl("    "),
                     records[i].value(qsl("BA")).toString(),
                         records[i].value(qsl("Thesa")).toString(),
                         d2euro(records[i].value(qsl("Summe")).toDouble())
