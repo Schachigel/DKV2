@@ -450,8 +450,8 @@ SELECT
   Datum as date,
   STRFTIME('%Y', Datum) as Year,
   SUM(xBuchungen.Betrag) /100. as Summe,
-  'Unterjährig Zinsen' as BA,
-  'ausgezahlt ' as Thesa
+  'Unterjährige Zinsen' as BA,
+  ' ausgezahlte Zinsen ' as Thesa
 FROM xBuchungen INNER JOIN xVertraege ON xBuchungen.VertragsId = xVertraege.id
 WHERE xBuchungen.BuchungsArt = 4 AND (SELECT COUNT(*) FROM xBuchungen WHERE Datum = date) = 3
 GROUP BY Year
@@ -462,8 +462,8 @@ SELECT
   Datum as date,
   STRFTIME('%Y', Datum) as Year,
   SUM(xBuchungen.Betrag) /100. as Summe,
-  'Unterjährig Zinsen' as BA,
-  'angerechnet' as Thesa
+  'Unterjährige Zinsen' as BA,
+  ' angerechnete Zinsen ' as Thesa
 FROM xBuchungen INNER JOIN xVertraege ON xBuchungen.VertragsId = xVertraege.id
 WHERE xBuchungen.BuchungsArt = 4 AND (SELECT COUNT(*) FROM xBuchungen WHERE Datum = date) = 2
 GROUP BY Year
@@ -474,8 +474,8 @@ SELECT
   Datum as date,
   STRFTIME('%Y', Datum) as Year,
   SUM(xBuchungen.Betrag) /100. as Summe,
-  'Unterjährig Zinsen' as BA,
-  'gesamt' as Thesa
+  'Unterjährige Zinsen' as BA,
+  ' gesamte Zinsen' as Thesa
 FROM xBuchungen INNER JOIN xVertraege ON xBuchungen.VertragsId = xVertraege.id
 WHERE xBuchungen.BuchungsArt = 4
 GROUP BY Year
@@ -486,9 +486,9 @@ SELECT
   STRFTIME('%Y', Datum) as Year,
   SUM(xBuchungen.Betrag) /100. as Summe,
   'Zins aus Jahresendabrechnungen' as BA,
-  CASE WHEN xVertraege.thesaurierend = 0 THEN 'ausbezahlt'
-   WHEN xVertraege.thesaurierend = 1 THEN 'angerechnet'
-   WHEN xVertraege.thesaurierend = 2 THEN 'einbehalten'
+  CASE WHEN xVertraege.thesaurierend = 0 THEN ' ausbezahlte Zinsen '
+   WHEN xVertraege.thesaurierend = 1 THEN ' angerechnete Zinsen '
+   WHEN xVertraege.thesaurierend = 2 THEN ' einbehaltene Zinsen '
   END  as Thesa
 FROM xBuchungen INNER JOIN xVertraege ON xBuchungen.VertragsId = xVertraege.id
 WHERE xBuchungen.BuchungsArt = 8
@@ -500,7 +500,7 @@ SELECT
   STRFTIME('%Y', Datum) as Year,
   SUM(xBuchungen.Betrag) /100. as Summe,
   'Zins aus Jahresendabrechnungen' as BA,
-  'gesamt' AS Thesa
+  ' gesamte Zinsen ' AS Thesa
 FROM xBuchungen INNER JOIN xVertraege ON xBuchungen.VertragsId = xVertraege.id
 WHERE xBuchungen.BuchungsArt = 8
 GROUP BY Year, xBuchungen.BuchungsArt

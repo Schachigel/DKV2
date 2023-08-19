@@ -126,6 +126,41 @@ int tablelayout::fillSectionData(QTextTable* table, const int secIndex, const in
     return sec.data.count();
 }
 
+int tablelayout::fillSectionDataWithSubsections(QTextTable* table, const int secIndex, const int row)
+{   LOG_CALL;
+    section& sec =sections[secIndex];
+    for( int rowInData =0; rowInData < sec.data.count(); rowInData++) {
+        QStringList& rowData =sec.data[rowInData];
+        if( rowData[0] == MAGIC_SUBHEADER_MARKER) {
+            QTextTableCell cell =table->cellAt(row + rowInData, 0);
+            setCellFormat( cell,sectionHeader);
+            table->mergeCells (row +rowInData, 0, 1, table->columns ());
+            cell.firstCursorPosition().insertHtml(sec.data[rowInData][1]);
+            continue;
+        }
+        for( int colInData =0; colInData < rowData.count(); colInData++) {
+            QTextTableCell cell =table->cellAt(row + rowInData, colInData);
+            if( rowInData%2) {
+                // odd rows
+                if(  colInData == 0)
+                    setCellFormat( cell,dataFirstColOdd);
+                else if( colInData == table->columns()-1)
+                    setCellFormat( cell, dataLastColOdd);
+                else setCellFormat( cell, dataMiddleColOdd);
+            } else {
+                // even rows
+                if(  colInData == 0)
+                    setCellFormat( cell,dataFirstColEven);
+                else if( colInData == table->columns()-1)
+                    setCellFormat( cell, dataLastColEven);
+                else setCellFormat( cell, dataMiddleColEven);
+            }
+            cell.firstCursorPosition().insertHtml(sec.data[rowInData][colInData]);
+        }
+    }
+    return sec.data.count();
+}
+
 int tablelayout::fillEmptyRow(QTextTable* table, const int row)
 {   // LOG_CALL_W(i2s(row));
     QTextTableCell cell =table->cellAt(row, 0);
@@ -155,7 +190,10 @@ void tablelayout::renderTable( )
         if( sectionIndex > 0)
             currentRow += fillEmptyRow(table, currentRow);
         currentRow += fillSectionHeader(table, sectionIndex, currentRow);
-        currentRow += fillSectionData(table, sectionIndex, currentRow);
+        if( sections[sectionIndex].hasSubsections)
+            currentRow += fillSectionDataWithSubsections(table, sectionIndex, currentRow);
+        else
+            currentRow += fillSectionData(table, sectionIndex, currentRow);
     }
     return;
 }
@@ -242,6 +280,8 @@ void uebersichten::renderPayedInterestByYear()
     tablelayout tl(td);
     // tl.cols = QStringList...)
     tablelayout::section currentSec;
+    currentSec.hasSubsections =true;
+    QString subsection;
     for( int i=0; i <records.count(); i++) {
         QString curYear = records[i].value(qsl("Year")).toString();
         if( currentSec.header not_eq curYear) {
@@ -250,13 +290,17 @@ void uebersichten::renderPayedInterestByYear()
             // ... and start new section
             currentSec.header =curYear;
             currentSec.data.clear();
+            subsection =records[i].value(qsl("BA")).toString();
+            currentSec.data.push_back ({MAGIC_SUBHEADER_MARKER, subsection});
         }
-
+        if( subsection not_eq records[i].value(qsl("BA")).toString()) {
+            subsection =records[i].value(qsl("BA")).toString();
+            currentSec.data.push_back ({MAGIC_SUBHEADER_MARKER, subsection});
+        }
         if (records[i].value(qsl("Summe")).toDouble() != 0.0) {
             currentSec.data.push_back(
                 {
-//                    qsl("    "),
-                    records[i].value(qsl("BA")).toString(),
+//                    records[i].value(qsl("BA")).toString(),
                         records[i].value(qsl("Thesa")).toString(),
                         d2euro(records[i].value(qsl("Summe")).toDouble())
                 });
