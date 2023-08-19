@@ -1,7 +1,7 @@
 #ifndef UEBERSICHTEN_H
 #define UEBERSICHTEN_H
 
-
+const QString MAGIC_SUBHEADER_MARKER ="!!__--SUBHEADER--__!!";
 
 struct tablelayout
 {
@@ -9,6 +9,7 @@ struct tablelayout
     struct section {
         QString header;
         QVector<QStringList> data;
+        bool hasSubsections =false;
     };
     enum cellType {
         colHeader,
@@ -37,6 +38,7 @@ private:
     int insertColHeader(QTextTable* tt);
     int fillSectionHeader(QTextTable* tt, const int secIndex, const int row);
     int fillSectionData(QTextTable* tt, const int secIndex, const int row);
+    int fillSectionDataWithSubsections(QTextTable* tt, const int secIndex, const int row);
     int fillEmptyRow(QTextTable* tt, const int row);
     void setCellFormat(QTextTableCell& cell, cellType ct);
 private: // data
@@ -73,6 +75,7 @@ private: // data
     /*dataFirstColEv*/ {fontSize_data,      regular, Qt::black, QColor(245, 245, 245), Qt::AlignLeft  , 0, 0},
     /*dataMid.ColEv*/  {fontSize_data,      regular, Qt::black, QColor(245, 245, 245), Qt::AlignCenter, 0, 0},
     /*dataLastColEv*/  {fontSize_data,      regular, Qt::black, QColor(245, 245, 245), Qt::AlignRight , 0, 0}
+    /*subsection head*/
     };
 
 };
