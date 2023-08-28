@@ -27,7 +27,7 @@ SELECT
     , V.Betrag /100., '[soll: ' || CAST( V.Betrag /100. AS TEXT) || ' €]' )) AS Nominalwert
   , IIF(IFNULL(AnlagenId, 0) == 0
       , CAST(V.Zsatz / 100. AS VARCHAR) || ' % (ohne Anlage)'
-      , CAST(V.Zsatz / 100. AS VARCHAR) || ' % - ' || GA.Typ || ' (AId ' || AnlagenId ||')') AS Zinssatz
+      , CAST(V.Zsatz / 100. AS VARCHAR) || ' % - ' || GA.Typ || ' (Id ' || AnlagenId ||')') AS Zinssatz
 
 -- Zinsmodus
   , V.thesaurierend AS Zinsmodus
@@ -86,10 +86,12 @@ SELECT
   , K.id AS KreditorId
   , K.Nachname || ', ' || K.Vorname AS KreditorIn
   , V.Kennung AS Vertragskennung
-  , strftime('%d.%m.%Y',Aktivierungsdatum) AS Aktivierung
-  , strftime('%d.%m.%Y', Vertragsende) AS Vertragsende
-  , ifnull(AktivierungsWert, V.Betrag / 100.) AS Anfangswert
-  , CAST(V.Zsatz / 100. AS VARCHAR) || ' %'    AS Zinssatz
+  , STRFTIME('%d.%m.%Y',Aktivierungsdatum) AS Aktivierung
+  , STRFTIME('%d.%m.%Y', Vertragsende) AS Vertragsende
+  , IFNULL(AktivierungsWert, V.Betrag / 100.) AS Anfangswert
+  , IIF (IFNULL(V.AnlagenId, 0) == 0
+       , CAST(V.Zsatz / 100. AS VARCHAR) || ' %'
+       , CAST(V.Zsatz / 100. AS VARCHAR) || ' % (Id ' || V.AnlagenId || ')') AS Zinssatz
   , IIF(V.thesaurierend = 0, 'Auszahlend',
        IIF( V.thesaurierend = 1, 'Thesaur.',
           IIF( V.thesaurierend = 2, 'Fester Zins',
