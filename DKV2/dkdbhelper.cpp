@@ -463,12 +463,87 @@ QString decorateHighValues(double d)
 }
 }
 
+QVector<QStringList> perpetualInvestmentByContracts()
+{
+    QString sql {qsl(R"str(
+   WITH
+   fortlaufendeGeldanlagen AS (
+   /* alle fortlaufenden Geldanlagen */
+      SELECT * FROM Geldanlagen WHERE Ende = '9999-12-31'
+   )
+   , Abschluesse AS (
+   /* Alle Vertragsabschlüsse m fortlaufender Geldanlage */
+      SELECT fortlGeldnalage.rowid    AS AnlageId
+        , fortlGeldnalage.Typ || ' (' || printf("%.2f%", V.zSatz/100.) || ')' AS Anlage
+        , V.Kennung          AS VKennung
+        , V.Vertragsdatum AS Datum
+        , V.Betrag        AS Betrag
+      FROM Vertraege AS V
+      INNER JOIN fortlaufendeGeldanlagen AS fortlGeldnalage ON fortlGeldnalage.rowid = V.AnlagenId
+
+    UNION
+   /* Alle Vertragsabschlüsse m fortlaufender Geldanlage von BEENDETEN Verträgen */
+      SELECT fortlGeldnalage.rowid    AS AnlageId
+        , fortlGeldnalage.Typ || ' (' || printf("%.2f%", exV.zSatz/100.) || ')' AS Anlage
+        , exV.Kennung          AS VKennung
+        , exV.Vertragsdatum AS Datum
+        , exV.Betrag        AS Betrag
+      FROM exVertraege AS exV
+      INNER JOIN fortlaufendeGeldanlagen AS fortlGeldnalage ON fortlGeldnalage.rowid = exV.AnlagenId
+      )
+    , temp AS (
+    SELECT
+    Abschluesse.Anlage AS Anlage
+    , Abschluesse.Datum AS Vertragsdatum
+    , Abschluesse.VKennung
+    , count(Abschluesse.VKennung) AS AnzahlVertraege
+    , sum(Abschluesse.Betrag/100.) AS AnlageSumme_Tag
+    , (SELECT SUM(Betrag)/100.
+      FROM ( SELECT Betrag
+             FROM Abschluesse AS _ab
+             WHERE _ab.AnlageId = Abschluesse.AnlageId
+               AND _ab.Datum > DATE(Abschluesse.Datum, '-1 years')
+               AND _ab.Datum <= Abschluesse.Datum
+           )
+      ) AS periodenSumme
+    FROM Abschluesse
+    GROUP BY Datum, AnlageId
+    ORDER BY Anlage ASC, Datum DESC
+    )
+    SELECT
+      Anlage
+      , Vertragsdatum
+      , IIF(AnzahlVertraege = 1, TEMP.VKennung, TEMP.VKennung || ' ...') AS Vertrag
+      , AnzahlVertraege
+      , AnlageSumme_Tag
+      , periodenSumme
+    FROM temp
+        )str")};
+    QVector<QSqlRecord> rec;
+    if( not executeSql (sql, rec)) {
+        return QVector<QStringList>();
+    }
+    QVector<QStringList> result;
+    for( int i=0; i< rec.size (); i++) {
+        QStringList zeile;
+        int col =0;
+        zeile.push_back (rec[i].value(col++).toString ()), // Anlage
+        zeile.push_back (rec[i].value(col++).toDate().toString("dd.MM.yyyy")); // Vertragsdatum
+        zeile.push_back (rec[i].value(col++).toString());  //Kennung
+        zeile.push_back (rec[i].value(col++).toString ()); // contract count
+        zeile.push_back (d2euro(rec[i].value(col++).toDouble ())); // new contract sum by day
+        double periodSum =rec[i].value(col++).toDouble ();
+        zeile.push_back (decorateHighValues (periodSum));
+        result.push_back (zeile);
+    }
+    return result;
+}
+
 QVector<QStringList> perpetualInvestment_bookings()
 {
     QString sql {qsl(R"str(
 WITH
-fortlaufendeGeldanlagen AS
-(
+fortlaufendeGeldanlagen AS (
    SELECT Typ, rowid, ZSatz FROM Geldanlagen WHERE Ende = '9999-12-31'
 )
 , geldBewegungen AS
@@ -483,6 +558,19 @@ fortlaufendeGeldanlagen AS
   FROM Buchungen
   INNER JOIN Vertraege ON Vertraege.id == Buchungen.VertragsId
   INNER JOIN fortlaufendeGeldanlagen AS Anlagen ON Anlagen.rowid = Vertraege.AnlagenId
+
+  UNION
+
+  SELECT
+    exBuchungen.Datum AS bDatum
+    , exBuchungen.Betrag AS Buchungsbetrag
+    , Anlagen.rowid AS aId
+    , Anlagen.Typ AS Anlage
+    , Anlagen.ZSatz AS Zinssatz
+
+  FROM exBuchungen
+  INNER JOIN exVertraege ON exVertraege.id == exBuchungen.VertragsId
+  INNER JOIN fortlaufendeGeldanlagen AS Anlagen ON Anlagen.rowid = exVertraege.AnlagenId
 )
 , temp AS
 (
@@ -532,7 +620,7 @@ FROM temp
         QStringList zeile;
         int col =1;
         QString anlage =qsl("%1 (%2%)").arg(rec[i].value(col++).toString());
-        zeile.push_back (anlage.arg(i2s(rec[i].value(col++).toInt ()/100.))); // Anlagenbez.
+        zeile.push_back (anlage.arg(prozent2prozent_str(rec[i].value(col++).toInt ()/100.))); // Anlagenbez.
         zeile.push_back (rec[i].value(col++).toDate().toString ("dd.MM.yyyy")); // Buchungsdatum
         zeile.push_back (i2s(rec[i].value(col++).toInt())); // Anzahl Buchungen
         zeile.push_back (s_d2euro(rec[i].value(col++).toDouble ())); // buchungen zu diesem Buchungsdatum
@@ -771,5 +859,3 @@ WHERE
     cbd.Buchungsdatum =rec.value ("Datum").toDate ();
     return true;
 }
-
-

@@ -382,11 +382,12 @@ void uebersichten::renderContractRuntimeDistrib()
 
 void uebersichten::renderPerpetualInvestmentsCheckContracts()
 {
-    QString head {qsl("Liste fortlaufender Geldanlagen")};
-    QString desc {qsl("Diese Tabelle gibt für jede fortlaufende Geldanlage die Sumnme der Vertragswerte im Jahr vor dem jeweiligen Vertragsabschluß an.")};
+    QString head {qsl("Prüfung der Grenzwerte ('100.000er Regel') für fortlaufende Geldanlagen anhand der Vertragswerte")};
+    QString desc {qsl("Diese Tabelle gibt für fortlaufende Geldanlagen die Sumnme der Vertragswerte (ohne Zinsen!) im Jahr vor dem jeweiligen Vertragsabschluß an. "
+                     "Es werden auch bereits beendete Verträge berücksichtigt, sofern sie in diesem Zeitraum abgeschlossen wurden.")};
     prep(head, desc);
     tablelayout tl(td);
-    tl.cols =QStringList{qsl("Vert.\nDatum"), qsl("Vertrags-\nkennung"), qsl("Anzahl"), qsl("Vertragswert(e)"), qsl("Summe der\nletzten 12M") };
+    tl.cols =QStringList{qsl("Vert.\nDatum"), qsl("Vertrags-\nkennung"), qsl("Anzahl neu"), qsl("Vertragswert(e)"), qsl("Summe der\nletzten 12M") };
 
     QVector<QStringList> data =perpetualInvestmentByContracts ();
     if( data.isEmpty())
@@ -415,9 +416,10 @@ void uebersichten::renderPerpetualInvestmentsCheckContracts()
 
 void uebersichten::renderPerpetualInvestmentsCheckBookings()
 {
-    QString head {qsl("Prüfung der Grenzwerte für fortlaufende Geldanlagen anhand aller Buchungen")};
-    QString desc {qsl("Diese Tabelle gibt dür Verträge mit fortlaufenden Geldanlagen an, "
-                      "wie hoch die Summe der Vertragswerte ist, die sich aus den Buchungen der letzten 12 Monate ergeben.")};
+    QString head {qsl("Prüfung der Grenzwerte ('100.000er Regel') für fortlaufende Geldanlagen anhand der gemachten Buchungen")};
+    QString desc {qsl("Diese Tabelle gibt für fortlaufende Geldanlagen die Summe der Buchungswerte (alle Ein- und Auszahlungen und Zinsen) im Jahr vor der jeweiligen Buchung an."
+                     " Es werden auch bereits beendete Verträge berücksichtigt, sofern sie in diesem Zeitraum abgeschlossen wurden.")};
+
     prep(head, desc);
     tablelayout tl(td);
     tl.cols =QStringList{qsl("Buchungs-\ndatum"), qsl("# Buchungen\nzu diesem\nDatum"), qsl("Wert d. Buchungen\nzu diesem\nDatum"), qsl("Gesamtwert\nincl. Zinsen"), qsl("Gesamtwert der\nEinzahlungen\no. Zinsen")};
