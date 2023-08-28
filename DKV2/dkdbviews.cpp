@@ -27,7 +27,7 @@ SELECT
     , V.Betrag /100., '[soll: ' || CAST( V.Betrag /100. AS TEXT) || ' €]' )) AS Nominalwert
   , IIF(IFNULL(AnlagenId, 0) == 0
       , CAST(V.Zsatz / 100. AS VARCHAR) || ' % (ohne Anlage)'
-      , CAST(V.Zsatz / 100. AS VARCHAR) || ' % - ' || GA.Typ ) AS Zinssatz
+      , CAST(V.Zsatz / 100. AS VARCHAR) || ' % - ' || GA.Typ || ' (AId ' || AnlagenId ||')') AS Zinssatz
 
 -- Zinsmodus
   , V.thesaurierend AS Zinsmodus

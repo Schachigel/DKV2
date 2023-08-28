@@ -102,7 +102,7 @@ const QVector<tableViewColTexts> columnTextsContracts {
     /*cp_InitialBooking,  */ {qsl("Geldeingang"), qsl("'Wertstellung' der ersten Überweisung")},
     /*cp_InterestActive,  */ {qsl("Zins Status"), qsl("Ist die Zinsanrechnung aktiv?")},
     /*cp_ContractValue,   */ {qsl("Nominalwert"), qsl("Bei aktiven Verträgen: Höhe der Einlage, sonst der im Vertrag vereinbarte Kreditbetrag")},
-    /*cp_InterestRate,    */ {qsl("Zinssatz"), qsl("Zinssatz in %")},
+    /*cp_InterestRate,    */ {qsl("Zinssatz"), qsl("Zinssatz in %, ggf. zugeordnete Geldanlage und Anlagen Id")},
     /*cp_InterestMode,    */ {qsl("Zinsmodus"), qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein")},
     /*cp_InterestBearing, */ {qsl("Verzinsliches\nGuthaben"), qsl("Bei thesaurierenden Verträgen: Einlage und angesparte Zinsen")},
     /*cp_Interest,        */ {qsl("Angesparter\nZins"), qsl("Nicht ausgezahlte Zinsen bei Verträgen mit fester Verzinsung und thesaurierenden Verträgen")},
