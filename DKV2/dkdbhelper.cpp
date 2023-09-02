@@ -474,7 +474,7 @@ QVector<QStringList> perpetualInvestmentByContracts()
    , Abschluesse AS (
    /* Alle Vertragsabschlüsse m fortlaufender Geldanlage */
       SELECT fortlGeldnalage.rowid    AS AnlageId
-        , fortlGeldnalage.Typ || ' (' || printf("%.2f%", V.zSatz/100.) || ')' AS Anlage
+        , fortlGeldnalage.Typ || ' (id ' || printf("%i, %.2f%", V.AnlagenId, V.zSatz/100.) || ')' AS Anlage
         , V.Kennung          AS VKennung
         , V.Vertragsdatum AS Datum
         , V.Betrag        AS Betrag
@@ -484,7 +484,7 @@ QVector<QStringList> perpetualInvestmentByContracts()
     UNION
    /* Alle Vertragsabschlüsse m fortlaufender Geldanlage von BEENDETEN Verträgen */
       SELECT fortlGeldnalage.rowid    AS AnlageId
-        , fortlGeldnalage.Typ || ' (' || printf("%.2f%", exV.zSatz/100.) || ')' AS Anlage
+        , fortlGeldnalage.Typ || ' (id ' || printf("%i, %.2f%", exV.AnlagenId, exV.zSatz/100.) || ')' AS Anlage
         , exV.Kennung          AS VKennung
         , exV.Vertragsdatum AS Datum
         , exV.Betrag        AS Betrag
@@ -518,7 +518,7 @@ QVector<QStringList> perpetualInvestmentByContracts()
       , AnlageSumme_Tag
       , periodenSumme
     FROM temp
-        )str")};
+    )str")};
     QVector<QSqlRecord> rec;
     if( not executeSql (sql, rec)) {
         return QVector<QStringList>();
@@ -544,71 +544,85 @@ QVector<QStringList> perpetualInvestment_bookings()
     QString sql {qsl(R"str(
 WITH
 fortlaufendeGeldanlagen AS (
-   SELECT Typ, rowid, ZSatz FROM Geldanlagen WHERE Ende = '9999-12-31'
+   SELECT rowid, Typ, ZSatz  FROM Geldanlagen WHERE Ende = '9999-12-31'
 )
-, geldBewegungen AS
-(
-  SELECT
-    Buchungen.Datum AS bDatum
-    , Buchungen.Betrag AS Buchungsbetrag
-    , Anlagen.rowid AS aId
-    , Anlagen.Typ AS Anlage
-    , Anlagen.ZSatz AS Zinssatz
-
+, inaktiveVertraege AS (
+  /* alle Verträge, die noch keine Buchung hatten*/
+  SELECT Vertraege.id            AS VId
+    , Vertraege.AnlagenId     AS AId
+    , Vertraege.Vertragsdatum AS Datum
+    , Vertraege.Betrag        AS Betrag
+  FROM Vertraege
+  WHERE Vertraege.id NOT IN (SELECT DISTINCT Buchungen.VertragsId FROM Buchungen)
+ )
+, geldbewegungenAktiveVertraege AS(
+  /* alle Buchungen von Verträgen in fortlaufenden Geldanlagen */
+  SELECT  Vertraege.id        AS VId
+    , Anlagen.rowid           AS AId
+    , Buchungen.Datum         AS Datum
+    , Buchungen.Betrag        AS Betrag
   FROM Buchungen
+  /* JOIN-> Buchungen ! nur aktive Verträge */
   INNER JOIN Vertraege ON Vertraege.id == Buchungen.VertragsId
   INNER JOIN fortlaufendeGeldanlagen AS Anlagen ON Anlagen.rowid = Vertraege.AnlagenId
-
-  UNION
-
-  SELECT
-    exBuchungen.Datum AS bDatum
-    , exBuchungen.Betrag AS Buchungsbetrag
-    , Anlagen.rowid AS aId
-    , Anlagen.Typ AS Anlage
-    , Anlagen.ZSatz AS Zinssatz
-
-  FROM exBuchungen
-  INNER JOIN exVertraege ON exVertraege.id == exBuchungen.VertragsId
-  INNER JOIN fortlaufendeGeldanlagen AS Anlagen ON Anlagen.rowid = exVertraege.AnlagenId
 )
-, temp AS
-(
-  SELECT
-    aId
-    , Zinssatz
-    , Anlage
-    , bDatum
-    , SUM(Buchungsbetrag) /100. AS Buchungsbetraege
-    , COUNT(Buchungsbetrag) AS anzahlBuchungen
 
-    , (SELECT SUM(Buchungen.Betrag) /100. FROM Buchungen WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.AnlagenId == aId) AND Buchungen.Datum <= bDatum AND Buchungen.Datum > DATE(bDatum, '-1 year')
-    ) AS BuchungsSummenInclZins
-    , (SELECT COUNT(*) FROM Buchungen WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.AnlagenId == aId) AND Buchungen.Datum <= bDatum AND Buchungen.Datum > DATE(bDatum, '-1 year')
-    ) AS BuchungsSummenInclZins_count
-
-    , (SELECT SUM(Buchungen.Betrag) /100. FROM Buchungen WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend == 0 AND Vertraege.AnlagenId == aId) AND Buchungen.Datum <= bDatum AND Buchungen.Datum > DATE(bDatum, '-1 year') AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2 OR Buchungen.BuchungsArt == 8)
-    ) AS BuchungsSummenExclZins_ausz
-
-    , (SELECT COUNT(*) FROM Buchungen WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend != 0 AND Vertraege.AnlagenId == aId) AND Buchungen.Datum <= bDatum AND Buchungen.Datum > DATE(bDatum, '-1 year') AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2)
-    ) AS BuchungsSummenExclZins_N_ausz_count
-    , (SELECT SUM(Buchungen.Betrag) /100. FROM Buchungen WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend != 0 AND Vertraege.AnlagenId == aId) AND Buchungen.Datum <= bDatum AND Buchungen.Datum > DATE(bDatum, '-1 year') AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2)
-    ) AS BuchungsSummenExclZins_N_ausz
-
-  FROM geldBewegungen
-  GROUP BY aId, bDatum
-  ORDER BY aId DESC, bDatum DESC
+, geldbewegungenBeendeteVertraege AS (
+  /* alle Buchungen von beendeten Verträgen mit fortlaufenden Geldanlagen
+     !! OHNE Abschlussbuchungen !! */
+  SELECT VId
+    , AId
+    , Datum
+    , Betrag
+  /* dieses SELECT ist da, um BId */
+  FROM (
+    SELECT VId
+      , AId
+      , Datum
+      , Betrag
+      , BId
+    FROM (
+      SELECT
+        exVertraege.id       AS VId
+        , Anlagen.rowid      AS AId
+        , exBuchungen.Datum  AS Datum
+        , exBuchungen.Betrag AS Betrag
+        , exBuchungen.id     AS BId
+      FROM exBuchungen
+      INNER JOIN exVertraege ON exVertraege.id = exBuchungen.VertragsId
+      INNER JOIN fortlaufendeGeldanlagen AS Anlagen ON Anlagen.rowid = exVertraege.AnlagenId
+    )
+  )
+  WHERE 0 <> (SELECT SUM(ExBuchungen.Betrag)
+             FROM ExBuchungen
+             WHERE ExBuchungen.VertragsId == vid AND ExBuchungen.id <= BId)
 )
-SELECT
-  aId
-  , Anlage
-  , Zinssatz
-  , bDatum
-  , anzahlBuchungen AS zumDatum_anzahlBuchungen
-  , IFNULL(Buchungsbetraege, 0.) AS zumDatum_Gebucht
-  , IFNULL(BuchungsSummenExclZins_ausz, 0.) + IFNULL(BuchungsSummenExclZins_N_ausz, 0.) AS ly_einAusZahlungen_oZ
-  , IFNULL(BuchungsSummenInclZins, 0.) AS ly_Wert_incl_Zinsen
-FROM temp
+, alleBewegungen AS (
+SELECT * FROM inaktiveVertraege
+UNION
+SELECT * FROM geldbewegungenAktiveVertraege
+UNION
+SELECT * FROM geldbewegungenBeendeteVertraege
+)
+/***** ENDE DER CTE *****/
+SELECT  printf('(Id %i) %s (%.2f%%)', outerAB.AId, Anlagen.Typ, Anlagen.ZSatz/100.)  AS Anlage
+  , Datum
+  , count(Datum) AS AnzahlB
+  , SUM(Betrag /100.) AS SummeTagesbuchungen
+  , (
+    SELECT SUM(aB.Betrag) /100.
+    FROM alleBewegungen AS aB
+    WHERE outerAB.AId == aB.AId  /* aufsummieren bisheriger Beträge m gleicher Anlage */
+      AND ab.Datum BETWEEN DATE(outerAB.Datum, '-1 year') AND outerAB.Datum
+    ) AS laufendeAnlagenSumme
+/*  , DATE(Datum, '-1 year') AS periodenbeginn */
+
+FROM alleBewegungen AS outerAB
+JOIN Geldanlagen as Anlagen ON Anlagen.rowid = AId
+
+GROUP BY AId, Datum
+
+ORDER BY AId ASC, Datum DESC
     )str")};
 
     QVector<QSqlRecord> rec;
@@ -616,16 +630,13 @@ FROM temp
         return QVector<QStringList>();
     }
     QVector<QStringList> result;
-    for( int i=0; i< rec.size (); i++) {
+    for( int row=0; row< rec.size (); row++) {
         QStringList zeile;
-        int col =1;
-        QString anlage =qsl("%1 (%2%)").arg(rec[i].value(col++).toString());
-        zeile.push_back (anlage.arg(prozent2prozent_str(rec[i].value(col++).toInt ()/100.))); // Anlagenbez.
-        zeile.push_back (rec[i].value(col++).toDate().toString ("dd.MM.yyyy")); // Buchungsdatum
-        zeile.push_back (i2s(rec[i].value(col++).toInt())); // Anzahl Buchungen
-        zeile.push_back (s_d2euro(rec[i].value(col++).toDouble ())); // buchungen zu diesem Buchungsdatum
-        zeile.push_back (decorateHighValues (rec[i].value(col++).toDouble ())); // Wert nur Einzahlungen
-        zeile.push_back (decorateHighValues (rec[i].value(col++).toDouble ())); // Wert incl. Zinsen
+        zeile.push_back (rec[row].value(qsl("Anlage")).toString ());
+        zeile.push_back (rec[row].value(qsl("Datum")).toDate().toString ("dd.MM.yyyy")); // Buchungsdatum
+        zeile.push_back (i2s(rec[row].value(qsl("AnzahlB")).toInt())); // Anzahl Buchungen
+        zeile.push_back s_d2euro(rec[row].value(qsl("SummeTagesbuchungen")).toDouble ())); // buchungen zu diesem Buchungsdatum
+        zeile.push_back (decorateHighValues (rec[row].value(qsl("laufendeAnlagenSumme")).toDouble ())); // Wert nur Einzahlungen
         result.push_back (zeile);
     }
     return result;

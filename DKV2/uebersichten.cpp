@@ -422,7 +422,7 @@ void uebersichten::renderPerpetualInvestmentsCheckBookings()
 
     prep(head, desc);
     tablelayout tl(td);
-    tl.cols =QStringList{qsl("Buchungs-\ndatum"), qsl("# Buchungen\nzu diesem\nDatum"), qsl("Wert d. Buchungen\nzu diesem\nDatum"), qsl("Gesamtwert\nincl. Zinsen"), qsl("Gesamtwert der\nEinzahlungen\no. Zinsen")};
+    tl.cols =QStringList{qsl("Datum"), qsl("Anzahl\nBuchungen"), qsl("Wert der Buchungen"), qsl("Gesamtwert der\nGeldanlage")};
 
     QVector<QStringList> data =perpetualInvestment_bookings();
     if( data.isEmpty())
