@@ -417,8 +417,9 @@ void uebersichten::renderPerpetualInvestmentsCheckContracts()
 void uebersichten::renderPerpetualInvestmentsCheckBookings()
 {
     QString head {qsl("Prüfung der Grenzwerte ('100.000er Regel') für fortlaufende Geldanlagen anhand der gemachten Buchungen")};
-    QString desc {qsl("Diese Tabelle gibt für fortlaufende Geldanlagen die Summe der Buchungswerte (alle Ein- und Auszahlungen und Zinsen) im Jahr vor der jeweiligen Buchung an."
-                     " Es werden auch bereits beendete Verträge berücksichtigt, sofern sie in diesem Zeitraum abgeschlossen wurden.")};
+    QString desc {qsl("Diese Tabelle gibt für fortlaufende Geldanlagen die Summe aller Buchungswerte an. Es werden alle Ein- und Auszahlungen, Jahresendzinsen und unterjährige Zinsen "
+                     "im Jahr vor der jeweiligen Buchung aufsummiert. Für Verträge, deren initiale Einzahlung noch aussteht, wird der Vertragswert zum Vertragsdatum verwendet. "
+                     "Es werden auch Buchungen von bereits beendete Verträge berücksichtigt, sofern in diesen Zeitraum fallen.")};
 
     prep(head, desc);
     tablelayout tl(td);
