@@ -1,3 +1,4 @@
+#include "qnamespace.h"
 #include "qapplication.h"
 #include "qnamespace.h"
 #include <QtGlobal>
@@ -340,24 +341,16 @@ void MainWindow::prepare_investmentsListView()
 
     QTableView* tv =ui->InvestmentsTableView;
     tv->setModel(model);
-    tv->setItemDelegateForColumn(0, new PercentFrom100sItemFormatter);
-    model->setHeaderData(0, Qt::Horizontal, qsl("Zinssatz"), Qt::DisplayRole);
-    tv->setItemDelegateForColumn(1, new DateItemFormatter);
-    model->setHeaderData(1, Qt::Horizontal, qsl("Begin"), Qt::DisplayRole);
-    tv->setItemDelegateForColumn(2, new DateItemFormatter);
-    model->setHeaderData(2, Qt::Horizontal, qsl("Ende"), Qt::DisplayRole);
-    model->setHeaderData (3, Qt::Horizontal, qsl("Bezeichner"), Qt::DisplayRole);
-    model->setHeaderData(4, Qt::Horizontal, qsl("Anzahl\n(alle)"), Qt::DisplayRole);
-    tv->setItemDelegateForColumn(5, new CurrencyFormatter);
-    model->setHeaderData(5, Qt::Horizontal, qsl("Summe\n(alle Vertr.)"), Qt::DisplayRole);
-    model->setHeaderData(6, Qt::Horizontal, qsl("Anzahl\n(aktive)"), Qt::DisplayRole);
-    tv->setItemDelegateForColumn(7, new CurrencyFormatter);
-    model->setHeaderData(7, Qt::Horizontal, qsl("Summe\n(aktive)"), Qt::DisplayRole);
-    tv->setItemDelegateForColumn (8, new CurrencyFormatter);
-    model->setHeaderData (8, Qt::Horizontal, qsl("Summe\nEinzahlungen"), Qt::DisplayRole);
-    tv->setItemDelegateForColumn (9, new CurrencyFormatter);
-    model->setHeaderData (9, Qt::Horizontal, qsl("Summe\nincl. Zins"), Qt::DisplayRole);
-    tv->hideColumn(11);
+    int column =0;
+    model->setHeaderData(column++, Qt::Horizontal, qsl("Anlagen Id"), Qt::DisplayRole);
+    model->setHeaderData(column++, Qt::Horizontal, qsl("Zinssatz"), Qt::DisplayRole);
+    model->setHeaderData(column++, Qt::Horizontal, qsl("Zeitraum / fortl."), Qt::DisplayRole);
+    model->setHeaderData(column++, Qt::Horizontal, qsl("Bezeichnung"), Qt::DisplayRole);
+    model->setHeaderData(column++, Qt::Horizontal, qsl("# laufend.\nVerträge"), Qt::DisplayRole);
+    model->setHeaderData(column++, Qt::Horizontal, qsl("davon ohne\nGeldeingang"), Qt::DisplayRole);
+    model->setHeaderData(column++, Qt::Horizontal, qsl("# beend.\nVerträge"), Qt::DisplayRole);
+    model->setHeaderData(column++, Qt::Horizontal, qsl("Gesamtbetrag\naller Vertr."), Qt::DisplayRole);
+
     tv->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tv->setAlternatingRowColors(true);
     model->setEditStrategy(QSqlTableModel::OnFieldChange);
