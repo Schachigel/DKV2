@@ -350,6 +350,7 @@ void MainWindow::prepare_investmentsListView()
     model->setHeaderData(column++, Qt::Horizontal, qsl("davon ohne\nGeldeingang"), Qt::DisplayRole);
     model->setHeaderData(column++, Qt::Horizontal, qsl("# beend.\nVerträge"), Qt::DisplayRole);
     model->setHeaderData(column++, Qt::Horizontal, qsl("Gesamtbetrag\naller Vertr."), Qt::DisplayRole);
+    model->setHeaderData(column++, Qt::Horizontal, qsl("(Ab-) Geschlossene\nGeldanlagen"), Qt::DisplayRole);
 
     tv->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tv->setAlternatingRowColors(true);
