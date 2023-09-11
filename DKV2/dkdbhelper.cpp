@@ -566,7 +566,6 @@ fortlaufendeGeldanlagen AS (
   INNER JOIN Vertraege ON Vertraege.id == Buchungen.VertragsId
   INNER JOIN fortlaufendeGeldanlagen AS Anlagen ON Anlagen.rowid = Vertraege.AnlagenId
 )
-
 , geldbewegungenBeendeteVertraege AS (
   /* alle Buchungen von beendeten Verträgen mit fortlaufenden Geldanlagen
      !! OHNE Abschlussbuchungen !! */
@@ -598,11 +597,11 @@ fortlaufendeGeldanlagen AS (
              WHERE ExBuchungen.VertragsId == vid AND ExBuchungen.id <= BId)
 )
 , alleBewegungen AS (
-SELECT * FROM inaktiveVertraege
-UNION
-SELECT * FROM geldbewegungenAktiveVertraege
-UNION
-SELECT * FROM geldbewegungenBeendeteVertraege
+  SELECT * FROM inaktiveVertraege
+    UNION ALL
+  SELECT * FROM geldbewegungenAktiveVertraege
+    UNION ALL
+  SELECT * FROM geldbewegungenBeendeteVertraege
 )
 /***** ENDE DER CTE *****/
 SELECT  printf('(Id %i) %s (%.2f%%)', outerAB.AId, Anlagen.Typ, Anlagen.ZSatz/100.)  AS Anlage
@@ -615,13 +614,9 @@ SELECT  printf('(Id %i) %s (%.2f%%)', outerAB.AId, Anlagen.Typ, Anlagen.ZSatz/10
     WHERE outerAB.AId == aB.AId  /* aufsummieren bisheriger Beträge m gleicher Anlage */
       AND ab.Datum BETWEEN DATE(outerAB.Datum, '-1 year') AND outerAB.Datum
     ) AS laufendeAnlagenSumme
-/*  , DATE(Datum, '-1 year') AS periodenbeginn */
-
 FROM alleBewegungen AS outerAB
-JOIN Geldanlagen as Anlagen ON Anlagen.rowid = AId
-
+  JOIN Geldanlagen as Anlagen ON Anlagen.rowid = AId
 GROUP BY AId, Datum
-
 ORDER BY AId ASC, Datum DESC
     )str")};
 
