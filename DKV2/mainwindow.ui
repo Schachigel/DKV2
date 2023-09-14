@@ -447,6 +447,16 @@
          </layout>
         </item>
         <item>
+         <widget class="QLabel" name="lblInvestmentsHeader">
+          <property name="text">
+           <string>Die berechneten Werte zu den Anlagen beinhalten ...</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QTableView" name="InvestmentsTableView"/>
         </item>
        </layout>
@@ -461,7 +471,7 @@
      <x>0</x>
      <y>0</y>
      <width>1073</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_database">

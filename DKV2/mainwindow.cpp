@@ -117,8 +117,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->bookingsTableView->setItemDelegateForColumn(2, new bookingTypeFormatter);
     ui->bookingsTableView->setStyleSheet(tableCellStyle);
     ui->InvestmentsTableView->setStyleSheet(tableCellStyle);
+    ///// ///
     ui->InvestmentsTableView->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
     ui->InvestmentsTableView->setStyleSheet(tableCellStyle);
+    ui->lblInvestmentsHeader->setText (qsl(R"str(
+Diese Übersicht zeigt alle Geldanlagen mit Anzahl und Wert der zugeordneten Verträge.
+Die Anzahl enthält Verträge vor und nach dem ersten Geldeingang. Beendeten Verträge werden separat gezählt. Der Gesamtbetrag summiert über Verträge ohne Geldeingang (Vertragswert), Verträge nach dem ersten Geldeingang (alle Buchungen) sowie beendete Verträge (Buchungen), sofern die Vertragsabschlüsse und Buchungen im entsprechenden Zeitraum getätigt wurden.
+(Ab-) Geschlossene Geldanlagen werden beim Anlegen von Verträgen nicht mehr zu Auswahl angeboten.
+Alle Werte beziehen sich auf das aktuelle Datum (%1). Für weitere Details sollte die Übersicht unter "Verträge" -> "Übersichten" -> Verlauf fortlaufender Geldanlagen (Buchungen) verwendet werden:
+    )str").arg(QDate::currentDate ().toString ()));
 
     QSettings settings;
     restoreGeometry(settings.value(qsl("geometry")).toByteArray());
@@ -342,12 +349,11 @@ void MainWindow::prepare_investmentsListView()
     QTableView* tv =ui->InvestmentsTableView;
     tv->setModel(model);
     int column =0;
-    model->setHeaderData(column++, Qt::Horizontal, qsl("Anlagen Id"), Qt::DisplayRole);
+    model->setHeaderData(column++, Qt::Horizontal, qsl("Anl. Id"), Qt::DisplayRole);
     model->setHeaderData(column++, Qt::Horizontal, qsl("Zinssatz"), Qt::DisplayRole);
     model->setHeaderData(column++, Qt::Horizontal, qsl("Zeitraum / fortl."), Qt::DisplayRole);
     model->setHeaderData(column++, Qt::Horizontal, qsl("Bezeichnung"), Qt::DisplayRole);
-    model->setHeaderData(column++, Qt::Horizontal, qsl("# laufend.\nVerträge"), Qt::DisplayRole);
-    model->setHeaderData(column++, Qt::Horizontal, qsl("davon ohne\nGeldeingang"), Qt::DisplayRole);
+    model->setHeaderData(column++, Qt::Horizontal, qsl("Anzahl laufend. Verträge,\ndavon (mit/ ohne Geldeingang)"), Qt::DisplayRole);
     model->setHeaderData(column++, Qt::Horizontal, qsl("# beend.\nVerträge"), Qt::DisplayRole);
     model->setHeaderData(column++, Qt::Horizontal, qsl("Gesamtbetrag\naller Vertr."), Qt::DisplayRole);
     model->setHeaderData(column++, Qt::Horizontal, qsl("(Ab-) Geschlossene\nGeldanlagen"), Qt::DisplayRole);

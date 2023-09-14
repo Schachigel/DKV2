@@ -162,14 +162,14 @@ R"str(
 WITH
 GA_begrenzt AS (
   SELECT *
-  FrOM Geldanlagen
+  FROM Geldanlagen
   WHERE Geldanlagen.Offen AND Geldanlagen.Ende <> '9999-12-31'
 )
 , GA_fortlaufend AS (
   SELECT *
-  FrOM Geldanlagen
+  FROM Geldanlagen
   WHERE Geldanlagen.Offen
-    AND rowid NOT IN (SELECT rowid FrOM GA_begrenzt)
+    AND rowid NOT IN (SELECT rowid FROM GA_begrenzt)
 )
 , inaktiveVertraege AS (
   SELECT *
@@ -182,17 +182,17 @@ GA_begrenzt AS (
   WHERE id IN (SELECT DISTINCT VertragsId FROM Buchungen)
 )
 , beendeteVertraege_fortlaufendeGA AS (
-    SELECT *
-    FROM exVertraege
-    WHERE exVertraege.AnlagenId IN (SELECT rowid FROM GA_fortlaufend)
+  SELECT *
+  FROM exVertraege
+  WHERE exVertraege.AnlagenId IN (SELECT rowid FROM GA_fortlaufend)
 )
 , beendeteVertraege_begrenztGA AS (
-    SELECT exVertraege.*, GA.Anfang, GA.Ende
-    FROM exVertraege
-      INNER JOIN Geldanlagen AS GA ON GA.rowid == exVertraege.AnlagenId
-    WHERE exVertraege.AnlagenId NOT IN (SELECT rowid FROM GA_fortlaufend)
+  SELECT exVertraege.*, GA.Anfang, GA.Ende
+  FROM exVertraege
+    INNER JOIN Geldanlagen AS GA ON GA.rowid == exVertraege.AnlagenId
+  WHERE exVertraege.AnlagenId NOT IN (SELECT rowid FROM GA_fortlaufend)
 )
-, AnlagenOhneVertraege AS (
+, Anl_OhneVertraege AS (
   SELECT Anlagen.rowid AS AId
     , Anlagen.ZSatz    AS Zinssatz
     , IIF( Anlagen.Ende == '9999-12-31'
@@ -200,23 +200,23 @@ GA_begrenzt AS (
       strftime('%d.%m.%Y', Anlagen.Anfang) || ' - '
       || strftime('%d.%m.%Y', Anlagen.Ende)) AS Zeitraum
     , Anlagen.Typ AS Bezeichnung
-    , 'keine'     AS Anzahl
+    , 0           AS AnzahlAktive
     , 0           AS AnzahlInaktive
-    , 0           AS AnzahlBeendet
-    , ' - '       AS Betrag
+    , 0           AS AnzahlBeendete
+    , 0.          AS Betrag
     , IIF( Anlagen.Offen, 'Ja', 'Nein') AS Offen
   FROM Geldanlagen AS Anlagen
   WHERE Anlagen.rowid NOT IN (SELECT DISTINCT Vertraege.AnlagenId FROM Vertraege)
 )
-, begrenzteVertraege_inaktiv AS (
+, Anl_begr_Vertraege_inaktiv AS (
   SELECT  V.AnlagenId           AS AId
     , Anlagen.ZSatz             AS Zinssatz
     , strftime('%d.%m.%Y', Anlagen.Anfang) || ' - '
       || strftime('%d.%m.%Y', Anlagen.Ende) AS Zeitraum
     , Anlagen.Typ               AS Bezeichnung
-    , COUNT(V.id)               AS Anzahl
+    , 0                         AS AnzahlAktive
     , COUNT(V.id)               AS AnzahlInaktive
-    , 0                         AS AnzahlBeendet
+    , 0                         AS AnzahlBeendete
     , SUM(V.Betrag)             AS Betrag
     , IIF( Anlagen.Offen, 'Ja', 'Nein') AS Offen
   FROM inaktiveVertraege AS V
@@ -225,14 +225,14 @@ GA_begrenzt AS (
     AND V.Vertragsdatum <= Anlagen.Ende
   GROUP BY V.AnlagenId
 )
-, fortlVertraege_inaktiv AS (
+, Anl_fortl_Vertraege_inaktiv AS (
   SELECT  V.AnlagenId           AS AId
     , Anlagen.ZSatz             AS Zinssatz
     , 'fortlaufende Geldanlage' AS Zeitraum
     , Anlagen.Typ               AS Bezeichnung
-    , COUNT(V.id)               AS Anzahl
+    , 0                         AS AnzahlAktive
     , COUNT(V.id)               AS AnzahlInaktive
-    , 0                         AS AnzahlBeendet
+    , 0                         AS AnzahlBeendete
     , SUM(V.Betrag)             AS Betrag
     , IIF( Anlagen.Offen, 'Ja', 'Nein') AS Offen
   FROM inaktiveVertraege AS V
@@ -240,29 +240,29 @@ GA_begrenzt AS (
   WHERE V.Vertragsdatum >= date('now', '-1 year') /* replace 'now' with the contract date given by the user */
   GROUP BY V.AnlagenId
 )
-, begrenzteVertraege_aktiv AS (
+, Anl_begr_Vertraege_aktiv AS (
   SELECT V.AnlagenId            AS AId
     , Anlagen.ZSatz             AS Zinssatz
     , strftime('%d.%m.%Y', Anlagen.Anfang) || ' - '
       || strftime('%d.%m.%Y', Anlagen.Ende) AS Zeitraum
     , Anlagen.Typ               AS Bezeichnung
-    , COUNT(V.id)               AS Anzahl
+    , COUNT(V.id)               AS AnzahlAktive
     , 0                         AS AnzahlInaktive
-    , 0                         AS AnzahlBeendet
+    , 0                         AS AnzahlBeendete
     , (SELECT SUM(Betrag) FROM Buchungen  WHERE Buchungen.Datum BETWEEN date('now', '-1 year') AND date('now')) AS Betrag
     , IIF( Anlagen.Offen, 'Ja', 'Nein') AS Offen
   FROM aktiveVertraege AS V
     INNER JOIN GA_begrenzt AS Anlagen ON Anlagen.rowid == V.AnlagenId
   GROUP BY V.AnlagenId
 )
-, fortlVertraege_aktiv AS (
+, Anl_fortl_Vertraege_aktiv AS (
   SELECT V.AnlagenId            AS AId
     , Anlagen.ZSatz             AS Zinssatz
     , 'fortlaufende Geldanlage' AS Zeitraum
     , Anlagen.Typ               AS Bezeichnung
-    , COUNT(V.id)               AS Anzahl
+    , COUNT(V.id)               AS AnzahlAktive
     , 0                         AS AnzahlInaktive
-    , 0                         AS AnzahlBeendet
+    , 0                         AS AnzahlBeendete
     , (SELECT SUM(Betrag) FROM Buchungen  WHERE Buchungen.Datum BETWEEN date('now', '-1 year') AND date('now')) AS Betrag
     , IIF( Anlagen.Offen, 'Ja', 'Nein') AS Offen
   FROM aktiveVertraege AS V
@@ -285,10 +285,10 @@ GA_begrenzt AS (
     FROM (
       SELECT
         beendeteVertraege_fortlaufendeGA.id       AS VId
-    , beendeteVertraege_fortlaufendeGA.AnlagenId AS AId
-        , exBuchungen.Datum  AS Datum
-        , exBuchungen.Betrag AS Betrag
-        , exBuchungen.id     AS BId
+         , beendeteVertraege_fortlaufendeGA.AnlagenId AS AId
+         , exBuchungen.Datum  AS Datum
+         , exBuchungen.Betrag AS Betrag
+         , exBuchungen.id     AS BId
       FROM exBuchungen
       INNER JOIN beendeteVertraege_fortlaufendeGA ON beendeteVertraege_fortlaufendeGA.id = exBuchungen.VertragsId
     )
@@ -300,14 +300,14 @@ GA_begrenzt AS (
            AND ExBuchungen.Datum BETWEEN date('now', '-1 year') AND date('now')
            )
 )
-, fortlVertraege_beendet AS (
+, Anl_fortl_Vertraege_beendet AS (
   SELeCT AId                    AS AId
     , Anlagen.ZSatz             AS Zinssatz
     , 'fortlaufende Geldanlage' AS Zeitraum
     , Anlagen.Typ               AS Bezeichnung
-    , 0                         AS Anzahl /* beendete zählen nicht zu den 20ern*/
+    , 0                         AS AnzahlAktive
     , 0                         AS AnzahlInaktive
-    , COUNT(DISTINCT VId)       AS AnzahlBeendet
+    , COUNT(DISTINCT VId)                AS AnzahlBeendete
     , SUM(Betrag)               AS Betrag
     , IIF( Anlagen.Offen, 'Ja', 'Nein') AS Offen
   FROM Buchungen_beendeteVertraege_fortlaufend
@@ -330,10 +330,10 @@ GA_begrenzt AS (
     FROM (
       SELECT
         beendeteVertraege_begrenztGA.id          AS VId
-    , beendeteVertraege_begrenztGA.AnlagenId AS AId
+        , beendeteVertraege_begrenztGA.AnlagenId AS AId
         , exBuchungen.Datum  AS Datum
-    , beendeteVertraege_begrenztGA.Anfang AS Anfang
-    , beendeteVertraege_begrenztGA.Ende   AS Ende
+        , beendeteVertraege_begrenztGA.Anfang AS Anfang
+        , beendeteVertraege_begrenztGA.Ende   AS Ende
         , exBuchungen.Betrag AS Betrag
         , exBuchungen.id     AS BId
       FROM exBuchungen
@@ -347,48 +347,57 @@ GA_begrenzt AS (
            AND ExBuchungen.Datum BETWEEN Anfang AND Ende
            )
 )
-, begrenzteVertraege_beendet AS (
+, Anl_begr_Vertraege_beendet AS (
   SELECT AId                    AS AId
     , Anlagen.ZSatz             AS Zinssatz
     , 'fortlaufende Geldanlage' AS Zeitraum
     , Anlagen.Typ               AS Bezeichnung
-    , 0                         AS Anzahl /* beendete zählen nicht zu den 20ern*/
     , 0                         AS AnzahlInaktive
-    , COUNT(DISTINCT VId)       AS AnzahlBeendet
+    , 0                         AS AnzahlAktive
+    , COUNT(DISTINCT VId)       AS AnzahlBeendete
     , SUM(Betrag)               AS Betrag
     , IIF( Anlagen.Offen, 'Ja', 'Nein') AS Offen
   FROM Buchungen_beendeteVertraege_begrenzt
     INNER JOIN Geldanlagen AS Anlagen ON Anlagen.rowid == AId
   GROUP BY AId
 )
+, Summen AS (
+  SELECT AId
+    , Zinssatz/100.             AS Zinssatz
+    , Zeitraum
+    , Bezeichnung
+    , SUM(AnzahlAktive)         AS "AnzahlAktive"
+    , SUM(AnzahlInaktive)       AS "AnzahlInaktive"
+    , SUM(AnzahlBeendete)       AS "AnzahlBeendete"
+    , SUM(Betrag)               AS Gesamtbetrag
+    , IIF( Offen, 'Ja', 'Nein') AS Offen
+  FROM (
+      SELECT * FROM Anl_OhneVertraege
+    UNION ALL
+      SELECT * FROM Anl_begr_Vertraege_inaktiv
+    UNION ALL
+      SELECT * FROM Anl_fortl_Vertraege_inaktiv
+    UNION ALL
+      SELECT * FROM Anl_begr_Vertraege_aktiv
+    UNION ALL
+      SELECT * FROM Anl_fortl_Vertraege_aktiv
+    UNION ALL
+      SELECT * FROM Anl_fortl_Vertraege_beendet
+    UNION ALL
+      SELECT * FROM Anl_begr_Vertraege_beendet
+  )
+  GROUP BY AId
+)
 
 SELECT AId
-  , printf(" %.2f%% ", Zinssatz/100.) AS Zinssatz
+  , printf(" %.2f%% ", Zinssatz) AS Zinssatz
   , Zeitraum
   , Bezeichnung
-  , printf('%d', SUM(Anzahl)) AS "Anzahl Verträge"
-  , printf('%d', SUM(AnzahlInaktive)) AS "davon ohne Geldeingang"
-  , SUM(AnzahlBeendet)  AS "#beendete Verträge"
-  , printf(" %.2f € ", SUM(Betrag)/100.) AS Gesamtbetrag
+  , printf('%d (%d/%d)', AnzahlAktive + AnzahlInaktive, AnzahlAktive, AnzahlInaktive) AS "Anz. laufende V. (mit/ ohne Geldeingang)"
+  , printf("%d", AnzahlBeendete) AS "Anz. beendete Verträge"
+  , printf(" %.2f € ", Gesamtbetrag/100.) AS Gesamtbetrag
   , IIF( Offen, 'Ja', 'Nein') AS [(Ab-)Geschlossen]
-
-FROM (
-  SELECT * FROM begrenzteVertraege_inaktiv
-UNION ALL
-  SELECT * FROM AnlagenOhneVertraege
-UNION ALL
-  SELECT * FROM fortlVertraege_inaktiv
-UNION ALL
-  SELECT * FROM begrenzteVertraege_aktiv
-UNION ALL
-  SELECT * FROM fortlVertraege_aktiv
-UNION ALL
-  SELECT * FROM fortlVertraege_beendet
-UNION ALL
-  SELECT * FROM begrenzteVertraege_beendet
-
-  )
-GROUP BY AId
+FROM Summen
 ORDER BY Zinssatz
 )str"
 )};
