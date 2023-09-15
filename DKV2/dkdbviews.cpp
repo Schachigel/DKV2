@@ -304,35 +304,31 @@ const QMap<QString, QString> views ={
     {vnInvestmentsView, sqlInvestmentsView}
 };
 
-const QStringList getIndexSql() {
-    return {
-        qsl("CREATE INDEX 'Buchungen_vId'        ON 'Buchungen' ( 'VertragsId')"),
-        qsl("CREATE INDEX 'Buchungen_vid-bdatum' ON 'Buchungen' ( 'VertragsId', 'Datum' )"),
-        qsl("CREATE INDEX 'Buchungen_BArt'       ON 'Buchungen' ( 'BuchungsArt' )"),
-        qsl("CREATE INDEX 'Vertraege_aId'    ON 'Vertraege'   ( 'AnlagenId' )"),
-        qsl("CREATE INDEX 'Vertraege_Datum'  ON 'Vertraege'   ('Vertragsdatum' )"),
-        qsl("CREATE INDEX 'Geldanlagen_Ende' ON 'Geldanlagen' ( 'Ende' )")
-    };
-}
-
-
-
-
-bool remove_all_views(const QSqlDatabase& db /*=QSqlDatabase::database()*/)
-{   LOG_CALL;
-    QVector<QSqlRecord> views;
-    if( executeSql(qsl("SELECT name FROM sqlite_master WHERE type ='view'"), views, db)) {
-        for( const auto& rec : qAsConst(views)) {
-// TODO: use deleteView helper from helpersql
-            if( executeSql_wNoRecords(qsl("DROP view %1").arg(rec.value(0).toString()), db))
-                continue;
-            else
-                return false;
-        }
-        return true;
+bool createDkDbViews( const QMap<QString, QString>& views, const QSqlDatabase& db)
+{
+    foreach(QString view, views.keys()) {
+        if( not createPersistentDbView (view, views[view], db))
+            return false;
     }
-    return false;
+    return true;
 }
+
+
+//bool remove_all_views(const QSqlDatabase& db /*=QSqlDatabase::database()*/)
+//{   LOG_CALL;
+//    QVector<QSqlRecord> views;
+//    if( executeSql(qsl("SELECT name FROM sqlite_master WHERE type ='view'"), views, db)) {
+//        for( const auto& rec : qAsConst(views)) {
+//// TODO: use deleteView helper from helpersql
+//            if( executeSql_wNoRecords(qsl("DROP VIEW %1").arg(rec.value(0).toString()), db))
+//                continue;
+//            else
+//                return false;
+//        }
+//        return true;
+//    }
+//    return false;
+//}
 
 //////////////////////////////////////
 // SQL Statemends (stored here to not clutter the source code with long constant strings)

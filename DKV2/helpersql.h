@@ -136,25 +136,31 @@ struct dbViewDev{
     const QString sql;
 };
 
-bool deleteDbView(const QString& name, const QSqlDatabase& db = QSqlDatabase::database());
-bool createDbViews( const QMap<QString, QString>& views, const QSqlDatabase& db);
-
-bool createIndicesFromSQL( const QStringList Sqls, const QSqlDatabase& db);
-
 namespace
 {
 const bool persistentView =false;
 const bool temporaryView  =true;
-inline bool createDbView(const QString& name, const QString& sql, bool temporary =false, const QSqlDatabase& db = QSqlDatabase::database())
-{   LOG_CALL_W(name);
 
+inline bool deleteDbView(const QString& name, const QSqlDatabase& db = QSqlDatabase::database())
+{
+    if( executeSql_wNoRecords(qsl("DROP VIEW IF EXISTS '%1'").arg(name), db)) {
+        RETURN_OK( true, qsl("deleteDbView: deleteDbView: dropped view: "), name);
+    }
+    RETURN_OK( false, "deleteDbView: drop view failed: ", name);
+}
+
+inline bool createDbView(const QString& name, const QString& sql, bool temporary, const QSqlDatabase& db = QSqlDatabase::database())
+{
+/* view deletion / insertion costs only single digit ms - so it is not worth reading and comparing views to avoid deletion
+*/
     deleteDbView (name, db);
-    QString createViewSql = "CREATE %1 VIEW %2 AS " + sql;
+    QString createViewSql = "CREATE %1 VIEW '%2' AS " + sql;
     createViewSql = createViewSql.arg((temporary ? qsl("TEMP") : QString()), name);
     if( executeSql_wNoRecords(createViewSql, db)) {
+        qInfo() << "createDbView: successfully created " << (temporary == temporaryView ? qsl(" temporary view ") : qsl(" persistent view ")) << name;
         return true;
     }
-    qCritical() << "Faild to create view " << name;
+    qCritical() << "createDbView: Faild to create view " << name;
     return false;
 }
 
@@ -168,6 +174,8 @@ inline bool createPersistentDbView(const QString& name, const QString& sql, cons
 {
     return createDbView(name, sql, persistentView, db);
 }
+
+bool createDbIndex( const QString& iName, const QString& iFields, const QSqlDatabase& db);
 
 
 #endif // SQLHELPER_H

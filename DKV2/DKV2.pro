@@ -93,6 +93,7 @@ SOURCES += \
         dbtable.cpp \
         dkdbcopy.cpp \
         dkdbhelper.cpp \
+        dkdbindices.cpp \
         dkdbviews.cpp \
         dlgannualsettlement.cpp \
         dlgaskcontractlabel.cpp \
@@ -145,6 +146,7 @@ HEADERS += pch.h\
         dbtable.h \
         dkdbcopy.h \
         dkdbhelper.h \
+        dkdbindices.h \
         dkdbviews.h \
         dkv2version.h \
         dlgannualsettlement.h \

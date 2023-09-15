@@ -9,6 +9,7 @@
 #include "creditor.h"
 #include "investment.h"
 #include "dkdbviews.h"
+#include "dkdbindices.h"
 #include "dkdbcopy.h"
 #include "dkdbhelper.h"
 
@@ -127,12 +128,12 @@ bool treat_DbIsAlreadyInUse_File(QString filename)
 
 bool insertDKDB_Views( const QSqlDatabase &db)
 {   LOG_CALL;
-    return createDbViews(views, db);
+    return createDkDbViews (views, db);
 }// initial database tables and content
 
 bool insertDKDB_Indices( const QSqlDatabase& db)
-{   LOG_CALL;
-    return createIndicesFromSQL( getIndexSql (), db);
+{
+    return createDkDbIndices( db);
 }
 
 bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/, zinssusance sz /*=zs30360*/)

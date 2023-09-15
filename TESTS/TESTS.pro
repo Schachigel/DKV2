@@ -38,6 +38,7 @@ SOURCES +=  \
     ../DKV2/creditor.cpp \
     ../DKV2/dkdbcopy.cpp \
     ../DKV2/dkdbhelper.cpp \
+    ../DKV2/dkdbindices.cpp \
     ../DKV2/dkdbviews.cpp \
     ../DKV2/helperfin.cpp \
     ../DKV2/ibanvalidator.cpp \

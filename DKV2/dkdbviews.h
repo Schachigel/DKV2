@@ -1,7 +1,10 @@
 #ifndef DKDBVIEWS_H
 #define DKDBVIEWS_H
 
-// dynamic view creatrion
+#include "qsqldatabase.h"
+bool createDkDbViews( const QMap<QString, QString>& views, const QSqlDatabase& db =QSqlDatabase::database ());
+
+//  views
 extern const QString vnContractView;
 extern const QString sqlContractView;
 extern const QString vnExContractView;
@@ -14,8 +17,8 @@ extern const QString vnBookingsOverview;
 
 // statistics w/o time dep. saved as views
 extern const QMap<QString, QString> views;
-const QStringList getIndexSql();
-bool remove_all_views(const QSqlDatabase& db =QSqlDatabase::database());
+
+    //bool remove_all_views(const QSqlDatabase& db =QSqlDatabase::database());
 
 // annual interest calculation
 extern const QString sqlNextAnnualSettlement;

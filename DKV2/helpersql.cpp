@@ -468,37 +468,12 @@ int getHighestRowId(const QString& tablename)
     return executeSingleValueSql(qsl("MAX(rowid)"), tablename).toInt();
 }
 
-bool deleteDbView(const QString& name, const QSqlDatabase& db)
-{   LOG_CALL;
-    if( executeSql_wNoRecords(qsl("DROP VIEW IF EXISTS %1").arg(name), db)) {
-        qInfo() << "dropped view: " << name;
-        return true;
-    }
-    RETURN_OK( false, "drop view failed: ", name);
-}
-
-bool createDbViews( const QMap<QString, QString>& views, const QSqlDatabase& db)
+bool createDbIndex( const QString& iName, const QString& iFields, const QSqlDatabase& db)
 {
-    foreach(QString view, views.keys()) {
-        if( not createPersistentDbView (view, views[view], db))
-            return false;
-    }
-    return true;
-}
-bool createIndicesFromSQL( const QStringList Sqls, const QSqlDatabase& db)
-{   LOG_CALL;
-    QVector<QSqlRecord> indices;
-    executeSql (qsl("SELECT name from sqlite_master WHERE type=='index'"), indices, db);
-    for( int i =0; i<indices.count (); i++) {
-        QString tablename =indices[i].field(0).value().toString ();
-        if( tablename.startsWith (qsl("sqlite"), Qt::CaseInsensitive))
-            continue;
-        else
-            executeSql_wNoRecords (qsl("DROP INDEX [%1]").arg(tablename), db);
-    }
-    for(int i=0; i < Sqls.count (); i++) {
-        if( not executeSql_wNoRecords (Sqls[i], db))
-            return false;
-    }
-    return true;
+    // sample arguments: qsl("Buchungen_vId"), qsl("'Buchungen'   ( 'VertragsId')")}
+    if( not executeSql_wNoRecords (qsl("DROP INDEX IF EXISTS '%1'").arg(iName), db))
+        RETURN_ERR(false, qsl("createDbIndex: failed to delete index"));
+    if( not executeSql_wNoRecords (qsl("CREATE INDEX '%1' ON %2").arg(iName, iFields), db))
+        RETURN_ERR(false, qsl("createDbIndex: failed to create index"), iName, iFields);
+    RETURN_OK( true, qsl("successfully created index"), iName);
 }
