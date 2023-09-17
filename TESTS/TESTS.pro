@@ -62,6 +62,7 @@ SOURCES +=  \
     test_dkdbcopy.cpp \
     test_dkdbhelper.cpp \
     test_finance.cpp \
+    test_geldanlagen.cpp \
     test_main.cpp \
     test_properties.cpp \
     test_sqlhelper.cpp \
@@ -87,6 +88,7 @@ HEADERS += \
     test_dkdbcopy.h \
     test_dkdbhelper.h \
     test_finance.h \
+    test_geldanlagen.h \
     test_properties.h \
     test_sqlhelper.h \
     test_statistics.h \

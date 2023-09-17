@@ -138,7 +138,18 @@ WHERE
 ///////////////////////////////////////////////////////
 // related functions
 ///////////////////////////////////////////////////////
-tableindex_t saveNewInvestment(int ZSatz, QDate start, QDate end, const QString &type)
+tableindex_t saveNewFloatingInvestment(int ZSatz, const QString &type)
+{   LOG_CALL;
+    TableDataInserter tdi(investment::getTableDef());
+    tdi.setValue(fnInvestmentInterest, ZSatz);
+    tdi.setValue(fnInvestmentStart, BeginingOfTime);
+    tdi.setValue(fnInvestmentEnd, EndOfTheFuckingWorld);
+    tdi.setValue(fnInvestmentType, type);
+    tdi.setValue(fnInvestmentState, 1);
+    return tdi.InsertRecord();
+}
+
+tableindex_t saveNewTimeframedInvestment(int ZSatz, QDate start, QDate end, const QString &type)
 {   LOG_CALL;
     TableDataInserter tdi(investment::getTableDef());
     tdi.setValue(fnInvestmentInterest, ZSatz);

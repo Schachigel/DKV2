@@ -16,6 +16,8 @@
 #include "test_statistics.h"
 #include "test_tabledatainserter.h"
 #include "test_dbtable.h"
+#include "test_geldanlagen.h"
+
 
 #ifndef TESTLIB_SELFCOVERAGE_START
 #define TESTLIB_SELFCOVERAGE_START(a)
@@ -45,7 +47,8 @@ int main(int argc, char *argv[])
     int executions =1;
     do {
         // in memory db
-        tests.push_back(new test_booking);
+        tests.push_back(new test_geldanlagen);
+/*        tests.push_back(new test_booking);
         tests.push_back(new test_appConfig);
         tests.push_back(new test_creditor);
         tests.push_back(new test_contract);
@@ -63,7 +66,7 @@ int main(int argc, char *argv[])
         // on disk db
         tests.push_back(new test_tableDataInserter);
         tests.push_back(new test_dkdbcopy);
-
+*/
 // NO ACTIVE TESTS        tests.push_back(new test_letterTemplate);
 // NO ACTIVE TESTS        tests.push_back(new test_views);
     } while(--executions);

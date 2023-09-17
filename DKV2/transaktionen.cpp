@@ -917,7 +917,7 @@ qlonglong createInvestment_matchingContract(int &interest, QDate &from,
         return 0;
     }
     qlonglong newId =
-            saveNewInvestment(wiz.field(pnZSatz).toInt(), wiz.field(pnVon).toDate(),
+        saveNewTimeframedInvestment(wiz.field(pnZSatz).toInt(), wiz.field(pnVon).toDate(),
                               wiz.field(pnBis).toDate(), wiz.field(pnTyp).toString());
     if (0 >= newId) {
         qCritical() << "Investment could not be saved";
@@ -941,11 +941,19 @@ void createInvestment() {
         qInfo() << "investment wiz was canceled";
         return;
     }
-    if (0 >= saveNewInvestment(
+    if( wiz.field (pnBis) == EndOfTheFuckingWorld) {
+        if (0 >= saveNewFloatingInvestment(
+                wiz.field(pnZSatz).toInt(), wiz.field(pnTyp).toString())) {
+            qCritical() << "Floating investment could not be saved";
+            QMessageBox::warning(nullptr, qsl("Fehler"),
+                                 qsl("Die Geldanlage konnte nicht gespeichert werden"));
+        }    } else {
+        if (0 >= saveNewTimeframedInvestment(
                 wiz.field(pnZSatz).toInt(), wiz.field(pnVon).toDate(),
                 wiz.field(pnBis).toDate(), wiz.field(pnTyp).toString())) {
-        qCritical() << "Investment could not be saved";
-        QMessageBox::warning(nullptr, qsl("Fehler"),
-                             qsl("Die Geldanlage konnte nicht gespeichert werden"));
+            qCritical() << "Timeframed investment could not be saved";
+            QMessageBox::warning(nullptr, qsl("Fehler"),
+                                 qsl("Die Geldanlage konnte nicht gespeichert werden"));
+        }
     }
 }
