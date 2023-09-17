@@ -402,7 +402,9 @@ void MainWindow::on_btnCreateFromContracts_clicked()
 }
 void MainWindow::on_btnNewInvestment_clicked()
 {   LOG_CALL;
+
     createInvestment();
+
     QSqlTableModel* m =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
     m->select();
     ui->InvestmentsTableView->resizeColumnsToContents();
@@ -440,7 +442,6 @@ void MainWindow::on_btnAlleLoeschen_clicked()
         prepare_investmentsListView ();
     }
 }
-
 
 void MainWindow::on_InvestmentsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;

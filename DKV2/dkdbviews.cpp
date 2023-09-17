@@ -191,12 +191,6 @@ GA_begrenzt AS (
 )
 , Anl_OhneVertraege AS (
   SELECT Anlagen.rowid AS AId
-    , Anlagen.ZSatz    AS Zinssatz
-    , IIF( Anlagen.Ende == '9999-12-31'
-      , 'fortlaufende Geldanlage',
-      strftime('%d.%m.%Y', Anlagen.Anfang) || ' - '
-      || strftime('%d.%m.%Y', Anlagen.Ende)) AS Zeitraum
-    , Anlagen.Typ AS Bezeichnung
     , 0           AS AnzahlAktive
     , 0           AS AnzahlInaktive
     , 0           AS AnzahlBeendete
@@ -207,10 +201,6 @@ GA_begrenzt AS (
 )
 , Anl_begr_Vertraege_inaktiv AS (
   SELECT  V.AnlagenId           AS AId
-    , Anlagen.ZSatz             AS Zinssatz
-    , strftime('%d.%m.%Y', Anlagen.Anfang) || ' - '
-      || strftime('%d.%m.%Y', Anlagen.Ende) AS Zeitraum
-    , Anlagen.Typ               AS Bezeichnung
     , 0                         AS AnzahlAktive
     , COUNT(V.id)               AS AnzahlInaktive
     , 0                         AS AnzahlBeendete
@@ -224,9 +214,6 @@ GA_begrenzt AS (
 )
 , Anl_fortl_Vertraege_inaktiv AS (
   SELECT  V.AnlagenId           AS AId
-    , Anlagen.ZSatz             AS Zinssatz
-    , 'fortlaufende Geldanlage' AS Zeitraum
-    , Anlagen.Typ               AS Bezeichnung
     , 0                         AS AnzahlAktive
     , COUNT(V.id)               AS AnzahlInaktive
     , 0                         AS AnzahlBeendete
@@ -239,10 +226,6 @@ GA_begrenzt AS (
 )
 , Anl_begr_Vertraege_aktiv AS (
   SELECT V.AnlagenId            AS AId
-    , Anlagen.ZSatz             AS Zinssatz
-    , strftime('%d.%m.%Y', Anlagen.Anfang) || ' - '
-      || strftime('%d.%m.%Y', Anlagen.Ende) AS Zeitraum
-    , Anlagen.Typ               AS Bezeichnung
     , COUNT(V.id)               AS AnzahlAktive
     , 0                         AS AnzahlInaktive
     , 0                         AS AnzahlBeendete
@@ -254,9 +237,6 @@ GA_begrenzt AS (
 )
 , Anl_fortl_Vertraege_aktiv AS (
   SELECT V.AnlagenId            AS AId
-    , Anlagen.ZSatz             AS Zinssatz
-    , 'fortlaufende Geldanlage' AS Zeitraum
-    , Anlagen.Typ               AS Bezeichnung
     , COUNT(V.id)               AS AnzahlAktive
     , 0                         AS AnzahlInaktive
     , 0                         AS AnzahlBeendete
@@ -299,9 +279,6 @@ GA_begrenzt AS (
 )
 , Anl_fortl_Vertraege_beendet AS (
   SELeCT AId                    AS AId
-    , Anlagen.ZSatz             AS Zinssatz
-    , 'fortlaufende Geldanlage' AS Zeitraum
-    , Anlagen.Typ               AS Bezeichnung
     , 0                         AS AnzahlAktive
     , 0                         AS AnzahlInaktive
     , COUNT(DISTINCT VId)                AS AnzahlBeendete
@@ -346,9 +323,6 @@ GA_begrenzt AS (
 )
 , Anl_begr_Vertraege_beendet AS (
   SELECT AId                    AS AId
-    , Anlagen.ZSatz             AS Zinssatz
-    , 'fortlaufende Geldanlage' AS Zeitraum
-    , Anlagen.Typ               AS Bezeichnung
     , 0                         AS AnzahlInaktive
     , 0                         AS AnzahlAktive
     , COUNT(DISTINCT VId)       AS AnzahlBeendete
@@ -360,9 +334,6 @@ GA_begrenzt AS (
 )
 , Summen AS (
   SELECT AId
-    , Zinssatz/100.             AS Zinssatz
-    , Zeitraum
-    , Bezeichnung
     , SUM(AnzahlAktive)         AS "AnzahlAktive"
     , SUM(AnzahlInaktive)       AS "AnzahlInaktive"
     , SUM(AnzahlBeendete)       AS "AnzahlBeendete"
@@ -387,14 +358,17 @@ GA_begrenzt AS (
 )
 
 SELECT AId
-  , printf(" %.2f%% ", Zinssatz) AS Zinssatz
-  , Zeitraum
-  , Bezeichnung
+  , printf(" %.2f%% ", Anlagen.ZSatz /100.) AS Zinssatz
+    , IIF( Anlagen.Ende == '9999-12-31'
+      , 'fortlaufende Geldanlage',
+      strftime('%d.%m.%Y', Anlagen.Anfang) || ' - '
+      || strftime('%d.%m.%Y', Anlagen.Ende)) AS Zeitraum
+  , Anlagen.Typ AS Bezeichnung
   , printf('%d (%d/%d)', AnzahlAktive + AnzahlInaktive, AnzahlAktive, AnzahlInaktive) AS "Anz. laufende V. (mit/ ohne Geldeingang)"
   , printf("%d", AnzahlBeendete) AS "Anz. beendete Verträge"
   , printf(" %.2f € ", Gesamtbetrag/100.) AS Gesamtbetrag
-  , IIF( Offen, 'Ja', 'Nein') AS [(Ab-)Geschlossen]
-FROM Summen
+  , IIF( Anlagen.Offen, 'Ja', 'Nein') AS [(Ab-)Geschlossen]
+FROM Summen INNER JOIN Geldanlagen AS Anlagen ON AId == Anlagen.rowid
 ORDER BY Zinssatz
 )str"
 )};
