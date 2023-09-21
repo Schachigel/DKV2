@@ -48,6 +48,7 @@ double gesamtbetrag3 =0.;
 
 void test_geldanlagen::test_kontinuierlicheAnlagen()
 {
+    int contractcount =1;
 // prep: to have exactly one investment (1%, floating)
 {
         QCOMPARE(1, saveNewFloatingInvestment (investment1_interest, qsl("investment 1")));
@@ -103,7 +104,7 @@ void test_geldanlagen::test_kontinuierlicheAnlagen()
     cont01.setInterestModel (interestModel::reinvest);
     cont01.setInterestRate (dbInterest2Interest(investment1_interest ));
     cont01.setInvestmentId (2);
-    QCOMPARE( 1, cont01.saveNewContract ());
+    QCOMPARE( contractcount++, cont01.saveNewContract ());
     // ObjectUnderTest
     QVERIFY2(executeSql(sqlInvestmentsView, resultset), "Geldanlagen Ansicht SQL konnte nicht ausgeführt werden!");
     // test
@@ -129,7 +130,7 @@ void test_geldanlagen::test_kontinuierlicheAnlagen()
     cont02.setInterestModel (interestModel::reinvest);
     cont02.setInterestRate (dbInterest2Interest(investment1_interest));
     cont02.setInvestmentId (2);
-    QCOMPARE( 2, cont02.saveNewContract ());
+    QCOMPARE( contractcount++, cont02.saveNewContract ());
     // ObjectUnderTest
     QVERIFY2(executeSql(sqlInvestmentsView, resultset), "Geldanlagen Ansicht SQL konnte nicht ausgeführt werden!");
     // test
@@ -213,7 +214,6 @@ void test_geldanlagen::test_kontinuierlicheAnlagen()
     // ObjectUnderTest
     QVERIFY2(executeSql(sqlInvestmentsView, resultset), "Geldanlagen Ansicht SQL konnte nicht ausgeführt werden!");
     // test
-    dbgDumpDB ();
     QCOMPARE(2, resultset.size());
     // Anlage m niedrigerem Zins kommt zuerst
     QCOMPARE(resultset[0].value (fnAnzahlLaufende), qsl("0 (0/0)"));
@@ -239,7 +239,7 @@ void test_geldanlagen::test_kontinuierlicheAnlagen()
     cont03.setInterestModel (interestModel::fixed);
     cont03.setInterestRate (dbInterest2Interest(investment3_interest ));
     cont03.setInvestmentId (3);
-    cont03.saveNewContract ();
+    QCOMPARE( contractcount++,    cont03.saveNewContract ());
     cont03.bookInitialPayment (contractConclusion, cont03.plannedInvest ());
     // ObjectUnderTest
     QVERIFY2(executeSql(sqlInvestmentsView, resultset), "Geldanlagen Ansicht SQL konnte nicht ausgeführt werden!");
@@ -271,7 +271,7 @@ void test_geldanlagen::test_kontinuierlicheAnlagen()
     oldContract01.setInterestModel (interestModel::payout);
     oldContract01.setInterestRate (dbInterest2Interest(investment3_interest ));
     oldContract01.setInvestmentId (3);
-    QCOMPARE( 4, oldContract01.saveNewContract ());
+    QCOMPARE( contractcount++, oldContract01.saveNewContract ());
     // ObjectUnderTest: Investment values should not chage
     QVector<QSqlRecord> resultset;
     QVERIFY2(executeSql(sqlInvestmentsView, resultset), "Geldanlagen Ansicht SQL konnte nicht ausgeführt werden!");
@@ -290,13 +290,36 @@ void test_geldanlagen::test_kontinuierlicheAnlagen()
 // prep: make a deposit less than a year back
     oldContract01.deposit (oldContractConcluseionDate.addMonths (2), investedAmount3, true); // 3000.
     resultset.clear ();
-    // tests: this should not change statistics
+    // tests: this should not change contract count, but Amount in the Investment
     QVERIFY2(executeSql(sqlInvestmentsView, resultset), "Geldanlagen Ansicht SQL konnte nicht ausgeführt werden!");
     QCOMPARE(resultset[0].value (fnAnzahlLaufende), qsl("2 (2/0)")); // one more contract to count
     QCOMPARE(resultset[0].value (fnAnzahlBeendete).toInt(), 0);
     QCOMPARE(resultset[0].value (fnGesamtbetrag), qsl(" %1 € ").arg(d2s(gesamtbetrag3 +investedAmount3)));
+// prep: future bookings do not count in
+    oldContract01.deposit(QDate::currentDate ().addDays (5), investedAmount3); // FUTURE date
+    resultset.clear();
+    QVERIFY2(executeSql(sqlInvestmentsView, resultset), "Geldanlagen Ansicht SQL konnte nicht ausgeführt werden!");
+    QCOMPARE(resultset[0].value (fnAnzahlLaufende), qsl("2 (2/0)")); // one more contract to count
+    QCOMPARE(resultset[0].value (fnAnzahlBeendete).toInt(), 0);
+    QCOMPARE(resultset[0].value (fnGesamtbetrag), qsl(" %1 € ").arg(d2s(gesamtbetrag3 +investedAmount3)));
+// prep: future new contract should not change count or Amount
+    contract futureContract;
+    futureContract.setCreditorId (saveRandomCreditor ().id());
+    futureContract.setConclusionDate (QDate::currentDate ().addDays (1));
+    futureContract.setPlannedInvest (investedAmount1);
+    futureContract.setInterestModel (interestModel::payout);
+    futureContract.setInterestRate (dbInterest2Interest(investment3_interest ));
+    futureContract.setInvestmentId (3);
+    QCOMPARE( contractcount++, futureContract.saveNewContract ());
 
-
+    resultset.clear();
+    // ObjectUnderTest
+    dbgDumpDB ();
+    QVERIFY2(executeSql(sqlInvestmentsView, resultset), "Geldanlagen Ansicht SQL konnte nicht ausgeführt werden!");
+    // investment 3 w. lowest interest is unchanged
+    QCOMPARE(resultset[0].value (fnAnzahlLaufende), qsl("2 (2/0)")); // one more contract to count
+    QCOMPARE(resultset[0].value (fnAnzahlBeendete).toInt(), 0);
+    QCOMPARE(resultset[0].value (fnGesamtbetrag), qsl(" %1 € ").arg(d2s(gesamtbetrag3 +investedAmount3)));
 }
 
 
