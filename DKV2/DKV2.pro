@@ -95,6 +95,7 @@ SOURCES += \
         dkdbhelper.cpp \
         dkdbindices.cpp \
         dkdbviews.cpp \
+        dlgabout.cpp \
         dlgannualsettlement.cpp \
         dlgaskcontractlabel.cpp \
         dlgaskdate.cpp \
@@ -149,6 +150,7 @@ HEADERS += pch.h\
         dkdbindices.h \
         dkdbviews.h \
         dkv2version.h \
+        dlgabout.h \
         dlgannualsettlement.h \
         dlgaskcontractlabel.h \
         dlgaskdate.h \

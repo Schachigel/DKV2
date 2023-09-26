@@ -1,3 +1,4 @@
+#include "qapplication.h"
 #include <QtGlobal>
 
 #if defined(Q_OS_WIN)
@@ -13,6 +14,7 @@
 #include "opendatabase.h"
 #include "wiznewdatabase.h"
 #include "dlgaskdate.h"
+#include "dlgabout.h"
 #include "uiitemformatter.h"
 #include "dkdbhelper.h"
 #include "dkdbviews.h"
@@ -844,15 +846,27 @@ void MainWindow::on_actionDatenbank_Views_schreiben_triggered()
 // about
 void MainWindow::on_action_about_DKV2_triggered()
 {   LOG_CALL;
+
+    dlgAbout aboutDlg (this);
+    aboutDlg.setHeader (qsl("<p>DKV2 Version: %1<br>"
+                           "Betriebssystem: %2<br>"
+                           "Prozess: %3<p>").arg(QApplication::applicationVersion()
+                                , QSysInfo::prettyProductName()
+                                , QSysInfo::buildAbi()));
+
     QString msg;
-    msg = qsl("Lieber Anwender. \nDKV2 wird von seinen Entwicklern kostenlos zur Verfügung gestellt.\n");
-    msg += qsl("Es wurde mit viel Arbeit und Sorgfalt entwickelt. Wenn Du es nützlich findest: Viel Spaß bei der Anwendung!!\n");
-    msg += qsl("Allerdings darfst Du es nicht verkaufen oder bezahlte Dienste für Einrichtung oder Unterstützung anbieten.\n");
-    msg += qsl("DKV2 könnte Fehler enthalten. Wenn Du sie uns mitteilst werden sie vielleicht ausgebessert.\n");
-    msg += qsl("Aber aus der Verwendung kannst Du keine Rechte ableiten. Verwende DKV2 so, wie es ist - ");
-    msg += qsl("sollten Fehler auftreten übernehmen wir weder Haftung noch Verantwortung - dafür hast Du sicher Verständnis.\n");
-    msg += qsl("Viel Spaß mit DKV2 !");
-    QMessageBox::information(this, qsl("I n f o"), msg);
+    msg = qsl("<b>Lieber Anwender!</b> <p>DKV2 wird von seinen Entwicklern kostenlos zur Verfügung gestellt. ");
+    msg += qsl("Es wurde mit viel Arbeit und Sorgfalt entwickelt. Wenn Du es nützlich findest: Viel Spaß bei der Anwendung!!<br>");
+    msg += qsl("Allerdings darfst Du es nicht verkaufen oder bezahlte Dienste wie etwa für Einrichtung, Schulung oder Unterstützung anbieten oder leisten.<br>");
+    msg += qsl("Trotz aller Sorgfalt und Mühe: Wie jede Software enthält DKV2 sicher Fehler. Wenn Du sie uns mitteilst werden sie vielleicht ausgebessert.<br>");
+    msg += qsl("Aber aus der Verwendung kannst Du keine Rechte ableiten. ");
+    msg += qsl("Wenn Fehler und Probleme auftreten, so übernehmen wir weder Haftung für Folgen noch Verantwortung für Schäden - dafür hast Du sicher Verständnis.<br>");
+    msg += qsl("<br><b>Viel Spaß mit DKV2 !</b>");
+    aboutDlg.setMsg (msg);
+
+    aboutDlg.exec();
+
+
 }
 void MainWindow::closeEvent(QCloseEvent *event)
 {
