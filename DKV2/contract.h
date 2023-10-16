@@ -8,11 +8,11 @@
 
 enum class interestModel
 {
-    payout = 0,
-    reinvest /*= 1*/,
-    fixed /*= 2*/,
-    zero  /*= 3*/,
-    maxId /*= 4*/,
+    payout     = 0,
+    reinvest /*= 1 */,
+    fixed    /*= 2 */,
+    zero     /*= 3 */,
+    maxId    /*= 4 */,
     allIModels = maxId
 };
 inline QString interestModelDisplayString(const interestModel m) {
