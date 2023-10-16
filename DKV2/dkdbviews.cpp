@@ -199,7 +199,7 @@ WITH
 ---------------------------------------------------------------------------------------------------
 -- Anlagen : AId, AnzahlAktive, AnzahlInaktive, AnzahlBeendete, Betrag
 ---------------------------------------------------------------------------------------------------
-, Anl_OhneVertraege AS (
+, Anlagen_OhneVertraege AS (
     SELECT Anlagen.rowid AS AId
       , 0                AS AnzahlAktive
       , 0                AS AnzahlInaktive
@@ -211,88 +211,83 @@ WITH
         UNION
       SELECT DISTINCT AnlagenId FROM exVertraege)
 )
-, Anl_begr_Vertraege_inaktiv AS (
+-- Anlagen mit Intervall
+, AnlagenMIntervall_Vertraege_Aktiv AS (
+    SELECT V.AnlagenId            AS AId
+      , COUNT(V.id)               AS AnzahlAktive
+      , 0                         AS AnzahlInaktive
+      , 0                         AS AnzahlBeendete
+      , (SELECT SUM(Betrag)
+         FROM zuBeruecksichtigendeBuchunge AS Buchungen
+         WHERE Buchungen.AnlagenId == V.AnlagenId AND Buchungen.Datum BETWEEN Anlagen.Anfang AND Anlagen.Ende) AS Betrag
+    FROM aktiveVertraege AS V
+      INNER JOIN GA_begrenzt AS Anlagen ON Anlagen.rowid == V.AnlagenId -- für Anlagenintervall (.Anfang und .Ende)
+    GROUP BY V.AnlagenId
+)
+, AnlagenMIntervall_Vertraege_inaktiv AS (
     SELECT  V.AnlagenId           AS AId
       , 0                         AS AnzahlAktive
       , COUNT(V.id)               AS AnzahlInaktive
       , 0                         AS AnzahlBeendete
       , SUM(V.Betrag)             AS Betrag
     FROM inaktiveVertraege AS V
-      INNER JOIN GA_begrenzt AS Anlagen ON Anlagen.rowid == V.AnlagenId
+      INNER JOIN GA_begrenzt AS Anlagen ON Anlagen.rowid == V.AnlagenId -- statt WHERE .. IN GA_begrenzt
     WHERE V.Vertragsdatum BETWEEN Anlagen.Anfang AND Anlagen.Ende
     GROUP BY V.AnlagenId
 )
-, Anl_fortl_Vertraege_inaktiv AS (
+-- Anlagen (fortlaufenden)
+, AnlagenFortlaufend_Vertraege_Aktiv AS (
+    SELECT V.AnlagenId            AS AId
+      , COUNT(V.id)               AS AnzahlAktive
+      , 0                         AS AnzahlInaktive
+      , 0                         AS AnzahlBeendete
+      , (SELECT SUM(Betrag)
+         FROM zuBeruecksichtigendeBuchunge AS Buchungen
+         WHERE Buchungen.AnlagenId == V.AnlagenId AND Buchungen.Datum BETWEEN DATE('now', '-1 year') AND DATE('now')) AS Betrag
+    FROM aktiveVertraege AS V
+      INNER JOIN GA_fortlaufend AS Anlagen ON Anlagen.rowid == V.AnlagenId -- statt WHERE ... in GA_fortlaufend
+    GROUP BY V.AnlagenId
+)
+, AnlagenFortlaufend_Vertraege_inaktiv AS (
     SELECT  V.AnlagenId           AS AId
       , 0                         AS AnzahlAktive
       , COUNT(V.id)               AS AnzahlInaktive
       , 0                         AS AnzahlBeendete
       , SUM(V.Betrag)             AS Betrag
     FROM inaktiveVertraege AS V
-      INNER JOIN GA_fortlaufend AS Anlagen ON Anlagen.rowid == V.AnlagenId
+      INNER JOIN GA_fortlaufend AS Anlagen ON Anlagen.rowid == V.AnlagenId -- statt WHERE ... in GA_fortlaufend
     WHERE V.Vertragsdatum BETWEEN DATE('now', '-1 year') AND DATE('now')
     GROUP BY V.AnlagenId
 )
-, Anl_begr_Vertraege_aktiv AS (
-    SELECT V.AnlagenId            AS AId
-      , COUNT(V.id)               AS AnzahlAktive
-      , 0                         AS AnzahlInaktive
-      , 0                         AS AnzahlBeendete
-      , (SELECT SUM(Betrag) FROM zuBeruecksichtigendeBuchunge AS Buchungen WHERE Buchungen.AnlagenId == V.AnlagenId AND Buchungen.Datum BETWEEN Anlagen.Anfang AND Anlagen.Ende) AS Betrag
-    FROM aktiveVertraege AS V
-      INNER JOIN GA_begrenzt AS Anlagen ON Anlagen.rowid == V.AnlagenId
-    GROUP BY V.AnlagenId
-)
-, Anl_fortl_Vertraege_aktiv AS (
-    SELECT V.AnlagenId            AS AId
-      , COUNT(V.id)               AS AnzahlAktive
-      , 0                         AS AnzahlInaktive
-      , 0                         AS AnzahlBeendete
-      , (SELECT SUM(Betrag) FROM zuBeruecksichtigendeBuchunge AS Buchungen  WHERE Buchungen.AnlagenId == V.AnlagenId AND Buchungen.Datum BETWEEN DATE('now', '-1 year') AND DATE('now')) AS Betrag
-    FROM aktiveVertraege AS V
-      INNER JOIN GA_fortlaufend AS Anlagen ON Anlagen.rowid == V.AnlagenId
-    GROUP BY V.AnlagenId
-)
-, tmp_Buchungen_beendeteVertraege_fortlaufend AS (
-  /* alle Buchungen von beendeten Verträgen mit fortlaufenden Geldanlagen
-     !! INCL Abschlussbuchungen !! */
+-- Anlagen (fortlaufend) von beendeten Verträgen
+, Buchungen_beendeteVertraege_fortlaufend AS (
       SELECT
         beendeteVertraege_fortlaufendeGA.id           AS VId
          , beendeteVertraege_fortlaufendeGA.AnlagenId AS AId
          , exBuchungen.Datum                          AS Datum
          , exBuchungen.Betrag                         AS Betrag
          , exBuchungen.id                             AS BId
+         , MxId                                       AS maxBid
       FROM zuBeruecksichtigende_ExBuchunge AS exBuchungen
       INNER JOIN beendeteVertraege_fortlaufendeGA ON beendeteVertraege_fortlaufendeGA.id = exBuchungen.VertragsId
+      -- diese nächsten 2 Zeilen entfernen die Auszahllungsbuchungen aus der Liste aller Buchungen
+      NATURAL JOIN (SELECT VertragsId, MaX(id) AS MxId FROM zuBeruecksichtigende_ExBuchunge GROUP BY VertragsId)
+      WHERE exBuchungen.id <> MxId AND ExBuchungen.Datum BETWEEN  DATE('now', '-1 year') AND DATE('now')
 )
-, MaxId_Buchungen_beendeteVertraege_fortlaufend AS (
-    SELECT VId, MAX(BId) AS MaxBid
-    FROM tmp_Buchungen_beendeteVertraege_fortlaufend
-    GROUP bY VId
-)
-, Buchungen_beendeteVertraege_fortlaufend AS (
-  /* alle Buchungen von beendeten Verträgen mit fortlaufenden Geldanlagen
-     !! OHNE Abschlussbuchungen !! */
-    SELECT *
-    FROM tmp_Buchungen_beendeteVertraege_fortlaufend CROSS JOIN MaxId_Buchungen_beendeteVertraege_fortlaufend USING (VId)
-    WHERE tmp_Buchungen_beendeteVertraege_fortlaufend.BId <> MaxId_Buchungen_beendeteVertraege_fortlaufend.MaxBid
-)
-, Anl_fortl_Vertraege_beendet AS (
+, AnlagenFortlaufend_Vertraege_Beendet AS (
     SELeCT AId                    AS AId
       , 0                         AS AnzahlAktive
       , 0                         AS AnzahlInaktive
       , COUNT(DISTINCT VId)       AS AnzahlBeendete
       , SUM(Betrag)               AS Betrag
     FROM Buchungen_beendeteVertraege_fortlaufend
-      INNER JOIN Geldanlagen AS Anlagen ON Anlagen.rowid == AId
     GROUP BY AId
 )
-, Buchungen_beendeteVertraege_begrenzt AS (
-    SELECT VId, AId, Datum, Anfang, Ende, Betrag
+-- Anlagen (mit Intervall) von beendeten Verträgen
+, Buchungen_beendeteVertraege_mInterval AS (
+    SELECT VId, AId, Datum, Anfang, Ende, Betrag, BId
     FROM (
-      SELECT VId, AId, Datum, Anfang, Ende, Betrag, BId
-      FROM (
-        SELECT
+      SELECT
           beendeteVertraege_begrenztGA.id          AS VId
           , beendeteVertraege_begrenztGA.AnlagenId AS AId
           , exBuchungen.Datum                      AS Datum
@@ -300,24 +295,20 @@ WITH
           , beendeteVertraege_begrenztGA.Ende      AS Ende
           , exBuchungen.Betrag                     AS Betrag
           , exBuchungen.id                         AS BId
-        FROM zuBeruecksichtigende_ExBuchunge AS exBuchungen
+          , MxId                                   AS maxBid
+      FROM zuBeruecksichtigende_ExBuchunge AS exBuchungen
         INNER JOIN beendeteVertraege_begrenztGA ON beendeteVertraege_begrenztGA.id = exBuchungen.VertragsId
+        NATURAL JOIN (SELECT VertragsId, MAX(id) AS MxId FROM zuBeruecksichtigende_ExBuchunge GROUP BY VertragsId)
+      WHERE ExBuchungen.id <> MxId AND ExBuchungen.Datum BETWEEN Anfang AND Ende
       )
-    )
-    WHERE 0 <> (SELECT SUM(exBuchungen.Betrag)
-               FROM zuBeruecksichtigende_ExBuchunge AS exBuchungen
-               WHERE exBuchungen.VertragsId == vid
-                     AND exBuchungen.id <= BId
-                     AND exBuchungen.Datum BETWEEN Anfang AND Ende
-               )
   )
-, Anl_begr_Vertraege_beendet AS (
+, AnlagenMInterval_Vertraege_Beendet AS (
     SELECT AId                    AS AId
       , 0                         AS AnzahlInaktive
       , 0                         AS AnzahlAktive
       , COUNT(DISTINCT VId)       AS AnzahlBeendete
       , SUM(Betrag)               AS Betrag
-    FROM Buchungen_beendeteVertraege_begrenzt
+    FROM Buchungen_beendeteVertraege_mInterval
       INNER JOIN Geldanlagen AS Anlagen ON Anlagen.rowid == AId
     GROUP BY AId
 )
@@ -328,19 +319,19 @@ WITH
     , SUM(AnzahlBeendete)       AS "AnzahlBeendete"
     , SUM(Betrag)               AS Gesamtbetrag
   FROM (
-      SELECT * FROM Anl_OhneVertraege
+      SELECT * FROM Anlagen_OhneVertraege
     UNION ALL
-      SELECT * FROM Anl_begr_Vertraege_inaktiv
+      SELECT * FROM AnlagenMIntervall_Vertraege_inaktiv
     UNION ALL
-      SELECT * FROM Anl_fortl_Vertraege_inaktiv
+      SELECT * FROM AnlagenFortlaufend_Vertraege_inaktiv
     UNION ALL
-      SELECT * FROM Anl_begr_Vertraege_aktiv
+      SELECT * FROM AnlagenMIntervall_Vertraege_Aktiv
     UNION ALL
-      SELECT * FROM Anl_fortl_Vertraege_aktiv
+      SELECT * FROM AnlagenFortlaufend_Vertraege_Aktiv
     UNION ALL
-      SELECT * FROM Anl_fortl_Vertraege_beendet
+      SELECT * FROM AnlagenFortlaufend_Vertraege_Beendet
     UNION ALL
-      SELECT * FROM Anl_begr_Vertraege_beendet
+      SELECT * FROM AnlagenMInterval_Vertraege_Beendet
   )
   GROUP BY AId
 )
