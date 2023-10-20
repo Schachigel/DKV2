@@ -604,7 +604,7 @@ WITH Bookings AS (
   , KreditorId               AS kid
   , zSatz                    AS Zinssatz
   , Buchungen.Betrag         AS Betrag
-  , IIF( Vertraege.thesaurierend = 2, IIF( Buchungen.BuchungsArt = 8, 0, Buchungen.Betrag), Buchungen.Betrag)
+  , IIF( Vertraege.thesaurierend = 2, IIF( Buchungen.BuchungsArt = 8 OR Buchungen.BuchungsArt = 4, 0, Buchungen.Betrag), Buchungen.Betrag)
                              AS VerzinslGuthaben
   FROM Buchungen JOIN Vertraege ON Vertraege.id = Buchungen.VertragsId
 )
@@ -619,7 +619,7 @@ WITH Bookings AS (
   FROM Vertraege WHERE id IN (SELEcT DISTINCT VertragsId FROM Buchungen)
 )
 , sums AS (
-  SELEcT SUM(Betrag) /100. AS GesamtVolumen
+  SELEcT SUM(VerzinslGuthaben) /100. AS GesamtVolumen
     , SUM(VerzinslGuthaben *Zinssatz)/100. /100. /100. AS Jahreszins
   FROM Bookings
 )
@@ -655,13 +655,13 @@ WITH all_counts AS (
 , active_bookings AS (
   SELECT ZSatz /100.                 AS Zinssatz
     , Buchungen.Betrag               AS Betrag
-    , IIF( Vertraege.thesaurierend = 2, IIF( Buchungen.BuchungsArt = 8, 0, Buchungen.Betrag), Buchungen.Betrag)
+    , IIF( Vertraege.thesaurierend = 2, IIF( Buchungen.BuchungsArt = 8 OR Buchungen.BuchungsArt = 4, 0, Buchungen.Betrag), Buchungen.Betrag)
                                      AS VerzinslGuthaben
     FROM Buchungen JOIN Vertraege ON Vertraege.id = Buchungen.VertragsId
 )
 , active_sums AS (
-  SELEcT IFNULL( SUM(Betrag) /100., 0)            AS GesamtVolumen
-    , IFNULL( SUM(Betrag) /100. /COUNT(*), 0)     AS MittlererVertragswert
+  SELEcT IFNULL( SUM(VerzinslGuthaben) /100., 0)            AS GesamtVolumen
+    , IFNULL( SUM(VerzinslGuthaben) /100. /COUNT(*), 0)     AS MittlererVertragswert
     , IFNULL( SUM(VerzinslGuthaben *Zinssatz) /100. /100., 0)
                                       AS Jahreszins
     , IFNULL( SUM(VerzinslGuthaben *Zinssatz) /100. /100. / SUM(Betrag) *100., 0)

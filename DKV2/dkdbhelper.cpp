@@ -388,11 +388,11 @@ QVector<QStringList> overviewShortInfo(const QString& sql)
     QSqlRecord record =executeSingleRecordSql(sql);
     ret.push_back(QStringList({qsl("Anzahl DK Geber*innen"), record.value(qsl("AnzahlKreditoren")).toString()}));
     ret.push_back(QStringList({qsl("Anzahl der Verträge"), record.value(qsl("AnzahlVertraege")).toString()}));
-    ret.push_back(QStringList({qsl("Gesamtvolumen"), s_d2euro(record.value(qsl("GesamtVolumen")).toDouble())}));
-    ret.push_back(QStringList({qsl("Mittlerer Vertragswert"), s_d2euro(record.value(qsl("MittlererVertragswert")).toDouble())}));
-    ret.push_back(QStringList({qsl("Jahreszins"), s_d2euro(record.value(qsl("JahresZins")).toDouble())}));
-    ret.push_back(QStringList({qsl("Durchschn. Zins (gew. Mittel)"), qsl("%1 %").arg(r2(record.value(qsl("ZinsRate")).toDouble()))}));
-    ret.push_back(QStringList({qsl("Mittlerer Zins"), qsl("%1 %").arg(r2(record.value(qsl("MittelZins")).toDouble()))}));
+    ret.push_back(QStringList({qsl("Gesamtvolumen"), d2euro(record.value(qsl("GesamtVolumen")).toDouble())}));
+    ret.push_back(QStringList({qsl("Mittlerer Vertragswert"), d2euro(record.value(qsl("MittlererVertragswert")).toDouble())}));
+    ret.push_back(QStringList({qsl("Jahreszins (ca.)"), d2euro(record.value(qsl("JahresZins")).toDouble())}));
+    ret.push_back(QStringList({qsl("Durchschn. Zinssatz (gew. Mittel, ca.)"), qsl("%1 %").arg(r2(record.value(qsl("ZinsRate")).toDouble()))}));
+    ret.push_back(QStringList({qsl("Mittlerer Zinssatz (ca.)"), qsl("%1 %").arg(r2(record.value(qsl("MittelZins")).toDouble()))}));
 
     return ret;
 }
