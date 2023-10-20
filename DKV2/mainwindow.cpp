@@ -231,11 +231,11 @@ void MainWindow::prepare_startPage()
          messageHtml += qsl("<p><b>DK Verwaltung für <font color=blue>%1</font></td>").arg(pName);
     }
     if( allContractsValue > 0) {
-        QString valueRow = qsl("<p>Die Summer aller Direktkredite und Zinsen beträgt <big><font color=red>")
-                + d2euro(allContractsValue) + qsl("</font></big>");
+        QString valueRow = qsl("<p>Die Summer aller Direktkredite und Zinsen beträgt<sup>*</sup> <big><font color=red>")
+                + d2euro(allContractsValue) + qsl("</font></big><br><small>*) Ohne einbehaltene Zinsen von Verträgen mit dem Zinsmodus 'fest'");
         messageHtml += valueRow;
     }
-    messageHtml += qsl("<p>DB File: [ %1 ]").arg(ui->statusLabel->text ());
+    messageHtml += qsl("<p>Aktuelle Datenbank: [%1]<p>").arg(ui->statusLabel->text ());
     ui->lblInfo->setText(messageHtml);
     }
 void MainWindow::on_action_menu_database_start_triggered()
