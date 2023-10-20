@@ -727,6 +727,10 @@ void annualSettlementLetters() {
             /////////////////////////////////////////////////
             savePdfFromHtmlTemplate(qsl("zinsbrief.html"), fileName, printData);
         }
+        else {
+            qWarning() << "List of contracts and terminated contracts was empty" << credRecord.getVariantMap ();
+        }
+
         /////////////////////////////////////////////////
     }
 

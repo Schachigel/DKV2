@@ -370,18 +370,14 @@ bool createCsvActiveContracts()
 // calculate data for start page
 double valueOfAllContracts()
 {
-    QString sqlInactive {qsl(R"str(
-SELECT SUM(Betrag)/100. AS Gesamtbetrag
-FROM Vertraege
-WHERE id NOT IN (SELECT DISTINCT VertragsId FROM Buchungen)
-)str")};
-    double inactiveSum =executeSingleValueSql(sqlInactive).toDouble();
-    QString sqlActive {qsl(R"str(
-SELEcT SUM(Betrag) /100. as Gesamtbetrag
-FROM Buchungen
-)str")};
-    double activeSum =executeSingleValueSql(sqlActive).toDouble();
-    return inactiveSum + activeSum;
+    return executeSingleValueSql(qsl(R"str(
+SELECT
+(SELECT SUM(Betrag)/100.
+FROM Vertraege WHERE id NOT IN (SELECT DISTINCT VertragsId FROM Buchungen)) +
+(SELECT SUM( IIF( thesaurierend == 2 AND (BuchungsArt == 8 OR BuchungsArt == 4), 0, Betrag)) /100.
+FROM Buchungen INNER JOIN (SELECT id, thesaurierend FROM Vertraege) AS Vertraege ON Buchungen.VertragsId == Vertraege.id)
+AS Gesamtbetrag
+    )str")).toDouble();
 }
 
 // statistics, overviews
