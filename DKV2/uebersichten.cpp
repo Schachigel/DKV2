@@ -258,7 +258,7 @@ void uebersichten::renderShortInfo()
 Die Kurzinfo gibt einen Überblick über grundlegende Informationen zu den Direktkrediten.
 Für <i>aktive<i> Verträge läuft bereits die Verzinsung. Bei <i>inaktiven</i> Verträgen
 steht die Einzahlung durch die Kreditgeber*in noch aus.
-<br>Zinswerte sind hier ungenau, da der Zeitpunkt einer Ein- oder Auszahlung nicht berücksichtigt wird.
+<br>Zinswerte sind hier ungenau (i.A. zu hoch), da der Zeitpunkt einer Ein- oder Auszahlung nicht berücksichtigt wird.
 )str"));
     prep(head, describe);
     tablelayout tl(td);
