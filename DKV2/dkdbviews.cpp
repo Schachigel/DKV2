@@ -343,8 +343,8 @@ SELECT AId
       strftime('%d.%m.%Y', Anlagen.Anfang) || ' - '
       || strftime('%d.%m.%Y', Anlagen.Ende)) AS Zeitraum
   , Anlagen.Typ AS Bezeichnung
-  , printf('%d (%d/%d)', AnzahlAktive + AnzahlInaktive, AnzahlAktive, AnzahlInaktive) AS "Anz. laufende V. (mit/ ohne Geldeingang)"
-  , printf("%d", AnzahlBeendete) AS "Anz. beendete Verträge"
+  , printf('%d (%d/%d)', AnzahlAktive + AnzahlInaktive, AnzahlAktive, AnzahlInaktive) AS [Anz_laufendeV_(mit_ohne_Geldeingang)]
+  , printf("%d", AnzahlBeendete) AS [Anz_beendeteVerträge]
   , printf(" %.2f € ", Gesamtbetrag/100.) AS Gesamtbetrag
   , IIF( Anlagen.Offen, 'Offen', 'f. neue Vertr. geschlossen') AS [(Ab-)Geschlossen]
 FROM Summen INNER JOIN Geldanlagen AS Anlagen ON AId == Anlagen.rowid

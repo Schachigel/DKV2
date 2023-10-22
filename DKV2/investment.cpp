@@ -6,12 +6,6 @@
 #include "tabledatainserter.h"
 #include "investment.h"
 
-const QString fnInvestmentInterest{qsl("ZSatz")};
-const QString fnInvestmentStart{qsl("Anfang")};
-const QString fnInvestmentEnd{qsl("Ende")};
-const QString fnInvestmentType{qsl("Typ")};
-const QString fnInvestmentState{qsl("Offen")};
-
 investment::investment(qlonglong id /*=-1*/, int Interest /*=0*/,
                        const QDate Start /*=EndOfTheFuckingWorld*/, const QDate End /*=EndOfTheFuckingWorld*/,
                        const QString& Type /*=qsl("")*/, const bool State)
@@ -189,20 +183,31 @@ bool deleteInvestment(const qlonglong rowid)
     return executeSql_wNoRecords (sql);
 }
 
-bool setInvestment(const qlonglong rowid, bool state)
+bool updateInvestmentState(const qlonglong rowid, bool state)
 {   LOG_CALL;
     QString sql{qsl("UPDATE  Geldanlagen  SET Offen = %1 WHERE rowid == %2")};
 
     sql =sql.arg(state ? qsl("true") : qsl("false"), i2s(rowid));
     return executeSql_wNoRecords(sql);
 }
+
+bool updateInvestmentType(const QString type, qlonglong rowid)
+{   LOG_CALL;
+    QString sqlType {type};
+    sqlType =sqlType.replace ("'", "''");
+    QString sql{qsl("UPDATE Geldanlagen SET Typ = '%1' WHERE rowid == %2")};
+
+    sql =sql.arg(sqlType, i2s(rowid));
+    return executeSql_wNoRecords (sql);
+}
+
 bool closeInvestment(const qlonglong rowid)
 {
-    return setInvestment(rowid, false);
+    return updateInvestmentState(rowid, false);
 }
 bool openInvestment(const qlonglong rowid)
 {
-    return setInvestment(rowid, true);
+    return updateInvestmentState(rowid, true);
 }
 
 int nbrActiveInvestments(const QDate cDate/*=EndOfTheFuckingWorld*/)

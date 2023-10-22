@@ -739,7 +739,7 @@
     <string>Löschen</string>
    </property>
    <property name="toolTip">
-    <string>Das Investment wird aus der Datenbank gelsöcht. </string>
+    <string>Das Investment wird unwiderruflich aus der Datenbank gelöscht. </string>
    </property>
   </action>
   <action name="actionInvestmentSchliessen">

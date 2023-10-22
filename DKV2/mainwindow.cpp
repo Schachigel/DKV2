@@ -231,8 +231,8 @@ void MainWindow::prepare_startPage()
          messageHtml += qsl("<p><b>DK Verwaltung für <font color=blue>%1</font></td>").arg(pName);
     }
     if( allContractsValue > 0) {
-        QString valueRow = qsl("<p>Die Summer aller Direktkredite und Zinsen beträgt<sup>*</sup> <big><font color=red>")
-                + s_d2euro(allContractsValue) + qsl("</font></big><br><small>*) Ohne einbehaltene Zinsen von Verträgen mit dem Zinsmodus 'fest'");
+        QString valueRow = qsl("<tr><td></td><td>Die Summer aller Direktkredite und Zinsen beträgt<sup>*</sup> <big><font color=red>")
+                + s_d2euro(allContractsValue) + qsl("</font></big><br><small>*) Einbehaltene Zinsen von Verträgen mit dem Zinsmodus 'fest' werden nicht gewertet<br></small></td><td></td></tr>");
         messageHtml += valueRow;
     }
     messageHtml += qsl("<p>Aktuelle Datenbank: [%1]<p>").arg(ui->statusLabel->text ());
@@ -356,12 +356,17 @@ void MainWindow::prepare_investmentsListView()
     model->setHeaderData(column++, Qt::Horizontal, qsl("Anzahl laufend. Verträge,\ndavon (mit/ ohne Geldeingang)"), Qt::DisplayRole);
     model->setHeaderData(column++, Qt::Horizontal, qsl("# beend.\nVerträge"), Qt::DisplayRole);
     model->setHeaderData(column++, Qt::Horizontal, qsl("Gesamtbetrag\naller Vertr."), Qt::DisplayRole);
-    model->setHeaderData(column++, Qt::Horizontal, qsl("(Ab-) Geschlossene\nGeldanlagen"), Qt::DisplayRole);
+    model->setHeaderData(column++, Qt::Horizontal, qsl("Geschlossene / offene\nGeldanlagen"), Qt::DisplayRole);
 
     tv->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tv->setAlternatingRowColors(true);
+
     model->setEditStrategy(QSqlTableModel::OnFieldChange);
-    model->select();
+    if( not model->select()) {
+        qCritical() << "Model selection failed ";
+        return;
+    }
+
     tv->resizeColumnsToContents();
 }
 void MainWindow::on_actionAnlagen_verwalten_triggered()
@@ -443,14 +448,31 @@ void MainWindow::on_btnAlleLoeschen_clicked()
     }
 }
 
+namespace
+{
+QSqlRecord currentInvestment;
+}
 void MainWindow::on_InvestmentsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;
     QTableView* tv =ui->InvestmentsTableView;
     QModelIndex index =tv->indexAt(pos);
+    QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
+
+    currentInvestment.clearValues ();
+    currentInvestment =executeSingleRecordSql (investment::getTableDef ().Fields (),
+                                               qsl("rowid == %1").arg(tm->record(index.row()).value(qsl("AId")).toLongLong()));
 
     QMenu cmenu( qsl("investmentsContextMenu"), this);
     ui->actionInvestmentLoeschen->setData(index);
+
     cmenu.addAction(ui->actionInvestmentLoeschen);
+    if( currentInvestment.value(fnInvestmentState).toBool()) {
+        ui->actionInvestmentSchliessen->setText (qsl("Geldanlage schließen"));
+        ui->actionInvestmentSchliessen->setToolTip (qsl("Zu geschlossenen Geldanlagen können keine Verträge mehr hinzugefügt werden."));
+    } else {
+        ui->actionInvestmentSchliessen->setText (qsl("Geldanlage öffnen"));
+        ui->actionInvestmentSchliessen->setToolTip (qsl("Zu offenen Geldanlagen können Verträge hinzugefügt werden."));
+    }
     cmenu.addAction(ui->actionInvestmentSchliessen);
     cmenu.addAction(ui->actionTyp_Bezeichnung_aendern);
     cmenu.addAction (ui->action_cmenu_Vertraege_anzeigen);
@@ -460,85 +482,93 @@ void MainWindow::on_InvestmentsTableView_customContextMenuRequested(QPoint pos)
 
 void MainWindow::on_actionInvestmentLoeschen_triggered()
 {
-    QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
-    QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
-    QSqlRecord rec =tm->record(index.row());
-    QDate dAnfang =rec.value(qsl("Anfang")).toDate();
-    QString anfang =dAnfang.toString(qsl("yyyy.MM.dd"));
-    QDate dEnde =rec.value(qsl("Ende")).toDate();
-    QString ende =dEnde.toString(qsl("yyyy.MM.dd"));
-    int zinssatz =rec.value(qsl("ZSatz")).toInt();
-    QString typ =rec.value(qsl("Typ")).toString();
+    QDate dAnfang =currentInvestment.value(fnInvestmentStart).toDate();
+    QString anfang =dAnfang.toString(qsl("dd.MM.yyyy"));
+    QDate dEnde =currentInvestment.value(fnInvestmentEnd).toDate();
+    QString ende =dEnde.toString(qsl("dd.MM.yyyy"));
+    int zinssatz =currentInvestment.value(fnInvestmentInterest).toInt();
+    QString typ =currentInvestment.value(fnInvestmentType).toString();
 
-    QString msg{qsl("Soll die Anlage mit <b>%1% Zins</b>, <br>vom <b>%2 zum %3</b><br> mit dem Bezeichner <br><b>'%4'</b><br> gelöscht werden?")};
+    QString msg {qsl("Soll die Anlage mit <b>%1% Zins</b>, <br>vom <b>%2 zum %3</b><br> mit dem Bezeichner <br><b>'%4'</b><br> gelöscht werden?")};
     msg =msg.arg(QString::number(zinssatz/100., 'f', 2), anfang, ende, typ);
 
-    if( not dEnde.isValid ())
+    if( dEnde == EndOfTheFuckingWorld or not dEnde.isValid ()) {
         msg =qsl("Soll die fortlaufende Anlage <b>'%1'</b> mit <b>%2% Zins</b> gelöscht werden?").arg(typ, QString::number(zinssatz/100., 'f', 2));
+    }
 
     if( QMessageBox::Yes == QMessageBox::question(this, qsl("Löschen"), msg)) {
         // delete the entry, update the view
-        if( deleteInvestment(rec.value(qsl("AnlagenId")).toLongLong ())) {
-            qInfo() << "removed investment row " << index.row();
-            //tm->submitAll();
+        if( deleteInvestment(currentInvestment.value(qsl("rowid")).toLongLong ())) {
+            qInfo() << "removed investment row " << currentInvestment.value(qsl("rowid")).toLongLong ();
+            QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
             tm->select();
         } else {
             QMessageBox::information (this, qsl("Fehler"), qsl("Beim Löschen ist ein Fehler aufgetreten - bitte schau in die LOG Datei!"));
-            qWarning() << tm->lastError();
+            qWarning() << "Geldanlage löschen fehlgeschlagen";
         }
     }
 }
 void MainWindow::on_actionInvestmentSchliessen_triggered()
 {
-    QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
-    QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
-    QSqlRecord rec =tm->record(index.row());
-    bool currentStatus =rec.value(qsl("Offen")).toString() == qsl("Offen");
-    QDate dAnfang =rec.value(qsl("Anfang")).toDate();
+    bool currentStatus =currentInvestment.value(fnInvestmentState).toBool();
+    QDate dAnfang =currentInvestment.value(fnInvestmentStart).toDate();
     QString anfang =dAnfang.toString(qsl("yyyy.MM.dd"));
-    QDate dEnde =rec.value(qsl("Ende")).toDate();
+    QDate dEnde =currentInvestment.value(fnInvestmentEnd).toDate();
     QString ende =dEnde.toString(qsl("yyyy.MM.dd"));
-    int zinssatz =rec.value(qsl("ZSatz")).toInt();
-    QString typ =rec.value(qsl("Typ")).toString();
-    QString msg{currentStatus
-                ? qsl("Zu einer geschlossenen Anlage können keine weiteren Verträge mehr hinzugefügt werden.<p>Soll die Anlage mit <b>%1%</b><br>im Zeitraum vom %2 zum %3 <br>mit dem Typ <br><i><&nbsp;><&nbsp;><&nbsp;>'%4'</i>  <br> geschlossen werden?")
-                : qsl("Wenn Du die Geldanlage wieder öffnest, dann könnn weitere Verträge hinzugefügt werden.<p>Soll die Anlage mit <b>%1%</b><br>im Zeitraum vom %2 zum %3 <br>mit dem Typ <br><i><&nbsp;><&nbsp;><&nbsp;>'%4'</i>  <br> geöffnet werden?")
-               };
-    msg =msg.arg(QString::number(zinssatz/100., 'f', 2), anfang, ende, typ);
-
-    qlonglong rowid =rec.value(qsl("AnlagenId")).toLongLong ();
-    if( QMessageBox::Yes == QMessageBox::question(this, qsl("Status ändern"), msg)) {
-        bool result =currentStatus ? closeInvestment(rowid) : openInvestment(rowid);
-//        bool result = currentStatus ? closeInvestment(zinssatz, dAnfang, dEnde, typ) : openInvestment(zinssatz, dAnfang, dEnde, typ);
-        if( result) {
-            qInfo() << "Investment status from investment " << rowid << " was changed to " << (currentStatus ? "closed" : "open");
-            tm->select();
+    int zinssatz =currentInvestment.value(fnInvestmentInterest).toInt();
+    QString typ =currentInvestment.value(fnInvestmentType).toString();
+    QString msg;
+    if( currentStatus) {
+        if( dEnde == EndOfTheFuckingWorld) {
+            msg =qsl("Zu einer geschlossenen Anlage können keine weiteren Verträge mehr hinzugefügt werden. <p>Soll die fortlaufende Anlage mit <b>%1</b><br>mit dem Typ <br><i><&nbsp;><&nbsp;><&nbsp;>'%4'</i>  <br> geschlossen werden?").arg(QString::number(zinssatz/100., 'f', 2), typ);
         } else {
-            qWarning() << tm->lastError();
+            msg =qsl("Zu einer geschlossenen Anlage können keine weiteren Verträge mehr hinzugefügt werden.<p>Soll die Anlage mit <b>%1%</b><br>im Zeitraum vom %2 zum %3 <br>mit dem Typ <br><i><&nbsp;><&nbsp;><&nbsp;>'%4'</i>  <br> geschlossen werden?").arg(QString::number(zinssatz/100., 'f', 2), anfang, ende, typ);
+        }
+    }
+    else {
+        if( dEnde == EndOfTheFuckingWorld) {
+            msg =qsl("Wenn Du die Geldanlage wieder öffnest, dann könnn weitere Verträge hinzugefügt werden.<p>Soll die Anlage mit <b>%1%</b><br>mit dem Typ <br><i><&nbsp;><&nbsp;><&nbsp;>'%4'</i>  <br> geöffnet werden?").arg(QString::number(zinssatz/100., 'f', 2), typ);
+        } else  {
+            msg =qsl("Wenn Du die Geldanlage wieder öffnest, dann könnn weitere Verträge hinzugefügt werden.<p>Soll die Anlage mit <b>%1%</b><br>im Zeitraum vom %2 zum %3 <br>mit dem Typ <br><i><&nbsp;><&nbsp;><&nbsp;>'%4'</i>  <br> geöffnet werden?").arg(QString::number(zinssatz/100., 'f', 2), anfang, ende, typ);
         }
     }
 
+    qlonglong rowid =currentInvestment.value(qsl("rowid")).toLongLong ();
+    if( QMessageBox::Yes == QMessageBox::question(this, qsl("Status ändern"), msg)) {
+        bool result =currentStatus ? closeInvestment(rowid) : openInvestment(rowid);
+        if( result) {
+            qInfo() << "Investment status from investment " << rowid << " was changed to " << (currentStatus ? "closed" : "open");
+            QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
+            tm->select();
+        } else {
+            QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
+            qWarning() << tm->lastError();
+        }
+    }
 }
 void MainWindow::on_actionTyp_Bezeichnung_aendern_triggered()
 {
-    QModelIndex index =ui->actionInvestmentLoeschen->data().toModelIndex();
-    QSqlTableModel* model {qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model())};
-    QString typ =ui->InvestmentsTableView->model()->data(index.siblingAtColumn(3)).toString();;
-//    QString zinssatz =ui->InvestmentsTableView->model()->data(index.siblingAtColumn(0)).toString();
-    QString zinssatz =qobject_cast<PercentFrom100sItemFormatter*>(ui->InvestmentsTableView->itemDelegate(index.siblingAtColumn(0)))
-            ->displayText(model->data(index.siblingAtColumn(0)), QLocale());
+    QString zinssatz =dbInterest2_str(currentInvestment.value(fnInvestmentInterest).toInt ());
+    QString von =currentInvestment.value(fnInvestmentStart).toDate ().toString("dd.MM.yyyy");
+    QDate dBis  =currentInvestment.value(fnInvestmentEnd).toDate ();
+    QString bis =dBis.toString("dd.MM.yyyy");
+    QString typ =currentInvestment.value(fnInvestmentType).toString ();
+    bool fortlaufend {dBis == EndOfTheFuckingWorld || not dBis.isValid()};
 
-    QString von =doFormatDateItem(model->data(index.siblingAtColumn(1)));
-    QString bis =doFormatDateItem(model->data(index.siblingAtColumn(2)));
-
-    QString msg {qsl("<table><tr><th>Neue Bezeichnung für den Anlage </th></tr><tr><td style=\"text-align:center\">mit %1 Zins</td></tr>"
-                     "<tr><td>von %2 bis %3.</tr>"
+    QString msg {qsl("<table><tr><td>Neue Bezeichnung für die Anlage mit %1 Zins</td></tr>"
+                     "<tr><td>%2</tr>"
                      "<tr><td>alter Wert: <i>'%4'</i></td></tr></table>")};
+    if( fortlaufend) {
+        msg =msg.arg(zinssatz, qsl("(fortlaufend)."));
+    } else {
+        msg =msg.arg(zinssatz, qsl("von %1 bis %2.").arg(von, bis));
+    }
+    msg =msg.arg(typ);
 
     QInputDialog id(this);
     id.setInputMode(QInputDialog::InputMode::TextInput);
     id.setWindowTitle(qsl("Geldanlagen"));
-    id.setLabelText(msg.arg(zinssatz, von, bis, typ));
+    id.setLabelText(msg);
     id.setTextValue(typ);
     QLineEdit* leText =id.findChild<QLineEdit*>();
     if(leText) leText->setMaxLength(25);
@@ -548,11 +578,10 @@ void MainWindow::on_actionTyp_Bezeichnung_aendern_triggered()
     if( not idOk or txt.isEmpty())
         return;
 
-    QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
-    QSqlRecord rec =tm->record(index.row());
-    QString sql(qsl("UPDATE Geldanlagen SET Typ =? WHERE rowid =%1").arg(rec.value(qsl("AnlagenId")).toString()));
-    if( executeSql_wNoRecords(sql, {QVariant(txt)}))
+    if( updateInvestmentType(txt, currentInvestment.value(qsl("rowid")).toLongLong ())) {
+        QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
         tm->select();
+    }
 }
 void MainWindow::on_action_cmenu_Vertraege_anzeigen_triggered()
 {

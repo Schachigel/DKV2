@@ -4,6 +4,12 @@
 #include "contract.h"
 #include "dbtable.h"
 
+const QString fnInvestmentInterest{qsl("ZSatz")};
+const QString fnInvestmentStart{qsl("Anfang")};
+const QString fnInvestmentEnd{qsl("Ende")};
+const QString fnInvestmentType{qsl("Typ")};
+const QString fnInvestmentState{qsl("Offen")};
+
 struct investment
 {
 // types
@@ -43,6 +49,7 @@ bool deleteInvestment(const qlonglong rowid);
 //bool openInvestment(const int ZSatz, const QDate v, const QDate b, const QString& t);
 bool closeInvestment(const qlonglong rowid);
 bool openInvestment (const qlonglong rowid);
+bool updateInvestmentType(const QString type, qlonglong rowid);
 
 int nbrActiveInvestments(const QDate contractDate=EndOfTheFuckingWorld);
 QVector<QPair<qlonglong, QString>> activeInvestments(const QDate contractDate=EndOfTheFuckingWorld);
