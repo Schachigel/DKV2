@@ -11,11 +11,6 @@
     <height>869</height>
    </rect>
   </property>
-  <property name="font">
-   <font>
-    <pointsize>10</pointsize>
-   </font>
-  </property>
   <property name="windowTitle">
    <string>-  DKV2 -</string>
   </property>
@@ -31,15 +26,9 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
-       <property name="font">
-        <font>
-         <family>Verdana</family>
-         <pointsize>8</pointsize>
-        </font>
-       </property>
        <property name="styleSheet">
         <string notr="true">background: white</string>
        </property>
@@ -60,51 +49,58 @@
          <number>1</number>
         </property>
         <item>
-         <widget class="QLabel" name="lblInfo">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="font">
-           <font>
-            <family>Verdana</family>
-            <pointsize>10</pointsize>
-           </font>
-          </property>
-          <property name="autoFillBackground">
-           <bool>false</bool>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background: white</string>
-          </property>
-          <property name="text">
-           <string>&lt;h1&gt;&lt;br&gt;Willkommen bei  DKV2&lt;/h1&gt;</string>
-          </property>
-          <property name="scaledContents">
-           <bool>true</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="lblSplash">
-          <property name="text">
-           <string/>
-          </property>
-          <property name="pixmap">
-           <pixmap resource="resource.qrc">:/res/splash.png</pixmap>
-          </property>
-          <property name="scaledContents">
-           <bool>false</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QLabel" name="lblInfo">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>1</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color: black</string>
+            </property>
+            <property name="text">
+             <string notr="true">Wilkommen bei DKV2</string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::RichText</enum>
+            </property>
+            <property name="scaledContents">
+             <bool>false</bool>
+            </property>
+            <property name="margin">
+             <number>50</number>
+            </property>
+            <property name="indent">
+             <number>0</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lblSplash">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+              <horstretch>0</horstretch>
+              <verstretch>3</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="pixmap">
+             <pixmap resource="resource.qrc">:/res/splash.png</pixmap>
+            </property>
+            <property name="scaledContents">
+             <bool>false</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -461,7 +457,7 @@
      <x>0</x>
      <y>0</y>
      <width>1073</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_database">
@@ -521,6 +517,7 @@
     <addaction name="action_menu_debug_create_sample_data"/>
     <addaction name="action_menu_debug_show_log"/>
     <addaction name="separator"/>
+    <addaction name="actionSchriftgr_e_anpassen"/>
     <addaction name="actionDatenbank_Views_schreiben"/>
     <addaction name="separator"/>
     <addaction name="action_about_DKV2"/>
@@ -839,6 +836,11 @@
    </property>
    <property name="toolTip">
     <string>Die letzte Buchung wird gelöscht und der Vertragswert angepasst</string>
+   </property>
+  </action>
+  <action name="actionSchriftgr_e_anpassen">
+   <property name="text">
+    <string>Schrift&amp;größe anpassen</string>
    </property>
   </action>
  </widget>

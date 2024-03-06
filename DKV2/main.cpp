@@ -2,7 +2,7 @@
 
 #include "dbstructure.h"
 #include "mainwindow.h"
-
+#include "appconfig.h"
 #include "dkv2version.h"
 
 #define ERROR_FILE_NOT_FOUND 5
@@ -48,6 +48,11 @@ int main(int argc, char *argv[])
     a.setOrganizationName(qsl("4-MHS")); // used to store our settings
     a.setApplicationName(qsl("DKV2"));
     a.setApplicationVersion(qsl(DKV2_VERSION_STRING));
+    QFont f =a.font();
+    double systemFontSize =f.pointSizeF ();
+    appConfig::setSystemFontsize( systemFontSize);
+    f.setPointSizeF(systemFontSize *appConfig::Zoom());
+    a.setFont(f);
 
     initLogging();
 
@@ -71,6 +76,7 @@ int main(int argc, char *argv[])
 #endif
 
     MainWindow w;
+    w.setFont(f);
     if( not w.dbLoadedSuccessfully) return -1;
 
     w.show();

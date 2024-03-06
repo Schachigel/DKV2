@@ -4,7 +4,6 @@
 
 dlgAbout::dlgAbout(QWidget *parent) : QDialog(parent)
 {
-    setFontPs( this, 10);
     header =new QLabel();
     header->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
     header->setWordWrap (true);

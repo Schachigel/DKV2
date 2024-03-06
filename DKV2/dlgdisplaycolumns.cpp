@@ -5,7 +5,6 @@
 dlgDisplayColumns::dlgDisplayColumns(const QVector<QPair<int, QString>>& colInfo, const QBitArray& status, QWidget* p)
     : QDialog(p), status(status), colInfo(colInfo)
 {
-    setFontPs(this, 10);
     QVBoxLayout* mainlayout =new QVBoxLayout();
 
     QLabel* header =new QLabel( qsl("<h3>Wähle die Spalten aus,<br> die angezeigt werden sollen!</h3>"));

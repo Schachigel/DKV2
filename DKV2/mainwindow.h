@@ -181,6 +181,8 @@ private slots:
 
     void on_action_cmenu_undo_last_booking_triggered();
 
+    void on_actionSchriftgr_e_anpassen_triggered();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();

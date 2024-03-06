@@ -84,7 +84,6 @@ bool wpTerminateContract_ConfirmationPage::isComplete() const
 
 wizTerminateContract::wizTerminateContract(QWidget* p, contract& c) : QWizard(p), cont(c)
 {
-    QFont f = font(); f.setPointSize(10); setFont(f);
     addPage(new wpTerminateContract_DatePage);
     addPage(new wpTerminateContract_ConfirmationPage);
 }

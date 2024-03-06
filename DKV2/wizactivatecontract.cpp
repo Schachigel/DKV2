@@ -135,7 +135,6 @@ bool wpInitialPayment_SummaryPage::isComplete() const
 
 wizInitialPayment::wizInitialPayment(QWidget* p) : QWizard (p)
 {
-    QFont f = font(); f.setPointSize(10); setFont(f);
     addPage(new wpInitialPayment_IntroPage);
     addPage(new wpInitialPayment_DatePage);
     addPage(new wpInitialPayment_AmountPage);

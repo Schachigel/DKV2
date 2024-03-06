@@ -178,8 +178,6 @@ void MainWindow::on_pbCreditorsColumnsOnOff_clicked()
         colInfo.push_back (QPair<int, QString>(i, columnTextsCreditors[i].header));
     }
     dlgDisplayColumns dlg(colInfo, ba, getMainWindow ());
-    QFont f =dlg.font(); f.setPointSize(10); dlg.setFont(f);
-
     if( dlg.exec () == QDialog::Accepted ) {
         setMetaInfo (creditorTableColumnVisibilityStatus, toString(dlg.getNewStatus()));
         prepare_CreditorsListPage ();

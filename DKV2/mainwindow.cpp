@@ -1,4 +1,5 @@
 #include "qapplication.h"
+#include "qnamespace.h"
 #include <QtGlobal>
 
 #if defined(Q_OS_WIN)
@@ -19,7 +20,6 @@
 #include "dkdbhelper.h"
 #include "dkdbviews.h"
 #include "dkdbcopy.h"
-#include "contracttablemodel.h"
 #include "transaktionen.h"
 #include "uebersichten.h"
 
@@ -105,7 +105,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->statusBar->addPermanentWidget(ui->statusLabel);
     setCentralWidget(ui->stackedWidget);
-
+    ui->stackedWidget->setFont(QApplication::font ());
     // //////////////////
     const QString tableCellStyle {qsl("QTableView::item { padding-top: 5px; padding-bottom: 5px; padding-right: 10px; padding-left: 10px; }")};
     ui->CreditorsTableView->setStyleSheet(tableCellStyle);
@@ -214,23 +214,22 @@ void MainWindow::updateViews()
 void MainWindow::prepare_startPage()
 {   LOG_CALL;
     busycursor b;
-    QString messageHtml {qsl("<table width='100%'><tr></tr><tr><td width='20%'></td><td width='60%'><center><h2>Willkommen zu DKV2- Deiner Verwaltung von Direktkrediten</h2></center></td><td width='20%'></td></tr>")};
+    QString messageHtml {qsl("<h2>Willkommen zu DKV2- Deiner Verwaltung von Direktkrediten</h2>")};
 
     double allContractsValue =valueOfAllContracts();
 
     QString pName =dbConfig::readValue(projectConfiguration::GMBH_ADDRESS1).toString();
     if( pName.size()) {
-        messageHtml += qsl("<tr></tr><tr><td></td><td><b>DK Verwaltung für <font color=blue>%1</font></td><td></td></tr>").arg(pName);
+         messageHtml += qsl("<p><b>DK Verwaltung für <font color=blue>%1</font></td>").arg(pName);
     }
     if( allContractsValue > 0) {
-        QString valueRow = qsl("<tr><td></td><td>Die Summer aller Direktkredite und Zinsen beträgt <big><font color=red>")
-                + d2euro(allContractsValue) + qsl("</font></big></td><td></td></tr>");
+        QString valueRow = qsl("<p>Die Summer aller Direktkredite und Zinsen beträgt <big><font color=red>")
+                + d2euro(allContractsValue) + qsl("</font></big>");
         messageHtml += valueRow;
     }
-    messageHtml += qsl("<tr><td></td><td>[%1]</td><td></td></tr>").arg(ui->statusLabel->text ());
-    messageHtml += qsl("</table>");
+    messageHtml += qsl("<p>DB File: [ %1 ]").arg(ui->statusLabel->text ());
     ui->lblInfo->setText(messageHtml);
-}
+    }
 void MainWindow::on_action_menu_database_start_triggered()
 {   LOG_CALL;
     prepare_startPage();
@@ -379,9 +378,6 @@ void MainWindow::on_btnCreateFromContracts_clicked()
     id.setWindowTitle (qsl("Art der Anlage auswählen"));
     id.setLabelText (qsl("Wähle aus, ob zeitlich befristete oder fortlaufende Anlagen erzeugt werden sollen."));
     id.setComboBoxItems (options);
-    QFont font =id.font ();
-    font.setPointSize (10);
-    id.setFont (font);
     bool ok =id.exec ();
 
 //    QString item =QInputDialog::getItem(this, qsl("Art der Anlage auswählen"), qsl("Wähle aus, ob zeitlich befristete oder fortlaufende Anlagen erzeugt werden sollen."), options, 0, false, &ok);
@@ -539,7 +535,6 @@ void MainWindow::on_actionTyp_Bezeichnung_aendern_triggered()
                      "<tr><td>alter Wert: <i>'%4'</i></td></tr></table>")};
 
     QInputDialog id(this);
-    QFont f =id.font(); f.setPointSize(10); id.setFont(f);
     id.setInputMode(QInputDialog::InputMode::TextInput);
     id.setWindowTitle(qsl("Geldanlagen"));
     id.setLabelText(msg.arg(zinssatz, von, bis, typ));
@@ -880,4 +875,24 @@ void MainWindow::closeEvent(QCloseEvent *event)
 #else
     Q_UNUSED(event);
 #endif
+}
+
+void MainWindow::on_actionSchriftgr_e_anpassen_triggered()
+{
+    bool OK =true;
+    double current =appConfig::Zoom ();
+    double input =QInputDialog::getDouble(this, qsl("Schriftgröße anpassen"),
+                                           qsl("Skalierungsfaktor zwischen 0,8 und 1,5"),
+                                           current, 0.8, 1.5, 1, &OK,
+                                           Qt::WindowFlags(), 0.1);
+    if( OK and (current not_eq input)) {
+        appConfig::setZoom (input);
+        QMessageBox::information (this, qsl("Neustart"), qsl("Damit eine neue Schriftgröße in allen Fenstern angewendet wird, muss das Programm eventuell neu gestartet werden."));
+        QFont f =QApplication::font();
+        f.setPointSizeF(appConfig::getSystemFontsize () *appConfig::Zoom());
+        QApplication::setFont(f);
+        setFont(f);
+        ui->stackedWidget->setFont (f);
+        ui->stackedWidget->currentWidget ()->setFont (f);
+    }
 }

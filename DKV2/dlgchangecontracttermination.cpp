@@ -5,9 +5,8 @@
 
 dlgChangeContractTermination::dlgChangeContractTermination(QWidget *parent) : QDialog(parent)
 {
-    setFontPs(this, 10);
-    title =new QLabel(qsl("Verändern von Vertragsende und Kündigungsfrist<p>"));
-    setFontPs(title, 14);
+    title =new QLabel(qsl("<h2>Verändern von Vertragsende und Kündigungsfrist<p></h2>"));
+    setFontPointSize(title, 14);
     subTitle =new QLabel(qsl("Für das Vertragsende kann eine Kündigungsfrist <b>oder</b> "
                              "ein festes Vertragsende vereinbart werden.<p>"
                              "Bei einem festen Vertragsende wird üblicher Weise keine Kündigungsfrist "

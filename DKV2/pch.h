@@ -72,7 +72,7 @@
 
 #include <QVariant>
 
-#include <QRegExpValidator>
+#include <QRegularExpressionValidator>
 #include <QRegularExpression>
 
 #include <QMap>

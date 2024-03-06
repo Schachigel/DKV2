@@ -33,9 +33,15 @@ struct appConfig
     static QString LastDb();
     static void delLastDb();
 
+    static QString keynameZoom;
+    static void setZoom( double z);
+    static double Zoom();
+    static double getSystemFontsize() { return getRuntimeData(    qsl("SystemFontSize")).toDouble ();}
+    static void   setSystemFontsize( double fs) { LOG_CALL_W(QString::number(fs)); setRuntimeData( qsl("SystemFontSize"), fs);}
+
     // dynamic config data stored in memory
-    static void setRuntimeData( const QString& name, const QString& value);
-    static QString getRuntimeData( const QString& name, const QString& defaultvalue ="");
+    static void setRuntimeData( const QString& name, const QVariant& value);
+    static QVariant getRuntimeData( const QString& name);
 
     // for testing only
     static void deleteUserData(const QString& name);

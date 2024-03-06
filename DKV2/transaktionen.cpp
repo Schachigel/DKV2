@@ -123,7 +123,6 @@ void changeContractComment(contract *pc) {
     QInputDialog ipd(getMainWindow());
     ipd.setInputMode(QInputDialog::TextInput);
     ipd.setWindowTitle(qsl("Anmerkung zum Vertrag ändern"));
-    ipd.setStyleSheet(qsl("* { font-size: 10pt; }"));
     ipd.setTextValue(pc->comment());
     ipd.setLabelText(qsl("Ändere den Kommentar zum Vertrag von ") +
                      cred.firstname() + qsl(" ") + cred.lastname());

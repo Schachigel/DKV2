@@ -298,8 +298,6 @@ void MainWindow::on_btnVertragsSpalten_clicked()
     }
 
     dlgDisplayColumns dlg(colInfo, ba, getMainWindow ());
-    QFont f =dlg.font(); f.setPointSize(10); dlg.setFont(f);
-
     if( dlg.exec () == QDialog::Accepted ) {
         setMetaInfo (storageName, toString(dlg.getNewStatus()));
         showDeletedContracts ? prepare_deleted_contracts_list_view ()
@@ -512,7 +510,6 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
     {
         QInputDialog id(this);
         id.setLabelText (qsl("Wähle die gewünschte Geldanlage aus der Liste aus"));
-        QFont f=id.font(); f.setPointSize(10); id.setFont(f);
         id.setComboBoxEditable(false);
         QStringList iList;
         for( const auto& inv: qAsConst(invests)) {

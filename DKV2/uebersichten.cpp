@@ -206,7 +206,6 @@ void uebersichten::prep( const QString& head, const QString& desc)
     // set document defaults
     QFont f =td->defaultFont();
     f.setFamily(qsl("Verdana"));
-    f.setPointSize(12);
     td->setDefaultFont(f);
 
     // add Title, project info and current date

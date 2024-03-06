@@ -185,9 +185,6 @@ wpNewInvestInterest::wpNewInvestInterest(QWidget* p) : QWizardPage(p)
 */
 wizNewInvestment::wizNewInvestment(QWidget* p) : QWizard(p)
 {
-    QFont f =font(); f.setPointSize(10); setFont(f);
-    // keep values going back and forth
-//    setOption(WizardOption::IndependentPages);
     addPage(new wpNewInvestInterest());
     addPage(new wpTimeFrame());
     addPage(new wpType());

@@ -263,5 +263,4 @@ wizOpenOrNewDb::wizOpenOrNewDb(QWidget* p) : QWizard(p)
     setPage(selectNewFile, new wpNewDb(this));
     setPage (Zinssusance, new wpICalcMode(this));
     setPage(selectExistingFile, new wpExistingDb(this));
-    QFont f = font(); f.setPointSize(10); setFont(f);
 }

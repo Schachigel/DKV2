@@ -2,6 +2,7 @@
 #include "helpersql.h"
 #include "dbstructure.h"
 #include "dkv2version.h"
+#include "qvariant.h"
 #include "appconfig.h"
 
 
@@ -136,6 +137,36 @@ QString appConfig::LastDb()
 void appConfig::delLastDb()
 {   LOG_CALL;
     deleteUserData(keyLastDb);
+}
+
+QString appConfig::keynameZoom {qsl("Zoom")};
+double appConfig::Zoom()
+{
+    QString sZoom =getUserData(keynameZoom, qsl("1.2"));
+    double dZoom =sZoom.toDouble();
+    if( dZoom >= 0.5 and dZoom < 2)
+        return dZoom;
+    else {
+        setZoom( 1.1);
+        return 1.1;
+    }
+}
+void appConfig::setZoom(double d)
+{
+    if( d >= 0.5 or d < 2)
+        setUserData(keynameZoom, QString::number(d));
+}
+
+namespace {
+    static QMap<QString, QVariant> runtimeData;
+}
+void appConfig::setRuntimeData( const QString& name, const QVariant& value)
+{
+    runtimeData[name] =value;
+}
+QVariant appConfig::getRuntimeData( const QString& name)
+{
+    return runtimeData.value(name);
 }
 
 

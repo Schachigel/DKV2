@@ -87,9 +87,6 @@ void wpFileSelection_IntroPage::setVisible(bool v)
 */
 wizFileSelectionWiz::wizFileSelectionWiz(QWidget *p) : QWizard(p)
 {
-    QFont f = font();
-    f.setPointSize(10);
-    setFont(f);
     addPage(new wpFileSelection_IntroPage);
 }
 
@@ -414,9 +411,6 @@ wizConfigureNewDatabaseWiz::wizConfigureNewDatabaseWiz(QWidget *p) : QWizard(p)
     addPage(new wpContractMinValues_Page);
     addPage(new wpContractLableInfo_Page);
     addPage(new wpNewDatabase_SummaryPage);
-    QFont f = font();
-    f.setPointSize(10);
-    setFont(f);
 }
 
 void wizConfigureNewDatabaseWiz::updateDbConfig(const QString &dbFile)
@@ -480,9 +474,6 @@ wizConfigureProjectWiz::wizConfigureProjectWiz(QWidget *p) : QWizard(p)
     addPage(new wpProjectAddress_Page);
     addPage(new wpProjectDetails_Page);
     addPage(new wpContractMinValues_Page);
-    QFont f = font();
-    f.setPointSize(10);
-    setFont(f);
 }
 void wizConfigureProjectWiz::updateDbConfig()
 {

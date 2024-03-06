@@ -70,7 +70,12 @@ inline ret_t returnLog(int sev, ret_t ret, TS ...args)
 QString toString(const QBitArray &ba);
 QBitArray toQBitArray(const QString& s);
 
-void setFontPs(QWidget* w, int ps);
+inline void setFontPointSize(QWidget* w, int ps)
+{
+    QFont f =w->font();
+    f.setPointSize(ps);
+    w->setFont(f);
+}
 void centerDlg(QWidget* parent, QWidget* child, int minWidth =300, int minHeight =400);
 class dbgTimer
 {

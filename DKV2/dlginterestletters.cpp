@@ -10,8 +10,6 @@ void dlgInterestLetters::setYear(int y)
 
 dlgInterestLetters::dlgInterestLetters(QWidget *parent, QVector<int> years) : QDialog(parent), years(years)
 {
-    setFontPs(this, 10);
-
     QGridLayout* g =new QGridLayout();
     // get some space left and right
     g->setColumnMinimumWidth(0, 30);
@@ -20,8 +18,7 @@ dlgInterestLetters::dlgInterestLetters(QWidget *parent, QVector<int> years) : QD
     int row =0;
     g->setRowMinimumHeight(row++, 20);
 
-    QLabel* title =new QLabel(qsl("Ausgabe Zinsbriefe"));
-    setFontPs(title, 14);
+    QLabel* title =new QLabel(qsl("<h2>Ausgabe Zinsbriefe</h2>"));
     g->addWidget(title, row++, 1);
 
     QString msgtxt =qsl("Bitte das Jahr für die Zinsbriefe wählen.");

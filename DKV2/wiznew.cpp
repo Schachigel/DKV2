@@ -887,8 +887,6 @@ void wpConfirmContract::initializePage()
 wizNew::wizNew(creditor& c, QWidget *p) : QWizard(p), cred(c)
 {
     LOG_CALL;
-    QFont f =font(); f.setPointSize(10); setFont(f);
-
     setPage(page_new_or_existing, new wpNewOrExisting(this));
     setPage(page_address, new wpNewCreditorAddress(this));
     setPage(page_email, new wpEmail(this));

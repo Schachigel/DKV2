@@ -5,8 +5,6 @@
 
 dlgAnnualsettlement::dlgAnnualsettlement(QWidget *parent, int year) : QDialog(parent), year(year)
 {
-    setFontPs(this, 10);
-
     QGridLayout* g =new QGridLayout();
     // get some space left and right
     g->setColumnMinimumWidth(0, 30);
@@ -15,8 +13,7 @@ dlgAnnualsettlement::dlgAnnualsettlement(QWidget *parent, int year) : QDialog(pa
     int row =0;
     g->setRowMinimumHeight(row++, 20);
 
-    QLabel* title =new QLabel(qsl("Jahresabrechnung"));
-    setFontPs(title, 14);
+    QLabel* title =new QLabel(qsl("<h2>Jahresabrechnung</h2>"));
     g->addWidget(title, row++, 1);
 
     Q_ASSERT(year);

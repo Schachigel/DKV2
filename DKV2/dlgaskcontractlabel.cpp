@@ -3,7 +3,6 @@
 
 dlgAskContractLabel::dlgAskContractLabel(const QString& oldLabel) : oldLabel(oldLabel)
 {
-    setFontPs(this, 10);
     QLabel* header =new QLabel(qsl("Vertragskennung anpassen"));
     QLabel* msg    =new QLabel(qsl("Mit diesem Dialog kannst Du die Kennung eines Vertrages ändern.<p>"
                                    " <b>Du solltest die Kennung jedoch nur aus wichtigem Grund ändern, <br>denn sie ist ein wichtiges Identifikationsmerkmal eines Vertrages.</b>"));

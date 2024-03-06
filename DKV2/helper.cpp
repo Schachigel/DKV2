@@ -26,12 +26,7 @@ QBitArray toQBitArray(const QString& s)
     return ba;
 }
 
-void setFontPs(QWidget* w, int ps)
-{
-    QFont f =w->font();
-    f.setPointSize(ps);
-    w->setFont(f);
-}
+
 
 void centerDlg(QWidget* parent, QWidget* child, int minWidth /*=300*/, int minHeight /*=400*/)
 {
