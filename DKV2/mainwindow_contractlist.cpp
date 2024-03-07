@@ -146,6 +146,7 @@ void MainWindow::prepare_valid_contracts_list_view()
     }
 
     QTableView *&tv = ui->contractsTableView;
+    tv->setFont (QApplication::font ());
     proxy->setSourceModel(model);
     tv->setModel(proxy);
     if ( not model->select()) {
@@ -213,6 +214,8 @@ void MainWindow::prepare_deleted_contracts_list_view()
     }
 
     QTableView*& contractsTV = ui->contractsTableView;
+    contractsTV->setFont (QApplication::font ());
+
     contractsTV->setModel(model);
     if ( not model->select()) {
         qCritical() << "Model selection failed" << model->lastError();

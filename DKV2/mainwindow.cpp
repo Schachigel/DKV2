@@ -157,6 +157,8 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
         qWarning() << "stackedWidget changed to non existing page";
         return;
     }
+    ui->stackedWidget->currentWidget ()->setFont (QApplication::font ());
+
 //    switch(arg1)
 //    {
 //    case startPageIndex:
@@ -228,11 +230,11 @@ void MainWindow::prepare_startPage()
 
     QString pName =dbConfig::readValue(projectConfiguration::GMBH_ADDRESS1).toString();
     if( pName.size()) {
-         messageHtml += qsl("<p><b>DK Verwaltung für <font color=blue>%1</font></td>").arg(pName);
+         messageHtml += qsl("<p><b>DK Verwaltung für <font color=blue>%1</font>").arg(pName);
     }
     if( allContractsValue > 0) {
-        QString valueRow = qsl("<tr><td></td><td>Die Summer aller Direktkredite und Zinsen beträgt<sup>*</sup> <big><font color=red>")
-                + s_d2euro(allContractsValue) + qsl("</font></big><br><small>*) Einbehaltene Zinsen von Verträgen mit dem Zinsmodus 'fest' werden nicht gewertet<br></small></td><td></td></tr>");
+        QString valueRow = qsl("<p>Die Summer aller Direktkredite und Zinsen beträgt<sup>*</sup> <big><font color=red>")
+                + s_d2euro(allContractsValue) + qsl("</font></big><br><small>*) Einbehaltene Zinsen von Verträgen mit dem Zinsmodus 'fest' werden nicht gewertet<br></small><p>");
         messageHtml += valueRow;
     }
     messageHtml += qsl("<p>Aktuelle Datenbank: [%1]<p>").arg(ui->statusLabel->text ());
@@ -347,6 +349,8 @@ void MainWindow::prepare_investmentsListView()
     model->setTable(vnInvestmentsView);
 
     QTableView* tv =ui->InvestmentsTableView;
+    tv->setFont (QApplication::font ());
+
     tv->setModel(model);
     int column =0;
     model->setHeaderData(column++, Qt::Horizontal, qsl("Anl. Id"), Qt::DisplayRole);

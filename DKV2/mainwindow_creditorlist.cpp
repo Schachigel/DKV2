@@ -60,6 +60,7 @@ void MainWindow::prepare_CreditorsListPage()
     model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model->select();
     ui->CreditorsTableView->setModel(model);
+    ui->CreditorsTableView->setFont(QApplication::font ());
 
     QBitArray ba =toQBitArray (getMetaInfo (creditorTableColumnVisibilityStatus, creditorTableColumnVisibilityDefault));
     /* Force appropriate length of QBitArray */
