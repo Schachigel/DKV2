@@ -808,12 +808,11 @@ void cancelContract(contract &c) {
     wiz.contractualEnd = QDate::currentDate().addMonths(c.noticePeriod());
     wiz.exec();
     if (not wiz.field(qsl("confirmed")).toBool())
-
     {
         qInfo() << "cancel wizard canceled by user";
         return;
     }
-    c.cancel(wiz.field(qsl("date")).toDate());
+    c.cancel(wiz.field(qsl("date")).toDate(), wiz.field(qsl("KüDatum")).toDate());
 }
 void finalizeContractLetter(contract *c) {
     LOG_CALL;

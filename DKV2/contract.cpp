@@ -1,4 +1,5 @@
 
+#include "dbfield.h"
 #include "helper.h"
 #include "helpersql.h"
 #include "helperfin.h"
@@ -22,6 +23,7 @@
 /*static*/ const QString contract::fnAnlagenId{qsl("AnlagenId")};
 /*static*/ const QString contract::fnLaufzeitEnde{qsl("LaufzeitEnde")};
 /*static*/ const QString contract::fnZAktiv{qsl("zActive")};
+/*static*/ const QString contract::fnDateCanceled(qsl("KueDatum"));
 /*static*/ const QString contract::fnZeitstempel{qsl("Zeitstempel")};
 
 /*static*/ const dbtable& contract::getTableDef()
@@ -47,6 +49,7 @@
             qsl("Geldanlagen"), qsl("rowid"), ODOU_Action::SET_NULL));
         contractTable.append(dbfield(fnLaufzeitEnde,  QVariant::Date).setNotNull().setDefault(EndOfTheFuckingWorld_str));
         contractTable.append(dbfield(fnZAktiv,        QVariant::Bool).setDefault(true));
+        contractTable.append(dbfield(fnDateCanceled,  QVariant::Date).setNotNull().setDefault(EndOfTheFuckingWorld_str));
         contractTable.append(dbfield(fnZeitstempel,   QVariant::DateTime).setDefaultNow());
     }
     return contractTable;
@@ -106,6 +109,7 @@ void contract::initContractDefaults( const qlonglong CREDITORid /*=-1*/)
     setInvestmentId(SQLITE_invalidRowId);
     setInterestActive(true);
     isTerminated =false;
+    initCancelationDate();
 }
 void contract::initRandom(const tableindex_t creditorId)
 {
@@ -477,15 +481,15 @@ bool contract::payout(const QDate d, double amount, bool payoutInterest)
     QSqlDatabase::database().commit();
     return true;
 }
-bool contract::cancel(const QDate d)
+bool contract::cancel(const QDate dPlannedContractEnd, const QDate dCancelation)
 {   LOG_CALL;
     if( not initialPaymentReceived()) {
         qInfo() << "an inactive contract can not be canceled. It should be deleted.";
         return false;
     }
-    QDate actualD =avoidYearEndBookings(d);
-    QString sql =qsl("UPDATE Vertraege SET LaufzeitEnde=?, Kfrist=? WHERE id=?");
-    QVector<QVariant> v {actualD.toString(Qt::ISODate), -1, id()};
+    QDate actualD =avoidYearEndBookings(dPlannedContractEnd);
+    QString sql =qsl("UPDATE Vertraege SET LaufzeitEnde=?, Kfrist=?, KueDatum=? WHERE id=?");
+    QVector<QVariant> v {actualD.toString(Qt::ISODate), -1, dCancelation.toString(Qt::ISODate), id()};
     if( not executeSql_wNoRecords(sql, v)) {
         qCritical() << "faild to cancel contract ";
         return false;
@@ -785,6 +789,10 @@ bool operator==(const contract& lhs, const contract& rhs)
 bool operator!=(const contract& lhs, const contract& rhs)
 {
     return not (lhs==rhs);
+}
+
+void contract::initCancelationDate() {
+    td.setValue (qsl("KueDatum"), EndOfTheFuckingWorld);
 }
 
 contract saveRandomContract(const tableindex_t creditorId)

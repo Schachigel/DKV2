@@ -27,12 +27,24 @@ wpCancelContract_DatePage::wpCancelContract_DatePage(QWidget* p) : QWizardPage(p
     subTitleLabel = new QLabel(qsl("Keine Daten!"));
     subTitleLabel->setWordWrap(true);
 
+    QLabel *lblVEnde =new QLabel(qsl("Datum, zu dem der Vertrag beendet wird"));
     QDateEdit *de = new QDateEdit;
     de->setDisplayFormat(qsl("dd.MM.yyyy"));
     registerField(qsl("date"), de);
+
+    QLabel *lblK = new QLabel( qsl("Datum, zu dem die Kündigung ausgesprochen wurde"));
+    QDateEdit *deK = new QDateEdit;
+    deK->setDisplayFormat(qsl("dd.MM.yyyy"));
+    registerField(qsl("KüDatum"), deK);
+
     QVBoxLayout*  layout = new QVBoxLayout;
     layout->addWidget(subTitleLabel);
+    layout->addWidget (lblVEnde);
     layout->addWidget(de);
+    layout->addWidget (new QLabel());
+    layout->addWidget (lblK);
+    layout->addWidget (deK);
+
     setLayout(layout);
 }
 
@@ -46,6 +58,7 @@ void wpCancelContract_DatePage::initializePage()
     subTitle =subTitle.arg(wiz->contractualEnd.toString(qsl("dd.MM.yyyy")), latestB.toString(qsl("dd.MM.yyyy")));
     subTitleLabel->setText(subTitle);
     setField(qsl("date"), qMax(wiz->contractualEnd, latestB));
+    setField(qsl("KüDatum"), QDate::currentDate ());
 }
 
 bool wpCancelContract_DatePage::validatePage()
@@ -81,9 +94,10 @@ wpCancelContract_SummaryPage::wpCancelContract_SummaryPage(QWidget* p) : QWizard
 void wpCancelContract_SummaryPage::initializePage()
 {
     wizCancelContract* wiz = qobject_cast<wizCancelContract*>(wizard());
-    QString subt =qsl("Der Vertrag <b>%1</b> <p>von <b>%2</b><p>soll zum <b>%3</b> beendet werden.");
+    QString subt =qsl("Der Vertrag <b>%1</b> <p>von <b>%2</b><p>soll zum <b>%3</b> beendet werden.\nDie Kündigung wurde am %4 ausgesprochen.");
     subt = subt.arg(wiz->c.label(), wiz->creditorName);
     subt = subt.arg(field(qsl("date")).toDate().toString(qsl("dd.MM.yyyy")));
+    subt = subt.arg(field(qsl("KüDatum")).toDate().toString(qsl("dd.MM.yyyy")));
     subTitleLabel->setText(subt);
 }
 void wpCancelContract_SummaryPage::onConfirmData_toggled(int)

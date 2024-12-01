@@ -37,8 +37,10 @@ inline int toInt(const interestModel m) {
     return static_cast<int>(m);
 }
 inline interestModel interestModelFromInt(const int i) {
-    if( i < 0 or i >toInt(interestModel::maxId))
+    if( i < 0 or i >toInt(interestModel::maxId)){
         Q_ASSERT(not "Invalid interestModel");
+        return static_cast<interestModel>(interestModel::maxId);;
+    }
     return static_cast<interestModel>(i);
 }
 
@@ -59,6 +61,7 @@ struct contract
     static const QString fnAnlagenId;
     static const QString fnLaufzeitEnde;
     static const QString fnZAktiv;
+    static const QString fnDateCanceled;
     static const QString fnZeitstempel;
     // static & friends
     static const dbtable& getTableDef();
@@ -160,14 +163,14 @@ struct contract
     int annualSettlement(const int year);
     bool deposit(const QDate d, double amount, bool payoutInterest =false);
     bool payout(const QDate d, double amount, bool payoutInterest =false);
-    bool cancel(const QDate d);
+    bool cancel(const QDate d_plannedContractEnd, const QDate dCancelation);
     bool finalize(const bool simulate, const QDate finDate, double& finInterest, double& finPayout);
     // helper
     QString toString(const QString &name =QString()) const;
     QVariantMap toVariantMap(QDate fromDate = BeginingOfTime, QDate toDate = EndOfTheFuckingWorld);
     double payedInterestAtTermination();
     double getAnnualInterest(int year, bookingType interestType = bookingType::annualInterestDeposit);
-
+    void initCancelationDate();
     // allow contract objects from deleted contracts
     bool isTerminated =false;
 private:
