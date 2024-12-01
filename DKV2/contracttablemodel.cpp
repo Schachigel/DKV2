@@ -14,7 +14,7 @@ QDate dateFromNP(const QString& s)
      * (x Monate) /n dd.mm.yyy
      */
 
-#if QT_VERSION_CHECK(5, 14, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     QStringList lines =s.split(qsl("\xA"), Qt::SkipEmptyParts);
 #else
     QStringList lines =s.split(qsl("\xA"), QString::SkipEmptyParts);
