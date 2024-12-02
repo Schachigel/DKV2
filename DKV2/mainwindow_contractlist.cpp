@@ -105,9 +105,10 @@ const QVector<tableViewColTexts> columnTextsContracts {
     /*cp_InterestMode,    */ {qsl("Zinsmodus"), qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein")},
     /*cp_InterestBearing, */ {qsl("Verzinsliches\nGuthaben"), qsl("Bei thesaurierenden Verträgen: Einlage und angesparte Zinsen")},
     /*cp_Interest,        */ {qsl("Angesparter\nZins"), qsl("Nicht ausgezahlte Zinsen bei Verträgen mit fester Verzinsung und thesaurierenden Verträgen")},
-    /*cp_ContractEnd      */ {qsl("Kündigungsfrist/ \nVertragsende"), qsl("Modalität und Datum des Vertrag Endes")}
+    /*cp_ContractEnd      */ {qsl("Kündigungsfrist/ \nVertragsende"), qsl("Modalität und Datum des Vertrag Endes")},
+    /*cp_CancelDate       */ {qsl("Kündigungsdatum"), qsl("Datum, zu dem die Kündigung ausgesprochen wurde")}
 };
-const QString defaultVisibilityPattern_contracts {qsl("000111111111111")};
+const QString defaultVisibilityPattern_contracts {qsl("0001111111111111")};
 const QString visibilityPatternMetaInfoName {qsl("VertraegeSpalten")};
 const QVector<tableViewColTexts> columnTexts_d_Contracts {
     /*cp_d_vid,                */ {"", ""},
@@ -121,10 +122,11 @@ const QVector<tableViewColTexts> columnTexts_d_Contracts {
     /*cp_d_InterestMode,       */ {qsl("Zinsmodus"), qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein")},
     /*cp_d_Interest,           */ {qsl("Zins"), ""},
     /*cp_d_TotalDeposit,       */ {qsl("Einzahlungen"), qsl("Summe aller Einzahlungen")},
-    /*cp_d_FinalPayout,        */ {qsl("Abschl. Auszahlung"), ""}
+    /*cp_d_FinalPayout,        */ {qsl("Abschl. Auszahlung"), ""},
+    /*cp_CancelDate       */      {qsl("Kündigungsdatum"), qsl("Datum, zu dem die Kündigung ausgesprochen wurde")}
     /*cp_d_colCount            */
 };
-const QString defaultVisibilityPattern_deletedContracts {qsl("001111111111")};
+const QString defaultVisibilityPattern_deletedContracts {qsl("0011111111111")};
 const QString visibilityPattern_d_MetaInfoName {qsl("geloeschteVertraegeSpalten")};
 ///////////////////////////////////////
 /// preparation of the list view
@@ -166,6 +168,7 @@ void MainWindow::prepare_valid_contracts_list_view()
     tv->setItemDelegateForColumn(cp_InterestBearing, new CurrencyFormatter(tv));
     tv->setItemDelegateForColumn(cp_Interest, new CurrencyFormatter(tv));
     tv->setItemDelegateForColumn(cp_InterestMode, new interestModeFormatter(tv));
+    tv->setItemDelegateForColumn(cp_CancelDate, new DateItemFormatter);
 
     Q_ASSERT(cp_colCount == columnTextsContracts.count ());
     QBitArray ba =toQBitArray(getMetaInfo (visibilityPatternMetaInfoName, defaultVisibilityPattern_contracts));
@@ -223,9 +226,11 @@ void MainWindow::prepare_deleted_contracts_list_view()
     contractsTV->setAlternatingRowColors(true);
     contractsTV->setSortingEnabled(true);
     contractsTV->setItemDelegateForColumn(cp_d_InitialValue, new CurrencyFormatter(contractsTV));
-    contractsTV->setItemDelegateForColumn(cp_d_Interest, new CurrencyFormatter(contractsTV));
+    contractsTV->setItemDelegateForColumn(cp_d_Interest,     new CurrencyFormatter(contractsTV));
     contractsTV->setItemDelegateForColumn(cp_d_TotalDeposit, new CurrencyFormatter(contractsTV));
-    contractsTV->setItemDelegateForColumn(cp_d_FinalPayout, new CurrencyFormatter(contractsTV));
+    contractsTV->setItemDelegateForColumn(cp_d_FinalPayout,  new CurrencyFormatter(contractsTV));
+    contractsTV->setItemDelegateForColumn(cp_d_CancelDate,   new DateItemFormatter);
+
 
     Q_ASSERT(cp_d_colCount == columnTexts_d_Contracts.count());
     QBitArray ba =toQBitArray (getMetaInfo (visibilityPattern_d_MetaInfoName, defaultVisibilityPattern_deletedContracts));

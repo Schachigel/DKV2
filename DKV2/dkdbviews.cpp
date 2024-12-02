@@ -48,6 +48,8 @@ SELECT
   ,IIF( V.Kfrist == -1, strftime('%d.%m.%Y', V.LaufzeitEnde),
       IIF( date(V.LaufzeitEnde) > date('5000-12-31'), '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)',
           '(' || CAST(V.Kfrist AS VARCHAR) || ' Monate)' || char(10) || strftime('%d.%m.%Y', V.LaufzeitEnde))) AS KdgFristVertragsende
+-- Datum der Kündigung
+  ,IIF( V.KueDatum == '9999-12-31', '', V.KueDatum) AS KdgDatum
 
 FROM Vertraege AS V
 INNER JOIN Kreditoren AS K ON V.KreditorId = K.id
@@ -95,6 +97,7 @@ SELECT
   , IIF( V.thesaurierend  = 0, Zinsen_ausz, Zinsen_thesa) AS Zinsen
   , IIF( V.thesaurierend  > 0, -1* letzte_Auszahlung + sum_o_Zinsen, -1* letzte_Auszahlung + sum_mit_Zinsen) AS Einlagen
   , maxValue AS Endauszahlung
+  ,IIF( V.KueDatum == '9999-12-31', '', V.KueDatum) AS KdgDatum
 
 FROM exVertraege AS V  INNER JOIN Kreditoren AS K ON V.KreditorId = K.id
 

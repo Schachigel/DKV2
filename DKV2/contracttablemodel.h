@@ -17,6 +17,7 @@ enum colmn_Pos {
     cp_InterestBearing,
     cp_Interest,
     cp_ContractEnd,
+    cp_CancelDate,
     cp_colCount
 };
 
@@ -33,6 +34,7 @@ enum column_pos_del {
     cp_d_Interest,
     cp_d_TotalDeposit,
     cp_d_FinalPayout,
+    cp_d_CancelDate,
     cp_d_colCount
 };
 

@@ -67,7 +67,6 @@ bool contractsHeaderSortingAdapter::eventFilter(QObject * /*watched*/, QEvent *e
 
         auto header = headerView();
         const int indexAtCursor = header->logicalIndexAt(mouseEvent()->pos());
-qInfo() << "index: " << indexAtCursor;
         if (indexAtCursor == -1)
             ; // Do nothing, we clicked outside the headers
         else if (header->sortIndicatorSection() not_eq indexAtCursor) {
