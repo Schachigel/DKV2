@@ -4,6 +4,7 @@ release/
 test/
 data/
 out/
+build/
 .vs/
 *.db3
 *db3bak
