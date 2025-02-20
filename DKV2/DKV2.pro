@@ -99,6 +99,7 @@ SOURCES += \
         dlgannualsettlement.cpp \
         dlgaskcontractlabel.cpp \
         dlgaskdate.cpp \
+        dlgchangebooking.cpp \
         dlgchangecontracttermination.cpp \
         dlgdisplaycolumns.cpp \
         dlginterestletters.cpp \
@@ -154,6 +155,7 @@ HEADERS += pch.h\
         dlgannualsettlement.h \
         dlgaskcontractlabel.h \
         dlgaskdate.h \
+        dlgchangebooking.h \
         dlgchangecontracttermination.h \
         dlgdisplaycolumns.h \
         dlginterestletters.h \

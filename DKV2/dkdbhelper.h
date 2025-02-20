@@ -69,4 +69,13 @@ void calc_contractEnd(QVector<contractEnd_rowData>& ce);
 
 QString Vor_Nachname_Kreditor(qlonglong id);
 
+struct changeBookingData {
+    QString VKennung;
+    QString Vorname;
+    QString Nachname;
+    int BetragInCt;
+    QDate Buchungsdatum;
+};
+bool getChangeBookingData(changeBookingData& cbd, qlonglong bid);
+
 #endif // DKDBHELPER_H

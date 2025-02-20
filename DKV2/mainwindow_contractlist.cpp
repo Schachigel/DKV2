@@ -4,6 +4,7 @@
 #include "busycursor.h"
 #include "csvwriter.h"
 #include "contracttablemodel.h"
+#include "qglobal.h"
 #include "uiitemformatter.h"
 #include "dlgdisplaycolumns.h"
 
@@ -353,10 +354,12 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
 // available in the handler functions
 namespace {
 contract* contractUnderMouseMenu =nullptr;
+qlonglong bookingIdUnderMouseMenu =-1;
 }
 
 void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;
+
     busycursor bc;
     QTableView*& tv = ui->contractsTableView;
     QModelIndex index = tv->indexAt(pos).siblingAtColumn(0);
@@ -409,6 +412,33 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
     return;
 //////////////////////////////////////
 
+}
+
+void MainWindow::on_bookingsTableView_customContextMenuRequested(const QPoint &pos)
+{   LOG_CALL;
+    if( showDeletedContracts) {
+        qInfo() << "no context menu for bookings of deleted contracts";
+        return;
+    }
+    busycursor bc;
+    QTableView*& tv =ui->bookingsTableView;
+    QModelIndex index =tv->indexAt (pos).siblingAtColumn (0);
+    if( not index.isValid ())
+        return;
+
+    bookingIdUnderMouseMenu =index.data().toLongLong ();
+    QMenu menu(qsl("bookingsContextMenu"), this);
+    menu.addAction (ui->action_cmenu_change_booking);
+    bc.finish();
+
+    menu.exec (ui->bookingsTableView->mapToGlobal (pos));
+    bookingIdUnderMouseMenu =-1;
+}
+
+void MainWindow::on_action_cmenu_change_booking_triggered()
+{
+    changeBookingValue(bookingIdUnderMouseMenu);
+    updateViews();
 }
 
 void MainWindow::on_action_cmenu_change_conclusion_date_triggered()

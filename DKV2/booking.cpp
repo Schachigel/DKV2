@@ -3,6 +3,7 @@
 #include "contract.h"
 #include "dkdbviews.h"
 #include "dbstructure.h"
+#include "qnamespace.h"
 #include "booking.h"
 
 /* static */ const dbtable& booking::getTableDef()
@@ -16,6 +17,7 @@
         bookingsTable.append(dbfield(fn_bDatum,       QVariant::Date).setDefault(EndOfTheFuckingWorld_str).setNotNull());
         bookingsTable.append(dbfield(fn_bBuchungsArt, QVariant::Int).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
         bookingsTable.append(dbfield(fn_bBetrag,      QVariant::Int).setNotNull()); // in cent
+        bookingsTable.append(dbfield(fn_bModifiziert, QVariant::Date).setDefault(EndOfTheFuckingWorld_str).setNotNull());
         bookingsTable.append(dbfield(qsl("Zeitstempel"),  QVariant::DateTime).setDefaultNow());
     }
     return bookingsTable;
@@ -99,6 +101,14 @@ bool bookInterestActive(const tableindex_t contractId, QDate date)
     return bookingToDB(bookingType::setInterestActive, contractId, date, 0.);
 }
 
+bool writeBookingUpdate( qlonglong bookingId, int newValeuInCt)
+{
+    QString sql {qsl("UPDATE %0 SET %1=%2, %3=%4 WHERE id=%5")
+            .arg(tn_Buchungen, fn_bBetrag, QString::number(newValeuInCt),
+                 fn_bModifiziert, QDate::currentDate().toString(Qt::ISODate),
+                         QString::number(bookingId))};
+    return executeSql_wNoRecords (sql);
+}
 ///////////// bookingS start here
 
 QDate dateOfnextSettlement()

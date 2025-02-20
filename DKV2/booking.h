@@ -7,13 +7,14 @@
 #include "helpersql.h"
 #include "dbtable.h"
 
-inline const QString tn_Buchungen {qsl("Buchungen")};
+inline const QString tn_Buchungen   {qsl("Buchungen")};
 inline const QString tn_ExBuchungen {qsl("ExBuchungen")};
 
 inline const QString fn_bVertragsId {qsl("VertragsId")};
 inline const QString fn_bBuchungsArt{qsl("BuchungsArt")};
 inline const QString fn_bBetrag     {qsl("Betrag")};
 inline const QString fn_bDatum      {qsl("Datum")};
+inline const QString fn_bModifiziert{qsl("Überschrieben")};
 
 enum class bookingType{
     non, // means all
@@ -82,6 +83,7 @@ bool bookPayout(    const tableindex_t contractId, QDate date, const double amou
 bool bookReInvestInterest(const tableindex_t contractId, QDate date, const double amount);
 bool bookAnnualInterestDeposit( const tableindex_t contractId, QDate date, const double amount);
 bool bookInterestActive(const tableindex_t contractId, QDate date);
+bool writeBookingUpdate( qlonglong bookingId, int newValeuInCt);
 
 //QVector<booking> bookingsFromDB(const QString& where, const QString& order ="", bool terminated =false);
 QVector<booking> getBookings(   const tableindex_t contractId,  const QDate from = BeginingOfTime, const QDate to = EndOfTheFuckingWorld,

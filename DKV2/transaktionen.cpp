@@ -26,6 +26,7 @@
 #include "dlgaskdate.h"
 #include "dlgchangecontracttermination.h"
 #include "dlginterestletters.h"
+#include "dlgchangebooking.h"
 #include "transaktionen.h"
 #include "wiznew.h"
 #include "wiznewinvestment.h"
@@ -155,6 +156,7 @@ void changeContractTermination(contract *pc) {
         pc->updateTerminationDate(dlg.endDate(), dlg.noticePeriod());
     return;
 }
+
 void changeContractDate(contract *v) {
     QDate actD = v->initialPaymentDate();
     if (not actD.isValid())
@@ -197,6 +199,7 @@ void changeContractDate(contract *v) {
     }
     qInfo() << __FUNCTION__ << " Dialog was canceled";
 }
+
 void changeContractLabel(contract *v) {
     QString currentLabel = v->label();
     dlgAskContractLabel dlg(currentLabel);
@@ -360,6 +363,27 @@ void changeContractValue(contract *pc) {
     } else
         qInfo() << "contract change was canceld by the user";
 }
+void changeBookingValue(qlonglong bookingId)
+{
+    changeBookingData cbd;
+    getChangeBookingData (cbd, bookingId);
+    dlgChangeBooking dlg;
+    dlg.Kennung      =cbd.VKennung;
+    dlg.Buchungsdatum=cbd.Buchungsdatum;
+    dlg.Vorname      =cbd.Vorname;
+    dlg.Nachname     =cbd.Nachname;
+    dlg.BuchungswertInCent =cbd.BetragInCt;
+
+    if( dlg.exec() == QDialog::Rejected) {
+        QMessageBox::information (getMainWindow (), qsl("Abbruch"), qsl("Die Änderung der Buchung wurde abgebrochen"));
+        return;
+    }
+    qInfo() << qsl("Änderung der Buchung %1 auf %2").arg(QString::number(bookingId), ct2euro( dlg.BuchungswertInCent));
+    if( not writeBookingUpdate(bookingId, dlg.BuchungswertInCent)) {
+        QMessageBox::warning (getMainWindow (), "Fehler", "Die Buchung konnte nicht angepasst werden");
+    }
+}
+
 
 void undoLastBooking(contract* v)
 {

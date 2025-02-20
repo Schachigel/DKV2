@@ -183,6 +183,10 @@ private slots:
 
     void on_actionSchriftgr_e_anpassen_triggered();
 
+    void on_bookingsTableView_customContextMenuRequested(const QPoint &pos);
+
+    void on_action_cmenu_change_booking_triggered();
+
 private:
     Ui::MainWindow *ui;
     void prepare_CreditorsListPage();

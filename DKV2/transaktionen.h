@@ -10,11 +10,15 @@ void changeContractComment(contract* c);
 void changeContractTermination(contract* c);
 
 void changeContractDate(contract* v);
+
 void changeContractLabel(contract* v);
 void changeInitialPaymentDate(contract* v);
 void receiveInitialBooking(contract* v);
 void activateInterest(contract* v);
+
 void changeContractValue(contract* v);
+void changeBookingValue(qlonglong bookingId);
+
 void undoLastBooking(contract* v);
 void annualSettlement();
 QVariantList getContractList(qlonglong creditorId, QDate startDate, QDate endDate, bool isTerminated);

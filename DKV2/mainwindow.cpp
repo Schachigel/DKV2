@@ -896,3 +896,4 @@ void MainWindow::on_actionSchriftgr_e_anpassen_triggered()
         ui->stackedWidget->currentWidget ()->setFont (f);
     }
 }
+

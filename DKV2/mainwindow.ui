@@ -26,7 +26,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="EmptyPage">
        <property name="styleSheet">
@@ -203,7 +203,11 @@
             <string>Verwende die sekundäre Maustaste für weitere Optionen</string>
            </property>
           </widget>
-          <widget class="QTableView" name="bookingsTableView"/>
+          <widget class="QTableView" name="bookingsTableView">
+           <property name="contextMenuPolicy">
+            <enum>Qt::CustomContextMenu</enum>
+           </property>
+          </widget>
          </widget>
         </item>
        </layout>
@@ -841,6 +845,17 @@
   <action name="actionSchriftgr_e_anpassen">
    <property name="text">
     <string>Schrift&amp;größe anpassen</string>
+   </property>
+  </action>
+  <action name="action_cmenu_change_booking">
+   <property name="text">
+    <string>Wert der Buchung ändern</string>
+   </property>
+   <property name="toolTip">
+    <string>Wert einer bereits getätigten Buchung ändern</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
    </property>
   </action>
  </widget>

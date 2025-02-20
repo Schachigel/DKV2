@@ -734,3 +734,42 @@ QString Vor_Nachname_Kreditor(qlonglong id)
     return executeSingleValueSql(qsl("Vorname || ' ' || Nachname"), qsl("Kreditoren"),
                                  qsl("id=%1").arg(id)).toString ();
 }
+
+// struct changeBookingData {
+//     QString VKennung;
+//     QString Vorname;
+//     QString Nachname;
+//     int BetragInCt;
+//     QDate Buchungsdatum;
+// };
+
+bool getChangeBookingData(changeBookingData& cbd, qlonglong bid)
+{
+    QString  sql{ qsl(R"str(
+SELECT
+  Vertraege.Kennung
+, Kreditoren.Vorname
+, Kreditoren.Nachname
+, Buchungen.Betrag
+, Buchungen.Datum
+
+FROM Buchungen
+
+INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id
+INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId
+
+WHERE
+    Buchungen.id = %1
+)str") };
+
+    QSqlRecord rec =executeSingleRecordSql (sql.arg(bid));
+    qDebug() << rec;
+    cbd.Vorname  =rec.value("Vorname").toString ();
+    cbd.Nachname =rec.value ("Nachname").toString ();
+    cbd.BetragInCt =rec.value ("Betrag").toInt ();
+    cbd.VKennung =rec.value ("Kennung").toString ();
+    cbd.Buchungsdatum =rec.value ("Datum").toDate ();
+    return true;
+}
+
+
