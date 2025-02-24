@@ -478,11 +478,11 @@ void test_finance::test_convertionFuncs()
     QCOMPARE( i2s(-99), qsl("-99"));
     QCOMPARE( i2s(987654321), qsl("987654321"));
 
-    QCOMPARE( d2euro(1), qsl("1,00 €"));
-    QCOMPARE( d2euro(1.234), qsl("1,23 €"));
-    QCOMPARE( d2euro(1.235), qsl("1,24 €"));
-    QCOMPARE( d2euro(1111.235), qsl("1.111,24 €"));
-    QCOMPARE( d2euro(1234567), qsl("1.234.567,00 €"));
+    QCOMPARE( s_d2euro(1), qsl("1,00 €"));
+    QCOMPARE( s_d2euro(1.234), qsl("1,23 €"));
+    QCOMPARE( s_d2euro(1.235), qsl("1,24 €"));
+    QCOMPARE( s_d2euro(1111.235), qsl("1.111,24 €"));
+    QCOMPARE( s_d2euro(1234567), qsl("1.234.567,00 €"));
 
     QCOMPARE( prozent2prozent_str (1.), qsl("1,00 %"));
     QCOMPARE( prozent2prozent_str (1.5), qsl("1,50 %"));

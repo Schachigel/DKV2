@@ -66,7 +66,7 @@ QString CurrencyFormatter::displayText(const QVariant& value, const QLocale& )co
     if( not vv.convert(qMetaTypeId<double>()))
         return value.toString();
     double w =value.toDouble();
-    return qsl(" %1 ").arg(d2euro(w));
+    return qsl(" %1 ").arg(s_d2euro(w));
 };
 void CurrencyFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
@@ -86,9 +86,9 @@ QString BookingAmountItemFormatter::displayText(const QVariant& value, const QLo
 {
     double w = r2(value.toDouble()/100.);
     if( w <= 0)
-        return "[" + d2euro(-1 *w) + " "  + "]";
+        return "[" + s_d2euro(-1 *w) + " "  + "]";
     else
-        return d2euro(w)+ " ";
+        return s_d2euro(w)+ " ";
 };
 
 QString bookingTypeFormatter::displayText(const QVariant &value, const QLocale &) const

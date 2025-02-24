@@ -184,7 +184,7 @@ const booking contract::latestBooking()
     }
     booking latestB(id(), bookingType(rec.value(fn_bBuchungsArt).toInt()), rec.value(fn_bDatum).toDate(), euroFromCt(rec.value(fn_bBetrag).toInt()));
     RETURN_OK (latestB, qsl("Latest Booking:"), qsl("Typ: "), bookingTypeDisplayString(latestB.type), qsl("/"), latestB.date.toString (Qt::ISODate), qsl("/"),
-                         d2euro(latestB.amount), qsl("/"), qsl("cId:"), i2s(latestB.contractId));
+                         s_d2euro(latestB.amount), qsl("/"), qsl("cId:"), i2s(latestB.contractId));
 }
 
 // write to db
@@ -280,9 +280,9 @@ bool contract::bookInitialPayment(const QDate date, const double amount)
         RETURN_ERR( false, error);
 
     if ( bookDeposit(id(), date, amount))
-            RETURN_OK( true, qsl("Successfully activated contract %1 [%2, %3]").arg( id_aS(), date.toString (Qt::ISODate), d2euro(amount)));
+            RETURN_OK( true, qsl("Successfully activated contract %1 [%2, %3]").arg( id_aS(), date.toString (Qt::ISODate), s_d2euro(amount)));
 
-    RETURN_ERR( false, qsl("Failed to execut activation on contract "), id_aS(), qsl(" ["), date.toString() , d2euro(amount), qsl("]"));
+    RETURN_ERR( false, qsl("Failed to execut activation on contract "), id_aS(), qsl(" ["), date.toString() , s_d2euro(amount), qsl("]"));
     return false;
 }
 bool contract::initialPaymentReceived() const
@@ -652,12 +652,12 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
 
     double d = value(fromDate);
     v["dStartBetrag"] = d;
-    v["startBetrag"] = d2euro(d);
+    v["startBetrag"] = s_d2euro(d);
     v["startDatum"] = fromDate.toString(qsl("dd.MM.yyyy"));
 
     d = value(toDate);
     v["dEndBetrag"] = d;
-    v["endBetrag"] = d2euro(d);
+    v["endBetrag"] = s_d2euro(d);
     v["endDatum"] = toDate.toString(qsl("dd.MM.yyyy"));
 
     v["Vertragsdatum"] = td.getValue(fnVertragsDatum).toDate().toString(qsl("dd.MM.yyyy"));
@@ -667,7 +667,7 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
     v["zzAusgesezt"] = QVariant(not interestActive());
     v["Anmerkung"] = comment();
     v["Betrag"] = euroFromCt(td.getValue(fnBetrag).toInt());
-    v["strBetrag"] = d2euro(euroFromCt(td.getValue(fnBetrag).toInt()));
+    v["strBetrag"] = s_d2euro(euroFromCt(td.getValue(fnBetrag).toInt()));
     v["Zinsmodell"] = ::interestModelDisplayString(iModel());
     v["KFrist"] = hasEndDate() ? 0 : noticePeriod();
     v["Status"] = isTerminated ? "Beendet" : "Laufend";
@@ -705,10 +705,10 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
     }
 
     if (v["dSonstigeZinsen"] != 0.)
-        v["SonstigeZinsen"] = d2euro(v["dSonstigeZinsen"].toDouble());
+        v["SonstigeZinsen"] = s_d2euro(v["dSonstigeZinsen"].toDouble());
 
     if (v["dJahresZinsen"] != 0.) {
-        v["JahresZinsen"] = d2euro(v["dJahresZinsen"].toDouble());
+        v["JahresZinsen"] = s_d2euro(v["dJahresZinsen"].toDouble());
         if (iModel() == interestModel::payout) {
             v["dAuszahlung"] = v["dJahresZinsen"];
             v["Auszahlung"] = v["JahresZinsen"];
@@ -726,7 +726,7 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
         QVariantMap bookMap = {};
         bookMap["Date"] = b.date.toString(qsl("dd.MM.yyyy"));
         bookMap["Text"] = bookingTypeDisplayString(b.type);
-        bookMap["Betrag"] = d2euro(b.amount);
+        bookMap["Betrag"] = s_d2euro(b.amount);
 
         bl.append(bookMap);
     }

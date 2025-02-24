@@ -245,8 +245,8 @@ QString redOrBlack(int i, int max)
 }
 QString redOrBlack(double d, double max)
 {
-    if( d >= max) return qsl("<div style=\"color:red\">") +d2euro(d) +qsl("</div>");
-    else return d2euro(d);
+    if( d >= max) return qsl("<div style=\"color:red\">") +s_d2euro(d) +qsl("</div>");
+    else return s_d2euro(d);
 }
 
 QVector<QString> formatedStatisticData(investment::invStatisticData data, double Vertragswert)

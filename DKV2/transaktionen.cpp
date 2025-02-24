@@ -372,14 +372,14 @@ void changeBookingValue(qlonglong bookingId)
     dlg.Buchungsdatum=cbd.Buchungsdatum;
     dlg.Vorname      =cbd.Vorname;
     dlg.Nachname     =cbd.Nachname;
-    dlg.BuchungswertInCent =cbd.BetragInCt;
+    dlg.ursprWertInCt =cbd.BetragInCt;
 
     if( dlg.exec() == QDialog::Rejected) {
         QMessageBox::information (getMainWindow (), qsl("Abbruch"), qsl("Die Änderung der Buchung wurde abgebrochen"));
         return;
     }
-    qInfo() << qsl("Änderung der Buchung %1 auf %2").arg(QString::number(bookingId), ct2euro( dlg.BuchungswertInCent));
-    if( not writeBookingUpdate(bookingId, dlg.BuchungswertInCent)) {
+    qInfo() << qsl("Änderung der Buchung %1 auf %2").arg(QString::number(bookingId), s_ct2euro( dlg.neuerWertInCt));
+    if( not writeBookingUpdate(bookingId, dlg.neuerWertInCt)) {
         QMessageBox::warning (getMainWindow (), "Fehler", "Die Buchung konnte nicht angepasst werden");
     }
 }
@@ -405,7 +405,7 @@ LIMIT 1
         return;
     }
     QString BArt =bookingTypeDisplayString(fromInt(rec.value (qsl("Buchungen.BuchungsArt")).toLongLong ()));
-    QString BBetrag =ct2euro (rec.value (qsl("Buchungen.Betrag")).toInt ());
+    QString BBetrag =s_ct2euro (rec.value (qsl("Buchungen.Betrag")).toInt ());
     QString BDatum =rec.value (qsl("Buchungen.Datum")).toDate ().toString (Qt::TextDate);
     QString VKennung = rec.value (qsl("Vertraege.Kennung")).toString ();
     QString VN =rec.value( qsl("Kreditoren.Vorname")).toString ();
@@ -670,25 +670,25 @@ void annualSettlementLetters() {
             }
             payedInterest = otherInterest + interestForPayout;
             printData[qsl("ausbezahlterZins")] =
-                    payedInterest == 0. ? "" : d2euro(payedInterest);
+                    payedInterest == 0. ? "" : s_d2euro(payedInterest);
             printData[qsl("mitAusbezahltemZins")] = payedInterest > 0.;
             printData[qsl("mitZins")] = payedInterest + interestCredit > 0.;
             printData[qsl("SumAuszahlung")] =
-                    interestForPayout == 0. ? "" : d2euro(interestForPayout);
+                    interestForPayout == 0. ? "" : s_d2euro(interestForPayout);
             printData[qsl("dSumJahresZinsen")] = annualInterest;
 
             printData[qsl("SumJahresZinsen")] =
-                    annualInterest == 0. ? "" : d2euro(annualInterest);
+                    annualInterest == 0. ? "" : s_d2euro(annualInterest);
 
             printData[qsl("sonstigerZins")] =
-                    otherInterest == 0. ? "" : d2euro(otherInterest);
+                    otherInterest == 0. ? "" : s_d2euro(otherInterest);
 
             printData["SumZinsgutschrift"] =
-                    interestCredit == 0. ? "" : d2euro(interestCredit);
+                    interestCredit == 0. ? "" : s_d2euro(interestCredit);
 
             printData[qsl("Vertraege")] = vl;
 
-            printData[qsl("totalBetrag")] = d2euro(totalBetrag);
+            printData[qsl("totalBetrag")] = s_d2euro(totalBetrag);
 
             QString fileName = qsl("Jahresinfo %1_%3, %4")
                                .arg(i2s(yearOfSettlement), credRecord.lastname(),
@@ -696,23 +696,23 @@ void annualSettlementLetters() {
             fileName = fileName.replace("/", "-").replace("*", "#").replace(":", "#");
             /* save data for eMail batch file */
             currCreditorMap[qsl("Vertraege")] = vl;
-            currCreditorMap["SumBetrag"] = d2euro(totalBetrag);
+            currCreditorMap["SumBetrag"] = s_d2euro(totalBetrag);
             currCreditorMap[qsl("Attachment")] = fileName;
             currCreditorMap[qsl("SumJahresZinsen")] =
-                    annualInterest == 0. ? "" : d2euro(annualInterest);
+                    annualInterest == 0. ? "" : s_d2euro(annualInterest);
 
             currCreditorMap[qsl("SumSonstigeZinsen")] =
-                    otherInterest == 0. ? "" : d2euro(otherInterest);
+                    otherInterest == 0. ? "" : s_d2euro(otherInterest);
 
             currCreditorMap[qsl("SumZinsgutschrift")] =
-                    interestCredit == 0. ? "" : d2euro(interestCredit);
+                    interestCredit == 0. ? "" : s_d2euro(interestCredit);
 
             if (currCreditorMap[qsl("Email")] == "") {
                 currCreditorMap.remove(qsl("Email"));
             }
 
             if (interestForPayout > 0.) {
-                currCreditorMap[qsl("SumAuszahlung")] = d2euro(interestForPayout);
+                currCreditorMap[qsl("SumAuszahlung")] = s_d2euro(interestForPayout);
                 Auszahlungen.append(currCreditorMap);
             } else {
                 currCreditorMap[qsl("SumAuszahlung")] = "";
@@ -733,11 +733,11 @@ void annualSettlementLetters() {
     // Create the eMail Batch file.
     printData[qsl("Kreditoren")] = Kreditoren;
     printData[qsl("Auszahlungen")] = Auszahlungen;
-    printData[qsl("Sum2Betrag")] = d2euro(totalBetrag2);
-    printData[qsl("Sum2JahresZinsen")] = d2euro(annualInterest2);
-    printData[qsl("Sum2SonstigeZinsen")] = d2euro(otherInterest2);
-    printData[qsl("Sum2Auszahlung")] = d2euro(interestForPayout2);
-    printData[qsl("Sum2Zinsgutschrift")] = d2euro(interestCredit2);
+    printData[qsl("Sum2Betrag")] = s_d2euro(totalBetrag2);
+    printData[qsl("Sum2JahresZinsen")] = s_d2euro(annualInterest2);
+    printData[qsl("Sum2SonstigeZinsen")] = s_d2euro(otherInterest2);
+    printData[qsl("Sum2Auszahlung")] = s_d2euro(interestForPayout2);
+    printData[qsl("Sum2Zinsgutschrift")] = s_d2euro(interestCredit2);
 
     writeRenderedTemplate(
                 qsl("zinsmails.bat"),
@@ -853,7 +853,7 @@ void finalizeContractLetter(contract *c) {
     creditor credRecord(c->creditorId());
     printData[qsl("creditor")] = QVariant(credRecord.getVariantMap());
     printData[qsl("Vertrag")] = c->toVariantMap();
-    printData[qsl("endBetrag")] = d2euro(c->value());
+    printData[qsl("endBetrag")] = s_d2euro(c->value());
     double ausbezZins = c->payedInterestAtTermination();
     printData[qsl("ausbezahlterZins")] = ausbezZins;
     printData[qsl("mitAusbezahltemZins")] = !qFuzzyCompare(ausbezZins, 0.);

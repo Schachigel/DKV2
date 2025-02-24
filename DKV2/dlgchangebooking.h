@@ -13,12 +13,12 @@ public: // data
     QString Nachname;
     QString Kennung;
     QDate Buchungsdatum;
-    int BuchungswertInCent;
+    int neuerWertInCt =0;
+    int ursprWertInCt =0;
 private:
     QLabel* info;
     QDialogButtonBox* buttons;
     QLineEdit* leNeuerWert;
-
 };
 
 #endif // DLGCHANGEBOOKING_H

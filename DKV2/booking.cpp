@@ -53,7 +53,7 @@
 QString booking::toString( ) const
 {
     return qsl("%1 zum Vertrag# %2: Betrag: %3, Datum: %4")
-            .arg(bookingTypeDisplayString (type), i2s(contractId), d2euro(amount), date.toString(Qt::ISODate));
+            .arg(bookingTypeDisplayString (type), i2s(contractId), s_d2euro(amount), date.toString(Qt::ISODate));
 }
 
 /////////////// BOOKING functions (friends, not family ;) )
@@ -103,7 +103,7 @@ bool bookInterestActive(const tableindex_t contractId, QDate date)
 
 bool writeBookingUpdate( qlonglong bookingId, int newValeuInCt)
 {
-    QString sql {qsl("UPDATE %0 SET %1=%2, %3=%4 WHERE id=%5")
+    QString sql {qsl("UPDATE %0 SET %1=%2, %3='%4' WHERE id=%5")
             .arg(tn_Buchungen, fn_bBetrag, QString::number(newValeuInCt),
                  fn_bModifiziert, QDate::currentDate().toString(Qt::ISODate),
                          QString::number(bookingId))};

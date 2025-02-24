@@ -54,7 +54,7 @@ double ZinsesZins_30_360( const double zins, const double wert,
                          const QDate von, const QDate bis, const bool thesa)
 {
     qInfo().noquote() << "\n\nZinsberechnung (30/360) von " << von << " bis " << bis << ((thesa) ? (" thesaurierend\n") : ("ausschüttend\n"))
-                       << "Wert: " << d2euro(wert) << " Zinssatz: " << prozent2prozent_str (zins) << "\n";
+                       << "Wert: " << s_d2euro(wert) << " Zinssatz: " << prozent2prozent_str (zins) << "\n";
     if( not (von.isValid() and bis.isValid())
             or ( von > bis)
             or ( wert <= 0.)) {

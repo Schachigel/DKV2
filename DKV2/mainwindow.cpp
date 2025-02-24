@@ -224,7 +224,7 @@ void MainWindow::prepare_startPage()
     }
     if( allContractsValue > 0) {
         QString valueRow = qsl("<p>Die Summer aller Direktkredite und Zinsen beträgt <big><font color=red>")
-                + d2euro(allContractsValue) + qsl("</font></big>");
+                + s_d2euro(allContractsValue) + qsl("</font></big>");
         messageHtml += valueRow;
     }
     messageHtml += qsl("<p>DB File: [ %1 ]").arg(ui->statusLabel->text ());

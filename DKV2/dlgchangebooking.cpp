@@ -20,7 +20,7 @@ dlgChangeBooking::dlgChangeBooking() {
 
     info =new QLabel(qsl("Änderung der Buchung vom 31.3.1922 zu dem Vertrag KENNUNG3333333 <p>von Hugo Hurtiglangername<p>"
                               "Bisheriger Wert: <b>444,55 Euro</b><p>"));
-    leNeuerWert =new QLineEdit(QString::number(euroFromCt(BuchungswertInCent)));
+    leNeuerWert =new QLineEdit(QString::number(euroFromCt(neuerWertInCt)));
 
     QGridLayout* g =new QGridLayout();
     g->setColumnMinimumWidth (0, 30); // linker Rand
@@ -49,20 +49,41 @@ void dlgChangeBooking::showEvent(QShowEvent* se)
         return;
     info->setText (QString("Änderung der Buchung vom %4 zu dem Vertrag %1 <p>von %2 %3<p>"
                                       "Bisheriger Wert: <b>%5</b>\n")
-                                  .arg(Kennung, Vorname, Nachname, Buchungsdatum.toString (), ct2euro(BuchungswertInCent)));
+                                  .arg(Kennung, Vorname, Nachname, Buchungsdatum.toString (), s_ct2euro(ursprWertInCt)));
+    QLocale l;
+    leNeuerWert->setText (l.toString ((euroFromCt (ursprWertInCt))));
     centerDlg(qobject_cast<QWidget*>(parent()), this, 200, 300);
-
 }
 
 void dlgChangeBooking::accepted()
 {
     QLocale l;
-    double d_neuerWert =l.toDouble (leNeuerWert->text());
-    QString neuerWert =d2euro(d_neuerWert);
+    qInfo() << leNeuerWert->text ();
+    double neuerWertInEuro =r2(l.toDouble (leNeuerWert->text()));
+    neuerWertInCt =ctFromEuro(neuerWertInEuro);
+
+    if( neuerWertInCt == ursprWertInCt) {
+        // keine Änderung
+        if( QMessageBox::Yes == QMessageBox::question(this, qsl("Meldung"), "Soll der ursprüngliche Wert beibehalten bleiben?")) {
+            return QDialog::reject ();
+        } else {
+            return;
+        }
+    }
+
+    int signChangecheck =(ursprWertInCt/std::abs(ursprWertInCt)) * (neuerWertInCt/std::abs(neuerWertInCt));
+    if(  signChangecheck < 0) {
+        //  Vorzeichenwechsel sollte nicht vorkommen
+        QMessageBox::information (this, qsl("Fehler"), "Das Vorzeichen einer Buchung kann nicht geändert werden. <br>Eine Auszahlung kann also nicht zur Einzahlung werden oder umgekehrt");
+        return; // dialog für Neueingabe offen halten
+    }
+
+    QString neuerWert =s_d2euro(neuerWertInEuro);
     if(QMessageBox::Yes ==
         QMessageBox::question (this, "Bestätigung",
-                   QString("Soll der Wert der Buchung von %1 auf %2 geändert werden?").arg(ct2euro (BuchungswertInCent), neuerWert))) {
-        BuchungswertInCent =ctFromEuro (d_neuerWert);
+                   QString("Soll der Wert der Buchung von %1 auf %2 geändert werden?").arg(s_ct2euro (ursprWertInCt), s_ct2euro (neuerWertInCt)))) {
+        neuerWertInCt =ctFromEuro (neuerWertInEuro);
         return QDialog::accept();
     }
+    return; // dialog für Neueingabe offen halten
 }

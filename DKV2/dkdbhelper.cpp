@@ -353,7 +353,7 @@ bool createCsvActiveContracts()
         col.append (record.value(creditor::fnIBAN).toString());
         col.append (record.value(creditor::fnBIC).toString());
         col.append (prozent2prozent_str (record.value(qsl("Zinssatz")).toDouble ()));
-        col.append (d2euro (record.value(qsl("Wert")).toDouble ()));
+        col.append (s_d2euro (record.value(qsl("Wert")).toDouble ()));
         col.append (record.value(qsl("Aktivierungsdatum")).toDate().toString ("dd.MM.yyyy"));
         col.append (record.value(qsl("Kuendigungsfrist")).toString());
         col.append (record.value(qsl("Vertragsende")).toDate().toString ("dd.MM.yyyy"));
@@ -392,9 +392,9 @@ QVector<QStringList> overviewShortInfo(const QString& sql)
     QSqlRecord record =executeSingleRecordSql(sql);
     ret.push_back(QStringList({qsl("Anzahl DK Geber*innen"), record.value(qsl("AnzahlKreditoren")).toString()}));
     ret.push_back(QStringList({qsl("Anzahl der Verträge"), record.value(qsl("AnzahlVertraege")).toString()}));
-    ret.push_back(QStringList({qsl("Gesamtvolumen"), d2euro(record.value(qsl("GesamtVolumen")).toDouble())}));
-    ret.push_back(QStringList({qsl("Mittlerer Vertragswert"), d2euro(record.value(qsl("MittlererVertragswert")).toDouble())}));
-    ret.push_back(QStringList({qsl("Jahreszins"), d2euro(record.value(qsl("JahresZins")).toDouble())}));
+    ret.push_back(QStringList({qsl("Gesamtvolumen"), s_d2euro(record.value(qsl("GesamtVolumen")).toDouble())}));
+    ret.push_back(QStringList({qsl("Mittlerer Vertragswert"), s_d2euro(record.value(qsl("MittlererVertragswert")).toDouble())}));
+    ret.push_back(QStringList({qsl("Jahreszins"), s_d2euro(record.value(qsl("JahresZins")).toDouble())}));
     ret.push_back(QStringList({qsl("Durchschn. Zins (gew. Mittel)"), qsl("%1 %").arg(r2(record.value(qsl("ZinsRate")).toDouble()))}));
     ret.push_back(QStringList({qsl("Mittlerer Zins"), qsl("%1 %").arg(r2(record.value(qsl("MittelZins")).toDouble()))}));
 
@@ -437,17 +437,17 @@ QVector<contractRuntimeDistrib_rowData> contractRuntimeDistribution()
     }
     QVector<contractRuntimeDistrib_rowData> ret;
     // .ret.push_back({"Zeitraum", "Anzahl", "Wert"});
-    ret.push_back({"Bis ein Jahr ",          i2s(AnzahlBisEinJahr), d2euro(SummeBisEinJahr)});
-    ret.push_back({"Ein bis fünf Jahre ",    i2s(AnzahlBisFuenfJahre), d2euro(SummeBisFuenfJahre)});
-    ret.push_back({"Länger als fünf Jahre ", i2s(AnzahlLaenger), d2euro(SummeLaenger) });
-    ret.push_back({"Unbegrenzte Verträge ",  i2s(AnzahlUnbegrenzet), d2euro(SummeUnbegrenzet) });
+    ret.push_back({"Bis ein Jahr ",          i2s(AnzahlBisEinJahr), s_d2euro(SummeBisEinJahr)});
+    ret.push_back({"Ein bis fünf Jahre ",    i2s(AnzahlBisFuenfJahre), s_d2euro(SummeBisFuenfJahre)});
+    ret.push_back({"Länger als fünf Jahre ", i2s(AnzahlLaenger), s_d2euro(SummeLaenger) });
+    ret.push_back({"Unbegrenzte Verträge ",  i2s(AnzahlUnbegrenzet), s_d2euro(SummeUnbegrenzet) });
     return ret;
 }
 
 namespace {
 QString decorateHighValues(double d)
 {
-    QString ret =d2euro (d);
+    QString ret =s_d2euro (d);
     if (d >=80000.) {
         if (d >=90000.) {
             if (d >=100000.) {
@@ -535,7 +535,7 @@ FROM temp
         zeile.push_back (anlage.arg(i2s(rec[i].value(col++).toInt ()/100.))); // Anlagenbez.
         zeile.push_back (rec[i].value(col++).toDate().toString ("dd.MM.yyyy")); // Buchungsdatum
         zeile.push_back (i2s(rec[i].value(col++).toInt())); // Anzahl Buchungen
-        zeile.push_back (d2euro(rec[i].value(col++).toDouble ())); // buchungen zu diesem Buchungsdatum
+        zeile.push_back (s_d2euro(rec[i].value(col++).toDouble ())); // buchungen zu diesem Buchungsdatum
         zeile.push_back (decorateHighValues (rec[i].value(col++).toDouble ())); // Wert nur Einzahlungen
         zeile.push_back (decorateHighValues (rec[i].value(col++).toDouble ())); // Wert incl. Zinsen
         result.push_back (zeile);
@@ -590,7 +590,7 @@ QVector<QStringList> perpetualInvestmentByContracts()
         zeile.push_back (rec[i].value(col++).toDate().toString("dd.MM.yyyy")); // Vertragsdatum
         zeile.push_back (rec[i].value(col++).toString());  //Kennung
         zeile.push_back (rec[i].value(col++).toString ()); // contract count
-        zeile.push_back (d2euro(rec[i].value(col++).toDouble ())); // new contract sum by day
+        zeile.push_back (s_d2euro(rec[i].value(col++).toDouble ())); // new contract sum by day
         double periodSum =rec[i].value(col++).toDouble ();
         zeile.push_back (decorateHighValues (periodSum));
         result.push_back (zeile);

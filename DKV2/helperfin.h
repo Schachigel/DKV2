@@ -25,11 +25,11 @@ inline QString i2s(int x)       {
     return QString::number(x);
 }
 
-inline QString d2euro(double x) {
+inline QString s_d2euro(double x) {
     static QLocale locale;
     return locale.toCurrencyString(x);
 }
-inline QString ct2euro(int ct) {
+inline QString s_ct2euro(int ct) {
     static QLocale locale;
     return locale.toCurrencyString (euroFromCt (ct));
 }

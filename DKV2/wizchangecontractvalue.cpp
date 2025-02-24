@@ -48,7 +48,7 @@ bool wpChangeContract_IntroPage::validatePage()
         QString msg(qsl("Die kleinste Einlage beträgt %1. Die kleinste Auszahlung beträgt %2. "
                     "Daher ist im Moment keine Auszahlung möglich.<p>Du kannst einen Einzahlung machen oder "
                     "über den entsprechenden Menüpunkt den Vertrag beenden"));
-        msg = msg.arg(d2euro(minContract), d2euro(minPayout));
+        msg = msg.arg(s_d2euro(minContract), s_d2euro(minPayout));
         QMessageBox::information(this, qsl("Keine Auszahlung möglich"), msg);
         return false;
     }
@@ -90,7 +90,7 @@ void wpChangeContract_AmountPage::initializePage()
     if( isDeposit) {
         setTitle(qsl("Einzahlungsbetrag"));
         QString subt =qsl("Der Betrag muss größer als %1 sein.");
-        subt =subt.arg(d2euro(minPayout));
+        subt =subt.arg(s_d2euro(minPayout));
         subTitleLabel->setText(subt);
         setField(qsl("amount"), l.toString (1000.));
     } else {
@@ -100,7 +100,7 @@ void wpChangeContract_AmountPage::initializePage()
         // double minPayment = 100., minRemains = 500.;
         double maxPayout = currentAmount - minAmount;
         QString subtitle =qsl("Der Auszahlungsbetrag kann zwischen %1 und %2 liegen.");
-        subtitle = subtitle.arg(d2euro(minPayout), d2euro(maxPayout));
+        subtitle = subtitle.arg(s_d2euro(minPayout), s_d2euro(maxPayout));
         subTitleLabel->setText(subtitle);
         setField(qsl("amount"), l.toString(minPayout));
     }
@@ -124,11 +124,11 @@ bool wpChangeContract_AmountPage::validatePage()
         double minPayout =dbConfig::readValue(MIN_PAYOUT).toDouble();
         double minAmount =dbConfig::readValue(MIN_AMOUNT).toDouble();
         if( amount < minPayout) {
-            QMessageBox::information(this, qsl("Auszahlung nicht möglich"), qsl("Der Auszahlungsbetrag muss mindestens %1 betragen").arg(d2euro(minPayout)));
+            QMessageBox::information(this, qsl("Auszahlung nicht möglich"), qsl("Der Auszahlungsbetrag muss mindestens %1 betragen").arg(s_d2euro(minPayout)));
             return false;
         }
         if( currentAmount-amount < minAmount) {
-            QMessageBox::information(this, qsl("Auszahlung nicht möglich"), qsl("Der Restbetrag muss mindestens %1 betragen").arg(d2euro(minAmount)));
+            QMessageBox::information(this, qsl("Auszahlung nicht möglich"), qsl("Der Restbetrag muss mindestens %1 betragen").arg(s_d2euro(minAmount)));
             return false;
         }
     }
@@ -258,9 +258,9 @@ void wpChangeContract_Summary::initializePage()
         subtitle = qsl("Auszahlung ") +subtitle;
         newValue = wiz->currentAmount - change;
     }
-    subTitleLabel->setText(subtitle.arg(wiz->contractLabel, wiz->creditorName, d2euro(oldValue),
-                   deposit? qsl("+") : qsl("-"), d2euro(change),
-                   d2euro(newValue), field(qsl("date")).toDate().toString(qsl("dd.MM.yyyy"))));
+    subTitleLabel->setText(subtitle.arg(wiz->contractLabel, wiz->creditorName, s_d2euro(oldValue),
+                   deposit? qsl("+") : qsl("-"), s_d2euro(change),
+                   s_d2euro(newValue), field(qsl("date")).toDate().toString(qsl("dd.MM.yyyy"))));
 }
 bool wpChangeContract_Summary::isComplete() const
 {

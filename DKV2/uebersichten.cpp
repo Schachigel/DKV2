@@ -301,7 +301,7 @@ void uebersichten::renderPayedInterestByYear()
                 {
 //                    records[i].value(qsl("BA")).toString(),
                         records[i].value(qsl("Thesa")).toString(),
-                        d2euro(records[i].value(qsl("Summe")).toDouble())
+                        s_d2euro(records[i].value(qsl("Summe")).toDouble())
                 });
         }
     }
@@ -325,7 +325,7 @@ void uebersichten::renderContractsByContractEnd()
     for( int i =0; i < data.count(); i++) {
         sec.data.push_back(QStringList({i2s(data[i].year),
                                         i2s(data[i].count),
-                                       d2euro(data[i].value)}));
+                                       s_d2euro(data[i].value)}));
     }
     if( sec.data.count())
         tl.sections.push_back(sec);
@@ -356,7 +356,7 @@ void uebersichten::renderInterestDistribution()
         }
         currentSec.data.push_back({
                                       prozent2prozent_str(records[i].value(qsl("Zinssatz")).toDouble()),
-                                      d2euro(records[i].value(qsl("Summe")).toDouble()),
+                                      s_d2euro(records[i].value(qsl("Summe")).toDouble()),
                                       records[i].value(qsl("Anzahl")).toString()});
     }
     if( currentSec.header.size())
