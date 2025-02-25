@@ -108,6 +108,7 @@ public:
     functionlogging(const QString& fu, const QString& fi) :fuName(fu), fiName( fi) {
         depth++;
         QString fill=QString(qsl(">")).repeated(depth);
+        qInfo().noquote() << QLatin1String("------- Enter function ");
         qInfo().noquote() << fill << fuName << " (" << fiName << ")";
     }
     functionlogging(const functionlogging&) =delete;

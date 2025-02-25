@@ -234,7 +234,7 @@ QSqlQuery prepQuery( const QString sql, const QSqlDatabase& db =QSqlDatabase::da
     QSqlQuery q(db);
     q.setForwardOnly (true);
     if( q.prepare (sql))
-        RETURN_OK( q, qsl("prepQuery"), qsl("Successfully prepared query: %1").arg(q.lastQuery ()));
+        RETURN_OK( q, qsl("prepQuery"), qsl("Successfully prepared query:\n %1").arg(q.lastQuery ()));
     else
         RETURN_ERR(q, qsl("prepQuery"), qsl("Failed to prep Query:"), q.lastError ().text (), qsl("\n"), q.lastQuery ());
 }

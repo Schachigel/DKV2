@@ -42,7 +42,7 @@ int daysToContractEnd(const QString& s)
         retval= QDate::currentDate().daysTo(d);
     else
         retval= daysUntilTheEndOfTheFuckingWorld;
-    qDebug() << "daysToContractEnd: " << s << ", " << retval;
+//    qDebug() << "daysToContractEnd: " << s << ", " << retval;
     return retval;
 }
 } // namespace
@@ -57,7 +57,7 @@ void ContractTableModel::setCol13ExtraData()
         int cid =data(index( row, 0), Qt::DisplayRole).toInt();
         int dtce =daysToContractEnd(data(index(row, cp_ContractEnd), Qt::DisplayRole).toString());
         extraData.insert(cid, dtce);
-        qDebug() << "extra data: " << cid << ", " << dtce;
+//        qDebug() << "extra data: " << cid << ", " << dtce;
     }
 }
 
