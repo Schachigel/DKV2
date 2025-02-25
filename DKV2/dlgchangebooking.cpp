@@ -70,18 +70,18 @@ void dlgChangeBooking::accepted()
             return;
         }
     }
-
-    int signChangecheck =(ursprWertInCt/std::abs(ursprWertInCt)) * (neuerWertInCt/std::abs(neuerWertInCt));
-    if(  signChangecheck < 0) {
-        //  Vorzeichenwechsel sollte nicht vorkommen
-        QMessageBox::information (this, qsl("Fehler"), "Das Vorzeichen einer Buchung kann nicht geändert werden. <br>Eine Auszahlung kann also nicht zur Einzahlung werden oder umgekehrt");
-        return; // dialog für Neueingabe offen halten
+    if( ursprWertInCt && neuerWertInCt) {
+        // avoid int overflow and div. by zero
+        int signChangecheck =(ursprWertInCt/std::abs(ursprWertInCt)) * (neuerWertInCt/std::abs(neuerWertInCt));
+        if(  signChangecheck < 0) {
+            QMessageBox::information (this, qsl("Fehler"), "Das Vorzeichen einer Buchung kann nicht geändert werden. <br>Eine Auszahlung kann also nicht zur Einzahlung werden oder umgekehrt");
+            return; // dialog für Neueingabe offen halten
+        }
     }
 
-    QString neuerWert =s_d2euro(neuerWertInEuro);
     if(QMessageBox::Yes ==
         QMessageBox::question (this, "Bestätigung",
-                   QString("Soll der Wert der Buchung von %1 auf %2 geändert werden?").arg(s_ct2euro (ursprWertInCt), s_ct2euro (neuerWertInCt)))) {
+                   QString("Soll der Wert der Buchung von %1 auf %2 geändert werden?").arg(s_ct2euro(ursprWertInCt), s_ct2euro(neuerWertInCt)))) {
         neuerWertInCt =ctFromEuro (neuerWertInEuro);
         return QDialog::accept();
     }
