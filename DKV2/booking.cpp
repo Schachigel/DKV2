@@ -17,7 +17,7 @@
         bookingsTable.append(dbfield(fn_bDatum,       QVariant::Date).setDefault(EndOfTheFuckingWorld_str).setNotNull());
         bookingsTable.append(dbfield(fn_bBuchungsArt, QVariant::Int).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
         bookingsTable.append(dbfield(fn_bBetrag,      QVariant::Int).setNotNull()); // in cent
-        bookingsTable.append(dbfield(fn_bModifiziert, QVariant::Date).setDefault(EndOfTheFuckingWorld_str).setNotNull());
+        bookingsTable.append(dbfield(fn_bModifiziert, QVariant::Date).setDefault(BeginingOfTime).setNotNull());
         bookingsTable.append(dbfield(qsl("Zeitstempel"),  QVariant::DateTime).setDefaultNow());
     }
     return bookingsTable;
