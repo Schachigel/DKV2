@@ -116,11 +116,10 @@ void contract::initRandom(const tableindex_t creditorId)
     static QRandomGenerator *rand = QRandomGenerator::system();
     setLabel(proposeContractLabel());
     setCreditorId(creditorId);
+    setInterestRate( rand->bounded(25)* 0.15);
+
     setInterestModel(interestModelFromInt(rand->bounded(100)%4));
-    if( rand->bounded (1000)%15 == 0)
-        setInterestRate (0.);
-    else
-        setInterestRate( rand->bounded(25)* 0.15);
+
     setPlannedInvest(    rand->bounded(50)  *1000.
                        + rand->bounded(1,3) *500.
                        + rand->bounded(10)  *100.);
