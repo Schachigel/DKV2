@@ -15,6 +15,7 @@ private slots:
     void init();
     void cleanup();
     void  test_ohneAnlagen();
+    void test_kontinuierlicheAnlagen_data();
     void test_kontinuierlicheAnlagen();
     // void test_zeitlBegrenzteAnlagen();
 };

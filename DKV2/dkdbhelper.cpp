@@ -143,8 +143,10 @@ bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/
     bool ret = false;
     autoRollbackTransaction art(db.connectionName());
     do {
-        if( includeViews) if ( not insertDKDB_Views(db)) break;
-        if( includeViews) if (not insertDKDB_Indices(db)) break;
+        if( includeViews)
+            if ( not insertDKDB_Views(db)) break;
+        if( includeViews)
+            if (not insertDKDB_Indices(db)) break;
         insert_DbProperties(db);
         ret = true;
     } while (false);
@@ -388,9 +390,9 @@ QVector<QStringList> overviewShortInfo(const QString& sql)
     QSqlRecord record =executeSingleRecordSql(sql);
     ret.push_back(QStringList({qsl("Anzahl DK Geber*innen"), record.value(qsl("AnzahlKreditoren")).toString()}));
     ret.push_back(QStringList({qsl("Anzahl der Verträge"), record.value(qsl("AnzahlVertraege")).toString()}));
-    ret.push_back(QStringList({qsl("Gesamtvolumen"), d2euro(record.value(qsl("GesamtVolumen")).toDouble())}));
-    ret.push_back(QStringList({qsl("Mittlerer Vertragswert"), d2euro(record.value(qsl("MittlererVertragswert")).toDouble())}));
-    ret.push_back(QStringList({qsl("Jahreszins (ca.)"), d2euro(record.value(qsl("JahresZins")).toDouble())}));
+    ret.push_back(QStringList({qsl("Gesamtvolumen"), s_d2euro(record.value(qsl("GesamtVolumen")).toDouble())}));
+    ret.push_back(QStringList({qsl("Mittlerer Vertragswert"), s_d2euro(record.value(qsl("MittlererVertragswert")).toDouble())}));
+    ret.push_back(QStringList({qsl("Jahreszins (ca.)"), s_d2euro(record.value(qsl("JahresZins")).toDouble())}));
     ret.push_back(QStringList({qsl("Durchschn. Zinssatz (gew. Mittel, ca.)"), qsl("%1 %").arg(r2(record.value(qsl("ZinsRate")).toDouble()))}));
     ret.push_back(QStringList({qsl("Mittlerer Zinssatz (ca.)"), qsl("%1 %").arg(r2(record.value(qsl("MittelZins")).toDouble()))}));
 
@@ -527,7 +529,7 @@ QVector<QStringList> perpetualInvestmentByContracts()
         zeile.push_back (rec[i].value(col++).toDate().toString("dd.MM.yyyy")); // Vertragsdatum
         zeile.push_back (rec[i].value(col++).toString());  //Kennung
         zeile.push_back (rec[i].value(col++).toString ()); // contract count
-        zeile.push_back (d2euro(rec[i].value(col++).toDouble ())); // new contract sum by day
+        zeile.push_back (s_d2euro(rec[i].value(col++).toDouble ())); // new contract sum by day
         double periodSum =rec[i].value(col++).toDouble ();
         zeile.push_back (decorateHighValues (periodSum));
         result.push_back (zeile);
@@ -626,63 +628,8 @@ ORDER BY AId ASC, Datum DESC
         zeile.push_back (rec[row].value(qsl("Anlage")).toString ());
         zeile.push_back (rec[row].value(qsl("Datum")).toDate().toString ("dd.MM.yyyy")); // Buchungsdatum
         zeile.push_back (i2s(rec[row].value(qsl("AnzahlB")).toInt())); // Anzahl Buchungen
-        zeile.push_back s_d2euro(rec[row].value(qsl("SummeTagesbuchungen")).toDouble ())); // buchungen zu diesem Buchungsdatum
+        zeile.push_back (s_d2euro(rec[row].value(qsl("SummeTagesbuchungen")).toDouble ())); // buchungen zu diesem Buchungsdatum
         zeile.push_back (decorateHighValues (rec[row].value(qsl("laufendeAnlagenSumme")).toDouble ())); // Wert nur Einzahlungen
-        result.push_back (zeile);
-    }
-    return result;
-}
-
-QVector<QStringList> perpetualInvestmentByContracts()
-{
-    QString sql {qsl(R"str(
-   WITH
-   fortlaufendeGeldanlagen AS
-   (
-      SELECT * FROM Geldanlagen WHERE Ende = '9999-12-31'
-   ),
-    Abschluesse AS (
-      SELECT G.rowid    AS AnlageId
-        , G.Typ || ' (' || printf("%.2f%", V.zSatz/100.) || ')' AS Anlage
-        , V.Kennung          AS Vertrag
-        , V.Vertragsdatum AS Datum
-        , V.Betrag        AS Betrag
-      FROM Vertraege AS V
-      INNER JOIN fortlaufendeGeldanlagen AS G ON G.rowid = V.AnlagenId
-    )
-    SELECT
-    Abschluesse.Anlage AS Anlage
-    , Abschluesse.Datum AS Vertragsdatum
-    , Abschluesse.Vertrag
-    , count(Abschluesse.Vertrag) AS AnzahlVerträge
-    , sum(Abschluesse.Betrag/100.) AS AnlageSumme_Tag
-    , (SELECT SUM(Betrag)/100.
-      FROM ( SELECT Betrag
-             FROM Abschluesse AS _ab
-             WHERE _ab.AnlageId = Abschluesse.AnlageId
-               AND _ab.Datum > DATE(Abschluesse.Datum, '-1 years')
-               AND _ab.Datum <= Abschluesse.Datum
-           )
-      ) AS periodenSumme
-    FROM Abschluesse
-    GROUP BY Datum, AnlageId
-    ORDER BY Anlage ASC, Datum DESC
-    )str")};
-    QVector<QSqlRecord> rec;
-    if( not executeSql (sql, rec)) {
-        return QVector<QStringList>();
-    }
-    QVector<QStringList> result;
-    for( int i=0; i< rec.size (); i++) {
-        QStringList zeile;
-        int col =0;
-        zeile.push_back (rec[i].value(col++).toString ()), // Anlage
-        zeile.push_back (rec[i].value(col++).toDate().toString("dd.MM.yyyy")); // Vertragsdatum
-        zeile.push_back (rec[i].value(col++).toString());  //Kennung
-        zeile.push_back (rec[i].value(col++).toString ()); // contract count
-        zeile.push_back (s_d2euro(rec[i].value(col++).toDouble ())); // new contract sum by day
-        double periodSum =rec[i].value(col++).toDouble ();
-        zeile.push_back (decorateHighValues (periodSum));
         result.push_back (zeile);
     }
     return result;

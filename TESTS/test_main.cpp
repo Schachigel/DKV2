@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
     QDir dir =QDir::current();
     qInfo() << "Running in " << dir.path();
     dir.mkpath("../data");
+    qInstallMessageHandler(logger);
 
 //    QTest::setMainSourcePath(__FILE__, "X:/home/dev/DKV2/TESTS");
     int errCount = 0;
@@ -48,7 +49,7 @@ int main(int argc, char *argv[])
     do {
         // in memory db
         tests.push_back(new test_geldanlagen);
-/*        tests.push_back(new test_booking);
+        tests.push_back(new test_booking);
         tests.push_back(new test_appConfig);
         tests.push_back(new test_creditor);
         tests.push_back(new test_contract);
@@ -66,7 +67,7 @@ int main(int argc, char *argv[])
         // on disk db
         tests.push_back(new test_tableDataInserter);
         tests.push_back(new test_dkdbcopy);
-*/
+
 // NO ACTIVE TESTS        tests.push_back(new test_letterTemplate);
 // NO ACTIVE TESTS        tests.push_back(new test_views);
     } while(--executions);

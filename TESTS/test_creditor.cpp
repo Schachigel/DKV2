@@ -155,12 +155,10 @@ void test_creditor::test_getAllCreditorInfoSorted ()
     // test no creditors
     QCOMPARE( creditorIds.size (), 0);
 
-
     saveRandomContractPerCreditor();
     activateAllContracts (yearOfAnnualSettlement);
     // function under test
     creditorsWithAnnualSettlement(creditorIds, yearOfAnnualSettlement);
-    dbgDumpDB();
     // test some creditors
     QCOMPARE( creditorIds.size (), numberOfCreditors);
 }

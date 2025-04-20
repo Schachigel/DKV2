@@ -336,7 +336,7 @@ WITH
   GROUP BY AId
 )
 
-SELECT AId
+SELECT Anlagen.rowid AS AId
   , printf(" %.2f%% ", Anlagen.ZSatz /100.) AS Zinssatz
     , IIF( Anlagen.Ende == '9999-12-31'
       , 'fortlaufende Geldanlage',
@@ -347,7 +347,7 @@ SELECT AId
   , printf("%d", AnzahlBeendete) AS [Anz_beendeteVerträge]
   , printf(" %.2f € ", Gesamtbetrag/100.) AS Gesamtbetrag
   , IIF( Anlagen.Offen, 'Offen', 'f. neue Vertr. geschlossen') AS [(Ab-)Geschlossen]
-FROM Summen INNER JOIN Geldanlagen AS Anlagen ON AId == Anlagen.rowid
+FROM Geldanlagen AS Anlagen LEFT JOIN Summen ON AId == Anlagen.rowid
 ORDER BY Zinssatz
 )str"
 )};
@@ -394,9 +394,13 @@ const QMap<QString, QString> views ={
 
 bool createDkDbViews( const QMap<QString, QString>& views, const QSqlDatabase& db)
 {
-    foreach(QString view, views.keys()) {
-        if( not createPersistentDbView (view, views[view], db))
+    QMapIterator<QString, QString> iter(views);
+    while (iter.hasNext ()) {
+        iter.next ();
+        if( not createPersistentDbView (iter.key (), iter.value (), db)) {
+            qDebug() << __FUNCTION__ << ": " << "failed with " << iter.key() << iter.value();
             return false;
+        }
     }
     return true;
 }
