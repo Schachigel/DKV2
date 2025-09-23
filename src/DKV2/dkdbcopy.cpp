@@ -1,3 +1,4 @@
+#include "pch.h"
 
 #include "helpersql.h"
 #include "helperfile.h"
@@ -71,7 +72,7 @@ bool depersonalize(QString connection)
         {qsl("UPDATE exVertraege SET Anmerkung = ''")}
     };
     //QSqlQuery q(QSqlDatabase::database (connection));
-    for( const auto &sql : qAsConst(updateSql)) {
+    for( const auto &sql : std::as_const(updateSql)) {
         if( not executeSql_wNoRecords (sql, QSqlDatabase::database (connection)))
             RETURN_ERR(false, qsl("depersonilize sql failed"));
     }
@@ -160,7 +161,7 @@ QString convert_database_inplace( const QString& targetFilename, const dbstructu
     switchForeignKeyHandling(fkh_off, autodetatch.alias(), db);
 
     QVector<dbtable> tables =dbs.getTables();
-    for(auto& table : qAsConst(tables))
+    for(auto& table : std::as_const(tables))
     {
         const int destFields = table.Fields().count();
         const int srcFields  = QSqlDatabase(db).record(table.Name()).count();

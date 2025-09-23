@@ -1,9 +1,11 @@
+
 #include <iso646.h>
 
 #include "helper.h"
 #include "helperfin.h"
 #include "helpersql.h"
 
+#include "dbstructure.h"
 #include "dbtable.h"
 
 bool autoDetachDb::attachDb(const QString& filename)
@@ -27,27 +29,27 @@ QString DbInsertableString(const QVariant& v)
         qCritical() << "Data to be inserted is not valid:>" << v << "<";
         return qsl("''");
     }
-    switch(v.type())
+    switch(v.metaType().id())
     {
-    case QVariant::String:
-    case QVariant::ByteArray:
-    case QVariant::Char:
+    case QMetaType::QString:
+    case QMetaType::QByteArray:
+    case QMetaType::Char:
         return singleQuoted( v.toString().replace(qsl("'"), qsl("''")));
-    case QVariant::Date: {
+    case QMetaType::QDate: {
         return singleQuoted(v.toDate().toString(Qt::ISODate));
     }
-    case QVariant::DateTime: {
+    case QMetaType::QDateTime: {
         return singleQuoted(v.toDateTime().toString(qsl("yyyy-MM-dd hh:mm:ss")));
     }
-    case QVariant::Double: {
+    case QMetaType::Double: {
         return singleQuoted(QString::number(v.toDouble(), 'f', 2));
     }
-    case QVariant::Bool:
+    case QMetaType::Bool:
         return (v.toBool()) ? qsl("TRUE") : qsl("FALSE");;
-    case QVariant::Int:
-    case QVariant::UInt:
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
+    case QMetaType::Int:
+    case QMetaType::UInt:
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
         return i2s(v.toInt());
     default:
         qCritical() << "switch(v.type()) DEFAULTED " << v;
@@ -55,52 +57,52 @@ QString DbInsertableString(const QVariant& v)
     return "'" + v.toString () +"'";
 }
 
-QString dbCreatetable_type(const QVariant::Type t)
+QString dbCreatetable_type(const QMetaType t)
 {   // these are the strings we use in data definition
     // so that they are expressive, but are still close
     // to the actual affinity data types
-    switch( t)
+    switch( t.id())
     {
-    case QVariant::String:
-    case QVariant::ByteArray:
-    case QVariant::Char:
+    case QMetaType::QString:
+    case QMetaType::QByteArray:
+    case QMetaType::Char:
         return qsl("TEXT"); // affinity: TEXT
-    case QVariant::Date:
+    case QMetaType::QDate:
         return qsl("TEXTDATE"); // affinity: TEXT
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
         return qsl("DATETIME"); // affinity: TEXT
-    case QVariant::Int:
-    case QVariant::LongLong:
-    case QVariant::UInt:
-    case QVariant::ULongLong:
+    case QMetaType::Int:
+    case QMetaType::LongLong:
+    case QMetaType::UInt:
+    case QMetaType::ULongLong:
         return qsl("INTEGER"); // affinity: INTEGER
-    case QVariant::Bool:
+    case QMetaType::Bool:
         return qsl("BOOLEAN");
-    case QVariant::Double:
+    case QMetaType::Double:
         return qsl("DOUBLE"); // affinity: REAL
     default:
         Q_ASSERT( not bool("invalid database type"));
         return qsl("INVALID");
     }
 }
-QString dbAffinityType(const QVariant::Type t)
+QString dbAffinityType(const QMetaType t)
 {   // affinities are, what the database actually uses
     // as a "preferred" type of data stored in a column
-    switch( t)
+    switch( t.id())
     {
-    case QVariant::String:
-    case QVariant::ByteArray:
-    case QVariant::Char:
-    case QVariant::Date:
-    case QVariant::DateTime:
+    case QMetaType::QString:
+    case QMetaType::QByteArray:
+    case QMetaType::Char:
+    case QMetaType::QDate:
+    case QMetaType::QDateTime:
         return qsl("TEXT");
-    case QVariant::Int:
-    case QVariant::LongLong:
-    case QVariant::UInt:
-    case QVariant::ULongLong:
-    case QVariant::Bool:
+    case QMetaType::Int:
+    case QMetaType::LongLong:
+    case QMetaType::UInt:
+    case QMetaType::ULongLong:
+    case QMetaType::Bool:
         return qsl("INTEGER");
-    case QVariant::Double:
+    case QMetaType::Double:
         return qsl("REAL");
     default:
         Q_ASSERT( not bool("invalid database type"));
@@ -115,7 +117,7 @@ void closeAllDatabaseConnections()
     if( cl.count())
         qInfo() << "Found open connections" << cl;
 
-    for( const auto &s : qAsConst(cl)) {
+    for( const auto &s : std::as_const(cl)) {
         QSqlDatabase::database(s).close();
         QSqlDatabase::removeDatabase(s);
     }
@@ -143,7 +145,7 @@ bool tableExists(const QString& tablename, const QSqlDatabase& db)
 {
     return db.tables().contains(tablename);
 }
-bool VarTypes_share_DbType( const QVariant::Type t1, const QVariant::Type t2)
+bool VarTypes_share_DbType( const QMetaType t1, const QMetaType t2)
 {
     return dbAffinityType(t1) == dbAffinityType(t2);
 }
@@ -159,9 +161,9 @@ bool verifyTable(const dbtable& tableDef, const QSqlDatabase &db)
         if( not FieldFromDb.isValid())
             RETURN_OK( false, QString(__FUNCTION__), qsl("failed: table exists but field is missing"), field.name());
 
-        if( not VarTypes_share_DbType(field.type(), recordFromDb.field(field.name()).type()))
+        if( not VarTypes_share_DbType(field.metaType(), recordFromDb.field(field.name()).metaType()))
             RETURN_OK( false, QString(__FUNCTION__), qsl("failed: field "), field.name (), qsl(" type mismatch: %1 vs. %2")
-                       .arg(field.type (), recordFromDb.field(field.name()).type()));
+            .arg(field.metaType ().name(), recordFromDb.field(field.name()).metaType().name()));
     }
     RETURN_OK( true, QString(__FUNCTION__), qsl("verified table %1").arg(tableDef.Name ()));
 }
@@ -189,60 +191,77 @@ void maintainTableList (const QString& tablename, QString& TableList)
 }
 void sqlSnippetsFromFieldlist(const QVector<dbfield>& fields, QSet<QString>& usedTables, QString& FieldList, QString& TableList)
 {
-    for( const auto& f : qAsConst(fields)) {
-        if( f.tableName().isEmpty() or f.name().isEmpty())
+//     for( const auto& f : std::as_const(fields)) {
+    for( int i =0; i < fields.count(); i++) {
+        if( fields[i].tableName().isEmpty() or fields[i].name().isEmpty())
             qCritical().noquote () << QString(__FUNCTION__) << ": missing table or field name";
-        maintainFieldList (f.name(), f.tableName (), FieldList);
+        maintainFieldList (fields[i].name(), fields[i].tableName (), FieldList);
 
-        if( usedTables.contains(f.tableName()))
+        if( usedTables.contains(fields[i].tableName()))
             continue;
-        usedTables.insert(f.tableName());
-        maintainTableList(f.tableName (), TableList);
+        usedTables.insert(fields[i].tableName());
+        maintainTableList(fields[i].tableName (), TableList);
     }
 }
 
-QSqlField adjustTypeOfField(const QSqlField& f, QVariant::Type t)
+QSqlField adjustTypeOfField(const QSqlField& f, QMetaType t)
 {
-    if( f.value().type () == t) return f;
-    QVariant tmpV = f.value();
-    tmpV.convert(t); // adjust content of field to expected type
+    if( f.value().metaType () == t) return f;
+
     if( f.value().isNull ()) {
         qInfo() << QString(__FUNCTION__) << "incoming value is NULL" << f;
-    } else {
-        if( tmpV.isNull ()){
-            qCritical() << QString(__FUNCTION__) << "field conversion failed" << f << " -> " << tmpV;
-            Q_ASSERT( "data field conversion should not fail");
-        }
+        // NULL is valid, eg. AnlagenId is initially NULL
+        return f;
     }
+    QVariant tmpV(f.value());
+    QMetaType expected(t);
+
+    if( tmpV.canConvert(expected)) {
+        tmpV.convert(expected); // adjust content of field to expected type
+    };
+    if( tmpV.isNull ()){
+        qCritical() << QString(__FUNCTION__) << "field conversion failed" << f << " -> " << tmpV;
+        Q_ASSERT( "data field conversion should not fail");
+        return f;
+    }
+
     QSqlField ret (f);
     ret.setValue(tmpV); // make a new field containing the adjusted variant
     return ret;
 }
+
 QSqlRecord adjustSqlRecordTypesToDbFieldTypes(const QVector<dbfield>& fields, const QSqlRecord& record)
 {
     if( fields.size () != record.count ())
         RETURN_ERR(QSqlRecord(), QString(__FUNCTION__), qsl("Anzahl der Felder stimmt nicht überein"));
 
     QSqlRecord result;
-    for( const auto& field: qAsConst(fields))
-        result.append(adjustTypeOfField(record.field(field.name()), field.type ()));
+    for( const auto& field: std::as_const(fields))
+        result.append(adjustTypeOfField(record.field(field.name()), field.metaType ()));
 
     return result;
 }
-QSqlQuery prepQuery( const QString sql, const QSqlDatabase& db =QSqlDatabase::database())
+std::optional<QSqlQuery> prepQuery( const QString sql, const QSqlDatabase& db =QSqlDatabase::database())
 {
     QSqlQuery q(db);
     q.setForwardOnly (true);
-    if( q.prepare (sql))
-        RETURN_OK( q, qsl("prepQuery"), qsl("Successfully prepared query:\n %1").arg(q.lastQuery ()));
+    if( q.prepare (sql)){
+        qInfo() << qsl("prepQuery") << qsl("Successfully prepared query:\n %1").arg(q.lastQuery());
+        return q;
+    }
     else
-        RETURN_ERR(q, qsl("prepQuery"), qsl("Failed to prep Query:"), q.lastError ().text (), qsl("\n"), q.lastQuery ());
+        qCritical() << qsl("prepQuery") << qsl("Failed to prep Query:") << q.lastError ().text () << qsl("\n") << q.lastQuery ();
+    return std::nullopt; // moved
 }
 bool executeQuery( QSqlQuery& q, QVector<QSqlRecord>& records)
 {
     if( q.exec()) {
-        if( q.numRowsAffected () >0)
-            qInfo() << __FUNCTION__ << qsl("affected %1 rows").arg(q.numRowsAffected ());
+        int nbrElements =q.numRowsAffected ();
+        if(nbrElements > 0)
+            qInfo() << __FUNCTION__ << qsl("affected %1 rows").arg(nbrElements);
+        else
+            qInfo() << __FUNCTION__ << qsl("affected no rows");
+        records.reserve(nbrElements);
         while(q.next())
             records.push_back(q.record());
         RETURN_OK( true, qsl("executeQuery"), qsl("Successfully returned %1 records").arg(records.count ()));
@@ -251,7 +270,7 @@ bool executeQuery( QSqlQuery& q, QVector<QSqlRecord>& records)
 }
 bool bindNamedParams(QSqlQuery &q, const QVector<QPair<QString, QVariant>>& params)
 {
-    for( const QPair<QString, QVariant>& param: qAsConst (params)) {
+    for( const QPair<QString, QVariant>& param: std::as_const(params)) {
         QString paramName =param.first;
         QVariant paramValue =param.second;
         if( paramName.isEmpty ())
@@ -271,7 +290,7 @@ bool bindNamedParams(QSqlQuery &q, const QVector<QPair<QString, QVariant>>& para
 }
 bool bindPositionalParams(QSqlQuery& q , const QVector<QVariant> params)
 {
-    for( const QVariant& param: qAsConst (params)) {
+    for( const QVariant& param: std::as_const(params)) {
         if( param.isValid()) {
             q.addBindValue(param);
         } else
@@ -291,23 +310,32 @@ bool bindPositionalParams(QSqlQuery& q , const QVector<QVariant> params)
 // no parameters
 bool executeSql(const QString& sql, QVector<QSqlRecord>& result, const QSqlDatabase& db /*= ...*/ )
 {
-    QSqlQuery q =prepQuery(sql, db);
-    if( q.lastError ().type ()== QSqlError::NoError)
-        return executeQuery(q, result);
+    auto oq =prepQuery(sql, db);
+    if( oq){
+        return executeQuery(oq.value(), result);
+    }
     else
         return false;
 }
 // named parameters
 bool executeSql(const QString& sql, const QVector<QPair<QString, QVariant>>& params, QVector<QSqlRecord>& result, const QSqlDatabase& db)
 {
-    QSqlQuery q =prepQuery(sql, db);
-    return bindNamedParams (q, params) && executeQuery(q, result);
+    auto oq =prepQuery(sql, db);
+    if( oq){
+        QSqlQuery q =std::move(oq.value());
+        return bindNamedParams (q, params) && executeQuery(q, result);
+    }
+    return false;
 }
 // positional parameters
 bool executeSql(const QString& sql, const QVector<QVariant>& params, QVector<QSqlRecord>& result, const QSqlDatabase& db)
 {
-    QSqlQuery q =prepQuery(sql, db);
-    return bindPositionalParams (q, params) && executeQuery (q, result);
+    auto oq =prepQuery(sql, db);
+    if( oq){
+        QSqlQuery q =std::move(oq.value());
+        return bindPositionalParams (q, params) && executeQuery (q, result);
+    }
+    return false;
 }
 //
 QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where, const QString& order, const QSqlDatabase& db)
@@ -317,7 +345,7 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
     if( not executeSql( sql, tmpResult, db))
         RETURN_ERR(QVector<QSqlRecord>(), QString(__FUNCTION__), qsl("execSql failed"));
     QVector<QSqlRecord> result;
-    for( const QSqlRecord& record: qAsConst(tmpResult))
+    for( const QSqlRecord& record: std::as_const(tmpResult))
         // adjust the database types to the expected types
         result.push_back(adjustSqlRecordTypesToDbFieldTypes (fields, record));
 
@@ -358,12 +386,14 @@ QString selectQueryFromFields(const QVector<dbfield>& dbField, const QString& in
 
 QSqlRecord executeSingleRecordSql(const QString& sql, const QSqlDatabase& db)
 {
+    // NOT for "normal" SELECTs on dkv2 tables (normal = no manipulation like SUM, concatination, formatiing etc.
     QVector<QSqlRecord> records;
     if( executeSql(sql, records, db)) {
         if( records.isEmpty() or records.size () > 1)
             return QSqlRecord(); // error handling in called function
-        else
-            RETURN_OK( records[0], QString(__FUNCTION__), qsl("returned one value: %1").arg(records[0].value (0).toString ()));
+        else{
+            RETURN_OK( records[0], QString(__FUNCTION__), qsl("returned one Record: %1").arg(records[0].value (0).toString ()));
+        }
     }
     else
         return QSqlRecord(); // error handling in called function
@@ -379,6 +409,7 @@ QVariant executeSingleValueSql(const QString& sql, const QSqlDatabase& db)
 {
     QSqlRecord v =executeSingleRecordSql (sql, db);
     // error handling is done in executeSingleRecordSql
+
     if( v.isEmpty () or v.count () > 1)
         return QVariant();
     else if( v.value (0).isNull ())
@@ -411,16 +442,19 @@ QVariant executeSingleValueSql(const QString& fieldName, const QString& tableNam
     return executeSingleValueSql(sql, db);
 }
 QVariant executeSingleValueSql(const dbfield& field, const QString& where, const QSqlDatabase& db)
-{
+{   // this function will preserv the type defined in our dbstructure if possible
     if( field.name().isEmpty() or field.tableName().isEmpty())
         RETURN_ERR( QVariant(), QString(__FUNCTION__), qsl("invalid parameters"));
 
-    QVariant result = executeSingleValueSql(field.name(), field.tableName(), where, db);
+    // set the type to what was defined in dkdbstructure
+    QMetaType mt =dkdbstructur[field.tableName()][field.name()].metaType();
 
+    Q_ASSERT(mt != QMetaType(QMetaType::UnknownType));
+    QVariant result = executeSingleValueSql(field.name(), field.tableName(), where, db);
     if( not result.isValid())
         RETURN_OK( result, QString(__FUNCTION__), qsl("found no result"));
 
-    if(result.convert(field.type()))
+    if(result.convert(mt))
         RETURN_OK( result, QString(__FUNCTION__), qsl("single valid value found"));
     else
         RETURN_ERR( QVariant(), qsl("executeSingleValueSql(): variant type conversion failed"));
@@ -441,8 +475,8 @@ QVector<QVariant> executeSingleColumnSql( const dbfield& dbField, const QString&
         RETURN_ERR(QVector<QVariant>(), QString(__FUNCTION__), qsl("Query execution failed"));
 
     QVector<QVariant> result;
-    for( const QSqlRecord& record: qAsConst(queryReturn))
-            result.push_back(adjustTypeOfField(record.field(0), dbField.type()).value());
+    for( const QSqlRecord& record: std::as_const(queryReturn))
+            result.push_back(adjustTypeOfField(record.field(0), dbField.metaType()).value());
     return result;
 }
 

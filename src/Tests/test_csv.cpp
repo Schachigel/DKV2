@@ -1,14 +1,18 @@
+
 #include "test_csv.h"
 #include "../DKV2/csvwriter.h"
 
 void test_csv::test_sql_with_parameter_binding()
 {
     {
-        QSqlDatabase::addDatabase("QSQLITE");
-        QSqlDatabase::database().setDatabaseName(qsl(":memory:"));
-        QSqlDatabase::database(/*QSqlDatabase::defaultConnection, true*/);
+        QSqlDatabase db =QSqlDatabase::addDatabase("QSQLITE");
+
+        db.setDatabaseName(qsl(":memory:"));
+        db.open();
+        // clazy:exclude=unused-non-trivial-variable
         QString sqlCreateTable =QStringLiteral("CREATE TABLE testt (s TEXT, i INTEGER)");
-        QSqlQuery qCreate{sqlCreateTable};
+        QSqlQuery qCreate; qCreate.prepare(sqlCreateTable);
+        qCreate.exec();
     }
     // positional binding works
     {

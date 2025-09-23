@@ -12,6 +12,7 @@
     and/or other materials provided with the distribution.
 */
 
+#include <QFile>
 #include "mustache.h"
 
 using namespace Mustache;
@@ -77,7 +78,7 @@ QtVariantContext::QtVariantContext(const QVariant& root, PartialResolver* resolv
 
 QVariant variantMapValue(const QVariant& value, const QString& key)
 {
-    if (value.userType() == QVariant::Map) {
+    if (value.userType() == QMetaType::QVariantMap) {
         return value.toMap().value(key);
     } else {
         return value.toHash().value(key);
@@ -121,14 +122,14 @@ bool QtVariantContext::isFalse(const QString& key) const
     case QMetaType::UInt:
     case QMetaType::LongLong:
     case QMetaType::ULongLong:
-    case QVariant::Bool:
+    case QMetaType::Bool:
         return !value.toBool();
-    case QVariant::List:
-    case QVariant::StringList:
+    case QMetaType::QVariantList:
+    case QMetaType::QStringList:
         return value.toList().isEmpty();
-    case QVariant::Hash:
+    case QMetaType::QVariantHash:
         return value.toHash().isEmpty();
-    case QVariant::Map:
+    case QMetaType::QVariantMap:
         return value.toMap().isEmpty();
     default:
         return value.toString().isEmpty();
@@ -137,7 +138,7 @@ bool QtVariantContext::isFalse(const QString& key) const
 
 QString QtVariantContext::stringValue(const QString& key) const
 {
-    if (isFalse(key) && value(key).userType() != QVariant::Bool) {
+    if (isFalse(key) && value(key).userType() != QMetaType::Bool) {
         return QString();
     }
     return value(key).toString();
@@ -250,10 +251,10 @@ QString Renderer::render(const QString& _template, int startPos, int endPos, Con
     while (m_errorPos == -1) {
         Tag tag = findTag(_template, lastTagEnd, endPos);
         if (tag.type == Tag::Null) {
-            output += _template.midRef(lastTagEnd, endPos - lastTagEnd);
+            output += _template.mid(lastTagEnd, endPos - lastTagEnd);
             break;
         }
-        output += _template.midRef(lastTagEnd, tag.start - lastTagEnd);
+        output += _template.mid(lastTagEnd, tag.start - lastTagEnd);
         switch (tag.type) {
         case Tag::Value:
         {

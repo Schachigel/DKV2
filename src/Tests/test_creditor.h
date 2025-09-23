@@ -1,7 +1,7 @@
 #ifndef TEST_CREDITOR_H
 #define TEST_CREDITOR_H
 
-#include <QTest>
+#include <QtTest/QTest>
 
 class test_creditor : public QObject
 {

@@ -1,3 +1,4 @@
+#include "pch.h"
 
 #include "helpersql.h"
 #include "helperfin.h"
@@ -36,8 +37,8 @@ int tablelayout::colCount()
     if( _colCount not_eq -1)
         return _colCount;
     _colCount =cols.count();
-    for( auto const & sec : qAsConst(sections)) {
-        for( auto const & dataset : qAsConst(sec.data)) {
+    for( auto const & sec : std::as_const(sections)) {
+        for( auto const & dataset : std::as_const(sec.data)) {
             int nbrOfDataCols =dataset.count();
             if( nbrOfDataCols > _colCount)
                 _colCount =nbrOfDataCols;
@@ -89,7 +90,7 @@ int tablelayout::insertColHeader(QTextTable* table)
 int tablelayout::fillSectionHeader(QTextTable* table, const int secIndex, const int row)
 {   LOG_CALL;
     section& sec =sections[secIndex];
-    if( 0 == sec.header.count())
+    if( 0 == sec.header.size())
         return 0;
     table->mergeCells(row, 0, 1, table->columns());
     QTextTableCell cell =table->cellAt(row, 0);
@@ -305,7 +306,7 @@ void uebersichten::renderPayedInterestByYear()
                 });
         }
     }
-    if( currentSec.data.count() or currentSec.header.count())
+    if( currentSec.data.count() or currentSec.header.size())
         tl.sections.push_back(currentSec);
     tl.renderTable();
 }

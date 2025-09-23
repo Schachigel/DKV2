@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "helper.h"
 #include "helpersql.h"
 #include "dkdbviews.h"
@@ -272,7 +274,7 @@ FROM alle
 // VIEWs to be created in the database
 //////////////////////////////////////
 const QString vnBookingsOverview {qsl("vBuchungen")};
-const QString sqlBookingsOverview {qsl(
+const QString sqlBookingsOverview {qsl( // clazy:exclude=non-pod-global-static
 R"str(
 SELECT
   IFNULL(B.Datum, V.Vertragsdatum),
@@ -309,8 +311,9 @@ const QMap<QString, QString> views ={
 
 bool createDkDbViews( const QMap<QString, QString>& views, const QSqlDatabase& db)
 {
-    foreach(QString view, views.keys()) {
-        if( not createPersistentDbView (view, views[view], db))
+//    foreach(QString view, views.keys()) {
+    for ( auto [viewname, viewSql ] : views.asKeyValueRange()) {
+        if( not createPersistentDbView (viewname, viewSql, db))
             return false;
     }
     return true;
@@ -321,7 +324,7 @@ bool createDkDbViews( const QMap<QString, QString>& views, const QSqlDatabase& d
 //{   LOG_CALL;
 //    QVector<QSqlRecord> views;
 //    if( executeSql(qsl("SELECT name FROM sqlite_master WHERE type ='view'"), views, db)) {
-//        for( const auto& rec : qAsConst(views)) {
+//        for( const auto& rec : std::as_const(views)) {
 //// TODO: use deleteView helper from helpersql
 //            if( executeSql_wNoRecords(qsl("DROP VIEW %1").arg(rec.value(0).toString()), db))
 //                continue;

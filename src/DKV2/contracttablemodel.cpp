@@ -1,3 +1,4 @@
+#include "pch.h"
 
 #include "helper.h"
 #include "contract.h"
@@ -91,7 +92,7 @@ bool ContractProxyModel::lessThan(const QModelIndex &left, const QModelIndex &ri
         QString leftString = sourceModel()->data(left, Qt::DisplayRole).toString();
         QString rightString = sourceModel()->data(right, Qt::DisplayRole).toString();
 
-        static QRegularExpression re("\\((\\d+) *Monate\\)");
+        static QRegularExpression re(qsl("\\((\\d+) *Monate\\)"));
         if (leftDtce == rightDtce) {
             int leftMonth = re.match(leftString).captured(1).toInt();
             int rightMonth = re.match(rightString).captured(1).toInt();
@@ -106,7 +107,7 @@ bool ContractProxyModel::lessThan(const QModelIndex &left, const QModelIndex &ri
     {
         QString leftString = sourceModel()->data(left, Qt::DisplayRole).toString();
         QString rightString = sourceModel()->data(right, Qt::DisplayRole).toString();
-        static QRegularExpression re("([\\.,\\d]+)");
+        static QRegularExpression re(qsl("([\\.,\\d]+)"));
         double leftValue = re.match(leftString).captured(1).toDouble();
         double rightValue = re.match(rightString).captured(1).toDouble();
 
@@ -116,26 +117,26 @@ bool ContractProxyModel::lessThan(const QModelIndex &left, const QModelIndex &ri
     {
         QVariant leftData = sourceModel()->data(left, Qt::DisplayRole);
         QVariant rightData = sourceModel()->data(right, Qt::DisplayRole);
-        if (leftData.type() != rightData.type())
+        if (leftData.metaType() != rightData.metaType())
             return false;
 
-        switch (leftData.type())
+        switch (leftData.metaType().id())
         {
-        case QVariant::String:
+        case QMetaType::QString:
             return leftData.toString() < rightData.toString();
-        case QVariant::Double:
+        case QMetaType::Double:
             return leftData.toDouble() < rightData.toDouble();
-        case QVariant::Int:
+        case QMetaType::Int:
             return leftData.toInt() < rightData.toInt();
-        case QVariant::UInt:
+        case QMetaType::UInt:
             return leftData.toUInt() < rightData.toUInt();
-        case QVariant::LongLong:
+        case QMetaType::LongLong:
             return leftData.toLongLong() < rightData.toLongLong();
-        case QVariant::ULongLong:
+        case QMetaType::ULongLong:
             return leftData.toULongLong() < rightData.toULongLong();
-        case QVariant::Date :
+        case QMetaType::QDate :
             return leftData.toDate() < rightData.toDate();
-        case QVariant::DateTime:
+        case QMetaType::QDateTime:
             return leftData.toDateTime() < rightData.toDateTime();
         default:
             return false;

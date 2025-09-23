@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "qapplication.h"
 #include "qnamespace.h"
 #include <QtGlobal>
@@ -524,7 +526,7 @@ void MainWindow::on_actionTyp_Bezeichnung_aendern_triggered()
     QSqlTableModel* model {qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model())};
     QString typ =ui->InvestmentsTableView->model()->data(index.siblingAtColumn(3)).toString();;
 //    QString zinssatz =ui->InvestmentsTableView->model()->data(index.siblingAtColumn(0)).toString();
-    QString zinssatz =qobject_cast<PercentFrom100sItemFormatter*>(ui->InvestmentsTableView->itemDelegate(index.siblingAtColumn(0)))
+    QString zinssatz =qobject_cast<PercentFrom100sItemFormatter*>(ui->InvestmentsTableView->itemDelegateForIndex(index.siblingAtColumn(0)))
             ->displayText(model->data(index.siblingAtColumn(0)), QLocale());
 
     QString von =doFormatDateItem(model->data(index.siblingAtColumn(1)));

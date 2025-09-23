@@ -1,4 +1,4 @@
-
+#include "pch.h"
 
 #include "dbstructure.h"
 #include "mainwindow.h"
@@ -43,11 +43,18 @@ void setGermanUi()
 
 int main(int argc, char *argv[])
 {
+#if defined(Q_OS_WIN)
+    // 0 = disable, 1 = dark title/borders only, 2 = follow system + dark palette
+    qputenv("QT_QPA_PLATFORM", "windows:darkmode=2");
+#endif
 
     QApplication a(argc, argv);
     a.setOrganizationName(qsl("4-MHS")); // used to store our settings
     a.setApplicationName(qsl("DKV2"));
     a.setApplicationVersion(qsl(DKV2_VERSION_STRING));
+#if QT_VERSION < QT_VERSION_CHECK(6,7,0)
+    a.setStyle("Fusion");
+#endif
     QFont f =a.font();
     double systemFontSize =f.pointSizeF ();
     appConfig::setSystemFontsize( systemFontSize);

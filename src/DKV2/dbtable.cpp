@@ -1,4 +1,6 @@
 
+#include "pch.h"
+
 #include "helper.h"
 #include "helpersql.h"
 #include "dbtable.h"
@@ -30,7 +32,7 @@ dbtable dbtable::append(const dbForeignKey& fk)
 void dbtable::setUnique( const QVector<dbfield>& fs)
 {   // LOG_CALL;
     QString tmp;
-    for( auto& f : qAsConst(fs)) {
+    for( auto& f : std::as_const(fs)) {
         if( tmp.size()) tmp = tmp + qsl(", ");
         tmp =tmp + f.name();
     }

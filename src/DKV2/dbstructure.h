@@ -16,7 +16,9 @@ public:
     dbstructure appendTable(const dbtable& t);
     bool createDb(const QString& dbFileName) const;
     bool createDb(const QSqlDatabase& db= QSqlDatabase::database()) const;
-
+    // tests
+    void clear() { Tables.clear();}
+    QString toString();
 private:
     QVector<dbtable> Tables;
 };
@@ -26,6 +28,7 @@ inline dbstructure dkdbstructur;
 
 // THE structure of our database the single source of truth
 void init_DKDBStruct();
+void reInit_DKDBStruct();
 //
 bool createFileWithDatabaseStructure (const QString& targetfn, const dbstructure& dbs =dkdbstructur);
 //

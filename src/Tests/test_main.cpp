@@ -1,4 +1,5 @@
 
+#include <QtTest/QTest>
 
 #include <vector>
 #include "../DKV2/helper.h"
@@ -32,28 +33,20 @@ int main(int argc, char *argv[])
     qInfo() << "Running in " << dir.path();
     dir.mkpath("../data");
 
-//    QTest::setMainSourcePath(__FILE__, "X:/home/dev/DKV2/TESTS");
-    int errCount = 0;
-    auto ASSERT_TEST = [&errCount, argc, argv](QObject* obj)
-    {
-        errCount += QTest::qExec(obj, argc, argv);
-        delete obj;
-    };
-
     std::vector<QObject*> tests;
 
-    int executions =1;
+    int executions =5;
     do {
-        // in memory db
+//        in memory db
         tests.push_back(new test_booking);
         tests.push_back(new test_appConfig);
         tests.push_back(new test_creditor);
         tests.push_back(new test_contract);
+        tests.push_back(new test_sqlhelper);
         tests.push_back(new test_statistics);
         tests.push_back(new test_db);
         tests.push_back(new test_dkdbhelper);
         tests.push_back(new test_properties);
-        tests.push_back(new test_sqlhelper);
 
         // no db
         tests.push_back(new test_finance);
@@ -72,12 +65,14 @@ int main(int argc, char *argv[])
     std::mt19937 g(rd());
     std::shuffle(tests.begin(), tests.end(), g);
 
+    int errCount = 0;
     {
         dbgTimer timer("overall test time");
         for( auto test: tests){
-            ASSERT_TEST(test);
+//            qInfo() << " running " << test->objectName();
+            errCount += QTest::qExec( test);
         }
-    }
+    } // timer scope to measure test execution
 
     if( errCount == 1) qInfo() << "\n>>>   There was an error   <<< ";
     else if (errCount > 1) qInfo() << "\n>>>   There were " << errCount << " errors   <<<";

@@ -1,7 +1,7 @@
 #ifndef TST_CSV_H
 #define TST_CSV_H
 
-#include <QTest>
+#include <QtTest/QtTest>
 
 class test_csv : public QObject
 {

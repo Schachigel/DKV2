@@ -1,3 +1,4 @@
+#include "pch.h"
 
 #include "helper.h"
 #include "helperfin.h"
@@ -42,12 +43,12 @@ QString investment::toString() const
 {
     static dbtable investmentTable(qsl("Geldanlagen"));
     if( 0 == investmentTable.Fields().size()){
-        investmentTable.append(dbfield(qsl("rowid"), QVariant::LongLong).setAutoInc());
-        investmentTable.append(dbfield(fnInvestmentInterest, QVariant::Int).setNotNull());
-        investmentTable.append(dbfield(fnInvestmentStart,    QVariant::Date).setNotNull());
-        investmentTable.append(dbfield(fnInvestmentEnd,      QVariant::Date).setNotNull());
-        investmentTable.append(dbfield(fnInvestmentType,     QVariant::String).setNotNull());
-        investmentTable.append(dbfield(fnInvestmentState,    QVariant::Bool).setNotNull());
+        investmentTable.append(dbfield(qsl("rowid"), QMetaType::LongLong).setAutoInc());
+        investmentTable.append(dbfield(fnInvestmentInterest, QMetaType::Int).setNotNull());
+        investmentTable.append(dbfield(fnInvestmentStart,    QMetaType::QDate).setNotNull());
+        investmentTable.append(dbfield(fnInvestmentEnd,      QMetaType::QDate).setNotNull());
+        investmentTable.append(dbfield(fnInvestmentType,     QMetaType::QString).setNotNull());
+        investmentTable.append(dbfield(fnInvestmentState,    QMetaType::Bool).setNotNull());
         QVector<dbfield> unique;
         unique.append(investmentTable[fnInvestmentInterest]);
         unique.append(investmentTable[fnInvestmentStart]);
@@ -224,7 +225,7 @@ QVector<QPair<qlonglong, QString>> activeInvestments(const QDate cDate)
         qInfo() << "no investments";
         return QVector<QPair<qlonglong, QString>>();
     }
-    for(const auto& rec : qAsConst(result)) {
+    for(const auto& rec : std::as_const(result)) {
         QString comboboxentry {qsl("%1 (%2)").arg(rec.value(fnInvestmentType).toString(), prozent2prozent_str (rec.value(qsl("ZSatz")).toInt ()/100.))};
         investments.push_back({rec.value(qsl("rowid")).toLongLong(), comboboxentry});
     }
@@ -309,7 +310,7 @@ QVector<investment> openInvestments(int rate, QDate conclusionDate)
         return QVector<investment>();
 
     QVector<investment> result;
-    for (const auto &record : qAsConst(records)) {
+    for (const auto &record : std::as_const(records)) {
         result.push_back(investment(record.value(qsl("rowid")).toLongLong(),
                                     record.value(fnInvestmentInterest).toInt(),
                                     record.value(fnInvestmentStart).toDate(),

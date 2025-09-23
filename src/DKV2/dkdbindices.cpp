@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "helper.h"
 #include "helpersql.h"
 
@@ -12,8 +14,8 @@ const QMap<QString, QString> indices ={
 
 bool createDkDbIndices(const QSqlDatabase& db)
 {
-    foreach(QString iName ,indices.keys()) {
-        if( not createDbIndex(iName, indices[iName], db))
+    for (auto [iName , index] : indices.asKeyValueRange()) {
+        if( not createDbIndex(iName, index, db))
             RETURN_ERR(false, qsl("createDkDbIndices failed"));
     }
     RETURN_OK(true, qsl("createDkDbIndices: indices were created successfully"));

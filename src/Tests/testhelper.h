@@ -1,7 +1,7 @@
 #ifndef TESTHELPER_H
 #define TESTHELPER_H
 
-#include <QTest>
+#include <QtTest/QTest>
 #include "../DKV2/helper.h"
 
 inline const QString testDbFilename {qsl("./data/testdb.sqlite")};

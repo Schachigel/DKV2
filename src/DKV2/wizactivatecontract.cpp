@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include <iso646.h>
 
 #include "helper.h"
@@ -101,7 +103,7 @@ wpInitialPayment_SummaryPage::wpInitialPayment_SummaryPage( QWidget* p) : QWizar
     layout->addWidget(subTitleLabel);
     layout->addWidget(cb);
     setLayout(layout);
-    connect(cb, &QCheckBox::stateChanged, this, &wpInitialPayment_SummaryPage::onConfirmData_toggled);
+    connect(cb, &QCheckBox::checkStateChanged, this, &wpInitialPayment_SummaryPage::onConfirmData_toggled);
 }
 
 void wpInitialPayment_SummaryPage::initializePage()
@@ -134,7 +136,8 @@ bool wpInitialPayment_SummaryPage::isComplete() const
 }
 
 wizInitialPayment::wizInitialPayment(QWidget* p) : QWizard (p)
-{
+{   LOG_CALL;
+    setWizardStyle(QWizard::ModernStyle);
     addPage(new wpInitialPayment_IntroPage);
     addPage(new wpInitialPayment_DatePage);
     addPage(new wpInitialPayment_AmountPage);

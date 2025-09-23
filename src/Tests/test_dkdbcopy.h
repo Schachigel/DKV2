@@ -1,7 +1,10 @@
 #ifndef TEST_DKDBCOPY_H
 #define TEST_DKDBCOPY_H
 
-#include <QTest>
+#include "../DKV2/pch.h"
+
+#include <QtTest/QTest>
+
 
 #include "../DKV2/helper.h"
 #include "testhelper.h"

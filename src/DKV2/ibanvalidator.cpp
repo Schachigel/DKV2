@@ -1,3 +1,4 @@
+#include "pch.h"
 
 #include "helper.h"
 #include "helperfin.h"
@@ -54,11 +55,12 @@ bool checkIban(QString iban)
         return false;
 }
 
-IbanValidator::IbanValidator(QObject* parent) : QRegExpValidator(parent)
+IbanValidator::IbanValidator(QObject* parent) : QRegularExpressionValidator(parent)
 {
-    setRegExp(QRegExp(expression));
+    static const QRegularExpression ibanRegEx(expression);
+    setRegularExpression(ibanRegEx);
 
-    Q_ASSERT_X(regExp().isValid(), "invalid regExp", regExp().pattern().toLatin1());
+    Q_ASSERT_X(regularExpression().isValid(), "invalid regExp", regularExpression().pattern().toLatin1());
 }
 
 IbanValidator::State IbanValidator::validate(QString& input, int& pos) const
@@ -68,7 +70,7 @@ IbanValidator::State IbanValidator::validate(QString& input, int& pos) const
     // qInfo() << "1. basic check by regular expression (parent class) of" << iban;
     iban.remove(QLatin1Char(' '));    // generously ignore spaces
     iban = iban.toUpper();            // generously accept non-capitalized letters
-    State result = QRegExpValidator::validate(iban, pos);
+    State result = QRegularExpressionValidator::validate(iban, pos);
     if (result not_eq QValidator::Acceptable)
         return result;
     // qInfo() << "2. string passed reg exp validation and is forwarded to checksum calculation" << iban;

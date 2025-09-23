@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "helper.h"
 #include "helpersql.h"
 #include "contract.h"
@@ -10,15 +11,15 @@
 {
     static dbtable bookingsTable(tn_Buchungen);
     if( 0 == bookingsTable.Fields().size()) {
-        bookingsTable.append(dbfield(qsl("id"),       QVariant::LongLong).setAutoInc());
-        bookingsTable.append(dbfield(fn_bVertragsId,  QVariant::LongLong).setNotNull());
+        bookingsTable.append(dbfield(qsl("id"),       QMetaType::LongLong).setAutoInc());
+        bookingsTable.append(dbfield(fn_bVertragsId,  QMetaType::LongLong).setNotNull());
         bookingsTable.append(dbForeignKey(bookingsTable[fn_bVertragsId],
                                           dkdbstructur[contract::tnContracts][contract::fnId], ODOU_Action::RESTRICT));
-        bookingsTable.append(dbfield(fn_bDatum,       QVariant::Date).setDefault(EndOfTheFuckingWorld_str).setNotNull());
-        bookingsTable.append(dbfield(fn_bBuchungsArt, QVariant::Int).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
-        bookingsTable.append(dbfield(fn_bBetrag,      QVariant::Int).setNotNull()); // in cent
-        bookingsTable.append(dbfield(fn_bModifiziert, QVariant::Date).setDefault(BeginingOfTime).setNotNull());
-        bookingsTable.append(dbfield(qsl("Zeitstempel"),  QVariant::DateTime).setDefaultNow());
+        bookingsTable.append(dbfield(fn_bDatum,       QMetaType::QDate).setDefault(EndOfTheFuckingWorld_str).setNotNull());
+        bookingsTable.append(dbfield(fn_bBuchungsArt, QMetaType::Int).setNotNull()); // deposit, interestDeposit, outpayment, interestPayment
+        bookingsTable.append(dbfield(fn_bBetrag,      QMetaType::Int).setNotNull()); // in cent
+        bookingsTable.append(dbfield(fn_bModifiziert, QMetaType::QDate).setDefault(BeginingOfTime).setNotNull());
+        bookingsTable.append(dbfield(qsl("Zeitstempel"),  QMetaType::QDateTime).setDefaultNow());
     }
     return bookingsTable;
 }
@@ -26,7 +27,7 @@
 {
     static dbtable deletedBookings(tn_ExBuchungen);
     if( 0 == deletedBookings.Fields().size()) {
-        deletedBookings.append(dbfield(qsl("id"), QVariant::LongLong).setPrimaryKey());
+        deletedBookings.append(dbfield(qsl("id"), QMetaType::LongLong).setPrimaryKey());
         for( int i =1 /* not 0 */; i < getTableDef().Fields().count(); i++) {
             deletedBookings.append(getTableDef().Fields()[i]);
         }
@@ -118,7 +119,7 @@ QDate dateOfnextSettlement()
      * gebuchte Geldeingänge für Neuverträge (=Aktivierungen) gab
     */
     QVariant ret =executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(sqlNextAnnualSettlement));
-    bool canC = ret.convert(QMetaType::QDate);
+    bool canC = ret.convert(QMetaType(QMetaType::QDate));
     QDate retDate = canC ? ret.toDate () : QDate();
     RETURN_OK(retDate, qsl("DateOfnextSettlement: Date of next Settlement was found as %1").arg(retDate.toString (Qt::ISODate)));
 }
@@ -144,7 +145,7 @@ QVector<booking> bookingsFromDB(const QString& where, const QString& order ="", 
              : executeSql( booking::getTableDef().Fields(), where, order);
 
     QVector<booking> vRet;
-    for (auto& rec : qAsConst(records)) {
+    for (auto& rec : std::as_const(records)) {
         booking b (rec.value(fn_bVertragsId).toLongLong(),
                    bookingType(rec.value(fn_bBuchungsArt).toInt()),
                    rec.value(fn_bDatum).toDate(),
@@ -174,7 +175,7 @@ QVector<booking> getExBookings(const qlonglong cid, QDate from, const QDate to,
 double getBookingsSum(QVector<booking> bl, bookingType bt)
 {
     double sum = 0.;
-    for (const auto &b : qAsConst(bl)) {
+    for (const auto &b : std::as_const(bl)) {
         if (b.type == bt) {
             sum += b.amount;
         }
@@ -195,7 +196,7 @@ QVector<int> yearsWithAnnualBookings()
                 .arg (bookingTypeToNbrString(bookingType::annualInterestDeposit))};
     QVector<QSqlRecord> vYears;
     if( executeSql (sql, vYears)) {
-        for (const QSqlRecord& year : qAsConst(vYears)) {
+        for (const QSqlRecord& year : std::as_const(vYears)) {
             years.push_back (year.value (0).toInt ());
         }
     } else {

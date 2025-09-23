@@ -1,3 +1,5 @@
+#include "../DKV2/pch.h"
+
 #include "../DKV2/helper.h"
 #include "../DKV2/appconfig.h"
 

@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "helperfin.h"
 #include "dkdbhelper.h"
 #include "appconfig.h"
@@ -6,6 +8,8 @@
 
 #include "investment.h"
 #include "wiznew.h"
+
+
 
 /*
  * wizNewOrExistingPage - ask user if a new user should be created or an existing
@@ -47,7 +51,7 @@ void wpNewOrExisting::initializePage()
         getAllCreditorInfoSorted(Personen);
         if (Personen.count())
         {
-            for (auto &Entry : qAsConst(Personen))
+            for (auto &Entry : std::as_const(Personen))
             {
                 cbCreditors->addItem(Entry.second, QVariant((Entry.first)));
             }
@@ -203,6 +207,10 @@ int wpNewCreditorAddress::nextId() const
 /*
  * wizEmailPage - ask e-mail and comment for the new creditor
 */
+
+static QRegularExpression rx(qsl("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b"),
+                      QRegularExpression::CaseInsensitiveOption);
+
 wpEmail::wpEmail(QWidget *p) : QWizardPage(p)
 {
     LOG_CALL;
@@ -264,15 +272,11 @@ bool wpEmail::validatePage()
     QString email = field(pnEMail).toString().trimmed().toLower();
     setField(pnEMail, email);
     if (email.size())
-    {
-        QRegularExpression rx(qsl("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b"),
-                              QRegularExpression::CaseInsensitiveOption);
-        if (not rx.match(field(pnEMail).toString()).hasMatch())
-        {
+        if (not rx.match(field(pnEMail).toString()).hasMatch()) {
             QMessageBox::information(this, qsl("Fehler"), qsl("Das Format der e-mail Adresse ist ungültig: ") + email);
             return false;
         }
-    }
+
     setField(pnComment, field(pnComment).toString().trimmed());
     setField(pnPhone, field(pnPhone).toString().trimmed());
     setField(pnContact, field(pnContact).toString().trimmed());
@@ -368,7 +372,7 @@ wpConfirmCreditor::wpConfirmCreditor(QWidget *p) : QWizardPage(p)
     l->addWidget(cbConfirmCreditor);
     l->addWidget(cbCreateContract);
     setLayout(l);
-    connect(cbCreateContract, &QCheckBox::stateChanged, this, &wpConfirmCreditor::onConfirmCreateContract_toggled);
+    connect(cbCreateContract, &QCheckBox::checkStateChanged, this, &wpConfirmCreditor::onConfirmCreateContract_toggled);
     setCommitPage(true);
 }
 void wpConfirmCreditor::initializePage()
@@ -711,7 +715,7 @@ void wpInterestFromInvestment::initializePage()
 {
     QVector<QPair<qlonglong, QString>> investments = activeInvestments(field(pnCDate).toDate());
     cbInvestments->clear();
-    for (const auto &invest : qAsConst(investments)) {
+    for (const auto &invest : std::as_const(investments)) {
         cbInvestments->addItem(invest.second, invest.first);
     }
     registerField(pnI_CheckBoxIndex, cbInvestments);
@@ -887,6 +891,7 @@ void wpConfirmContract::initializePage()
 wizNew::wizNew(creditor& c, QWidget *p) : QWizard(p), cred(c)
 {
     LOG_CALL;
+    setWizardStyle(QWizard::ModernStyle);
     setPage(page_new_or_existing, new wpNewOrExisting(this));
     setPage(page_address, new wpNewCreditorAddress(this));
     setPage(page_email, new wpEmail(this));

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "helper.h"
 #include "helpersql.h"
 #include "dbstructure.h"
@@ -21,8 +22,10 @@ const QString appConfig::fnWert { qsl("Wert")};
 dbtable appConfig::getTableDef()
 {
     static dbtable table(tnMeta);
-    table.append(dbfield(qsl("Name"), QVariant::String).setPrimaryKey());
-    table.append(dbfield(qsl("Wert"), QVariant::String).setNotNull());
+    if( table.Fields().size() == 0) {
+        table.append(dbfield(qsl("Name"), QMetaType::QString).setPrimaryKey());
+        table.append(dbfield(qsl("Wert"), QMetaType::QString).setNotNull());
+    }
 
     return table;
 }
@@ -31,13 +34,13 @@ dbtable appConfig::getTableDef()
 void initMetaInfo( const QString& name, const QString& initialValue, const QSqlDatabase& db)
 {   LOG_CALL;
     QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='%1'").arg(name), db);
-    if( value.type() == QVariant::Invalid)
+    if( value.metaType().id() == QMetaType::UnknownType)
         setMetaInfo(name, initialValue, db);
 }
 void initNumMetaInfo( const QString& name, const double newValue, const QSqlDatabase& db)
 {   LOG_CALL;
     QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='%1'").arg(name), db);
-    if( value.type() == QVariant::Invalid)
+    if( value.metaType().id() == QMetaType::UnknownType)
         setNumMetaInfo(name, newValue, db);
 }
 QString getMetaInfo(const QString& name, const QString& def, const QSqlDatabase& db)
@@ -158,7 +161,7 @@ void appConfig::setZoom(double d)
 }
 
 namespace {
-    static QMap<QString, QVariant> runtimeData;
+static QMap<QString, QVariant> runtimeData; // clazy:exclude=non-pod-global-static
 }
 void appConfig::setRuntimeData( const QString& name, const QVariant& value)
 {
@@ -178,8 +181,8 @@ QVariantMap getMetaTableAsMap(const QSqlDatabase &db)
         RETURN_ERR(QVariantMap(), QString(__FUNCTION__), qsl("Failed to read meta table"));
 
     QString name, value;
-    static QRegularExpression re("[/\\.]");
-    for( const QSqlRecord& record: qAsConst(table))  {
+    static QRegularExpression re(qsl("[/\\.]"));
+    for( const QSqlRecord& record: std::as_const(table))  {
         name  =record.value("name").toString().replace(re, "");
         value =record.value("Wert").toString();
         vm[name] =value;
@@ -293,15 +296,15 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
         qCritical() << "invalid paramter to be set";
         return;
     }
-    switch (value.type()) {
-    case QVariant::Double:
+    switch (value.metaType().id()) {
+    case QMetaType::Double:
         setNumMetaInfo(defaultParams.value(pc).first, value.toDouble(), db, tblAlias);
         break;
-    case QVariant::Int:
-    case QVariant::UInt:
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
-    case QVariant::String:
+    case QMetaType::Int:
+    case QMetaType::UInt:
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
+    case QMetaType::QString:
     default:
         setMetaInfo(defaultParams.value(pc).first, value.toString(), db, tblAlias);
     }

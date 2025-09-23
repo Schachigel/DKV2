@@ -6,9 +6,8 @@
 bool checkIban(QString iban);
 
 // taken from https://github.com/Al-/IbanValidator
-class IbanValidator : public QRegExpValidator
+class IbanValidator : public QRegularExpressionValidator
 {
-    Q_OBJECT
 public:
     explicit IbanValidator(QObject* parent =nullptr);
     virtual void fixup (QString& input) const override;

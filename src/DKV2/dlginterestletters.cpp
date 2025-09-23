@@ -32,7 +32,7 @@ dlgInterestLetters::dlgInterestLetters(QWidget *parent, QVector<int> years) : QD
 
     QLabel *yearLabel = new QLabel(qsl("Jahr"));
     yearSelector = new QComboBox;
-    for( const auto& year: years) {
+    for( const auto& year: std::as_const(years)) {
         yearSelector->addItem (i2s(year), year);
     }
 
@@ -44,7 +44,7 @@ dlgInterestLetters::dlgInterestLetters(QWidget *parent, QVector<int> years) : QD
 
     confirm =new QCheckBox(qsl("Briefe als PDF Dateien ausgeben."));
     g->addWidget(confirm, row++, 1);
-    connect(confirm, &QCheckBox::stateChanged, this, &dlgInterestLetters::confirmChanged);
+    connect(confirm, &QCheckBox::checkStateChanged, this, &dlgInterestLetters::confirmChanged);
 
     buttons =new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
     buttons->button(QDialogButtonBox::Ok)->setDefault(true);

@@ -1,3 +1,4 @@
+#include "../DKV2/pch.h"
 
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -79,14 +80,14 @@ void test_db::test_createSimpleTable_wRefInt()
     LOG_CALL;
     dbstructure s;
     dbtable parent("p");
-    dbfield id("id", QVariant::Int);
+    dbfield id("id", QMetaType::Int);
     id.setAutoInc (true);
     parent.append(id);
     s.appendTable(parent);
     dbtable child("c");
-    dbfield childId("id", QVariant::Int);
+    dbfield childId("id", QMetaType::Int);
     childId.setAutoInc (true);
-    dbfield parentId("parent", QVariant::Int);
+    dbfield parentId("parent", QMetaType::Int);
     child.append(childId);
     child.append(parentId);
     dbForeignKey fk(childId, parent["id"], ODOU_Action::CASCADE);
@@ -106,10 +107,10 @@ void test_db::test_createSimpleTable_wRefInt2()
     LOG_CALL;
     dbstructure s = dbstructure()
                     .appendTable(dbtable("p")
-                    .append(dbfield("id", QVariant::Int).setAutoInc ()));
+                    .append(dbfield("id", QMetaType::Int).setAutoInc ()));
     dbtable c("c");
-    c.append(dbfield("id", QVariant::Int).setAutoInc ());
-    c.append(dbfield("pid", QVariant::Int));
+    c.append(dbfield("id", QMetaType::Int).setAutoInc ());
+    c.append(dbfield("pid", QMetaType::Int));
     c.append(dbForeignKey(c["pid"], s["p"]["id"], ODOU_Action::CASCADE));
     s.appendTable( c);
 
@@ -127,12 +128,12 @@ void test_db::test_addRecords_wDep()
     dbstructure s = dbstructure()
                         .appendTable(
                             dbtable("p")
-                                .append(dbfield("id", QVariant::Int).setAutoInc ())
+                                .append(dbfield("id", QMetaType::Int).setAutoInc ())
                                 .append(dbfield("name")));
 
     dbtable c("c");
-    c.append(dbfield("id", QVariant::Int).setAutoInc ());
-    c.append(dbfield("pid", QVariant::Int));
+    c.append(dbfield("id", QMetaType::Int).setAutoInc ());
+    c.append(dbfield("pid", QMetaType::Int));
     c.append(dbForeignKey(c["pid"], s["p"]["id"], ODOU_Action::CASCADE));
     s.appendTable( c);
 
@@ -160,11 +161,11 @@ void test_db::test_deleteRecord_wDep()
     dbstructure s = dbstructure()
                         .appendTable(
                             dbtable("p")
-                                .append(dbfield("id", QVariant::Int).setAutoInc ())
+                                .append(dbfield("id", QMetaType::Int).setAutoInc ())
                                 .append(dbfield("name")));
     dbtable c("c");
-    c.append(dbfield("id", QVariant::Int).setAutoInc ());
-    c.append(dbfield("pid", QVariant::Int));
+    c.append(dbfield("id", QMetaType::Int).setAutoInc ());
+    c.append(dbfield("pid", QMetaType::Int));
     c.append(dbForeignKey(c["pid"], s["p"]["id"], ODOU_Action::CASCADE));
     s.appendTable( c);
 

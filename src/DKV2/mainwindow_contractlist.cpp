@@ -1,10 +1,9 @@
-
+#include "pch.h"
 #include "helper.h"
 
 #include "busycursor.h"
 #include "csvwriter.h"
 #include "contracttablemodel.h"
-#include "qglobal.h"
 #include "uiitemformatter.h"
 #include "dlgdisplaycolumns.h"
 
@@ -48,7 +47,7 @@ namespace {
 qlonglong intFromRight(const QString& input, const QString& flag)
 {
     auto convOk =false;
-    QStringRef argument =input.rightRef(input.length()-flag.length());
+    QString argument =input.right(input.length()-flag.length());
     qlonglong nbr =argument.toInt(&convOk);
     if( convOk)
         return nbr;
@@ -547,13 +546,13 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
         id.setLabelText (qsl("Wähle die gewünschte Geldanlage aus der Liste aus"));
         id.setComboBoxEditable(false);
         QStringList iList;
-        for( const auto& inv: qAsConst(invests)) {
+        for( const auto& inv: std::as_const(invests)) {
             iList.push_back(inv.toString());
         }
         id.setComboBoxItems(iList);
         QComboBox* cb =id.findChild<QComboBox*>();
         int i =0;
-        for( const auto& inv: qAsConst(invests)) {
+        for( const auto& inv: std::as_const(invests)) {
             cb->setItemData(i++, inv.rowid);
         }
         qInfo() << cb;
@@ -598,7 +597,7 @@ void MainWindow::on_btnSave2Csv_clicked()
             if( ba.at(j)) {
                 QVariant v =recSingleRow.value (j);
                 QVariant tmp(v);
-                if( tmp.canConvert (QVariant::Double) && tmp.convert (QVariant::Double))
+                if( tmp.canConvert (QMetaType(QMetaType::Double)) && tmp.convert (QMetaType(QMetaType::Double)))
                     csv.appendToRow( QLocale().toString(tmp.toDouble (), 'f', 2));
                 else
                     csv.appendToRow(recSingleRow.value(j).toString());

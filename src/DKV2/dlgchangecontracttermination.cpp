@@ -1,3 +1,4 @@
+#include "pch.h"
 
 #include "helper.h"
 #include "helperfin.h"
@@ -42,7 +43,7 @@ dlgChangeContractTermination::dlgChangeContractTermination(QWidget *parent) : QD
 
     QLabel* lBoth =new QLabel(qsl("Kündigungsfrist <i>und</i> Vertragsende zulassen"));
     allowBoth =new QCheckBox();
-    connect(allowBoth, &QCheckBox::stateChanged, this, &dlgChangeContractTermination::onAllowBothChanged);
+    connect(allowBoth, &QCheckBox::checkStateChanged, this, &dlgChangeContractTermination::onAllowBothChanged);
 
     QGridLayout* g =new QGridLayout(this);
     g->setColumnMinimumWidth(0, 30);

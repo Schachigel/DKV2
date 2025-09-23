@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include <iso646.h>
 
 #include "helper.h"
@@ -86,7 +88,8 @@ void wpFileSelection_IntroPage::setVisible(bool v)
  * for copyDb or openDb
 */
 wizFileSelectionWiz::wizFileSelectionWiz(QWidget *p) : QWizard(p)
-{
+{   LOG_CALL;
+    setWizardStyle(QWizard::ModernStyle);
     addPage(new wpFileSelection_IntroPage);
 }
 
@@ -364,7 +367,7 @@ wpNewDatabase_SummaryPage::wpNewDatabase_SummaryPage(QWidget *p) : QWizardPage(p
     layout->addWidget(subTitleLabel);
     layout->addWidget(cb);
     setLayout(layout);
-    connect(cb, &QCheckBox::stateChanged, this, &wpNewDatabase_SummaryPage::onConfirmData_toggled);
+    connect(cb, &QCheckBox::checkStateChanged, this, &wpNewDatabase_SummaryPage::onConfirmData_toggled);
 }
 void wpNewDatabase_SummaryPage::initializePage()
 {
@@ -404,7 +407,8 @@ bool wpNewDatabase_SummaryPage::isComplete() const
  * newDb wizard: filename, GmbH data, db data
 */
 wizConfigureNewDatabaseWiz::wizConfigureNewDatabaseWiz(QWidget *p) : QWizard(p)
-{
+{   LOG_CALL;
+    setWizardStyle(QWizard::ModernStyle);
     addPage(new wpFileSelectionNewDb_IntroPage);
     addPage(new wpProjectAddress_Page);
     addPage(new wpProjectDetails_Page);
@@ -469,7 +473,8 @@ wpConfigure_IntroPage::wpConfigure_IntroPage(QWidget *p) : QWizardPage(p)
  * newDb wizard: filename, GmbH data, db data
 */
 wizConfigureProjectWiz::wizConfigureProjectWiz(QWidget *p) : QWizard(p)
-{
+{   LOG_CALL;
+    setWizardStyle(QWizard::ModernStyle);
     addPage(new wpConfigure_IntroPage);
     addPage(new wpProjectAddress_Page);
     addPage(new wpProjectDetails_Page);

@@ -1,3 +1,4 @@
+#include "../DKV2/pch.h"
 
 #include "../DKV2/helpersql.h"
 #include "../DKV2/dbstructure.h"
@@ -40,11 +41,11 @@ const QVariant val_date   (QDate(1995, 5, 6));
 dbtable defineTestTable()
 {
     dbtable t(tname);
-    t.append(dbfield(fnId,     QVariant::LongLong).setAutoInc());
-    t.append(dbfield(fnInt,    QVariant::Int).setNotNull());
-    t.append(dbfield(fnString, QVariant::String).setNotNull());
-    t.append(dbfield(fnBool,   QVariant::Bool).setNotNull());
-    t.append(dbfield(fnDate,   QVariant::Date).setNotNull());
+    t.append(dbfield(fnId,     QMetaType::LongLong).setAutoInc());
+    t.append(dbfield(fnInt,    QMetaType::Int).setNotNull());
+    t.append(dbfield(fnString, QMetaType::QString).setNotNull());
+    t.append(dbfield(fnBool,   QMetaType::Bool).setNotNull());
+    t.append(dbfield(fnDate,   QMetaType::QDate).setNotNull());
     return t;
 }
 }
@@ -63,18 +64,18 @@ void test_tableDataInserter::test_insert_and_retreive()
     }/// <- CUT
     QSqlRecord r = executeSingleRecordSql( t.Fields());
     qInfo() << r;
-    QVERIFY( r.value("id").type() == QVariant::LongLong
-             or r.value("id").type() == QVariant::Int);
+    QVERIFY( r.value("id").metaType().id() == QMetaType::LongLong
+            or r.value("id").metaType().id() == QMetaType::Int);
     QCOMPARE( r.value("id"), 1);
     QVariant v = r.value(fnInt);
-    qInfo() << v << " (" << v.type() << ")";
-    QCOMPARE( v.type(), QVariant::Int);
+    qInfo() << v << " (" << v.metaType().name() << ")";
+    QCOMPARE( v.metaType().id(), QMetaType::Int);
     QCOMPARE( v, val_int);
-    QCOMPARE( r.value(fnBool).type(), QVariant::Bool);
+    QCOMPARE( r.value(fnBool).metaType().id(), QMetaType::Bool);
     QCOMPARE( r.value(fnBool), val_bool);
-    QCOMPARE( r.value(fnString).type(), QVariant::String);
+    QCOMPARE( r.value(fnString).metaType().id(), QMetaType::QString);
     QCOMPARE( r.value(fnString), val_string);
-    QCOMPARE( r.value(fnDate).type(), QVariant::Date);
+    QCOMPARE( r.value(fnDate).metaType().id(), QMetaType::QDate);
     QCOMPARE( r.value(fnDate), val_date);
 
     // add more data

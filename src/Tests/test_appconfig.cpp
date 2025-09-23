@@ -1,3 +1,4 @@
+#include "../DKV2/pch.h"
 
 #include "../DKV2/helpersql.h"
 #include "../DKV2/appconfig.h"
@@ -6,7 +7,7 @@
 #include "testhelper.h"
 #include "test_appconfig.h"
 
-void test_appConfig::initTestCase()
+void test_appConfig::init()
 {
     appConfig::setLastDb("c:/temp/data.dkdb");
     QVERIFY( appConfig::LastDb().size());
@@ -15,8 +16,9 @@ void test_appConfig::initTestCase()
     initTestDkDb_InMemory();
     fill_DkDbDefaultContent(QSqlDatabase::database(), false);
 }
-void test_appConfig::cleanupTestCase()
+void test_appConfig::cleanup()
 {
+//    LOG_CALL;
     appConfig::delLastDb();
     appConfig::delOutDir();
     QCOMPARE(appConfig::Outdir(), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/DKV2"));
@@ -25,12 +27,12 @@ void test_appConfig::cleanupTestCase()
 
 void test_appConfig::test_initials()
 {
-    // initTastCase runs w/o error
+    // init/cleanup runs w/o error
 }
 void test_appConfig::test_overwrite_value()
 {
     QString newValue= "newvalue";
-    // overwrite value fro initTestCase
+    // overwrite value for initTestCase
     appConfig::setLastDb(newValue +"ldb");
     QCOMPARE(appConfig::LastDb(), newValue +"ldb");
     appConfig::setOutDir(newValue +"od");

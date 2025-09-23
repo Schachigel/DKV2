@@ -1,3 +1,4 @@
+#include "pch.h"
 
 #include "helper.h"
 #include "helperfin.h"
@@ -202,7 +203,7 @@ wpChangeContract_Summary::wpChangeContract_Summary(QWidget* p) : QWizardPage(p)
     layout->addWidget(subTitleLabel);
     layout->addWidget(cb);
     setLayout(layout);
-    connect(cb, &QCheckBox::stateChanged, this, &wpChangeContract_Summary::onConfirmData_toggled);
+    connect(cb, &QCheckBox::checkStateChanged, this, &wpChangeContract_Summary::onConfirmData_toggled);
 }
 
 int wpChangeContract_DatePage::nextId() const
@@ -273,7 +274,8 @@ void wpChangeContract_Summary::onConfirmData_toggled(int)
 
 
 wizChangeContract::wizChangeContract(QWidget* p) : QWizard(p)
-{
+{   LOG_CALL;
+    setWizardStyle(QWizard::ModernStyle);
     setPage(intro_page, new wpChangeContract_IntroPage);
     setPage(amount_page, new wpChangeContract_AmountPage);
     setPage(date_page, new wpChangeContract_DatePage);
