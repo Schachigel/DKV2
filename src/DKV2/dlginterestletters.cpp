@@ -44,7 +44,9 @@ dlgInterestLetters::dlgInterestLetters(QWidget *parent, QVector<int> years) : QD
 
     confirm =new QCheckBox(qsl("Briefe als PDF Dateien ausgeben."));
     g->addWidget(confirm, row++, 1);
-    connect(confirm, &QCheckBox::checkStateChanged, this, &dlgInterestLetters::confirmChanged);
+    // TODO Change to checkStateChanged once Qt 6.9 is available on all targets.
+    // https://doc.qt.io/qt-6/qcheckbox-obsolete.html
+    connect(confirm, &QCheckBox::stateChanged, this, &dlgInterestLetters::confirmChanged);
 
     buttons =new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
     buttons->button(QDialogButtonBox::Ok)->setDefault(true);

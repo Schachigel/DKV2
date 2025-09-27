@@ -367,7 +367,9 @@ wpNewDatabase_SummaryPage::wpNewDatabase_SummaryPage(QWidget *p) : QWizardPage(p
     layout->addWidget(subTitleLabel);
     layout->addWidget(cb);
     setLayout(layout);
-    connect(cb, &QCheckBox::checkStateChanged, this, &wpNewDatabase_SummaryPage::onConfirmData_toggled);
+    // TODO Change to checkStateChanged once Qt 6.9 is available on all targets.
+    // https://doc.qt.io/qt-6/qcheckbox-obsolete.html
+    connect(cb, &QCheckBox::stateChanged, this, &wpNewDatabase_SummaryPage::onConfirmData_toggled);
 }
 void wpNewDatabase_SummaryPage::initializePage()
 {

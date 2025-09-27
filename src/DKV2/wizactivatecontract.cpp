@@ -103,7 +103,9 @@ wpInitialPayment_SummaryPage::wpInitialPayment_SummaryPage( QWidget* p) : QWizar
     layout->addWidget(subTitleLabel);
     layout->addWidget(cb);
     setLayout(layout);
-    connect(cb, &QCheckBox::checkStateChanged, this, &wpInitialPayment_SummaryPage::onConfirmData_toggled);
+    // TODO Change to checkStateChanged once Qt 6.9 is available on all targets.
+    // https://doc.qt.io/qt-6/qcheckbox-obsolete.html
+    connect(cb, &QCheckBox::stateChanged, this, &wpInitialPayment_SummaryPage::onConfirmData_toggled);
 }
 
 void wpInitialPayment_SummaryPage::initializePage()
