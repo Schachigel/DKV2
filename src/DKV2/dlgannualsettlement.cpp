@@ -28,7 +28,9 @@ dlgAnnualsettlement::dlgAnnualsettlement(QWidget *parent, int year) : QDialog(pa
 
     confirm =new QCheckBox(qsl("Jahresabrechnung jetzt durchführen."));
     g->addWidget(confirm, row++, 1);
-    connect(confirm, &QCheckBox::checkStateChanged, this, &dlgAnnualsettlement::confirmChanged);
+    // TODO Change to checkStateChanged once Qt 6.9 is available on all targets.
+    // https://doc.qt.io/qt-6/qcheckbox-obsolete.html
+    connect(confirm, &QCheckBox::stateChanged, this, &dlgAnnualsettlement::confirmChanged);
 
     buttons =new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
     buttons->button(QDialogButtonBox::Ok)->setDefault(true);
