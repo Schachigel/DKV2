@@ -7,13 +7,13 @@
 
 /* static */ bool dbfield::isSupportedDBType(QVariant::Type t)
 {
-    if(t == QVariant::LongLong) return true; // index col
-    if(t == QVariant::Int)      return true; // money in ct
-    if(t == QVariant::Date)     return true;
-    if(t == QVariant::DateTime) return true; // booking date & time
-    if(t == QVariant::String)   return true;
-    if(t == QVariant::Bool)     return true;
-    if(t == QVariant::Double)   return true;
+    if(t == QMetaType::LongLong) return true; // index col
+    if(t == QMetaType::Int)      return true; // money in ct
+    if(t == QMetaType::QDate)     return true;
+    if(t == QMetaType::QDateTime) return true; // booking date & time
+    if(t == QMetaType::QString)   return true;
+    if(t == QMetaType::Bool)     return true;
+    if(t == QMetaType::Double)   return true;
     Q_ASSERT_X(true, "isSupportedType: ", "unsupported database data type");
     return false;
 }

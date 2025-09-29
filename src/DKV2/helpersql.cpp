@@ -29,25 +29,25 @@ QString DbInsertableString(const QVariant& v)
     }
     switch(v.type())
     {
-    case QVariant::String:
-    case QVariant::ByteArray:
-    case QVariant::Char:
+    case QMetaType::QString:
+    case QMetaType::QByteArray:
+    case QMetaType::Char:
         return singleQuoted( v.toString().replace(qsl("'"), qsl("''")));
-    case QVariant::Date: {
+    case QMetaType::QDate: {
         return singleQuoted(v.toDate().toString(Qt::ISODate));
     }
-    case QVariant::DateTime: {
+    case QMetaType::QDateTime: {
         return singleQuoted(v.toDateTime().toString(qsl("yyyy-MM-dd hh:mm:ss")));
     }
-    case QVariant::Double: {
+    case QMetaType::Double: {
         return singleQuoted(QString::number(v.toDouble(), 'f', 2));
     }
-    case QVariant::Bool:
+    case QMetaType::Bool:
         return (v.toBool()) ? qsl("TRUE") : qsl("FALSE");;
-    case QVariant::Int:
-    case QVariant::UInt:
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
+    case QMetaType::Int:
+    case QMetaType::UInt:
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
         return i2s(v.toInt());
     default:
         qCritical() << "switch(v.type()) DEFAULTED " << v;
@@ -61,22 +61,22 @@ QString dbCreatetable_type(const QVariant::Type t)
     // to the actual affinity data types
     switch( t)
     {
-    case QVariant::String:
-    case QVariant::ByteArray:
-    case QVariant::Char:
+    case QMetaType::QString:
+    case QMetaType::QByteArray:
+    case QMetaType::Char:
         return qsl("TEXT"); // affinity: TEXT
-    case QVariant::Date:
+    case QMetaType::QDate:
         return qsl("TEXTDATE"); // affinity: TEXT
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
         return qsl("DATETIME"); // affinity: TEXT
-    case QVariant::Int:
-    case QVariant::LongLong:
-    case QVariant::UInt:
-    case QVariant::ULongLong:
+    case QMetaType::Int:
+    case QMetaType::LongLong:
+    case QMetaType::UInt:
+    case QMetaType::ULongLong:
         return qsl("INTEGER"); // affinity: INTEGER
-    case QVariant::Bool:
+    case QMetaType::Bool:
         return qsl("BOOLEAN");
-    case QVariant::Double:
+    case QMetaType::Double:
         return qsl("DOUBLE"); // affinity: REAL
     default:
         Q_ASSERT( not bool("invalid database type"));
@@ -88,19 +88,19 @@ QString dbAffinityType(const QVariant::Type t)
     // as a "preferred" type of data stored in a column
     switch( t)
     {
-    case QVariant::String:
-    case QVariant::ByteArray:
-    case QVariant::Char:
-    case QVariant::Date:
-    case QVariant::DateTime:
+    case QMetaType::QString:
+    case QMetaType::QByteArray:
+    case QMetaType::Char:
+    case QMetaType::QDate:
+    case QMetaType::QDateTime:
         return qsl("TEXT");
-    case QVariant::Int:
-    case QVariant::LongLong:
-    case QVariant::UInt:
-    case QVariant::ULongLong:
-    case QVariant::Bool:
+    case QMetaType::Int:
+    case QMetaType::LongLong:
+    case QMetaType::UInt:
+    case QMetaType::ULongLong:
+    case QMetaType::Bool:
         return qsl("INTEGER");
-    case QVariant::Double:
+    case QMetaType::Double:
         return qsl("REAL");
     default:
         Q_ASSERT( not bool("invalid database type"));
@@ -115,7 +115,7 @@ void closeAllDatabaseConnections()
     if( cl.count())
         qInfo() << "Found open connections" << cl;
 
-    for( const auto &s : qAsConst(cl)) {
+    for( const auto &s : std::as_const(cl)) {
         QSqlDatabase::database(s).close();
         QSqlDatabase::removeDatabase(s);
     }
@@ -189,7 +189,7 @@ void maintainTableList (const QString& tablename, QString& TableList)
 }
 void sqlSnippetsFromFieldlist(const QVector<dbfield>& fields, QSet<QString>& usedTables, QString& FieldList, QString& TableList)
 {
-    for( const auto& f : qAsConst(fields)) {
+    for( const auto& f : std::as_const(fields)) {
         if( f.tableName().isEmpty() or f.name().isEmpty())
             qCritical().noquote () << QString(__FUNCTION__) << ": missing table or field name";
         maintainFieldList (f.name(), f.tableName (), FieldList);
@@ -224,7 +224,7 @@ QSqlRecord adjustSqlRecordTypesToDbFieldTypes(const QVector<dbfield>& fields, co
         RETURN_ERR(QSqlRecord(), QString(__FUNCTION__), qsl("Anzahl der Felder stimmt nicht überein"));
 
     QSqlRecord result;
-    for( const auto& field: qAsConst(fields))
+    for( const auto& field: std::as_const(fields))
         result.append(adjustTypeOfField(record.field(field.name()), field.type ()));
 
     return result;
@@ -251,7 +251,7 @@ bool executeQuery( QSqlQuery& q, QVector<QSqlRecord>& records)
 }
 bool bindNamedParams(QSqlQuery &q, const QVector<QPair<QString, QVariant>>& params)
 {
-    for( const QPair<QString, QVariant>& param: qAsConst (params)) {
+    for( const QPair<QString, QVariant>& param: std::as_const (params)) {
         QString paramName =param.first;
         QVariant paramValue =param.second;
         if( paramName.isEmpty ())
@@ -271,7 +271,7 @@ bool bindNamedParams(QSqlQuery &q, const QVector<QPair<QString, QVariant>>& para
 }
 bool bindPositionalParams(QSqlQuery& q , const QVector<QVariant> params)
 {
-    for( const QVariant& param: qAsConst (params)) {
+    for( const QVariant& param: std::as_const (params)) {
         if( param.isValid()) {
             q.addBindValue(param);
         } else
@@ -317,7 +317,7 @@ QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& wh
     if( not executeSql( sql, tmpResult, db))
         RETURN_ERR(QVector<QSqlRecord>(), QString(__FUNCTION__), qsl("execSql failed"));
     QVector<QSqlRecord> result;
-    for( const QSqlRecord& record: qAsConst(tmpResult))
+    for( const QSqlRecord& record: std::as_const(tmpResult))
         // adjust the database types to the expected types
         result.push_back(adjustSqlRecordTypesToDbFieldTypes (fields, record));
 
@@ -441,7 +441,7 @@ QVector<QVariant> executeSingleColumnSql( const dbfield& dbField, const QString&
         RETURN_ERR(QVector<QVariant>(), QString(__FUNCTION__), qsl("Query execution failed"));
 
     QVector<QVariant> result;
-    for( const QSqlRecord& record: qAsConst(queryReturn))
+    for( const QSqlRecord& record: std::as_const(queryReturn))
             result.push_back(adjustTypeOfField(record.field(0), dbField.type()).value());
     return result;
 }

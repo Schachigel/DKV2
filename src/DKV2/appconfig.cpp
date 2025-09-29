@@ -21,8 +21,8 @@ const QString appConfig::fnWert { qsl("Wert")};
 dbtable appConfig::getTableDef()
 {
     static dbtable table(tnMeta);
-    table.append(dbfield(qsl("Name"), QVariant::String).setPrimaryKey());
-    table.append(dbfield(qsl("Wert"), QVariant::String).setNotNull());
+    table.append(dbfield(qsl("Name"), QMetaType::QString).setPrimaryKey());
+    table.append(dbfield(qsl("Wert"), QMetaType::QString).setNotNull());
 
     return table;
 }
@@ -179,7 +179,7 @@ QVariantMap getMetaTableAsMap(const QSqlDatabase &db)
 
     QString name, value;
     static QRegularExpression re("[/\\.]");
-    for( const QSqlRecord& record: qAsConst(table))  {
+    for( const QSqlRecord& record: std::as_const(table))  {
         name  =record.value("name").toString().replace(re, "");
         value =record.value("Wert").toString();
         vm[name] =value;
@@ -294,14 +294,14 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
         return;
     }
     switch (value.type()) {
-    case QVariant::Double:
+    case QMetaType::Double:
         setNumMetaInfo(defaultParams.value(pc).first, value.toDouble(), db, tblAlias);
         break;
-    case QVariant::Int:
-    case QVariant::UInt:
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
-    case QVariant::String:
+    case QMetaType::Int:
+    case QMetaType::UInt:
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
+    case QMetaType::QString:
     default:
         setMetaInfo(defaultParams.value(pc).first, value.toString(), db, tblAlias);
     }

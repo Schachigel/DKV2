@@ -47,7 +47,7 @@ void wpNewOrExisting::initializePage()
         getAllCreditorInfoSorted(Personen);
         if (Personen.count())
         {
-            for (auto &Entry : qAsConst(Personen))
+            for (auto &Entry : std::as_const(Personen))
             {
                 cbCreditors->addItem(Entry.second, QVariant((Entry.first)));
             }
@@ -711,7 +711,7 @@ void wpInterestFromInvestment::initializePage()
 {
     QVector<QPair<qlonglong, QString>> investments = activeInvestments(field(pnCDate).toDate());
     cbInvestments->clear();
-    for (const auto &invest : qAsConst(investments)) {
+    for (const auto &invest : std::as_const(investments)) {
         cbInvestments->addItem(invest.second, invest.first);
     }
     registerField(pnI_CheckBoxIndex, cbInvestments);

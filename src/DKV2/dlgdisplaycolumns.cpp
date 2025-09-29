@@ -12,7 +12,7 @@ dlgDisplayColumns::dlgDisplayColumns(const QVector<QPair<int, QString>>& colInfo
     mainlayout->addWidget (header);
 
     QVBoxLayout* layout =new QVBoxLayout();
-    for( const QPair<int, QString>& col : qAsConst(colInfo)) {
+    for( const QPair<int, QString>& col : std::as_const(colInfo)) {
         if( col.second.isEmpty ()) continue;
         QCheckBox* cb =new QCheckBox(col.second);
         cb->setChecked (status[col.first]);
@@ -41,7 +41,7 @@ dlgDisplayColumns::dlgDisplayColumns(const QVector<QPair<int, QString>>& colInfo
 
 void dlgDisplayColumns::selectAll()
 {
-    for( const auto& box : qAsConst(checkboxes)) {
+    for( const auto& box : std::as_const(checkboxes)) {
         box->setCheckState (Qt::CheckState::Checked);
     }
 }
@@ -49,7 +49,7 @@ void dlgDisplayColumns::selectAll()
 void dlgDisplayColumns::accept ()
 {
     int checkboxIndex =0;
-    for( const QPair<int, QString>& col : qAsConst(colInfo)) {
+    for( const QPair<int, QString>& col : std::as_const(colInfo)) {
         if( col.second.isEmpty ()) continue;
         if( checkboxes[checkboxIndex]->isChecked ())
             status[col.first] =true;

@@ -63,7 +63,7 @@ void getBookingDateInfoBySql(const QString &sql, QVector<BookingDateData>& dates
         qInfo() << "getDatesBySql: no dates to found";
         return;
     }
-    for (const auto &rec : qAsConst(records)) {
+    for (const auto &rec : std::as_const(records)) {
         dates.push_back({rec.value(0).toInt(), rec.value(1).toString(), rec.value(2).toDate()});
     }
     qInfo() << "getDatesBySql added " << dates.size() << " dates to the vector";
@@ -86,7 +86,7 @@ bool postDB_UpgradeActions(int /*sourceVersion*/, const QString & dbName)
         qsl("UPDATE Geldanlagen SET Typ     = '' WHERE Typ      IS NULL")
         // other updates...
     };
-    for(const auto & sql: qAsConst(updates)) {
+    for(const auto & sql: std::as_const(updates)) {
         QVector<QVariant> params;
         executeSql_wNoRecords (sql, params, db);
     }
@@ -256,7 +256,7 @@ int createNewInvestmentsFromContracts( bool fortlaufend)
         RETURN_ERR( -1, QString(__FUNCTION__), qsl("Info aus Verträgen konnte nicht gelesen werden"));
 
     int ret =0;
-    for( const QSqlRecord& rec : qAsConst(res)) {
+    for( const QSqlRecord& rec : std::as_const(res)) {
         int ZSatz =rec.value(qsl("ZSatz")).toInt();
         QDate vDate =rec.value(qsl("Vertragsdatum")).toDate();
         if( fortlaufend)
@@ -275,7 +275,7 @@ int automatchInvestmentsToContracts()
         RETURN_ERR( -1, QString(__FUNCTION__), qsl("Info aus Verträgen konnte nicht gelesen werden"));
 
     int successcount =0;
-    for( const QSqlRecord& rec : qAsConst(res)) {
+    for( const QSqlRecord& rec : std::as_const(res)) {
         int interestRate   =rec.value(qsl("ZSatz")).toInt();
         QDate contractDate =rec.value(qsl("Vertragsdatum")).toDate();
         QVector<investment> suitableInvestments =openInvestments(interestRate, contractDate);
@@ -306,9 +306,9 @@ bool createCsvActiveContracts()
 
     QStringList header;
     dbtable t(tempViewContractsCsv);
-    t.append(dbfield(contract::fnId, QVariant::Int));
+    t.append(dbfield(contract::fnId, QMetaType::Int));
     header.append(qsl("Vertragsnummer"));
-    t.append(dbfield(creditor::fnId, QVariant::Int));
+    t.append(dbfield(creditor::fnId, QMetaType::Int));
     header.append (qsl("Kundennummer"));
     t.append(dbfield(creditor::fnVorname));
     header.append (qsl("Vorname"));
@@ -330,19 +330,19 @@ bool createCsvActiveContracts()
     header.append (qsl("Zinssatz"));
     t.append(dbfield(qsl("Wert"), QVariant::Double));
     header.append (qsl("Vertragswert"));
-    t.append(dbfield(qsl("Aktivierungsdatum"), QVariant::Date));
+    t.append(dbfield(qsl("Aktivierungsdatum"), QMetaType::QDate));
     header.append (qsl("Aktivierungsdatum"));
-    t.append(dbfield(qsl("Kuendigungsfrist"), QVariant::Int));
+    t.append(dbfield(qsl("Kuendigungsfrist"), QMetaType::Int));
     header.append (qsl("Kündigungsfrist"));
-    t.append(dbfield(qsl("Vertragsende"), QVariant::Date));
+    t.append(dbfield(qsl("Vertragsende"), QMetaType::QDate));
     header.append (qsl("Vertragsende"));
-    t.append(dbfield(qsl("thesa"), QVariant::Int));
+    t.append(dbfield(qsl("thesa"), QMetaType::Int));
     header.append (qsl("Zinsmodus"));
 
     QVector<QSqlRecord> qResult =executeSql (t.Fields ());
 
     QVector<QStringList> data;
-    for(const auto& record : qAsConst( qResult)) {
+    for(const auto& record : std::as_const( qResult)) {
         QStringList col;
         col.append (record.value(contract::fnId).toString());
         col.append (record.value(creditor::fnId).toString());
@@ -408,8 +408,8 @@ QVector<contractRuntimeDistrib_rowData> contractRuntimeDistribution()
     createTemporaryDbView (tname, sqlContractsActiveView);
     dbtable t(tname);
     t.append (dbfield(qsl("Wert"), QVariant::Type::Double));
-    t.append (dbfield(qsl("Aktivierungsdatum"), QVariant::Date));
-    t.append (dbfield(qsl("Vertragsende"), QVariant::Date));
+    t.append (dbfield(qsl("Aktivierungsdatum"), QMetaType::QDate));
+    t.append (dbfield(qsl("Vertragsende"), QMetaType::QDate));
 
     QVector<QSqlRecord> records =executeSql(t.Fields ());
     if( records.empty ())

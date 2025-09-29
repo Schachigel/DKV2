@@ -121,21 +121,21 @@ bool ContractProxyModel::lessThan(const QModelIndex &left, const QModelIndex &ri
 
         switch (leftData.type())
         {
-        case QVariant::String:
+        case QMetaType::QString:
             return leftData.toString() < rightData.toString();
-        case QVariant::Double:
+        case QMetaType::Double:
             return leftData.toDouble() < rightData.toDouble();
-        case QVariant::Int:
+        case QMetaType::Int:
             return leftData.toInt() < rightData.toInt();
         case QVariant::UInt:
             return leftData.toUInt() < rightData.toUInt();
-        case QVariant::LongLong:
+        case QMetaType::LongLong:
             return leftData.toLongLong() < rightData.toLongLong();
-        case QVariant::ULongLong:
+        case QMetaType::ULongLong:
             return leftData.toULongLong() < rightData.toULongLong();
-        case QVariant::Date :
+        case QMetaType::QDate :
             return leftData.toDate() < rightData.toDate();
-        case QVariant::DateTime:
+        case QMetaType::QDateTime:
             return leftData.toDateTime() < rightData.toDateTime();
         default:
             return false;

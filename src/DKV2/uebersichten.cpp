@@ -36,8 +36,8 @@ int tablelayout::colCount()
     if( _colCount not_eq -1)
         return _colCount;
     _colCount =cols.count();
-    for( auto const & sec : qAsConst(sections)) {
-        for( auto const & dataset : qAsConst(sec.data)) {
+    for( auto const & sec : std::as_const(sections)) {
+        for( auto const & dataset : std::as_const(sec.data)) {
             int nbrOfDataCols =dataset.count();
             if( nbrOfDataCols > _colCount)
                 _colCount =nbrOfDataCols;

@@ -121,7 +121,7 @@ bool QtVariantContext::isFalse(const QString& key) const
     case QMetaType::UInt:
     case QMetaType::LongLong:
     case QMetaType::ULongLong:
-    case QVariant::Bool:
+    case QMetaType::Bool:
         return !value.toBool();
     case QVariant::List:
     case QVariant::StringList:
@@ -137,7 +137,7 @@ bool QtVariantContext::isFalse(const QString& key) const
 
 QString QtVariantContext::stringValue(const QString& key) const
 {
-    if (isFalse(key) && value(key).userType() != QVariant::Bool) {
+    if (isFalse(key) && value(key).userType() != QMetaType::Bool) {
         return QString();
     }
     return value(key).toString();

@@ -494,7 +494,7 @@ void annualSettlement() {
     QVector<QDate> startOfInterrestCalculation;
     QVector<booking> asBookings;
     // try execute annualSettlement for all contracts
-    for (const auto &id : qAsConst(ids)) {
+    for (const auto &id : std::as_const(ids)) {
         contract c(id.toLongLong());
         QDate startDate = c.latestBooking().date;
         if (0 not_eq c.annualSettlement(yearOfSettlement)) {
@@ -573,7 +573,7 @@ QVariantList getContractList(qlonglong creditorId, QDate startDate,
                             : dkdbstructur[contract::tnContracts][contract::fnId],
             qsl(" %1=%2 GROUP BY id").arg(contract::fnKreditorId, i2s(creditorId)));
 
-    for (const auto &id : qAsConst(ids)) {
+    for (const auto &id : std::as_const(ids)) {
         contract contr(id.toLongLong(), isTerminated);
         /* Forget contracts that don't exist in the period.
 i.e. conclusionDate must be before end of period
@@ -640,7 +640,7 @@ void annualSettlementLetters() {
     double otherInterest2 = 0;
     double interestForPayout2 = 0.;
     double interestCredit2 = 0.;
-    for (const auto &cred : qAsConst(creditorIds)) {
+    for (const auto &cred : std::as_const(creditorIds)) {
         creditor credRecord(cred);
         QVariantMap currCreditorMap = credRecord.getVariantMap();
         printData["creditor"] = currCreditorMap;
@@ -660,7 +660,7 @@ void annualSettlementLetters() {
 
         if (vl.size() > 0) {
             double payedInterest = 0;
-            for (const QVariant &v : qAsConst(vl)) {
+            for (const QVariant &v : std::as_const(vl)) {
                 QVariantMap vm = v.toMap();
                 otherInterest += vm["dSonstigeZinsen"].toDouble();
                 annualInterest += vm["dJahresZinsen"].toDouble();

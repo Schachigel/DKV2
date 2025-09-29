@@ -18,7 +18,7 @@ struct dbCloser
     ~dbCloser(){
         if( QSqlDatabase::database(conName).isValid()){
             QList<QString> cl = QSqlDatabase::connectionNames();
-            for( const auto& con : qAsConst(cl)) {
+            for( const auto& con : std::as_const(cl)) {
                 if( con == conName) {
                     QSqlDatabase::database(con).close();
                     QSqlDatabase::removeDatabase(con);

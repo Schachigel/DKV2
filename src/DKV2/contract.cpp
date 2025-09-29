@@ -31,26 +31,26 @@
     static dbtable contractTable(tnContracts);
     if (contractTable.Fields().isEmpty ())
     {
-        contractTable.append(dbfield(fnId,           QVariant::LongLong).setAutoInc());
-        contractTable.append(dbfield(fnKreditorId,   QVariant::LongLong).setNotNull());
+        contractTable.append(dbfield(fnId,           QMetaType::LongLong).setAutoInc());
+        contractTable.append(dbfield(fnKreditorId,   QMetaType::LongLong).setNotNull());
         contractTable.append(dbForeignKey(contractTable[fnKreditorId],
             dkdbstructur[qsl("Kreditoren")][fnId], ODOU_Action::CASCADE));
         // deleting a creditor will delete inactive contracts but not
         // contracts with existing bookings (=active or terminated contracts)
-        contractTable.append(dbfield(fnKennung,       QVariant::String).setUnique ());
-        contractTable.append(dbfield(fnAnmerkung,     QVariant::String).setDefault(""));
-        contractTable.append(dbfield(fnZSatz,         QVariant::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
-        contractTable.append(dbfield(fnBetrag,        QVariant::Int).setNotNull().setDefault(0)); // ct
-        contractTable.append(dbfield(fnThesaurierend, QVariant::Int).setNotNull().setDefault(1));
-        contractTable.append(dbfield(fnVertragsDatum, QVariant::Date).setNotNull());
-        contractTable.append(dbfield(fnKFrist,        QVariant::Int).setNotNull().setDefault(6));
-        contractTable.append(dbfield(fnAnlagenId,     QVariant::LongLong));
+        contractTable.append(dbfield(fnKennung,       QMetaType::QString).setUnique ());
+        contractTable.append(dbfield(fnAnmerkung,     QMetaType::QString).setDefault(""));
+        contractTable.append(dbfield(fnZSatz,         QMetaType::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
+        contractTable.append(dbfield(fnBetrag,        QMetaType::Int).setNotNull().setDefault(0)); // ct
+        contractTable.append(dbfield(fnThesaurierend, QMetaType::Int).setNotNull().setDefault(1));
+        contractTable.append(dbfield(fnVertragsDatum, QMetaType::QDate).setNotNull());
+        contractTable.append(dbfield(fnKFrist,        QMetaType::Int).setNotNull().setDefault(6));
+        contractTable.append(dbfield(fnAnlagenId,     QMetaType::LongLong));
         contractTable.append(dbForeignKey(contractTable[fnAnlagenId],
             qsl("Geldanlagen"), qsl("rowid"), ODOU_Action::SET_NULL));
-        contractTable.append(dbfield(fnLaufzeitEnde,  QVariant::Date).setNotNull().setDefault(EndOfTheFuckingWorld_str));
-        contractTable.append(dbfield(fnZAktiv,        QVariant::Bool).setDefault(true));
-        contractTable.append(dbfield(fnDateCanceled,  QVariant::Date).setNotNull().setDefault(EndOfTheFuckingWorld_str));
-        contractTable.append(dbfield(fnZeitstempel,   QVariant::DateTime).setDefaultNow());
+        contractTable.append(dbfield(fnLaufzeitEnde,  QMetaType::QDate).setNotNull().setDefault(EndOfTheFuckingWorld_str));
+        contractTable.append(dbfield(fnZAktiv,        QMetaType::Bool).setDefault(true));
+        contractTable.append(dbfield(fnDateCanceled,  QMetaType::QDate).setNotNull().setDefault(EndOfTheFuckingWorld_str));
+        contractTable.append(dbfield(fnZeitstempel,   QMetaType::QDateTime).setDefaultNow());
     }
     return contractTable;
 }
@@ -59,7 +59,7 @@
     Q_ASSERT(getTableDef().Fields().size());
     static dbtable exContractTable(tnExContracts);
     if (exContractTable.Fields().isEmpty()) {
-        exContractTable.append(dbfield(fnId, QVariant::LongLong).setPrimaryKey());
+        exContractTable.append(dbfield(fnId, QMetaType::LongLong).setPrimaryKey());
         for(int i= 1 /* not 0 */; i < getTableDef().Fields().count(); i++) {
             exContractTable.append(getTableDef().Fields()[i]);
         }
@@ -720,7 +720,7 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
 
     QVariantList bl;
 
-    for (const auto &b : qAsConst(yearBookings))
+    for (const auto &b : std::as_const(yearBookings))
     {
         QVariantMap bookMap = {};
         bookMap["Date"] = b.date.toString(qsl("dd.MM.yyyy"));

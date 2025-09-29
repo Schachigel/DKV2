@@ -151,7 +151,7 @@ bool dbsHaveSameTables(const QSqlDatabase &db1, const QSqlDatabase &db2)
          qInfo() << "db comparison: table list count missmatch";
          ret =false;
     }
-    for (const auto &table: qAsConst(tl1)) {
+    for (const auto &table: std::as_const(tl1)) {
         if( tl2.contains(table)){
             qInfo() << "common table: " << table;
             int rc1 =rowCount(table, "", db1);
@@ -165,7 +165,7 @@ bool dbsHaveSameTables(const QSqlDatabase &db1, const QSqlDatabase &db2)
         qInfo() << "db comparison: table '" << table << "' is missing in second database";
         ret =false;
     }
-    for (const auto &table: qAsConst(tl2)) {
+    for (const auto &table: std::as_const(tl2)) {
         if( tl1.contains(table))
             continue;
         qInfo() << "db comparison: table '" << table << "' is missing in first database";
@@ -211,7 +211,7 @@ int doAnnualSettlementAllContracts (int year)
 {   LOG_CALL_W(i2s(year));
     QVector<QVariant> ids =executeSingleColumnSql (dkdbstructur["Vertraege"].Fields ()[0]);
     int executedSettlements =0;
-    for( const auto& id : qAsConst(ids)) {
+    for( const auto& id : std::as_const(ids)) {
         contract c(id.toLongLong ());
         if( year == c.annualSettlement (year)){
             executedSettlements++;

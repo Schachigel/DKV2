@@ -179,18 +179,18 @@ void test_dkdbcopy::test_convertDatabaseInplace_wNewColumn()
     // define original datastructure before the change: 2 tables
     dbstructure oldDbStructure;
     dbtable t1(qsl("t1"));
-    t1.append(dbfield(qsl("id"), QVariant::LongLong).setAutoInc());
+    t1.append(dbfield(qsl("id"), QMetaType::LongLong).setAutoInc());
     t1.append(dbfield(qsl("f1")));
     oldDbStructure.appendTable(t1);
     dbtable t2(qsl("t2"));
-    t2.append(dbfield(qsl("id"), QVariant::LongLong).setAutoInc());
-    t2.append(dbfield(qsl("t1id"), QVariant::LongLong).setNotNull());
+    t2.append(dbfield(qsl("id"), QMetaType::LongLong).setAutoInc());
+    t2.append(dbfield(qsl("t1id"), QMetaType::LongLong).setNotNull());
     t2.append(dbForeignKey(t2[qsl("t1id")], oldDbStructure[qsl("t1")][qsl("id")], ODOU_Action::CASCADE));
     t2.append(dbfield(qsl("t2f1")));
     oldDbStructure.appendTable(t2);
     dbtable meta(qsl("Meta"));
-    meta.append (dbfield(qsl("Name"), QVariant::String));
-    meta.append (dbfield(qsl("Wert"), QVariant::String));
+    meta.append (dbfield(qsl("Name"), QMetaType::QString));
+    meta.append (dbfield(qsl("Wert"), QMetaType::QString));
     oldDbStructure.appendTable(meta);
     // create source db with old db structure
     oldDbStructure.createDb(dbfn1);

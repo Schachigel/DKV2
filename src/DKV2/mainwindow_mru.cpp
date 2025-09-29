@@ -40,7 +40,7 @@ void MainWindow::add_MRU_entry(const QString& filepath)
 namespace {
 void clear_MRU(QVector<QAction*>& addedActions)
 {
-    for(const auto& aa: qAsConst(addedActions)) {
+    for(const auto& aa: std::as_const(addedActions)) {
         delete aa;
     }
     addedActions.clear();

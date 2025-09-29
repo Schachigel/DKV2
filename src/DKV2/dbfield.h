@@ -11,7 +11,7 @@ public: // types
     // constr. destr. & access fu
     explicit dbfield() : QSqlField(){}
     dbfield(const QString& name,
-            const QVariant::Type type=QVariant::String)
+            const QVariant::Type type=QMetaType::QString)
      :  QSqlField(name, type)
     {
         Q_ASSERT(isSupportedDBType(type));

@@ -70,11 +70,11 @@ bool creditor::fromDb( const qlonglong id)
     for(int i=0; i<rec.count(); i++)
     {
         qInfo() << "reading Kreditor from db; Field:" << rec.field(i).name() << "-value:" << rec.field(i).value() << "(" << rec.field(i).value().type() << ")";
-        if( dkdbstructur[tablename][rec.field(i).name()].type() == QVariant::String)
+        if( dkdbstructur[tablename][rec.field(i).name()].type() == QMetaType::QString)
             ti.setValue(rec.field(i).name(), rec.field(i).value().toString());
-        else if( dkdbstructur[tablename][rec.field(i).name()].type() == QVariant::LongLong)
+        else if( dkdbstructur[tablename][rec.field(i).name()].type() == QMetaType::LongLong)
             ti.setValue(rec.field(i).name(), rec.field(i).value().toLongLong());
-        else if( dkdbstructur[tablename][rec.field(i).name()].type() == QVariant::Double)
+        else if( dkdbstructur[tablename][rec.field(i).name()].type() == QMetaType::Double)
             ti.setValue(rec.field(i).name(), rec.field(i).value().toDouble());
         else
             ti.setValue(rec.field(i).name(), rec.field(i).value());
@@ -190,21 +190,21 @@ bool creditor::remove()
     static dbtable creditortable(tablename);
     if( 0 == creditortable.Fields().size())
     {
-        creditortable.append(dbfield(fnId,       QVariant::LongLong).setAutoInc());
-        creditortable.append(dbfield(fnVorname,  QVariant::String).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnNachname, QVariant::String).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnStrasse,  QVariant::String).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnPlz,      QVariant::String).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnStadt,    QVariant::String).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnLand,     QVariant::String).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnTel,      QVariant::String).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnEmail,    QVariant::String).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnAnmerkung,QVariant::String).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnKontakt,  QVariant::String).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnBuchungskonto,QVariant::String).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnIBAN,     QVariant::String).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnBIC,      QVariant::String).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnZeitstepel, QVariant::DateTime).setDefaultNow());
+        creditortable.append(dbfield(fnId,       QMetaType::LongLong).setAutoInc());
+        creditortable.append(dbfield(fnVorname,  QMetaType::QString).setDefault(emptyStringV));
+        creditortable.append(dbfield(fnNachname, QMetaType::QString).setDefault(emptyStringV));
+        creditortable.append(dbfield(fnStrasse,  QMetaType::QString).setDefault(emptyStringV));
+        creditortable.append(dbfield(fnPlz,      QMetaType::QString).setDefault(emptyStringV));
+        creditortable.append(dbfield(fnStadt,    QMetaType::QString).setDefault(emptyStringV));
+        creditortable.append(dbfield(fnLand,     QMetaType::QString).setDefault(emptyStringV));
+        creditortable.append(dbfield(fnTel,      QMetaType::QString).setDefault(emptyStringV));
+        creditortable.append(dbfield(fnEmail,    QMetaType::QString).setDefault(emptyStringV));
+        creditortable.append(dbfield(fnAnmerkung,QMetaType::QString).setDefault(emptyStringV));
+        creditortable.append(dbfield(fnKontakt,  QMetaType::QString).setDefault(emptyStringV));
+        creditortable.append(dbfield(fnBuchungskonto,QMetaType::QString).setDefault(emptyStringV));
+        creditortable.append(dbfield(fnIBAN,     QMetaType::QString).setDefault(emptyStringV));
+        creditortable.append(dbfield(fnBIC,      QMetaType::QString).setDefault(emptyStringV));
+        creditortable.append(dbfield(fnZeitstepel, QMetaType::QDateTime).setDefaultNow());
         QVector<dbfield> unique;
         unique.append(creditortable[fnVorname]);
         unique.append(creditortable[fnNachname]);
@@ -229,7 +229,7 @@ ORDER BY Nachname ASC, Vorname ASC
         qCritical() << "Error reading DKGeber while creating a contract";
         return;
     }
-    for( const auto& record: qAsConst( result))
+    for( const auto& record: std::as_const( result))
         entries.append({record.value(0).toLongLong (), record.value(1).toString ()});
 }
 
@@ -270,7 +270,7 @@ SELECT DISTINCT id FROM
         qCritical() << "error getting creditors";
         return;
     }
-    for(const auto& record : qAsConst(result))
+    for(const auto& record : std::as_const(result))
         entries.append (record.value(0).toLongLong ());
 }
 

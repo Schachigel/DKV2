@@ -410,7 +410,7 @@ bool createDkDbViews( const QMap<QString, QString>& views, const QSqlDatabase& d
 //{   LOG_CALL;
 //    QVector<QSqlRecord> views;
 //    if( executeSql(qsl("SELECT name FROM sqlite_master WHERE type ='view'"), views, db)) {
-//        for( const auto& rec : qAsConst(views)) {
+//        for( const auto& rec : std::as_const(views)) {
 //// TODO: use deleteView helper from helpersql
 //            if( executeSql_wNoRecords(qsl("DROP VIEW %1").arg(rec.value(0).toString()), db))
 //                continue;
