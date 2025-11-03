@@ -1,3 +1,4 @@
+#include "pch.h"
 
 #include "booking.h"
 #include "contract.h"
@@ -63,7 +64,7 @@ void PercentFrom100sItemFormatter::paint(QPainter *painter, const QStyleOptionVi
 QString CurrencyFormatter::displayText(const QVariant& value, const QLocale& )const
 {
     QVariant vv(value);
-    if( not vv.convert(qMetaTypeId<double>()))
+    if( not vv.convert(QMetaType(QMetaType::Double)))
         return value.toString();
     double w =value.toDouble();
     return qsl(" %1 ").arg(s_d2euro(w));

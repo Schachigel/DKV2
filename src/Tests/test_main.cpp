@@ -1,4 +1,5 @@
 
+#include <QtTest/QTest>
 
 #include <vector>
 #include "../DKV2/helper.h"

@@ -49,7 +49,7 @@ void insert_DbProperties(const QSqlDatabase &db = QSqlDatabase::database())
 int get_db_version(const QSqlDatabase &db)
 {   /*LOG_CALL;*/
     QVariant vversion =dbConfig::read_DBVersion(db);
-    if( not (vversion.isValid() and vversion.canConvert(QMetaType::Double)))
+    if( not (vversion.isValid() and vversion.canConvert<double>()))
         return noVersion; // big problem: no db
     int d =vversion.toInt();
     qInfo() << "DB Version Comparison: expected / found: " << CURRENT_DB_VERSION << " / " << d;
@@ -143,10 +143,8 @@ bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/
     bool ret = false;
     autoRollbackTransaction art(db.connectionName());
     do {
-        if( includeViews)
-            if ( not insertDKDB_Views(db)) break;
-        if( includeViews)
-            if (not insertDKDB_Indices(db)) break;
+        if( includeViews) if ( not insertDKDB_Views(db)) break;
+        if( includeViews) if (not insertDKDB_Indices(db)) break;
         insert_DbProperties(db);
         ret = true;
     } while (false);
@@ -326,9 +324,9 @@ bool createCsvActiveContracts()
     header.append (qsl("IBAN"));
     t.append(dbfield(creditor::fnBIC));
     header.append (qsl("BIC"));
-    t.append(dbfield(qsl("Zinssatz"), QVariant::Double));
+    t.append(dbfield(qsl("Zinssatz"), QMetaType::Double));
     header.append (qsl("Zinssatz"));
-    t.append(dbfield(qsl("Wert"), QVariant::Double));
+    t.append(dbfield(qsl("Wert"), QMetaType::Double));
     header.append (qsl("Vertragswert"));
     t.append(dbfield(qsl("Aktivierungsdatum"), QMetaType::QDate));
     header.append (qsl("Aktivierungsdatum"));
@@ -407,7 +405,7 @@ QVector<contractRuntimeDistrib_rowData> contractRuntimeDistribution()
     QString tname {qsl("activeContracts")};
     createTemporaryDbView (tname, sqlContractsActiveView);
     dbtable t(tname);
-    t.append (dbfield(qsl("Wert"), QVariant::Type::Double));
+    t.append (dbfield(qsl("Wert"), QMetaType::Type::Double));
     t.append (dbfield(qsl("Aktivierungsdatum"), QMetaType::QDate));
     t.append (dbfield(qsl("Vertragsende"), QMetaType::QDate));
 
@@ -415,7 +413,7 @@ QVector<contractRuntimeDistrib_rowData> contractRuntimeDistribution()
     if( records.empty ())
         RETURN_ERR(QVector<contractRuntimeDistrib_rowData>(), qsl("calculation of runtime distribution failed"));
 
-    for( const auto& record : records) {
+    for( const auto& record : std::as_const(records)) {
         double wert =record.value(qsl("Wert")).toReal();
         QDate   von =record.value(qsl("Datum")).toDate();
         QDate   bis =record.value(qsl("Vertragsende")).toDate();

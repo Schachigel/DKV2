@@ -1,4 +1,6 @@
 
+#include "pch.h"
+
 #include "helper.h"
 #include "helpersql.h"
 #include "dbtable.h"

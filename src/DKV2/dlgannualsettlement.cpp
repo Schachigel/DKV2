@@ -1,3 +1,4 @@
+#include "pch.h"
 
 #include "helper.h"
 #include "helperfin.h"
@@ -27,7 +28,7 @@ dlgAnnualsettlement::dlgAnnualsettlement(QWidget *parent, int year) : QDialog(pa
 
     confirm =new QCheckBox(qsl("Jahresabrechnung jetzt durchführen."));
     g->addWidget(confirm, row++, 1);
-    connect(confirm, &QCheckBox::stateChanged, this, &dlgAnnualsettlement::confirmChanged);
+    connect(confirm, &QCheckBox::checkStateChanged, this, &dlgAnnualsettlement::confirmChanged);
 
     buttons =new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
     buttons->button(QDialogButtonBox::Ok)->setDefault(true);

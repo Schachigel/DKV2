@@ -1,7 +1,7 @@
 #ifndef TEST_BOOKING_H
 #define TEST_BOOKING_H
 
-#include <QTest>
+#include <QtTest/QTest>
 
 class test_booking : public QObject
 {

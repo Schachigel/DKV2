@@ -14,16 +14,12 @@ const QString fnExistingFile{qsl("existingFile")};
 struct wpOpenOrNew : public QWizardPage
 {
     wpOpenOrNew(QWidget* p);
+
     int nextId() const override;
-//    void initializePage() override;
-//    bool validatePage() override;
 
 private:
     Q_OBJECT;
     bool init =true;
-    QRadioButton* rbNew =nullptr;
-    QRadioButton* rbExisting =nullptr;
-    QLabel *subTitleLabel = new QLabel();
 };
 
 struct wpNewDb : public QWizardPage

@@ -1,7 +1,7 @@
 #ifndef TEST_DKDBHELPER_H
 #define TEST_DKDBHELPER_H
 
-#include <QTest>
+#include <QtTest/QTest>
 
 class test_dkdbhelper : public QObject
 {

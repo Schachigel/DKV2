@@ -3,11 +3,14 @@
 
 class dlgChangeBooking : public QDialog
 {
+    Q_OBJECT
 public:
-    dlgChangeBooking();
-private slots:
+    explicit dlgChangeBooking(QWidget* w=nullptr);
+
+protected:
     void showEvent(QShowEvent*) override;
-    void accepted() ;
+    void accept() override;
+
 public: // data
     QString Vorname;
     QString Nachname;

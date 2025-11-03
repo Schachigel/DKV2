@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "helper.h"
 #include "busycursor.h"
 #include "opendatabase.h"

@@ -1,4 +1,5 @@
-#include "qnamespace.h"
+#include "pch.h"
+
 #include "qapplication.h"
 #include "qnamespace.h"
 #include <QtGlobal>

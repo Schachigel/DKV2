@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "helperfin.h"
 #include "dkdbhelper.h"
 #include "appconfig.h"
@@ -6,6 +8,8 @@
 
 #include "investment.h"
 #include "wiznew.h"
+
+
 
 /*
  * wizNewOrExistingPage - ask user if a new user should be created or an existing
@@ -203,6 +207,10 @@ int wpNewCreditorAddress::nextId() const
 /*
  * wizEmailPage - ask e-mail and comment for the new creditor
 */
+
+static QRegularExpression rx(qsl("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b"),
+                      QRegularExpression::CaseInsensitiveOption);
+
 wpEmail::wpEmail(QWidget *p) : QWizardPage(p)
 {
     LOG_CALL;
@@ -267,8 +275,7 @@ bool wpEmail::validatePage()
     {
         QRegularExpression rx(qsl("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b"),
                               QRegularExpression::CaseInsensitiveOption);
-        if (not rx.match(field(pnEMail).toString()).hasMatch())
-        {
+        if (not rx.match(field(pnEMail).toString()).hasMatch()) {
             QMessageBox::information(this, qsl("Fehler"), qsl("Das Format der e-mail Adresse ist ungültig: ") + email);
             return false;
         }
@@ -368,7 +375,7 @@ wpConfirmCreditor::wpConfirmCreditor(QWidget *p) : QWizardPage(p)
     l->addWidget(cbConfirmCreditor);
     l->addWidget(cbCreateContract);
     setLayout(l);
-    connect(cbCreateContract, &QCheckBox::stateChanged, this, &wpConfirmCreditor::onConfirmCreateContract_toggled);
+    connect(cbCreateContract, &QCheckBox::checkStateChanged, this, &wpConfirmCreditor::onConfirmCreateContract_toggled);
     setCommitPage(true);
 }
 void wpConfirmCreditor::initializePage()

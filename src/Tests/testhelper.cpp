@@ -1,3 +1,4 @@
+#include "../DKV2/pch.h"
 
 #include "../DKV2/helpersql.h"
 #include "../DKV2/dkdbhelper.h"
@@ -15,7 +16,7 @@ void getRidOfFile(QString filename)
 
 void initTestDkDb_InMemory()
 {   LOG_CALL;
-    init_DKDBStruct();
+    reInit_DKDBStruct();
     openDefaultDbConnection_InMemory();
     QVERIFY(dkdbstructur.createDb());
 }
@@ -74,25 +75,25 @@ void cleanupTestDkDb()
     closeAllDatabaseConnections();
     if (QFile::exists(testDbFilename))
         QFile::remove(testDbFilename);
-//    QDir().rmdir("../data");
+
     QVERIFY2( (QFile::exists(testDbFilename) == false), "destroy database failed." );
+}
+void openDefaultDatabaseConnection(QString name, QString options =QString())
+{
+    QSqlDatabase::addDatabase(dbTypeName);
+    QSqlDatabase db =QSqlDatabase::database();
+    db.setDatabaseName(name);
+    db.setConnectOptions(options);
+    db.open();
+
 }
 void openDefaultDbConnection_InMemory()
 {
-//    QSqlDatabase::addDatabase(dbTypeName);
-//    QSqlDatabase db;
-//    db.setDatabaseName(qsl(":memory:"));
-//    db.open();
-    QSqlDatabase::addDatabase(dbTypeName);
-    QSqlDatabase::database().setDatabaseName(qsl(":memory:"));
-    QSqlDatabase::database();
+    openDefaultDatabaseConnection(qsl(":memory:"));
 }
 void openDefaultDbConnection(QString file /*testDbFilename*/)
 {
-    QSqlDatabase::addDatabase(dbTypeName);
-    QSqlDatabase::database().setDatabaseName(file);
-    QSqlDatabase::database().setConnectOptions ("QSQLITE_OPEN_URI;QSQLITE_ENABLE_SHARED_CACHE");
-    QSqlDatabase::database().open ();
+    openDefaultDatabaseConnection(file, ("QSQLITE_OPEN_URI;QSQLITE_ENABLE_SHARED_CACHE"));
 }
 void closeDefaultDbConnection( )
 {
@@ -228,20 +229,6 @@ enum DB_COMPARE_MODE
     compareData
 };
 
-//bool dbCompare(const QString& left_file, const QString& right_file, DB_COMPARE_MODE compareMode)
-//{
-//    autoDb left_db(left_file, qsl("left_con"), autoDb::read_only);
-//    autoDb right_db(right_file, qsl("right_con"), autoDb::read_only);
-
-//    // compare tables
-//    QStringList left_T, right_T;
-//    left_T
-
-//    // compare fields
-
-//    // compare content
-//}
-
 void dbgDumpDatabase(const QString& testname)
 {   LOG_CALL;
     QString filename { qsl("./data/%1.db").arg(testname).replace (':', '#')};
@@ -252,8 +239,11 @@ void dbgDumpDatabase(const QString& testname)
     QFile::remove(filename);
     qInfo() << "removing file for replacement: " << filename;
     QVERIFY( not QFile::exists(filename));
-    QString sql{qsl("VACUUM INTO '%1'").arg(filename)};
-    QSqlDatabase::database().exec(sql);
+
+    QSqlQuery q;
+    q.prepare(qsl("VACUUM INTO '%1'").arg(filename));
+    q.exec();
+
     QVERIFY( QFile::exists(filename));
 }
 

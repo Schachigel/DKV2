@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif

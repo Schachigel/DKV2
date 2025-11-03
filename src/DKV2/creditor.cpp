@@ -69,12 +69,12 @@ bool creditor::fromDb( const qlonglong id)
 
     for(int i=0; i<rec.count(); i++)
     {
-        qInfo() << "reading Kreditor from db; Field:" << rec.field(i).name() << "-value:" << rec.field(i).value() << "(" << rec.field(i).value().type() << ")";
-        if( dkdbstructur[tablename][rec.field(i).name()].type() == QMetaType::QString)
+        qInfo() << "reading Kreditor from db; Field:" << rec.field(i).name() << "-value:" << rec.field(i).value() << "(" << rec.field(i).value().metaType().name() << ")";
+        if( dkdbstructur[tablename][rec.field(i).name()].metaType().id() == QMetaType::QString)
             ti.setValue(rec.field(i).name(), rec.field(i).value().toString());
-        else if( dkdbstructur[tablename][rec.field(i).name()].type() == QMetaType::LongLong)
+        else if( dkdbstructur[tablename][rec.field(i).name()].value().metaType().id() == QMetaType::LongLong)
             ti.setValue(rec.field(i).name(), rec.field(i).value().toLongLong());
-        else if( dkdbstructur[tablename][rec.field(i).name()].type() == QMetaType::Double)
+        else if( dkdbstructur[tablename][rec.field(i).name()].value().metaType().id() == QMetaType::Double)
             ti.setValue(rec.field(i).name(), rec.field(i).value().toDouble());
         else
             ti.setValue(rec.field(i).name(), rec.field(i).value());
@@ -100,15 +100,16 @@ bool creditor::isValid( QString& errortext) const
         ti.getValue(fnStadt).toString().isEmpty())
         errortext = qsl("Die Adressdaten sind unvollständig");
     QString email = ti.getValue(fnEmail).toString();
-    if( email.size() or email == qsl("NULL_STRING"))
-    {
-        QRegularExpression rx(qsl("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b"),
+
+    static const QRegularExpression rx(qsl("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b"),
                               QRegularExpression::CaseInsensitiveOption);
+
+    if( email.size() or email == qsl("NULL_STRING")){
         if( not rx.match(email).hasMatch())
             errortext = "Das Format der e-mail Adresse ist ungültig: " + email;
     }
     QString iban = ti.getValue(qsl("IBAN")).toString();
-    if( iban.size()){
+    if( iban.size()) {
         if( not checkIban(iban))
             errortext = qsl("Das Format der IBAN ist nicht korrekt: ") + iban;
     }

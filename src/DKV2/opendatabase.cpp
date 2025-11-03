@@ -1,3 +1,4 @@
+#include "pch.h"
 
 #include "helper.h"
 #include "dkdbhelper.h"
@@ -38,6 +39,7 @@ bool tryToUseDb(const QString dbPath) {
 
 bool askUserForNextDb() {
     wizOpenOrNewDb wizOpenOrNew;
+
     if( QDialog::Accepted not_eq wizOpenOrNew.exec()) {
         qInfo() << "wizard OpenOrNew was canceled by the user";
         return false;
@@ -66,7 +68,7 @@ bool openDB_atStartup()
 {
     // was a path provided by command line?
     QString dbPath {getDbFileFromCommandline()};
-    if( not dbPath.isEmpty ()) {
+    if( dbPath.size()) {
         // there was a command line arguemnt and we assume it is a file path
         qInfo() << "Path from command line: " << dbPath;
         dbPath = QFileInfo (dbPath).canonicalFilePath ();
@@ -101,7 +103,7 @@ bool openDB_atStartup()
 bool openDB_MRU( const QString path)
 {
     QString cPath = QFileInfo(path).canonicalFilePath ();
-    if( tryToUseDb (path))
+    if( tryToUseDb (cPath))
         return true;
     if( appConfig::LastDb().isEmpty()){
         expected_error(qsl("Beim Öffnen der Datenbank %1 ist ein schwerwiegender Fehler aufgetreten. Die Anwendung wird beendet").arg(path));

@@ -633,6 +633,7 @@ QString contract::toString(const QString &title) const
     }
     stream << "Wert:     " << value() << qsl("\n");
     stream << "Zinssatz: " << interestRate() << qsl("\n");
+    stream << "verz.Zz   " << interestActive() << qsl("\n");
     stream << "Buchungen:" << getNbrOfBookings (id()) << qsl("\n");
     return ret;
 }
@@ -775,7 +776,7 @@ bool operator==(const contract& lhs, const contract& rhs)
             continue;
         if( (lhs.td.getValue(fname) == rhs.td.getValue(fname))
                 &&
-           (lhs.td.getValue(fname).type () == rhs.td.getValue(fname).type ()))
+           (lhs.td.getValue(fname).metaType () == rhs.td.getValue(fname).metaType ()))
             // QVariant comparison might convert QString to numbers
             continue;
         else {
@@ -805,7 +806,7 @@ contract saveRandomContract(const tableindex_t creditorId)
 void saveRandomContractPerCreditor()
 {
     QVector<QVariant> creditorIds = executeSingleColumnSql(dkdbstructur[qsl("Kreditoren")][contract::fnId]);
-    for( const QVariant& creditorId: creditorIds) {
+    for( const QVariant& creditorId: std::as_const(creditorIds)) {
         saveRandomContract (creditorId.toLongLong ());
     }
 }
@@ -827,7 +828,7 @@ int activateAllContracts(int year)
     QVector<dbfield> idField {contract::getTableDef().Fields()[0]};
     QVector<QSqlRecord> ids= executeSql(idField);
     int res =0;
-    for( const auto& id : ids) {
+    for( const auto& id : std::as_const(ids)) {
         contract c(id.value (0).toLongLong ());
         if( not c.interestActive ())
             c.bookActivateInterest (QDate(year, 1, 1).addYears (-1));

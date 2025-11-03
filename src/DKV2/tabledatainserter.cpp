@@ -21,13 +21,13 @@ bool TableDataInserter::setValue(const QString& n, const QVariant& v, treatNull 
         setValueToDefault(n);
         return true;
     }
-    if( dbAffinityType(record.field(n).type()) == dbAffinityType(v.type())) {
+    if( dbAffinityType(record.field(n).metaType()) == dbAffinityType(v.metaType())) {
         record.setValue(n, v);
         return true;
     }
-    qInfo() << "TDI::setValue: Wrong field type for insertion -> converting" << v.type() << " -> " << record.field(n).type();
+    qInfo() << "TDI::setValue: Wrong field type for insertion -> converting" << v.metaType().name() << " -> " << record.field(n).metaType().name();
     QVariant vf (v);
-    if( vf.convert(record.field(n).type())) {
+    if( vf.convert(record.field(n).metaType())) {
         record.setValue(n, vf);
         return true;
     }
@@ -52,6 +52,7 @@ bool TableDataInserter::setValues(const QSqlRecord &input)
     if( input.count() not_eq record.count())
         RETURN_ERR( false, qsl("TableDataInserter setValues faild: wrong sqlRecord size (actual / expected): %1 / %2").arg(i2s(input.count ()),i2s(record.count())) );
     qInfo() << "Tdi: setting Values from QSqlRecord";
+
     for( int i=0; i< input.count(); i++) {
         if( setValue(input.fieldName(i), input.value(i))) {
             qInfo() << "TDI::setValues: Value set: " << input.fieldName(i) << " : " << input.value(i);

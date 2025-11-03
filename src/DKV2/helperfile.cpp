@@ -1,3 +1,4 @@
+#include "pch.h"
 
 #include "helper.h"
 #include "helperfile.h"
@@ -147,7 +148,7 @@ HANDLE openDbSignalnFile =INVALID_HANDLE_VALUE;
 QFile* openDbIndicationFile =nullptr;
 #endif
 namespace {
-QString indicatorfilenameExtension {qsl(".is_opened_By_Dkv2")};
+QString indicatorfilenameExtension {qsl(".is_opened_By_Dkv2")}; // clazy:exclude=non-pod-global-static
 }
 
 void createSignalFile(const QString& filename)

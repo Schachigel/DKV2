@@ -1,7 +1,7 @@
 #ifndef TEST_APPCONFIG_H
 #define TEST_APPCONFIG_H
 
-#include <QTest>
+#include <QtTest/QTest>
 
 class test_appConfig : public QObject
 {
@@ -14,8 +14,8 @@ private:
     // test helper data
 
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
+    void init();
+    void cleanup();
 //    void init();
 //    void cleanup();
     void test_initials();

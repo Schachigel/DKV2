@@ -11,12 +11,12 @@ public: // types
     // constr. destr. & access fu
     explicit dbfield() : QSqlField(){}
     dbfield(const QString& name,
-            const QVariant::Type type=QMetaType::QString)
-     :  QSqlField(name, type)
+            const QMetaType::Type type=QMetaType::QString)
+        :  QSqlField(name, QMetaType(type))
     {
         Q_ASSERT(isSupportedDBType(type));
         Q_ASSERT( not name.contains(qsl("-")));
-        setType(type);
+        setMetaType(QMetaType(type));
         // autoinc will prevent the reuse of prim.key values after deletion
     }
     bool operator ==(const dbfield &b) const;
@@ -31,7 +31,7 @@ public: // types
     dbfield setDefaultNow() { setDefaultValue(QVariant()); timeStamp =true; return *this;}
 private:
     // somewhat a helper
-    static bool isSupportedDBType(const QVariant::Type t);
+    static bool isSupportedDBType(const QMetaType::Type t);
     // data
     bool unique = false;
     bool primaryKey=false;

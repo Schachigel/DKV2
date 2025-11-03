@@ -1,5 +1,6 @@
-#include "testhelper.h"
+#include "../DKV2/pch.h"
 
+#include "testhelper.h"
 #include "test_views.h"
 
 void test_views::initTestCase()

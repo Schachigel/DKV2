@@ -1,3 +1,4 @@
+#include "pch.h"
 
 #include "wizcancelcontract.h"
 
@@ -89,7 +90,7 @@ wpCancelContract_SummaryPage::wpCancelContract_SummaryPage(QWidget* p) : QWizard
     layout->addWidget(subTitleLabel);
     layout->addWidget(cb);
     setLayout(layout);
-    connect(cb, &QCheckBox::stateChanged, this, &wpCancelContract_SummaryPage::onConfirmData_toggled);
+    connect(cb, &QCheckBox::checkStateChanged, this, &wpCancelContract_SummaryPage::onConfirmData_toggled);
 }
 void wpCancelContract_SummaryPage::initializePage()
 {

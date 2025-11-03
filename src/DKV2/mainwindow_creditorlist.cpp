@@ -1,3 +1,4 @@
+#include "pch.h"
 
 #include "dlgdisplaycolumns.h"
 #include "busycursor.h"

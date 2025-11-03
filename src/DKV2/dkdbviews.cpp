@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "helper.h"
 #include "helpersql.h"
 #include "dkdbviews.h"
@@ -357,7 +359,7 @@ ORDER BY Zinssatz
 // VIEWs to be created in the database
 //////////////////////////////////////
 const QString vnBookingsOverview {qsl("vBuchungen")};
-const QString sqlBookingsOverview {qsl(
+const QString sqlBookingsOverview {qsl( // clazy:exclude=non-pod-global-static
 R"str(
 SELECT
   IFNULL(B.Datum, V.Vertragsdatum),
@@ -395,8 +397,7 @@ const QMap<QString, QString> views ={
 bool createDkDbViews( const QMap<QString, QString>& views, const QSqlDatabase& db)
 {
     QMapIterator<QString, QString> iter(views);
-    while (iter.hasNext ()) {
-        iter.next ();
+for (auto it = views.cbegin(); it != views.cend(); ++it) {
         if( not createPersistentDbView (iter.key (), iter.value (), db)) {
             qDebug() << __FUNCTION__ << ": " << "failed with " << iter.key() << iter.value();
             return false;

@@ -1,3 +1,5 @@
+#include "../DKV2/pch.h"
+
 #include "../DKV2/creditor.h"
 #include "../DKV2/contract.h"
 #include "../DKV2/booking.h"
@@ -252,7 +254,7 @@ void test_booking::test_getBookings()
     QVERIFY( bookDeposit (cont.id(), d1, deposit_amount));
 
     {
-        QVector bookings =getBookings(cont.id());
+        QVector<booking>  bookings =getBookings(cont.id());
         QVERIFY( bookings.size() == 1);
         QCOMPARE( bookings[0], booking(cont.id(), bookingType::deposit, d1, deposit_amount));
     }

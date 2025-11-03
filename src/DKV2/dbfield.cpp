@@ -1,11 +1,12 @@
 #include <iso646.h>
+#include "pch.h"
 
 #include "helper.h"
 #include "helpersql.h"
 
 #include "dbfield.h"
 
-/* static */ bool dbfield::isSupportedDBType(QVariant::Type t)
+/* static */ bool dbfield::isSupportedDBType(QMetaType::Type t)
 {
     if(t == QMetaType::LongLong) return true; // index col
     if(t == QMetaType::Int)      return true; // money in ct
@@ -22,13 +23,13 @@ bool dbfield::operator ==(const dbfield &b) const
 {
     return ((tableName() == b.tableName())
             and (name()  == b.name())
-            and (type()  == b.type()));
+            and (metaType()  == b.metaType()));
 }
 
 QString dbfield::get_CreateSqlSnippet() const
 {
     return name()
-            + qsl(" ") + dbCreatetable_type(type())
+           + qsl(" ") + dbCreatetable_type(metaType())
             + (primaryKey ? qsl(" PRIMARY KEY") : "")
             + (isAutoValue()? qsl(" AUTOINCREMENT") : "")
             + ((requiredStatus()==Required)? qsl(" NOT NULL") : "")

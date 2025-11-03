@@ -1,3 +1,4 @@
+#include "../DKV2/pch.h"
 
 #include "financaltimespan.h"
 

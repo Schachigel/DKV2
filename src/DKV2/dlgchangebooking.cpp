@@ -1,11 +1,10 @@
-
 #include "helper.h"
 #include "helperfin.h"
 #include "qevent.h"
 #include "qlineedit.h"
 #include "dlgchangebooking.h"
 
-dlgChangeBooking::dlgChangeBooking() {
+dlgChangeBooking::dlgChangeBooking(QWidget* ) {
     QLabel* header =new QLabel(qsl("Buchungswert anpassen"));
     QLabel* msg    =new QLabel(qsl("Mit diesem Dialog kannst Du den Betrag einer Buchung ändern.<p>"
                                    "Normalerweise sollte das nicht notwendig sein. Es kann aber helfen, <br>"
@@ -15,8 +14,8 @@ dlgChangeBooking::dlgChangeBooking() {
 
     buttons =new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
     buttons->button(QDialogButtonBox::Ok)->setDefault(true);
-    connect(buttons, &QDialogButtonBox::accepted, this, &dlgChangeBooking::accepted);
-    connect(buttons, &QDialogButtonBox::rejected, this, &dlgChangeBooking::reject);
+    connect(buttons, &QDialogButtonBox::accepted, this, &dlgChangeBooking::accept);
+    connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     info =new QLabel(qsl("Änderung der Buchung vom 31.3.1922 zu dem Vertrag KENNUNG3333333 <p>von Hugo Hurtiglangername<p>"
                               "Bisheriger Wert: <b>444,55 Euro</b><p>"));
@@ -55,7 +54,7 @@ void dlgChangeBooking::showEvent(QShowEvent* se)
     centerDlg(qobject_cast<QWidget*>(parent()), this, 200, 300);
 }
 
-void dlgChangeBooking::accepted()
+void dlgChangeBooking::accept()
 {
     QLocale l;
     qInfo() << leNeuerWert->text ();

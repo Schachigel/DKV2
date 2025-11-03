@@ -1,4 +1,4 @@
-
+#include "pch.h"
 #include "helper.h"
 
 #include "busycursor.h"
@@ -48,7 +48,7 @@ namespace {
 qlonglong intFromRight(const QString& input, const QString& flag)
 {
     auto convOk =false;
-    QStringRef argument =input.rightRef(input.length()-flag.length());
+    QString argument =input.right(input.length()-flag.length());
     qlonglong nbr =argument.toInt(&convOk);
     if( convOk)
         return nbr;
@@ -601,7 +601,7 @@ void MainWindow::on_btnSave2Csv_clicked()
             if( ba.at(j)) {
                 QVariant v =recSingleRow.value (j);
                 QVariant tmp(v);
-                if( tmp.canConvert (QMetaType::Double) && tmp.convert (QMetaType::Double))
+                if( tmp.canConvert (QMetaType(QMetaType::Double)) && tmp.convert (QMetaType(QMetaType::Double)))
                     csv.appendToRow( QLocale().toString(tmp.toDouble (), 'f', 2));
                 else
                     csv.appendToRow(recSingleRow.value(j).toString());

@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include <iso646.h>
 
 #include "helper.h"
@@ -364,7 +366,7 @@ wpNewDatabase_SummaryPage::wpNewDatabase_SummaryPage(QWidget *p) : QWizardPage(p
     layout->addWidget(subTitleLabel);
     layout->addWidget(cb);
     setLayout(layout);
-    connect(cb, &QCheckBox::stateChanged, this, &wpNewDatabase_SummaryPage::onConfirmData_toggled);
+    connect(cb, &QCheckBox::checkStateChanged, this, &wpNewDatabase_SummaryPage::onConfirmData_toggled);
 }
 void wpNewDatabase_SummaryPage::initializePage()
 {

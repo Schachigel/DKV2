@@ -1,7 +1,7 @@
 #ifndef TEST_DB_H
 #define TEST_DB_H
 
-#include <QTest>
+#include <QtTest/QTest>
 
 class test_db : public QObject
 {

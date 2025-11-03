@@ -1,3 +1,4 @@
+#include "pch.h"
 
 #include "helper.h"
 #include "helperfile.h"
@@ -15,9 +16,8 @@
 // dbstructure dkdbstructur;
 
 dbstructure dbstructure::appendTable(const dbtable& t)
-{   // LOG_CALL;
-//    qInfo() << "adding table to db structure " << t.name;
-    for (auto& table: qAsConst(Tables)) {
+{
+    for (auto& table: std::as_const(Tables)) {
         if( table.Name() == t.Name()) {
             qCritical() << "Versuch eine Tabelle wiederholt zur Datenbank hinzuzufügen";
             Q_ASSERT( not bool("redundent table in structure"));
@@ -28,8 +28,7 @@ dbstructure dbstructure::appendTable(const dbtable& t)
 }
 
 dbtable dbstructure::operator[](const QString& name) const
-{   // LOG_CALL;
-    // qDebug() << "accessing db table " << name;
+{
     for( dbtable table : Tables) {
         if( table.Name() == name)
             return table;
@@ -55,6 +54,19 @@ bool dbstructure::createDb(const QSqlDatabase& db) const
     return true;
 }
 
+QString dbstructure::toString()
+{
+    QString ret;
+    for (const dbtable& t : std::as_const(Tables)) {
+        for (const dbfield& f : t.Fields() ) {
+            ret += f.name() + ", " +f.tableName() +", " +f.metaType().name() +"\n";
+        }
+    }
+    return ret;
+}
+
+
+
 void init_DKDBStruct()
 {   LOG_CALL_W("Setting up internal database structures");
     if( dkdbstructur.getTables ().size ())
@@ -70,6 +82,12 @@ void init_DKDBStruct()
     dkdbstructur.appendTable(booking::getTableDef_deletedBookings());
     dkdbstructur.appendTable(appConfig::getTableDef());
 }
+void reInit_DKDBStruct()
+{
+    dkdbstructur.clear();
+    init_DKDBStruct();
+}
+
 
 // db creation for newDb and copy (w & w/o de-personalisation)
 bool createFileWithDatabaseStructure (const QString& targetfn, const dbstructure& dbs/* =dkdbstructu*/)

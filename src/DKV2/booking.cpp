@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "helper.h"
 #include "helpersql.h"
 #include "contract.h"
@@ -118,7 +119,7 @@ QDate dateOfnextSettlement()
      * gebuchte Geldeingänge für Neuverträge (=Aktivierungen) gab
     */
     QVariant ret =executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(sqlNextAnnualSettlement));
-    bool canC = ret.convert(QMetaType::QDate);
+    bool canC = ret.convert(QMetaType(QMetaType::QDate));
     QDate retDate = canC ? ret.toDate () : QDate();
     RETURN_OK(retDate, qsl("DateOfnextSettlement: Date of next Settlement was found as %1").arg(retDate.toString (Qt::ISODate)));
 }

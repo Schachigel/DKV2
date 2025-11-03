@@ -202,7 +202,7 @@ wpChangeContract_Summary::wpChangeContract_Summary(QWidget* p) : QWizardPage(p)
     layout->addWidget(subTitleLabel);
     layout->addWidget(cb);
     setLayout(layout);
-    connect(cb, &QCheckBox::stateChanged, this, &wpChangeContract_Summary::onConfirmData_toggled);
+    connect(cb, &QCheckBox::checkStateChanged, this, &wpChangeContract_Summary::onConfirmData_toggled);
 }
 
 int wpChangeContract_DatePage::nextId() const

@@ -1,3 +1,4 @@
+#include "pch.h"
 
 #include "helper.h"
 #include "appconfig.h"
@@ -10,27 +11,19 @@
 wpOpenOrNew::wpOpenOrNew(QWidget* p) : QWizardPage(p)
 {   LOG_CALL;
     setTitle(qsl("Datenbank Auswahl"));
-    subTitleLabel->setWordWrap(true);
-    subTitleLabel->setText(qsl("Mit dieser Dialogfolge kann die Datenbank zum Speichern der Kreditdaten gewählt werden."));
-    QRadioButton* rbNew  = new QRadioButton(qsl("Neue Datenbank anlegen"));
-    registerField(fnCreateNew, rbNew);
-    QRadioButton* rbOpen = new QRadioButton(qsl("Eine existierende Datenbank öffnen"));
+    setSubTitle(qsl("Mit dieser Dialogfolge kann die Datenbank zum Speichern der Kreditdaten gewählt werden."));
+
     QVBoxLayout* lv =new QVBoxLayout();
-    lv->addWidget(subTitleLabel);
+    QRadioButton* rbNew =new QRadioButton(qsl("Neue Datenbank anlegen"), this);
+    QRadioButton* rbOpen =new QRadioButton(qsl("Eine existierende Datenbank öffnen"), this);
+    rbOpen->setChecked(true);
+    registerField(fnCreateNew, rbNew);
+
     lv->addWidget(rbNew);
     lv->addWidget(rbOpen);
 
     setLayout(lv);
 }
-
-//void wizOpenOrNewDatabase::initializePage()
-//{   //LOG_CALL;
-//}
-
-//bool wizOpenOrNewDatabase::validatePage()
-//{   //LOG_CALL;
-//    return true;
-//}
 
 int wpOpenOrNew::nextId() const
 {

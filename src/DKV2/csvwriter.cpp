@@ -1,7 +1,5 @@
+#include "pch.h"
 
-#include "helper.h"
-#include "helpersql.h"
-#include "helperfin.h"
 #include "helperfile.h"
 #include "appconfig.h"
 #include "csvwriter.h"
@@ -23,7 +21,7 @@ int csvwriter::addColumns(const QString& headers)
 
 int csvwriter::addColumns(const QStringList headers)
 {   LOG_CALL;
-    for(auto& s : qAsConst(headers))
+    for(auto& s : std::as_const(headers))
     {
         addColumn(s);
     }
@@ -45,7 +43,7 @@ void csvwriter::appendToRow(const QString& value)
 void csvwriter::addRow(const QStringList &cols)
 {   //LOG_CALL;
     Q_ASSERT(cols.size() == headers.size());
-    for( auto& s : qAsConst(cols)) {
+    for( auto& s : std::as_const(cols)) {
         appendToRow(s);
     }
 }
@@ -67,12 +65,12 @@ QString csvwriter::appendCsvLine(const QString& line, const QString& appendix) c
 QString csvwriter::toString() const
 {   LOG_CALL;
     QString out;
-    for( auto& i : qAsConst(headers)) {
+    for( auto& i : std::as_const(headers)) {
         out = appendCsvLine(out, i);
     }
-    for( auto& j : qAsConst(rows)) {
+    for( auto& j : std::as_const(rows)) {
         QString line;
-        for( auto& k : qAsConst(j))
+        for( auto& k : std::as_const(j))
         {
             line = appendCsvLine( line, k);
         }
@@ -92,7 +90,6 @@ bool csvwriter::saveAndShowInExplorer(const QString& proposedFileName) const
 
     QTextStream s;
     s.setDevice (&file);
-    s.setCodec("UTF-8");
     s.setGenerateByteOrderMark(true);
     s << toString();
 
@@ -107,7 +104,7 @@ bool StringLists2csv(const QString& filename, const QStringList& header, const Q
     csvwriter csv (qsl(";"));
 //    qDebug() << header;
     csv.addColumns(header);
-    for( auto& line : qAsConst(data)) {
+    for( auto& line : std::as_const(data)) {
 //        qDebug() << line;
         if(line.size() not_eq numColumns){
             qWarning() << "csv file not created due to wrong number of elements in " << line;

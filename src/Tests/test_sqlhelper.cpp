@@ -8,12 +8,13 @@
 #include "test_sqlhelper.h"
 
 void test_sqlhelper::init()
-{   LOG_CALL;
+{
+    reInit_DKDBStruct();
     openDefaultDbConnection_InMemory();
 }
 
 void test_sqlhelper::cleanup()
-{   LOG_CALL;
+{
     closeDefaultDbConnection();
 }
 void test_sqlhelper::test_init_cleanup()
@@ -182,7 +183,7 @@ void test_sqlhelper::test_executeSql_namedParams()
         QVERIFY (rowCount(tname) == 1);
         // one record
         QVector<QSqlRecord> result;
-        QVERIFY (executeSql (qsl("SELECT * FROM %1 WHERE i=:param").arg(tname), {QPair(qsl(":param"), QVariant(42))}, result));
+        QVERIFY (executeSql (qsl("SELECT * FROM %1 WHERE i=:param").arg(tname),  QVector<QPair<QString, QVariant>>{{qsl(":param"), QVariant(42)}}, result));
         QCOMPARE (result.size(), 1);
     }
     {
@@ -341,7 +342,8 @@ void test_sqlhelper::test_eSingleValueSql_field_table_PreservesValues()
 
     value =executeSingleValueSql("aDate",   "testtable", "id=1");
     QCOMPARE( value.toDate(), date);
-    QCOMPARE( value, QVariant(date)); value.clear ();
+    // QCOMPARE( value, QVariant(date)); changed in Qt6; QVariant can not know the type here and there is no more implizit conversion
+    value.clear ();
 
     value =executeSingleValueSql("anInt",   "testtable", "id=1");
     QCOMPARE( value.toLongLong (), i);
@@ -370,7 +372,8 @@ void test_sqlhelper::test_eSingleValueSql_field_table_PreservesValues()
 
     value =executeSingleValueSql("aDate",   "testtable", "id=2");
     QCOMPARE( value.toDate(), date);
-    QCOMPARE( value, QVariant(date)); value.clear ();
+    // QCOMPARE( value, QVariant(date)); changed in Qt6; QVariant can not know the type here and there is no more implizit conversion
+    value.clear ();
 
     value =executeSingleValueSql("anInt",   "testtable", "id=2");
     QCOMPARE( value.toInt(), i);
@@ -394,9 +397,12 @@ void test_sqlhelper::test_eSingleValueSql_dbfield_PreservsValue()
     t.append(dbfield("anInt",   QMetaType::Int));
     t.append(dbfield("aString", QMetaType::QString));
     t.append(dbfield("aBool",   QMetaType::Bool));
-    QVERIFY(ensureTable(t));
-    // <- prep
 
+    dkdbstructur.appendTable(t);
+
+    QVERIFY(ensureTable(t));
+
+    // <- prep
     QVariant string{"Hallo Welt!"};
     QVariant date{QDate (1965, 5, 6)};
     QVariant i {42};
@@ -405,8 +411,9 @@ void test_sqlhelper::test_eSingleValueSql_dbfield_PreservsValue()
                 .arg( tablename, DbInsertableString(date), DbInsertableString(i), DbInsertableString(string), DbInsertableString(b))};
 
     QVERIFY(QSqlQuery().exec(createSql));
-    //
+
     QCOMPARE(executeSingleValueSql(t["id"],     "id=1"), QVariant(1));
+
     QCOMPARE(executeSingleValueSql(t["aDate"],  "id=1"), date);
     QCOMPARE(executeSingleValueSql(t["anInt"],  "id=1"), i);
     QCOMPARE(executeSingleValueSql(t["aString"],"id=1"), string);
@@ -482,7 +489,7 @@ void test_sqlhelper::test_executeSingleColumnSql()
     QCOMPARE( result.count(), rowcount);
     qlonglong i =0;
     for ( auto& v : result) {
-        QVERIFY(v.type() == t["col_ll"].type());
+        QVERIFY(v.metaType() == t["col_ll"].metaType());
         QCOMPARE( v.toLongLong (), i++);
     }
     //
@@ -490,7 +497,7 @@ void test_sqlhelper::test_executeSingleColumnSql()
     int j =0;
     QCOMPARE( result.count(), rowcount);
     for ( auto& v : result) {
-        QVERIFY(v.type() == t["col_I"].type());
+        QVERIFY(v.metaType() == t["col_I"].metaType());
         QCOMPARE( v.toInt (), j--);
     }
     //
@@ -498,7 +505,7 @@ void test_sqlhelper::test_executeSingleColumnSql()
     QCOMPARE( result.count(), rowcount);
     i =0;
     for ( auto& v : result) {
-        QVERIFY(v.type() == t["col_S"].type());
+        QVERIFY(v.metaType() == t["col_S"].metaType());
         QCOMPARE (v.toString (), i2s(i++));
     }
     //
@@ -506,7 +513,7 @@ void test_sqlhelper::test_executeSingleColumnSql()
     QCOMPARE( result.count(), rowcount);
     i =0;
     for ( auto& v : result) {
-        QVERIFY(v.type() == t["col_D"].type());
+        QVERIFY(v.metaType() == t["col_D"].metaType());
         QCOMPARE(v.toDate (), QDate::currentDate ().addDays (i++));
     }
     //
@@ -514,7 +521,7 @@ void test_sqlhelper::test_executeSingleColumnSql()
     QCOMPARE( result.count(), rowcount);
     i =0;
     for ( auto& v : result) {
-        QVERIFY(v.type() == t["col_B"].type());
+        QVERIFY(v.metaType() == t["col_B"].metaType());
         QCOMPARE( v.toBool (), i++%2 == 0);
     }
 }
@@ -578,15 +585,15 @@ void test_sqlhelper::test_variantTypeConservation()
 
     // data types are back to what we put in
     QCOMPARE( ll, record.value("col_ll"));
-    QCOMPARE( ll.type(), record.value("col_ll").type());
+    QCOMPARE( ll.metaType(), record.value("col_ll").metaType());
     QCOMPARE(  i, record.value("col_I"));
-    QCOMPARE(  i.type(), record.value("col_I").type());
+    QCOMPARE(  i.metaType(), record.value("col_I").metaType());
     QCOMPARE(  s, record.value("col_S"));
-    QCOMPARE(  s.type(), record.value("col_S").type());
+    QCOMPARE(  s.metaType(), record.value("col_S").metaType());
     QCOMPARE(  d, record.value("col_D"));
-    QCOMPARE(  d.type(), record.value("col_D").type());
+    QCOMPARE(  d.metaType(), record.value("col_D").metaType());
     QCOMPARE(  b, record.value("col_B"));
-    QCOMPARE(  b.type(), record.value("col_B").type());
+    QCOMPARE(  b.metaType(), record.value("col_B").metaType());
 }
 
 namespace {

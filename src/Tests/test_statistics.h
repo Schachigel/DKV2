@@ -1,7 +1,7 @@
 #ifndef TEST_STATISTICS_H
 #define TEST_STATISTICS_H
 
-#include <QTest>
+#include <QtTest/QTest>
 
 #include "../DKV2/contract.h"
 

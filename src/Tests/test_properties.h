@@ -1,7 +1,7 @@
 #ifndef TEST_PROPERTIES_H
 #define TEST_PROPERTIES_H
 
-#include <QTest>
+#include <QtTest/QTest>
 
 class test_properties : public QObject
 {

@@ -1,3 +1,4 @@
+#include "pch.h"
 
 #include "dkdbhelper.h"
 #include "wizterminatecontract.h"
@@ -56,7 +57,7 @@ wpTerminateContract_ConfirmationPage::wpTerminateContract_ConfirmationPage(QWidg
     layout->addWidget(cbPrint);
     layout->addWidget(cbConfirm);
     setLayout(layout);
-    connect(cbConfirm, &QCheckBox::stateChanged, this, &wpTerminateContract_ConfirmationPage::onConfirmData_toggled);
+    connect(cbConfirm, &QCheckBox::checkStateChanged, this, &wpTerminateContract_ConfirmationPage::onConfirmData_toggled);
 }
 
 void wpTerminateContract_ConfirmationPage::initializePage()

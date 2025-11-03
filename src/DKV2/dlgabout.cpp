@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "helper.h"
 #include "dlgabout.h"
 #include "qboxlayout.h"

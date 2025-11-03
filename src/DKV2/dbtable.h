@@ -15,7 +15,7 @@ struct dbtable
 {
     // constr. destr. & access fu
     dbtable(const QString& n="") : name(n) {}
-//    void setName(const QString& n) { name = n;}
+    void setName(const QString& n) { name = n;}
     QString Name() const {return name;}
     const QVector<dbfield> Fields() const { return fields;}
     const QVector<dbForeignKey> ForeignKeys() const {return foreignKeys;}
