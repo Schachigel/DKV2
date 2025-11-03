@@ -110,8 +110,10 @@ void createEmptyFile(const QString& path)
     QDir d(fi.absolutePath());
     d.mkpath(".");
     QFile f(fi.absoluteFilePath());
-    f.open(QIODevice::WriteOnly);
-    f.close();
+    if(f.open(QIODevice::WriteOnly))
+        f.close();
+    else
+        qCritical() << "failed to create empty file";
 }
 
 bool dbHasTable(const QString& tname, const QSqlDatabase& db /*=QSqlDatabase::database()*/)

@@ -9,16 +9,27 @@
 bool extractTemplateFileFromResource(const QString& path, const QString& file, const QString& outname)
 {   LOG_CALL_W(file);
     QFileInfo fi( QDir(path), outname.isEmpty() ? file : outname);
-    if( fi.exists ())
+    if( fi.exists ()) {
+        qInfo() << "existing template file was not overwritten: " << outname;
         return true;
+    }
 
     QFile resource(qsl(":/res/")+file);
-    resource.open(QIODevice::ReadOnly);
+    if( not resource.open(QIODevice::ReadOnly)){
+        qCritical() << "resource could not be opened from file";
+        return false;
+    }
     QByteArray br =resource.readAll ();
 
     QFile target (fi.absoluteFilePath ());
-    target.open(QIODevice::WriteOnly);
-    target.write (br);
+    if( not target.open(QIODevice::WriteOnly)) {
+        qCritical() << "target of resource could not be written";
+        return false;
+    }
+    if( -1 <= target.write (br)) {
+        qCritical() << "failed to write to template file";
+        return false;
+    }
 
     if( not fi.exists()) {
         qCritical() << "failed to write template files";

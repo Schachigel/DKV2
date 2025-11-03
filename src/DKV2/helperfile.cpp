@@ -12,8 +12,9 @@ QString getUniqueTempFilename(const QString &templateFileName, const QString& pu
     result = result.append(purpose).append(qsl("_XXXXXX.")).append (fi.suffix ());
     // make sure the file can be used
     QTemporaryFile temp {result};
-    temp.open();
+    [[maybe_unused]] auto x =temp.open(); // creates the file
     return temp.fileName();
+    // destruction will delete the file, so the name is available for being created again
 }
 
 bool moveToBackup(const QString &fn)
@@ -136,9 +137,12 @@ QString fileToString( const QString& filename)
 }
 
 bool stringToFile( const QString& string, const QString& fullFileName)
-{
+{   LOG_CALL;
     QFile file(fullFileName);
-    file.open (QFile::WriteOnly);
+    if( not file.open (QFile::WriteOnly)) {
+        qCritical() << "opening file failed";
+        return false;
+    }
     return file.write( string.toUtf8 ()) > 0;
 }
 

@@ -1,3 +1,5 @@
+# Ressource einbinden
+set(CMAKE_AUTORCC ON)                         # aktiviert rcc
 set (TARGET DKV2)
 
 qt_add_executable( ${TARGET} WIN32
@@ -12,7 +14,7 @@ qt_add_executable( ${TARGET} WIN32
     
     DKV2.rc
     dkv2version.h
-    resource.qrc
+#    resource.qrc
 
     pch.h
 
@@ -106,10 +108,13 @@ qt_add_executable( ${TARGET} WIN32
     wizterminatecontract.cpp
     wizterminatecontract.h
 )
+target_sources(DKV2 PRIVATE resource.qrc)    # deine .qrc
+
 # usage of precompiled header
 target_precompile_headers( ${TARGET} PRIVATE pch.h)
 set_target_properties(${TARGET} PROPERTIES AUTOGEN_USE_PCH ON)
 set_target_properties(${TARGET} PROPERTIES AUTOGEN_USE_PCH ON)
+
 
 target_link_libraries(${TARGET} PRIVATE Qt6::Core)
 target_link_libraries(${TARGET} PRIVATE Qt6::Widgets)

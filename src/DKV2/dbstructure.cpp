@@ -152,7 +152,9 @@ bool validateDbSchema(const QString& filename, const dbstructure& dbs /*=dkdbstr
         if( db.open()) {
             if (hasAllTablesAndFields(db, dbs)) {
                 qInfo() << filename << " is a valid Database";
+                ////
                 return true;
+                ////
             } else {
                 msg =qsl("db does not have all tables or fields");
             }
