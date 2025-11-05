@@ -15,7 +15,7 @@ if [ -z ${QTDIR+x} ]; then
   QTDIR="${Qt5_Dir:-/usr}"
 fi
 
-QMAKE=${QTDIR}/bin/qmake6
+QMAKE="${QT_ROOT_DIR}/bin/qmake6"
 MAKE=make
 
 GIT_VERSION=`git rev-parse --short HEAD`
@@ -66,7 +66,9 @@ EXTRA_PLUGINS="platforms/libqxcb.so,platformthemes/libqgtk3.so"
 # - https://github.com/probonopd/linuxdeployqt/issues/612
 # - https://github.com/probonopd/linuxdeployqt/issues/608
 PATH=${QTDIR}/bin:${PATH} ${LINUXDEPLOYQT} app/DKV2 \
-  -extra-plugins=${EXTRA_PLUGINS} \
+  #-extra-plugins=${EXTRA_PLUGINS} \
+  -extra-plugins="$QT_ROOT_DIR/plugins/sqldrivers/libqsqlite.so" \
+  -plugins=platforms,iconengines,imageformats,sqldrivers \
   -appimage \
   ${LINUXDEPLOYQT_OPTS} \
   -bundle-non-qt-libs \
