@@ -22,6 +22,7 @@ qt_add_executable(${TARGET}
     test_tabledatainserter.cpp test_tabledatainserter.h
     test_views.cpp test_views.h
     testhelper.cpp testhelper.h
+    financaltimespan.cpp financaltimespan.h
 
     # benötigte Quelldateien aus DKV2
     ../DKV2/helper.cpp
