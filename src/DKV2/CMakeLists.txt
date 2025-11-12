@@ -1,8 +1,13 @@
-# Ressource einbinden
-set(CMAKE_AUTORCC ON)                         # aktiviert rcc
-set (TARGET DKV2)
+set(TARGET DKV2)
 
-qt_add_executable( ${TARGET} WIN32
+# Plattform-Flag (GUI: kein Konsolenfenster unter Windows / macOS)
+if(APPLE)
+    set(PLATFORM_GUI_FLAG MACOSX_BUNDLE)
+elseif(WIN32)
+    set(PLATFORM_GUI_FLAG WIN32)
+endif()
+
+qt_add_executable(${TARGET} ${PLATFORM_GUI_FLAG}
     CMakeLists.txt
     main.cpp
     mainwindow.cpp
@@ -14,7 +19,7 @@ qt_add_executable( ${TARGET} WIN32
     
     DKV2.rc
     dkv2version.h
-#    resource.qrc
+    resource.qrc
 
     pch.h
 
@@ -108,19 +113,24 @@ qt_add_executable( ${TARGET} WIN32
     wizterminatecontract.cpp
     wizterminatecontract.h
 )
-target_sources(DKV2 PRIVATE resource.qrc)    # deine .qrc
 
-# usage of precompiled header
-target_precompile_headers( ${TARGET} PRIVATE pch.h)
-set_target_properties(${TARGET} PROPERTIES AUTOGEN_USE_PCH ON)
+target_precompile_headers(${TARGET} PRIVATE pch.h)
 set_target_properties(${TARGET} PROPERTIES AUTOGEN_USE_PCH ON)
 
-
-target_link_libraries(${TARGET} PRIVATE Qt6::Core)
-target_link_libraries(${TARGET} PRIVATE Qt6::Widgets)
-target_link_libraries(${TARGET} PRIVATE Qt6::Sql)
-target_link_libraries(${TARGET} PRIVATE Qt6::PrintSupport)
-
-set_target_properties(${TARGET} PROPERTIES
-    WIN22_EXECUTABLE ON
+target_link_libraries(${TARGET} PRIVATE
+    Qt6::Core Qt6::Widgets Qt6::Sql Qt6::PrintSupport
 )
+
+# Plattform-spezifische Eigenschaften
+if(WIN32)
+    set_target_properties(${TARGET} PROPERTIES WIN32_EXECUTABLE ON)
+elseif(APPLE)
+    set_target_properties(${TARGET} PROPERTIES
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist"
+        MACOSX_BUNDLE_BUNDLE_NAME "DKV2"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "com.example.dkv2"
+    )
+    install(TARGETS ${TARGET} BUNDLE DESTINATION .)
+else()
+    install(TARGETS ${TARGET} RUNTIME DESTINATION bin)
+endif()
