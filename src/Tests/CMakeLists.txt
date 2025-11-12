@@ -45,20 +45,20 @@ qt_add_executable(${TARGET}
     ../DKV2/tabledatainserter.cpp
 )
 
-# find_package(Qt6 REQUIRED COMPONENTS Test Widgets Sql PrintSupport)
-find_package(Qt6 REQUIRED COMPONENTS Test Sql PrintSupport)
+find_package(Qt6 REQUIRED COMPONENTS Test Widgets Sql PrintSupport)
 
-# usage of precompiled header
 target_precompile_headers(${TARGET} PRIVATE ../DKV2/pch.h)
 set_target_properties(${TARGET} PROPERTIES AUTOGEN_USE_PCH ON)
 
-# If you want to be explicit on MSVC:
-if (MSVC)
-  target_link_options(Tests PRIVATE /SUBSYSTEM:CONSOLE)
+target_link_libraries(${TARGET} PRIVATE
+    Qt6::Test Qt6::Core Qt6::Widgets Qt6::Sql Qt6::PrintSupport
+)
+
+# explizit Konsolen-Subsystem unter Windows
+if(MSVC)
+    target_link_options(${TARGET} PRIVATE /SUBSYSTEM:CONSOLE)
 endif()
 
-target_link_libraries(${TARGET} PRIVATE Qt6::Test)
-target_link_libraries(${TARGET} PRIVATE Qt6::Core)
-target_link_libraries(${TARGET} PRIVATE Qt6::Widgets)
-target_link_libraries(${TARGET} PRIVATE Qt6::Sql)
-target_link_libraries(${TARGET} PRIVATE Qt6::PrintSupport)
+# optional: Tests installierbar machen
+install(TARGETS ${TARGET} RUNTIME DESTINATION tests)
+
