@@ -47,8 +47,12 @@ jobs:
       - name: Bundle with macdeployqt (+ DMG)
         run: |
           APP_PATH="build/install/${APP_NAME}.app"
-          "${Qt6_DIR}/bin/macdeployqt" "$APP_PATH" -always-overwrite
-          # macdeployqt kann DMG erzeugen, ist aber oft rudimentär – wir bauen eine saubere DMG:
+          echo "QT_ROOT_DIR=${QT_ROOT_DIR}"
+          ls -la "${QT_ROOT_DIR}/bin" || true
+
+          "${QT_ROOT_DIR}/bin/macdeployqt" "$APP_PATH" -always-overwrite -verbose=2
+
+          # optional eigene DMG:
           create-dmg \
             --volname "${APP_NAME}" \
             --overwrite \
