@@ -13,7 +13,7 @@ execute_process(
 
 add_compile_definitions(GIT_COMMIT="${GIT_COMMIT_HASH}")
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widges Sql PrintSupport)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Sql PrintSupport)
 
 qt_standard_project_setup()
 
