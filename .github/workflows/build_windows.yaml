@@ -1,0 +1,80 @@
+name: Windows build 
+on:
+  push:
+    branches: ["*"]
+    tags: ["v*"]
+  pull_request:
+    branches: ["main"]
+    
+jobs:
+  build-windows:
+    name: Windows build
+    runs-on: windows-latest
+    permissions:
+        contents: write
+
+    env:
+      BUILD_TYPE: Release
+      APP_NAME: DKV2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Qt 6.9.3 (MSVC)
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.9.3'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2022_64'
+          cache: true
+
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install Ninja
+        run: choco install ninja -y
+     # diagnose
+      - name: Scan CMake for bad generator expressions
+        shell: pwsh
+        run: |
+          $hits = Select-String -Path .\**\CMakeLists.txt, .\**\*.cmake -Pattern '\$<CONFIG:' -SimpleMatch
+          if ($hits) { $hits | ForEach-Object { "$($_.Path):$($_.LineNumber): $($_.Line)" } ; exit 1 }
+
+
+      - name: Configure (CMake + Ninja)
+        shell: pwsh
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE -DCMAKE_PREFIX_PATH="$env:Qt6_DIR\lib\cmake"
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build build -j2
+
+      - name: Install to staging
+        shell: pwsh
+        run: cmake --install build --prefix "$pwd\build\install"
+
+      - name: Bundle with windeployqt
+        shell: bash
+        run: |
+          APP_EXE="build/install/${APP_NAME}.exe"
+          echo "Qt bin: $QT_ROOT_DIR/bin"
+          "$QT_ROOT_DIR/bin/windeployqt.exe" --release --compiler-runtime "$APP_EXE"
+
+      - name: Package zip
+        run: powershell -Command "Compress-Archive -Path build\install\* -DestinationPath build\${env:APP_NAME}-windows.zip -Force"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-Windows
+          path: |
+            build/${{ env.APP_NAME }}-windows.zip
+            build/install/**
+
+      # optional: attach to release on tags (mirror mac/linux)
+      - name: Upload to GitHub Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/${{ env.APP_NAME }}-windows.zip

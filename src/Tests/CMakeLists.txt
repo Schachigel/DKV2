@@ -1,5 +1,10 @@
 set (TARGET Tests)
 
+install(TARGETS DKV2
+  BUNDLE DESTINATION .
+  CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
+)
+
 qt_add_executable(${TARGET}
     test_main.cpp
     resource.qrc
@@ -44,6 +49,10 @@ qt_add_executable(${TARGET}
     ../DKV2/helperfin.cpp
     ../DKV2/ibanvalidator.cpp
     ../DKV2/tabledatainserter.cpp
+)
+
+target_compile_definitions(Tests PRIVATE
+  $<$<CONFIG:Debug>:DKV2_TEST_DEBUG>
 )
 
 find_package(Qt6 REQUIRED COMPONENTS Test Widgets Sql PrintSupport)

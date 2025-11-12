@@ -114,6 +114,15 @@ qt_add_executable(${TARGET} ${PLATFORM_GUI_FLAG}
     wizterminatecontract.h
 )
 
+target_compile_definitions(DKV2 PRIVATE
+  $<$<CONFIG:Debug>:DKV2_DEBUG>
+)
+
+install(TARGETS DKV2
+  BUNDLE DESTINATION .
+  CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
+)
+
 target_precompile_headers(${TARGET} PRIVATE pch.h)
 set_target_properties(${TARGET} PROPERTIES AUTOGEN_USE_PCH ON)
 

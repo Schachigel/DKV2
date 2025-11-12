@@ -47,17 +47,16 @@ jobs:
       - name: Bundle with macdeployqt (+ DMG)
         run: |
           APP_PATH="build/install/${APP_NAME}.app"
+          "${QT_ROOT_DIR}/bin/macdeployqt" "$APP_PATH" -always-overwrite -verbose=2
           echo "QT_ROOT_DIR=${QT_ROOT_DIR}"
           ls -la "${QT_ROOT_DIR}/bin" || true
 
-          "${QT_ROOT_DIR}/bin/macdeployqt" "$APP_PATH" -always-overwrite -verbose=2
-
-          # optional eigene DMG:
-          create-dmg \
-            --volname "${APP_NAME}" \
-            --overwrite \
-            "build/install/${APP_NAME}.dmg" \
-            "$APP_PATH"
+      - name: Create DMG (hdiutil)
+        run: |
+          APP_PATH="build/install/${APP_NAME}.app"
+          DMG_PATH="build/install/${APP_NAME}.dmg"
+          rm -f "$DMG_PATH"
+          hdiutil create -volname "${APP_NAME}" -srcfolder "$APP_PATH" -ov -format UDZO "$DMG_PATH"
 
       - name: Upload artifacts (DMG + .app)
         uses: actions/upload-artifact@v4
