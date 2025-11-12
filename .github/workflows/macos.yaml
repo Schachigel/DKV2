@@ -1,0 +1,64 @@
+name: macOS build
+
+on:
+  push:
+    branches: ["*"]
+    tags: ["*"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-macos:
+    runs-on: macos-14  # Apple Silicon Runner; auf Intel -> macos-13
+    env:
+      BUILD_TYPE: Release
+      APP_NAME: DKV2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          brew update
+          brew install ninja create-dmg
+
+      - name: Install Qt 6.9.3
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.9.3"
+          host: "mac"
+          target: "desktop"
+          cache: true
+          aqtversion: "==3.*"
+          # ggf. Module, z. B.: modules: "qtimageformats qtsvg qttools"
+      - name: Configure (CMake + Ninja)
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+            -DCMAKE_PREFIX_PATH="${Qt6_DIR}/lib/cmake" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
+            # Für Universal Binary: getrennte Builds arm64/x86_64 oder CMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+      - name: Build
+        run: cmake --build build --config ${BUILD_TYPE} -j3
+
+      - name: Install to bundle staging
+        run: cmake --install build --config ${BUILD_TYPE} --prefix "${PWD}/build/install"
+
+      - name: Bundle with macdeployqt (+ DMG)
+        run: |
+          APP_PATH="build/install/${APP_NAME}.app"
+          "${Qt6_DIR}/bin/macdeployqt" "$APP_PATH" -always-overwrite
+          # macdeployqt kann DMG erzeugen, ist aber oft rudimentär – wir bauen eine saubere DMG:
+          create-dmg \
+            --volname "${APP_NAME}" \
+            --overwrite \
+            "build/install/${APP_NAME}.dmg" \
+            "$APP_PATH"
+
+      - name: Upload artifacts (DMG + .app)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-macOS
+          path: |
+            build/install/${{ env.APP_NAME }}.dmg
+            build/install/${{ env.APP_NAME }}.app
