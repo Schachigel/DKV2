@@ -38,13 +38,17 @@ jobs:
       - name: Scan CMake for bad generator expressions
         shell: pwsh
         run: |
-          $hits = Select-String -Path .\**\CMakeLists.txt, .\**\*.cmake -Pattern '\$<CONFIG:' -SimpleMatch
-          if ($hits) { $hits | ForEach-Object { "$($_.Path):$($_.LineNumber): $($_.Line)" } ; exit 1 }
-
+          $pattern = '\$\<CONFIG:'
+          $hits = Select-String -Path .\**\CMakeLists.txt, .\**\*.cmake -Pattern $pattern -SimpleMatch
+          if ($hits) {
+          $hits | ForEach-Object { "$($_.Path):$($_.LineNumber): $($_.Line)" }
+          exit 1
+          }
 
       - name: Configure (CMake + Ninja)
         shell: pwsh
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE -DCMAKE_PREFIX_PATH="$env:Qt6_DIR\lib\cmake"
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE -DCMAKE_PREFIX_PATH="$env:Qt6_DIR\lib\cmake"
 
       - name: Build
         shell: pwsh
