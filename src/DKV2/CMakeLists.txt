@@ -118,10 +118,14 @@ target_compile_definitions(DKV2 PRIVATE
   $<$<CONFIG:Debug>:DKV2_DEBUG>
 )
 
-install(TARGETS DKV2
-  BUNDLE DESTINATION .
-  CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
-)
+if(WIN32)
+    install(TARGETS DKV2 RUNTIME DESTINATION .)
+elseif(APPLE)
+    install(TARGETS DKV2 BUNDLE DESTINATION .)
+else()
+    install(TARGETS DKV2 RUNTIME DESTINATION bin)
+endif()
+
 
 target_precompile_headers(${TARGET} PRIVATE pch.h)
 set_target_properties(${TARGET} PROPERTIES AUTOGEN_USE_PCH ON)
