@@ -50,4 +50,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: DKV2-AppImage
-          path: build-dist-linux/*.AppImage
+          path: build-dist-linux/DKV2-*.AppImage

@@ -64,4 +64,4 @@ jobs:
           name: ${{ env.APP_NAME }}-macOS
           path: |
             build/install/${{ env.APP_NAME }}.dmg
-            build/install/${{ env.APP_NAME }}.app
+            # build/install/${{ env.APP_NAME }}.app
