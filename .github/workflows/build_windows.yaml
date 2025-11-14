@@ -73,7 +73,7 @@ jobs:
         with:
           name: ${{ env.APP_NAME }}-Windows
           path: |
-            build/${{ env.APP_NAME }}-windows.zip
+            # build/${{ env.APP_NAME }}-windows.zip
             build/install/**
 
       # optional: attach to release on tags (mirror mac/linux)
