@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product
+    Id="*"
+    Name="DKV2"
+    Language="1031"
+    Version="22.0.11"
+    Manufacturer="Holger Mairon"
+    UpgradeCode="{878ED3B1-AE99-4C1B-884A-601407566F10}">
+
+    <Package
+      InstallerVersion="500"
+      Compressed="yes"
+      InstallScope="perMachine"
+      Platform="x64" />
+
+    <!-- Updates / Upgrades -->
+    <MajorUpgrade
+      AllowDowngrades="no"
+      DowngradeErrorMessage="Eine neuere Version von DKV2 ist bereits installiert." />
+
+    <!-- Explizites Media statt MediaTemplate -->
+    <Media Id="1" Cabinet="DKV2.cab" EmbedCab="yes" />
+
+    <!-- Feature, das alle von heat erzeugten Dateien einschließt -->
+    <Feature Id="MainFeature" Title="DKV2" Level="1">
+      <ComponentGroupRef Id="DKV2Components" />
+      <ComponentRef Id="ApplicationShortcut" />
+    </Feature>
+
+    <!-- UI: Dialog mit Zielordner-Auswahl, ohne Lizenz -->
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <UIRef Id="WixUI_InstallDir" />
+    
+    <!-- Lizenz-Dialog überspringen -->
+    <UI>
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="InstallDirDlg" Order="2">1</Publish>
+      <Publish Dialog="InstallDirDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" Order="2">1</Publish>
+    </UI>
+
+    <!-- Installationspfad: C:\Program Files\DKV2 -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER" Name="DKV2" />
+      </Directory>
+      
+      <!-- Startmenü -->
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="DKV2" />
+      </Directory>
+    </Directory>
+    
+    <!-- Startmenü-Verknüpfung -->
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="{A7B8C9D0-1234-5678-90AB-CDEF12345678}">
+        <Shortcut Id="ApplicationStartMenuShortcut"
+                  Name="DKV2"
+                  Description="Direktkreditverwaltung für MHS Projekte"
+                  Target="[INSTALLFOLDER]DKV2.exe"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="DKV2Icon.exe"
+                  IconIndex="0" />
+        <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" 
+                       Key="Software\DKV2" 
+                       Name="installed" 
+                       Type="integer" 
+                       Value="1" 
+                       KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    
+    <!-- Icon Definition -->
+    <Icon Id="DKV2Icon.exe" SourceFile="$(var.SourceDir)\DKV2.exe" />
+
+  </Product>
+</Wix>

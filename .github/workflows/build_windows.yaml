@@ -1,21 +1,23 @@
-name: Windows build 
+name: Windows Build
+
 on:
   push:
     branches: ["*"]
     tags: ["v*"]
   pull_request:
     branches: ["main"]
-    
+
 jobs:
   build-windows:
     name: Windows build
     runs-on: windows-latest
     permissions:
-        contents: write
+      contents: write
 
     env:
       BUILD_TYPE: Release
       APP_NAME: DKV2
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,51 +36,187 @@ jobs:
 
       - name: Install Ninja
         run: choco install ninja -y
-     # diagnose
+
       - name: Scan CMake for bad generator expressions
         shell: pwsh
         run: |
           $pattern = '\$\<CONFIG:'
           $hits = Select-String -Path .\**\CMakeLists.txt, .\**\*.cmake -Pattern $pattern -SimpleMatch
           if ($hits) {
-          $hits | ForEach-Object { "$($_.Path):$($_.LineNumber): $($_.Line)" }
-          exit 1
+            $hits | ForEach-Object { "$($_.Path):$($_.LineNumber): $($_.Line)" }
+            exit 1
           }
 
       - name: Configure (CMake + Ninja)
         shell: pwsh
         run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE="${env:BUILD_TYPE}" -DCMAKE_PREFIX_PATH="${env:Qt6_DIR}\lib\cmake"
+          cmake -S . -B build -G Ninja `
+            -DCMAKE_BUILD_TYPE="${env:BUILD_TYPE}" `
+            -DCMAKE_PREFIX_PATH="${env:Qt6_DIR}\lib\cmake"
 
       - name: Build
         shell: pwsh
         run: cmake --build build -j2
 
-      - name: Install to staging
+      - name: Install WiX Toolset
+        run: choco install wixtoolset -y
+
+      - name: Prepare staging directory
         shell: pwsh
-        run: cmake --install build --prefix "$pwd\build\install"
+        run: |
+          New-Item -ItemType Directory -Path "build\stage" -Force | Out-Null
+          $exe = "$env:APP_NAME.exe"
+          Copy-Item "build\$exe" "build\stage\$exe" -Force
 
       - name: Bundle with windeployqt
         shell: bash
         run: |
-          APP_EXE="build/install/${APP_NAME}.exe"
+          APP_EXE="build/stage/${APP_NAME}.exe"
           echo "Qt bin: $QT_ROOT_DIR/bin"
-          "$QT_ROOT_DIR/bin/windeployqt.exe" --release --compiler-runtime "$APP_EXE"
+          "$QT_ROOT_DIR/bin/windeployqt.exe" \
+            --release \
+            --compiler-runtime \
+            --no-translations \
+            --verbose 2 \
+            "$APP_EXE"
+
+      - name: Debug - Verify stage content after windeployqt
+        shell: pwsh
+        run: |
+          Write-Host "=== Files in build\stage ==="
+          Get-ChildItem build\stage -Recurse -File | ForEach-Object {
+            $size = "{0:N2}" -f ($_.Length / 1KB)
+            Write-Host "$($_.FullName.Replace((Get-Location).Path, '.')): $size KB"
+          }
+          
+          $totalSize = (Get-ChildItem build\stage -Recurse -File | 
+                        Measure-Object -Property Length -Sum).Sum / 1MB
+          Write-Host "`n=== Total size: $($totalSize:N2) MB ==="
+          
+          $fileCount = (Get-ChildItem build\stage -Recurse -File).Count
+          Write-Host "=== File count: $fileCount ==="
+
+      - name: Generate WiX fragment
+        shell: pwsh
+        run: |
+          $wixRoot = Get-ChildItem "${env:ProgramFiles(x86)}" -Directory -Filter "WiX Toolset*" |
+                     Sort-Object Name -Descending | Select-Object -First 1
+          $wixBin = Join-Path $wixRoot.FullName "bin"
+
+          New-Item -ItemType Directory -Path "installer" -Force | Out-Null
+
+          # Heat OHNE -g1 und MIT -platform x64
+          & "$wixBin\heat.exe" dir "build\stage" `
+            -cg DKV2Components `
+            -dr INSTALLFOLDER `
+            -gg -srd -sreg `
+            -var var.SourceDir `
+            -platform x64 `
+            -out installer\DKV2_files.wxs
+
+          Write-Host "`n=== First 50 lines of DKV2_files.wxs ==="
+          Get-Content installer\DKV2_files.wxs | Select-Object -First 50
+          
+          Write-Host "`n=== Checking Component count ==="
+          $componentCount = (Select-String -Path installer\DKV2_files.wxs -Pattern '<Component' -AllMatches).Matches.Count
+          Write-Host "Components found: $componentCount"
+          
+          Write-Host "`n=== Checking File count ==="
+          $fileCount = (Select-String -Path installer\DKV2_files.wxs -Pattern '<File' -AllMatches).Matches.Count
+          Write-Host "Files found: $fileCount"
+
+      - name: Build MSI
+        shell: pwsh
+        run: |
+          $wixRoot = Get-ChildItem "${env:ProgramFiles(x86)}" -Directory -Filter "WiX Toolset*" |
+                     Sort-Object Name -Descending | Select-Object -First 1
+          $wixBin = Join-Path $wixRoot.FullName "bin"
+
+          Write-Host "Using WiX bin: $wixBin"
+
+          # Relativen Pfad verwenden statt absolutem
+          $stagePath = "build\stage"
+          Write-Host "Stage path: $stagePath"
+          
+          $fileCount = (Get-ChildItem $stagePath -Recurse -File).Count
+          Write-Host "Files in stage: $fileCount"
+
+          # candle mit relativem Pfad
+          Write-Host "`nRunning candle.exe..."
+          & "$wixBin\candle.exe" `
+            -v `
+            -dSourceDir="$stagePath" `
+            -arch x64 `
+            -out installer\ `
+            installer\product.wxs `
+            installer\DKV2_files.wxs
+
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "candle.exe failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+          
+          Write-Host "`n=== .wixobj files created ==="
+          Get-ChildItem installer\*.wixobj | ForEach-Object {
+            $size = "{0:N2}" -f ($_.Length / 1KB)
+            Write-Host "$($_.Name): $size KB"
+          }
+
+          # light mit explizitem cab-cache Pfad
+          Write-Host "`nRunning light.exe..."
+          
+          # Absoluter Pfad zum build Verzeichnis für CAB
+          $buildPath = (Resolve-Path "build").Path
+          
+          & "$wixBin\light.exe" `
+            -v `
+            -ext WixUIExtension `
+            -b "$stagePath" `
+            -reusecab `
+            -cc "$buildPath" `
+            -spdb `
+            -sval `
+            -out build\DKV2.msi `
+            installer\product.wixobj `
+            installer\DKV2_files.wixobj
+
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "light.exe failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+
+          if (-not (Test-Path "build\DKV2.msi")) {
+            Write-Error "MSI was not created"
+            exit 1
+          }
+          
+          $msiFile = Get-Item "build\DKV2.msi"
+          $msiSize = $msiFile.Length / 1KB
+          Write-Host "`n=== MSI created ==="
+          Write-Host "Size: $([math]::Round($msiSize, 2)) KB"
+          Write-Host "Path: $($msiFile.FullName)"
+          
+          # CAB Datei prüfen (die enthält die eigentlichen Dateien)
+          if (Test-Path "build\cab1.cab") {
+            $cabSize = (Get-Item "build\cab1.cab").Length / 1MB
+            Write-Host "`n=== CAB file ==="
+            Write-Host "Size: $([math]::Round($cabSize, 2)) MB"
+          }
 
       - name: Package zip
-        run: powershell -Command "Compress-Archive -Path build\install\* -DestinationPath build\${env:APP_NAME}-windows.zip -Force"
+        shell: pwsh
+        run: |
+          $name = $env:APP_NAME
+          Compress-Archive -Path 'build\stage\*' -DestinationPath "build\$name-windows.zip" -Force
 
-      - name: Upload artifact
+      - name: Upload ZIP artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}-Windows
-          path: |
-            # build/${{ env.APP_NAME }}-windows.zip
-            build/install/**
+          name: ${{ env.APP_NAME }}-Windows-Zip
+          path: build/${{ env.APP_NAME }}-windows.zip
 
-      # optional: attach to release on tags (mirror mac/linux)
-      - name: Upload to GitHub Release (tags only)
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+      - name: Upload MSI artifact
+        uses: actions/upload-artifact@v4
         with:
-          files: build/${{ env.APP_NAME }}-windows.zip
+          name: DKV2-MSI
+          path: build/DKV2.msi

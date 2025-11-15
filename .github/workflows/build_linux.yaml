@@ -1,4 +1,5 @@
-name: Linux (Docker Jammy, Qt 6.9.3, AppImage)
+name: Linux Build 
+#(Docker Jammy, Qt 6.9.3, AppImage)
 
 on:
   push:
