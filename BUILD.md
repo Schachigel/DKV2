@@ -26,3 +26,9 @@ The easiest way to build on Ubuntu Linux 24.04 uses Docker to install Qt and req
   ```sh
   ./src/DKV2/DKV2
   ```
+- For creating DK-Briefe, copy these files into the `vorlagen` directory in your output directory
+  (often in `DKV2` in `Documents`):
+  - `brieflogo.png`
+  - `zinsbrief.css`
+  - `zinsbrief.html`
+  - `zinsliste.html`
