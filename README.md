@@ -5,8 +5,7 @@ Verwendete Technologie:
 Programmiersprache C++, 
 UI and Utility Framework Qt mit sqlite als Datenbank
 
-Beschreibung: sites.google.com/view/dkv2
-
-! Die Windows Installationen werden mit einer kostenlosen Version von Advanced Installer für Open Source Projekte erstellt. Herzlichen Dank an die Entwickler von https://www.advancedinstaller.com/
+Beschreibung: (noch) sites.google.com/view/dkv2
+! Doku wird verschoben nach https://schachigel.github.io/DKV2/
 
 CSV Dateien werden mit code aus dem qtcsv projekt (MIT lic.) generiert
