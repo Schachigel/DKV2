@@ -1,14 +1,7 @@
 set(TARGET DKV2)
 
-# Plattform-Flag (GUI: kein Konsolenfenster unter Windows / macOS)
-if(APPLE)
-    set(PLATFORM_GUI_FLAG MACOSX_BUNDLE)
-elseif(WIN32)
-    set(PLATFORM_GUI_FLAG WIN32)
-endif()
-
-qt_add_executable(${TARGET} ${PLATFORM_GUI_FLAG}
-    CMakeLists.txt
+# Source files
+set(DKV2_SOURCES
     main.cpp
     mainwindow.cpp
     mainwindow.h
@@ -16,11 +9,9 @@ qt_add_executable(${TARGET} ${PLATFORM_GUI_FLAG}
     mainwindow_contractlist.cpp
     mainwindow_creditorlist.cpp
     mainwindow_mru.cpp
-    
-    DKV2.rc
+
     dkv2version.h
     resource.qrc
-
     pch.h
 
     appconfig.cpp
@@ -52,7 +43,6 @@ qt_add_executable(${TARGET} ${PLATFORM_GUI_FLAG}
     dkdbindices.h
     dkdbviews.cpp
     dkdbviews.h
-    DKV2.icns
     dlgabout.cpp
     dlgabout.h
     dlgannualsettlement.cpp
@@ -81,7 +71,6 @@ qt_add_executable(${TARGET} ${PLATFORM_GUI_FLAG}
     helpersql.h
     ibanvalidator.cpp
     ibanvalidator.h
-    Info.plist
     investment.cpp
     investment.h
     mustache.cpp
@@ -114,27 +103,41 @@ qt_add_executable(${TARGET} ${PLATFORM_GUI_FLAG}
     wizterminatecontract.h
 )
 
-target_compile_definitions(DKV2 PRIVATE
-  $<$<CONFIG:Debug>:DKV2_DEBUG>
-)
-
+# Platform-specific sources
 if(WIN32)
-    install(TARGETS DKV2 RUNTIME DESTINATION .)
+    list(APPEND DKV2_SOURCES DKV2.rc)
 elseif(APPLE)
-    install(TARGETS DKV2 BUNDLE DESTINATION .)
-else()
-    install(TARGETS DKV2 RUNTIME DESTINATION bin)
+    list(APPEND DKV2_SOURCES DKV2.icns Info.plist)
 endif()
 
+# Platform-specific GUI flag
+if(APPLE)
+    set(PLATFORM_GUI_FLAG MACOSX_BUNDLE)
+elseif(WIN32)
+    set(PLATFORM_GUI_FLAG WIN32)
+endif()
 
+# Create executable
+qt_add_executable(${TARGET} ${PLATFORM_GUI_FLAG} ${DKV2_SOURCES})
+
+# Compile definitions
+target_compile_definitions(${TARGET} PRIVATE
+    $<$<CONFIG:Debug>:DKV2_DEBUG>
+)
+
+# Precompiled headers
 target_precompile_headers(${TARGET} PRIVATE pch.h)
 set_target_properties(${TARGET} PROPERTIES AUTOGEN_USE_PCH ON)
 
+# Link libraries
 target_link_libraries(${TARGET} PRIVATE
-    Qt6::Core Qt6::Widgets Qt6::Sql Qt6::PrintSupport
+    Qt6::Core
+    Qt6::Widgets
+    Qt6::Sql
+    Qt6::PrintSupport
 )
 
-# Plattform-spezifische Eigenschaften
+# Platform-specific properties
 if(WIN32)
     set_target_properties(${TARGET} PROPERTIES WIN32_EXECUTABLE ON)
 elseif(APPLE)
@@ -143,6 +146,12 @@ elseif(APPLE)
         MACOSX_BUNDLE_BUNDLE_NAME "DKV2"
         MACOSX_BUNDLE_GUI_IDENTIFIER "com.example.dkv2"
     )
+endif()
+
+# Installation
+if(WIN32)
+    install(TARGETS ${TARGET} RUNTIME DESTINATION .)
+elseif(APPLE)
     install(TARGETS ${TARGET} BUNDLE DESTINATION .)
 else()
     install(TARGETS ${TARGET} RUNTIME DESTINATION bin)

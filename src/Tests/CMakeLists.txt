@@ -1,35 +1,47 @@
-set (TARGET Tests)
+set(TARGET Tests)
 
-install(TARGETS DKV2
-  BUNDLE DESTINATION .
-  CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
-)
-
-qt_add_executable(${TARGET}
+# Test sources
+set(TEST_SOURCES
     test_main.cpp
     resource.qrc
-    ../DKV2/pch.h
 
-    # eigene Testdateien
-    test_appconfig.cpp test_appconfig.h
-    test_booking.cpp test_booking.h
-    test_contract.cpp test_contract.h
-    test_creditor.cpp test_creditor.h
-    test_csv.cpp test_csv.h
-    test_db.cpp test_db.h
-    test_dbtable.cpp test_dbtable.h
-    test_dkdbcopy.cpp test_dkdbcopy.h
-    test_dkdbhelper.cpp test_dkdbhelper.h
-    test_finance.cpp test_finance.h
-    test_properties.cpp test_properties.h
-    test_sqlhelper.cpp test_sqlhelper.h
-    test_statistics.cpp test_statistics.h
-    test_tabledatainserter.cpp test_tabledatainserter.h
-    test_views.cpp test_views.h
-    testhelper.cpp testhelper.h
-    financaltimespan.cpp financaltimespan.h
+    # Test files
+    test_appconfig.cpp
+    test_appconfig.h
+    test_booking.cpp
+    test_booking.h
+    test_contract.cpp
+    test_contract.h
+    test_creditor.cpp
+    test_creditor.h
+    test_csv.cpp
+    test_csv.h
+    test_db.cpp
+    test_db.h
+    test_dbtable.cpp
+    test_dbtable.h
+    test_dkdbcopy.cpp
+    test_dkdbcopy.h
+    test_dkdbhelper.cpp
+    test_dkdbhelper.h
+    test_finance.cpp
+    test_finance.h
+    test_properties.cpp
+    test_properties.h
+    test_sqlhelper.cpp
+    test_sqlhelper.h
+    test_statistics.cpp
+    test_statistics.h
+    test_tabledatainserter.cpp
+    test_tabledatainserter.h
+    testhelper.cpp
+    testhelper.h
+    financaltimespan.cpp
+    financaltimespan.h
+)
 
-    # benötigte Quelldateien aus DKV2
+# DKV2 source files needed for tests
+set(DKV2_TEST_SOURCES
     ../DKV2/helper.cpp
     ../DKV2/appconfig.cpp
     ../DKV2/booking.cpp
@@ -51,24 +63,35 @@ qt_add_executable(${TARGET}
     ../DKV2/tabledatainserter.cpp
 )
 
-target_compile_definitions(Tests PRIVATE
-  $<$<CONFIG:Debug>:DKV2_TEST_DEBUG>
+# Create test executable
+qt_add_executable(${TARGET} ${TEST_SOURCES} ${DKV2_TEST_SOURCES})
+
+# Compile definitions
+target_compile_definitions(${TARGET} PRIVATE
+    $<$<CONFIG:Debug>:DKV2_TEST_DEBUG>
 )
 
-find_package(Qt6 REQUIRED COMPONENTS Test Widgets Sql PrintSupport)
-
+# Precompiled headers
 target_precompile_headers(${TARGET} PRIVATE ../DKV2/pch.h)
 set_target_properties(${TARGET} PROPERTIES AUTOGEN_USE_PCH ON)
 
+# Link libraries
 target_link_libraries(${TARGET} PRIVATE
-    Qt6::Test Qt6::Core Qt6::Widgets Qt6::Sql Qt6::PrintSupport
+    Qt6::Test
+    Qt6::Core
+    Qt6::Widgets
+    Qt6::Sql
+    Qt6::PrintSupport
 )
 
-# explizit Konsolen-Subsystem unter Windows
+# Windows-specific: Force console subsystem
 if(MSVC)
     target_link_options(${TARGET} PRIVATE /SUBSYSTEM:CONSOLE)
 endif()
 
-# optional: Tests installierbar machen
-install(TARGETS ${TARGET} RUNTIME DESTINATION tests)
-
+# Installation
+install(TARGETS ${TARGET}
+    RUNTIME DESTINATION tests
+    BUNDLE DESTINATION .
+    CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
+)
