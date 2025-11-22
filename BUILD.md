@@ -26,11 +26,9 @@ The easiest way to build on Ubuntu Linux 24.04 uses Docker to install Qt and req
   ```sh
   ./src/DKV2/DKV2
   ```
-- Copy these files from `src/DKV2/res/` into the `vorlagen` directory in your output directory
-  (often in `DKV2` in `Documents`):
-  - `brieflogo.png`
+- After generating the first PDF output, you may wish to edit the content of the `vorlagen`
+  directory in your output directory (often in `DKV2` in `Documents`) to match your needs.  For
+  example:
+  - `brieflogo.png`: This one will most likely be wrong for you.
   - `zinsbrief.css`
   - `zinsbrief.html`
-  - `zinsbuchungen.csv`
-  - `zinsliste.html`
-  You may want to edit some of these templates (especially `brieflogo.png`) to match your project.
