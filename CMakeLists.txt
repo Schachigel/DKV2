@@ -3,6 +3,7 @@ project( dkv2 LANGUAGES CXX VERSION 0.20.0.11 )
 
 set( CMAKE_CXX_STANDARD 17)
 set( CMAKE_CXX_STANDARD_REQUIRED ON)
+set( CMAKE_AUTORCC ON)
 
 execute_process(
     COMMAND git rev-parse --short HEAD
