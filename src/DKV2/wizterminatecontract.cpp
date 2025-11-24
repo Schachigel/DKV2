@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "dkdbhelper.h"
 #include "wizterminatecontract.h"
@@ -59,7 +59,7 @@ wpTerminateContract_ConfirmationPage::wpTerminateContract_ConfirmationPage(QWidg
     setLayout(layout);
     // TODO Change to checkStateChanged once Qt 6.9 is available on all targets.
     // https://doc.qt.io/qt-6/qcheckbox-obsolete.html
-    connect(cbConfirm, &QCheckBox::stateChanged, this, &wpTerminateContract_ConfirmationPage::onConfirmData_toggled);
+    connect(cbConfirm, &QCheckBox::checkStateChanged, this, &wpTerminateContract_ConfirmationPage::onConfirmData_toggled);
 }
 
 void wpTerminateContract_ConfirmationPage::initializePage()
@@ -76,7 +76,7 @@ void wpTerminateContract_ConfirmationPage::initializePage()
     subtitle = subtitle.arg(s_d2euro(wiz->cont.value()), s_d2euro(interest), s_d2euro(finalValue));
     subTitleLabel->setText(subtitle);
 }
-void wpTerminateContract_ConfirmationPage::onConfirmData_toggled(int)
+void wpTerminateContract_ConfirmationPage::onConfirmData_toggled(Qt::CheckState)
 {
     emit completeChanged();
 }

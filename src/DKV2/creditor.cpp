@@ -322,7 +322,7 @@ creditor saveRandomCreditor()
     c.setFirstname(Vornamen [rand->bounded(Vornamen.count ())]);
     c.setLastname(Nachnamen [rand->bounded(Nachnamen.count ())]);
     c.setStreet(Strassen[rand->bounded(Strassen.count())] +i2s(count++));
-    int indexCity = rand->bounded(Cities.count());
+    int indexCity = rand->bounded((int)Cities.count());
     c.setPostalCode(Cities[indexCity].first);
     c.setCity(Cities[indexCity].second);
     QString email = c.firstname() % qsl(".") % c.lastname() % qsl("@") + emailprovider[rand->bounded(emailprovider.count())];

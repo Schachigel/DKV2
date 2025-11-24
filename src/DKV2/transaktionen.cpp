@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "appconfig.h"
 #include "dkdbhelper.h"
@@ -297,9 +297,8 @@ void receiveInitialBooking(contract *v) {
     if (not v->bookInitialPayment(
                 wiz.field(fnDate).toDate(),
                 QLocale().toDouble(wiz.field(fnAmount).toString()))) {
-        qCritical() << "contract activation failed";
-        Q_ASSERT(false);
-    }
+        qCritical() << Q_FUNC_INFO <<  "contract activation failed";
+        Q_UNREACHABLE();    }
     return;
 }
 void activateInterest(contract *v) {
@@ -337,7 +336,7 @@ void changeContractValue(contract *pc) {
     LOG_CALL;
     if (not pc->initialPaymentReceived()) {
         qCritical() << "tried to changeContractValue of an inactive contract";
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
         return;
     }
 

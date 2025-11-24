@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include <iso646.h>
 
@@ -369,7 +369,7 @@ wpNewDatabase_SummaryPage::wpNewDatabase_SummaryPage(QWidget *p) : QWizardPage(p
     setLayout(layout);
     // TODO Change to checkStateChanged once Qt 6.9 is available on all targets.
     // https://doc.qt.io/qt-6/qcheckbox-obsolete.html
-    connect(cb, &QCheckBox::stateChanged, this, &wpNewDatabase_SummaryPage::onConfirmData_toggled);
+    connect(cb, &QCheckBox::checkStateChanged, this, &wpNewDatabase_SummaryPage::onConfirmData_toggled);
 }
 void wpNewDatabase_SummaryPage::initializePage()
 {
@@ -396,7 +396,7 @@ void wpNewDatabase_SummaryPage::initializePage()
     subt = subt.arg(field(dbConfig::paramName(STARTINDEX)).toString());
     subTitleLabel->setText(subt);
 }
-void wpNewDatabase_SummaryPage::onConfirmData_toggled(int)
+void wpNewDatabase_SummaryPage::onConfirmData_toggled(Qt::CheckState)
 {
     emit completeChanged();
 }

@@ -1,16 +1,14 @@
-#include "pch.h"
-
 #include "helper.h"
 #include "dlgaskcontractlabel.h"
 
-dlgAskContractLabel::dlgAskContractLabel(const QString& oldLabel) : oldLabel(oldLabel)
+dlgAskContractLabel::dlgAskContractLabel(const QString& givenLabel)
 {
     QLabel* header =new QLabel(qsl("Vertragskennung anpassen"));
     QLabel* msg    =new QLabel(qsl("Mit diesem Dialog kannst Du die Kennung eines Vertrages ändern.<p>"
                                    " <b>Du solltest die Kennung jedoch nur aus wichtigem Grund ändern, <br>denn sie ist ein wichtiges Identifikationsmerkmal eines Vertrages.</b>"));
     msg->setTextFormat (Qt::RichText);
 
-    leLabel =new QLineEdit(oldLabel);
+    leLabel =new QLineEdit(givenLabel);
 
     buttons =new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
     buttons->button(QDialogButtonBox::Ok)->setDefault(true);

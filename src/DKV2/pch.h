@@ -1,7 +1,26 @@
+// pch.h
 #ifndef PCH_H
 #define PCH_H
 
+// Disable all warnings for precompiled headers (Qt framework code)
+#ifdef _MSC_VER
+// #pragma warning(push, 0)  // Disable all warnings
+#elif defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wextra"
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+
+
 #include <QObject>
+
+#include <QString>
+#include <QStringLiteral>
+#include <QStringList>
+#include <QStringBuilder>
+#include <QVariant>
+
 #include <QPrinter>
 #include <QApplication>
 #include <QGuiApplication>
@@ -65,13 +84,6 @@
 #include <QInputDialog>
 #include <QTextStream>
 
-#include <QString>
-#include <QStringLiteral>
-#include <QStringList>
-#include <QStringBuilder>
-
-#include <QVariant>
-
 #include <QRegularExpressionValidator>
 #include <QRegularExpression>
 
@@ -99,5 +111,12 @@
 
 #include <QHeaderView>
 #include <QTableView>
+
+// Re-enable warnings for your own code
+#ifdef _MSC_VER
+// #pragma warning(pop)  // Restore warning level
+#elif defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 #endif // PCH_H

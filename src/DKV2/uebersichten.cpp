@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "helpersql.h"
 #include "helperfin.h"
@@ -247,8 +247,8 @@ void uebersichten::renderDocument( uebersichten::uetype t)
 //        renderContractsByInterestByYear();
 //        break
     default:
-        Q_ASSERT(not "one shoule never come here");
-        break;
+        qCritical("invalid uetype");
+        Q_UNREACHABLE();
     }
 }
 

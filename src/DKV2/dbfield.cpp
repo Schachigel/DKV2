@@ -1,5 +1,5 @@
 #include <iso646.h>
-#include "pch.h"
+
 
 #include "helper.h"
 #include "helpersql.h"

@@ -102,7 +102,7 @@ QVariant QtVariantContext::value(const QString& key) const
         return m_contextStack.last();
     }
     QStringList keyPath = key.split(".");
-    for (int i = m_contextStack.count()-1; i >= 0; i--) {
+    for (qsizetype i = m_contextStack.count()-1; i >= 0; i--) {
         QVariant value = variantMapValueForKeyPath(m_contextStack.at(i), keyPath);
         if (!value.isNull()) {
             return value;
@@ -160,7 +160,7 @@ void QtVariantContext::pop()
     m_contextStack.pop();
 }
 
-int QtVariantContext::listCount(const QString& key) const
+qsizetype QtVariantContext::listCount(const QString& key) const
 {
     const QVariant& item = value(key);
     if (item.canConvert<QVariantList>()) {
@@ -240,7 +240,7 @@ QString Renderer::render(const QString& _template, Context* context)
     m_tagStartMarker = m_defaultTagStartMarker;
     m_tagEndMarker = m_defaultTagEndMarker;
 
-    return render(_template, 0, _template.length(), context);
+    return render(_template, 0, (int)_template.length(), context);
 }
 
 QString Renderer::render(const QString& _template, int startPos, int endPos, Context* context)
@@ -276,7 +276,7 @@ QString Renderer::render(const QString& _template, int startPos, int endPos, Con
                     setError("No matching end tag found for section", tag.start);
                 }
             } else {
-                int listCount = context->listCount(tag.key);
+                qsizetype listCount = context->listCount(tag.key);
                 if (listCount > 0) {
                     for (int i=0; i < listCount; i++) {
                         context->push(tag.key, i);
@@ -329,14 +329,14 @@ QString Renderer::render(const QString& _template, int startPos, int endPos, Con
             if (tag.indentation > 0) {
                 output += QString(" ").repeated(tag.indentation);
                 // Indenting the output to keep the parent indentation.
-                int posOfLF = partialContent.indexOf("\n", 0);
+                qsizetype posOfLF = partialContent.indexOf("\n", 0);
                 while (posOfLF > 0 && posOfLF < (partialContent.length() - 1)) { // .length() - 1 because we dont want indentation AFTER the last character if it's a LF
                     partialContent = partialContent.insert(posOfLF + 1, QString(" ").repeated(tag.indentation));
                     posOfLF = partialContent.indexOf("\n", posOfLF + 1);
                 }
             }
 
-            QString partialRendered = render(partialContent, 0, partialContent.length(), context);
+            QString partialRendered = render(partialContent, 0, (int)partialContent.length(), context);
 
             output += partialRendered;
 
@@ -378,24 +378,24 @@ void Renderer::setError(const QString& error, int pos)
 
 Tag Renderer::findTag(const QString& content, int pos, int endPos)
 {
-    int tagStartPos = content.indexOf(m_tagStartMarker, pos);
+    int tagStartPos = (int) content.indexOf(m_tagStartMarker, pos);
     if (tagStartPos == -1 || tagStartPos >= endPos) {
         return Tag();
     }
 
-    int tagEndPos = content.indexOf(m_tagEndMarker, tagStartPos + m_tagStartMarker.length());
+    int tagEndPos = (int) content.indexOf(m_tagEndMarker, tagStartPos + m_tagStartMarker.length());
     if (tagEndPos == -1) {
         return Tag();
     }
-    tagEndPos += m_tagEndMarker.length();
+    tagEndPos += (int) m_tagEndMarker.length();
 
     Tag tag;
     tag.type = Tag::Value;
     tag.start = tagStartPos;
-    tag.end = tagEndPos;
+    tag.end =   tagEndPos;
 
-    pos = tagStartPos + m_tagStartMarker.length();
-    endPos = tagEndPos - m_tagEndMarker.length();
+    pos = (int) tagStartPos + (int) m_tagStartMarker.length();
+    endPos = (int) tagEndPos - (int) m_tagEndMarker.length();
 
     QChar typeChar = content.at(pos);
 
@@ -415,7 +415,7 @@ Tag Renderer::findTag(const QString& content, int pos, int endPos)
         tag.key = readTagName(content, pos+1, endPos);
     } else if (typeChar == '=') {
         tag.type = Tag::SetDelimiter;
-        readSetDelimiter(content, pos+1, tagEndPos - m_tagEndMarker.length());
+        readSetDelimiter(content, pos+1, tagEndPos - (int) m_tagEndMarker.length());
     } else {
         if (typeChar == '&') {
             tag.escapeMode = Tag::Unescape;
@@ -423,7 +423,7 @@ Tag Renderer::findTag(const QString& content, int pos, int endPos)
         } else if (typeChar == '{') {
             tag.escapeMode = Tag::Raw;
             ++pos;
-            int endTache = content.indexOf('}', pos);
+            int  endTache = (int) content.indexOf('}', pos);
             if (endTache == tag.end - m_tagEndMarker.length()) {
                 ++tag.end;
             } else {

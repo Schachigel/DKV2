@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "helperfile.h"
 #include "appconfig.h"
@@ -13,19 +13,18 @@ void csvwriter::addColumn(const QString& header)
     headers.append(h.trimmed());
 }
 
-int csvwriter::addColumns(const QString& headers)
-{   LOG_CALL_W(headers);
-    QList<QString> list = headers.split(separator);
+qsizetype csvwriter::addColumns(const QString& HeadersAsString)
+{   LOG_CALL_W(HeadersAsString);
+    QList<QString> list = HeadersAsString.split(separator);
     return addColumns(list);
 }
 
-int csvwriter::addColumns(const QStringList headers)
+qsizetype csvwriter::addColumns(const QStringList HeadersToBeAdded)
 {   LOG_CALL;
-    for(auto& s : std::as_const(headers))
-    {
+    for(auto& s : std::as_const(HeadersToBeAdded)) {
         addColumn(s);
     }
-    return headers.size();
+    return HeadersToBeAdded.size();
 }
 
 void csvwriter::appendToRow(const QString& value)
@@ -100,7 +99,7 @@ bool csvwriter::saveAndShowInExplorer(const QString& proposedFileName) const
 bool StringLists2csv(const QString& filename, const QStringList& header, const QVector<QStringList>& data)
 {
     LOG_CALL;
-    int numColumns =header.size();
+    qsizetype numColumns =header.size();
     csvwriter csv (qsl(";"));
 //    qDebug() << header;
     csv.addColumns(header);

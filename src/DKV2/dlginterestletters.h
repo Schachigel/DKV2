@@ -14,7 +14,7 @@ public:
     virtual void setYear(int y);
     int getYear() { return yearSelector->currentData ().toInt (); }
 private slots:
-    void confirmChanged(int state);
+    void confirmChanged(Qt::CheckState state);
 
 private:
     int year;

@@ -36,7 +36,9 @@ qt_standard_project_setup()
 # Platform-specific settings
 if(APPLE)
     # Lower deployment target for broader compatibility (macOS 10.15 Catalina)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15 CACHE STRING "Minimum macOS version")
+    # set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15 CACHE STRING "Minimum macOS version")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 12.0 CACHE STRING "Minimum macOS version")
+
     message(STATUS "macOS deployment target: ${CMAKE_OSX_DEPLOYMENT_TARGET}")
 endif()
 
@@ -45,63 +47,9 @@ function(set_project_warnings target)
     if(MSVC)
         target_compile_options(${target} PRIVATE
             /W4                 # High warning level
-            /WX-                # Warnings as errors (disabled by default, enable with /WX)
+            /WX                 # Warnings as errors (disabled by default, enable with /WX)
             /permissive-        # Standards conformance
-            /w14242             # Conversion warnings
-            /w14254             # operator mismatch
-            /w14263             # Member function does not override base class virtual
-            /w14265             # Class has virtual functions, but destructor is not virtual
-            /w14287             # Unsigned/negative constant mismatch
-            /we4289             # Loop variable used outside loop
-            /w14296             # Expression is always true/false
-            /w14311             # Pointer truncation
-            /w14545             # Expression evaluates to function missing argument list
-            /w14546             # Function call before comma missing argument list
-            /w14547             # Operator before comma has no effect
-            /w14549             # Operator before comma has no effect
-            /w14555             # Expression has no effect
-            /w14619             # Pragma warning suppression
-            /w14640             # Thread-unsafe static member initialization
-            /w14826             # Conversion is sign-extended
-            /w14905             # Wide string literal cast
-            /w14906             # String literal cast
-            /w14928             # Illegal copy-initialization
         )
-    else()
-        target_compile_options(${target} PRIVATE
-            -Wall               # Enable most warnings
-            -Wextra             # Enable extra warnings
-            -Wpedantic          # Strict ISO C++ warnings
-            -Wshadow            # Warn if variable shadows another
-            -Wnon-virtual-dtor  # Warn if class with virtual functions has non-virtual destructor
-            -Wold-style-cast    # Warn for C-style casts
-            -Wcast-align        # Warn for potential alignment issues
-            -Wunused            # Warn on unused variables
-            -Woverloaded-virtual # Warn if you overload (not override) a virtual function
-            -Wconversion        # Warn on type conversions that may lose data
-            -Wsign-conversion   # Warn on sign conversions
-            -Wdouble-promotion  # Warn if float is implicitly promoted to double
-            -Wformat=2          # Warn on security issues around format strings
-        )
-        
-        # GCC-specific warnings
-        if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-            target_compile_options(${target} PRIVATE
-                -Wmisleading-indentation
-                -Wduplicated-cond
-                -Wduplicated-branches
-                -Wlogical-op
-                -Wnull-dereference
-            )
-        endif()
-        
-        # Clang-specific warnings
-        if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-            target_compile_options(${target} PRIVATE
-                -Wmost
-                -Wextra-semi
-            )
-        endif()
     endif()
 endfunction()
 
@@ -109,25 +57,26 @@ endfunction()
 function(enable_sanitizers target)
     if(CMAKE_BUILD_TYPE MATCHES "Debug")
         if(MSVC)
-            # MSVC has limited sanitizer support
-            target_compile_options(${target} PRIVATE /fsanitize=address)
-            target_link_options(${target} PRIVATE /fsanitize=address)
-            message(STATUS "Enabled AddressSanitizer for ${target} (MSVC)")
-        else()
-            # GCC and Clang support multiple sanitizers
-            target_compile_options(${target} PRIVATE
-                -fsanitize=address              # Memory errors
-                -fsanitize=undefined            # Undefined behavior
-                -fsanitize=leak                 # Memory leaks
-                -fno-omit-frame-pointer         # Better stack traces
-                -fno-optimize-sibling-calls     # Better debugging
-            )
-            target_link_options(${target} PRIVATE
-                -fsanitize=address
-                -fsanitize=undefined
-                -fsanitize=leak
-            )
-            message(STATUS "Enabled sanitizers for ${target} (Address, UndefinedBehavior, Leak)")
+            # MSVC AddressSanitizer requires specific runtime library settings
+            # It's incompatible with /MDd, so we need to change to /MTd
+            # However, this can cause issues with Qt which uses /MD(d)
+            # So we'll make sanitizers optional on MSVC
+            option(ENABLE_MSVC_ASAN "Enable AddressSanitizer on MSVC (requires /MT runtime)" OFF)
+
+            if(ENABLE_MSVC_ASAN)
+                target_compile_options(${target} PRIVATE
+                    /fsanitize=address
+                    /Zi  # Debug info
+                )
+                # Change runtime library to /MTd for Debug, /MT for Release
+                set_target_properties(${target} PROPERTIES
+                    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+                )
+                target_link_options(${target} PRIVATE /fsanitize=address)
+                message(STATUS "Enabled AddressSanitizer for ${target} (MSVC with /MT runtime)")
+            else()
+                message(STATUS "MSVC sanitizers disabled for ${target} (incompatible with Qt's /MD runtime)")
+            endif()
         endif()
     endif()
 endfunction()

@@ -38,9 +38,8 @@ inline bookingType fromInt(int i)
     case 16: // setI.Active
         return static_cast<bookingType>(i);
     default:
-        Q_ASSERT(! "invalid booking type");
         qCritical() << "invalid booking type";
-        return static_cast<bookingType>(0);
+        Q_UNREACHABLE();
     }
 }
 inline QString bookingTypeToNbrString( const bookingType t) {return i2s(bookingTypeToInt(t));};

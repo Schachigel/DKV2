@@ -21,7 +21,7 @@ inline double dbInterest2Interest(int p) {
     return r2(double(p)/100.);
 }
 
-inline QString i2s(int x)       {
+inline QString i2s(qlonglong x)       {
     return QString::number(x);
 }
 

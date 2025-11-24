@@ -76,7 +76,7 @@ struct wpNewCreditorAddress : public QWizardPage{
     bool validatePage()   override;
     int nextId() const    override;
 private:
-    Q_OBJECT;
+    Q_OBJECT
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
@@ -86,7 +86,7 @@ struct wpEmail : public QWizardPage {
     bool validatePage()   override;
     int nextId() const    override;
 private:
-    Q_OBJECT;
+    Q_OBJECT
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
@@ -100,7 +100,7 @@ struct wpBankAccount : public QWizardPage{
     bool validatePage()   override;
     int nextId() const    override;
 private:
-    Q_OBJECT;
+    Q_OBJECT
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
@@ -113,7 +113,7 @@ public:
     bool validatePage()   override;
     int nextId() const    override;
 public slots:
-    void onConfirmCreateContract_toggled(int state);
+    void onConfirmCreateContract_toggled(Qt::CheckState state);
 private:
     QCheckBox*  cbCreateContract =nullptr;
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
@@ -134,7 +134,7 @@ struct wpLableAndAmount : public QWizardPage{
     bool validatePage()   override;
     int nextId() const    override;
 private:
-    Q_OBJECT;
+    Q_OBJECT
     QLabel* contractLabel = nullptr;
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
@@ -169,7 +169,7 @@ struct wpInterestSelectionMode : public QWizardPage {
     void initializePage() override;
     int nextId() const override;
 private:
-    Q_OBJECT;
+    Q_OBJECT
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
@@ -199,7 +199,7 @@ struct wpInterestSelection : public QWizardPage {
     bool validatePage() override;
     int nextId() const    override;
 private:
-    Q_OBJECT;
+    Q_OBJECT
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
@@ -211,7 +211,7 @@ struct wpInterestPayoutMode : public QWizardPage {
     bool validatePage() override;
     int nextId() const override;
 private:
-    Q_OBJECT;
+    Q_OBJECT
     QComboBox* cbImode =nullptr;
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
@@ -221,7 +221,7 @@ private:
  */
 class wpConfirmContract : public QWizardPage
 {
-    Q_OBJECT;
+    Q_OBJECT
 public:
     wpConfirmContract(QWidget*);
     void initializePage() override;
@@ -247,7 +247,7 @@ struct wizNew : public QWizard
     creditor& cred;
     bool selectCreateContract =true; // for edit creditor this should be false
 private:
-    Q_OBJECT;
+    Q_OBJECT
     bool updateMode =false;
 };
 

@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "helper.h"
 #include "contract.h"
@@ -38,23 +38,23 @@ QDate dateFromNP(const QString& s)
 int daysToContractEnd(const QString& s)
 {
     QDate d =dateFromNP(s);
-    int retval =-1;
+    qint64 retval =-1;
     if( d.isValid())
         retval= QDate::currentDate().daysTo(d);
     else
         retval= daysUntilTheEndOfTheFuckingWorld;
 //    qDebug() << "daysToContractEnd: " << s << ", " << retval;
-    return retval;
+    return (int) retval;
 }
 } // namespace
 
 void ContractTableModel::setCol13ExtraData()
 {
-    qlonglong maxRow =rowCount();
+    int maxRow =rowCount();
     if( maxRow ==256)
         while (canFetchMore()) fetchMore();
     maxRow =rowCount();
-    for( qlonglong row =0; row < maxRow; row++) {
+    for( int row =0; row < maxRow; row++) {
         int cid =data(index( row, 0), Qt::DisplayRole).toInt();
         int dtce =daysToContractEnd(data(index(row, cp_ContractEnd), Qt::DisplayRole).toString());
         extraData.insert(cid, dtce);

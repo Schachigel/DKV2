@@ -12,7 +12,7 @@ public:
     bool confirmed() { return confirm->isChecked();}
     void setYear(int y) {year =y;}
 private slots:
-    void confirmChanged(int state);
+    void confirmChanged(Qt::CheckState state);
 private:
     int year =0;
     QDialogButtonBox* buttons;

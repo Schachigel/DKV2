@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "dbstructure.h"
 #include "mainwindow.h"

@@ -1,9 +1,8 @@
-#include "pch.h"
+
 #include "helper.h"
 #include "helpersql.h"
 #include "dbstructure.h"
 #include "dkv2version.h"
-#include "qvariant.h"
 #include "appconfig.h"
 
 
@@ -269,7 +268,7 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
 /*static*/ void dbConfig::writeDefaults(const QSqlDatabase &db /*=QSqlDatabase::database()*/)
 {
     for( int i =0; i< MAX_PC_INDEX; i++) {
-        projectConfiguration pc {(projectConfiguration)i};
+        projectConfiguration pc {static_cast<projectConfiguration>(i)};
         writeValue(pc, defaultParams.value(pc).second, db);
     }
 }

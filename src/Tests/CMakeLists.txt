@@ -4,7 +4,7 @@ set(TARGET Tests)
 set(TEST_SOURCES
     test_main.cpp
     resource.qrc
-    
+
     # Test files
     test_appconfig.cpp
     test_appconfig.h
@@ -92,7 +92,7 @@ endif()
 
 # Precompiled headers
 target_precompile_headers(${TARGET} PRIVATE ../DKV2/pch.h)
-set_target_properties(${TARGET} PROPERTIES 
+set_target_properties(${TARGET} PROPERTIES
     AUTOGEN_USE_PCH ON
     AUTOMOC ON
     AUTOUIC ON
@@ -187,12 +187,15 @@ add_custom_target(run_tests
 )
 
 # Print test configuration
+list(LENGTH TEST_SOURCES TEST_SOURCES_COUNT)
+list(LENGTH DKV2_TEST_SOURCES DKV2_TEST_SOURCES_COUNT)
+
 message(STATUS "")
 message(STATUS "Tests Configuration:")
 message(STATUS "  Test executable: ${TARGET}")
 message(STATUS "  Test output directory: ${CMAKE_BINARY_DIR}/tests")
-message(STATUS "  Number of test source files: ${CMAKE_LIST_LENGTH TEST_SOURCES}")
-message(STATUS "  Number of DKV2 source files linked: ${CMAKE_LIST_LENGTH DKV2_TEST_SOURCES}")
+message(STATUS "  Number of test source files: ${TEST_SOURCES_COUNT}")
+message(STATUS "  Number of DKV2 source files linked: ${DKV2_TEST_SOURCES_COUNT}")
 message(STATUS "  Run tests with: cmake --build . --target run_tests")
 message(STATUS "  Or with CTest: ctest --output-on-failure")
 message(STATUS "")

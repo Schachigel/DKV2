@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "dlgdisplaycolumns.h"
 #include "busycursor.h"
@@ -64,7 +64,7 @@ void MainWindow::prepare_CreditorsListPage()
 
     QBitArray ba =toQBitArray (getMetaInfo (creditorTableColumnVisibilityStatus, creditorTableColumnVisibilityDefault));
     /* Force appropriate length of QBitArray */
-    int oldSize = ba.size();
+    qsizetype oldSize = ba.size();
     ba.resize(col_count);
     if( oldSize < col_count)
         ba.fill(true, oldSize, col_count);
@@ -94,8 +94,8 @@ int  MainWindow::id_SelectedCreditor()
     // What is the persId of the currently selected person in the person?
     QModelIndex mi(ui->CreditorsTableView->currentIndex().siblingAtColumn(0));
     if( mi.isValid()) {
-        QVariant data(ui->CreditorsTableView->model()->data(mi));
-        return data.toInt();
+        QVariant id(ui->CreditorsTableView->model()->data(mi));
+        return id.toInt();
     }
     qCritical() << "Index der Personenliste konnte nicht bestimmt werden";
     return SQLITE_invalidRowId;
@@ -170,7 +170,7 @@ void MainWindow::on_actionNeu_triggered()
 void MainWindow::on_pbCreditorsColumnsOnOff_clicked()
 {
     QBitArray ba =toQBitArray (getMetaInfo(creditorTableColumnVisibilityStatus, creditorTableColumnVisibilityDefault));
-    int oldSize = ba.size();
+    qsizetype oldSize = ba.size();
     ba.resize(col_count);
     ba.fill(true, oldSize, col_count);
 

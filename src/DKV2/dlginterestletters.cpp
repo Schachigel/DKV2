@@ -32,8 +32,8 @@ dlgInterestLetters::dlgInterestLetters(QWidget *parent, QVector<int> years) : QD
 
     QLabel *yearLabel = new QLabel(qsl("Jahr"));
     yearSelector = new QComboBox;
-    for( const auto& year: std::as_const(years)) {
-        yearSelector->addItem (i2s(year), year);
+    for( const auto& aYear: std::as_const(years)) {
+        yearSelector->addItem (i2s(aYear), aYear);
     }
 
     g->addWidget(yearLabel, row, 1);
@@ -46,7 +46,7 @@ dlgInterestLetters::dlgInterestLetters(QWidget *parent, QVector<int> years) : QD
     g->addWidget(confirm, row++, 1);
     // TODO Change to checkStateChanged once Qt 6.9 is available on all targets.
     // https://doc.qt.io/qt-6/qcheckbox-obsolete.html
-    connect(confirm, &QCheckBox::stateChanged, this, &dlgInterestLetters::confirmChanged);
+    connect(confirm, &QCheckBox::checkStateChanged, this, &dlgInterestLetters::confirmChanged);
 
     buttons =new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
     buttons->button(QDialogButtonBox::Ok)->setDefault(true);
@@ -59,7 +59,7 @@ dlgInterestLetters::dlgInterestLetters(QWidget *parent, QVector<int> years) : QD
     setLayout(g);
 }
 
-void dlgInterestLetters::confirmChanged(int state)
+void dlgInterestLetters::confirmChanged(Qt::CheckState state)
 {
     if( state == Qt::Checked)
         buttons->button(QDialogButtonBox::Ok)->setEnabled(true);

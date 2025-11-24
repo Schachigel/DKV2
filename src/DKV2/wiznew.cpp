@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "helperfin.h"
 #include "dkdbhelper.h"
@@ -374,7 +374,7 @@ wpConfirmCreditor::wpConfirmCreditor(QWidget *p) : QWizardPage(p)
     setLayout(l);
     // TODO Change to checkStateChanged once Qt 6.9 is available on all targets.
     // https://doc.qt.io/qt-6/qcheckbox-obsolete.html
-    connect(cbCreateContract, &QCheckBox::stateChanged, this, &wpConfirmCreditor::onConfirmCreateContract_toggled);
+    connect(cbCreateContract, &QCheckBox::checkStateChanged, this, &wpConfirmCreditor::onConfirmCreateContract_toggled);
     setCommitPage(true);
 }
 void wpConfirmCreditor::initializePage()
@@ -447,7 +447,7 @@ int wpConfirmCreditor::nextId() const
     else
         return -1;
 }
-void wpConfirmCreditor::onConfirmCreateContract_toggled(int state)
+void wpConfirmCreditor::onConfirmCreateContract_toggled(Qt::CheckState state)
 {
     LOG_CALL;
     qInfo() << "onConfirmCreateContract..." << state;

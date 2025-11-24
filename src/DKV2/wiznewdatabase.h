@@ -60,7 +60,7 @@ struct wpProjectDetails_Page : public QWizardPage
     wpProjectDetails_Page(QWidget* p= nullptr);
     void cleanupPage() override  {};
     void initializePage() override;
-    Q_OBJECT;
+    Q_OBJECT
 
 private:
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
@@ -95,13 +95,13 @@ private:
 };
 /* new db summary Page */
 class wpNewDatabase_SummaryPage : public QWizardPage{
-    Q_OBJECT;
+    Q_OBJECT
 public:
     wpNewDatabase_SummaryPage (QWidget* p=nullptr);
     void initializePage() override;
     bool isComplete() const override;
 public slots:
-    void onConfirmData_toggled(int);
+    void onConfirmData_toggled(Qt::CheckState);
 
 private:
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
@@ -112,7 +112,7 @@ struct wizConfigureNewDatabaseWiz : public QWizard
     wizConfigureNewDatabaseWiz(QWidget* p =nullptr);
     void updateDbConfig(const QString &dbFile);
     void updateDbConfig(const QSqlDatabase &db=QSqlDatabase::database());
-    Q_OBJECT;
+    Q_OBJECT
 
 private:
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));

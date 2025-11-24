@@ -42,8 +42,8 @@ private:
     int fillEmptyRow(QTextTable* tt, const int row);
     void setCellFormat(QTextTableCell& cell, cellType ct);
 private: // data
-    int _colCount =-1;
-    int _rowCount =-1;
+    qsizetype _colCount =-1;
+    qsizetype _rowCount =-1;
     QVector<int> optColWidth;
 
     const bool bold =true;

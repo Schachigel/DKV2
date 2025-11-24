@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "helper.h"
 #include "helperfin.h"
@@ -99,7 +99,8 @@ void IbanValidator::fixup(QString& input) const
     // qInfo() << "2. remove all spaces in" << input;
     input.remove(QLatin1Char(' '));
     // qInfo() << "3. place spaces every four symbols in" << input;
-    if (input.length() > 4) for (int i(input.length() / 4 * 4); i > 0; i = i - 4)
+    if (input.length() > 4)
+        for (qsizetype i(input.length() / 4l * 4l); i > 0l; i = i - 4l)
             input.insert(i, QLatin1String(" "));
     // qInfo() << "4. trim possibly added space at end of" << input;
     input = input.trimmed();
@@ -110,8 +111,8 @@ unsigned int IbanValidator::mod97(const QString& input)
     // qInfo() << "IbanValidator::mod97" << "calculate module 97 of" << input;
     int a[30] = {1, 10, 3, 30, 9, 90, 27, 76, 81, 34, 49, 5, 50, 15, 53, 45, 62, 38, 89, 17, 73, 51, 25, 56, 75, 71, 31, 19, 93, 57};
     int ad(0);
-    int len = input.length();
-    for (int i(0); i < len; ++i)
+    qsizetype len = input.length();
+    for (qsizetype i(0); i < len; ++i)
         ad += a[i] * (input.at(len - 1- i).toLatin1() - QChar(QLatin1Char('0')).toLatin1());
     return ad % 97;
 }

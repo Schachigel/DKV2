@@ -57,7 +57,7 @@ public:
 	/** Returns the number of items in the list value for @p key or 0 if
 	  * the value for @p key is not a list.
 	  */
-	virtual int listCount(const QString& key) const = 0;
+    virtual qsizetype listCount(const QString& key) const = 0;
 
 	/** Set the current context to the value for @p key.
 	  * If index is >= 0, set the current context to the @p index'th value
@@ -112,7 +112,7 @@ public:
 
 	virtual QString stringValue(const QString& key) const;
 	virtual bool isFalse(const QString& key) const;
-	virtual int listCount(const QString& key) const;
+    virtual qsizetype listCount(const QString& key) const;
 	virtual void push(const QString& key, int index = -1);
 	virtual void pop();
 	virtual bool canEval(const QString& key) const;

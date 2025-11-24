@@ -12,7 +12,7 @@ public:
     void initializePage() override;
     bool validatePage() override;
     int nextId() const override;
-    Q_OBJECT;
+    Q_OBJECT
 
 private:
     QLabel *subTitleLabel = nullptr;
@@ -25,7 +25,7 @@ struct wpChangeContract_AmountPage : public QWizardPage
     void initializePage() override;
     bool validatePage() override;
     int nextId() const override;
-    Q_OBJECT;
+    Q_OBJECT
 
 private:
     QLabel *subTitleLabel = nullptr;
@@ -38,7 +38,7 @@ struct wpChangeContract_DatePage : public QWizardPage
     void initializePage() override;
     bool validatePage() override;
     int nextId() const override;
-    Q_OBJECT;
+    Q_OBJECT
 
 private:
     QLabel *subTitleLabel = nullptr;
@@ -53,17 +53,17 @@ struct wpChangeContract_PayoutInterestPage : public QWizardPage
 //    void initializePage() override;
 //    bool validatePage() override;
     int nextId() const override;
-    Q_OBJECT;
+    Q_OBJECT
 };
 
 class wpChangeContract_Summary : public QWizardPage{
-    Q_OBJECT;
+    Q_OBJECT
 public:
     wpChangeContract_Summary(QWidget* p =nullptr);
     void initializePage() override;
     bool isComplete() const override;
 public slots:
-    void onConfirmData_toggled(int);
+    void onConfirmData_toggled(Qt::CheckState);
 
 private:
     QLabel *subTitleLabel = nullptr;
@@ -77,7 +77,7 @@ struct wizChangeContract : public QWizard
     double  currentAmount = 0.;
     QDate   earlierstDate;
     bool interestPayoutPossible =false;
-    Q_OBJECT;
+    Q_OBJECT
 };
 
 #endif // CHANGECONTRACTVALUEWIZ_H

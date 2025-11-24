@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "wizcancelcontract.h"
 
@@ -74,7 +74,7 @@ bool wpCancelContract_DatePage::validatePage()
         QMessageBox::information(this, qsl("Ungültiges Datum"), msg);
         return false;
     }
-    return true;
+    // return true;
 }
 
 wpCancelContract_SummaryPage::wpCancelContract_SummaryPage(QWidget* p) : QWizardPage(p)
@@ -92,7 +92,7 @@ wpCancelContract_SummaryPage::wpCancelContract_SummaryPage(QWidget* p) : QWizard
     setLayout(layout);
     // TODO Change to checkStateChanged once Qt 6.9 is available on all targets.
     // https://doc.qt.io/qt-6/qcheckbox-obsolete.html
-    connect(cb, &QCheckBox::stateChanged, this, &wpCancelContract_SummaryPage::onConfirmData_toggled);
+    connect(cb, &QCheckBox::checkStateChanged, this, &wpCancelContract_SummaryPage::onConfirmData_toggled);
 }
 void wpCancelContract_SummaryPage::initializePage()
 {
@@ -103,7 +103,7 @@ void wpCancelContract_SummaryPage::initializePage()
     subt = subt.arg(field(qsl("KüDatum")).toDate().toString(qsl("dd.MM.yyyy")));
     subTitleLabel->setText(subt);
 }
-void wpCancelContract_SummaryPage::onConfirmData_toggled(int)
+void wpCancelContract_SummaryPage::onConfirmData_toggled(Qt::CheckState)
 {
     emit completeChanged();
 }

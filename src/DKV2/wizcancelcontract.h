@@ -8,7 +8,7 @@
 struct wpCancelContract_IntroPage : public QWizardPage {
     wpCancelContract_IntroPage (QWidget* w =nullptr);
     void initializePage() override;
-    Q_OBJECT;
+    Q_OBJECT
 
 private:
     QLabel *subTitleLabel = nullptr;
@@ -19,7 +19,7 @@ struct wpCancelContract_DatePage : public QWizardPage {
     void cleanupPage() override  {};
     void initializePage() override;
     bool validatePage() override;
-    Q_OBJECT;
+    Q_OBJECT
 
 private:
     QLabel *subTitleLabel = nullptr;
@@ -30,9 +30,9 @@ struct wpCancelContract_SummaryPage : public QWizardPage {
     void initializePage() override;
     bool isComplete() const override;
 public slots:
-    void onConfirmData_toggled(int);
+    void onConfirmData_toggled(Qt::CheckState);
 private:
-    Q_OBJECT;
+    Q_OBJECT
     QLabel *subTitleLabel = nullptr;
 };
 
@@ -43,7 +43,7 @@ struct wizCancelContract : public QWizard
     contract c;
     QString creditorName;
     QDate contractualEnd;
-    Q_OBJECT;
+    Q_OBJECT
 };
 
 #endif // WIZCANCELCONTRACT_H

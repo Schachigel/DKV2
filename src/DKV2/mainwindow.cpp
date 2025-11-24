@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "qapplication.h"
 #include "qnamespace.h"
@@ -651,7 +651,7 @@ QString bookingDateDesc( const BookingDateData &bdd)
     }
 }
 
-int currentDateIndex =0;
+qsizetype currentDateIndex =0;
 
 void MainWindow::on_rbActive_toggled(bool checked)
 {
@@ -672,8 +672,8 @@ void MainWindow::on_rbAll_toggled(bool checked)
 void MainWindow::on_pbBack_clicked()
 {
     // back increases the index
-    const int maxIndex =dates.size() -1;
-    currentDateIndex = qMin(currentDateIndex +1, maxIndex);
+    const qsizetype maxIndex =dates.size() -1l;
+    currentDateIndex = qMin(currentDateIndex +1l, maxIndex);
     ui->lblBookingDate->setText(bookingDateDesc(dates[currentDateIndex]));
     ui->pbBack->setEnabled(currentDateIndex < maxIndex);
     ui->pbNext->setEnabled(true);

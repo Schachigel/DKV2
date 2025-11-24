@@ -35,14 +35,14 @@ private:
 
 class wpTimeFrame : public QWizardPage
 {
-    Q_OBJECT;
+    Q_OBJECT
 public:
     wpTimeFrame(QWidget* p =nullptr);
     void initializePage() override;
     bool validatePage() override;
 private slots:
     void onStartDate_changed();
-    void onSwitchFloating(int state);
+    void onSwitchFloating(Qt::CheckState state);
 
 private:
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
@@ -57,7 +57,7 @@ struct wpNewInvestInterest : public QWizardPage
     // void initializePage() override;
     // bool validatePage() override;
 private:
-    Q_OBJECT;
+    Q_OBJECT
     QLabel *subTitleLabel = new QLabel(qsl("Keine Daten!"));
 };
 
@@ -69,7 +69,7 @@ public:
     QDate getInitStartDate() { return initialStartDate;}
 private:
     QDate initialStartDate;
-    Q_OBJECT;
+    Q_OBJECT
 };
 
 #endif // WIZNEWINVESTMENT_H

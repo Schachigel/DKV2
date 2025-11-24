@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "helper.h"
 #include "helpersql.h"
 #include "contract.h"
@@ -46,8 +46,8 @@
     case bookingType::annualInterestDeposit: return qsl("Jahreszins");
     case bookingType::setInterestActive:     return qsl("Aktivierung d. Zinszahlung");
     default:
-        Q_ASSERT(not "Ungültigen Buchungstyp");
-        return qsl("FEHLER: ungültiger Buchungstyp");
+        qCritical() << "Ungültigen Buchungstyp";
+        Q_UNREACHABLE();
     }
 }
 

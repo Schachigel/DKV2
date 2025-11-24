@@ -8,13 +8,12 @@
 class dlgAskContractLabel : public QDialog
 {
 public:
-    dlgAskContractLabel(const QString& oldLabel);
+    dlgAskContractLabel(const QString& givenLabel);
     QString newLabel() {return leLabel->text ();};
 private slots:
     void showEvent(QShowEvent*) override;
 
 private:
-    QString oldLabel;
     QLineEdit* leLabel;
     QDialogButtonBox* buttons;
 };

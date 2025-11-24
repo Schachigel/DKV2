@@ -43,8 +43,8 @@ struct autoDb{
             qCritical() << db.lastError();
         }
     }
-    operator QSqlDatabase() const {return db;};
-    QString conName() { return closer.conName;};
+    operator QSqlDatabase() const {return db;}
+    QString conName() { return closer.conName;}
     dbCloser closer;
     QSqlDatabase db;
 };

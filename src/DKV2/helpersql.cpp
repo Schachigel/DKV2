@@ -81,8 +81,8 @@ QString dbCreatetable_type(const QMetaType t)
     case QMetaType::Double:
         return qsl("DOUBLE"); // affinity: REAL
     default:
-        Q_ASSERT( not bool("invalid database type"));
-        return qsl("INVALID");
+        qCritical() << "invalid database type";
+        Q_UNREACHABLE();
     }
 }
 QString dbAffinityType(const QMetaType t)
@@ -105,8 +105,8 @@ QString dbAffinityType(const QMetaType t)
     case QMetaType::Double:
         return qsl("REAL");
     default:
-        Q_ASSERT( not bool("invalid database type"));
-        return qsl("INVALID");
+        qCritical() << "invalid database type";
+        Q_UNREACHABLE();
     }
 }
 
@@ -221,8 +221,7 @@ QSqlField adjustTypeOfField(const QSqlField& f, QMetaType t)
     };
     if( tmpV.isNull ()){
         qCritical() << QString(__FUNCTION__) << "field conversion failed" << f << " -> " << tmpV;
-        Q_ASSERT( "data field conversion should not fail");
-        return f;
+        Q_UNREACHABLE();
     }
 
     QSqlField ret (f);

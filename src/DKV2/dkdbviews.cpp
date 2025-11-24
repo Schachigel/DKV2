@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "helper.h"
 #include "helpersql.h"
@@ -309,10 +309,10 @@ const QMap<QString, QString> views ={
     {vnInvestmentsView, sqlInvestmentsView}
 };
 
-bool createDkDbViews( const QMap<QString, QString>& views, const QSqlDatabase& db)
+bool createDkDbViews( const QMap<QString, QString>& vs, const QSqlDatabase& db)
 {
 //    foreach(QString view, views.keys()) {
-    for ( auto [viewname, viewSql ] : views.asKeyValueRange()) {
+    for ( auto [viewname, viewSql ] : vs.asKeyValueRange()) {
         if( not createPersistentDbView (viewname, viewSql, db))
             return false;
     }

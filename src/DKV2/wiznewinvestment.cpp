@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "helper.h"
 #include "appconfig.h"
@@ -94,7 +94,7 @@ wpTimeFrame::wpTimeFrame(QWidget* w) : QWizardPage(w)
     cbFloating->setCheckState (Qt::Unchecked);
     // TODO Change to checkStateChanged once Qt 6.9 is available on all targets.
     // https://doc.qt.io/qt-6/qcheckbox-obsolete.html
-    connect(cbFloating, &QCheckBox::stateChanged, this, &wpTimeFrame::onSwitchFloating);
+    connect(cbFloating, &QCheckBox::checkStateChanged, this, &wpTimeFrame::onSwitchFloating);
 
     deVon =new QDateEdit();
     deVon->setDisplayFormat(qsl("dd.MM.yyyy"));
@@ -123,7 +123,7 @@ wpTimeFrame::wpTimeFrame(QWidget* w) : QWizardPage(w)
     setLayout(vl);
 }
 
-void wpTimeFrame::onSwitchFloating(int state)
+void wpTimeFrame::onSwitchFloating(Qt::CheckState state)
 {
     if( state == Qt::CheckState::Checked){
         deVon->setDate (BeginingOfTime);

@@ -169,8 +169,8 @@ double contract::interestBearingValue() const
     case interestModel::zero:
         return value();
     default:
-        Q_ASSERT(false);
-        return 0.;
+        qCritical() << "invalid interest Model";
+        Q_UNREACHABLE();
     }
 }
 const booking contract::latestBooking()
@@ -397,7 +397,8 @@ int contract::annualSettlement( int year)
         }
         case interestModel::maxId:
         default: {
-            Q_ASSERT(false);
+            qCritical() << "invalid interest Model";
+            Q_UNREACHABLE();
         } }
         if( bookingSuccess) {
             qInfo() << "Successfull annual settlement: contract id " << id_aS() << ": " << nextAnnualSettlementDate << " Zins: " << zins;
@@ -847,7 +848,7 @@ QDate activateRandomContracts(const int percent)
 
     QVector<QVariant> contractData = executeSingleColumnSql (contract::getTableDef ().Fields ()[0]);
 
-    int activations = contractData.count() * percent / 100;
+    qsizetype activations = contractData.count() * percent / 100l;
     static QRandomGenerator* rand = QRandomGenerator::system();
 
     for (int i=0; i < activations; i++) {

@@ -16,7 +16,7 @@ public:
 private slots:
     void showEvent(QShowEvent*) override;
     void onNoticePeriod_currentIndexChanged(int i);
-    void onAllowBothChanged(int i);
+    void onAllowBothChanged(Qt::CheckState i);
     void accept() override;
 private:
     QDate minContractTerminationDate;

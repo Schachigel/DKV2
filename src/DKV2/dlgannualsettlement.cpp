@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "helper.h"
 #include "helperfin.h"
@@ -30,7 +30,7 @@ dlgAnnualsettlement::dlgAnnualsettlement(QWidget *parent, int year) : QDialog(pa
     g->addWidget(confirm, row++, 1);
     // TODO Change to checkStateChanged once Qt 6.9 is available on all targets.
     // https://doc.qt.io/qt-6/qcheckbox-obsolete.html
-    connect(confirm, &QCheckBox::stateChanged, this, &dlgAnnualsettlement::confirmChanged);
+    connect(confirm, &QCheckBox::checkStateChanged, this, &dlgAnnualsettlement::confirmChanged);
 
     buttons =new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
     buttons->button(QDialogButtonBox::Ok)->setDefault(true);
@@ -43,7 +43,7 @@ dlgAnnualsettlement::dlgAnnualsettlement(QWidget *parent, int year) : QDialog(pa
     setLayout(g);
 }
 
-void dlgAnnualsettlement::confirmChanged(int state)
+void dlgAnnualsettlement::confirmChanged(Qt::CheckState state)
 {
     if( state == Qt::Checked)
         buttons->button(QDialogButtonBox::Ok)->setEnabled(true);

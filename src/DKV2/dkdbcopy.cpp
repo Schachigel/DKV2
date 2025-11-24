@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "helpersql.h"
 #include "helperfile.h"
@@ -163,7 +163,7 @@ QString convert_database_inplace( const QString& targetFilename, const dbstructu
     QVector<dbtable> tables =dbs.getTables();
     for(auto& table : std::as_const(tables))
     {
-        const int destFields = table.Fields().count();
+        const qsizetype destFields = table.Fields().count();
         const int srcFields  = QSqlDatabase(db).record(table.Name()).count();
         if( destFields < srcFields) {
             RETURN_ERR(QString(), qsl("destianation Table misses fields "), table.Name ());

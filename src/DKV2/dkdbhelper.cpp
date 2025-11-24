@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "helperfile.h"
 #include "helpersql.h"
@@ -533,7 +533,7 @@ FROM temp
         QStringList zeile;
         int col =1;
         QString anlage =qsl("%1 (%2%)").arg(rec[i].value(col++).toString());
-        zeile.push_back (anlage.arg(i2s(rec[i].value(col++).toInt ()/100.))); // Anlagenbez.
+        zeile.push_back (anlage.arg( QString::number( rec[i].value(col++).toInt () /100.))); // Anlagenbez.
         zeile.push_back (rec[i].value(col++).toDate().toString ("dd.MM.yyyy")); // Buchungsdatum
         zeile.push_back (i2s(rec[i].value(col++).toInt())); // Anzahl Buchungen
         zeile.push_back (s_d2euro(rec[i].value(col++).toDouble ())); // buchungen zu diesem Buchungsdatum

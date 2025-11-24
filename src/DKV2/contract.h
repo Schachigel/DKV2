@@ -29,9 +29,9 @@ inline QString interestModelDisplayString(const interestModel m) {
     case interestModel::allIModels:
         return qsl("Alle");
     default:
-        Q_ASSERT(false);
+        qCritical() << Q_FUNC_INFO <<  ": invalid interest Model";
+        Q_UNREACHABLE();
     }
-    return QString();
 }
 inline int toInt(const interestModel m) {
     return static_cast<int>(m);
@@ -104,7 +104,11 @@ struct contract
         else return 0.;
     }
 
-    void setInvestmentId(tableindex_t rId) { td.setValue(fnAnlagenId, (isValidRowId (rId)?QVariant(rId):QVariant::fromValue((nullptr))));}
+    void setInvestmentId(tableindex_t rId) { td.setValue(fnAnlagenId,
+                                                         (isValidRowId (rId)
+                                                              ?
+                                                              QVariant(rId)
+                                                              :QVariant()));}
     tableindex_t investmentId() const { return td.getValue(fnAnlagenId).toLongLong();}
 
     void setPlannedInvest(const double d) { td.setValue(fnBetrag, ctFromEuro(d));}

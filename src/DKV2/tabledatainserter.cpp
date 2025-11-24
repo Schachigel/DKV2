@@ -84,7 +84,7 @@ bool TableDataInserter::updateValue(const QString& n, const QVariant& v, qlonglo
     }
     if( not whereDone) {
         qWarning() << "could not update value w/o index; trying 'id'";
-        where =where.arg(qsl("id"), index);
+        where =where.arg(qsl("id"), QString::number(index));
     }
     return executeSql_wNoRecords(sql + where);
 }

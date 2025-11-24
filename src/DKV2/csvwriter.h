@@ -10,8 +10,8 @@ class csvwriter
 public:
     csvwriter(const QString& sep =qsl(";")) : separator(sep){ Q_ASSERT(sep.length()==1);}
     void addColumn(const QString& header);
-    int  addColumns(const QString& headers);
-    int addColumns(const QStringList headers);
+    qsizetype addColumns(const QString& headers);
+    qsizetype addColumns(const QStringList headers);
     void appendToRow(const QString& value);
     void addRow(const QStringList& cols);
     void addRow(const QString& row);

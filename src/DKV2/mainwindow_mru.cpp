@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include "helper.h"
 #include "busycursor.h"
@@ -9,7 +9,6 @@ const char nbr_mru_entries =5;
 QAction* mru_action =nullptr;
 const QString mruMenuName {qsl("actionZuletzt_verwendet")};
 const QString settingGroup {qsl("MRU")};
-QVector<QAction*> addedActions;
 
 void MainWindow::add_MRU_entry(const QString& filepath)
 {

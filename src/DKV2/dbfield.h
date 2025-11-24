@@ -26,7 +26,7 @@ public: // types
     dbfield setUnique(const bool u=true){ Q_ASSERT_X(defaultValue ().isNull (),"setUnique" , "unique values should not have a default value"); unique =u; return *this;}
     dbfield setPrimaryKey(const bool p=true){ primaryKey = p; return *this;}
     dbfield setNotNull(const bool nn=true){ setRequired(nn); return *this;}
-    dbfield setDefault(const QVariant& d){ Q_ASSERT(unique == false); setDefaultValue(d); return *this;}
+    dbfield setDefault(const QVariant& defaultvalue){ Q_ASSERT(unique == false); setDefaultValue(defaultvalue); return *this;}
     dbfield setAutoInc(const bool a=true){ if(a) setPrimaryKey (); setAutoValue(a); return *this;}
     dbfield setDefaultNow() { setDefaultValue(QVariant()); timeStamp =true; return *this;}
 private:

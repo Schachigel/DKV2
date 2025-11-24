@@ -20,7 +20,7 @@ struct wpOpenOrNew : public QWizardPage
 //    bool validatePage() override;
 
 private:
-    Q_OBJECT;
+    Q_OBJECT
     bool init =true;
 };
 
@@ -32,7 +32,7 @@ struct wpNewDb : public QWizardPage
     void setVisible(bool v) override;
     int nextId() const override;
 private:
-    Q_OBJECT;
+    Q_OBJECT
     QLabel *subTitleLabel = new QLabel();
 
 private slots:
@@ -54,7 +54,7 @@ struct wpExistingDb : public QWizardPage
     void setVisible(bool v) override;
     int nextId() const override;
 private:
-    Q_OBJECT;
+    Q_OBJECT
     QLabel *subTitleLabel = new QLabel();
 private slots:
     void browseButtonClicked();
@@ -67,7 +67,7 @@ struct wizOpenOrNewDb : public QWizard
 {
     wizOpenOrNewDb(QWidget* p =nullptr);
     QString selectedFile;
-    Q_OBJECT;
+    Q_OBJECT
 };
 
 

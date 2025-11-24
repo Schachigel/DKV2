@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "helper.h"
 
 #include "busycursor.h"
@@ -173,7 +173,7 @@ void MainWindow::prepare_valid_contracts_list_view()
     Q_ASSERT(cp_colCount == columnTextsContracts.count ());
     QBitArray ba =toQBitArray(getMetaInfo (visibilityPatternMetaInfoName, defaultVisibilityPattern_contracts));
     /* make sure that array is long enough to hold all columns */
-    int oldSize = ba.size();
+    qsizetype oldSize = ba.size();
     ba.resize(cp_colCount);
     ba.fill(true, oldSize, cp_colCount);
     for(int i=0; i<int(colmn_Pos::cp_colCount); i++) {
@@ -235,7 +235,7 @@ void MainWindow::prepare_deleted_contracts_list_view()
     Q_ASSERT(cp_d_colCount == columnTexts_d_Contracts.count());
     QBitArray ba =toQBitArray (getMetaInfo (visibilityPattern_d_MetaInfoName, defaultVisibilityPattern_deletedContracts));
     /* make sure that array is long enough to hold all columns */
-    int oldSize = ba.size();
+    qsizetype oldSize = ba.size();
     ba.resize(cp_d_colCount);
     ba.fill(true, oldSize, cp_d_colCount);
     for (int i = 0; i < int(cp_d_colCount); i++) {

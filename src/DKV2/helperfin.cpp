@@ -1,4 +1,4 @@
-#include "pch.h"
+
 
 #include <iso646.h>
 
@@ -99,17 +99,17 @@ int TageZwischen_act_act( const QDate von, const QDate bis)
     Q_ASSERT(von.year () == bis.year());
     Q_ASSERT (bis >= von);
 
-    int days =von.daysTo(bis);
+    qint64 days =von.daysTo(bis);
     qInfo() << "Tage(a/a) von " << von << " bis " << bis << ": " << days;
-    return days;
+    return (int) days;
 }
 int TageBisJahresende_act_act( const QDate date)
 {
-    return date.daysTo (QDate(date.year(), 12, 31));
+    return (int) date.daysTo (QDate(date.year(), 12, 31));
 }
 int TageSeitJahresAnfang_act_act( const QDate date)
 {
-    return QDate(date.year()-1, 12, 31).daysTo (date);
+    return (int) QDate(date.year()-1, 12, 31).daysTo (date);
 }
 double ZinsesZins_act_act( const double zins, const double wert,
                           const QDate von, const QDate bis, const bool thesa)
