@@ -117,29 +117,19 @@ elseif(WIN32)
     set(PLATFORM_GUI_FLAG WIN32)
 endif()
 
+# Create executable
 qt_add_executable(${TARGET} ${PLATFORM_GUI_FLAG} ${DKV2_SOURCES})
 
+# Compile definitions
 target_compile_definitions(${TARGET} PRIVATE
     $<$<CONFIG:Debug>:DKV2_DEBUG>
-    QT_DEPRECATED_WARNINGS
-    QT_DISABLE_DEPRECATED_BEFORE=0x060000
 )
 
-if(COMMAND set_project_warnings)
-    set_project_warnings(${TARGET})
-endif()
-
-if(COMMAND enable_sanitizers)
-    enable_sanitizers(${TARGET})
-endif()
-
+# Precompiled headers
 target_precompile_headers(${TARGET} PRIVATE pch.h)
-set_target_properties(${TARGET} PROPERTIES
-    AUTOGEN_USE_PCH ON
-    AUTOMOC ON
-    AUTOUIC ON
-)
+set_target_properties(${TARGET} PROPERTIES AUTOGEN_USE_PCH ON)
 
+# Link libraries
 target_link_libraries(${TARGET} PRIVATE
     Qt6::Core
     Qt6::Widgets
@@ -147,56 +137,22 @@ target_link_libraries(${TARGET} PRIVATE
     Qt6::PrintSupport
 )
 
-# Platform-specific settings
+# Platform-specific properties
 if(WIN32)
-    set_target_properties(${TARGET} PROPERTIES
-        WIN32_EXECUTABLE ON
-        VERSION ${PROJECT_VERSION}
-    )
-    if(MSVC)
-        target_link_options(${TARGET} PRIVATE /SUBSYSTEM:WINDOWS)
-    endif()
-
+    set_target_properties(${TARGET} PROPERTIES WIN32_EXECUTABLE ON)
 elseif(APPLE)
     set_target_properties(${TARGET} PROPERTIES
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist"
         MACOSX_BUNDLE_BUNDLE_NAME "DKV2"
         MACOSX_BUNDLE_GUI_IDENTIFIER "com.example.dkv2"
-        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-        MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}
-        MACOSX_BUNDLE_INFO_STRING "Direktkredit Verwaltung"
-    )
-
-    add_custom_command(TARGET ${TARGET} POST_BUILD
-        COMMAND codesign --force --deep --sign - $<TARGET_BUNDLE_DIR:${TARGET}>
-        COMMENT "Ad-hoc signing macOS bundle"
-        VERBATIM
-    )
-
-else()
-    set_target_properties(${TARGET} PROPERTIES
-        VERSION ${PROJECT_VERSION}
-        OUTPUT_NAME "dkv2"
     )
 endif()
 
-# Installation Rules
+# Installation
 if(WIN32)
-    install(TARGETS ${TARGET}
-        RUNTIME DESTINATION .
-    )
-
+    install(TARGETS ${TARGET} RUNTIME DESTINATION .)
 elseif(APPLE)
-    install(TARGETS ${TARGET}
-        BUNDLE DESTINATION .
-    )
-
-    # <<< FIX: macOS-Deployment erfolgt extern im Workflow >>>
-    message(STATUS "Note: macOS Qt deployment is handled via macdeployqt in GitHub Actions.")
-
+    install(TARGETS ${TARGET} BUNDLE DESTINATION .)
 else()
-    install(TARGETS ${TARGET}
-        RUNTIME DESTINATION bin
-    )
+    install(TARGETS ${TARGET} RUNTIME DESTINATION bin)
 endif()
-
