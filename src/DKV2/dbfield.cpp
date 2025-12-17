@@ -1,6 +1,4 @@
 #include <iso646.h>
-
-
 #include "helper.h"
 #include "helpersql.h"
 

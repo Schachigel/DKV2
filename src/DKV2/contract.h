@@ -120,11 +120,17 @@ struct contract
     }
     interestModel iModel() const { return interestModelFromInt(td.getValue(fnThesaurierend).toInt());}
 
-    void setNoticePeriod(const int m) { td.setValue(fnKFrist, m); if( -1 not_eq m) setPlannedEndDate( EndOfTheFuckingWorld);}
+    void setNoticePeriod(const int m) {
+        td.setValue(fnKFrist, m);
+        if( -1 not_eq m)
+            setPlannedEndDate( EndOfTheFuckingWorld);}
     int noticePeriod() const { return td.getValue(fnKFrist).toInt();}
 
     bool hasEndDate() const {return -1 == td.getValue(fnKFrist);}
-    void setPlannedEndDate( const QDate d) { td.setValue(fnLaufzeitEnde, d); if( d not_eq EndOfTheFuckingWorld) setNoticePeriod(-1);}
+    void setPlannedEndDate( const QDate d) {
+        td.setValue(fnLaufzeitEnde, d);
+        if( d not_eq EndOfTheFuckingWorld)
+            setNoticePeriod(-1);}
     QDate plannedEndDate() const { return td.getValue(fnLaufzeitEnde).toDate();}
 
     void setConclusionDate(const QDate d) { td.setValue(fnVertragsDatum, d);}

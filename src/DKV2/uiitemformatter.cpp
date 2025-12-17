@@ -1,5 +1,3 @@
-
-
 #include "booking.h"
 #include "contract.h"
 #include "helperfin.h"

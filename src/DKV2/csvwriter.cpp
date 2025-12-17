@@ -1,5 +1,3 @@
-
-
 #include "helperfile.h"
 #include "appconfig.h"
 #include "csvwriter.h"

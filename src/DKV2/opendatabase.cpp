@@ -1,5 +1,3 @@
-
-
 #include "helper.h"
 #include "dkdbhelper.h"
 #include "appconfig.h"

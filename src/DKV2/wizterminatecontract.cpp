@@ -1,5 +1,3 @@
-
-
 #include "dkdbhelper.h"
 #include "wizterminatecontract.h"
 

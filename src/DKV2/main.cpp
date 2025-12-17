@@ -1,5 +1,3 @@
-
-
 #include "dbstructure.h"
 #include "mainwindow.h"
 #include "appconfig.h"

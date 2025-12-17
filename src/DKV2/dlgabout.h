@@ -10,8 +10,8 @@ public:
     explicit dlgAbout(QWidget *p =nullptr);
     void setHeader(const QString &s) {header->setText(s);}
     void setMsg(const QString &s) {msg->setText(s);}
-private slots:
-    void showEvent(QShowEvent*) override;
+protected:
+    void showEvent(QShowEvent*) override;  // KEIN slot!
 private:
     QLabel* header;
     QLabel*msg;

@@ -1,6 +1,3 @@
-
-
-
 #include "helper.h"
 #include "helpersql.h"
 #include "dbtable.h"

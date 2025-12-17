@@ -1,4 +1,3 @@
-
 #include "helper.h"
 #include "helpersql.h"
 #include "dbstructure.h"
@@ -155,7 +154,7 @@ double appConfig::Zoom()
 }
 void appConfig::setZoom(double d)
 {
-    if( d >= 0.5 or d < 2)
+    if( d >= 0.5 and d < 2)
         setUserData(keynameZoom, QString::number(d));
 }
 

@@ -1,4 +1,3 @@
-
 #include "helper.h"
 #include "helpersql.h"
 #include "contract.h"

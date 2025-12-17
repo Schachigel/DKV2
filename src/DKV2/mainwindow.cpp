@@ -1,5 +1,3 @@
-
-
 #include "qapplication.h"
 #include "qnamespace.h"
 #include <QtGlobal>

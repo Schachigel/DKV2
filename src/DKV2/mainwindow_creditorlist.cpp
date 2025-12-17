@@ -1,5 +1,3 @@
-
-
 #include "dlgdisplaycolumns.h"
 #include "busycursor.h"
 #include "transaktionen.h"

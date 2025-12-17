@@ -1,5 +1,3 @@
-
-
 #include "helper.h"
 #include "dlgaskdate.h"
 

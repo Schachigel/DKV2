@@ -1,5 +1,3 @@
-
-
 #include "helper.h"
 #include "helperfile.h"
 #include "helpersql.h"

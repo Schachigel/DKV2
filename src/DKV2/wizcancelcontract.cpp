@@ -1,5 +1,3 @@
-
-
 #include "wizcancelcontract.h"
 
 wpCancelContract_IntroPage::wpCancelContract_IntroPage(QWidget* p) : QWizardPage(p)

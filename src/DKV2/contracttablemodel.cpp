@@ -1,5 +1,3 @@
-
-
 #include "helper.h"
 #include "contract.h"
 #include "contracttablemodel.h"
