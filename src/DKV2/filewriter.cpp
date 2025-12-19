@@ -1,3 +1,5 @@
+#include <QPainter>
+#include <QPrinter>
 #include "helper.h"
 #include "helperfile.h"
 #include "appconfig.h"

@@ -4,7 +4,8 @@
 #include "helperfin.h"
 #include "dlgannualsettlement.h"
 
-dlgAnnualsettlement::dlgAnnualsettlement(QWidget *parent, int year) : QDialog(parent), year(year)
+dlgAnnualsettlement::dlgAnnualsettlement(int year, QWidget *parent) 
+    : year(year), QDialog(parent) 
 {
     QGridLayout* g =new QGridLayout();
     // get some space left and right

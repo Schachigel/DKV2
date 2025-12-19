@@ -479,7 +479,7 @@ void annualSettlement() {
     }
     int yearOfSettlement = bookingDate.year();
     //    wizAnnualSettlement wiz(getMainWindow());
-    dlgAnnualsettlement dlg(getMainWindow(), yearOfSettlement);
+    dlgAnnualsettlement dlg(yearOfSettlement, getMainWindow());
 
     if (dlg.exec() == QDialog::Rejected || not dlg.confirmed())
         return;
