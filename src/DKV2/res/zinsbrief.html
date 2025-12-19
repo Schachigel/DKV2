@@ -145,10 +145,18 @@ Empfehle uns daher bitte weiter an Freund*innen, Bekannte und Verwandte!
     Sehr geehrte Damen und Herren,
     <p>{{creditor.Vorname}} {{creditor.Nachname}} hat der {{meta.gmbhaddress1}} einen zinsgünstigen Direktkredit zur Unterstützung des sozialen, selbstorganisierten Miethausprojekts
     {{meta.gmbhprojekt}} gewährt.
-    Für das Jahr {{Zinsjahr}} wurden Zinsen<br/> 
-    {{#ausbezahlterZins}}in Höhe von {{ausbezahlterZins}} ausbezahlt{{^SumZinsgutschrift}}.{{/SumZinsgutschrift}}<br/>{{/ausbezahlterZins}}
-    {{#SumZinsgutschrift}}in Höhe von {{SumZinsgutschrift}} gutgeschrieben.{{/SumZinsgutschrift}}
-    
+    <p>
+      Für das Jahr {{Zinsjahr}} wurden Zinsen
+      <!-- auszahlend -->
+      {{#ausbezahlterZins}}
+        in Höhe von {{ausbezahlterZins}} ausbezahlt{{^SumZinsgutschrift}}.{{/SumZinsgutschrift}}
+        {{#SumZinsgutschrift}}und{{/SumZinsgutschrift}}
+      {{/ausbezahlterZins}}
+      <!-- thesaurierend -->
+      {{#SumZinsgutschrift}}
+        in Höhe von {{SumZinsgutschrift}} gutgeschrieben.
+      {{/SumZinsgutschrift}}
+    </p>
 
 <p><p>Mit freundlichen Grüßen<br>
 <p>{{meta.gmbhdkv}}<p>
