@@ -16,7 +16,7 @@ private:
     QDialogButtonBox* buttons;
     QCheckBox* csv;
     QCheckBox* confirm;
-signals:
+private slots:
     void confirmChanged(Qt::CheckState state);
 };
 
