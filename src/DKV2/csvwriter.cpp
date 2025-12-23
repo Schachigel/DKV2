@@ -54,7 +54,7 @@ void csvwriter::addRow(const QString& row)
 QString csvwriter::appendCsvLine(const QString& line, const QString& appendix) const
 {   //LOG_CALL;
     QString l(line);
-    if( l.size()) l += separator + qsl(" ");
+    if( l.size()) l += separator;
     return l + appendix;
 }
 
