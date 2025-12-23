@@ -563,7 +563,7 @@ wpContractTimeframe::wpContractTimeframe(QWidget *p) : QWizardPage(p)
     subTitleLabel->setWordWrap(true);
     subTitleLabel->setText(qsl("Für das Vertragsende kann eine Kündigungsfrist <b>oder</b> ein festes Vertragsende vereinbart werden."));
     QDateEdit *deCDate = new QDateEdit(QDate::currentDate());
-    registerField(pnCDate, deCDate);
+    registerField(pnCDate, deCDate, "date");
     deCDate->setDisplayFormat(qsl("dd.MM.yyyy"));
     QLabel *l1 = new QLabel(qsl("Vertragsdatum"));
     l1->setBuddy(deCDate);
@@ -589,7 +589,7 @@ wpContractTimeframe::wpContractTimeframe(QWidget *p) : QWizardPage(p)
     l2->setBuddy(cbNoticePeriod);
 
     deTerminationDate = new QDateEdit;
-    registerField(pnEDate, deTerminationDate);
+    registerField(pnEDate, deTerminationDate, "date");
     deTerminationDate->setDisplayFormat(qsl("dd.MM.yyyy"));
     QLabel *l3 = new QLabel(qsl("Vertragsende"));
     l3->setBuddy(deTerminationDate);
