@@ -495,12 +495,18 @@ void annualSettlement() {
     for (const auto &id : std::as_const(ids)) {
         contract c(id.toLongLong());
         QDate startDate = c.latestBooking().date;
-        if (0 not_eq c.annualSettlement(yearOfSettlement)) {
+        /////////////////////////////////////////////////////
+        if (0 not_eq c.annualSettlement(yearOfSettlement))
+        ////////////////////////////////////////////////////
+        {
             if (dlg.print_csv()) {
                 changedContracts.push_back(c);
                 asBookings.push_back(c.latestBooking());
                 startOfInterrestCalculation.push_back(startDate);
             }
+        } else {
+            qCritical() << "jährl. Zinsabrechnung ist fehlgeschlagen für Vertrag " << c.id ()
+                        << ": " << c.label ();
         }
     }
     if (dlg.print_csv())
