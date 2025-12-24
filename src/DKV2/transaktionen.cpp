@@ -430,7 +430,7 @@ void print_as_csv(const QDate &bookingDate,
                   const QVector<booking> &asBookings) {
     csvwriter csv(qsl(";"));
     csv.addColumns(
-                qsl("Vorname;Nachname;Email;Strasse;Plz;Stadt;IBAN;Kennung"
+                qsl("Vorname;Nachname;Email;Strasse;Plz;Stadt;IBAN;Kennung;"
                     "Auszahlend;"
                     "Beginn;Buchungsdatum;Zinssatz;Kreditbetrag;Zins;Endbetrag"));
     QLocale l;
