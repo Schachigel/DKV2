@@ -119,7 +119,7 @@ void test_csv::test_csv_twoHeader()
     csv.addColumn("A");
     csv.addColumn("B");
 
-    QCOMPARE(csv.toString(), "A; B");
+    QCOMPARE(csv.toString(), "A;B");
 }
 
 void test_csv::test_csv_twoHeader_useAddColumns()
@@ -127,7 +127,7 @@ void test_csv::test_csv_twoHeader_useAddColumns()
     csvwriter csv;
     csv.addColumns("A;B");
 
-    QCOMPARE(csv.toString(), "A; B");
+    QCOMPARE(csv.toString(), "A;B");
 }
 
 void test_csv::test_csv_twoHeader_useAddColumns_rm_space()
@@ -135,7 +135,7 @@ void test_csv::test_csv_twoHeader_useAddColumns_rm_space()
     csvwriter csv;
     csv.addColumns("  A  ;  B   ");
 
-    QCOMPARE(csv.toString(), "A; B");
+    QCOMPARE(csv.toString(), "A;B");
 }
 
 void test_csv::test_csv_oneHeader_oneRow()
@@ -162,7 +162,7 @@ void test_csv::test_csv_Headers_Rows()
     csv.addColumns("VN; NN; PLZ");
     csv.addRow(QList<QString>({"holger", "mairon", "69242"}));
 
-    QCOMPARE(csv.toString(), "VN; NN; PLZ\nholger; mairon; 69242");
+    QCOMPARE(csv.toString(), "VN;NN;PLZ\nholger;mairon;69242");
 }
 
 void test_csv::test_csv_Headers_Rows01()
@@ -173,7 +173,7 @@ void test_csv::test_csv_Headers_Rows01()
     csv.appendToRow("mairon");
     csv.appendToRow("69242");
 
-    QCOMPARE(csv.toString(), "VN; NN; PLZ\nholger; mairon; 69242");
+    QCOMPARE(csv.toString(), "VN;NN;PLZ\nholger;mairon;69242");
 }
 
 void test_csv::test_csv_fix_semicolon()
@@ -187,7 +187,7 @@ void test_csv::test_csv_fix_semicolon()
     csv.appendToRow("mairon;");
     csv.appendToRow("69;242");
 
-    QCOMPARE(csv.toString(), "VN,; ,NN; P,LZ\n,holger; mairon,; 69,242");
+    QCOMPARE(csv.toString(), "VN,;,NN;P,LZ\n,holger;mairon,;69,242");
 }
 
 void test_csv::test_csv_Headers_Rows02()
@@ -199,5 +199,5 @@ void test_csv::test_csv_Headers_Rows02()
     csv.appendToRow("Felix;");
     csv.appendToRow("Oliv;er");
 
-    QCOMPARE(csv.toString(), "VN; NN; PLZ\nholger; mairon; 69242\nLukas; Felix,; Oliv,er");
+    QCOMPARE(csv.toString(), "VN;NN;PLZ\nholger;mairon;69242\nLukas;Felix,;Oliv,er");
 }
