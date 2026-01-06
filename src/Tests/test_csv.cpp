@@ -1,6 +1,7 @@
 
 #include "test_csv.h"
 #include "../DKV2/csvwriter.h"
+#include <QtTest/QTest>
 
 void test_csv::test_sql_with_parameter_binding()
 {
@@ -100,6 +101,43 @@ void test_csv::test_sql_with_parameter_binding()
             qInfo() << sqlSelect << qSelect.boundValues () << qSelect.lastError () << qSelect.lastQuery ();
     }
 }
+
+void test_csv::test_toString_wTrimming_data()
+{
+    QTest::addColumn<QList<QString>>( "headers");
+    QTest::addColumn<QList<QString>>( "rows");
+    QTest::addColumn<QString>("expected");
+
+    struct testdata { QList<QString> h; QList<QString> r; QString e; };
+
+    testdata data[] {
+        // {{{""}},{{""}}, {""}},
+        // {{{"H"}},{{""}}, {"H"}},
+        // {{{""}},{{"D"}}, {"D"}},
+        {{{"H"}},{{"D"}}, {"H\r\nD"}},
+    };
+
+    for(const auto& tdata : data) {
+        QTest::newRow("empty csv test") << tdata.h << tdata.r << tdata.e;
+    }
+
+}
+void test_csv::test_toString_wTrimming()
+{
+    QFETCH(QList<QString>, headers);
+    QFETCH(QList<QString>, rows);
+    QFETCH(QString, expected);
+
+    csvWriter csv;
+    for( const auto& header : headers)
+        csv.addColumn(header);
+
+    for( const auto& row : rows)
+        csv.appendValueToNextRecord(row);
+
+    QCOMPARE(csv.toString(), expected);
+}
+
 void test_csv::test_empty_csv()
 {
     csvWriter csv;
@@ -113,6 +151,12 @@ void test_csv::test_csv_oneHeader()
     QCOMPARE(csv.toString(), "A");
 }
 
+void test_csv::test_csv_oneHeader_withSpace()
+{
+    csvWriter csv;
+    csv.addColumn(" mSpaces  ");
+    QCOMPARE( csv.toString(), "A");
+}
 void test_csv::test_csv_twoHeader()
 {
     csvWriter csv;

@@ -14,8 +14,12 @@ private slots:
 
     void test_sql_with_parameter_binding();
 
+    void test_toString_wTrimming_data();
+    void test_toString_wTrimming();
+
     void test_empty_csv();
     void test_csv_oneHeader();
+    void test_csv_oneHeader_withSpace();
     void test_csv_twoHeader();
     void test_csv_twoHeader_useAddColumns();
     void test_csv_twoHeader_useAddColumns_rm_space();
