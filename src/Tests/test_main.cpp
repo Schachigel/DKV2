@@ -65,6 +65,12 @@ int main(int argc, char *argv[])
     std::mt19937 g(rd());
     std::shuffle(tests.begin(), tests.end(), g);
 
+
+// one test only
+    tests.clear();
+    tests.push_back(new test_csv);
+//
+
     int errCount = 0;
     {
         dbgTimer timer("overall test time");

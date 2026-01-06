@@ -38,6 +38,7 @@ public:
     void addColumn(const QString& fieldname);
     void addColumns(const QList<QString>fieldnames);
     void appendValueToNextRecord(const QString& value);
+    void startNextRecord();
     void appendRecord(const QList<QString> record);
 
     QString& appendFieldToString(QString& l, const csvField& f) const;
@@ -57,11 +58,8 @@ private:
     QList<csvRecord> records;
 private:
     // functions
-
     // make sure to write any data into csv, so that it can be read from most csv reade and ms excel
     QString prepStringAsField(const QString& s);
-    // from fields and records to a string that can be written to a file or displayed
-    QString appendRecordToLIneString( const QString& line, const QString& appendix) const;
 
 };
 
