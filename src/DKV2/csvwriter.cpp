@@ -2,81 +2,82 @@
 #include "appconfig.h"
 #include "csvwriter.h"
 
-void csvwriter::addColumn(const QString& header)
-{   LOG_CALL_W(header);
-    QString h(header);
-    Q_ASSERT(rows.empty()); // no add. columns after adding data
-    h.replace(separator, qsl(","));
-    h.replace(lineBreak, qsl(" | "));
-    headers.append(h.trimmed());
+
+QString csvWriter::prepStringAsField(const QString& s)
+{
+    QString preped {(trim_fields == trim_input::remove_leading_and_trailing_whitespace) ? s.trimmed() : s};
+    preped.replace(fieldDelimiter, fieldDelimiter+fieldDelimiter);
+    if( preped.contains(fieldSeparator) || preped.contains(reWhiteSpace) || preped.contains(reLineBreak)) {
+        preped.prepend(fieldDelimiter);
+        preped.append(fieldDelimiter);
+    }
+    return preped;
 }
 
-qsizetype csvwriter::addColumns(const QString& HeadersAsString)
-{   LOG_CALL_W(HeadersAsString);
-    QList<QString> list = HeadersAsString.split(separator);
-    return addColumns(list);
+void csvWriter::addColumn(const QString& header)
+{
+    if (records.size()){
+        qCritical() << "csvWriter::addColumn: a row can only be added before records were added";
+        return;
+    }
+    headers.append({prepStringAsField(header)});
 }
 
-qsizetype csvwriter::addColumns(const QStringList HeadersToBeAdded)
-{   LOG_CALL;
-    for(auto& s : std::as_const(HeadersToBeAdded)) {
+void csvWriter::addColumns(const QStringList HeadersToBeAdded)
+{
+    for(auto& s : std::as_const(HeadersToBeAdded))
         addColumn(s);
-    }
-    return HeadersToBeAdded.size();
 }
 
-void csvwriter::appendToRow(const QString& value)
-{   //LOG_CALL_W(value);
-    QString v(value);
-    v.replace(separator, qsl(","));
-    v.replace(lineBreak, qsl(" | "));
-    currentRow.append(v.trimmed());
-    if( currentRow.size() == headers.size()) {
-        rows.append( currentRow);
-        currentRow.clear();
+void csvWriter::appendValueToNextRecord(const QString& value)
+{
+    Q_ASSERT( next.size() < headers.size());
+    next.append({prepStringAsField(value)});
+    if( next.size() == headers.size()){
+        records.append(next);
+        next.clear();
     }
 }
 
-void csvwriter::addRow(const QStringList &cols)
-{   //LOG_CALL;
-    Q_ASSERT(cols.size() == headers.size());
-    for( auto& s : std::as_const(cols)) {
-        appendToRow(s);
+void csvWriter::appendRecord(const QList<QString> record)
+{
+    Q_ASSERT( record.size() == headers.size());
+    for (const auto& recordEntry : record ) {
+        appendValueToNextRecord(recordEntry);
     }
 }
 
-void csvwriter::addRow(const QString& row)
-{   //LOG_CALL_W(row);
-    QList<QString> list = row.split(separator);
-    addRow(list);
+QString& csvWriter::appendFieldToString(QString& line, const csvField& newField) const
+{
+    line += (line.size() && newField.size()) ? (fieldSeparator +newField) : newField; // there is already smthg there
+    return line;
 }
+QString& csvWriter::appendRecordToString(QString& line, const csvRecord& newRecord) const
+{
+    if( line.size() && newRecord.size())
+        line +=lineSeparator;
 
-QString csvwriter::appendCsvLine(const QString& line, const QString& appendix) const
-{   //LOG_CALL;
-    QString l(line);
-    if( l.size()) l += separator;
-    return l + appendix;
-}
-
-
-QString csvwriter::toString() const
-{   LOG_CALL;
-    QString out;
-    for( auto& i : std::as_const(headers)) {
-        out = appendCsvLine(out, i);
+    QString thisLine;
+    for( const auto& field : newRecord) {
+        appendFieldToString(thisLine, field);
     }
-    for( auto& j : std::as_const(rows)) {
-        QString line;
-        for( auto& k : std::as_const(j))
-        {
-            line = appendCsvLine( line, k);
+    line += thisLine;
+    return line;
+}
+
+QString csvWriter::toString() const
+{
+    QString Output;
+    if( headers.size())
+        appendRecordToString(Output, headers);
+    if( records.size())
+        for (const auto & record : records) {
+            appendRecordToString(Output, record);
         }
-        out += qsl("\n") + line;
-    }
-    return out;
+    return Output;
 }
 
-bool csvwriter::saveAndShowInExplorer(const QString& proposedFileName) const
+bool csvWriter::saveAndShowInExplorer(const QString& proposedFileName) const
 {   LOG_CALL_W(proposedFileName);
     QString fqFilePath {appConfig::Outdir() + qsl("/") + proposedFileName};
     moveToBackup (fqFilePath);
@@ -94,20 +95,18 @@ bool csvwriter::saveAndShowInExplorer(const QString& proposedFileName) const
     return true;
 }
 
-bool StringLists2csv(const QString& filename, const QStringList& header, const QVector<QStringList>& data)
+bool StringLists2csv(const QString& filename, const QList<QString>& header, const QVector<QList<QString>>& data)
 {
     LOG_CALL;
     qsizetype numColumns =header.size();
-    csvwriter csv (qsl(";"));
-//    qDebug() << header;
+    csvWriter csv;
     csv.addColumns(header);
     for( auto& line : std::as_const(data)) {
-//        qDebug() << line;
         if(line.size() not_eq numColumns){
-            qWarning() << "csv file not created due to wrong number of elements in " << line;
+            qCritical() << "csv file not created due to wrong number of elements in " << line;
             return false;
         }
-        csv.addRow(line);
+        csv.appendRecord(line);
     }
     return csv.saveAndShowInExplorer (filename);
 }

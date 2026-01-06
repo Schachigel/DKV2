@@ -102,20 +102,20 @@ void test_csv::test_sql_with_parameter_binding()
 }
 void test_csv::test_empty_csv()
 {
-    csvwriter csv;
+    csvWriter csv;
     QCOMPARE(csv.toString(), "");
 }
 
 void test_csv::test_csv_oneHeader()
 {
-    csvwriter csv;
+    csvWriter csv;
     csv.addColumn("A");
     QCOMPARE(csv.toString(), "A");
 }
 
 void test_csv::test_csv_twoHeader()
 {
-    csvwriter csv;
+    csvWriter csv;
     csv.addColumn("A");
     csv.addColumn("B");
 
@@ -124,80 +124,80 @@ void test_csv::test_csv_twoHeader()
 
 void test_csv::test_csv_twoHeader_useAddColumns()
 {
-    csvwriter csv;
-    csv.addColumns("A;B");
+    csvWriter csv;
+    csv.addColumns({"A","B"});
 
     QCOMPARE(csv.toString(), "A;B");
 }
 
 void test_csv::test_csv_twoHeader_useAddColumns_rm_space()
 {
-    csvwriter csv;
-    csv.addColumns("  A  ;  B   ");
+    csvWriter csv;
+    csv.addColumns({" A  ","  B   "});
 
     QCOMPARE(csv.toString(), "A;B");
 }
 
 void test_csv::test_csv_oneHeader_oneRow()
 {
-    csvwriter csv;
-    csv.addColumns("H");
-    csv.appendToRow("R");
+    csvWriter csv;
+    csv.addColumns({"H"});
+    csv.appendValueToNextRecord("R");
 
-    QCOMPARE(csv.toString(), "H\nR");
+    QCOMPARE(csv.toString(), "H\r\nR");
 }
 
 void test_csv::test_csv_oneHeader_oneRow01()
 {
-    csvwriter csv;
+    csvWriter csv;
     csv.addColumn("H");
-    csv.appendToRow("R");
+    csv.appendValueToNextRecord("R");
 
-    QCOMPARE(csv.toString(), "H\nR");
+    QCOMPARE(csv.toString(), "H\r\nR");
 }
 
 void test_csv::test_csv_Headers_Rows()
 {
-    csvwriter csv;
-    csv.addColumns("VN; NN; PLZ");
-    csv.addRow(QList<QString>({"holger", "mairon", "69242"}));
+    csvWriter csv;
+    csv.addColumns({"VN", "NN","PLZ"});
+    csv.appendRecord(QList<QString>({"holger", "mairon", "69242"}));
 
-    QCOMPARE(csv.toString(), "VN;NN;PLZ\nholger;mairon;69242");
+    QCOMPARE(csv.toString(), "VN;NN;PLZ\r\nholger;mairon;69242");
 }
 
 void test_csv::test_csv_Headers_Rows01()
 {
-    csvwriter csv;
-    csv.addColumns("VN; NN; PLZ");
-    csv.appendToRow("holger");
-    csv.appendToRow("mairon");
-    csv.appendToRow("69242");
+    csvWriter csv;
+    csv.addColumns({"VN", "NN","PLZ"});
+    csv.appendValueToNextRecord("holger");
+    csv.appendValueToNextRecord("mairon");
+    csv.appendValueToNextRecord("69242");
 
-    QCOMPARE(csv.toString(), "VN;NN;PLZ\nholger;mairon;69242");
+    QCOMPARE(csv.toString(), "VN;NN;PLZ\r\nholger;mairon;69242");
 }
 
 void test_csv::test_csv_fix_semicolon()
 {
-    csvwriter csv;
+    csvWriter csv;
     csv.addColumn("VN;");
     csv.addColumn(";NN");
     csv.addColumn("P;LZ");
 
-    csv.appendToRow(";holger");
-    csv.appendToRow("mairon;");
-    csv.appendToRow("69;242");
+    csv.appendValueToNextRecord(";holger");
+    csv.appendValueToNextRecord("mairon;");
+    csv.appendValueToNextRecord("69;242");
 
-    QCOMPARE(csv.toString(), "VN,;,NN;P,LZ\n,holger;mairon,;69,242");
+    QCOMPARE(csv.toString(), "\"VN;\";\";NN\";\"P;LZ\"\r\n\";holger\";\"mairon;\";\"69;242\"");
 }
 
 void test_csv::test_csv_Headers_Rows02()
 {
-    csvwriter csv;
-    csv.addColumns("VN; NN; PLZ");
-    csv.addRow("holger; mairon; 69242");
-    csv.appendToRow("Lukas");
-    csv.appendToRow("Felix;");
-    csv.appendToRow("Oliv;er");
+    csvWriter csv;
+    csv.addColumns({"VN", "NN","PLZ"});
+    csv.appendRecord({"holger", " mairon", "69242"});
+    csv.appendValueToNextRecord("Lukas");
+    csv.appendValueToNextRecord("Felix;");
+    csv.appendValueToNextRecord("Oliv;er");
 
-    QCOMPARE(csv.toString(), "VN;NN;PLZ\nholger;mairon;69242\nLukas;Felix,;Oliv,er");
+    QCOMPARE(csv.toString(), "VN;NN;PLZ\r\nholger;mairon;69242\r\nLukas;\"Felix;\";\"Oliv;er\"");
 }

@@ -234,7 +234,7 @@ ORDER BY Nachname ASC, Vorname ASC
         entries.append({record.value(0).toLongLong (), record.value(1).toString ()});
 }
 
-void creditorsWithAnnualSettlement(QList<tableindex_t> &entries, int bookingYear)
+void creditorsWithAnnualSettlement(QList<tableindex_t> &entries, const int bookingYear)
 {   LOG_CALL;
     if( bookingYear < 1950) {
         qCritical() << "invalid booking year reading DKGeber";

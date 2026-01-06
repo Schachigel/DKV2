@@ -3,29 +3,66 @@
 
 #include "helper.h"
 
-static const QRegularExpression lineBreak (qsl("[\\n\\r]+")); // all \r\n combinations
+static const QRegularExpression reLineBreak  {qsl("[\\n\\r]+")}; // all \r\n combinations
+static const QRegularExpression reWhiteSpace {qsl("\\s+")};
+static const QString defFieldSeparator {qsl(";")};
+static const QString defFieldDelimiter {qsl("\"")};
+static const QString lineSeparator     { qsl("\r\n")};
 
-class csvwriter
+using csvField=QString;
+using csvRecord=QList<csvField>;
+
+enum trim_input {
+    no_trim =0,
+    remove_leading_and_trailing_whitespace
+
+};
+enum quoteAlways {
+    quote_where_necessary =0,
+    quote_all_fields
+};
+
+
+class csvWriter
 {
 public:
-    csvwriter(const QString& sep =qsl(";")) : separator(sep){ Q_ASSERT(sep.length()==1);}
-    void addColumn(const QString& header);
-    qsizetype addColumns(const QString& headers);
-    qsizetype addColumns(const QStringList headers);
-    void appendToRow(const QString& value);
-    void addRow(const QStringList& cols);
-    void addRow(const QString& row);
+    csvWriter(const QString& sep =defFieldSeparator,
+              const QString& delim=defFieldDelimiter,
+              const trim_input t =remove_leading_and_trailing_whitespace,
+              const quoteAlways q =quote_where_necessary)
+        : fieldSeparator(sep), fieldDelimiter(delim), trim_fields(t), quoteMode(quote_where_necessary)
+    { Q_ASSERT(sep.length()>=1); Q_ASSERT(sep.length()>=1);
+    }
+public:
+    // specify the columns in the table (csv). These names will make the first record
+    void addColumn(const QString& fieldname);
+    void addColumns(const QList<QString>fieldnames);
+    void appendValueToNextRecord(const QString& value);
+    void appendRecord(const QList<QString> record);
 
+    QString& appendFieldToString(QString& l, const csvField& f) const;
+    QString& appendRecordToString(QString& line, const csvRecord& newRecord) const;
     QString toString() const;
+
     bool saveAndShowInExplorer(const QString& filname) const;
 private:
-    QString appendCsvLine( const QString& line, const QString& appendix) const;
+    // const data / configuration
+    const QString fieldSeparator/*{qsl(";")}*/;
+    const QString fieldDelimiter/*{qsl("\"")}*/;
+    const trim_input trim_fields/*{remove_leading_and_trailing_whitespace}*/;
+    const quoteAlways quoteMode/*{quote_where_necessary}*/;
+    // variabel data
+    csvRecord headers;
+    csvRecord next;
+    QList<csvRecord> records;
+private:
+    // functions
 
-    QString separator;
+    // make sure to write any data into csv, so that it can be read from most csv reade and ms excel
+    QString prepStringAsField(const QString& s);
+    // from fields and records to a string that can be written to a file or displayed
+    QString appendRecordToLIneString( const QString& line, const QString& appendix) const;
 
-    QList<QString> headers;
-    QList<QList<QString>> rows;
-    QList<QString> currentRow;
 };
 
 bool StringLists2csv(const QString& filename, const QStringList& header, const QVector<QStringList>& lists);

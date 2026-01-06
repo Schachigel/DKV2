@@ -428,37 +428,38 @@ void print_as_csv(const QDate &bookingDate,
                   const QVector<contract> &changedContracts,
                   const QVector<QDate> &startOfInterrestCalculation,
                   const QVector<booking> &asBookings) {
-    csvwriter csv(qsl(";"));
-    csv.addColumns(
-                qsl("Vorname;Nachname;Email;Strasse;Plz;Stadt;IBAN;Kennung;"
-                    "Auszahlend;"
-                    "Beginn;Buchungsdatum;Zinssatz;Kreditbetrag;Zins;Endbetrag"));
+
+    csvWriter csv;
+    csv.addColumns({{"Vorname"}, {"Nachname"}, {"Email"}, {"Strasse"}, {"Plz"},
+                    {"Stadt"}, {"IBAN"}, {"Kennung"}, {"Auszahlend"}, {"Beginn"},
+                    {"Buchungsdatum"}, {"Zinssatz"}, {"Kreditbetrag"},
+                    {"Zinssatz"}, {"Zins"}, {"Endbetrag"}});
     QLocale l;
     for (int i = 0; i < changedContracts.count(); i++) {
         const contract &c = changedContracts[i];
         const booking &b = asBookings[i];
         // write data to CSV
         creditor cont(c.creditorId());
-        csv.appendToRow(cont.firstname());
-        csv.appendToRow(cont.lastname());
-        csv.appendToRow(cont.email());
-        csv.appendToRow(cont.street());
-        csv.appendToRow(cont.postalCode());
-        csv.appendToRow(cont.city());
+        csv.appendValueToNextRecord(cont.firstname());
+        csv.appendValueToNextRecord(cont.lastname());
+        csv.appendValueToNextRecord(cont.email());
+        csv.appendValueToNextRecord(cont.street());
+        csv.appendValueToNextRecord(cont.postalCode());
+        csv.appendValueToNextRecord(cont.city());
 
-        csv.appendToRow(cont.iban());
-        csv.appendToRow(c.label());
-        csv.appendToRow(interestModelDisplayString(c.iModel()));
-        csv.appendToRow(startOfInterrestCalculation[i].toString(qsl("dd.MM.yyyy")));
-        csv.appendToRow(bookingDate.toString(qsl("dd.MM.yyyy")));
-        csv.appendToRow(l.toString(c.interestRate(), 'f', 2));
+        csv.appendValueToNextRecord(cont.iban());
+        csv.appendValueToNextRecord(c.label());
+        csv.appendValueToNextRecord(interestModelDisplayString(c.iModel()));
+        csv.appendValueToNextRecord(startOfInterrestCalculation[i].toString(qsl("dd.MM.yyyy")));
+        csv.appendValueToNextRecord(bookingDate.toString(qsl("dd.MM.yyyy")));
+        csv.appendValueToNextRecord(l.toString(c.interestRate(), 'f', 2));
 
         if (c.iModel() == interestModel::reinvest)
-            csv.appendToRow(l.toString(c.value() - b.amount, 'f', 2));
+            csv.appendValueToNextRecord(l.toString(c.value() - b.amount, 'f', 2));
         else
-            csv.appendToRow(l.toString(c.value(), 'f', 2));
-        csv.appendToRow(l.toString(b.amount, 'f', 2));
-        csv.appendToRow(l.toString(c.value(), 'f', 2));
+            csv.appendValueToNextRecord(l.toString(c.value(), 'f', 2));
+        csv.appendValueToNextRecord(l.toString(b.amount, 'f', 2));
+        csv.appendValueToNextRecord(l.toString(c.value(), 'f', 2));
     }
     QString filename{qsl("%1_Jahresabrechnung-%2.csv")};
     filename = filename.arg(QDate::currentDate().toString(Qt::ISODate),

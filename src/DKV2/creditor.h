@@ -77,7 +77,7 @@ private:
 };
 
 void getAllCreditorInfoSorted(QList<QPair<tableindex_t, QString> > &entries);
-void creditorsWithAnnualSettlement(QList<tableindex_t> &entries, int bookingYear =-1);
+void creditorsWithAnnualSettlement(QList<tableindex_t> &entries, const int bookingYear =-1);
 
 
 // for testing

@@ -571,7 +571,6 @@ void MainWindow::on_action_cmenu_assoc_investment_triggered()
 
 void MainWindow::on_btnSave2Csv_clicked()
 {
-    csvwriter csv;
     QSqlTableModel* model = (showDeletedContracts ?
            qobject_cast<QSqlTableModel*>( ui->contractsTableView->model())
             :
@@ -584,22 +583,27 @@ void MainWindow::on_btnSave2Csv_clicked()
     QBitArray ba =(showDeletedContracts ?
                        toQBitArray(getMetaInfo (visibilityPattern_d_MetaInfoName, defaultVisibilityPattern_deletedContracts))
                       : toQBitArray(getMetaInfo (visibilityPatternMetaInfoName, defaultVisibilityPattern_contracts)));
+
+//TODO:
+//Anzahl der Kopfzeilen stimmt nicht immer m Datenzeilen überein. Die Daten der Anmerkung fehlten
+
+    csvWriter csv;
     // header
-    for( int i=0; i<rec.count(); i++) {
-        if( ba.at(i))
-            csv.addColumn(rec.fieldName(i));
+    for( int headerColumn=0; headerColumn < rec.count(); headerColumn++) {
+        if( ba.at(headerColumn))
+            csv.addColumn(rec.fieldName(headerColumn));
     }
     // data
-    for( int i=0; i<model->rowCount(); i++) {
-        QSqlRecord recSingleRow =model->record(i);
+    for( int datacolumn=0; datacolumn < model->rowCount(); datacolumn++) {
+        QSqlRecord recSingleRow =model->record(datacolumn);
         for( int j=0; j<recSingleRow.count(); j++) {
             if( ba.at(j)) {
                 QVariant v =recSingleRow.value (j);
                 QVariant tmp(v);
                 if( tmp.canConvert (QMetaType(QMetaType::Double)) && tmp.convert (QMetaType(QMetaType::Double)))
-                    csv.appendToRow( QLocale().toString(tmp.toDouble (), 'f', 2));
+                    csv.appendValueToNextRecord( QLocale().toString(tmp.toDouble (), 'f', 2));
                 else
-                    csv.appendToRow(recSingleRow.value(j).toString());
+                    csv.appendValueToNextRecord(recSingleRow.value(j).toString());
             }
         }
     }
