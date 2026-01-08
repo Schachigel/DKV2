@@ -589,15 +589,20 @@ void MainWindow::on_btnSave2Csv_clicked()
 
     csvWriter csv;
     // header
-    for( int headerColumn=0; headerColumn < rec.count(); headerColumn++) {
-        if( ba.at(headerColumn))
-            csv.addColumn(rec.fieldName(headerColumn));
+    for( int headerNbr=0; headerNbr < rec.count(); headerNbr++) {
+        if( ba.at(headerNbr)){
+            qDebug() << "column in header: " << headerNbr << ": " << rec.fieldName(headerNbr);
+            csv.addColumn(rec.fieldName(headerNbr));
+        }
     }
     // data
     for( int datacolumn=0; datacolumn < model->rowCount(); datacolumn++) {
         QSqlRecord recSingleRow =model->record(datacolumn);
+        qDebug() << "\ndata item col nr: ";
         for( int j=0; j<recSingleRow.count(); j++) {
             if( ba.at(j)) {
+                qDebug() << j;
+                qDebug() << "data item col nr: " << j;
                 QVariant v =recSingleRow.value (j);
                 QVariant tmp(v);
                 if( tmp.canConvert (QMetaType(QMetaType::Double)) && tmp.convert (QMetaType(QMetaType::Double)))

@@ -203,6 +203,20 @@ void test_csv::test_toString_wHeader_wTrimming_data()
         { {{" \" H \" "}},  {}, {"\"\"\" H \"\"\""} , {"quoted header with inner n outer spaces 2"} },// note: inner quote gets quoted AND string gets quoted because it contains quotes
         { {{"H"}},{{{"D"}}}, {"H\r\nD"}, {"one header, one row, one field"} }, //
         { {{"A"},{"B"},{"C"}}, {{"D","\" E \""," F "}}, {"A;B;C\r\nD;\"\"\" E \"\"\";F"} , {"no trimming in quoted strings"} },
+        { {{{"FieldA"}, {"FieldB"}, {"FieldC"}, {"FieldD"}, {"FieldE"}, {"FieldF"}, {"FieldG"}, {"FieldH"}, {"FieldI"}}},
+         {{{"DATA01"}, {"DATA02"}, {"DATA03"}, {"DATA04"}, {"DATA05"}, {"DATA06"}, {"DATA07"}, {"DATA08"}, {"DATA09"}},
+          {{"DATA01"}, {"DATA02"}, {"DATA03"}, {"DATA04"}, {"DATA05"}, {"DATA06"}, {"DATA07"}, {"DATA08"}, {"DATA09"}},
+          {{"DATA01"}, {"DATA02"}, {"DATA03"}, {"DATA04"}, {"DATA05"}, {"DATA06"}, {"DATA07"}, {"DATA08"}, {"DATA09"}},
+          {{"DATA01"}, {"DATA02"}, {"DATA03"}, {"DATA04"}, {"DATA05"}, {"DATA06"}, {"DATA07"}, {"DATA08"}, {"DATA09"}},
+          {{"DATA01"}, {"DATA02"}, {"DATA03"}, {"DATA04"}, {"DATA05"}, {"DATA06"}, {"DATA07"}, {"DATA08"}, {"DATA09"}},
+          {{"DATA01"}, {"DATA02"}, {"DATA03"}, {"DATA04"}, {"DATA05"}, {"DATA06"}, {"DATA07"}, {"DATA08"}, {"DATA09"}},},
+         {"FieldA;FieldB;FieldC;FieldD;FieldE;FieldF;FieldG;FieldH;FieldI\r\nDATA01;"
+          "DATA02;DATA03;DATA04;DATA05;DATA06;DATA07;DATA08;DATA09\r\n"
+          "DATA01;DATA02;DATA03;DATA04;DATA05;DATA06;DATA07;DATA08;DATA09\r\n"
+          "DATA01;DATA02;DATA03;DATA04;DATA05;DATA06;DATA07;DATA08;DATA09\r\n"
+          "DATA01;DATA02;DATA03;DATA04;DATA05;DATA06;DATA07;DATA08;DATA09\r\n"
+          "DATA01;DATA02;DATA03;DATA04;DATA05;DATA06;DATA07;DATA08;DATA09\r\n"
+          "DATA01;DATA02;DATA03;DATA04;DATA05;DATA06;DATA07;DATA08;DATA09"}}
      };
 
     for(const auto& tdata : data) {

@@ -1,7 +1,7 @@
 #ifndef DBFIELD_H
 #define DBFIELD_H
 
-#include <iso646.h>
+
 
 #include "helper.h"
 

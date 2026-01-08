@@ -1,5 +1,5 @@
 #include "helperfin.h"
-#include <iso646.h>
+
 
 #include "helper.h"
 #include "appconfig.h"

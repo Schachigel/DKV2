@@ -1,6 +1,6 @@
 #ifndef TABLEDATAINSERTER_H
 #define TABLEDATAINSERTER_H
-#include <iso646.h>
+
 
 
 #include "helpersql.h"

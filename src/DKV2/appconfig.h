@@ -1,7 +1,7 @@
 #ifndef APPCONFIG_H
 #define APPCONFIG_H
 
-#include <iso646.h>
+
 #include "dbtable.h"
 
 // db config info in 'meta' table
