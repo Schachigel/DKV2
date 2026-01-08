@@ -1,11 +1,11 @@
 
+#include "contract.h"
 #include "dbfield.h"
 #include "helper.h"
 #include "helpersql.h"
 #include "helperfin.h"
 #include "dbstructure.h"
 #include "dkdbhelper.h"
-#include "contract.h"
 #include "booking.h"
 
 // statics & friends

@@ -1,6 +1,6 @@
+#include "dbtable.h"
 #include "helper.h"
 #include "helpersql.h"
-#include "dbtable.h"
 #include "dbfield.h"
 
 const dbfield dbtable::operator[](const QString& s) const

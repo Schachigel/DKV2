@@ -1,9 +1,9 @@
 
+#include "creditor.h"
 #include "helpersql.h"
 #include "dbstructure.h"
 #include "ibanvalidator.h"
 #include "booking.h"
-#include "creditor.h"
 
 const QString creditor::fnId           {qsl("id")};
 const QString creditor::tablename      {qsl("Kreditoren")};

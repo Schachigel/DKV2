@@ -1,8 +1,8 @@
+#include "appconfig.h"
 #include "helper.h"
 #include "helpersql.h"
 #include "dbstructure.h"
 #include "dkv2version.h"
-#include "appconfig.h"
 
 
 /* static data */

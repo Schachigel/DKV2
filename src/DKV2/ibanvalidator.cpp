@@ -1,6 +1,6 @@
+#include "ibanvalidator.h"
 #include "helper.h"
 #include "helperfin.h"
-#include "ibanvalidator.h"
 
 IbanValidator* IbanValidator::globalValidator =nullptr;
 

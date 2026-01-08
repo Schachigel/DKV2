@@ -1,3 +1,6 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
 #include "qapplication.h"
 #include "qnamespace.h"
 #include <QtGlobal>
@@ -24,8 +27,6 @@
 #include "uebersichten.h"
 
 #include "contractsheadersortingadapter.h"
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
 
 QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
 {

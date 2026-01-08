@@ -1,10 +1,11 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
 #include "dlgdisplaycolumns.h"
 #include "busycursor.h"
 #include "transaktionen.h"
 #include "creditor.h"
 #include "helpersql.h"
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
 
 
 // Creditor list view page

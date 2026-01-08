@@ -1,10 +1,10 @@
+#include "booking.h"
 #include "helper.h"
 #include "helpersql.h"
 #include "contract.h"
 #include "dkdbviews.h"
 #include "dbstructure.h"
 #include "qnamespace.h"
-#include "booking.h"
 
 /* static */ const dbtable& booking::getTableDef()
 {

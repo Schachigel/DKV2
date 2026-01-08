@@ -1,9 +1,10 @@
+#include "uebersichten.h"
+
 #include "helpersql.h"
 #include "helperfin.h"
 #include "appconfig.h"
 #include "dkdbviews.h"
 #include "dkdbhelper.h"
-#include "uebersichten.h"
 
 
 void tablelayout::setCellFormat(QTextTableCell& cell, cellType ct) {

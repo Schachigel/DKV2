@@ -1,7 +1,7 @@
+#include "helperfin.h"
 #include <iso646.h>
 
 #include "helper.h"
-#include "helperfin.h"
 #include "appconfig.h"
 
 int TageZwischen_30_360( const QDate von, const QDate bis)

@@ -1,6 +1,6 @@
+#include "dkdbviews.h"
 #include "helper.h"
 #include "helpersql.h"
-#include "dkdbviews.h"
 
 //////////////////////////////////////
 // VIEWs to be created temporarily in the database

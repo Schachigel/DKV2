@@ -1,6 +1,6 @@
+#include "contracttablemodel.h"
 #include "helper.h"
 #include "contract.h"
-#include "contracttablemodel.h"
 
 namespace {
 QDate dateFromNP(const QString& s)

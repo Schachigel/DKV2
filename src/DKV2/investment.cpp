@@ -1,9 +1,9 @@
+#include "investment.h"
 #include "helper.h"
 #include "helperfin.h"
 #include "helpersql.h"
 #include "appconfig.h"
 #include "tabledatainserter.h"
-#include "investment.h"
 
 const QString fnInvestmentInterest{qsl("ZSatz")};
 const QString fnInvestmentStart{qsl("Anfang")};

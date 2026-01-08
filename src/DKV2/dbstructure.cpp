@@ -1,7 +1,7 @@
+#include "dbstructure.h"
 #include "helper.h"
 #include "helperfile.h"
 #include "helpersql.h"
-#include "dbstructure.h"
 #include "dkdbhelper.h"
 
 #include "appconfig.h"

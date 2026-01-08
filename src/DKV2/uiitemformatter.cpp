@@ -1,7 +1,8 @@
+#include "uiitemformatter.h"
+
 #include "booking.h"
 #include "contract.h"
 #include "helperfin.h"
-#include "uiitemformatter.h"
 
 void centralAlignedTextFormatter::paint(QPainter *p, const QStyleOptionViewItem &option, const QModelIndex& i) const
 {

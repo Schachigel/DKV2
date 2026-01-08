@@ -1,3 +1,4 @@
+#include "dkdbhelper.h"
 #include "helperfile.h"
 #include "helpersql.h"
 #include "appconfig.h"
@@ -10,7 +11,6 @@
 #include "dkdbviews.h"
 #include "dkdbindices.h"
 #include "dkdbcopy.h"
-#include "dkdbhelper.h"
 
 
 namespace  {

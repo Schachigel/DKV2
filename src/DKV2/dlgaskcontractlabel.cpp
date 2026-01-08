@@ -1,5 +1,6 @@
-#include "helper.h"
 #include "dlgaskcontractlabel.h"
+
+#include "helper.h"
 
 dlgAskContractLabel::dlgAskContractLabel(const QString& givenLabel)
 {

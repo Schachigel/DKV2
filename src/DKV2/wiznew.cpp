@@ -1,3 +1,5 @@
+#include "wiznew.h"
+
 #include "helperfin.h"
 #include "dkdbhelper.h"
 #include "appconfig.h"
@@ -5,7 +7,6 @@
 #include "creditor.h"
 
 #include "investment.h"
-#include "wiznew.h"
 
 
 

@@ -1,8 +1,7 @@
+#include "dbfield.h"
 #include <iso646.h>
 #include "helper.h"
 #include "helpersql.h"
-
-#include "dbfield.h"
 
 /* static */ bool dbfield::isSupportedDBType(QMetaType::Type t)
 {

@@ -1,8 +1,9 @@
+#include "dlgchangebooking.h"
+
 #include "helper.h"
 #include "helperfin.h"
 #include "qevent.h"
 #include "qlineedit.h"
-#include "dlgchangebooking.h"
 
 dlgChangeBooking::dlgChangeBooking(QWidget* ) {
     QLabel* header =new QLabel(qsl("Buchungswert anpassen"));

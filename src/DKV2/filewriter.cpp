@@ -1,10 +1,11 @@
+#include "filewriter.h"
+
 #include <QPainter>
 #include <QPrinter>
 #include "helper.h"
 #include "helperfile.h"
 #include "appconfig.h"
 #include "mustache.h"
-#include "filewriter.h"
 
 bool extractTemplateFileFromResource(const QString& path, const QString& file, const QString& outname)
 {   LOG_CALL_W(file);

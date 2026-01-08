@@ -1,9 +1,9 @@
 
+#include "helpersql.h"
 #include <iso646.h>
 
 #include "helper.h"
 #include "helperfin.h"
-#include "helpersql.h"
 
 #include "dbstructure.h"
 #include "dbtable.h"

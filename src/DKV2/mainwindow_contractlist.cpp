@@ -1,3 +1,6 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
 #include "helper.h"
 
 #include "busycursor.h"
@@ -9,9 +12,6 @@
 #include "dkdbviews.h"
 #include "investment.h"
 #include "transaktionen.h"
-
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
 
 
 /////////////////////////////////////////////////

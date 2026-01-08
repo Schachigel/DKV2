@@ -1,5 +1,6 @@
-#include "dkdbhelper.h"
 #include "wizterminatecontract.h"
+
+#include "dkdbhelper.h"
 
 wpTerminateContract_DatePage::wpTerminateContract_DatePage(QWidget* p) : QWizardPage(p)
 {

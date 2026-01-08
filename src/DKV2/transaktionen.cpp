@@ -1,3 +1,5 @@
+#include "transaktionen.h"
+
 #include "appconfig.h"
 #include "dkdbhelper.h"
 #include "helper.h"
@@ -26,7 +28,6 @@
 #include "dlgchangecontracttermination.h"
 #include "dlginterestletters.h"
 #include "dlgchangebooking.h"
-#include "transaktionen.h"
 #include "wiznew.h"
 #include "wiznewinvestment.h"
 

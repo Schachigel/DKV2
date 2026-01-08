@@ -1,7 +1,8 @@
+#include "mainwindow.h"
+
 #include "helper.h"
 #include "busycursor.h"
 #include "opendatabase.h"
-#include "mainwindow.h"
 
 const char nbr_mru_entries =5;
 QAction* mru_action =nullptr;

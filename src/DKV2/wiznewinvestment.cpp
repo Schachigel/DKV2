@@ -1,7 +1,7 @@
+#include "wiznewinvestment.h"
+
 #include "helper.h"
 #include "appconfig.h"
-
-#include "wiznewinvestment.h"
 
 /* ////////////////////////////
   wpInvestmentSummary

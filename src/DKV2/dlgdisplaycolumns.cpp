@@ -1,5 +1,5 @@
-#include "helper.h"
 #include "dlgdisplaycolumns.h"
+#include "helper.h"
 
 dlgDisplayColumns::dlgDisplayColumns(const QVector<QPair<int, QString>>& colInfo, const QBitArray& status, QWidget* p)
     : QDialog(p), status(status), colInfo(colInfo)

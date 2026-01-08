@@ -1,8 +1,8 @@
+#include "dkdbcopy.h"
 #include "helpersql.h"
 #include "helperfile.h"
 #include "appconfig.h"
 #include "tabledatainserter.h"
-#include "dkdbcopy.h"
 
 /*
 *  locally used helper functions

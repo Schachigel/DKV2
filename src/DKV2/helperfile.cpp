@@ -1,5 +1,5 @@
-#include "helper.h"
 #include "helperfile.h"
+#include "helper.h"
 #include "appconfig.h"
 
 QString getUniqueTempFilename(const QString &templateFileName, const QString& purpose)

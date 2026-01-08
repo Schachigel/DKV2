@@ -1,8 +1,8 @@
+#include "helper.h"
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
 #include <iostream>
-#include "helper.h"
 #ifndef QT_DEBUG
 #include "helperfile.h"
 #endif

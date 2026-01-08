@@ -1,6 +1,6 @@
+#include "csvwriter.h"
 #include "helperfile.h"
 #include "appconfig.h"
-#include "csvwriter.h"
 
 
 QString csvWriter::prepStringAsField(const QString& s)

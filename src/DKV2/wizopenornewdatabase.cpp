@@ -1,7 +1,7 @@
+#include "wizopenornewdatabase.h"
+
 #include "helper.h"
 #include "appconfig.h"
-
-#include "wizopenornewdatabase.h"
 
 /*
  * wizard Pages: wpOpenOrNew

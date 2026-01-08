@@ -1,3 +1,5 @@
+#include "opendatabase.h"
+
 #include "helper.h"
 #include "dkdbhelper.h"
 #include "appconfig.h"
@@ -5,7 +7,6 @@
 
 #include "wizopenornewdatabase.h"
 #include "wiznewdatabase.h"
-#include "opendatabase.h"
 
 namespace
 {
