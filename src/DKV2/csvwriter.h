@@ -13,7 +13,7 @@ using csvField=QString;
 using csvRecord=QList<csvField>;
 
 enum trim_input {
-    no_trim =0,
+    no_trimming =0,
     remove_leading_and_trailing_whitespace
 
 };

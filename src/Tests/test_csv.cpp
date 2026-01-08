@@ -123,6 +123,7 @@ void test_csv::test_toString_noHeader_wTrimming_data()
         { {{{"D"}},{{"E"}},{{"F"}}},   {"D\r\nE\r\nF"} , {"three rows one filed each"} },
         { {{{"D"},{"E", "E+"},{"F"}}}, {"D\r\nE;E+\r\nF"} , {"three rows one, two, one fileds"} },
         { {{{"D  ;"}},{{" E "}, {"  ;E+"}},{"F"}}, {"\"D  ;\"\r\nE;\";E+\"\r\nF"} , {"three rows one, two, one fileds,quoting"} },
+        { {{{"D"," \" E \" "," F "}}}, {"D;\"\"\" E \"\"\";F"} , {"no trimming in quoted strings"} }, // THREE quotes: quote the field AND double any quote in the field
     };
 
     for(const auto& tdata : data) {
@@ -135,6 +136,48 @@ void test_csv::test_toString_noHeader_wTrimming()
     QFETCH(QString, expectedFileContent);
 
     csvWriter csv;
+    for( const auto& row : records) {
+        for( const auto& field : row)
+            csv.appendValueToNextRecord(field);
+        csv.startNextRecord();
+    }
+    //    qDebug() << comment << "\n" << headers << "\n" << records;
+    QCOMPARE(csv.toString(), expectedFileContent);
+}
+
+void test_csv::test_toString_noHeader_NO_Trimming_data()
+{
+    QTest::addColumn<QList<QList<QString>>>( "records");
+    QTest::addColumn<QString>("expectedFileContent");
+
+    struct testdata { QList<QList<QString>> d; QString e; QString c;};
+
+    testdata data[] {
+        { {{}},                {""} , {"empty file"} },
+        { {{{"D"}}},           {"D"} , {"one field"} },
+        { {{{"D\"D"}}},        {"\"D\"\"D\""} , {"one field, quote inside"} },
+        { {{{"D","E"}}},       {"D;E"} , {"two fields"} },
+        { {{{"D","E"," F "}}}, {"D;E;\" F \""} , {"three fields"} },
+        { {{{" "},{""}}},       {"\" \";"}, {"three fields of nothing (there could not be one field of nothing)"} },
+        { {{{" D ","  E "," F  "}}},   {"\" D \";\"  E \";\" F  \""} , {"three fields, lot of spaces"} },
+        { {{{"D"}},{{"E"}}},           {"D\r\nE"} , {"two rows one filed each"} },
+        { {{{"  D  "}},{{"  E    "}}}, {"\"  D  \"\r\n\"  E    \""} , {"two rows one filed each lot of spaces"} },
+        { {{{"D"}},{{"E"}},{{"F"}}},   {"D\r\nE\r\nF"} , {"three rows one filed each"} },
+        { {{{"D"},{"E", "E+"},{" F "}}}, {"D\r\nE;E+\r\n\" F \""} , {"three rows one, two, one fileds"} },
+        { {{{"D  ;"}},{{" E "}, {"  ;E+"}},{"F"}}, {"\"D  ;\"\r\n\" E \";\"  ;E+\"\r\nF"} , {"three rows one, two, one fileds,quoting"} },
+        { {{{"D"," \" E \" "," F "}}}, {"D;\" \"\" E \"\" \";\" F \""} , {"no trimming in quoted strings"} }, // THREE quotes: quote the field AND double any quote in the field
+    };
+
+    for(const auto& tdata : data) {
+        QTest::newRow(tdata.c.toLocal8Bit()) << tdata.d << tdata.e;
+    }
+}
+void test_csv::test_toString_noHeader_NO_Trimming()
+{
+    QFETCH(QList<QList<QString>>, records);
+    QFETCH(QString, expectedFileContent);
+
+    csvWriter csv(";", "\"", trim_input::no_trimming);
     for( const auto& row : records) {
         for( const auto& field : row)
             csv.appendValueToNextRecord(field);
@@ -159,6 +202,7 @@ void test_csv::test_toString_wHeader_wTrimming_data()
         { {{" h\" H \" "}}, {}, {"\"h\"\" H \"\"\""} , {"quoted header with inner n outer spaces 1"} },
         { {{" \" H \" "}},  {}, {"\"\"\" H \"\"\""} , {"quoted header with inner n outer spaces 2"} },// note: inner quote gets quoted AND string gets quoted because it contains quotes
         { {{"H"}},{{{"D"}}}, {"H\r\nD"}, {"one header, one row, one field"} }, //
+        { {{"A"},{"B"},{"C"}}, {{"D","\" E \""," F "}}, {"A;B;C\r\nD;\"\"\" E \"\"\";F"} , {"no trimming in quoted strings"} },
      };
 
     for(const auto& tdata : data) {

@@ -15,6 +15,8 @@ private slots:
     // void test_sql_with_parameter_binding();
     void test_toString_noHeader_wTrimming_data();
     void test_toString_noHeader_wTrimming();
+    void test_toString_noHeader_NO_Trimming_data();
+    void test_toString_noHeader_NO_Trimming();
     void test_toString_wHeader_wTrimming_data();
     void test_toString_wHeader_wTrimming();
 
