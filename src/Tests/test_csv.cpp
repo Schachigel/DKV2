@@ -153,19 +153,19 @@ void test_csv::test_toString_noHeader_NO_Trimming_data()
     struct testdata { QList<QList<QString>> d; QString e; QString c;};
 
     testdata data[] {
-        { {{}},                {""} , {"empty file"} },
-        { {{{"D"}}},           {"D"} , {"one field"} },
-        { {{{"D\"D"}}},        {"\"D\"\"D\""} , {"one field, quote inside"} },
-        { {{{"D","E"}}},       {"D;E"} , {"two fields"} },
-        { {{{"D","E"," F "}}}, {"D;E;\" F \""} , {"three fields"} },
-        { {{{" "},{""}}},      {"\" \";"}, {"three fields of nothing (there could not be one field of nothing)"} },
-        { {{{" D ","  E "," F  "}}},   {"\" D \";\"  E \";\" F  \""} , {"three fields, lot of spaces"} },
-        { {{{"D"}},{{"E"}}},           {"D\r\nE"} , {"two rows one filed each"} },
-        { {{{"  D  "}},{{"  E    "}}}, {"\"  D  \"\r\n\"  E    \""} , {"two rows one filed each lot of spaces"} },
-        { {{{"D"}},{{"E"}},{{"F"}}},   {"D\r\nE\r\nF"} , {"three rows one filed each"} },
-        { {{{"D"},{"E", "E+"},{" F "}}},           {"D\r\nE;E+\r\n\" F \""} , {"three rows one, two, one fileds"} },
+        { {{}},                        {""} ,                             {"empty file"} },
+        { {{{"D"}}},                   {"D"},                             {"one field"} },
+        { {{{R"str(D"D)str"}}},        {R"str("D""D")str"} ,              {"one field, quote inside"} }, // quotes get doubled; strings w quotes inside get quoted
+        { {{{"D"},{"E"}}},             {"D;E"} ,                          {"two fields"} },
+        { {{{"D"},{"E"},{" F "}}},     {R"str(D;E;" F ")str"} ,           {"three fields"} },  // strings w spaces get qupted
+        { {{{" "},{""}}},              {R"str(" ";)str"},                 {"two fields of nothing (there could not be one field of nothing)"} },
+        { {{{" D ","  E "," F  "}}},   {R"str(" D ";"  E ";" F  ")str"} , {"three fields, lot of spaces"} },
+        { {{{"D"}},{{"E"}}},           {"D\r\nE"} ,                       {"two rows one filed each"} },
+        { {{{"  D  "}},{{"  E    "}}}, {R"str("  D  ")str" "\r\n" R"str("  E    ")str"} ,  {"two rows one filed each lot of spaces"} },
+        { {{{"D"}},{{"E"}},{{"F"}}},   {"D\r\nE\r\nF"} ,                                    {"three rows one filed each"} },
+        { {{{"D"},{"E", "E+"},{" F "}}},           {"D\r\nE;E+\r\n\" F \""} ,               {"three rows one, two, one fileds"} },
         { {{{"D  ;"}},{{" E "}, {"  ;E+"}},{"F"}}, {"\"D  ;\"\r\n\" E \";\"  ;E+\"\r\nF"} , {"three rows one, two, one fileds,quoting"} },
-        { {{{"D"," \" E \" "," F "}}},             {"D;\" \"\" E \"\" \";\" F \""} , {"no trimming in quoted strings"} }, // THREE quotes: quote the field AND double any quote in the field
+        { {{{"D"," \" E \" "," F "}}},             {R"str(D;" "" E "" ";" F ")str"} ,       {"no trimming in quoted strings"} }, // THREE quotes: quote the field AND double any quote in the field
     };
 
     for(const auto& tdata : data) {
