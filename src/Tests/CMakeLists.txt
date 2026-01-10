@@ -64,7 +64,8 @@ set(DKV2_TEST_SOURCES
 )
 
 # Create test executable
-qt_add_executable(${TARGET} ${TEST_SOURCES} ${DKV2_TEST_SOURCES})
+qt_add_executable(${TARGET} ${TEST_SOURCES} ${DKV2_TEST_SOURCES}
+    xtest_tolearn.h xtest_tolearn.cpp)
 
 # Compile definitions
 target_compile_definitions(${TARGET} PRIVATE

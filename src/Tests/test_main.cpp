@@ -17,6 +17,7 @@
 #include "test_statistics.h"
 #include "test_tabledatainserter.h"
 #include "test_dbtable.h"
+#include "xtest_tolearn.h"
 
 #ifndef TESTLIB_SELFCOVERAGE_START
 #define TESTLIB_SELFCOVERAGE_START(a)
@@ -33,29 +34,30 @@ int main(int argc, char *argv[])
     qInfo() << "Running in " << dir.path();
     dir.mkpath("../data");
 
-    std::vector<QObject*> tests;
-
+    std::vector<std::unique_ptr<QObject*>> tests;
+    bool oneTestOnly =false;
     int executions =5;
     do {
-//        in memory db
-        tests.push_back(new test_booking);
-        tests.push_back(new test_appConfig);
-        tests.push_back(new test_creditor);
-        tests.push_back(new test_contract);
-        tests.push_back(new test_sqlhelper);
-        tests.push_back(new test_statistics);
-        tests.push_back(new test_db);
-        tests.push_back(new test_dkdbhelper);
-        tests.push_back(new test_properties);
+        // in memory db
+        tests.push_back(std::make_unique<QObject*>( new test_booking));
+        tests.push_back(std::make_unique<QObject*>( new test_appConfig));
+        tests.push_back(std::make_unique<QObject*>( new test_creditor));
+        tests.push_back(std::make_unique<QObject*>( new test_contract));
+        tests.push_back(std::make_unique<QObject*>( new test_sqlhelper));
+        tests.push_back(std::make_unique<QObject*>( new test_statistics));
+        tests.push_back(std::make_unique<QObject*>( new test_db));
+        tests.push_back(std::make_unique<QObject*>( new test_dkdbhelper));
+        tests.push_back(std::make_unique<QObject*>( new test_properties));
+        tests.push_back(std::make_unique<QObject*>( new test_toLearn));
 
         // no db
-        tests.push_back(new test_finance);
-        tests.push_back(new test_csv);
-        tests.push_back(new test_dbfield);
+        tests.push_back(std::make_unique<QObject*>( new test_finance));
+        tests.push_back(std::make_unique<QObject*>( new test_csv));
+        tests.push_back(std::make_unique<QObject*>( new test_dbfield));
 
         // on disk db
-        tests.push_back(new test_tableDataInserter);
-        tests.push_back(new test_dkdbcopy);
+        tests.push_back(std::make_unique<QObject*>( new test_tableDataInserter));
+        tests.push_back(std::make_unique<QObject*>( new test_dkdbcopy));
 
 // NO ACTIVE TESTS        tests.push_back(new test_letterTemplate);
 // NO ACTIVE TESTS        tests.push_back(new test_views);
@@ -66,17 +68,19 @@ int main(int argc, char *argv[])
     std::shuffle(tests.begin(), tests.end(), g);
 
 
-// one test only
-    tests.clear();
-    tests.push_back(new test_csv);
-//
+    if( oneTestOnly){
+        tests.clear();
+        tests.push_back(std::make_unique<QObject*>( new test_csv));
+    }
+
 
     int errCount = 0;
     {
         dbgTimer timer("overall test time");
-        for( auto test: tests){
-//            qInfo() << " running " << test->objectName();
-            errCount += QTest::qExec( test);
+        for( auto& test: tests){
+            QObject* p =*test.get();
+            qInfo() << " running " << p->objectName();
+            errCount += QTest::qExec( p);
         }
     } // timer scope to measure test execution
 
