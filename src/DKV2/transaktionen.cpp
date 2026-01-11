@@ -467,6 +467,10 @@ void print_as_csv(const QDate &bookingDate,
                             i2s(bookingDate.year()));
     csv.saveAndShowInExplorer(filename);
 }
+
+void print_annaul_settlement_csv(int year) {
+
+}
 } // namespace
 void annualSettlement() {
     LOG_CALL;
@@ -511,9 +515,11 @@ void annualSettlement() {
                         << ": " << c.label ();
         }
     }
-    if (dlg.print_csv())
+    if (dlg.print_csv()){
         print_as_csv(bookingDate, changedContracts, startOfInterrestCalculation,
                      asBookings);
+        print_annaul_settlement_csv( yearOfSettlement);
+    }
     return;
 }
 
