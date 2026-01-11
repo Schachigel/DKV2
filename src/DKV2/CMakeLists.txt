@@ -118,7 +118,9 @@ elseif(WIN32)
 endif()
 
 # Create executable
-qt_add_executable(${TARGET} ${PLATFORM_GUI_FLAG} ${DKV2_SOURCES})
+qt_add_executable(${TARGET} ${PLATFORM_GUI_FLAG} ${DKV2_SOURCES}
+    annualSettlement.cpp
+    annualSettlement.h)
 
 # Compile definitions
 target_compile_definitions(${TARGET} PRIVATE

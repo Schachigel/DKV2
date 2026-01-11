@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
 
     const int nbrRuns = 5;
     std::vector<std::unique_ptr<QObject *>> tests;
-// use the following line for single test Debugging
+    // use the following line for single test Debugging
     //tests.push_back(std::make_unique<QObject *>(new test_csv));
 
     prepareTests(nbrRuns, tests);
