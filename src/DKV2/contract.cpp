@@ -360,7 +360,7 @@ bool contract::needsAnnualSettlement(const QDate intendedNextBooking)
 
     RETURN_OK( true, QString(__FUNCTION__), qsl("OK"));
 }
-int contract::annualSettlement( int year)
+int contract::  annualSettlement( int year)
 {   LOG_CALL_W(i2s(year));
     // es werden so lange Jahresabrechnungen durchgeführt, bis das Jahr "year" abgerechent ist
     Q_ASSERT(year);
@@ -760,6 +760,46 @@ double contract::getAnnualInterest(int year, bookingType interestType)
 }
 
 // NON MEMBER FUNCTIONS
+namespace {
+    // TEST new vs old creatrion of CSV Fiels
+    QVector<contract> changedContracts;
+    QVector<QDate> startOfInterrestCalculation;
+    QVector<booking> asBookings;
+}
+// for all contracts
+bool executeAnnualSettlement( int year) {
+    QVector<QVariant> ids = executeSingleColumnSql(
+        dkdbstructur[contract::tnContracts][contract::fnId]);
+    qInfo() << "going to try annual settlement for contracts w ids:" << ids;
+    // QVector<contract> changedContracts;
+    // QVector<QDate> startOfInterrestCalculation;
+    // QVector<booking> asBookings;
+    // try execute annualSettlement for all contracts
+    for (const auto &id : std::as_const(ids)) {
+        contract c(id.toLongLong());
+        QDate startDate = c.latestBooking().date;
+        /////////////////////////////////////////////////////
+        if (0 == c.annualSettlement(year))
+        ////////////////////////////////////////////////////
+        {
+            qCritical() << "jährl. Zinsabrechnung ist fehlgeschlagen für Vertrag " << c.id ()
+                << ": " << c.label ();
+        } else {   // for testing new vs. old csv creatrion
+            //       TEMPORARY
+            changedContracts.push_back(c);
+            asBookings.push_back(c.latestBooking());
+            startOfInterrestCalculation.push_back(startDate);
+            // TEMPRARY TODO: REMOVE
+        }
+    }
+    print_as_csv(nextDateForAnnualSettlement, changedContracts, startOfInterrestCalculation,
+                 asBookings);
+}
+
+void writeAnnualSettlementCsv(int year) {
+
+}
+
 
 // test helper
 // Vergleichsoperatoren für TESTS !!
