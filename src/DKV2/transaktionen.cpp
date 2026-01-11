@@ -474,16 +474,15 @@ void print_annaul_settlement_csv(int year) {
 } // namespace
 void annualSettlement() {
     LOG_CALL;
-    QDate bookingDate = dateOfnextSettlement();
-    if (not bookingDate.isValid() or bookingDate.isNull()) {
+    QDate nextDateForAnnualSettlement = dateOfnextSettlement();
+    if (not nextDateForAnnualSettlement.isValid() or nextDateForAnnualSettlement.isNull()) {
         QMessageBox::information(nullptr, qsl("Fehler"),
-                                 qsl("Ein Jahr für die nächste Zinsberechnung "
-                                     "konnte nicht gefunden werden."
+                                 qsl("Eine Jahreszinsabrechnung ist derzeit nicht möglich.\n"
                                      "Es gibt keine Verträge für die eine "
                                      "Abrechnung gemacht werden kann."));
         return;
     }
-    int yearOfSettlement = bookingDate.year();
+    int yearOfSettlement = nextDateForAnnualSettlement.year();
     //    wizAnnualSettlement wiz(getMainWindow());
     dlgAnnualsettlement dlg(yearOfSettlement, getMainWindow());
 
@@ -491,35 +490,15 @@ void annualSettlement() {
         return;
 
     busycursor bc;
-    QVector<QVariant> ids = executeSingleColumnSql(
-                                dkdbstructur[contract::tnContracts][contract::fnId]);
-    qInfo() << "going to try annual settlement for contracts w ids:" << ids;
-    QVector<contract> changedContracts;
-    QVector<QDate> startOfInterrestCalculation;
-    QVector<booking> asBookings;
-    // try execute annualSettlement for all contracts
-    for (const auto &id : std::as_const(ids)) {
-        contract c(id.toLongLong());
-        QDate startDate = c.latestBooking().date;
-        /////////////////////////////////////////////////////
-        if (0 not_eq c.annualSettlement(yearOfSettlement))
-        ////////////////////////////////////////////////////
-        {
-            if (dlg.print_csv()) {
-                changedContracts.push_back(c);
-                asBookings.push_back(c.latestBooking());
-                startOfInterrestCalculation.push_back(startDate);
-            }
-        } else {
-            qCritical() << "jährl. Zinsabrechnung ist fehlgeschlagen für Vertrag " << c.id ()
-                        << ": " << c.label ();
-        }
-    }
-    if (dlg.print_csv()){
-        print_as_csv(bookingDate, changedContracts, startOfInterrestCalculation,
-                     asBookings);
-        print_annaul_settlement_csv( yearOfSettlement);
-    }
+
+    //
+    if( executeAnnualSettlement( yearOfSettlement))
+        if( dlg.print_csv())
+            writeAnnualSettlementCsv(yearOfSettlement);
+
+
+
+
     return;
 }
 
