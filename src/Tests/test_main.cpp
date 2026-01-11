@@ -23,66 +23,83 @@
 #define TESTLIB_SELFCOVERAGE_START(a)
 #endif
 
-// QTEST_MAIN(tst_db)
-int main(int argc, char *argv[])
+void initTestRun(QApplication& app)
 {
-    QGuiApplication app(argc, argv);
     app.setAttribute(Qt::AA_Use96Dpi, true);
     app.setOrganizationName("4-MHS");
     app.setApplicationName("DKV2-tests");
-    QDir dir =QDir::current();
+    QDir dir = QDir::current();
     qInfo() << "Running in " << dir.path();
     dir.mkpath("../data");
-
-    std::vector<std::unique_ptr<QObject*>> tests;
-    bool oneTestOnly =false;
-    int executions =5;
-    do {
-        // in memory db
-        tests.push_back(std::make_unique<QObject*>( new test_booking));
-        tests.push_back(std::make_unique<QObject*>( new test_appConfig));
-        tests.push_back(std::make_unique<QObject*>( new test_creditor));
-        tests.push_back(std::make_unique<QObject*>( new test_contract));
-        tests.push_back(std::make_unique<QObject*>( new test_sqlhelper));
-        tests.push_back(std::make_unique<QObject*>( new test_statistics));
-        tests.push_back(std::make_unique<QObject*>( new test_db));
-        tests.push_back(std::make_unique<QObject*>( new test_dkdbhelper));
-        tests.push_back(std::make_unique<QObject*>( new test_properties));
-        tests.push_back(std::make_unique<QObject*>( new test_toLearn));
-
-        // no db
-        tests.push_back(std::make_unique<QObject*>( new test_finance));
-        tests.push_back(std::make_unique<QObject*>( new test_csv));
-        tests.push_back(std::make_unique<QObject*>( new test_dbfield));
-
-        // on disk db
-        tests.push_back(std::make_unique<QObject*>( new test_tableDataInserter));
-        tests.push_back(std::make_unique<QObject*>( new test_dkdbcopy));
-
-// NO ACTIVE TESTS        tests.push_back(new test_letterTemplate);
-// NO ACTIVE TESTS        tests.push_back(new test_views);
-    } while(--executions);
-
+}
+void shuffleTests(std::vector<std::unique_ptr<QObject *>> &tests) {
     std::random_device rd;
     std::mt19937 g(rd());
     std::shuffle(tests.begin(), tests.end(), g);
+}
 
+void prepareTests(int executions, std::vector<std::unique_ptr<QObject *>> &tests)
+{
+    Q_ASSERT(executions);
+    if (tests.size())
+        // for singel test debugging
+        return;
+    do {
+        // in memory db
+        tests.push_back(std::make_unique<QObject *>(new test_booking));
+        tests.push_back(std::make_unique<QObject *>(new test_appConfig));
+        tests.push_back(std::make_unique<QObject *>(new test_creditor));
+        tests.push_back(std::make_unique<QObject *>(new test_contract));
+        tests.push_back(std::make_unique<QObject *>(new test_sqlhelper));
+        tests.push_back(std::make_unique<QObject *>(new test_statistics));
+        tests.push_back(std::make_unique<QObject *>(new test_db));
+        tests.push_back(std::make_unique<QObject *>(new test_dkdbhelper));
+        tests.push_back(std::make_unique<QObject *>(new test_properties));
+        tests.push_back(std::make_unique<QObject *>(new test_toLearn));
 
-    if( oneTestOnly){
-        tests.clear();
-        tests.push_back(std::make_unique<QObject*>( new test_csv));
+        // no db
+        tests.push_back(std::make_unique<QObject *>(new test_finance));
+        tests.push_back(std::make_unique<QObject *>(new test_csv));
+        tests.push_back(std::make_unique<QObject *>(new test_dbfield));
+
+        // on disk db
+        tests.push_back(std::make_unique<QObject *>(new test_tableDataInserter));
+        tests.push_back(std::make_unique<QObject *>(new test_dkdbcopy));
+
+        // NO ACTIVE TESTS        tests.push_back(new test_letterTemplate);
+        // NO ACTIVE TESTS        tests.push_back(new test_views);
+    } while (--executions);
+
+    shuffleTests( tests);
+}
+
+int runTests(const std::vector<std::unique_ptr<QObject *>> &tests)
+{
+    int errCount {0};
+    dbgTimer timer("overall test time");
+    for( auto& test: tests) {
+        QObject* p =*test.get();
+        qInfo() << " running " << p->objectName();
+        // THE TESTs RUN HERE
+        errCount += QTest::qExec( p);
+        // THE TESTs RUN HERE
     }
+    return errCount;
+}
 
+int main(int argc, char *argv[]) {
 
-    int errCount = 0;
-    {
-        dbgTimer timer("overall test time");
-        for( auto& test: tests){
-            QObject* p =*test.get();
-            qInfo() << " running " << p->objectName();
-            errCount += QTest::qExec( p);
-        }
-    } // timer scope to measure test execution
+    QApplication app(argc, argv);
+    initTestRun(app);
+
+    const int nbrRuns = 5;
+    std::vector<std::unique_ptr<QObject *>> tests;
+// use the following line for single test Debugging
+    //tests.push_back(std::make_unique<QObject *>(new test_csv));
+
+    prepareTests(nbrRuns, tests);
+
+    int errCount { runTests(tests)};
 
     if( errCount == 1) qInfo() << "\n>>>   There was an error   <<< ";
     else if (errCount > 1) qInfo() << "\n>>>   There were " << errCount << " errors   <<<";
