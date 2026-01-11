@@ -197,6 +197,11 @@ private:
     void reset() {initContractDefaults();}
 };
 
+bool executeAnnualSettlement( int year) {
+
+}
+
+
 // test helper
 contract saveRandomContract(const tableindex_t creditorId);
 void saveRandomContractPerCreditor();

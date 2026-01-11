@@ -340,7 +340,7 @@ bool createDkDbViews( const QMap<QString, QString>& vs, const QSqlDatabase& db)
 
 // annual interest calculation
 /*
- * Fall 1: Aktive Verträgen für die es keine Zinsbuchungen gibt
+ * Fall 1: Aktive Verträgen für die es keine (Jahres-)Zinsbuchungen gibt
  *  d.h. keine Ein- oder Auszahlungen oder Jahresabrechnungen
  *  -> Das Abrechnungsjahr sollte das Jahr der Aktivierung sein
  *  Anmerkung: der "inner join" blendet nicht aktivierte Verträge aus
@@ -381,6 +381,16 @@ FROM
   SELECT nextInterestDate FROM (%2))
 ORDER BY date ASC LIMIT 1
 )str").arg(sqlNextAnnualSettlement_firstAS, sqlNextAnnualSettlement_nextAS)};
+
+// SQL to collect all data for csv creation for a given year
+const QString sqlAnnualSettlementCSV {qsl(
+R"str("
+
+")str")
+};
+
+
+
 // Listenausdruck createCsvActiveContracts
 const QString sqlContractsActiveDetailsView{ qsl(
 R"str(
