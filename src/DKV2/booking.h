@@ -89,7 +89,7 @@ QVector<booking> getBookings(   const tableindex_t contractId,  const QDate from
                                 const QString order = qsl("Datum DESC"), bool terminatedContract =false);
 QVector<booking> getExBookings(   const tableindex_t contractId,  const QDate from = BeginingOfTime, const QDate to = EndOfTheFuckingWorld,
                                 const QString order = qsl("Datum DESC"));
-QDate dateOfnextSettlement();
+
 int getNbrOfBookings(const tableindex_t contract, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld, const bool terminated =false);
 int getNbrOfExBookings(const tableindex_t contract, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld);
 

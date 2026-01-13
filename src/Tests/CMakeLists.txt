@@ -61,6 +61,7 @@ set(DKV2_TEST_SOURCES
     ../DKV2/helperfin.cpp
     ../DKV2/ibanvalidator.cpp
     ../DKV2/tabledatainserter.cpp
+    ../DKV2/annualSettlement.cpp
 )
 
 # Create test executable

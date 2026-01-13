@@ -173,10 +173,33 @@ double contract::interestBearingValue() const
         Q_UNREACHABLE();
     }
 }
+const QDate contract::latestBookingDate()
+{
+/*
+NOTE to self: DKV2 stellt sicher, dass bei Verträgen mit verzögerter Zinszahlung
+    eine Aktivierung der Zinszahlung erst nach dem ersten Geldeingang verbuchtwerden kann.
+    SONST müsste hier sichergestellt werden, dass die letzte Buchung vom Typ Ein/Auszahlung oder Zinszahlung ist
+*/
+
+    QString sql {qsl("SELECT MAX(%1) FROM %2 WHERE id=%3").arg(fn_bDatum, isTerminated ? tn_ExBuchungen : tn_Buchungen, id_aS())};
+    QVariant date =executeSingleValueSql(sql);
+    if( date.canConvert<QDate>())
+        return date.toDate();
+    else
+        return QDate();
+}
+
 const booking contract::latestBooking()
 {
-    QString sql {qsl("SELECT id, %1, %2, %3, %4 FROM %6 WHERE %1=%5 ORDER BY rowid DESC LIMIT 1").
-        arg(fn_bVertragsId, fn_bDatum, fn_bBuchungsArt, fn_bBetrag, id_aS(), isTerminated ? tn_ExBuchungen : tn_Buchungen)};
+    /*
+NOTE to self:
+    DKV2 stellt sicher, dass bei Verträgen mit verzögerter Zinszahlung
+    eine Aktivierung der Zinszahlung erst nach dem ersten Geldeingang verbuchtwerden kann.
+    SONST müsste hier sichergestellt werden, dass die letzte Buchung vom Typ Ein/Auszahlung oder Zinszahlung ist
+    */
+
+    QString sql {qsl("SELECT id, %1, %2, %3, %4 FROM %6 WHERE %1=%5 ORDER BY rowid DESC LIMIT 1").arg(
+        fn_bVertragsId, fn_bDatum, fn_bBuchungsArt, fn_bBetrag, id_aS(), isTerminated ? tn_ExBuchungen : tn_Buchungen)};
     QSqlRecord rec = executeSingleRecordSql(sql);
     if( 0 == rec.count()) {
         RETURN_OK( booking(), qsl("latestBooking returns empty value"));
@@ -213,6 +236,7 @@ bool contract::updateComment(const QString &c)
 }
 bool contract::updateInitialPaymentDate(const QDate& newD)
 {
+// TODO: ?? kontrolliert das UI, dass das ipd VOR jeder anderen Buchung ist?
     QString sql { qsl("UPDATE Buchungen SET  Datum = '%1' "
                    "WHERE id == ("
                    "SELECT MIN(rowid) FROM Buchungen WHERE VertragsId = %2 AND BuchungsArt = 1)").arg (newD.toString (Qt::ISODate), id_aS())
@@ -309,7 +333,7 @@ bool contract::noBookingButInitial()
 bool contract::bookActivateInterest(const QDate d)
 {
     autoRollbackTransaction art;
-    if ( latestBooking().date >= d)
+    if ( latestBookingDate() >= d)
         RETURN_ERR( false, qsl("could not activate interest on same data or after as last booking"));
     if( not bookInBetweenInterest(d))
         RETURN_ERR( false, qsl("could not book inbetween interest on "));
@@ -323,20 +347,24 @@ bool contract::bookActivateInterest(const QDate d)
     RETURN_ERR( false, qsl("failed to activate interest payment for contract "), id_aS());
 }
 
+inline bool isLastDayOfTheYear(QDate d) { return (d.month() == 12 && d.day() == 31);}
+
 // booking actions
 QDate contract::nextDateForAnnualSettlement()
 {
-    const booking lastB=latestBooking();
+    const QDate lastBD=latestBookingDate();
     // todo: !better error handling than magic number
-    if( lastB.date == EndOfTheFuckingWorld)
+    if( lastBD == EndOfTheFuckingWorld)
         return EndOfTheFuckingWorld;
-    qInfo() << "nD4aS searched for " << lastB.toString ();
-    if( isLastDayOfTheYear (lastB.date)) {
-        return lastB.date.addYears(1);
+    qInfo() << "nD4aS searched for " << lastBD.toString ();
+
+    if( isLastDayOfTheYear (lastBD)) {
+        // last Booking was a annual settlement -> next settlement in one year
+        return lastBD.addYears(1);
     }
     else
-        // for deposits, payouts, activations we return year end of the same year
-        return QDate(lastB.date.year(), 12, 31);
+        // for deposits, payouts, activations next settlement should be end of the same year
+        return QDate(lastBD.year(), 12, 31);
 }
 bool contract::needsAnnualSettlement(const QDate intendedNextBooking)
 {
@@ -361,13 +389,17 @@ bool contract::needsAnnualSettlement(const QDate intendedNextBooking)
     RETURN_OK( true, QString(__FUNCTION__), qsl("OK"));
 }
 int contract::  annualSettlement( int year)
-{   LOG_CALL_W(i2s(year));
+{
     // es werden so lange Jahresabrechnungen durchgeführt, bis das Jahr "year" abgerechent ist
     Q_ASSERT(year);
+    qInfo() << "\nJahresabrechnung für Vertrag " << label();
 
     booking lastB =latestBooking ();
     // no initial booking?
-    if( lastB.type == bookingType::non) return 0;
+    if( lastB.type == bookingType::non){
+        qInfo() << "Keine Einzahlung -> keine Jahresabrechnung!";
+        return 0;
+    }
 
     executeSql_wNoRecords(qsl("SAVEPOINT as_savepoint"));
     QDate requestedSettlementDate(year, 12, 31);
@@ -456,7 +488,7 @@ bool contract::payout(const QDate d, double amount, bool payoutInterest)
 {   LOG_CALL;
     double actualAmount = qFabs(amount);
 
-    const QDate lbd =latestBooking ().date;
+    const QDate lbd =latestBookingDate();
     QString error;
     if( actualAmount > value()) error = qsl("Payout impossible. The account has not enough coverage");
     else if( not d.isValid()) error =qsl("Invalid Date in payout");
@@ -500,10 +532,10 @@ bool contract::cancel(const QDate dPlannedContractEnd, const QDate dCancelation)
 bool contract::finalize(bool simulate, const QDate finDate,
                         double& finInterest, double& finPayout)
 {   LOG_CALL;
-    booking lastB =latestBooking();
+    QDate lastBookingDate =latestBookingDate();
     if( not finDate.isValid())
         RETURN_ERR( false, qsl("invalid date to finalize contract"));
-    if( finDate < lastB.date)
+    if( finDate < lastBookingDate)
         RETURN_ERR( false, qsl("finalize date before last booking"));
     if( not isValidRowId(id()))
         RETURN_ERR( false, qsl("invalid contract id"));
@@ -520,7 +552,7 @@ bool contract::finalize(bool simulate, const QDate finDate,
 
     if( needsAnnualSettlement(finDate)){
         if( annualSettlement(finDate.year() -1)) {
-            lastB =latestBooking ();
+            lastBookingDate =latestBookingDate();
         } else {
             executeSql_wNoRecords(qsl("ROLLBACK"));
             return false;
@@ -528,7 +560,7 @@ bool contract::finalize(bool simulate, const QDate finDate,
     }
     double preFinValue = interestBearingValue ();
     qInfo() << "After last annual settlement: interest bearing / value " << preFinValue << " / " << value();
-    finInterest = ZinsesZins(actualInterestRate(), preFinValue, lastB.date, finDate);
+    finInterest = ZinsesZins(actualInterestRate(), preFinValue, lastBookingDate, finDate);
     finPayout = value() +finInterest;
     if( simulate) {
         qInfo() << "simulation will stop here";
@@ -565,11 +597,14 @@ bool contract::bookInBetweenInterest(const QDate nextBookingDate, bool payout)
     // booking interest in case of deposits, payouts or finalization
     // performs annualSettlements if necesarry
 
-    booking lastB =latestBooking ();
+    QDate latestBDate =latestBookingDate();
     QString error;
-    if( lastB.type == bookingType::non) error =qsl("interest booking on inactive contract not possible");
-    else if( not nextBookingDate.isValid())  error =qsl("Invalid Date for interest booking");
-    else if( lastB.date > nextBookingDate) error =qsl("could not book interest because there are already more recent bookings");
+    if( not latestBDate.isValid())
+        error =qsl("interest booking on inactive contract not possible");
+    else if( not nextBookingDate.isValid())
+        error =qsl("Invalid Date for interest booking");
+    else if( latestBDate > nextBookingDate)
+        error =qsl("could not book interest because there are already more recent bookings");
     if( error.size()) {
         qCritical() << error;
         return false;
@@ -581,11 +616,11 @@ bool contract::bookInBetweenInterest(const QDate nextBookingDate, bool payout)
             return false;
         } else {
             // update lastB, because it was changed by the annual Settlement
-            lastB= latestBooking ();
+            latestBDate= latestBookingDate();
         }
     }
                    //////////
-    double zins = ZinsesZins(actualInterestRate(), interestBearingValue(), lastB.date, nextBookingDate);
+    double zins = ZinsesZins(actualInterestRate(), interestBearingValue(), latestBDate, nextBookingDate);
                    //////////
     // only annualSettlements can be payed out
     if( payout)
@@ -758,48 +793,6 @@ double contract::getAnnualInterest(int year, bookingType interestType)
 
     return euroFromCt(executeSingleValueSql (qsl("SUM(Betrag)"), tn_Buchungen, where).toInt());
 }
-
-// NON MEMBER FUNCTIONS
-namespace {
-    // TEST new vs old creatrion of CSV Fiels
-    QVector<contract> changedContracts;
-    QVector<QDate> startOfInterrestCalculation;
-    QVector<booking> asBookings;
-}
-// for all contracts
-bool executeAnnualSettlement( int year) {
-    QVector<QVariant> ids = executeSingleColumnSql(
-        dkdbstructur[contract::tnContracts][contract::fnId]);
-    qInfo() << "going to try annual settlement for contracts w ids:" << ids;
-    // QVector<contract> changedContracts;
-    // QVector<QDate> startOfInterrestCalculation;
-    // QVector<booking> asBookings;
-    // try execute annualSettlement for all contracts
-    for (const auto &id : std::as_const(ids)) {
-        contract c(id.toLongLong());
-        QDate startDate = c.latestBooking().date;
-        /////////////////////////////////////////////////////
-        if (0 == c.annualSettlement(year))
-        ////////////////////////////////////////////////////
-        {
-            qCritical() << "jährl. Zinsabrechnung ist fehlgeschlagen für Vertrag " << c.id ()
-                << ": " << c.label ();
-        } else {   // for testing new vs. old csv creatrion
-            //       TEMPORARY
-            changedContracts.push_back(c);
-            asBookings.push_back(c.latestBooking());
-            startOfInterrestCalculation.push_back(startDate);
-            // TEMPRARY TODO: REMOVE
-        }
-    }
-    print_as_csv(nextDateForAnnualSettlement, changedContracts, startOfInterrestCalculation,
-                 asBookings);
-}
-
-void writeAnnualSettlementCsv(int year) {
-
-}
-
 
 // test helper
 // Vergleichsoperatoren für TESTS !!

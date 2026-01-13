@@ -2,7 +2,6 @@
 #include "helper.h"
 #include "helpersql.h"
 #include "contract.h"
-#include "dkdbviews.h"
 #include "dbstructure.h"
 #include "qnamespace.h"
 
@@ -111,17 +110,6 @@ bool writeBookingUpdate( qlonglong bookingId, int newValeuInCt)
 }
 ///////////// bookingS start here
 
-QDate dateOfnextSettlement()
-{
-    /*
-     * Man sollte eine Jahresendbuchung auch mehrmals machen können, für den Fall, dass es nachträglich
-     * gebuchte Geldeingänge für Neuverträge (=Aktivierungen) gab
-    */
-    QVariant ret =executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(sqlNextAnnualSettlement));
-    bool canC = ret.convert(QMetaType(QMetaType::QDate));
-    QDate retDate = canC ? ret.toDate () : QDate();
-    RETURN_OK(retDate, qsl("DateOfnextSettlement: Date of next Settlement was found as %1").arg(retDate.toString (Qt::ISODate)));
-}
 int getNbrOfBookings(const qlonglong contract, const QDate from, const QDate to, const bool terminated)
 {
     QString where {qsl(" VertragsId=%1").arg(contract)};

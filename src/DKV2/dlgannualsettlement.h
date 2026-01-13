@@ -3,18 +3,16 @@
 
 
 
-class dlgAnnualsettlement : public QDialog
+class dlgAnnualSettlement : public QDialog
 {
     Q_OBJECT
 public:
-    explicit dlgAnnualsettlement( int year =0, QWidget *parent = nullptr);
-    bool print_csv() { return csv->isChecked();}
+    explicit dlgAnnualSettlement( int year =0, QWidget *parent = nullptr);
     bool confirmed() { return confirm->isChecked();}
     void setYear(int y) {year =y;}
 private:
     int year =0;
     QDialogButtonBox* buttons;
-    QCheckBox* csv;
     QCheckBox* confirm;
 private slots:
     void confirmChanged(Qt::CheckState state);

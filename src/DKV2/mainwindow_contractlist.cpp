@@ -3,7 +3,7 @@
 
 #include "helper.h"
 
-#include "busycursor.h"
+#include "busyCursor.h"
 #include "csvwriter.h"
 #include "contracttablemodel.h"
 #include "uiitemformatter.h"
@@ -25,13 +25,13 @@ void MainWindow::on_action_menu_contracts_listview_triggered()
 }
 void MainWindow::on_action_menu_Beendete_Vertr_ge_anzeigen_triggered()
 {
-    busycursor bc;
+    busyCursor bc;
     showDeletedContracts =true;
     prepare_contracts_list_view();
 }
 void MainWindow::prepare_contracts_list_view()
 {   LOG_CALL;
-    busycursor bc;
+    busyCursor bc;
 
     if( showDeletedContracts)
         prepare_deleted_contracts_list_view();
@@ -132,7 +132,7 @@ const QString visibilityPattern_d_MetaInfoName {qsl("geloeschteVertraegeSpalten"
 ///////////////////////////////////////
 void MainWindow::prepare_valid_contracts_list_view()
 { LOG_CALL;
-    busycursor bc;
+    busyCursor bc;
 
     QSqlTableModel* model = new ContractTableModel(this);
     QSortFilterProxyModel *proxy = new ContractProxyModel(this);
@@ -201,7 +201,7 @@ void MainWindow::prepare_valid_contracts_list_view()
 }
 void MainWindow::prepare_deleted_contracts_list_view()
 { LOG_CALL;
-    busycursor bc;
+    busyCursor bc;
     QSqlTableModel* model = new QSqlTableModel(this);
     model->setTable(vnExContractView);
 
@@ -313,7 +313,7 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
 {
 //// every time the selection in the contract tree view changes
 //// the bookings table below needs to be updated
-    busycursor bc;
+    busyCursor bc;
     // todo: do all init only once, this function should only do the
     // setFilter and the select()
     QModelIndex indexIndex = newI.siblingAtColumn(0);
@@ -358,7 +358,7 @@ qlonglong bookingIdUnderMouseMenu =-1;
 void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
 {   LOG_CALL;
 
-    busycursor bc;
+    busyCursor bc;
     QTableView*& tv = ui->contractsTableView;
     QModelIndex index = tv->indexAt(pos).siblingAtColumn(0);
     if( not index.isValid ())
@@ -418,7 +418,7 @@ void MainWindow::on_bookingsTableView_customContextMenuRequested(const QPoint &p
         qInfo() << "no context menu for bookings of deleted contracts";
         return;
     }
-    busycursor bc;
+    busyCursor bc;
     QTableView*& tv =ui->bookingsTableView;
     QModelIndex index =tv->indexAt (pos).siblingAtColumn (0);
     if( not index.isValid ())

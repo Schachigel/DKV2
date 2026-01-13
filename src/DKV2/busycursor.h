@@ -3,13 +3,13 @@
 
 
 
-struct busycursor
+struct busyCursor
 {
-    busycursor() {
+    busyCursor() {
         QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     };
-    busycursor(const busycursor&) =delete;
-    ~busycursor() {
+    busyCursor(const busyCursor&) =delete;
+    ~busyCursor() {
         QGuiApplication::restoreOverrideCursor();
     }
     void finish() {

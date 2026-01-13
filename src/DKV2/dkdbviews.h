@@ -22,6 +22,7 @@ extern const QMap<QString, QString> views;
 
 // annual interest calculation
 extern const QString sqlNextAnnualSettlement;
+
 // printing lists
 extern const QString sqlContractsActiveDetailsView;
 extern const QString sqlContractsActiveView;

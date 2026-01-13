@@ -3,6 +3,7 @@
 #include "../DKV2/creditor.h"
 #include "../DKV2/contract.h"
 #include "../DKV2/booking.h"
+#include "../DKV2/annualSettlement.h"
 
 #include "../DKV2/helper.h"
 
@@ -121,8 +122,8 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings03()
             qInfo() << "fixed minimalActivationDate for year end";
         }
         QDate dateOfNextS =dateOfnextSettlement();
+        QVERIFY(dateOfNextS.isValid());
         if( dateOfNextS not_eq QDate(minimalActivationDate.year(), 12, 31)) {
-            dbgDumpDB ();
             QCOMPARE(dateOfNextS, QDate(minimalActivationDate.year(), 12, 31));
         }
 //    }

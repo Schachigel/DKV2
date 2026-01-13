@@ -20,7 +20,7 @@
 #include "wizcancelcontract.h"
 #include "wizchangecontractvalue.h"
 #include "wizterminatecontract.h"
-// #include "wizannualsettlement.h"
+#include "annualSettlement.h"
 #include "busycursor.h"
 #include "dlgannualsettlement.h"
 #include "dlgaskcontractlabel.h"
@@ -104,7 +104,7 @@ void editCreditor(qlonglong creditorId) {
     wiz.setStartId(page_address);
 
     if (QDialog::Accepted == wiz.exec()) {
-        busycursor bc;
+        busyCursor bc;
         wiz.cred.setId(creditorId);
         if (wiz.cred.update())
             qInfo() << "successfully updated creditor";
@@ -132,7 +132,7 @@ void changeContractComment(contract *pc) {
         qInfo() << "inpud dlg canceled";
         return;
     }
-    busycursor bc;
+    busyCursor bc;
     if (pc->updateComment(ipd.textValue().trimmed()))
         qInfo() << "successfully updated comment";
     else
@@ -474,32 +474,24 @@ void print_annaul_settlement_csv(int year) {
 } // namespace
 void annualSettlement() {
     LOG_CALL;
-    QDate nextDateForAnnualSettlement = dateOfnextSettlement();
-    if (not nextDateForAnnualSettlement.isValid() or nextDateForAnnualSettlement.isNull()) {
-        QMessageBox::information(nullptr, qsl("Fehler"),
+    std::optional<QDate> nextDateForAnnualSettlement = dateOfnextSettlement();
+    if (not nextDateForAnnualSettlement) {
+        QMessageBox::information(getMainWindow(), qsl("Fehler"),
                                  qsl("Eine Jahreszinsabrechnung ist derzeit nicht möglich.\n"
                                      "Es gibt keine Verträge für die eine "
                                      "Abrechnung gemacht werden kann."));
         return;
     }
-    int yearOfSettlement = nextDateForAnnualSettlement.year();
-    //    wizAnnualSettlement wiz(getMainWindow());
-    dlgAnnualsettlement dlg(yearOfSettlement, getMainWindow());
 
+    int yearOfSettlement =nextDateForAnnualSettlement->year();
+    dlgAnnualSettlement dlg(yearOfSettlement, getMainWindow());
     if (dlg.exec() == QDialog::Rejected || not dlg.confirmed())
         return;
 
-    busycursor bc;
-
-    //
-    if( executeAnnualSettlement( yearOfSettlement))
-        if( dlg.print_csv())
-            writeAnnualSettlementCsv(yearOfSettlement);
-
-
-
-
-    return;
+    busyCursor bc;
+    if( not executeAnnualSettlement( yearOfSettlement)) {
+        qCritical() << "annual settlement failed !!";
+    }
 }
 
 /*************************/
@@ -586,7 +578,7 @@ void annualSettlementLetters() {
         return;
     }
 
-    busycursor bc;
+    busyCursor bc;
 #if 0
     QVector<booking> annualBookings =
             getAnnualSettlements(yearOfSettlement);
@@ -832,7 +824,7 @@ void cancelContract(contract &c) {
 void finalizeContractLetter(contract *c) {
     LOG_CALL;
 
-    busycursor bc;
+    busyCursor bc;
     // copy Templates (if not available)
     createInitialLetterTemplates();
 

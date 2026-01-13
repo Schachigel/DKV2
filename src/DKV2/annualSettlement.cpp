@@ -1,7 +1,10 @@
 #include "annualSettlement.h"
+#include "dkdbviews.h"
 #include "creditor.h"
 #include "contract.h"
 #include "csvwriter.h"
+#include "dbstructure.h"
+
 
 // NON MEMBER FUNCTIONS
 namespace {
@@ -52,27 +55,38 @@ void print_as_csv(const QDate &bookingDate,
                             i2s(bookingDate.year()));
     csv.saveAndShowInExplorer(filename);
 }
+} // Eo local namespace
+
+QDate dateOfnextSettlement()
+{
+    /*
+     * Man sollte eine Jahresendbuchung auch mehrmals machen können, für den Fall, dass es nachträglich
+     * gebuchte Geldeingänge für Neuverträge (=Aktivierungen) gab
+    */
+    QVariant ret =executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(sqlNextAnnualSettlement));
+
+    if( ret.canConvert<QDate>()) {
+        RETURN_OK(ret.toDate(),
+                  qsl("dateOfNextSettlement: Date of next Settlement was found to be %1").arg(ret.toDate().toString (Qt::ISODate)));
+    }
+    RETURN_OK(QDate(), qsl("dateOfNextSettlement: Es wurde kein Datum für eine Jahresabrechnung gefunden"));
 }
 
-
 // for all contracts
-bool executeAnnualSettlement( int year) {
+bool executeAnnualSettlement( int year)
+{
     QVector<QVariant> ids = executeSingleColumnSql(
         dkdbstructur[contract::tnContracts][contract::fnId]);
-    qInfo() << "going to try annual settlement for contracts w ids:" << ids;
-    // QVector<contract> changedContracts;
-    // QVector<QDate> startOfInterrestCalculation;
-    // QVector<booking> asBookings;
+
     // try execute annualSettlement for all contracts
     for (const auto &id : std::as_const(ids)) {
         contract c(id.toLongLong());
-        QDate startDate = c.latestBooking().date;
+        QDate startDate = c.latestBookingDate();
         /////////////////////////////////////////////////////
-        if (0 == c.annualSettlement(year))
+        if (0 == c.annualSettlement(year)) {
         ////////////////////////////////////////////////////
-        {
-            qCritical() << "jährl. Zinsabrechnung ist fehlgeschlagen für Vertrag " << c.id ()
-                << ": " << c.label ();
+
+            qInfo() << "Keine jährl. Zinsabrechnung für Vertrag " << c.id () << ": " << c.label ();
         } else {   // for testing new vs. old csv creatrion
             //       TEMPORARY
             changedContracts.push_back(c);
@@ -83,6 +97,8 @@ bool executeAnnualSettlement( int year) {
     }
     print_as_csv(QDate(year, 12, 31), changedContracts, startOfInterrestCalculation,
                  asBookings);
+
+    return true;
 }
 
 void writeAnnualSettlementCsv(int year) {

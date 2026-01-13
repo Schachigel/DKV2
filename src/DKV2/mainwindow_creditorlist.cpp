@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include "dlgdisplaycolumns.h"
-#include "busycursor.h"
+#include "busyCursor.h"
 #include "transaktionen.h"
 #include "creditor.h"
 #include "helpersql.h"
@@ -11,7 +11,7 @@
 // Creditor list view page
 void MainWindow::on_action_menu_creditors_listview_triggered()
 {   LOG_CALL;
-    busycursor b;
+    busyCursor b;
     prepare_CreditorsListPage();
     if( not ui->CreditorsTableView->currentIndex().isValid())
         ui->CreditorsTableView->selectRow(0);
@@ -53,7 +53,7 @@ const QString creditorTableColumnVisibilityDefault{qsl("011111111111110")};
 
 void MainWindow::prepare_CreditorsListPage()
 {   LOG_CALL;
-    busycursor b;
+    busyCursor b;
     QSqlTableModel* model = new QSqlTableModel(ui->CreditorsTableView);
     model->setTable(qsl("Kreditoren"));
     model->setFilter(qsl("Vorname LIKE '%") + ui->le_CreditorsFilter->text() + qsl("%' OR Nachname LIKE '%") + ui->le_CreditorsFilter->text() + qsl("%'"));
@@ -85,7 +85,7 @@ void MainWindow::prepare_CreditorsListPage()
 }
 void MainWindow::on_le_CreditorsFilter_editingFinished()
 {   LOG_CALL;
-    busycursor b;
+    busyCursor b;
     prepare_CreditorsListPage();
 }
 int  MainWindow::id_SelectedCreditor()
@@ -101,7 +101,7 @@ int  MainWindow::id_SelectedCreditor()
 }
 void MainWindow::on_btn_reset_filter_creditors_clicked()
 {   LOG_CALL;
-    busycursor b;
+    busyCursor b;
     ui->le_CreditorsFilter->setText("");
     prepare_CreditorsListPage();
 }
@@ -145,7 +145,7 @@ void MainWindow::on_action_cmenu_delete_creditor_triggered()
 
     if( QMessageBox::Yes not_eq QMessageBox::question(this, qsl("Kreditgeber löschen?"), msg))
         return;
-    busycursor b;
+    busyCursor b;
 
     if( c.remove())
         prepare_CreditorsListPage();
@@ -154,7 +154,7 @@ void MainWindow::on_action_cmenu_delete_creditor_triggered()
 }
 void MainWindow::on_action_cmenu_go_contracts_triggered()
 {   LOG_CALL;
-    busycursor b;
+    busyCursor b;
     ui->le_ContractsFilter->setText(qsl("kreditor:") +i2s(id_SelectedCreditor()));
     on_action_menu_contracts_listview_triggered();
 }

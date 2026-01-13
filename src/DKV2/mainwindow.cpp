@@ -214,7 +214,7 @@ void MainWindow::updateViews()
 // the empty "welcome" page
 void MainWindow::prepare_startPage()
 {   LOG_CALL;
-    busycursor b;
+    busyCursor b;
     QString messageHtml {qsl("<h2>Willkommen zu DKV2- Deiner Verwaltung von Direktkrediten</h2>")};
 
     double allContractsValue =valueOfAllContracts();
@@ -282,7 +282,7 @@ void MainWindow::on_action_menu_database_copy_triggered()
     if( dbfile.isEmpty ())
         return;
 
-    busycursor b;
+    busyCursor b;
     if( copy_Database_fromDefaultConnection(dbfile)){
         b.finish ();
         QMessageBox::information(this, qsl("Kopie angelegt"), qsl("Die Kopie ") +dbfile +qsl(" wurde erfolgreich angelegt"));
@@ -300,7 +300,7 @@ void MainWindow::on_action_menu_database_anonymous_copy_triggered()
     QString dbfile = askUserFilenameForCopy(qsl("Dateiname der Anonymisierten Kopie angeben."));
     if( dbfile.isEmpty ())
         return;
-    busycursor b;
+    busyCursor b;
     if( not copy_database_fDC_mangled(dbfile)) {
         b.finish ();
         QMessageBox::information(this, qsl("Fehler beim Kopieren"),
@@ -426,7 +426,7 @@ void MainWindow::on_btnAutoClose_clicked()
 }
 void MainWindow::on_btnAutoMatch_clicked()
 {
-    busycursor b;
+    busyCursor b;
     int i =automatchInvestmentsToContracts();
     b.finish ();
     QMessageBox::information(this, qsl("Zugeordnete Verträge"),
@@ -598,7 +598,7 @@ void MainWindow::on_comboUebersicht_currentIndexChanged(int i)
 {   LOG_CALL_W(i2s(i));
     if(i == -1)
         return;
-    busycursor b;
+    busyCursor b;
     updateUebersichtView(i);
 }
 void MainWindow::on_pbPrint_clicked()
@@ -810,7 +810,7 @@ void MainWindow::on_action_menu_contracts_print_lists_triggered()
 /////////////////////////////////////////////////
 void MainWindow::on_action_menu_debug_create_sample_data_triggered()
 {   LOG_CALL;
-    busycursor b;
+    busyCursor b;
     create_sampleData();
     ui->stackedWidget->setCurrentIndex(ui->stackedWidget->currentIndex());
     on_action_menu_contracts_listview_triggered();

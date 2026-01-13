@@ -170,7 +170,7 @@ int get_db_version(const QString &file)
 bool checkSchema_ConvertIfneeded(const QString &origDbFile)
 {
     LOG_CALL;
-    busycursor bc;
+    busyCursor bc;
     int version_of_original_file = get_db_version(origDbFile);
     if (version_of_original_file < CURRENT_DB_VERSION)
     {

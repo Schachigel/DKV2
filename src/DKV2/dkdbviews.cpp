@@ -339,48 +339,44 @@ bool createDkDbViews( const QMap<QString, QString>& vs, const QSqlDatabase& db)
 //////////////////////////////////////
 
 // annual interest calculation
-/*
- * Fall 1: Aktive Verträgen für die es keine (Jahres-)Zinsbuchungen gibt
- *  d.h. keine Ein- oder Auszahlungen oder Jahresabrechnungen
- *  -> Das Abrechnungsjahr sollte das Jahr der Aktivierung sein
- *  Anmerkung: der "inner join" blendet nicht aktivierte Verträge aus
-*/
-const QString sqlNextAnnualSettlement_firstAS {qsl(
-R"str(
-SELECT
-  STRFTIME('%Y-%m-%d', MIN(Datum), '1 day', '1 year', 'start of year', '-1 day')  as nextInterestDate
-FROM Buchungen INNER JOIN Vertraege ON Vertraege.id = buchungen.VertragsId
-WHERE
-  (SELECT count(*)
-   FROM Buchungen
-   WHERE (Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8) AND Buchungen.VertragsId=Vertraege.id)=0
-GROUP BY Vertraege.id
-ORDER BY Datum ASC LIMIT 1
-)str"
-)};
-/*
- * Fall 2: Aktive Verträge, für die es bereits Zinsbuchungen und / oder Jahresabr. gibt
- * -> Das nächste Abrechnungsjahr ist das Jahr der letzten Buchung
-*/
-const QString sqlNextAnnualSettlement_nextAS {qsl(
-R"str(
-SELECT
-  STRFTIME('%Y-%m-%d', MAX(Datum), '1 day', '1 year', 'start of year', '-1 day') as nextInterestDate
-FROM Buchungen INNER JOIN Vertraege ON Vertraege.id=buchungen.VertragsId
-WHERE Buchungen.BuchungsArt=4 OR Buchungen.BuchungsArt=8
-GROUP BY Buchungen.VertragsId
-ORDER BY Datum ASC LIMIT 1
-)str"
-)};
 const QString sqlNextAnnualSettlement {qsl(
 R"str(
-SELECT nextInterestDate AS date
-FROM
-  (SELECT nextInterestDate FROM (%1)
-     UNION
-  SELECT nextInterestDate FROM (%2))
-ORDER BY date ASC LIMIT 1
-)str").arg(sqlNextAnnualSettlement_firstAS, sqlNextAnnualSettlement_nextAS)};
+-- Ein einziges Datum: nächstes (frühestes) Jahresende, zu dem *irgendein* Vertrag
+-- die nächste Jahresabrechnung machen kann.
+WITH per_vertrag AS (
+  SELECT
+    v.id AS VertragsId,
+
+    -- letzte Jahresabrechnung (Typ 8)
+    (SELECT MAX(b.Datum)
+     FROM Buchungen b
+     WHERE b.VertragsId = v.id AND b.BuchungsArt = 8
+    ) AS last_jz,
+
+    -- letzte Buchung überhaupt (für Verträge ohne bisherige JA)
+    (SELECT MAX(b.Datum)
+     FROM Buchungen b
+     WHERE b.VertragsId = v.id
+    ) AS last_booking
+  FROM Vertraege v
+),
+next_date AS (
+  SELECT
+    VertragsId,
+    CASE
+      WHEN last_jz IS NOT NULL THEN
+        printf('%04d-12-31', CAST(strftime('%Y', last_jz) AS INTEGER) + 1)
+      WHEN last_booking IS NOT NULL THEN
+        printf('%04d-12-31', CAST(strftime('%Y', last_booking) AS INTEGER))
+      ELSE
+        NULL
+    END AS next_jz_date
+  FROM per_vertrag
+)
+SELECT MIN(next_jz_date) AS date
+FROM next_date
+WHERE next_jz_date IS NOT NULL
+)str")};
 
 // SQL to collect all data for csv creation for a given year
 const QString sqlAnnualSettlementCSV {qsl(

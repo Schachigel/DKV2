@@ -107,7 +107,7 @@ void MainWindow::onMRU_MenuItem()
         return;
     QString file =action->data ().toString();
     if( openDB_MRU (file)) {
-        busycursor b;
+        busyCursor b;
         return useDb(appConfig::LastDb ());
     }
     //if we come here the file does not exist

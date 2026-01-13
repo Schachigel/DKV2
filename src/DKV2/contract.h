@@ -149,6 +149,7 @@ struct contract
     double investedValue(const QDate d =EndOfTheFuckingWorld) const;
     // interestBearingValue depends on interestMode
     double interestBearingValue() const;
+    const QDate latestBookingDate();
     const booking latestBooking();
 
     // write to db
