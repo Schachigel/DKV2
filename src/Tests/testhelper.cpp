@@ -238,14 +238,17 @@ void dbgDumpDatabase(const QString& testname)
     filename.replace('>', '#');
 
     QDir().mkdir(qsl("./data"));
-    QFile::remove(filename);
-    qInfo() << "removing file for replacement: " << filename;
-    QVERIFY( not QFile::exists(filename));
+    QFile path{qsl("./data/")+filename};
+    getRidOfFile(path.fileName());
+
+    qInfo() << "removing file for replacement: " << path.fileName();
+    QVERIFY( not path.exists());
 
     QSqlQuery q;
-    q.prepare(qsl("VACUUM INTO '%1'").arg(filename));
+    q.prepare(qsl("VACUUM INTO '%1'").arg(path.fileName()));
     q.exec();
 
-    QVERIFY( QFile::exists(filename));
+    QVERIFY( path.exists());
+    getRidOfFile(path.fileName());
 }
 

@@ -474,22 +474,25 @@ void print_annaul_settlement_csv(int year) {
 } // namespace
 void annualSettlement() {
     LOG_CALL;
-    std::optional<QDate> nextDateForAnnualSettlement = dateOfnextSettlement();
-    if (not nextDateForAnnualSettlement) {
-        QMessageBox::information(getMainWindow(), qsl("Fehler"),
+    QDate nextDateForAnnualSettlement = dateOfnextSettlement();
+    if (not nextDateForAnnualSettlement.isValid()) {
+        QMessageBox::information(getMainWindow(), qsl("! Info !"),
                                  qsl("Eine Jahreszinsabrechnung ist derzeit nicht möglich.\n"
                                      "Es gibt keine Verträge für die eine "
                                      "Abrechnung gemacht werden kann."));
         return;
     }
 
-    int yearOfSettlement =nextDateForAnnualSettlement->year();
+    qInfo() << QString("Next AS possible for %1; lets ask the user").arg( nextDateForAnnualSettlement.year());
+    int yearOfSettlement =nextDateForAnnualSettlement.year();
     dlgAnnualSettlement dlg(yearOfSettlement, getMainWindow());
     if (dlg.exec() == QDialog::Rejected || not dlg.confirmed())
         return;
 
     busyCursor bc;
+    // annual settlement takes place HERE
     if( not executeAnnualSettlement( yearOfSettlement)) {
+        // annual settlement takes place HERE
         qCritical() << "annual settlement failed !!";
     }
 }

@@ -86,7 +86,7 @@ bool executeAnnualSettlement( int year)
         if (0 == c.annualSettlement(year)) {
         ////////////////////////////////////////////////////
 
-            qInfo() << "Keine jährl. Zinsabrechnung für Vertrag " << c.id () << ": " << c.label ();
+        qInfo() << "Keine jährl. Zinsabrechnung für Vertrag " << c.id () << ": " << c.label ();
         } else {   // for testing new vs. old csv creatrion
             //       TEMPORARY
             changedContracts.push_back(c);

@@ -181,7 +181,7 @@ NOTE to self: DKV2 stellt sicher, dass bei Verträgen mit verzögerter Zinszahlu
     SONST müsste hier sichergestellt werden, dass die letzte Buchung vom Typ Ein/Auszahlung oder Zinszahlung ist
 */
 
-    QString sql {qsl("SELECT MAX(%1) FROM %2 WHERE id=%3").arg(fn_bDatum, isTerminated ? tn_ExBuchungen : tn_Buchungen, id_aS())};
+    QString sql {qsl("SELECT MAX(%1) FROM %2 WHERE %3=%4").arg(fn_bDatum, isTerminated ? tn_ExBuchungen : tn_Buchungen, id_aS(), fn_bVertragsId)};
     QVariant date =executeSingleValueSql(sql);
     if( date.canConvert<QDate>())
         return date.toDate();
@@ -347,14 +347,14 @@ bool contract::bookActivateInterest(const QDate d)
     RETURN_ERR( false, qsl("failed to activate interest payment for contract "), id_aS());
 }
 
-inline bool isLastDayOfTheYear(QDate d) { return (d.month() == 12 && d.day() == 31);}
+inline bool isLastDayOfTheYear(const QDate& d) { return (d.month() == 12 && d.day() == 31);}
 
 // booking actions
 QDate contract::nextDateForAnnualSettlement()
 {
     const QDate lastBD=latestBookingDate();
     // todo: !better error handling than magic number
-    if( lastBD == EndOfTheFuckingWorld)
+    if( not lastBD.isValid())
         return EndOfTheFuckingWorld;
     qInfo() << "nD4aS searched for " << lastBD.toString ();
 
@@ -394,9 +394,8 @@ int contract::  annualSettlement( int year)
     Q_ASSERT(year);
     qInfo() << "\nJahresabrechnung für Vertrag " << label();
 
-    booking lastB =latestBooking ();
     // no initial booking?
-    if( lastB.type == bookingType::non){
+    if( not initialPaymentReceived()){
         qInfo() << "Keine Einzahlung -> keine Jahresabrechnung!";
         return 0;
     }
@@ -408,12 +407,13 @@ int contract::  annualSettlement( int year)
         RETURN_ERR(0, qsl("contract has no booking -> no settlement"));
     }
 
+    QDate lastBD{latestBookingDate()};
     bool bookingSuccess =false;
     while(nextAnnualSettlementDate <= requestedSettlementDate) {
         double baseValue =interestBearingValue();
           ////////// von letzter Buchung bis zum 31.12. des selben Jahres
         double zins =ZinsesZins(actualInterestRate(),
-                                baseValue, lastB.date, nextAnnualSettlementDate);
+                                baseValue, lastBD, nextAnnualSettlementDate);
         //////////
         switch(iModel()) {
         case interestModel::reinvest:
@@ -436,7 +436,7 @@ int contract::  annualSettlement( int year)
             qInfo() << "Successfull annual settlement: contract id " << id_aS() << ": " << nextAnnualSettlementDate << " Zins: " << zins;
             // latest booking has changes, so ...
             nextAnnualSettlementDate = nextDateForAnnualSettlement();
-            lastB =latestBooking ();
+            lastBD =latestBookingDate();
             continue;
         } else {
             qCritical() << "Failed annual settlement: Vertrag " << id_aS() << ": " << nextAnnualSettlementDate << " Zins: " << zins;
@@ -444,7 +444,7 @@ int contract::  annualSettlement( int year)
             return 0;
         }
     }
-    executeSql_wNoRecords(qsl("RELEASE SAVEPOINT as_savepoint"));
+// TODO: remove comment    executeSql_wNoRecords(qsl("RELEASE SAVEPOINT as_savepoint"));
     if( bookingSuccess)
         // there was a booking
         return year;
