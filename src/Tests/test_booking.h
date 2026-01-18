@@ -1,17 +1,10 @@
 #ifndef TEST_BOOKING_H
 #define TEST_BOOKING_H
 
-#include <QtTest/QTest>
-
 class test_booking : public QObject
 {
     Q_OBJECT
-public:
-    explicit test_booking(QObject* p=nullptr) : QObject(p){}
-    ~test_booking(){}
-private:
-    // helper
-signals:
+
 private slots:
     void init();
     void cleanup();

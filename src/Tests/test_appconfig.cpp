@@ -1,11 +1,12 @@
-#include "../DKV2/pch.h"
+#include "test_appconfig.h"
 
 #include "../DKV2/helpersql.h"
 #include "../DKV2/appconfig.h"
 #include "../DKV2/dkdbhelper.h"
 
 #include "testhelper.h"
-#include "test_appconfig.h"
+
+#include <QtTest/QTest>
 
 void test_appConfig::init()
 {

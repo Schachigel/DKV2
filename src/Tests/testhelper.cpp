@@ -1,11 +1,11 @@
-#include "../DKV2/pch.h"
+#include "testhelper.h"
 
+#include <QTest>
 #include "../DKV2/helpersql.h"
 #include "../DKV2/dkdbhelper.h"
 #include "../DKV2/creditor.h"
 #include "../DKV2/contract.h"
 
-#include "testhelper.h"
 
 void getRidOfFile(QString filename)
 {
@@ -238,17 +238,17 @@ void dbgDumpDatabase(const QString& testname)
     filename.replace('>', '#');
 
     QDir().mkdir(qsl("./data"));
-    QFile path{qsl("./data/")+filename};
-    getRidOfFile(path.fileName());
+    QFile filePath{filename};
+    getRidOfFile(filePath.fileName());
 
-    qInfo() << "removing file for replacement: " << path.fileName();
-    QVERIFY( not path.exists());
+    qInfo() << "removing file for replacement: " << filePath.fileName();
+    QVERIFY( not filePath.exists());
 
     QSqlQuery q;
-    q.prepare(qsl("VACUUM INTO '%1'").arg(path.fileName()));
-    q.exec();
+    q.prepare(qsl("VACUUM INTO '%1'").arg(filePath.fileName()));
+    if( !q.exec())
+        qDebug() << "Failed vacuum SQL " << q.lastError();
 
-    QVERIFY( path.exists());
-    getRidOfFile(path.fileName());
+    QVERIFY( filePath.exists());
 }
 

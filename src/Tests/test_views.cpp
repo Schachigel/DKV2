@@ -1,7 +1,8 @@
-#include "../DKV2/pch.h"
+#include "test_views.h"
 
 #include "testhelper.h"
-#include "test_views.h"
+
+#include <QtTest/QTest>
 
 void test_views::initTestCase()
 {
@@ -19,6 +20,8 @@ void test_views::cleanup()
 {
     cleanupTestDkDb();
 }
+
+// Todo?? insert views for SQLite User
 
 //void test_views::test_stat_activateContract_reinvesting()
 //{

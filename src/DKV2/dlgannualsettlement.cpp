@@ -1,6 +1,7 @@
 #include "dlgannualsettlement.h"
 
 #include "helper.h"
+#include "helper_core.h"
 #include "helperfin.h"
 
 dlgAnnualSettlement::dlgAnnualSettlement(int year, QWidget *parent)

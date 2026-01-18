@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)
 project(dkv2 LANGUAGES CXX VERSION 0.20.0.11)
 
 # C++ Standard
@@ -16,7 +16,8 @@ execute_process(
 add_compile_definitions(GIT_COMMIT="${GIT_COMMIT_HASH}")
 
 # Qt packages
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Sql PrintSupport Test)
+find_package(Qt6 REQUIRED COMPONENTS 
+    Core Widgets Sql PrintSupport) 
 
 qt_standard_project_setup()
 
@@ -24,6 +25,9 @@ qt_standard_project_setup()
 if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 12.0 CACHE STRING "Minimum macOS version")
 endif()
+
+include(CTest)
+enable_testing()
 
 # Subdirectories
 add_subdirectory(src/DKV2)

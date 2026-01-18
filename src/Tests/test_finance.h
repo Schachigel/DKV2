@@ -1,17 +1,9 @@
 #ifndef TEST_FINANCE_H
 #define TEST_FINANCE_H
 
-#include <QtTest/QTest>
-
 class test_finance : public QObject
 {
     Q_OBJECT
-public:
-    explicit test_finance(){}
-    ~test_finance(){}
-private:
-    // helper functions, test global stuff
-signals:
 
 private slots:
     //    void initTestCase();

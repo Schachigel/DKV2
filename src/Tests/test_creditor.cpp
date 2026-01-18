@@ -1,11 +1,13 @@
-#include "../DKV2/pch.h"
-
-#include "../DKV2/helper.h"
-#include "../DKV2/helpersql.h"
-#include "../DKV2/contract.h"
-#include "../DKV2/creditor.h"
-#include "testhelper.h"
 #include "test_creditor.h"
+
+#include "../DKV2/helper_core.h"
+#include "../DKV2/helpersql.h"
+#include "../DKV2/creditor.h"
+#include "../DKV2/contract.h"
+
+#include "testhelper.h"
+
+#include <QtTest/QTest>
 
 void test_creditor::init()
 {

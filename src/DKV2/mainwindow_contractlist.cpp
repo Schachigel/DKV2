@@ -584,9 +584,6 @@ void MainWindow::on_btnSave2Csv_clicked()
                        toQBitArray(getMetaInfo (visibilityPattern_d_MetaInfoName, defaultVisibilityPattern_deletedContracts))
                       : toQBitArray(getMetaInfo (visibilityPatternMetaInfoName, defaultVisibilityPattern_contracts)));
 
-//TODO:
-//Anzahl der Kopfzeilen stimmt nicht immer m Datenzeilen überein. Die Daten der Anmerkung fehlten
-
     csvWriter csv;
     // header
     for( int headerNbr=0; headerNbr < rec.count(); headerNbr++) {

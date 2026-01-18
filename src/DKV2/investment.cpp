@@ -1,5 +1,5 @@
 #include "investment.h"
-#include "helper.h"
+#include "helper_core.h"
 #include "helperfin.h"
 #include "helpersql.h"
 #include "appconfig.h"

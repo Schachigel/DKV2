@@ -26,7 +26,6 @@
 #include "transaktionen.h"
 #include "uebersichten.h"
 
-#include "contractsheadersortingadapter.h"
 
 QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
 {
@@ -323,7 +322,10 @@ void MainWindow::on_actionProjektkonfiguration_ndern_triggered()
 }
 void MainWindow::on_action_menu_database_configure_outdir_triggered()
 {   LOG_CALL;
-    appConfig::setOutDirInteractive(this);
+    QString dir{appConfig::Outdir()};
+    dir = QFileDialog::getExistingDirectory(this, qsl("Ausgabeverzeichnis"), dir,
+                                            QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    appConfig::setOutDir(dir);
 }
 void MainWindow::on_action_menu_database_program_exit_triggered()
 {   LOG_CALL;

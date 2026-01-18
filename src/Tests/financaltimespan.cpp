@@ -1,5 +1,3 @@
-#include "../DKV2/pch.h"
-
 #include "financaltimespan.h"
 
 int t_helper_TageBisJahresende_lookup(const QDate& d)

@@ -1,16 +1,9 @@
 #ifndef TEST_PROPERTIES_H
 #define TEST_PROPERTIES_H
 
-#include <QtTest/QTest>
-
 class test_properties : public QObject
 {
     Q_OBJECT
-public:
-//    explicit test_properties(QObject *p = nullptr);
-    virtual ~test_properties(){}
-
-private:
 
 private slots:
     void init();

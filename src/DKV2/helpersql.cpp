@@ -1,8 +1,5 @@
-
 #include "helpersql.h"
-
-
-#include "helper.h"
+#include "helper_core.h"
 #include "helperfin.h"
 
 #include "dbstructure.h"

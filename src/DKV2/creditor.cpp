@@ -1,8 +1,9 @@
 
 #include "creditor.h"
 #include "helpersql.h"
+#include "helperfin.h"
 #include "dbstructure.h"
-#include "ibanvalidator.h"
+//#include "ibanvalidator.h"
 #include "booking.h"
 
 const QString creditor::fnId           {qsl("id")};
@@ -110,7 +111,7 @@ bool creditor::isValid( QString& errortext) const
     }
     QString iban = ti.getValue(qsl("IBAN")).toString();
     if( iban.size()) {
-        if( not checkIban(iban))
+        if( not isValidIban(iban))
             errortext = qsl("Das Format der IBAN ist nicht korrekt: ") + iban;
     }
     if( errortext.isEmpty())

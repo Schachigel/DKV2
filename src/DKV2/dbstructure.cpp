@@ -1,5 +1,5 @@
 #include "dbstructure.h"
-#include "helper.h"
+#include "helper_core.h"
 #include "helperfile.h"
 #include "helpersql.h"
 #include "dkdbhelper.h"

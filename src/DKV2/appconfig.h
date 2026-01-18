@@ -1,7 +1,6 @@
 #ifndef APPCONFIG_H
 #define APPCONFIG_H
 
-
 #include "dbtable.h"
 
 // db config info in 'meta' table
@@ -24,7 +23,7 @@ struct appConfig
     static dbtable getTableDef();
     // global (on program / system level, stored in system registry)
     static void setOutDir(const QString& od);
-    static void setOutDirInteractive(QWidget* parent =nullptr);
+    //static void setOutDirInteractive(QWidget* parent =nullptr);
     static QString Outdir();
     static void delOutDir();
 
@@ -47,10 +46,10 @@ struct appConfig
     static void deleteUserData(const QString& name);
     static void deleteRuntimeData(const QString& name);
 private:
-    static bool testmode;
     static QString keyOutdir;
     static QString keyLastDb;
     static QString keyCurrentDb;
+    static bool testmode;
     static void setUserData(const QString& name, const QString& value);
     static QString getUserData( const QString& name, const QString& defaultvalue ="");
     // QString getNumUserData(QString name);

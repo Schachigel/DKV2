@@ -1,11 +1,14 @@
+#include "test_contract.h"
 
-#include "../DKV2/helper.h"
+#include "../DKV2/helper_core.h"
 #include "../DKV2/helpersql.h"
 #include "../DKV2/creditor.h"
 #include "../DKV2/contract.h"
 
 #include "testhelper.h"
-#include "test_contract.h"
+
+#include <QtTest/QTest>
+
 
 void test_contract::init()
 {   LOG_CALL;

@@ -1,17 +1,9 @@
 #ifndef TEST_APPCONFIG_H
 #define TEST_APPCONFIG_H
 
-#include <QtTest/QTest>
-
 class test_appConfig : public QObject
 {
     Q_OBJECT
-public:
-    explicit test_appConfig(QObject *p = nullptr) : QObject(p){};
-    virtual ~test_appConfig(){}
-
-private:
-    // test helper data
 
 private slots:
     void init();

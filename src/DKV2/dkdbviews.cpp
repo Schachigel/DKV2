@@ -1,5 +1,5 @@
 #include "dkdbviews.h"
-#include "helper.h"
+#include "helper_core.h"
 #include "helpersql.h"
 
 //////////////////////////////////////
@@ -317,23 +317,6 @@ bool createDkDbViews( const QMap<QString, QString>& vs, const QSqlDatabase& db)
     return true;
 }
 
-
-//bool remove_all_views(const QSqlDatabase& db /*=QSqlDatabase::database()*/)
-//{   LOG_CALL;
-//    QVector<QSqlRecord> views;
-//    if( executeSql(qsl("SELECT name FROM sqlite_master WHERE type ='view'"), views, db)) {
-//        for( const auto& rec : std::as_const(views)) {
-//// TODO: use deleteView helper from helpersql
-//            if( executeSql_wNoRecords(qsl("DROP VIEW %1").arg(rec.value(0).toString()), db))
-//                continue;
-//            else
-//                return false;
-//        }
-//        return true;
-//    }
-//    return false;
-//}
-
 //////////////////////////////////////
 // SQL Statemends (stored here to not clutter the source code with long constant strings)
 //////////////////////////////////////
@@ -343,39 +326,39 @@ const QString sqlNextAnnualSettlement {qsl(
 R"str(
 -- Ein einziges Datum: nächstes (frühestes) Jahresende, zu dem *irgendein* Vertrag
 -- die nächste Jahresabrechnung machen kann.
-WITH per_vertrag AS (
+WITH last_booking AS (
+  SELECT
+    b.VertragsId,
+    b.Datum      AS lastDatum,
+    b.BuchungsArt AS lastArt,
+    ROW_NUMBER() OVER (
+      PARTITION BY b.VertragsId
+      ORDER BY b.Datum DESC, b.id DESC
+    ) AS rn
+  FROM Buchungen b
+),
+per_contract AS (
   SELECT
     v.id AS VertragsId,
-
-    -- letzte Jahresabrechnung (Typ 8)
-    (SELECT MAX(b.Datum)
-     FROM Buchungen b
-     WHERE b.VertragsId = v.id AND b.BuchungsArt = 8
-    ) AS last_jz,
-
-    -- letzte Buchung überhaupt (für Verträge ohne bisherige JA)
-    (SELECT MAX(b.Datum)
-     FROM Buchungen b
-     WHERE b.VertragsId = v.id
-    ) AS last_booking
-  FROM Vertraege v
-),
-next_date AS (
-  SELECT
-    VertragsId,
     CASE
-      WHEN last_jz IS NOT NULL THEN
-        printf('%04d-12-31', CAST(strftime('%Y', last_jz) AS INTEGER) + 1)
-      WHEN last_booking IS NOT NULL THEN
-        printf('%04d-12-31', CAST(strftime('%Y', last_booking) AS INTEGER))
-      ELSE
-        NULL
-    END AS next_jz_date
-  FROM per_vertrag
+      -- letzte Buchung am 31.12. => nächste JZA ist 31.12. des Folgejahres
+      WHEN substr(lb.lastDatum, 6, 5) = '12-31' THEN date(lb.lastDatum, '+1 year')
+
+      -- sonst: 31.12. des Jahres der letzten Buchung
+      ELSE date(strftime('%Y', lb.lastDatum) || '-12-31')
+    END AS nextJzaDatum
+  FROM Vertraege v
+  JOIN last_booking lb
+    ON lb.VertragsId = v.id AND lb.rn = 1
+  -- nur Verträge mit mindestens einer Einzahlung (kein NULL/kein "leerer Vertrag")
+  WHERE EXISTS (
+    SELECT 1
+    FROM Buchungen b1
+    WHERE b1.VertragsId = v.id
+      AND b1.BuchungsArt = 1
+  )
 )
-SELECT MIN(next_jz_date) AS date
-FROM next_date
-WHERE next_jz_date IS NOT NULL
+SELECT MIN(nextJzaDatum) AS date FROM per_contract
 )str")};
 
 // SQL to collect all data for csv creation for a given year

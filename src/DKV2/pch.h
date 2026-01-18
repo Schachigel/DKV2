@@ -7,49 +7,14 @@
 // pch.h
 #ifndef PCH_H
 #define PCH_H
+#pragma once
 
+#include <QtSQl>
+#include <QtGui>
 // QtCore
-#include <QObject>
-#include <QVariant>
-
-#include <QString>
-#include <QStringList>
-#include <QStringLiteral>
-#include <QStringBuilder>
-
-#include <QDate>
-#include <QTime>
-#include <QDateTime>
-#include <QTimer>
-#include <QElapsedTimer>
-
-#include <QFile>
-#include <QDir>
-#include <QFileInfo>
-#include <QTemporaryFile>
-#include <QStandardPaths>
-#include <QTextStream>
-
-#include <QSettings>
-#include <QProcess>
-#include <QDebug>
-#include <QLocale>
-#include <QTranslator>
-
-#include <QtMath>
-#include <QRandomGenerator>
-
-#include <QRegularExpression>
-#include <QRegularExpressionValidator>
-
-#include <QMap>
-#include <QVector>
-#include <QPair>
-#include <QList>
-#include <QBitArray>
 
 // QtGui
-#include <QGuiApplication>
+#include <QApplication>
 #include <QImage>
 #include <QPixmap>
 #include <QPainter>
@@ -61,10 +26,10 @@
 #include <QTextCursor>
 #include <QTextTable>
 
+#include <QPrinter>
 #include <QPdfWriter>
 
 // QtWidgets
-#include <QApplication>
 #include <QWidget>
 #include <QMainWindow>
 #include <QDialogButtonBox>
@@ -96,19 +61,6 @@
 #include <QTableView>
 
 #include <QStyledItemDelegate>
-
-// QtSql
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QSqlField>
-#include <QSqlError>
-#include <QSqlRecord>
-
-#include <QSqlTableModel>
-#include <QSqlQueryModel>
-#include <QSqlRelationalTableModel>
-#include <QSortFilterProxyModel>
-
 #include <QEvent>
 
 #endif // PCH_H

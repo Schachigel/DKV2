@@ -56,8 +56,6 @@ wpTerminateContract_ConfirmationPage::wpTerminateContract_ConfirmationPage(QWidg
     layout->addWidget(cbPrint);
     layout->addWidget(cbConfirm);
     setLayout(layout);
-    // TODO Change to checkStateChanged once Qt 6.9 is available on all targets.
-    // https://doc.qt.io/qt-6/qcheckbox-obsolete.html
     connect(cbConfirm, &QCheckBox::checkStateChanged, this, &wpTerminateContract_ConfirmationPage::onConfirmData_toggled);
 }
 

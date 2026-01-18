@@ -1,7 +1,7 @@
 #ifndef KREDITOR_H
 #define KREDITOR_H
 
-#include "helper.h"
+#include "helper_core.h"
 #include "tabledatainserter.h"
 
 struct creditor

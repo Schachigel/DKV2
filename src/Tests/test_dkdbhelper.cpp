@@ -1,11 +1,13 @@
+#include "test_dkdbhelper.h"
 
-#include "../DKV2/helper.h"
+#include "../DKV2/helper_core.h"
+#include "../DKV2/helpersql.h"
 #include "../DKV2/dbstructure.h"
 #include "../DKV2/tabledatainserter.h"
-#include "../DKV2/helpersql.h"
 
 #include "testhelper.h"
-#include "test_dkdbhelper.h"
+
+#include <QtTest/QTest>
 
 void test_dkdbhelper::init()
 {   LOG_CALL;

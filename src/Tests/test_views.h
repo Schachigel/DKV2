@@ -1,8 +1,6 @@
 #ifndef TEST_VIEWS_H
 #define TEST_VIEWS_H
 
-#include <QtTest/QTest>
-
 class test_views : public QObject
 {
     Q_OBJECT

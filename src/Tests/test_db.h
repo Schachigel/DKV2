@@ -6,13 +6,6 @@
 class test_db : public QObject
 {
     Q_OBJECT
-public:
-    test_db() {}
-    ~test_db() {}
-
-private:
-
-signals:
 
 private slots:
     void initTestCase();

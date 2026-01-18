@@ -1,10 +1,11 @@
-#include "../DKV2/pch.h"
+#include "test_properties.h"
 
-#include "../DKV2/helper.h"
+#include "../DKV2/helper_core.h"
 #include "../DKV2/appconfig.h"
 
 #include "testhelper.h"
-#include "test_properties.h"
+
+#include <QtTest/QTest>
 
 void test_properties::init()
 {    LOG_CALL;

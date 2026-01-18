@@ -1,7 +1,7 @@
 #ifndef CSVWRITER_H
 #define CSVWRITER_H
 
-#include "helper.h"
+#include "helper_core.h"
 
 static const QRegularExpression reLineBreak  {qsl("[\\n\\r]+")}; // all \r\n combinations
 static const QRegularExpression reWhiteSpace {qsl("\\s+")};

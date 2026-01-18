@@ -1,32 +1,9 @@
 #include "helper.h"
-#ifdef Q_OS_WIN
-#include <windows.h>
-#endif
-#include <iostream>
-#ifndef QT_DEBUG
+#include "helper_core.h"
 #include "helperfile.h"
-#endif
-
-QFile* outFile_p{nullptr};
-int functionlogging::depth =0;
-
-QString toString(const QBitArray& ba)
-{
-    QString res;
-    for( int i=0; i < ba.size (); i++)
-        res.append (ba[i] ? qsl("1") : qsl("0"));
-    return res;
-}
-
-QBitArray toQBitArray(const QString& s)
-{
-    QBitArray ba(s.size ());
-    for( int i=0; i<s.size (); i++)
-        ba[i] = (s[i] == qsl("1")) ? true : false;
-    return ba;
-}
-
-
+#include "appconfig.h"
+#include "filewriter.h"
+#include "mustache.h"
 
 void centerDlg(QWidget* parent, QWidget* child, int minWidth /*=300*/, int minHeight /*=400*/)
 {
@@ -38,58 +15,6 @@ void centerDlg(QWidget* parent, QWidget* child, int minWidth /*=300*/, int minHe
         child->setGeometry(newPos.x(), newPos.y(),
                     nWidth, nHeight);
     }
-}
-
-void logger(QtMsgType type, const QMessageLogContext& c, const QString &msg)
-{
-    Q_UNUSED(c);
-    // secure this code with a critical section in case we start logging from multiple threads
-    if( not outFile_p) {
-        outFile_p = new QFile(logFilePath());
-        // this file will only be closed by the system at process end
-        if ( not outFile_p->open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            abort();
-        }
-    }
-    if( outFile_p) {
-        static QHash<QtMsgType, QString> msgLevelHash({{QtDebugMsg, qsl("DBuG")}, {QtInfoMsg, qsl("INFo")}, {QtWarningMsg, qsl("WaRN")}, {QtCriticalMsg, qsl("ERRo")}, {QtFatalMsg, qsl("FaIl")}});
-
-        QString endlCorrectedMsg (msg);
-        int lfCount = 0;
-        while( endlCorrectedMsg.endsWith(QChar::LineFeed) or endlCorrectedMsg.endsWith(QChar::CarriageReturn) )
-        {lfCount++; endlCorrectedMsg.chop(1);}
-
-        //    static QMutex mutex;
-        //    QMutexLocker lock(&mutex);
-        QString out {qsl("%1 %2 %3").arg(QTime::currentTime().toString(qsl("hh:mm:ss.zzz")), msgLevelHash[type], /*code, */endlCorrectedMsg)};
-#ifdef Q_OS_WIN
-        if( out.length () < 32765)
-            OutputDebugString(reinterpret_cast<const wchar_t *>(out.utf16()));
-#endif
-        QTextStream ts(outFile_p);
-        ts << out;
-        while(lfCount-->=0) ts << qsl("\n");
-
-        if (type == QtFatalMsg)
-            abort();
-    }
-}
-
-QString getLogFileName()
-{
-    QFileInfo fi(QCoreApplication::applicationFilePath ());
-#ifdef QT_DEBUG
-    return qsl("%1/%2.log").arg(QDir::tempPath (), fi.completeBaseName ());
-#else
-    return getUniqueTempFilename (qsl("%1/%2.log").arg(QDir::tempPath(), fi.completeBaseName ()),
-                                             QDateTime::currentDateTime ().toString(qsl("_yyyy_MM_dd_hhmmss_")));
-#endif
-}
-
-QString logFilePath()
-{
-    static QString logFilePath{getLogFileName()};
-    return logFilePath;
 }
 
 QMainWindow* getMainWindow()
@@ -114,4 +39,45 @@ QString getDbFileFromCommandline()
 
     qInfo() << "dbfile taken from command line " << dbfileFromCmdline;
     return dbfileFromCmdline;
+}
+
+// TODO: maybe this should be in another file, considering so many dependencies
+bool savePdfFromHtmlTemplate(const QString &templateFileName, const QString &outputFileName, const QVariantMap &data)
+{   LOG_CALL;
+    QFileInfo fi( outputFileName);
+    QString fullOutputFileName {outputFileName};
+    if(fi.isRelative ())
+        fullOutputFileName =appConfig::Outdir () +qsl("/") +outputFileName;
+    QString css{fileToString (appConfig::Outdir ()+qsl("/vorlagen/") +qsl("zinsbrief.css"))};
+
+    // DEBUG   printHtmlToPdf(renderedHtml, css, htmlFileName);
+
+    // Prepare the printer
+    QPrinter printer;
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    QPageLayout pl =printer.pageLayout ();
+    double leftB   = cm2Pt(3.); // breiter für Lochung
+    double topB    = cm2Pt(1.); // logo darf in den oberen Rand reichen
+    double rightB  = cm2Pt(0.); // logo darf in den Rand reichen
+    double bottomB = cm2Pt(2.);
+    pl.setPageSize (QPageSize(QPageSize::A4), QMargins(leftB, topB,rightB, bottomB));
+    printer.setPageLayout (pl);
+    printer.setOutputFileName(fullOutputFileName);
+
+    //Prepare the document
+    QTextDocument doc;
+    QString renderedHtml = mustachReplace(templateFileName, data);
+    doc.setPageSize(pl.pageSize ().size (QPageSize::Unit::Point));
+
+    // render the content.
+    doc.setDefaultStyleSheet (css);
+    doc.setHtml(renderedHtml);
+    // Write the PDF using a QPrinter
+    doc.print(&printer);
+
+    // Write the html content to file. (just in case ... e.g. for editing)
+    QString htmlFileName {appConfig::Outdir () +qsl("/html/") +replaceExtension(outputFileName, qsl(".html"))};
+    stringToFile( renderedHtml, htmlFileName);
+
+    return true;
 }

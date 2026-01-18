@@ -1,4 +1,4 @@
-#include "../DKV2/pch.h"
+#include "test_tabledatainserter.h"
 
 #include "../DKV2/helpersql.h"
 #include "../DKV2/dbstructure.h"
@@ -7,7 +7,8 @@
 #include "../DKV2/tabledatainserter.h"
 
 #include "testhelper.h"
-#include "test_tabledatainserter.h"
+
+#include <QtTest/QTest>
 
 void test_tableDataInserter::initTestCase()
 {

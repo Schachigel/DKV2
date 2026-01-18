@@ -1,160 +1,161 @@
-set(TARGET DKV2)
+set(APP_TARGET DKV2)
+set(CORE_TARGET dkv2_core)
+set(UI_TARGET   dkv2_ui)
 
-# Source files
-set(DKV2_SOURCES
-    main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
+# --- Core (ohne Widgets) ---
+set(DKV2_CORE_SOURCES
+    # Alle NICHT-UI Klassen rein
+    pch_core.h
+
+    helper_core.cpp helper_core.h
+    helperfile.cpp helperfile.h
+    helperfin.cpp helperfin.h
+    helpersql.cpp helpersql.h
+
+
+    booking.cpp booking.h
+    contract.cpp contract.h
+    creditor.cpp creditor.h
+    csvwriter.cpp csvwriter.h
+    dbfield.cpp dbfield.h
+    dbstructure.cpp dbstructure.h
+    dbtable.cpp dbtable.h
+    dkdbcopy.cpp dkdbcopy.h
+
+    dkdbindices.cpp dkdbindices.h
+    dkdbviews.cpp dkdbviews.h
+    filewriter.cpp filewriter.h
+
+    investment.cpp investment.h
+    mustache.cpp mustache.h
+
+    tabledatainserter.cpp tabledatainserter.h
+
+    annualSettlement.cpp annualSettlement.h
+)
+add_library(${CORE_TARGET} STATIC
+    ${DKV2_CORE_SOURCES}
+    appconfig.h
+    appconfig.cpp
+    dkdbhelper.cpp
+    dkdbhelper.h
+)
+
+target_precompile_headers(${CORE_TARGET} PRIVATE pch_core.h)
+set_target_properties(${CORE_TARGET} PROPERTIES AUTOGEN_USE_PCH ON)
+
+target_include_directories(${CORE_TARGET} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(${CORE_TARGET} PUBLIC
+    Qt6::Core
+    Qt6::Sql
+    Qt6::Gui
+)
+
+# Falls Core wirklich PrintSupport nutzt (eher selten), dann hier ergänzen:
+# target_link_libraries(${CORE_TARGET} PUBLIC Qt6::PrintSupport)
+
+# --- UI (Widgets/Dialoge/Wizards) ---
+set(DKV2_UI_SOURCES
+    pch.h
+    helper.cpp helper.h
+
+    mainwindow.cpp mainwindow.h mainwindow.ui
     mainwindow_contractlist.cpp
     mainwindow_creditorlist.cpp
     mainwindow_mru.cpp
 
-    dkv2version.h
-    resource.qrc
-    pch.h
+    dlgabout.cpp dlgabout.h
+    dlgannualsettlement.cpp dlgannualsettlement.h
+    dlgaskcontractlabel.cpp dlgaskcontractlabel.h
+    dlgaskdate.cpp dlgaskdate.h
+    dlgchangebooking.cpp dlgchangebooking.h
+    dlgchangecontracttermination.cpp dlgchangecontracttermination.h
+    dlgdisplaycolumns.cpp dlgdisplaycolumns.h
+    dlginterestletters.cpp dlginterestletters.h
 
-    appconfig.cpp
-    appconfig.h
-    booking.cpp
-    booking.h
-    busycursor.h
-    contract.cpp
-    contract.h
-    contractsheadersortingadapter.cpp
-    contractsheadersortingadapter.h
-    contracttablemodel.cpp
-    contracttablemodel.h
-    creditor.cpp
-    creditor.h
-    csvwriter.cpp
-    csvwriter.h
-    dbfield.cpp
-    dbfield.h
-    dbstructure.cpp
-    dbstructure.h
-    dbtable.cpp
-    dbtable.h
-    dkdbcopy.cpp
-    dkdbcopy.h
-    dkdbhelper.cpp
-    dkdbhelper.h
-    dkdbindices.cpp
-    dkdbindices.h
-    dkdbviews.cpp
-    dkdbviews.h
-    dlgabout.cpp
-    dlgabout.h
-    dlgannualsettlement.cpp
-    dlgannualsettlement.h
-    dlgaskcontractlabel.cpp
-    dlgaskcontractlabel.h
-    dlgaskdate.cpp
-    dlgaskdate.h
-    dlgchangebooking.cpp
-    dlgchangebooking.h
-    dlgchangecontracttermination.cpp
-    dlgchangecontracttermination.h
-    dlgdisplaycolumns.cpp
-    dlgdisplaycolumns.h
-    dlginterestletters.cpp
-    dlginterestletters.h
-    filewriter.cpp
-    filewriter.h
-    helper.cpp
-    helper.h
-    helperfile.cpp
-    helperfile.h
-    helperfin.cpp
-    helperfin.h
-    helpersql.cpp
-    helpersql.h
-    ibanvalidator.cpp
-    ibanvalidator.h
-    investment.cpp
-    investment.h
-    mustache.cpp
-    mustache.h
-    opendatabase.cpp
-    opendatabase.h
-    tabledatainserter.cpp
-    tabledatainserter.h
-    transaktionen.cpp
-    transaktionen.h
-    uebersichten.cpp
-    uebersichten.h
-    uiitemformatter.cpp
-    uiitemformatter.h
-    wizactivatecontract.cpp
-    wizactivatecontract.h
-    wizcancelcontract.cpp
-    wizcancelcontract.h
-    wizchangecontractvalue.cpp
-    wizchangecontractvalue.h
-    wiznew.cpp
-    wiznew.h
-    wiznewdatabase.cpp
-    wiznewdatabase.h
-    wiznewinvestment.cpp
-    wiznewinvestment.h
-    wizopenornewdatabase.cpp
-    wizopenornewdatabase.h
-    wizterminatecontract.cpp
-    wizterminatecontract.h
+    wizactivatecontract.cpp wizactivatecontract.h
+    wizcancelcontract.cpp wizcancelcontract.h
+    wizchangecontractvalue.cpp wizchangecontractvalue.h
+    wiznew.cpp wiznew.h
+    wiznewdatabase.cpp wiznewdatabase.h
+    wiznewinvestment.cpp wiznewinvestment.h
+    wizopenornewdatabase.cpp wizopenornewdatabase.h
+    wizterminatecontract.cpp wizterminatecontract.h
+    transaktionen.cpp transaktionen.h
+
+    uiitemformatter.cpp uiitemformatter.h
+    resource.qrc
 )
 
-# Platform-specific sources
+add_library(${UI_TARGET} STATIC
+    ${DKV2_UI_SOURCES}
+    opendatabase.cpp
+    opendatabase.h
+
+
+    ibanvalidator.h
+    ibanvalidator.cpp
+    uebersichten.h
+    uebersichten.cpp
+    busycursor.h
+
+
+    contractsheadersortingadapter.h
+    contractsheadersortingadapter.cpp
+    dkv2version.h
+    contracttablemodel.cpp
+    contracttablemodel.h
+)
+
+target_precompile_headers(${UI_TARGET} PRIVATE pch.h)
+set_target_properties(${UI_TARGET} PROPERTIES AUTOGEN_USE_PCH ON)
+
+target_include_directories(${UI_TARGET} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(${UI_TARGET} PUBLIC
+    ${CORE_TARGET}
+    Qt6::Widgets
+    Qt6::PrintSupport
+)
+
+# --- Executable: nur main + Plattformwrapper ---
+set(DKV2_APP_SOURCES
+    main.cpp
+)
+
 if(WIN32)
-    list(APPEND DKV2_SOURCES DKV2.rc)
+    list(APPEND DKV2_APP_SOURCES DKV2.rc)
 elseif(APPLE)
-    list(APPEND DKV2_SOURCES DKV2.icns Info.plist)
+    list(APPEND DKV2_APP_SOURCES DKV2.icns Info.plist)
 endif()
 
-# Platform-specific GUI flag
 if(APPLE)
     set(PLATFORM_GUI_FLAG MACOSX_BUNDLE)
 elseif(WIN32)
     set(PLATFORM_GUI_FLAG WIN32)
 endif()
 
-# Create executable
-qt_add_executable(${TARGET} ${PLATFORM_GUI_FLAG} ${DKV2_SOURCES}
-    annualSettlement.cpp
-    annualSettlement.h)
-
-# Compile definitions
-target_compile_definitions(${TARGET} PRIVATE
-    $<$<CONFIG:Debug>:DKV2_DEBUG>
+qt_add_executable(${APP_TARGET} ${PLATFORM_GUI_FLAG}
+    ${DKV2_APP_SOURCES}
 )
 
-# Precompiled headers
-target_precompile_headers(${TARGET} PRIVATE pch.h)
-set_target_properties(${TARGET} PROPERTIES AUTOGEN_USE_PCH ON)
-
-# Link libraries
-target_link_libraries(${TARGET} PRIVATE
-    Qt6::Core
-    Qt6::Widgets
-    Qt6::Sql
-    Qt6::PrintSupport
+# Link: GUI (die wiederum Core zieht, wenn UI_TARGET PUBLIC gegen CORE_TARGET linkt)
+target_link_libraries(${APP_TARGET} PRIVATE
+    ${UI_TARGET}
 )
 
-# Platform-specific properties
-if(WIN32)
-    set_target_properties(${TARGET} PROPERTIES WIN32_EXECUTABLE ON)
-elseif(APPLE)
-    set_target_properties(${TARGET} PROPERTIES
-        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist"
-        MACOSX_BUNDLE_BUNDLE_NAME "DKV2"
-        MACOSX_BUNDLE_GUI_IDENTIFIER "com.example.dkv2"
-    )
-endif()
+# PCH: nach dem Anlegen des Targets
+target_precompile_headers(${APP_TARGET} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/pch.h
+)
 
-# Installation
-if(WIN32)
-    install(TARGETS ${TARGET} RUNTIME DESTINATION .)
-elseif(APPLE)
-    install(TARGETS ${TARGET} BUNDLE DESTINATION .)
-else()
-    install(TARGETS ${TARGET} RUNTIME DESTINATION bin)
-endif()
+# Optional (meist nicht nötig, aber ok)
+set_target_properties(${APP_TARGET} PROPERTIES AUTOGEN_USE_PCH ON)
+
+
+# Installation/Bundle-Properties bleiben am Executable wie bisher.

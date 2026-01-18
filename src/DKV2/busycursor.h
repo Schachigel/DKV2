@@ -1,8 +1,6 @@
 #ifndef BUSYCURSOR_H
 #define BUSYCURSOR_H
 
-
-
 struct busyCursor
 {
     busyCursor() {

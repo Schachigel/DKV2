@@ -1,8 +1,6 @@
 #ifndef TEST_TABLEDATAINSERTER_H
 #define TEST_TABLEDATAINSERTER_H
 
-#include <QtTest/QTest>
-
 class test_tableDataInserter : public QObject
 {
     Q_OBJECT

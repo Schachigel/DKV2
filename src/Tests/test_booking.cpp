@@ -1,14 +1,14 @@
-#include "../DKV2/pch.h"
+#include "test_booking.h"
+
+#include "testhelper.h"
+#include "../DKV2/helper_core.h"
 
 #include "../DKV2/creditor.h"
 #include "../DKV2/contract.h"
 #include "../DKV2/booking.h"
 #include "../DKV2/annualSettlement.h"
 
-#include "../DKV2/helper.h"
-
-#include "testhelper.h"
-#include "test_booking.h"
+#include <QtTest/QTest>
 
 void test_booking::init()
 {   LOG_CALL;
@@ -42,7 +42,7 @@ void test_booking::test_dateONSettlement_noContracts()
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
     // kein aktiver Vertrag -> keine Jahresabrechnung
-    QCOMPARE( QDate(), dateOfnextSettlement());
+    QCOMPARE( dateOfnextSettlement(), QDate());
 }
 void test_booking::test_dateONSettlement_nextSettlement()
 {
@@ -56,7 +56,7 @@ void test_booking::test_dateONSettlement_nextSettlement()
     cont2.bookInitialPayment(QDate( 2001,6,1), 1000.);
     cont2.annualSettlement (2001);
     cont2.annualSettlement (2002);
-    QCOMPARE( QDate(2002,12,31), dateOfnextSettlement());
+    QCOMPARE( dateOfnextSettlement(), QDate(2002,12,31));
 }
 void test_booking::test_dateONSettlement_activatedContracts()
 {
@@ -128,7 +128,6 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings03()
         }
 //    }
 }
-
 void test_booking::test_bookDeposit()
 {
     creditor c(saveRandomCreditor());
@@ -210,7 +209,6 @@ void test_booking::test_bookInterestActive()
     QCOMPARE(v.size(), 1);
     QCOMPARE( v[0], booking(cont.id(), bookingType::setInterestActive, validDate, 0.));
 }
-
 void test_booking::test_getNbrOfBookings()
 {
     creditor c(saveRandomCreditor());
@@ -236,7 +234,6 @@ void test_booking::test_getNbrOfBookings()
     QCOMPARE( 2, getNbrOfBookings (cont.id (), earlier, d1.addDays (1)));
     QCOMPARE( 0, getNbrOfBookings (cont.id (), muchEarlier, earlier));
 }
-
 void test_booking::test_getBookings()
 {
     creditor c(saveRandomCreditor());
@@ -284,7 +281,6 @@ void test_booking::test_getBookings()
         QVERIFY ( getBookings(cont.id(), d3.addDays (1)).isEmpty());
     }
 }
-
 void test_booking::test_yearsWAnnualBookings()
 {
     creditor c(saveRandomCreditor());

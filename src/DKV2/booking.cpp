@@ -1,5 +1,5 @@
 #include "booking.h"
-#include "helper.h"
+#include "helper_core.h"
 #include "helpersql.h"
 #include "contract.h"
 #include "dbstructure.h"

@@ -371,8 +371,6 @@ wpConfirmCreditor::wpConfirmCreditor(QWidget *p) : QWizardPage(p)
     l->addWidget(cbConfirmCreditor);
     l->addWidget(cbCreateContract);
     setLayout(l);
-    // TODO Change to checkStateChanged once Qt 6.9 is available on all targets.
-    // https://doc.qt.io/qt-6/qcheckbox-obsolete.html
     connect(cbCreateContract, &QCheckBox::checkStateChanged, this, &wpConfirmCreditor::onConfirmCreateContract_toggled);
     setCommitPage(true);
 }

@@ -1,5 +1,3 @@
-#include "../DKV2/pch.h"
-
 #include "../DKV2/dkdbviews.h"
 #include "../DKV2/creditor.h"
 

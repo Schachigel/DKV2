@@ -1,6 +1,7 @@
 #ifndef SQLHELPER_H
 #define SQLHELPER_H
 
+#include "helper_core.h"
 #include "dbtable.h"
 
 inline const QString dbTypeName{qsl("QSQLITE")};

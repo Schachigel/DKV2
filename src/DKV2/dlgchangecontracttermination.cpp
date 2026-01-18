@@ -42,8 +42,6 @@ dlgChangeContractTermination::dlgChangeContractTermination(QWidget *parent) : QD
 
     QLabel* lBoth =new QLabel(qsl("Kündigungsfrist <i>und</i> Vertragsende zulassen"));
     allowBoth =new QCheckBox();
-    // TODO Change to checkStateChanged once Qt 6.9 is available on all targets.
-    // https://doc.qt.io/qt-6/qcheckbox-obsolete.html
     connect(allowBoth, &QCheckBox::checkStateChanged, this, &dlgChangeContractTermination::onAllowBothChanged);
 
     QGridLayout* g =new QGridLayout(this);

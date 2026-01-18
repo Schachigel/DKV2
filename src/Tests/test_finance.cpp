@@ -1,12 +1,10 @@
-#include "../DKV2/pch.h"
-
-
-
-#include "../DKV2/helper.h"
-#include "../DKV2/helperfin.h"
-#include "../DKV2/ibanvalidator.h"
-#include "financaltimespan.h"
 #include "test_finance.h"
+
+#include "../DKV2/helper_core.h"
+#include "../DKV2/helperfin.h"
+#include "financaltimespan.h"
+
+#include <QtTest/QTest>
 
 bool lastDayOfMonth(const QDate d)
 {
@@ -415,10 +413,8 @@ void test_finance::test_IbanValidator()
 {
     QFETCH(QString, IBAN);
     QFETCH(bool, isValid);
-    IbanValidator iv;
     int pos = 0;
-//    dbgTimer t(qsl("IsValidIban"));
-    QCOMPARE(iv.validate(IBAN, pos) == IbanValidator::State::Acceptable, isValid);
+    QCOMPARE(isValidIban(IBAN), isValid);
 }
 
 void test_finance::test_checkIban_data()
@@ -429,8 +425,7 @@ void test_finance::test_checkIban()
 {
     QFETCH(QString, IBAN);
     QFETCH(bool, isValid);
-//    dbgTimer t(qsl("checkIban"));
-    QCOMPARE(checkIban(IBAN), isValid);
+    QCOMPARE(isValidIban(IBAN), isValid);
 }
 
 void test_finance::test_euroFromCt()
@@ -438,37 +433,31 @@ void test_finance::test_euroFromCt()
     for( int i=0; i>-1000; i--) {
         double euro =euroFromCt(i);
         int    ct   =ctFromEuro(euro);
-//        qInfo() << i << ", " << QString::number (euro, 'f', 2) << ", " << ct;
         QCOMPARE(ct, i);
     }
     for( int i=0; i<1000; i++) {
         double euro =euroFromCt(i);
         int    ct   =ctFromEuro(euro);
-//        qInfo() << i << ", " << QString::number (euro, 'f', 2) << ", " << ct;
         QCOMPARE(ct, i);
     }
     for( int i=9999; i<10999; i++) {
         double euro =euroFromCt(i);
         int    ct   =ctFromEuro(euro);
-//        qInfo() << i << ", " << QString::number (euro, 'f', 2) << ", " << ct;
         QCOMPARE(ct, i);
     }
     for( int i=999000; i<1000100; i++) {
         double euro =euroFromCt(i);
         int    ct   =ctFromEuro(euro);
-//        qInfo() << i << ", " << QString::number (euro, 'f', 2) << ", " << ct;
         QCOMPARE(ct, i);
     }
     for( int i=9999000; i<10000100; i++) {
         double euro =euroFromCt(i);
         int    ct   =ctFromEuro(euro);
-//        qInfo() << i << ", " << QString::number (euro, 'f', 2) << ", " << ct;
         QCOMPARE(ct, i);
     }
     for( int i=99999000; i<100000100; i++) {
         double euro =euroFromCt(i);
         int    ct   =ctFromEuro(euro);
-//        qInfo() << i << ", " << QString::number (euro, 'f', 2) << ", " << ct;
         QCOMPARE(ct, i);
     }
 }

@@ -1,11 +1,13 @@
-#include "dbstructure.h"
+#include <QApplication>
+//#include "dbstructure.h"
 #include "mainwindow.h"
 #include "appconfig.h"
 #include "dkv2version.h"
+#include "dbstructure.h"
 
 #define ERROR_FILE_NOT_FOUND 5
 
-#include "helper.h"
+#include "helper_core.h"
 
 void initLogging()
 {

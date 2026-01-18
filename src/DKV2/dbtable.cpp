@@ -1,5 +1,5 @@
 #include "dbtable.h"
-#include "helper.h"
+#include "helper_core.h"
 #include "helpersql.h"
 #include "dbfield.h"
 

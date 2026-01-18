@@ -1,7 +1,7 @@
 
 #include "contract.h"
 #include "dbfield.h"
-#include "helper.h"
+#include "helper_core.h"
 #include "helpersql.h"
 #include "helperfin.h"
 #include "dbstructure.h"
@@ -440,16 +440,19 @@ int contract::  annualSettlement( int year)
             continue;
         } else {
             qCritical() << "Failed annual settlement: Vertrag " << id_aS() << ": " << nextAnnualSettlementDate << " Zins: " << zins;
-            executeSql_wNoRecords(qsl("ROLLBACK"));
-            return 0;
+            break;
         }
     }
-// TODO: remove comment    executeSql_wNoRecords(qsl("RELEASE SAVEPOINT as_savepoint"));
-    if( bookingSuccess)
+    if( bookingSuccess){
         // there was a booking
+        //
+        executeSql_wNoRecords(qsl("RELEASE SAVEPOINT as_savepoint"));
+        /////
         return year;
-    else
+    } else {
+        executeSql_wNoRecords(qsl("ROLLBACK TO as_savepoint"));
         return 0;
+    }
 }
 
 // booking actions

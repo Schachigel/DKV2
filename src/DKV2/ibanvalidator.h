@@ -1,8 +1,6 @@
 #ifndef IBANVALIDATOR_H
 #define IBANVALIDATOR_H
 
-
-
 bool checkIban(QString iban);
 
 // taken from https://github.com/Al-/IbanValidator

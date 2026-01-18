@@ -1,8 +1,7 @@
 #ifndef BOOKING_H
 #define BOOKING_H
 
-
-#include "helper.h"
+#include "helper_core.h"
 #include "helperfin.h"
 #include "helpersql.h"
 #include "dbtable.h"

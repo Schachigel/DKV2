@@ -1,5 +1,5 @@
 #include "appconfig.h"
-#include "helper.h"
+#include "helper_core.h"
 #include "helpersql.h"
 #include "dbstructure.h"
 #include "dkv2version.h"
@@ -87,25 +87,11 @@ void appConfig::setOutDir(const QString& od)
     setUserData(keyOutdir, od);
 }
 /* static */
-void appConfig::setOutDirInteractive(QWidget* parent)
-{   LOG_CALL;
-    QString dir(getUserData(keyOutdir, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)));
-    dir = QFileDialog::getExistingDirectory(parent, qsl("Ausgabeverzeichnis"), dir,
-               QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    setOutDir(dir);
-}
-/* static */
 QString appConfig::Outdir()
 {
     QString od;
     QString defaultDir {QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/DKV2")};
-    do {
-        od = getUserData(keyOutdir, defaultDir);
-        if( od.isEmpty())
-            setOutDirInteractive();
-    } while (od.isEmpty());
-    QDir().mkdir (od);
-    return od;
+    return getUserData(keyOutdir, defaultDir);
 }
 /* static */ /* for testing puropose */
 void appConfig::delOutDir()
@@ -216,7 +202,7 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
     {DKV2_VERSION,   {qsl("dkv2.exe.Version"),     QVariant(qsl(CURRENT_DKV2_VERSION))}},
     {GMBH_PROJECT,   {qsl("gmbh.projekt"),         QVariant(qsl("Esperanza"))}},
     {GMBH_ADDRESS1,  {qsl("gmbh.address1"),        QVariant(qsl("Esperanza Franklin GmbH"))}},
-    {GMBH_ADDRESS2,  {qsl("gmbh.address2"),        QVariant(emptyStringV)}},
+    {GMBH_ADDRESS2,  {qsl("gmbh.address2"),        QVariant(QString())}},
     {GMBH_STREET,    {qsl("gmbh.strasse"),     QVariant(qsl("Turley-Platz 8-9"))}},
     {GMBH_PLZ,       {qsl("gmbh.plz"),         QVariant(qsl("68167"))}},
     {GMBH_CITY,      {qsl("gmbh.stadt"),       QVariant(qsl("Mannheim"))}},
@@ -307,6 +293,3 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
         setMetaInfo(defaultParams.value(pc).first, value.toString(), db, tblAlias);
     }
 }
-
-
-

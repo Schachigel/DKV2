@@ -1,8 +1,50 @@
 #include "helperfin.h"
-
-
-#include "helper.h"
+#include "helper_core.h"
 #include "appconfig.h"
+
+// String in, bool out: validates IBAN per ISO 13616 (mod-97)
+bool isValidIban(const QString& input)
+{
+    // 1) Normalize: remove spaces, uppercase
+    QString iban;
+    iban.reserve(input.size());
+    for (QChar c : input) {
+        if (c.isSpace())
+            continue;
+        if (!c.isLetterOrNumber())
+            return false;
+        iban.append(c.toUpper());
+    }
+
+    // Basic length sanity
+    if (iban.size() < 15 || iban.size() > 34)
+        return false;
+
+    // Must start with 2 letters + 2 digits
+    if (!iban[0].isLetter() || !iban[1].isLetter() ||
+        !iban[2].isDigit()  || !iban[3].isDigit())
+        return false;
+
+    // 2) Rearrange: move first 4 chars to the end
+    const QString rearranged = iban.mid(4) + iban.left(4);
+
+    // 3) Compute mod 97 on the fly (avoid huge integer)
+    // Convert letters A..Z -> 10..35; digits stay as digits.
+    int mod = 0;
+    for (QChar c : rearranged) {
+        if (c.isDigit()) {
+            mod = (mod * 10 + (c.unicode() - '0')) % 97;
+        } else if (c.isLetter()) {
+            const int v = c.unicode() - 'A' + 10; // 10..35
+            // letters expand to two digits (10..35)
+            mod = (mod * 10 + (v / 10)) % 97;
+            mod = (mod * 10 + (v % 10)) % 97;
+        } else {
+            return false;
+        }
+    }
+    return mod == 1;
+}
 
 int TageZwischen_30_360( const QDate von, const QDate bis)
 {   // finanzmathematischer Abstand zwischen zwei Daten im selben Jahr

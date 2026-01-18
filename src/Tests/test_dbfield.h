@@ -1,18 +1,9 @@
 #ifndef TEST_DBTABLE_H
 #define TEST_DBTABLE_H
 
-#include <QtTest/QTest>
-
 class test_dbfield : public QObject
 {
     Q_OBJECT
-public:
-    test_dbfield() {}
-    ~test_dbfield() {}
-
-private:
-
-signals:
 
 private slots:
     // void initTestCase();

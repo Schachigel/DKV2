@@ -1,5 +1,5 @@
 #include "helperfile.h"
-#include "helper.h"
+#include "helper_core.h"
 #include "appconfig.h"
 
 QString getUniqueTempFilename(const QString &templateFileName, const QString& purpose)
@@ -93,32 +93,32 @@ void showInExplorer(const QString &pathOrFilename, bool fileOrFolder)
 #endif
 }
 
-void printHtmlToPdf( const QString &html, const QString &css, const QString &fn)
-{   LOG_CALL;
-    QTextDocument td;
-    td.setDefaultStyleSheet (css);
-    td.setHtml(html);
+// void printHtmlToPdf( const QString &html, const QString &css, const QString &fn)
+// {   LOG_CALL;
+//     QTextDocument td;
+//     td.setDefaultStyleSheet (css);
+//     td.setHtml(html);
 
-    QPdfWriter pdfw(fn);
-    pdfw.setCreator(qsl("Esperanza Franklin GmbH 4 MHS"));
-    //pdfw.setPageSize(QPagedPaintDevice::A4);
-    pdfw.setPageSize(QPageSize(QPageSize::A4));
-    pdfw.setPageOrientation(QPageLayout::Portrait);
-    pdfw.setPdfVersion(QPagedPaintDevice::PdfVersion_1_6);
-//    pdfw.setResolution(120 );
+//     QPdfWriter pdfw(fn);
+//     pdfw.setCreator(qsl("Esperanza Franklin GmbH 4 MHS"));
+//     //pdfw.setPageSize(QPagedPaintDevice::A4);
+//     pdfw.setPageSize(QPageSize(QPageSize::A4));
+//     pdfw.setPageOrientation(QPageLayout::Portrait);
+//     pdfw.setPdfVersion(QPagedPaintDevice::PdfVersion_1_6);
+// //    pdfw.setResolution(120 );
 
-    QPageSize ps(QPageSize::A4);
-    QMarginsF qmf( 188,235, 141, 235);
-    QPageLayout pl(ps, QPageLayout::Portrait, qmf, QPageLayout::Unit::Millimeter);
-    pl.setMode(QPageLayout::FullPageMode/*respect margins*/);
+//     QPageSize ps(QPageSize::A4);
+//     QMarginsF qmf( 188,235, 141, 235);
+//     QPageLayout pl(ps, QPageLayout::Portrait, qmf, QPageLayout::Unit::Millimeter);
+//     pl.setMode(QPageLayout::FullPageMode/*respect margins*/);
 
-    pdfw.setPageLayout(pl);
-    QPainter painter(&pdfw);
-    td.adjustSize();
-    td.drawContents(&painter);
+//     pdfw.setPageLayout(pl);
+//     QPainter painter(&pdfw);
+//     td.adjustSize();
+//     td.drawContents(&painter);
 
-    td.print( &pdfw);
-}
+//     td.print( &pdfw);
+// }
 
 QString absoluteCanonicalPath(const QString &path)
 {

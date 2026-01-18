@@ -1,11 +1,10 @@
-#include "../DKV2/pch.h"
 
+#include "../DKV2/helper_core.h"
+#include "../DKV2/dbfield.h"
 #include "../DKV2/dbtable.h"
-#include "../DKV2/helper.h"
+#include "test_dbfield.h"
 
-#include "test_dbtable.h"
-
-
+#include <QtTest/QTest>
 
 void test_dbfield::simpleTable_defaultValues()
 {

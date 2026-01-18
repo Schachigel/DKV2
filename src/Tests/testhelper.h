@@ -1,8 +1,29 @@
 #ifndef TESTHELPER_H
 #define TESTHELPER_H
 
-#include <QtTest/QTest>
-#include "../DKV2/helper.h"
+#include "../DKV2/helper_core.h"
+
+class dbgTimer
+{
+    QElapsedTimer t;
+    QString fname;
+    qint64 labcount =0;
+    qint64 lastLab =0;
+public:
+    dbgTimer() {t.start();}
+    dbgTimer(const dbgTimer&) = delete;
+    dbgTimer(const QString& fu) : fname(fu){t.start(); qInfo().noquote() << qsl("Debug Timer ") + fname << qsl(" start") << qsl("\n");}
+    ~dbgTimer() {qInfo().noquote() << "\n" << (fname.isEmpty() ? QString() : fname+ qsl(" end") )
+                                    << "\n" << qsl("Elapsed time: ")<< t.elapsed() << "ms" << qsl("\n");}
+    void lab(const QString& msg =QString()) {
+        qint64 now =t.elapsed();
+        qInfo().noquote() << (fname.isEmpty() ? QString() : fname) <<  qsl(" Lab# ")
+                          << (msg.isEmpty() ? QString::number(labcount++) : msg)
+                          << ":" << (now-lastLab)
+                          << "ms (overall: " << now << ")";
+        lastLab =now;
+    }
+};
 
 inline const QString testDbFilename {qsl("./data/testdb.sqlite")};
 inline const QString testTemplateDb {qsl("./data/template.sqlite")};

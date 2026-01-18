@@ -1,5 +1,4 @@
 #include "dlgaskcontractlabel.h"
-
 #include "helper.h"
 
 dlgAskContractLabel::dlgAskContractLabel(const QString& givenLabel)
@@ -33,8 +32,7 @@ dlgAskContractLabel::dlgAskContractLabel(const QString& givenLabel)
     setLayout (g);
 }
 
-void dlgAskContractLabel::showEvent(QShowEvent* se)
-{   LOG_CALL;
+void dlgAskContractLabel::showEvent(QShowEvent* se) {
     if( se->spontaneous())
         return;
     centerDlg(qobject_cast<QWidget*>(parent()), this, 200, 300);

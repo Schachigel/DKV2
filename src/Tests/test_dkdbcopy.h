@@ -1,19 +1,12 @@
 #ifndef TEST_DKDBCOPY_H
 #define TEST_DKDBCOPY_H
 
-#include "../DKV2/pch.h"
 
-#include <QtTest/QTest>
-
-
-#include "../DKV2/helper.h"
 #include "testhelper.h"
 
 class test_dkdbcopy : public QObject{
     Q_OBJECT
-public:
-    test_dkdbcopy(){}
-    ~test_dkdbcopy(){}
+
 private:
     const QString dbfn1{qsl("../data/testdb1.sqlite")};
     const QString dbfn2{qsl("../data/testdb2.sqlite")};

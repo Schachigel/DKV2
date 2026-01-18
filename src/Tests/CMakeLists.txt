@@ -1,99 +1,112 @@
-set(TARGET Tests)
+cmake_minimum_required(VERSION 3.21)
 
-# Test sources
-set(TEST_SOURCES
+# Qt packages
+find_package(Qt6 REQUIRED COMPONENTS Test)
+
+# -------------------------------------------------
+# Helper: one executable per suite (better Qt Creator integration + smaller logs)
+# -------------------------------------------------
+function(add_dkv2_test TARGET_NAME TEST_HEADER TEST_CLASS)
+    qt_add_executable(${TARGET_NAME}
+        test_main.cpp
+        testhelper.cpp
+        testhelper.h
+        ${TEST_HEADER}           # optional, für IDE-Ansicht
+        ${ARGN}                  # die .cpp Datei(en) der Suite
+    )
+
+    target_link_libraries(${TARGET_NAME} PRIVATE
+        Qt6::Test
+        dkv2_core
+    )
+
+    target_precompile_headers(${TARGET_NAME} PRIVATE
+        ../DKV2/pch_core.h
+    )
+    set_target_properties(${TARGET_NAME} PROPERTIES AUTOGEN_USE_PCH ON)
+
+    target_compile_definitions(${TARGET_NAME} PRIVATE
+        GEN_TEST_HEADER="${TEST_HEADER}"
+        GEN_TEST_CLASS=${TEST_CLASS}
+    )
+
+    if(MSVC)
+        target_link_options(${TARGET_NAME} PRIVATE /SUBSYSTEM:CONSOLE)
+    endif()
+
+    add_test(
+        NAME    ${TARGET_NAME}
+        COMMAND $<TARGET_FILE:${TARGET_NAME}>)
+    set_tests_properties(
+        ${TARGET_NAME} PROPERTIES
+        WORKING_DIRECTORY $<TARGET_FILE_DIR:${TARGET_NAME}>)
+
+endfunction()
+
+# -------------------------------------------------
+# Common test sources reused across suites
+# (compiled into each test exe; OK and simple)
+# -------------------------------------------------
+set(TEST_COMMON
     test_main.cpp
-    resource.qrc
-
-    # Test files
-    test_appconfig.cpp
-    test_appconfig.h
-    test_booking.cpp
-    test_booking.h
-    test_contract.cpp
-    test_contract.h
-    test_creditor.cpp
-    test_creditor.h
-    test_csv.cpp
-    test_csv.h
-    test_db.cpp
-    test_db.h
-    test_dbtable.cpp
-    test_dbtable.h
-    test_dkdbcopy.cpp
-    test_dkdbcopy.h
-    test_dkdbhelper.cpp
-    test_dkdbhelper.h
-    test_finance.cpp
-    test_finance.h
-    test_properties.cpp
-    test_properties.h
-    test_sqlhelper.cpp
-    test_sqlhelper.h
-    test_statistics.cpp
-    test_statistics.h
-    test_tabledatainserter.cpp
-    test_tabledatainserter.h
     testhelper.cpp
     testhelper.h
+)
+
+add_dkv2_test(test_csv "test_csv.h" test_csv
+    test_csv.cpp
+)
+
+add_dkv2_test(test_db "test_db.h" test_db
+    test_db.cpp
+)
+
+add_dkv2_test(test_views "test_views.h" test_views
+    test_views.cpp
+)
+
+add_dkv2_test(test_dkdbcopy "test_dkdbcopy.h" test_dkdbcopy
+    test_dkdbcopy.cpp
+)
+
+add_dkv2_test(test_dkdbhelper "test_dkdbhelper.h" test_dkdbhelper
+    test_dkdbhelper.cpp
+)
+
+add_dkv2_test(test_tableDataInserter "test_tabledatainserter.h" test_tableDataInserter
+    test_tabledatainserter.cpp
+)
+
+add_dkv2_test(test_dbfield "test_dbfield.h" test_dbfield
+    test_dbfield.cpp
+)
+
+add_dkv2_test(test_creditor "test_creditor.h" test_creditor
+    test_creditor.cpp
+)
+
+add_dkv2_test(test_booking "test_booking.h" test_booking
+    test_booking.cpp
+)
+
+add_dkv2_test(test_contract "test_contract.h" test_contract
+    test_contract.cpp
+)
+
+add_dkv2_test(test_finance "test_finance.h" test_finance
     financaltimespan.cpp
-    financaltimespan.h
+    test_finance.cpp
 )
 
-# DKV2 source files needed for tests
-set(DKV2_TEST_SOURCES
-    ../DKV2/helper.cpp
-    ../DKV2/appconfig.cpp
-    ../DKV2/booking.cpp
-    ../DKV2/contract.cpp
-    ../DKV2/creditor.cpp
-    ../DKV2/dbtable.cpp
-    ../DKV2/dbfield.cpp
-    ../DKV2/dbstructure.cpp
-    ../DKV2/helperfile.cpp
-    ../DKV2/helpersql.cpp
-    ../DKV2/dkdbhelper.cpp
-    ../DKV2/dkdbcopy.cpp
-    ../DKV2/dkdbindices.cpp
-    ../DKV2/dkdbviews.cpp
-    ../DKV2/csvwriter.cpp
-    ../DKV2/investment.cpp
-    ../DKV2/helperfin.cpp
-    ../DKV2/ibanvalidator.cpp
-    ../DKV2/tabledatainserter.cpp
-    ../DKV2/annualSettlement.cpp
+add_dkv2_test(test_statistics "test_statistics.h" test_statistics
+    test_statistics.cpp
 )
 
-# Create test executable
-qt_add_executable(${TARGET} ${TEST_SOURCES} ${DKV2_TEST_SOURCES}
-    xtest_tolearn.h xtest_tolearn.cpp)
-
-# Compile definitions
-target_compile_definitions(${TARGET} PRIVATE
-    $<$<CONFIG:Debug>:DKV2_TEST_DEBUG>
+add_dkv2_test(test_appConfig "test_appconfig.h" test_appConfig
+    test_appconfig.cpp
 )
 
-# Precompiled headers
-target_precompile_headers(${TARGET} PRIVATE ../DKV2/pch.h)
-set_target_properties(${TARGET} PROPERTIES AUTOGEN_USE_PCH ON)
-
-# Link libraries
-target_link_libraries(${TARGET} PRIVATE
-    Qt6::Test
-    Qt6::Core
-    Qt6::Widgets
-    Qt6::Sql
-    Qt6::PrintSupport
+add_dkv2_test(test_properties "test_properties.h" test_properties
+    test_properties.cpp
 )
 
-# Windows-specific: Force console subsystem
-if(MSVC)
-    target_link_options(${TARGET} PRIVATE /SUBSYSTEM:CONSOLE)
-endif()
-
-# Installation
-install(TARGETS ${TARGET}
-    RUNTIME DESTINATION tests
-    BUNDLE DESTINATION .
-    CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel
-)

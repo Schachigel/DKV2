@@ -1,9 +1,8 @@
-
 #include "test_csv.h"
-#include "../DKV2/csvwriter.h"
-#include <QtTest/QTest>
-#include <QDebug>
 
+#include "../DKV2/csvwriter.h"
+
+#include <QtTest/QTest>
 
 void test_csv::test_toString_noHeader_wTrimming_data()
 {

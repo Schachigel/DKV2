@@ -1,9 +1,7 @@
 #ifndef DBFIELD_H
 #define DBFIELD_H
 
-
-
-#include "helper.h"
+#include "helper_core.h"
 
 class dbfield : public QSqlField
 {
@@ -65,7 +63,6 @@ struct dbForeignKey
 
     // interface
     QString get_CreateSqlSnippet();
-    QString get_SelectSqlWhereClause();
 
 private:
     QString table;

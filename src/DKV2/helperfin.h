@@ -1,8 +1,9 @@
 #ifndef HELPERFIN_H
 #define HELPERFIN_H
+#include "helper_core.h"
 
 
-#include "helper.h"
+bool isValidIban(const QString& input);
 
 inline double r2(const double d)
 {

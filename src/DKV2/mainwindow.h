@@ -1,11 +1,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-
-
-#include "contractsheadersortingadapter.h"
 #include "booking.h"
 #include "appconfig.h"
+#include "contractsheadersortingadapter.h"
 
 class InvestmentsTableModel : public QSqlTableModel
 {

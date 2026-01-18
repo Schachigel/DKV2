@@ -1,17 +1,13 @@
-#include "../DKV2/pch.h"
+#include "test_db.h"
 
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QString>
-
-#include "../DKV2/helper.h"
+#include "../DKV2/helper_core.h"
 #include "../DKV2/helpersql.h"
 #include "../DKV2/dkdbhelper.h"
 #include "../DKV2/dbtable.h"
 #include "../DKV2/tabledatainserter.h"
 
 #include "testhelper.h"
-#include "test_db.h"
+
 // add necessary includes here
 
 void test_db::initTestCase()

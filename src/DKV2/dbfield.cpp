@@ -1,6 +1,6 @@
 #include "dbfield.h"
 
-#include "helper.h"
+#include "helper_core.h"
 #include "helpersql.h"
 
 /* static */ bool dbfield::isSupportedDBType(QMetaType::Type t)
@@ -51,13 +51,4 @@ QString dbForeignKey::get_CreateSqlSnippet()
 {
     Q_ASSERT_X( (not refTable.isEmpty()) && (not refField.isEmpty()), "creating foreignKey sql", "table and name must not be empty");
     return qsl("FOREIGN KEY (%1) REFERENCES %2 (%3) %4 %5").arg(field, refTable, refField, onDelete, onUpdate);
-}
-
-QString dbForeignKey::get_SelectSqlWhereClause()
-{   // todo: is this function really used?
-    Q_ASSERT_X( (not refTable.isEmpty()) && (not refField.isEmpty()), "creating foreignKey select sql", "table and name must not be empty");
-    QString sql;
-    if( table.size()) sql = table + qsl(".");
-    sql += field + qsl("=") + refTable + qsl(".") + refField;
-    return sql;
 }

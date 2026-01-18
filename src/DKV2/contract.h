@@ -1,7 +1,7 @@
 #ifndef VERTRAG_H
 #define VERTRAG_H
 
-#include "helper.h"
+#include "helper_core.h"
 #include "helperfin.h"
 #include "tabledatainserter.h"
 #include "booking.h"
