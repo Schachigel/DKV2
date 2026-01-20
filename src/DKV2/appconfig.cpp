@@ -67,7 +67,11 @@ void setMetaInfo(const QString& name, const QString& value, const QSqlDatabase& 
     QString tname =qsl("Meta");
     if( tblAlias.size()) tname =tblAlias +qsl(".") +tname;
     QString sql{qsl("INSERT OR REPLACE INTO %1 (Name, Wert) VALUES (:name, :value)")};
-    executeSql_wNoRecords(sql.arg(tname), {name, value}, db);
+    if( not executeSql_wNoRecords(sql.arg(tname), {name, value}, db)) {
+        qInfo() << QSqlDatabase::database().lastError();
+        qCritical() << "writing meta info failed " << name << " : " << value;
+    }
+
 }
 void setNumMetaInfo(const QString& name, const double value, const QSqlDatabase& db, const QString& tblAlias /*=QString()*/)
 {   LOG_CALL_W(name);
@@ -181,6 +185,7 @@ void appConfig::setUserData(const QString& name, const QString& value)
     QSettings config;
     qInfo() << "setUserData " << name << " : " << value;
     config.setValue(name, value);
+    config.sync();
 }
 /* static */
 QString appConfig::getUserData( const QString& name, const QString& defaultvalue)
@@ -201,8 +206,8 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
     {DB_VERSION,     {qsl("Version"),              QVariant(CURRENT_DB_VERSION)}},
     {DKV2_VERSION,   {qsl("dkv2.exe.Version"),     QVariant(qsl(CURRENT_DKV2_VERSION))}},
     {GMBH_PROJECT,   {qsl("gmbh.projekt"),         QVariant(qsl("Esperanza"))}},
-    {GMBH_ADDRESS1,  {qsl("gmbh.address1"),        QVariant(qsl("Esperanza Franklin GmbH"))}},
-    {GMBH_ADDRESS2,  {qsl("gmbh.address2"),        QVariant(QString())}},
+    {GMBH_ADDRESS1,  {qsl("gmbh.address1"),        QVariant(qsl("address 1"))}},
+    {GMBH_ADDRESS2,  {qsl("gmbh.address2"),        QVariant(QString(""))}},
     {GMBH_STREET,    {qsl("gmbh.strasse"),     QVariant(qsl("Turley-Platz 8-9"))}},
     {GMBH_PLZ,       {qsl("gmbh.plz"),         QVariant(qsl("68167"))}},
     {GMBH_CITY,      {qsl("gmbh.stadt"),       QVariant(qsl("Mannheim"))}},

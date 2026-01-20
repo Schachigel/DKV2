@@ -19,7 +19,6 @@ void test_appConfig::init()
 }
 void test_appConfig::cleanup()
 {
-//    LOG_CALL;
     appConfig::delLastDb();
     appConfig::delOutDir();
     QCOMPARE(appConfig::Outdir(), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/DKV2"));
@@ -88,6 +87,7 @@ void test_appConfig::test_dbConfig_Db()
 void test_appConfig::test_getMetaTableAsMap()
 {
     auto map =getMetaTableAsMap ();
+//     qDebug() << map;
     QCOMPARE( map.value ("gmbhprojekt"), "Esperanza");
     QCOMPARE( map.size (), projectConfiguration::MAX_PC_INDEX);
 }

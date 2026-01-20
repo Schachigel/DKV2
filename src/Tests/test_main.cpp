@@ -14,6 +14,12 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
+    QCoreApplication::setOrganizationName("DKV2-Test");
+    QCoreApplication::setApplicationName("test_DKV2");
+
     GEN_TEST_CLASS tc;
+    // argc =1;
+    // char* arg =new (char[]){"-maxwarnings 0"};
+    // char * v[] {arg, NULL};
     return QTest::qExec(&tc, argc, argv);
 }
