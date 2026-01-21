@@ -57,8 +57,8 @@ int main(int argc, char *argv[])
 #endif
     QFont f =a.font();
     double systemFontSize =f.pointSizeF ();
-    appConfig::setSystemFontsize( systemFontSize);
-    f.setPointSizeF(systemFontSize *appConfig::Zoom());
+    appconfig::setSystemFontsize( systemFontSize);
+    f.setPointSizeF(systemFontSize *appconfig::Zoom());
     a.setFont(f);
 
     initLogging();

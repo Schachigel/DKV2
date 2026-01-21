@@ -66,7 +66,7 @@ void showInExplorer(const QString &pathOrFilename, bool fileOrFolder)
     QString fullPath {pathOrFilename};
     QFileInfo fi(fullPath);
     if(fi.isRelative ())
-        fullPath = appConfig::Outdir ().append (qsl("/").append (pathOrFilename));
+        fullPath = appconfig::Outdir ().append (qsl("/").append (pathOrFilename));
 
     QString explorerW_selectedFile = QDir::toNativeSeparators(fullPath);
     if( fileOrFolder == showFile)

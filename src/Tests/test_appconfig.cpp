@@ -8,38 +8,38 @@
 
 #include <QtTest/QTest>
 
-void test_appConfig::init()
+void test_appconfig::init()
 {
-    appConfig::setLastDb("c:/temp/data.dkdb");
-    QVERIFY( appConfig::LastDb().size());
-    appConfig::setOutDir("C:/temp/output");
-    QVERIFY( appConfig::Outdir().size());
+    appconfig::setLastDb("c:/temp/data.dkdb");
+    QVERIFY( appconfig::LastDb().size());
+    appconfig::setOutDir("C:/temp/output");
+    QVERIFY( appconfig::Outdir().size());
     initTestDkDb_InMemory();
     fill_DkDbDefaultContent(QSqlDatabase::database(), false);
 }
-void test_appConfig::cleanup()
+void test_appconfig::cleanup()
 {
-    appConfig::delLastDb();
-    appConfig::delOutDir();
-    QCOMPARE(appConfig::Outdir(), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/DKV2"));
+    appconfig::delLastDb();
+    appconfig::delOutDir();
+    QCOMPARE(appconfig::Outdir(), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/DKV2"));
     cleanupTestDb_InMemory();
 }
 
-void test_appConfig::test_initials()
+void test_appconfig::test_initials()
 {
     // init/cleanup runs w/o error
 }
-void test_appConfig::test_overwrite_value()
+void test_appconfig::test_overwrite_value()
 {
     QString newValue= "newvalue";
     // overwrite value for initTestCase
-    appConfig::setLastDb(newValue +"ldb");
-    QCOMPARE(appConfig::LastDb(), newValue +"ldb");
-    appConfig::setOutDir(newValue +"od");
-    QCOMPARE(appConfig::Outdir(), newValue +"od");
+    appconfig::setLastDb(newValue +"ldb");
+    QCOMPARE(appconfig::LastDb(), newValue +"ldb");
+    appconfig::setOutDir(newValue +"od");
+    QCOMPARE(appconfig::Outdir(), newValue +"od");
 }
 
-void test_appConfig::test_dbConfig_RuntimeData()
+void test_appconfig::test_dbConfig_RuntimeData()
 {
     QString expectedString{qsl("gmbh adresse 1")};
     dbConfig::writeValue(GMBH_ADDRESS1, expectedString);
@@ -54,7 +54,7 @@ void test_appConfig::test_dbConfig_RuntimeData()
     QCOMPARE(dbConfig::readValue(MIN_AMOUNT), vInt);
 }
 
-void test_appConfig::test_dbConfig_Db()
+void test_appconfig::test_dbConfig_Db()
 {
     // the "global" config data
     QString expectedString{qsl("original Db Value")};
@@ -84,7 +84,7 @@ void test_appConfig::test_dbConfig_Db()
     QVERIFY(QFile::remove(newDbFilename));
 }
 
-void test_appConfig::test_getMetaTableAsMap()
+void test_appconfig::test_getMetaTableAsMap()
 {
     auto map =getMetaTableAsMap ();
 //     qDebug() << map;

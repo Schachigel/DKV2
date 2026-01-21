@@ -96,14 +96,14 @@ bool tryToUseDb(const QString dbPath) {
         return false;
     }
     // signal that the current db is disconected
-    appConfig::delLastDb ();
+    appconfig::delLastDb ();
 
     if( not open_databaseForApplication (dbPath)) {
         expected_error (qsl("Datenbank %1 kann nicht für die Anwendung geöffnet werden.").arg(dbPath));
         return false;
     }
     // propagate new open db to UI
-    appConfig::setLastDb (dbPath);
+    appconfig::setLastDb (dbPath);
     qInfo() << qsl("Datenbank %1 wurde erfolgreich für die Anwendung geöffnet.").arg(dbPath);
     return true;
     // db was loaded successfully
@@ -154,18 +154,18 @@ bool openDB_atStartup()
     }
 
     // no command line argument -> check registry
-    if( not appConfig::hasLastDb ())
+    if( not appconfig::hasLastDb ())
         return askUserForNextDb ();
-    dbPath =appConfig::LastDb();
+    dbPath =appconfig::LastDb();
     QString dbCanonicalPath {QFileInfo(dbPath).canonicalFilePath ()};
     if( dbCanonicalPath.isEmpty ()) {
-        appConfig::delLastDb (); // do not retry next time
+        appconfig::delLastDb (); // do not retry next time
         expected_error(qsl("Die zuletzt geöffnete Datenbank Datei %1 wurde nicht gefunden").arg(dbPath));
         // continue interactively
     } else {
         if( tryToUseDb(dbCanonicalPath))
             return true;
-        appConfig::delLastDb (); // do not retry next time
+        appconfig::delLastDb (); // do not retry next time
         expected_error(qsl("Die zuletzt geöffnete Datenbank konnte nicht geöffnet werden"));
         // continue interactivly
     }
@@ -178,7 +178,7 @@ bool openDB_MRU( const QString path)
     QString cPath = QFileInfo(path).canonicalFilePath ();
     if( tryToUseDb (cPath))
         return true;
-    if( appConfig::LastDb().isEmpty()){
+    if( appconfig::LastDb().isEmpty()){
         expected_error(qsl("Beim Öffnen der Datenbank %1 ist ein schwerwiegender Fehler aufgetreten. Die Anwendung wird beendet").arg(path));
         exit(1);
     } else {

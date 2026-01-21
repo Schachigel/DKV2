@@ -46,7 +46,7 @@ int wpOpenOrNew::nextId() const
  * wizard Pages: wpNewDb
  */
 QString defaultFolder() {
-    QString selectedFolder =appConfig::LastDb();
+    QString selectedFolder =appconfig::LastDb();
     if( selectedFolder.isEmpty()) {
         selectedFolder =QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     } else {

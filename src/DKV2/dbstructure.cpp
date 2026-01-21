@@ -78,7 +78,7 @@ void init_DKDBStruct()
     dkdbstructur.appendTable(contract::getTableDef_deletedContracts());
     dkdbstructur.appendTable(booking::getTableDef());
     dkdbstructur.appendTable(booking::getTableDef_deletedBookings());
-    dkdbstructur.appendTable(appConfig::getTableDef());
+    dkdbstructur.appendTable(appconfig::getTableDef());
 }
 void reInit_DKDBStruct()
 {

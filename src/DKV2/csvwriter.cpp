@@ -115,7 +115,7 @@ QString csvWriter::toString() const
 
 bool csvWriter::saveAndShowInExplorer(const QString& proposedFileName) const
 {   LOG_CALL_W(proposedFileName);
-    QString fqFilePath {appConfig::Outdir() + qsl("/") + proposedFileName};
+    QString fqFilePath {appconfig::Outdir() + qsl("/") + proposedFileName};
     moveToBackup (fqFilePath);
 
     QFile file(fqFilePath);

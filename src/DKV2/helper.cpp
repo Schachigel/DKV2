@@ -47,8 +47,8 @@ bool savePdfFromHtmlTemplate(const QString &templateFileName, const QString &out
     QFileInfo fi( outputFileName);
     QString fullOutputFileName {outputFileName};
     if(fi.isRelative ())
-        fullOutputFileName =appConfig::Outdir () +qsl("/") +outputFileName;
-    QString css{fileToString (appConfig::Outdir ()+qsl("/vorlagen/") +qsl("zinsbrief.css"))};
+        fullOutputFileName =appconfig::Outdir () +qsl("/") +outputFileName;
+    QString css{fileToString (appconfig::Outdir ()+qsl("/vorlagen/") +qsl("zinsbrief.css"))};
 
     // DEBUG   printHtmlToPdf(renderedHtml, css, htmlFileName);
 
@@ -76,7 +76,7 @@ bool savePdfFromHtmlTemplate(const QString &templateFileName, const QString &out
     doc.print(&printer);
 
     // Write the html content to file. (just in case ... e.g. for editing)
-    QString htmlFileName {appConfig::Outdir () +qsl("/html/") +replaceExtension(outputFileName, qsl(".html"))};
+    QString htmlFileName {appconfig::Outdir () +qsl("/html/") +replaceExtension(outputFileName, qsl(".html"))};
     stringToFile( renderedHtml, htmlFileName);
 
     return true;

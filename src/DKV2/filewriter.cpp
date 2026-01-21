@@ -49,7 +49,7 @@ QString mustachReplace(const QString &templateFileName, const QVariantMap &data)
     Mustache::QtVariantContext context(data);
     Mustache::Renderer renderer;
 
-    QString Content{ fileToString (appConfig::Outdir() + "/vorlagen/" + templateFileName)};
+    QString Content{ fileToString (appconfig::Outdir() + "/vorlagen/" + templateFileName)};
     // We need 3 passes to replace all mustache variables.
     for (int pass = 1; pass <= 3; pass++)
         Content = renderer.render( Content, &context);
@@ -63,12 +63,12 @@ bool writeRenderedTemplate(const QString &templateFileName, const QString &outpu
     QFileInfo fi(outputFileName);
     QString fullOutputFileName{outputFileName};
     if (fi.isRelative())
-        fullOutputFileName = appConfig::Outdir() + qsl("/") + outputFileName;
+        fullOutputFileName = appconfig::Outdir() + qsl("/") + outputFileName;
 
     // render the content.
     QString renderedText = mustachReplace(templateFileName, data);
     // Write the html content to file. (e.g. for editing)
-    stringToFile(renderedText, appConfig::Outdir() +qsl("/") +outputFileName);
+    stringToFile(renderedText, appconfig::Outdir() +qsl("/") +outputFileName);
 
     return true;
 }

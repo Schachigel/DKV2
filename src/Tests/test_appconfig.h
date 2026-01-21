@@ -1,7 +1,7 @@
 #ifndef TEST_APPCONFIG_H
 #define TEST_APPCONFIG_H
 
-class test_appConfig : public QObject
+class test_appconfig : public QObject
 {
     Q_OBJECT
 

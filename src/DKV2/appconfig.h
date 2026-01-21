@@ -15,7 +15,7 @@ QVariantMap getMetaTableAsMap(const QSqlDatabase &db = QSqlDatabase::database())
 void setMetaInfo(const QString& name, const QString& value, const QSqlDatabase& db = QSqlDatabase::database(), const QString& tblAlias =QString());
 void setNumMetaInfo(const QString& name, const double Wert, const QSqlDatabase& db = QSqlDatabase::database(), const QString& tblAlias =QString());
 
-struct appConfig
+struct appconfig
 {
     static const QString tnMeta;
     static const QString fnName;

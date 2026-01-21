@@ -35,7 +35,7 @@
 #include <QRandomGenerator>
 
 #include <QRegularExpression>
-#include <QRegularExpressionValidator>
+// #include <QRegularExpressionValidator>
 
 #include <QMap>
 #include <QVector>

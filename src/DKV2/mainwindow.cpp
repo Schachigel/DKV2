@@ -124,7 +124,7 @@ MainWindow::MainWindow(QWidget *parent) :
     restoreState(settings.value(qsl("windowState")).toByteArray());
 
     if( openDB_atStartup()) {
-        useDb(appConfig::LastDb ());
+        useDb(appconfig::LastDb ());
         dbLoadedSuccessfully =true;
     }
 }
@@ -249,7 +249,7 @@ QString askUserFilenameForCopy(const QString& title, bool onlyExistingFiles=fals
     else
         wiz.bffTitle =qsl("Wähle eine dkdb Datei aus oder gib einen neuen Dateinamen ein");
 
-    QFileInfo lastdb (appConfig::LastDb());
+    QFileInfo lastdb (appconfig::LastDb());
     if( lastdb.exists())
         wiz.openInFolder=lastdb.path();
     else
@@ -262,11 +262,11 @@ QString askUserFilenameForCopy(const QString& title, bool onlyExistingFiles=fals
 void MainWindow::on_action_menu_database_new_triggered()
 {   LOG_CALL;
     if( askUserForNextDb()) {
-        useDb(appConfig::LastDb ());
+        useDb(appconfig::LastDb ());
         return;
     }
 
-    if( appConfig::LastDb ().isEmpty()) {
+    if( appconfig::LastDb ().isEmpty()) {
         QMessageBox::information( this, qsl("Abbruch"), qsl("Die Datenbank konnte nicht geöffnet werden."
                                         " Die Anwendung muss beendet werden."));
         exit(1);
@@ -322,10 +322,10 @@ void MainWindow::on_actionProjektkonfiguration_ndern_triggered()
 }
 void MainWindow::on_action_menu_database_configure_outdir_triggered()
 {   LOG_CALL;
-    QString dir{appConfig::Outdir()};
+    QString dir{appconfig::Outdir()};
     dir = QFileDialog::getExistingDirectory(this, qsl("Ausgabeverzeichnis"), dir,
                                             QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    appConfig::setOutDir(dir);
+    appconfig::setOutDir(dir);
 }
 void MainWindow::on_action_menu_database_program_exit_triggered()
 {   LOG_CALL;
@@ -605,7 +605,7 @@ void MainWindow::on_comboUebersicht_currentIndexChanged(int i)
 }
 void MainWindow::on_pbPrint_clicked()
 {   LOG_CALL;
-    QString filename = appConfig::Outdir();
+    QString filename = appconfig::Outdir();
     filename += qsl("/") + QDate::currentDate().toString(qsl("yyyy-MM-dd_"));
     filename += Statistics_Filenames[ui->comboUebersicht->currentIndex()];
     filename += qsl(".pdf");
@@ -883,16 +883,16 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::on_actionSchriftgr_e_anpassen_triggered()
 {
     bool OK =true;
-    double current =appConfig::Zoom ();
+    double current =appconfig::Zoom ();
     double input =QInputDialog::getDouble(this, qsl("Schriftgröße anpassen"),
                                            qsl("Skalierungsfaktor zwischen 0,8 und 1,5"),
                                            current, 0.8, 1.5, 1, &OK,
                                            Qt::WindowFlags(), 0.1);
     if( OK and (current not_eq input)) {
-        appConfig::setZoom (input);
+        appconfig::setZoom (input);
         QMessageBox::information (this, qsl("Neustart"), qsl("Damit eine neue Schriftgröße in allen Fenstern angewendet wird, muss das Programm eventuell neu gestartet werden."));
         QFont f =QApplication::font();
-        f.setPointSizeF(appConfig::getSystemFontsize () *appConfig::Zoom());
+        f.setPointSizeF(appconfig::getSystemFontsize () *appconfig::Zoom());
         QApplication::setFont(f);
         setFont(f);
         ui->stackedWidget->setFont (f);

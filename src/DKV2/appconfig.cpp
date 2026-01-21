@@ -7,17 +7,17 @@
 
 /* static data */
 #ifndef QT_DEBUG
-QString appConfig::keyOutdir = qsl("outdir");
-QString appConfig::keyLastDb = qsl("db/last");
+QString appconfig::keyOutdir = qsl("outdir");
+QString appconfig::keyLastDb = qsl("db/last");
 #else
-QString appConfig::keyOutdir = qsl("dbg-outdir");
-QString appConfig::keyLastDb = qsl("dbg-db/last");
+QString appconfig::keyOutdir = qsl("dbg-outdir");
+QString appconfig::keyLastDb = qsl("dbg-db/last");
 #endif
-const QString appConfig::tnMeta { qsl("Meta")};
-const QString appConfig::fnName { qsl("Name")};
-const QString appConfig::fnWert { qsl("Wert")};
+const QString appconfig::tnMeta { qsl("Meta")};
+const QString appconfig::fnName { qsl("Name")};
+const QString appconfig::fnWert { qsl("Wert")};
 
-dbtable appConfig::getTableDef()
+dbtable appconfig::getTableDef()
 {
     static dbtable table(tnMeta);
     if( table.Fields().size() == 0) {
@@ -82,23 +82,23 @@ void setNumMetaInfo(const QString& name, const double value, const QSqlDatabase&
 }
 
 /* statics */
-bool appConfig::testmode = false;
+bool appconfig::testmode = false;
 
 /* static methods */
 /* static */
-void appConfig::setOutDir(const QString& od)
+void appconfig::setOutDir(const QString& od)
 {   LOG_CALL_W(od);
     setUserData(keyOutdir, od);
 }
 /* static */
-QString appConfig::Outdir()
+QString appconfig::Outdir()
 {
     QString od;
     QString defaultDir {QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/DKV2")};
     return getUserData(keyOutdir, defaultDir);
 }
 /* static */ /* for testing puropose */
-void appConfig::delOutDir()
+void appconfig::delOutDir()
 {
     qInfo() << "deleting outdir";
     QSettings set;
@@ -106,18 +106,18 @@ void appConfig::delOutDir()
 }
 
 /* static */
-void appConfig::setLastDb(const QString& filename)
+void appconfig::setLastDb(const QString& filename)
 {   LOG_CALL_W(filename);
     setUserData(keyLastDb, filename);
 }
 /* static */
-bool appConfig::hasLastDb()
+bool appconfig::hasLastDb()
 {
     QSettings config;
     return config.contains(keyLastDb);
 }
 /* static */
-QString appConfig::LastDb()
+QString appconfig::LastDb()
 {
     static QString defaultDb = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/Dkv2.dkdb");
     QString ldb = getUserData(keyLastDb, defaultDb);
@@ -125,13 +125,13 @@ QString appConfig::LastDb()
     return ldb;
 }
 /* static */ /* for testing puropose */
-void appConfig::delLastDb()
+void appconfig::delLastDb()
 {   LOG_CALL;
     deleteUserData(keyLastDb);
 }
 
-QString appConfig::keynameZoom {qsl("Zoom")};
-double appConfig::Zoom()
+QString appconfig::keynameZoom {qsl("Zoom")};
+double appconfig::Zoom()
 {
     QString sZoom =getUserData(keynameZoom, qsl("1.2"));
     double dZoom =sZoom.toDouble();
@@ -142,7 +142,7 @@ double appConfig::Zoom()
         return 1.1;
     }
 }
-void appConfig::setZoom(double d)
+void appconfig::setZoom(double d)
 {
     if( d >= 0.5 and d < 2)
         setUserData(keynameZoom, QString::number(d));
@@ -151,11 +151,11 @@ void appConfig::setZoom(double d)
 namespace {
 static QMap<QString, QVariant> runtimeData; // clazy:exclude=non-pod-global-static
 }
-void appConfig::setRuntimeData( const QString& name, const QVariant& value)
+void appconfig::setRuntimeData( const QString& name, const QVariant& value)
 {
     runtimeData[name] =value;
 }
-QVariant appConfig::getRuntimeData( const QString& name)
+QVariant appconfig::getRuntimeData( const QString& name)
 {
     return runtimeData.value(name);
 }
@@ -180,7 +180,7 @@ QVariantMap getMetaTableAsMap(const QSqlDatabase &db)
 
 /* private */
 /* static */
-void appConfig::setUserData(const QString& name, const QString& value)
+void appconfig::setUserData(const QString& name, const QString& value)
 {
     QSettings config;
     qInfo() << "setUserData " << name << " : " << value;
@@ -188,14 +188,14 @@ void appConfig::setUserData(const QString& name, const QString& value)
     config.sync();
 }
 /* static */
-QString appConfig::getUserData( const QString& name, const QString& defaultvalue)
+QString appconfig::getUserData( const QString& name, const QString& defaultvalue)
 {
     QSettings config;
     qInfo() << "getUserData " << name << "; def.Value: " << defaultvalue;
     return config.value(name, defaultvalue).toString();
 }
 /* static */
-void appConfig::deleteUserData(const QString& name)
+void appconfig::deleteUserData(const QString& name)
 {   LOG_CALL_W(name);
     QSettings config;
     config.remove(name);

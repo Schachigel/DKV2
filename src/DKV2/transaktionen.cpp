@@ -503,10 +503,10 @@ void annualSettlement() {
 namespace {
 void createInitialLetterTemplates() {
     LOG_CALL;
-    QDir outDir(appConfig::Outdir());
+    QDir outDir(appconfig::Outdir());
     outDir.mkdir(qsl("vorlagen"));
     outDir.mkdir(qsl("html"));
-    const QString vorlagenVerzeichnis = appConfig::Outdir() + qsl("/vorlagen/");
+    const QString vorlagenVerzeichnis = appconfig::Outdir() + qsl("/vorlagen/");
     extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("brieflogo.png"));
     extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.css"));
     extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.html"));
@@ -528,7 +528,7 @@ void createInitialLetterTemplates() {
                                     qsl("endabr-Zinsnachw.html"));
     extractTemplateFileFromResource(vorlagenVerzeichnis,
                                     qsl("endabrechnung.csv"));
-    extractTemplateFileFromResource(appConfig::Outdir() + qsl("/html/"),
+    extractTemplateFileFromResource(appconfig::Outdir() + qsl("/html/"),
                                     qsl("zinsbrief.css"));
 }
 
@@ -614,7 +614,7 @@ void annualSettlementLetters() {
     printData[qsl("Zinsdatum")] =
             QDate(yearOfSettlement, 12, 31).toString(qsl("dd.MM.yyyy"));
     printData[qsl("gmbhLogo")] =
-            QVariant(appConfig::Outdir() + qsl("/vorlagen/brieflogo.png"));
+            QVariant(appconfig::Outdir() + qsl("/vorlagen/brieflogo.png"));
     printData[qsl("meta")] = getMetaTableAsMap();
 
     /* storage for data of all Kreditoren */
@@ -743,7 +743,7 @@ void annualSettlementLetters() {
                 printData);
 
     bc.finish();
-    showInExplorer(appConfig::Outdir(), showFolder);
+    showInExplorer(appconfig::Outdir(), showFolder);
     qInfo() << "Alles OK";
 }
 
@@ -833,7 +833,7 @@ void finalizeContractLetter(contract *c) {
 
     QVariantMap printData = {};
     printData[qsl("gmbhLogo")] =
-            QVariant(appConfig::Outdir() + qsl("/vorlagen/brieflogo.png"));
+            QVariant(appconfig::Outdir() + qsl("/vorlagen/brieflogo.png"));
     printData[qsl("meta")] = getMetaTableAsMap();
 
     creditor credRecord(c->creditorId());
@@ -861,7 +861,7 @@ void finalizeContractLetter(contract *c) {
     writeRenderedTemplate(qsl("Endabrechnung.csv"),
                           qsl("Endabrechnung-") + filenamepattern + qsl(".csv"),
                           printData);
-    showInExplorer(appConfig::Outdir(), showFolder);
+    showInExplorer(appconfig::Outdir(), showFolder);
     qInfo() << "Vertragsabschlussdokument erfolgreich angelegt";
 }
 
