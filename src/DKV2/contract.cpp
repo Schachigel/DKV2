@@ -662,12 +662,12 @@ QString contract::toString(const QString &title) const
     QTextStream stream(&ret);
     stream << title << qsl("\n");
     if( id() <=0)
-        stream << qsl("[contract was not saved or loaded from DB]") << qsl("\n");
+        stream << qsl("[contract was not saved or loaded from DB]\n");
     else
-        stream << qsl("[id, cred.Id:") << id_aS() << qsl(", ") << i2s(creditorId()) << qsl("]") << qsl("\n");
+        stream << qsl("[id, cred.Id:") << id_aS() << qsl(", ") << i2s(creditorId()) << qsl("]\n");
     if( not initialPaymentReceived()) {
-        stream << "Wert (gepl.):     " << plannedInvest() << qsl("\n");
-        stream << "Zinssatz (gepl.): " << interestRate() << qsl("\n");
+        stream << qsl("Wert (gepl.):     %1\n").arg(plannedInvest()) << qsl("\n");
+        stream << qsl("Zinssatz (gepl.): %1\n").arg(interestRate());
         return ret;
     }
     stream << "Wert:     " << value() << qsl("\n");

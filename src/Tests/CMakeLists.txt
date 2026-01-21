@@ -78,6 +78,11 @@ function(_dkv2_write_single_main out_path class_name main_header)
 int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
+
+    // Required for tests that indirectly use QSettings
+    QCoreApplication::setOrganizationName(QStringLiteral(\"HoMsoft\"));
+    QCoreApplication::setApplicationName(QStringLiteral(\"DKV2_All_Tests\"));
+
     ${class_name} tc;
     return QTest::qExec(&tc, argc, argv);
 }
@@ -86,32 +91,180 @@ endfunction()
 
 function(_dkv2_write_runall_main out_path class_names main_headers)
   set(_inc "")
-  set(_exec "")
+  set(_run_table "")
 
   foreach(_h IN LISTS main_headers)
     string(APPEND _inc "#include \"${_h}\"\n")
   endforeach()
 
   foreach(_c IN LISTS class_names)
-    string(APPEND _exec "    { ${_c} tc; rc |= QTest::qExec(&tc, argc, argv); }\n")
+    # Each entry: { "ClassName", &runTest<ClassName> }
+    string(APPEND _run_table "        { \"${_c}\", &runTest<${_c}> },\n")
   endforeach()
 
   file(WRITE "${out_path}" "
 #include <QCoreApplication>
 #include <QtTest>
 
+#include <vector>
+#include <algorithm>
+#include <random>
+#include <cstdint>
+#include <cstring>
+#include <cstdlib>
+
+#include <QStringBuilder>
+
+#include \"testhelper.h\"   // dbgTimer (+ addLab)
+
 ${_inc}
+
+using TestFn = void(*)(int&, int, char**);
+
+template<typename T>
+static void runTest(int& rc, int argc, char** argv)
+{
+    T tc;
+    rc |= QTest::qExec(&tc, argc, argv);
+}
+
+struct TestEntry
+{
+    const char* name;
+    TestFn fn;
+};
+
+static int parseIntArg(int argc, char** argv, const char* key, int defaultValue)
+{
+    for (int i = 1; i < argc - 1; ++i) {
+        if (std::strcmp(argv[i], key) == 0) {
+            const int v = std::atoi(argv[i + 1]);
+            return (v >= 1) ? v : 1;
+        }
+    }
+    return defaultValue;
+}
+
+static std::uint32_t parseSeedArg(int argc, char** argv, const char* key, std::uint32_t defaultValue, bool& hasSeed)
+{
+    for (int i = 1; i < argc - 1; ++i) {
+        if (std::strcmp(argv[i], key) == 0) {
+            hasSeed = true;
+            return static_cast<std::uint32_t>(std::strtoul(argv[i + 1], nullptr, 10));
+        }
+    }
+    hasSeed = false;
+    return defaultValue;
+}
 
 int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
+    QCoreApplication::setOrganizationName(QStringLiteral(\"HoMsoft\"));
+    QCoreApplication::setApplicationName(QStringLiteral(\"DKV2_All_Tests\"));
+
+    std::vector<TestEntry> tests = {
+${_run_table}
+    };
+
+    const int repetitions = parseIntArg(argc, argv, \"--repeat\", 5);
+
+    bool hasSeed = false;
+    const std::uint32_t seedArg = parseSeedArg(argc, argv, \"--seed\", 0u, hasSeed);
+    const std::uint32_t effectiveSeed = hasSeed ? seedArg : std::random_device{}();
+
+    qInfo().noquote()
+        << (QLatin1String(\"test_all: repetitions = \") % QString::number(repetitions));
+
+    qInfo().noquote()
+        << (QLatin1String(\"test_all: RNG seed = \")
+            % QString::number(effectiveSeed)
+            % QLatin1String(hasSeed ? \" (fixed)\" : \" (random)\")); // ok: const char* literal
+
+    std::mt19937 rng{ effectiveSeed };
+
     int rc = 0;
-    dbgTimer time_all_tests(\"All tests runtime\");
-${_exec}
+
+    dbgTimer totalTimer(QStringLiteral(\"test_all: total\"), dbgTimer::initialState::stopped);
+    totalTimer.start(QStringLiteral(\"test_all: total duration\"));
+
+    for (int i = 1; i <= repetitions; ++i) {
+        dbgTimer roundTimer(QString(), dbgTimer::initialState::stopped);
+        roundTimer.start(
+            QLatin1String(\"test_all: round \")
+            % QString::number(i)
+            % QLatin1String(\" / \")
+            % QString::number(repetitions)
+        );
+
+        std::shuffle(tests.begin(), tests.end(), rng);
+
+        for (const auto& entry : tests) {
+            dbgTimer singleTimer(QString(), dbgTimer::initialState::stopped);
+            singleTimer.start(QLatin1String(\"test_all: \") % QLatin1String(entry.name));
+
+            entry.fn(rc, argc, argv);
+
+            singleTimer.end();
+
+            // Add single-test as a Lab to the round (indented for readability)
+            roundTimer.addLab(
+                singleTimer.final.timeInMs,
+                QLatin1String(\"  \")
+                % QLatin1String(entry.name)
+                % QLatin1String(\": \")
+                % QString::number(singleTimer.final.timeInMs)
+                % QLatin1String(\" ms\")
+            );
+
+            if (rc != 0) {
+                // Fail-fast: finalize + dump the most relevant hierarchy
+                roundTimer.end();
+                roundTimer.dump();
+
+                totalTimer.addLab(
+                    roundTimer.final.timeInMs,
+                    QLatin1String(\"round \")
+                    % QString::number(i)
+                    % QLatin1String(\" / \")
+                    % QString::number(repetitions)
+                    % QLatin1String(\": \")
+                    % QString::number(roundTimer.final.timeInMs)
+                    % QLatin1String(\" ms\")
+                );
+
+                totalTimer.end();
+                totalTimer.dump();
+                return rc;
+            }
+        }
+
+        roundTimer.end();
+
+        // Add round summary as a Lab to total
+        totalTimer.addLab(
+            roundTimer.final.timeInMs,
+            QLatin1String(\"round \")
+            % QString::number(i)
+            % QLatin1String(\" / \")
+            % QString::number(repetitions)
+            % QLatin1String(\": \")
+            % QString::number(roundTimer.final.timeInMs)
+            % QLatin1String(\" ms\")
+        );
+
+        // If you want per-round details even on success, uncomment:
+        // roundTimer.dump();
+    }
+
+    totalTimer.end();
+    totalTimer.dump();
+
     return rc;
 }
 ")
 endfunction()
+
 
 function(add_dkv2_test spec_row)
   _dkv2_parse_test_spec("${spec_row}" _target _class _main_header _files)

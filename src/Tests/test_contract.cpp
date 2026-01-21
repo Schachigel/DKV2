@@ -155,7 +155,6 @@ void test_contract::test_randomContract()
 void test_contract::test_randomContracts()
 {
     int count = 50;
-//    dbgTimer t(i2s(count) + " contracts");
     saveRandomCreditors(count/3);
     saveRandomContracts(count);
     QCOMPARE(rowCount("Vertraege"), count);
@@ -577,7 +576,6 @@ void test_contract::test_activate_interest_on_same_date_will_fail()
 
 void test_contract::test_getValue_byDate()
 {
-//    dbgTimer t("8x contract::getValue()");
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
     cont.setInterestRate(1.0);
@@ -602,7 +600,6 @@ void test_contract::test_getValue_byDate()
 
 void test_contract::test_contract_cv_wInterestPayout()
 {
-//    dbgTimer t(QStringLiteral("8x contract::getValue()"));
     creditor c(saveRandomCreditor());
     contract cont;
     cont.initRandom(c.id());
@@ -657,7 +654,6 @@ void test_contract::test_contract_cv_wInterestPayout()
 
 void test_contract::test_contract_cv_reInvesting()
 {
-//    dbgTimer t(QStringLiteral("8x contract::getValue()"));
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
     cont.setInterestRate(1.0);

@@ -40,8 +40,9 @@ void logger(QtMsgType type, const QMessageLogContext& c, const QString &msg)
             OutputDebugString(reinterpret_cast<const wchar_t *>(out.utf16()));
 #endif
         QTextStream ts(outFile_p);
+        ts << out; out =QString();
+        while(lfCount-- >= 0){out += qsl("\n");}
         ts << out;
-        while(lfCount-->=0) ts << qsl("\n");
 
         if (type == QtFatalMsg)
             abort();

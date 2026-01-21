@@ -8,6 +8,7 @@
 #include <QVariant>
 
 #include <QString>
+
 #include <QStringList>
 #include <QStringLiteral>
 #include <QStringBuilder>
