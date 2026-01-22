@@ -8,8 +8,8 @@ class test_dkdbcopy : public QObject{
     Q_OBJECT
 
 private:
-    const QString dbfn1{qsl("../data/testdb1.sqlite")};
-    const QString dbfn2{qsl("../data/testdb2.sqlite")};
+    const QString dbfn1{qsl("testdb1.sqlite")};
+    const QString dbfn2{qsl("testdb2.sqlite")};
     const QString tempFileName{testDbFilename +qsl(".preconversion.sqlite")};
 signals:
 private slots:

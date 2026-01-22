@@ -10,6 +10,11 @@
 
 void test_appconfig::init()
 {
+    m_tmp = std::make_unique<TestTempDir>(this);
+    QVERIFY(m_tmp->isValid());
+    m_cwd = std::make_unique<ScopedCurrentDir>(m_tmp->path());
+    QVERIFY(m_cwd->ok());
+
     appconfig::setLastDb("c:/temp/data.dkdb");
     QVERIFY( appconfig::LastDb().size());
     appconfig::setOutDir("C:/temp/output");
@@ -23,6 +28,10 @@ void test_appconfig::cleanup()
     appconfig::delOutDir();
     QCOMPARE(appconfig::Outdir(), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/DKV2"));
     cleanupTestDb_InMemory();
+
+    m_cwd.reset();  // leave directory first
+    m_tmp.reset();  // then delete directory
+
 }
 
 void test_appconfig::test_initials()
@@ -62,7 +71,7 @@ void test_appconfig::test_dbConfig_Db()
     QCOMPARE(dbConfig::readValue(GMBH_ADDRESS1), expectedString);
 
     // now lets start a second db
-    QString newDbFilename{qsl("../data/new.dkdb")};
+    QString newDbFilename{qsl("new.dkdb")};
     if( QFile::exists(newDbFilename)) QFile::remove(newDbFilename);
     QVERIFY( not QFile::exists(newDbFilename));
     {

@@ -2,6 +2,7 @@
 #define TESTHELPER_H
 
 #include "../DKV2/helper_core.h"
+#include <QTest>
 
 struct timerData {
     qint64 timeInMs = 0;
@@ -120,8 +121,65 @@ private:
     bool dumped {false};
 };
 
-inline const QString testDbFilename {qsl("./data/testdb.sqlite")};
-inline const QString testTemplateDb {qsl("./data/template.sqlite")};
+class ScopedCurrentDir
+{
+public:
+    explicit ScopedCurrentDir(const QString& newCwd)
+        : m_old(QDir::currentPath())
+    {
+        m_ok = QDir::setCurrent(newCwd);
+    }
+
+    ScopedCurrentDir(const ScopedCurrentDir&) = delete;
+    ScopedCurrentDir& operator=(const ScopedCurrentDir&) = delete;
+
+    ~ScopedCurrentDir()
+    {
+        // best-effort restore
+        QDir::setCurrent(m_old);
+    }
+
+    bool ok() const { return m_ok; }
+    QString oldPath() const { return m_old; }
+
+private:
+    QString m_old;
+    bool m_ok = false;
+};
+class TestTempDir
+{
+public:
+    explicit TestTempDir(const QObject* testObject)
+    {
+        const QString base =
+            QDir(QDir::currentPath()).filePath("tmp_tests");
+
+        QDir().mkpath(base);
+
+        const char* fn = QTest::currentTestFunction();
+        const QString name = fn ? QString::fromLatin1(fn) : "testcase";
+
+        const QString templ =
+            QDir(base).filePath(name + "-XXXXXX");
+
+        m_dir = QTemporaryDir(templ);
+    }
+
+    ~TestTempDir()
+    {
+        if (QTest::currentTestFailed())
+            m_dir.setAutoRemove(false);
+    }
+
+    bool isValid() const { return m_dir.isValid(); }
+    QString path() const { return m_dir.path(); }
+
+private:
+    QTemporaryDir m_dir;
+};
+
+inline const QString testDbFilename {qsl("testdb.sqlite")};
+inline const QString testTemplateDb {qsl("template.sqlite")};
 
 void getRidOfFile(QString fn);
 void initTestDkDb_InMemory();

@@ -24,7 +24,6 @@ void initTestDkDb_InMemory()
 void initTestDkDb()
 {   LOG_CALL;
     init_DKDBStruct();
-    QDir().mkdir(QString("./data"));
     if (QFile::exists(testDbFilename))
         QFile::remove(testDbFilename);
     if (QFile::exists(testDbFilename))
@@ -137,6 +136,7 @@ bool dbsHaveSameTables(const QString& fn1, const QString& fn2)
     QSqlDatabase db1 = QSqlDatabase::addDatabase(dbTypeName, closer1.conName);
     db1.setDatabaseName(fn1);
     bool open =db1.open();
+    if( not open) qDebug() << db1.lastError();
     Q_ASSERT(open);
     QSqlDatabase db2 = QSqlDatabase::addDatabase(dbTypeName, closer2.conName);
     db2.setDatabaseName(fn2);
@@ -233,11 +233,10 @@ enum DB_COMPARE_MODE
 
 void dbgDumpDatabase(const QString& testname)
 {   LOG_CALL;
-    QString filename { qsl("./data/%1.db").arg(testname).replace (':', '#')};
+    QString filename { qsl("%1.db").arg(testname).replace (':', '#')};
     filename.replace('<', '#');
     filename.replace('>', '#');
 
-    QDir().mkdir(qsl("./data"));
     QFile filePath{filename};
     getRidOfFile(filePath.fileName());
 

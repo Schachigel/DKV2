@@ -52,6 +52,7 @@ void test_dkdbcopy::test_dbsHaveSameTables()
     dbtable t1("t1");
     t1.append(dbfield("t1f1"));
     dbs1.appendTable(t1);
+    qDebug() << QDir::currentPath();
     QVERIFY(dbs1.createDb(dbfn1));
     QVERIFY(dbs1.createDb(dbfn2));
 
@@ -100,7 +101,7 @@ void test_dkdbcopy::test_dbsHaveSameTables_more_fields()
     dbs1.createDb(dbfn1);
 
     dbstructure dbs2;
-    t1.append(dbfield("t1f2"));
+    t1.append(dbfield("t1f2")); // same table gets additional field
     dbs2.appendTable(t1);
     dbs2.createDb(dbfn2);
 
