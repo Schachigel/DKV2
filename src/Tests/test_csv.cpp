@@ -42,7 +42,6 @@ void test_csv::test_toString_noHeader_wTrimming()
             csv.appendValueToNextRecord(field);
         csv.startNextRecord();
     }
-    //    qDebug() << comment << "\n" << headers << "\n" << records;
     QCOMPARE(csv.toString(), expectedFileContent);
 }
 
@@ -84,7 +83,6 @@ void test_csv::test_toString_noHeader_NO_Trimming()
             csv.appendValueToNextRecord(field);
         csv.startNextRecord();
     }
-    //    qDebug() << comment << "\n" << headers << "\n" << records;
     QCOMPARE(csv.toString(), expectedFileContent);
 }
 
@@ -123,7 +121,6 @@ void test_csv::test_toString_wHeader_wTrimming_data()
     for(const auto& tdata : data) {
         QTest::newRow(tdata.c.toLocal8Bit()) << tdata.h << tdata.d << tdata.e;
     }
-
 }
 void test_csv::test_toString_wHeader_wTrimming()
 {
@@ -138,6 +135,6 @@ void test_csv::test_toString_wHeader_wTrimming()
     for( const auto& row : records)
         for( const auto& field : row)
             csv.appendValueToNextRecord(field);
-//    qDebug() << comment << "\n" << headers << "\n" << records;
     QCOMPARE(csv.toString(), expectedFileContent);
 }
+// todo: have one or two tests with writing and reading of data

@@ -15,14 +15,14 @@ void getRidOfFile(QString filename)
 }
 
 void initTestDkDb_InMemory()
-{   LOG_CALL;
+{
     reInit_DKDBStruct();
     openDefaultDbConnection_InMemory();
     QVERIFY(dkdbstructur.createDb());
 }
 
 void initTestDkDb()
-{   LOG_CALL;
+{
     init_DKDBStruct();
     if (QFile::exists(testDbFilename))
         QFile::remove(testDbFilename);
@@ -34,7 +34,7 @@ void initTestDkDb()
 }
 
 void createTestDkDb_wData()
-{   LOG_CALL;
+{
     initTestDkDb();
     QVERIFY(fill_DkDbDefaultContent());
 }

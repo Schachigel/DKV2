@@ -12,16 +12,24 @@
 
 void test_tableDataInserter::initTestCase()
 {
+    m_tmp = std::make_unique<TestTempDir>(this);
+    QVERIFY(m_tmp->isValid());
+    m_cwd = std::make_unique<ScopedCurrentDir>(m_tmp->path());
+    QVERIFY(m_cwd->ok());
+
     init_DKDBStruct();
 }
 
 void test_tableDataInserter::init()
-{   LOG_CALL;
+{
     initTestDkDb();
+    m_cwd.reset();  // leave directory first
+    m_tmp.reset();  // then delete directory
+
 }
 
 void test_tableDataInserter::cleanup()
-{   LOG_CALL;
+{
     cleanupTestDkDb();
 
 }

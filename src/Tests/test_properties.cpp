@@ -1,6 +1,5 @@
 #include "test_properties.h"
 
-#include "../DKV2/helper_core.h"
 #include "../DKV2/appconfig.h"
 
 #include "testhelper.h"
@@ -8,12 +7,12 @@
 #include <QtTest/QTest>
 
 void test_properties::init()
-{    LOG_CALL;
+{
      initTestDkDb_InMemory ();
 }
 
 void test_properties::cleanup()
-{   LOG_CALL;
+{
     cleanupTestDb_InMemory ();
 }
 

@@ -9,7 +9,6 @@
 
 #include <QtTest/QTest>
 
-
 void test_contract::init()
 {   LOG_CALL;
     initTestDkDb_InMemory ();
@@ -40,7 +39,7 @@ void test_contract::test_set_get_interest()
 }
 
 void test_contract::test_activateContract()
-{   LOG_CALL;
+{
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
 
@@ -730,5 +729,4 @@ void test_contract::test_readExContract()
 {
     creditor c(saveRandomCreditor ());
     contract cont(saveRandomContract(c.id ()));
-
 }

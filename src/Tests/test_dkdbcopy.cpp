@@ -6,23 +6,27 @@
 
 #include "../DKV2/helperfin.h"
 #include "../DKV2/helpersql.h"
+#include "testhelper.h"
 
 #include <QtTest/QTest>
 
 void test_dkdbcopy::init()
 {
-    cleanup();
+    m_tmp = std::make_unique<TestTempDir>(this);
+    QVERIFY(m_tmp->isValid());
+    m_cwd = std::make_unique<ScopedCurrentDir>(m_tmp->path());
+    QVERIFY(m_cwd->ok());
 }
 
-void test_dkdbcopy::cleanup() {
-    QFile::remove(dbfn1);
-    QVERIFY( not QFile::exists(dbfn1));
-    QFile::remove(dbfn2);
-    QVERIFY( not QFile::exists(dbfn2));
-    QFile::remove(testDbFilename);
-    QVERIFY( not QFile::exists(testDbFilename));
-    QFile::remove(tempFileName);
-    QVERIFY( not QFile::exists(tempFileName));
+void test_dkdbcopy::cleanup()
+{
+    m_cwd.reset();  // leave directory first
+    m_tmp.reset();  // then delete directory
+}
+
+void test_dkdbcopy::test_init_and_cleanup()
+{
+
 }
 
 void test_dkdbcopy::test_moveToPreconversionBackup()

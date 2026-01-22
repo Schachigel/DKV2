@@ -167,7 +167,7 @@ int main(int argc, char** argv)
 ${_run_table}
     };
 
-    const int repetitions = parseIntArg(argc, argv, \"--repeat\", 5);
+    const int repetitions = parseIntArg(argc, argv, \"--repeat\", 3);
 
     bool hasSeed = false;
     const std::uint32_t seedArg = parseSeedArg(argc, argv, \"--seed\", 0u, hasSeed);

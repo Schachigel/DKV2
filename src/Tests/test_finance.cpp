@@ -165,6 +165,7 @@ void test_finance::test_TageBisJahresende_data()
         }
     }
 }
+
 void test_finance::test_TageBisJahresende()
 {
     QFETCH(QDate, date);

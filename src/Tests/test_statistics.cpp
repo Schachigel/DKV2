@@ -50,12 +50,12 @@ stats getStatsAllContracts(QDate date)
 }
 
 void test_statistics::init()
-{   LOG_CALL;
+{
     initTestDkDb_InMemory();
 }
 
 void test_statistics::cleanup()
-{   LOG_CALL;
+{
     cleanupTestDb_InMemory();
 }
 

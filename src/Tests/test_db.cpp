@@ -8,8 +8,6 @@
 
 #include "testhelper.h"
 
-// add necessary includes here
-
 void test_db::initTestCase()
 {
     init_DKDBStruct();
@@ -26,7 +24,7 @@ void test_db::cleanup()
 }
 
 void test_db::test_init_and_cleanup()
-{
+{ // do nothing there
 }
 
 void test_db::test_createSimpleTable()
@@ -73,7 +71,6 @@ void test_db::test_SimpleTableAddData()
 
 void test_db::test_createSimpleTable_wRefInt()
 {
-    LOG_CALL;
     dbstructure s;
     dbtable parent("p");
     dbfield id("id", QMetaType::Int);
@@ -100,7 +97,6 @@ void test_db::test_createSimpleTable_wRefInt()
 
 void test_db::test_createSimpleTable_wRefInt2()
 {
-    LOG_CALL;
     dbstructure s = dbstructure()
                     .appendTable(dbtable("p")
                     .append(dbfield("id", QMetaType::Int).setAutoInc ()));
@@ -120,7 +116,6 @@ void test_db::test_createSimpleTable_wRefInt2()
 
 void test_db::test_addRecords_wDep()
 {
-    LOG_CALL;
     dbstructure s = dbstructure()
                         .appendTable(
                             dbtable("p")

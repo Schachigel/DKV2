@@ -31,7 +31,6 @@ void test_appconfig::cleanup()
 
     m_cwd.reset();  // leave directory first
     m_tmp.reset();  // then delete directory
-
 }
 
 void test_appconfig::test_initials()
