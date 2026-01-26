@@ -23,7 +23,7 @@ void initTestDkDb_InMemory()
 
 void initTestDkDb()
 {
-    init_DKDBStruct();
+    reInit_DKDBStruct();
     if (QFile::exists(testDbFilename))
         QFile::remove(testDbFilename);
     if (QFile::exists(testDbFilename))

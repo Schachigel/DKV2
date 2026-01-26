@@ -1,5 +1,4 @@
 
-#include "../DKV2/helper.h"
 #include "../DKV2/helperfin.h"
 #include "../DKV2/dbstructure.h"
 #include "../DKV2/helpersql.h"
@@ -25,7 +24,7 @@ void test_sqlhelper::test_init_cleanup()
 }
 
 void test_sqlhelper::test_rowCount()
-{   LOG_CALL;
+{
     QString table {qsl("tablename")};
     QString field {qsl("fieldname")};
     qInfo() << "expect error";

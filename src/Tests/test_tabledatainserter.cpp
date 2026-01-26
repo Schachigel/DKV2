@@ -17,7 +17,7 @@ void test_tableDataInserter::initTestCase()
     m_cwd = std::make_unique<ScopedCurrentDir>(m_tmp->path());
     QVERIFY(m_cwd->ok());
 
-    init_DKDBStruct();
+    reInit_DKDBStruct();
 }
 
 void test_tableDataInserter::init()

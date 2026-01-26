@@ -10,12 +10,12 @@
 #include <QtTest/QTest>
 
 void test_contract::init()
-{   LOG_CALL;
+{
     initTestDkDb_InMemory ();
 }
 
 void test_contract::cleanup()
-{   LOG_CALL;
+{
     cleanupTestDb_InMemory ();
 }
 
