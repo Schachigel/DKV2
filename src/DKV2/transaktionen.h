@@ -16,7 +16,7 @@ void changeInitialPaymentDate(contract* v);
 void receiveInitialBooking(contract* v);
 void activateInterest(contract* v);
 
-void changeContractValue(contract* v);
+void doDeposit_or_payout(contract* v);
 void changeBookingValue(qlonglong bookingId);
 
 void undoLastBooking(contract* v);

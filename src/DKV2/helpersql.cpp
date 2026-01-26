@@ -385,8 +385,10 @@ QSqlRecord executeSingleRecordSql(const QString& sql, const QSqlDatabase& db)
     // NOT for "normal" SELECTs on dkv2 tables (normal = no manipulation like SUM, concatination, formatiing etc.
     QVector<QSqlRecord> records;
     if( executeSql(sql, records, db)) {
-        if( records.isEmpty() or records.size () > 1)
-            return QSqlRecord(); // error handling in called function
+        if( records.isEmpty() or records.size () > 1) {
+            qInfo() << qsl("ExecuteSingleRecordSql: nbr of records mismatch: %1/1").arg(records.size());
+            return QSqlRecord();
+        }
         else{
             RETURN_OK( records[0], QString(__FUNCTION__), qsl("returned one Record: %1").arg(records[0].value (0).toString ()));
         }

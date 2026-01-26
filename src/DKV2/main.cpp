@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     qInfo().noquote() << "DKV2 latest commit" << GIT_COMMIT;
     qInfo() << "************************************************";
 
-    init_DKDBStruct();
+    reInit_DKDBStruct();
 
 #ifndef QT_DEBUG
     QSplashScreen* splash = doSplash(); // do only AFTER having an app. object

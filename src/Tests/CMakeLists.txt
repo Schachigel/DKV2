@@ -29,6 +29,7 @@ set(DKV2_TEST_PCH
 #   target_name|class_name|main_header|file4|file5|...
 set(DKV2_TEST_SPECS
   "test_appconfig|test_appconfig|test_appconfig.h|test_appconfig.cpp"
+  "test_annualSettlement|test_annualSettlement|test_annualSettlement.h|test_annualSettlement.cpp"
   "test_booking|test_booking|test_booking.h|test_booking.cpp"
   "test_contract|test_contract|test_contract.h|test_contract.cpp"
   "test_creditor|test_creditor|test_creditor.h|test_creditor.cpp"
@@ -39,10 +40,11 @@ set(DKV2_TEST_SPECS
   "test_dkdbhelper|test_dkdbhelper|test_dkdbhelper.h|test_dkdbhelper.cpp"
   "test_finance|test_finance|test_finance.h|financaltimespan.h|test_finance.cpp|financaltimespan.cpp"
   "test_properties|test_properties|test_properties.h|test_properties.cpp"
-#  "test_sqlhelper|test_sqlhelper|test_sqlhelper.h|test_sqlhelper.cpp"
+  "test_sqlhelper|test_sqlhelper|test_sqlhelper.h|test_sqlhelper.cpp"
   "test_statistics|test_statistics|test_statistics.h|test_statistics.cpp"
   "test_tabledatainserter|test_tableDataInserter|test_tabledatainserter.h|test_tabledatainserter.cpp"
   "test_views|test_views|test_views.h|test_views.cpp"
+  "test_tolearn|test_tolearn|test_tolearn.h|test_tolearn.cpp"
   # add more rows here ...
 )
 #
@@ -166,7 +168,7 @@ int main(int argc, char** argv)
     std::vector<TestEntry> tests = {
 ${_run_table}
     };
-
+    // at 2026-01 about 2,3s per run on powerfull workstation
     const int repetitions = parseIntArg(argc, argv, \"--repeat\", 3);
 
     bool hasSeed = false;

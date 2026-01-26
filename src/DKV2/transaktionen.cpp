@@ -158,12 +158,9 @@ void changeContractTermination(contract *pc) {
 }
 
 void changeContractDate(contract *v) {
-    QDate actD = v->initialPaymentDate();
-    if (not actD.isValid())
-        actD =
-                QDate(EndOfTheFuckingWorld); // any contract conclusion date should be
-    // valid, if initial booking was not made
-    QDate oldCD = v->conclusionDate();
+    QDate oldCD {v->conclusionDate()};
+    QDate actD {v->initialPaymentDate()};
+
     dlgAskDate dlg;
     dlg.setDate(oldCD);
     dlg.setHeader(qsl("Vertragsdatum ändern"));
@@ -171,6 +168,9 @@ void changeContractDate(contract *v) {
                    "ersten Zahlungseingang %1 liegen")
                .arg(actD.toString("dd.MM.yyyy")));
 
+    if (not actD.isValid())
+        actD= QDate(EndOfTheFuckingWorld); // any contract conclusion date should be
+    // valid, if initial booking was not made
     while (QDialog::Accepted == dlg.exec()) {
         if (dlg.date() == oldCD) {
             qInfo() << __FUNCTION__ << " contract date was not changed";
@@ -230,15 +230,16 @@ void changeContractLabel(contract *v) {
     }
     qInfo() << __FUNCTION__ << " Dialog was canceld";
 }
+
 void changeInitialPaymentDate(contract *v) {
-    QDate currentIPDate{v->initialPaymentDate()};
-    if (not currentIPDate.isValid()) {
+    if (not v->initialPaymentReceived()) {
         qCritical()
-                << "Contract has no initial payment -> one should not come here";
+            << "Contract has no initial payment -> ui should prevent us from comeing here";
         return;
     }
 
     QDate conclusionDate{v->conclusionDate()}; // b-date has to be > conclusion
+    QDate currentIPDate{v->initialPaymentDate()};
     dlgAskDate dlg;
     dlg.setDate(currentIPDate);
     dlg.setHeader(qsl("Datum des Geldeingangs ändern"));
@@ -275,6 +276,7 @@ void changeInitialPaymentDate(contract *v) {
     }
     qInfo() << __FUNCTION__ << " dialog was canceled";
 }
+
 void receiveInitialBooking(contract *v) {
     LOG_CALL;
     creditor cred(v->creditorId());
@@ -300,6 +302,7 @@ void receiveInitialBooking(contract *v) {
         Q_UNREACHABLE();    }
     return;
 }
+
 void activateInterest(contract *v) {
     LOG_CALL;
     booking lastB = v->latestBooking();
@@ -324,17 +327,22 @@ void activateInterest(contract *v) {
         }
         break;
     } while (true);
-    if (not v->bookActivateInterest(dlg.date())) {
-        QString msg{qsl("Beim der Buchung ist ein Fehler eingetreten - bitte "
-                        "schaue in die LOG Datei für weitere Informationen")};
+    booking_success booking_OK {v->bookActivateInterest(dlg.date())};
+    if (not booking_OK) {
+        QString msg{qsl("Beim der Buchung ist ein Fehler eingetreten:\n %1").arg(booking_OK.error)};
         QMessageBox::warning(getMainWindow(), qsl("Buchungsfehler"), msg);
     }
 }
 
-void changeContractValue(contract *pc) {
+namespace {
+bool isLastDaysOfYear(QDate d) { return 12 == d.month()
+           && (30 == d.day() || 31 == d.day()); }
+}
+void doDeposit_or_payout(contract *pc) {
     LOG_CALL;
     if (not pc->initialPaymentReceived()) {
-        qCritical() << "tried to changeContractValue of an inactive contract";
+        qCritical() << "tried to changeContractValue of an inactive contract"
+            "; should be prevented by UI";
         Q_UNREACHABLE();
         return;
     }
@@ -344,7 +352,13 @@ void changeContractValue(contract *pc) {
     wiz.creditorName = cre.firstname() + qsl(" ") + cre.lastname();
     wiz.contractLabel = pc->label();
     wiz.currentAmount = pc->value();
-    wiz.earlierstDate = pc->latestBooking().date.addDays(1);
+    wiz.earlierstDate = [&pc =*pc]() -> QDate{
+        QDate lbd =pc.latestBookingDate();
+        if( isLastDaysOfYear(lbd))
+            return QDate(lbd.year() +1, 1, 1);
+        else
+            return (lbd.addDays(1));
+    }();
     wiz.interestPayoutPossible =
             pc->iModel() == interestModel::payout && pc->interestActive();
     wiz.setField(fnDeposit_notPayment, QVariant(true));
@@ -362,6 +376,7 @@ void changeContractValue(contract *pc) {
     } else
         qInfo() << "contract change was canceld by the user";
 }
+
 void changeBookingValue(qlonglong bookingId)
 {
     changeBookingData cbd;
@@ -383,9 +398,10 @@ void changeBookingValue(qlonglong bookingId)
     }
 }
 
-
-void undoLastBooking(contract* v)
+void undoLastBooking(contract *v)
 {
+// todo: this should remove all bookings of the same date
+// todo: have a ui to select the booking, from which all "younger" bookings should be deleted
     QString sqlMsg {qsl(R"str(
 SELECT Vertraege.Kennung
  , Kreditoren.Vorname, Kreditoren.Nachname
@@ -474,8 +490,8 @@ void print_annaul_settlement_csv(int year) {
 } // namespace
 void annualSettlement() {
     LOG_CALL;
-    QDate nextDateForAnnualSettlement = dateOfnextSettlement();
-    if (not nextDateForAnnualSettlement.isValid()) {
+    QDate nextAS_dateForAnyContract = dateOfnextSettlement();
+    if (not nextAS_dateForAnyContract.isValid()) {
         QMessageBox::information(getMainWindow(), qsl("! Info !"),
                                  qsl("Eine Jahreszinsabrechnung ist derzeit nicht möglich.\n"
                                      "Es gibt keine Verträge für die eine "
@@ -483,8 +499,8 @@ void annualSettlement() {
         return;
     }
 
-    qInfo() << QString("Next AS possible for %1; lets ask the user").arg( nextDateForAnnualSettlement.year());
-    int yearOfSettlement =nextDateForAnnualSettlement.year();
+    qInfo() << QString("Next AS possible for %1; lets ask the user").arg( nextAS_dateForAnyContract.year());
+    int yearOfSettlement =nextAS_dateForAnyContract.year();
     dlgAnnualSettlement dlg(yearOfSettlement, getMainWindow());
     if (dlg.exec() == QDialog::Rejected || not dlg.confirmed())
         return;

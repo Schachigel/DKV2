@@ -44,6 +44,15 @@ inline interestModel interestModelFromInt(const int i) {
     return static_cast<interestModel>(i);
 }
 
+struct booking_success {
+    QString error;
+    explicit operator bool(){return error.isEmpty();}
+};
+const booking_success booking_result_success {{}};
+#define booking_error(x) {x}
+
+using year = int;
+
 struct contract
 {
     // field names
@@ -164,14 +173,13 @@ struct contract
     // contract activation / initial deposit
     bool bookInitialPayment(const QDate aDate, const double amount);
     bool initialPaymentReceived() const;
-    bool bookActivateInterest(const QDate d);
+    booking_success bookActivateInterest(const QDate d);
     QDate initialPaymentDate();
     bool noBookingButInitial();
 
     // other booking actions
-    QDate nextDateForAnnualSettlement();
     bool needsAnnualSettlement( const QDate d);
-    int annualSettlement(const int year);
+    year annualSettlement(const year y);
     bool deposit(const QDate d, double amount, bool payoutInterest =false);
     bool payout(const QDate d, double amount, bool payoutInterest =false);
     bool cancel(const QDate d_plannedContractEnd, const QDate dCancelation);
@@ -180,12 +188,13 @@ struct contract
     QString toString(const QString &name =QString()) const;
     QVariantMap toVariantMap(QDate fromDate = BeginingOfTime, QDate toDate = EndOfTheFuckingWorld);
     double payedInterestAtTermination();
-    double getAnnualInterest(int year, bookingType interestType = bookingType::annualInterestDeposit);
+    double getAnnualInterest(year y, bookingType interestType = bookingType::annualInterestDeposit);
     void initCancelationDate();
     // allow contract objects from deleted contracts
     bool isTerminated =false;
 private:
     bool updateSetInterestActive();
+    QDate nextDateForAnnualSettlement();
 
     // data
     TableDataInserter td;
@@ -197,12 +206,6 @@ private:
     bool archive();
     void reset() {initContractDefaults();}
 };
-
-//
-// for all contracts
-bool executeAnnualSettlement( int year);
-void writeAnnualSettlementCsv(int year);
-//
 
 // test helper
 contract saveRandomContract(const tableindex_t creditorId);

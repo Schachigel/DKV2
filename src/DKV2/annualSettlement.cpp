@@ -73,21 +73,28 @@ QDate dateOfnextSettlement()
 }
 
 // for all contracts
-bool executeAnnualSettlement( int year)
+int executeAnnualSettlement( int year)
 {
     QVector<QVariant> ids = executeSingleColumnSql(
         dkdbstructur[contract::tnContracts][contract::fnId]);
+    // todo: beschränken auf Verträge, für die eine AS gemacht werden kann durch passendes SQL
 
     // try execute annualSettlement for all contracts
-    for (const auto &id : std::as_const(ids)) {
+    for (const auto &id : std::as_const(ids))
+    {
         contract c(id.toLongLong());
         QDate startDate = c.latestBookingDate();
-        /////////////////////////////////////////////////////
-        if (0 == c.annualSettlement(year)) {
-        ////////////////////////////////////////////////////
+        if( not startDate.isValid())
+            continue; // keine Buchung, keine (erst-)Einzahlung. ToDo: unnötig, wenn vorab die passenden Verträge ausgesucht wurden
 
-        qInfo() << "Keine jährl. Zinsabrechnung für Vertrag " << c.id () << ": " << c.label ();
-        } else {   // for testing new vs. old csv creatrion
+        /////////////////////////////////////////////////////
+        if (0 == c.annualSettlement(year))
+        ////////////////////////////////////////////////////
+        {
+            qInfo() << "Keine jährl. Zinsabrechnung für Vertrag " << c.id () << ": " << c.label ();
+        }
+        else
+        {   // for testing new vs. old csv creatrion
             //       TEMPORARY
             changedContracts.push_back(c);
             asBookings.push_back(c.latestBooking());
@@ -95,10 +102,9 @@ bool executeAnnualSettlement( int year)
             // TEMPRARY TODO: REMOVE
         }
     }
-    print_as_csv(QDate(year, 12, 31), changedContracts, startOfInterrestCalculation,
-                 asBookings);
+    // print_as_csv(QDate(year, 12, 31), changedContracts, startOfInterrestCalculation, asBookings);
 
-    return true;
+    return changedContracts.size();
 }
 
 void writeAnnualSettlementCsv(int year) {

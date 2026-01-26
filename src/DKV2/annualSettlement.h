@@ -4,4 +4,9 @@
 #endif // ANNUALSETTLEMENT_H
 
 QDate dateOfnextSettlement();
-bool executeAnnualSettlement( int year);
+// for all(?) contracts
+int executeAnnualSettlement( int year);
+
+//
+// void writeAnnualSettlementCsv(int year);
+//

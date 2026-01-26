@@ -472,7 +472,7 @@ void MainWindow::on_action_cmenu_delete_inactive_contract_triggered()
 }
 void MainWindow::on_action_cmenu_change_contract_triggered()
 {   LOG_CALL;
-    changeContractValue(contractUnderMouseMenu);
+    doDeposit_or_payout(contractUnderMouseMenu);
     updateViews();
 }
 void MainWindow::on_action_cmenu_undo_last_booking_triggered()

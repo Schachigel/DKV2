@@ -12,7 +12,6 @@
 #include "investment.h"
 #include "dkdbviews.h"
 #include "dkdbindices.h"
-#include "dkdbcopy.h"
 
 
 namespace  {
@@ -707,5 +706,3 @@ WHERE
     cbd.Buchungsdatum =rec.value ("Datum").toDate ();
     return true;
 }
-
-

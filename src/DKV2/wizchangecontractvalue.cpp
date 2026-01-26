@@ -146,7 +146,7 @@ wpChangeContract_DatePage::wpChangeContract_DatePage(QWidget* parent) : QWizardP
 
     QDateEdit *de = new QDateEdit;
     de->setDisplayFormat(qsl("dd.MM.yyyy"));
-    registerField(qsl("date"), de);
+    registerField(qsl("date"), de, "date");
 
     QVBoxLayout*  layout = new QVBoxLayout;
     layout->addWidget(subTitleLabel);
@@ -167,15 +167,16 @@ void wpChangeContract_DatePage::initializePage()
         setTitle(qsl("Überweisungsdatum"));
         subTitleLabel->setText(subt + qsl("<p>Gib das Datum ein, zu dem die Überweisung durchgeführt wird."));
     }
-    setField(qsl("date"), wiz->earlierstDate);
+    qInfo() << QDate::currentDate() << ", " << wiz->earlierstDate << ", " << qMax(QDate::currentDate(), wiz->earlierstDate);
+    setField(qsl("date"), QVariant(qMax(QDate::currentDate(), wiz->earlierstDate)));
 }
 
 bool wpChangeContract_DatePage::validatePage()
 {
     wizChangeContract* wiz= qobject_cast<wizChangeContract*>(this->wizard());
     QDate d {field(qsl("date")).toDate()};
-    QString msg;
 
+    QString msg;
     if( d < wiz->earlierstDate)
         msg =qsl("Das Vertragsdatum muss nach der letzten Buchung liegen");
     if( d.month() == 12 and d.day() == 31)
