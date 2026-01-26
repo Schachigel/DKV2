@@ -459,7 +459,7 @@ year contract::annualSettlement( year y)
         //
         executeSql_wNoRecords(qsl("RELEASE SAVEPOINT as_savepoint"));
         /////
-        return nextAnnualSettlementDate.year();
+        return lastBD.year();//nextAnnualSettlementDate.year();
     } else {
         qInfo() << "there was no annual settlement, so we do a rollback";
         executeSql_wNoRecords(qsl("ROLLBACK TO as_savepoint"));

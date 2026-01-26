@@ -31,6 +31,7 @@ void test_annualSettlement::test_noContract_noAS()
 void test_annualSettlement::test_oneContract_InitMidYear_onContract()
 {
     contract c{newContract()};
+    c.setInterestRate(10.);
     QDate in1990(1990,6,15);
     c.bookInitialPayment(in1990, 1000);
     QDate yearEnd1990(1990,12,31);
@@ -62,11 +63,11 @@ void test_annualSettlement::test_oneContract_InitMidYear_globally()
     c.bookInitialPayment(in1990, 1000);
     QDate yearEnd1990(1990,12,31);
     // TEST
-    QVERIFY(not executeAnnualSettlement(1989));
-    QCOMPARE(yearEnd1990, dateOfnextSettlement());
-    QVERIFY(executeAnnualSettlement(1990));
+    QCOMPARE(executeAnnualSettlement(1989), 0);
+    QCOMPARE(dateOfnextSettlement(), yearEnd1990);
+    QCOMPARE(executeAnnualSettlement(1990), 1);
     // second annual settlement
-    QVERIFY(executeAnnualSettlement(1991));
+    QCOMPARE(executeAnnualSettlement(1991), 1);
 }
 
 void test_annualSettlement::test_oneContract_InitOnYearEnd_globally()
@@ -78,7 +79,7 @@ void test_annualSettlement::test_oneContract_InitOnYearEnd_globally()
     QDate yearEnd1991(1991,12,31);
     //QCOMPARE(yearEnd1991, dateOfnextSettlement());
     QCOMPARE(QDate(1990,12,31), dateOfnextSettlement());
-    QVERIFY(executeAnnualSettlement(1989));
-    QVERIFY(executeAnnualSettlement(1990));
-    QVERIFY(executeAnnualSettlement(1991));
+    QCOMPARE(executeAnnualSettlement(1989),0);
+    QCOMPARE(executeAnnualSettlement(1990),1);
+    QCOMPARE(executeAnnualSettlement(1991),1);
 }

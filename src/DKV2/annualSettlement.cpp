@@ -8,11 +8,6 @@
 
 // NON MEMBER FUNCTIONS
 namespace {
-// TEST new vs old creatrion of CSV Fiels
-QVector<contract> changedContracts;
-QVector<QDate> startOfInterrestCalculation;
-QVector<booking> asBookings;
-// OLD version FOR TESTING ... ToDo
 void print_as_csv(const QDate &bookingDate,
                   const QVector<contract> &changedContracts,
                   const QVector<QDate> &startOfInterrestCalculation,
@@ -75,6 +70,11 @@ QDate dateOfnextSettlement()
 // for all contracts
 int executeAnnualSettlement( int year)
 {
+    // TEST new vs old creatrion of CSV Fiels
+    QVector<contract> changedContracts;
+    QVector<QDate> startOfInterrestCalculation;
+    QVector<booking> asBookings;
+    // OLD version FOR TESTING ... ToDo
     QVector<QVariant> ids = executeSingleColumnSql(
         dkdbstructur[contract::tnContracts][contract::fnId]);
     // todo: beschränken auf Verträge, für die eine AS gemacht werden kann durch passendes SQL

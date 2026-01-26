@@ -203,7 +203,6 @@ bool dbsHaveSameTables(const QString &fn1, const QString &fn2);
 bool dbsHaveSameTables(const QSqlDatabase& db1, const QSqlDatabase& db2);
 bool dbTablesHaveSameFields(const QString& table1, const QString& table2, const QSqlDatabase& db =QSqlDatabase::database());
 
-int doAnnualSettlementAllContracts (int year);
 bool dbCompare(const QString& left, const QString& right);
 
 #define dbgDumpDB() dbgDumpDatabase(QString(__FUNCTION__));
