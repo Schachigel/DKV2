@@ -110,12 +110,17 @@ QString dbAffinityType(const QMetaType t)
 // manage the app wide used database
 void closeAllDatabaseConnections()
 {   LOG_CALL;
+
+    // undo "addDatabase"
+    QSqlDatabase::database("qt_sql_default_connection", false).close();
+    QSqlDatabase::removeDatabase("qt_sql_default_connection");
+
     QList<QString> cl = QSqlDatabase::connectionNames();
     if( cl.count())
         qInfo() << "Found open connections" << cl;
 
     for( const auto &s : std::as_const(cl)) {
-        QSqlDatabase::database(s).close();
+        QSqlDatabase::database(s, false).close();
         QSqlDatabase::removeDatabase(s);
     }
     cl.clear();
@@ -254,15 +259,15 @@ bool executeQuery( QSqlQuery& q, QVector<QSqlRecord>& records)
     if( q.exec()) {
         int nbrElements =q.numRowsAffected ();
         if(nbrElements > 0)
-            qInfo() << __FUNCTION__ << qsl("affected %1 rows").arg(nbrElements);
+            qInfo() << qsl("executeQuery affected %1 rows").arg(nbrElements);
         else
-            qInfo() << __FUNCTION__ << qsl("affected no rows");
+            qInfo() << qsl("executeQuery affected no rows");
         records.reserve(nbrElements);
         while(q.next())
             records.push_back(q.record());
-        RETURN_OK( true, qsl("executeQuery"), qsl("Successfully returned %1 records").arg(records.count ()));
+        RETURN_OK( true, qsl("executeQuery: Successfully returned %1 record(s)").arg(records.count ()));
     } else
-        RETURN_ERR( false, qsl("executeQuery"), qsl("Faild to execute Query"), q.lastError ().text (), qsl("\n"), q.lastQuery ());
+        RETURN_ERR( false, qsl("executeQuery: Faild to execute Query"), q.lastError ().text (), qsl("\n"), q.lastQuery ());
 }
 bool bindNamedParams(QSqlQuery &q, const QVector<QPair<QString, QVariant>>& params)
 {
@@ -273,7 +278,7 @@ bool bindNamedParams(QSqlQuery &q, const QVector<QPair<QString, QVariant>>& para
             RETURN_ERR( false, QString(__FUNCTION__), qsl("Empty param name"));
         q.bindValue (paramName, paramValue);
     }
-    if( params.size () not_eq q.boundValues ().size())
+    if( params.size () > q.boundValues ().size())
         RETURN_ERR(false, qsl("Not all parameters were consumed by the query (bound: %1, given: %2)").arg(i2s(q.boundValues ().size ()), i2s(params.size())));
 
     if( q.boundValues ().size())
@@ -310,7 +315,7 @@ bool executeSql(const QString& sql, QVector<QSqlRecord>& result, const QSqlDatab
     if( oq){
         return executeQuery(oq.value(), result);
     }
-    else
+    else // todo: qCritical error
         return false;
 }
 // named parameters
@@ -319,7 +324,8 @@ bool executeSql(const QString& sql, const QVector<QPair<QString, QVariant>>& par
     auto oq =prepQuery(sql, db);
     if( oq){
         QSqlQuery q =std::move(oq.value());
-        return bindNamedParams (q, params) && executeQuery(q, result);
+        return bindNamedParams (q, params)
+               && executeQuery(q, result);
     }
     return false;
 }
@@ -390,7 +396,7 @@ QSqlRecord executeSingleRecordSql(const QString& sql, const QSqlDatabase& db)
             return QSqlRecord();
         }
         else{
-            RETURN_OK( records[0], QString(__FUNCTION__), qsl("returned one Record: %1").arg(records[0].value (0).toString ()));
+            RETURN_OK( records[0], qsl("exec.SingleRecordSql returned one Record: %1").arg(records[0].value (0).toString ()));
         }
     }
     else
@@ -408,10 +414,14 @@ QVariant executeSingleValueSql(const QString& sql, const QSqlDatabase& db)
     QSqlRecord v =executeSingleRecordSql (sql, db);
     // error handling is done in executeSingleRecordSql
 
-    if( v.isEmpty () or v.count () > 1)
+    if( v.count () not_eq 1) {
+        qInfo() << qsl("single value sql returned too many or no values (%1)").arg(v.count());
         return QVariant();
-    else if( v.value (0).isNull ())
+    }
+    if( v.isEmpty() || v.isNull(0)) {
+        qInfo() << qsl("single value sql empty record or NULL");
         return QVariant();
+    }
     else
         return v.value(0);
 }
@@ -498,14 +508,4 @@ bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& params, 
 int getHighestRowId(const QString& tablename)
 {   LOG_CALL;
     return executeSingleValueSql(qsl("MAX(rowid)"), tablename).toInt();
-}
-
-bool createDbIndex( const QString& iName, const QString& iFields, const QSqlDatabase& db)
-{
-    // sample arguments: qsl("Buchungen_vId"), qsl("'Buchungen'   ( 'VertragsId')")}
-    if( not executeSql_wNoRecords (qsl("DROP INDEX IF EXISTS '%1'").arg(iName), db))
-        RETURN_ERR(false, qsl("createDbIndex: failed to delete index"));
-    if( not executeSql_wNoRecords (qsl("CREATE INDEX '%1' ON %2").arg(iName, iFields), db))
-        RETURN_ERR(false, qsl("createDbIndex: failed to create index"), iName, iFields);
-    RETURN_OK( true, qsl("successfully created index"), iName);
 }

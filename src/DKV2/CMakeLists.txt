@@ -55,7 +55,7 @@ target_link_libraries(${CORE_TARGET} PUBLIC
 )
 
 # Falls Core wirklich PrintSupport nutzt (eher selten), dann hier ergänzen:
-# target_link_libraries(${CORE_TARGET} PUBLIC Qt6::PrintSupport)
+target_link_libraries(${CORE_TARGET} PUBLIC Qt6::PrintSupport)
 
 # --- UI (Widgets/Dialoge/Wizards) ---
 set(DKV2_UI_SOURCES

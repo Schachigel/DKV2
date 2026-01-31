@@ -175,7 +175,4 @@ inline bool createPersistentDbView(const QString& name, const QString& sql, cons
     return createDbView(name, sql, persistentView, db);
 }
 
-bool createDbIndex( const QString& iName, const QString& iFields, const QSqlDatabase& db);
-
-
 #endif // SQLHELPER_H

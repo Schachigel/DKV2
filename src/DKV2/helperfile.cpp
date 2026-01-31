@@ -144,6 +144,43 @@ bool stringToFile( const QString& string, const QString& fullFileName)
     return file.write( string.toUtf8 ()) > 0;
 }
 
+QString makeSafeFileName(QString name, int maxSize)
+{
+    // Windows-compatible superset (safe on all platforms)
+    static const QRegularExpression illegalChars(
+        R"([<>:"/\\|?*\x00-\x1F])"
+        );
+
+    // 1) remove illegal characters
+    name.remove(illegalChars);
+
+    // 2) trim trailing spaces and dots (Windows restriction)
+    while (name.endsWith(' ') || name.endsWith('.'))
+        name.chop(1);
+
+    // 3) avoid empty result
+    if (name.isEmpty())
+        name = QStringLiteral("_");
+
+#ifdef Q_OS_WIN
+    // 4) avoid reserved device names (case-insensitive)
+    static const QSet<QString> reserved = {
+        "CON","PRN","AUX","NUL",
+        "COM1","COM2","COM3","COM4","COM5","COM6","COM7","COM8","COM9",
+        "LPT1","LPT2","LPT3","LPT4","LPT5","LPT6","LPT7","LPT8","LPT9"
+    };
+
+    const QString upper = name.toUpper();
+    if (reserved.contains(upper))
+        name.prepend('_');
+#endif
+    if( maxSize > 0)
+        name =name.left(maxSize);
+    return name;
+}
+
+
+
 #if defined(Q_OS_WIN)
 HANDLE openDbSignalnFile =INVALID_HANDLE_VALUE;
 #else

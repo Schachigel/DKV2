@@ -1,6 +1,5 @@
 #include "wizchangecontractvalue.h"
 
-#include "helper.h"
 #include "helperfin.h"
 #include "appconfig.h"
 

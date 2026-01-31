@@ -57,7 +57,7 @@ QString booking::toString( ) const
 
 /////////////// BOOKING functions (friends, not family ;) )
 ///
-bool bookingToDB(bookingType t, const tableindex_t contractId, QDate date, const double amount)
+bool writeBookingToDB(bookingType t, const tableindex_t contractId, QDate date, const double amount)
 {   LOG_CALL_W (booking(contractId, t, date, amount).toString());
     if( not date.isValid ())
         RETURN_ERR(false, qsl(">> invalid booking date <<"));
@@ -76,28 +76,28 @@ bool bookDeposit(const tableindex_t contractId, QDate date, const double amount)
 {
     if( amount <= 0)
         RETURN_ERR(false, qsl(">> Einzahlungen müssen einen Wert größer als 0 haben <<"));
-    return bookingToDB( bookingType::deposit, contractId, date, amount);
+    return writeBookingToDB( bookingType::deposit, contractId, date, amount);
 }
 bool bookPayout(const tableindex_t contractId, QDate date, const double amount)
 {
     // contract has to check that a payout is possible
-    return bookingToDB(bookingType::payout, contractId, date, -1*qFabs(amount));
+    return writeBookingToDB(bookingType::payout, contractId, date, -1*qFabs(amount));
 }
 bool bookReInvestInterest(const tableindex_t contractId, QDate date, const double amount)
 {
     if( amount < 0)
         RETURN_ERR(false, qsl(">> booking ReInvestInterest failed due to negative amount <<"));
-    return bookingToDB(bookingType::reInvestInterest, contractId, date, amount);
+    return writeBookingToDB(bookingType::reInvestInterest, contractId, date, amount);
 }
 bool bookAnnualInterestDeposit(const tableindex_t contractId, QDate date, const double amount)
 {
     if( amount < 0)
         RETURN_ERR(false, qsl(">> booking Annual Interest Deposit failed due to negative amount <<"));
-    return bookingToDB(bookingType::annualInterestDeposit, contractId, date, amount);
+    return writeBookingToDB(bookingType::annualInterestDeposit, contractId, date, amount);
 }
 bool bookInterestActive(const tableindex_t contractId, QDate date)
 {
-    return bookingToDB(bookingType::setInterestActive, contractId, date, 0.);
+    return writeBookingToDB(bookingType::setInterestActive, contractId, date, 0.);
 }
 
 bool writeBookingUpdate( qlonglong bookingId, int newValeuInCt)

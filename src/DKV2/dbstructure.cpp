@@ -47,7 +47,7 @@ bool dbstructure::createDb(const QSqlDatabase& db) const
     switchForeignKeyHandling(fkh_on, db);
     for(dbtable& table :getTables()) {
         if( not ensureTable(table, db))
-            RETURN_ERR(false, qsl("could not create table "), table.Name());
+            RETURN_ERR(false, qsl("could not create table %1").arg(table.Name()));
     } // for
     return true;
 }

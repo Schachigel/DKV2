@@ -6,14 +6,14 @@
 void newCreditorAndContract();
 
 void editCreditor(qlonglong creditorId);
-void changeContractComment(contract* c);
+void changeContractComment(contract* pContract);
 void changeContractTermination(contract* c);
 
 void changeContractDate(contract* v);
 
 void changeContractLabel(contract* v);
 void changeInitialPaymentDate(contract* v);
-void receiveInitialBooking(contract* v);
+void receiveInitialBooking(contract* contract);
 void activateInterest(contract* v);
 
 void doDeposit_or_payout(contract* v);

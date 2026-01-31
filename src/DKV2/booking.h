@@ -74,7 +74,7 @@ struct booking
 };
 Q_DECLARE_TYPEINFO(booking, Q_PRIMITIVE_TYPE );
 
-bool bookingToDB(bookingType, const tableindex_t contrId, QDate date, const double);
+bool writeBookingToDB(bookingType, const tableindex_t contrId, QDate date, const double);
 
 bool bookDeposit(   const tableindex_t contractId, QDate date, const double amount);
 bool bookPayout(    const tableindex_t contractId, QDate date, const double amount);

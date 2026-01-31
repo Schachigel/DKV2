@@ -1,14 +1,15 @@
 #include "annualSettlement.h"
+
+#include "helperfile.h"
+#include "appconfig.h"
 #include "dkdbviews.h"
 #include "creditor.h"
-#include "contract.h"
 #include "csvwriter.h"
-#include "dbstructure.h"
 
 
 // NON MEMBER FUNCTIONS
 namespace {
-void print_as_csv(const QDate &bookingDate,
+QString print_as_csv(const QDate &bookingDate,
                   const QVector<contract> &changedContracts,
                   const QVector<QDate> &startOfInterrestCalculation,
                   const QVector<booking> &asBookings) {
@@ -45,10 +46,11 @@ void print_as_csv(const QDate &bookingDate,
         csv.appendValueToNextRecord(l.toString(b.amount, 'f', 2));
         csv.appendValueToNextRecord(l.toString(c.value(), 'f', 2));
     }
-    QString filename{qsl("%1_Jahresabrechnung-%2.csv")};
-    filename = filename.arg(QDate::currentDate().toString(Qt::ISODate),
-                            i2s(bookingDate.year()));
-    csv.saveAndShowInExplorer(filename);
+    return csv.toString();
+    // QString filename{qsl("%1_Jahresabrechnung-%2.csv")};
+    // filename = filename.arg(QDate::currentDate().toString(Qt::ISODate),
+    //                         i2s(bookingDate.year()));
+    // csv.saveAndShowInExplorer(filename);
 }
 } // Eo local namespace
 
@@ -68,45 +70,62 @@ QDate dateOfnextSettlement()
 }
 
 // for all contracts
-int executeAnnualSettlement( int year)
+int executeCompleteAS( year AS_year/*, QString &csv*/)
 {
-    // TEST new vs old creatrion of CSV Fiels
-    QVector<contract> changedContracts;
-    QVector<QDate> startOfInterrestCalculation;
-    QVector<booking> asBookings;
-    // OLD version FOR TESTING ... ToDo
-    QVector<QVariant> ids = executeSingleColumnSql(
-        dkdbstructur[contract::tnContracts][contract::fnId]);
-    // todo: beschränken auf Verträge, für die eine AS gemacht werden kann durch passendes SQL
+    QVector<QSqlRecord> contractData;
+    QVector<QPair<QString, QVariant>>parameterYear{{qsl(":YEAR"), QVariant(AS_year)}};
+    if( not executeSql(sqlContractDataForAnnualSettlement, parameterYear, contractData)) {
+        qCritical() << "executeCompleteAS: execution of sql failed";
+        return 0;
+    }
+    if( contractData.isEmpty()) {
+        qCritical() << "nothing to do: There are no contracts for AS";
+        return 0;
+    }
 
-    // try execute annualSettlement for all contracts
-    for (const auto &id : std::as_const(ids))
+    int nbrOfSuccessfull_AS {0};
+    for (const auto &C : std::as_const(contractData))
     {
-        contract c(id.toLongLong());
+        contract c(C);
+        qInfo() << c.toString();
         QDate startDate = c.latestBookingDate();
-        if( not startDate.isValid())
+        if( not startDate.isValid()) {
+            qCritical() << qsl("contract %1 seems to have no bookings").arg(c.id_aS());
             continue; // keine Buchung, keine (erst-)Einzahlung. ToDo: unnötig, wenn vorab die passenden Verträge ausgesucht wurden
+        }
 
         /////////////////////////////////////////////////////
-        if (0 == c.annualSettlement(year))
+        int aSResult {c.annualSettlement(AS_year)};
         ////////////////////////////////////////////////////
-        {
-            qInfo() << "Keine jährl. Zinsabrechnung für Vertrag " << c.id () << ": " << c.label ();
+        if( aSResult == AS_year) {
+            qInfo() << qsl("Jährl. Zinsabrechnung für Vertrag %1 (%2) erfolgreich").arg( c.id_aS(),  c.label ());
+            nbrOfSuccessfull_AS +=1;
         }
+        else if( aSResult == 0)
+            qCritical() << qsl("Keine jährl. Zinsabrechnung für Vertrag %1 (%2) möglich").arg( c.id_aS(),  c.label ());
         else
-        {   // for testing new vs. old csv creatrion
-            //       TEMPORARY
-            changedContracts.push_back(c);
-            asBookings.push_back(c.latestBooking());
-            startOfInterrestCalculation.push_back(startDate);
-            // TEMPRARY TODO: REMOVE
-        }
+            qCritical() << qsl("Zinsabrechnung nur erfolgreich für Vertrag %1 (%2) bis %3").arg(c.id_aS(), c.label (), QString::number(aSResult));
     }
-    // print_as_csv(QDate(year, 12, 31), changedContracts, startOfInterrestCalculation, asBookings);
-
-    return changedContracts.size();
+    return  nbrOfSuccessfull_AS;
 }
 
-void writeAnnualSettlementCsv(int year) {
+QString formulate_AS_as_CSV(year y)
+{
+    return QString();
+}
 
+QString AS_filename(year y)
+{
+    QString projectName {dbConfig::readValue(projectConfiguration::GMBH_PROJECT).toString()};
+    projectName =makeSafeFileName(projectName, 9);
+
+    QString filename{qsl("%1_JA-%2_%3.csv")};
+    filename = filename.arg(QDate::currentDate().toString(Qt::ISODate),
+                             i2s(y), projectName);
+    return filename;
+}
+
+void writeAnnualSettlementCsv(year y)
+{
+    QString content =formulate_AS_as_CSV(y);
 }

@@ -17,7 +17,4 @@ QMainWindow* getMainWindow();
 
 QString getDbFileFromCommandline();
 
-bool savePdfFromHtmlTemplate(const QString &templateName, const QString &fileName, const QVariantMap &data);
-
-
 #endif // HELPER_H

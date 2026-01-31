@@ -81,14 +81,21 @@ contract::contract(qlonglong contractId /*=-1*/, bool isTerminated /*=false*/)
      else
         loadFromDb( contractId);
 }
+contract::contract(const QSqlRecord &record) : td(getTableDef())
+{   LOG_CALL;
+    isTerminated =false;
+    if (not td.setValues(record))
+        qCritical() << "contract could not be created from record";
+}
 
 void contract::loadFromDb( qlonglong id)
 {   LOG_CALL_W(i2s(id)); // id_aS() might not be initialized yet!!
-    isTerminated = false;
-    QSqlRecord rec = executeSingleRecordSql( getTableDef().Fields(), qsl("id=%1").arg( id));
+    isTerminated =false;
+    QSqlRecord rec =executeSingleRecordSql( getTableDef().Fields(), qsl("id=%1").arg( id));
     if (not td.setValues(rec))
         qCritical() << "contract from id could not be created";
 }
+
 void contract::loadExFromDb(const tableindex_t id)
 {   LOG_CALL_W(i2s(id));
     isTerminated =true;
@@ -96,6 +103,7 @@ void contract::loadExFromDb(const tableindex_t id)
     if (not td.setValues(rec))
         qCritical() << "exContract from id could not be created";
 }
+
 void contract::initContractDefaults( const qlonglong CREDITORid /*=-1*/)
 {
     setId(SQLITE_invalidRowId);
@@ -111,6 +119,7 @@ void contract::initContractDefaults( const qlonglong CREDITORid /*=-1*/)
     isTerminated =false;
     initCancelationDate();
 }
+
 void contract::initRandom(const tableindex_t creditorId)
 {
     static QRandomGenerator *rand = QRandomGenerator::system();
@@ -144,6 +153,7 @@ double contract::value(const QDate d) const
         isTerminated ? tn_ExBuchungen : tn_Buchungen, where);
     if( v.isValid())
         return euroFromCt(v.toInt());
+    // todo: error handling
     return 0.;
 }
 double contract::investedValue(const QDate d) const
@@ -180,18 +190,20 @@ NOTE to self: DKV2 stellt sicher, dass bei Verträgen mit verzögerter Zinszahlu
     eine Aktivierung der Zinszahlung erst nach dem ersten Geldeingang verbuchtwerden kann.
     SONST müsste hier sichergestellt werden, dass die letzte Buchung vom Typ Ein/Auszahlung oder Zinszahlung ist
 */
-
     QString sql {qsl("SELECT MAX(%1) FROM %2 WHERE %3=%4")
                 .arg(fn_bDatum, isTerminated ? tn_ExBuchungen : tn_Buchungen, fn_bVertragsId, id_aS())};
     QVariant date =executeSingleValueSql(sql);
-    if( date.canConvert<QDate>())
-        return date.toDate();
-    else{
-        // this is a regular result, if there are no bookings.
-        // BUT using "initialPaymentReceived" is the prefrered method to find out, if there are bookings
-        qInfo() << "no lastestBookingDate as the contract has no bookings";
-        return QDate();
+    if( date.isValid() && date.canConvert<QDate>()) {
+        QDate d {date.toDate()};
+        if( d.isValid()){
+            qInfo() << qsl("latest Booking Date found to be %1").arg(d.toString());
+            return d;
+        }
     }
+    // this is a regular result, if there are no bookings.
+    // BUT using "initialPaymentReceived" is the prefrered method to find out, if there are bookings
+    qInfo() << "no lastestBookingDate as the contract has no bookings";
+    return QDate();
 }
 
 const booking contract::latestBooking()
@@ -202,8 +214,7 @@ NOTE to self:
     eine Aktivierung der Zinszahlung erst nach dem ersten Geldeingang verbuchtwerden kann.
     SONST müsste hier sichergestellt werden, dass die letzte Buchung vom Typ Ein/Auszahlung oder Zinszahlung ist
     */
-
-    QString sql {qsl("SELECT id, %1, %2, %3, %4 FROM %6 WHERE %1=%5 ORDER BY rowid DESC LIMIT 1").arg(
+    QString sql {qsl("SELECT id, %1, %2, %3, %4 FROM %6 WHERE %1=%5 ORDER BY %2 DESC, id DESC LIMIT 1").arg(
         fn_bVertragsId, fn_bDatum, fn_bBuchungsArt, fn_bBetrag, id_aS(), isTerminated ? tn_ExBuchungen : tn_Buchungen)};
     QSqlRecord rec = executeSingleRecordSql(sql);
     if( 0 == rec.count()) {
@@ -329,9 +340,10 @@ QDate contract::initialPaymentDate()
 }
 bool contract::noBookingButInitial()
 {
-    QString sql {qsl("SELECT count(*) FROM %1 WHERE %2 = %3 AND %4 < %5")
+    // an initial booking is always a deposit
+    QString sql {qsl("SELECT count(*) FROM %1 WHERE %2 = %3 AND %4 = %5")
                 .arg(tn_Buchungen, fn_bVertragsId, id_aS (), fn_bBuchungsArt,
-                     bookingTypeToNbrString(bookingType::setInterestActive))};
+                     bookingTypeToNbrString(bookingType::deposit))};
     return 1 == executeSingleValueSql (sql).toInt ();
 }
 
@@ -343,6 +355,7 @@ booking_success contract::bookActivateInterest(const QDate d)
         return booking_error({qsl("could not activate interest on same date or before as last booking")});
     autoRollbackTransaction art;
     // durch diese Zinsbuchung mit Wert 0 wird sichergestellt, dass die nächste Zinsbuchung zum richtigen Zeitpunkt beginnt
+    // kein Payout
     if( not bookInBetweenInterest(d))
         return booking_error({qsl("could not book inbetween interest on ")});
     if( updateSetInterestActive() // update contract
@@ -357,26 +370,34 @@ booking_success contract::bookActivateInterest(const QDate d)
     return booking_error({qsl("failed to activate interest payment for contract ").arg(id_aS())});
 }
 
-inline bool isLastDayOfTheYear(const QDate& d) { return (d.month() == 12 && d.day() == 31);}
+inline bool isLastDayOfTheYear(const QDate& d)
+{ return (d.month() == 12 && d.day() == 31);}
 
 // booking actions
-QDate contract::nextDateForAnnualSettlement()
+QDate contract::dateOf_next_AS()
 {
     const QDate lastBookingDate=latestBookingDate();
 
     if( not lastBookingDate.isValid())
+        // no booking date -> no initial deposit -> no AS for now...
         return EndOfTheFuckingWorld;
-    qInfo() << "nD4aS searched for " << lastBookingDate.toString ();
 
-    if( isLastDayOfTheYear (lastBookingDate)) {
-        // last Booking was a annual settlement -> next settlement in one year
+    if( isLastDayOfTheYear (lastBookingDate))
+        // last Booking was
+        // - an annual settlement
+        // - an initial deposit
+        // OR an intrest activation w interest booking -> next settlement in one year
         return lastBookingDate.addYears(1);
-    }
     else
-        // for deposits, payouts, activations next settlement should be end of the same year
+        // for deposits, payouts next settlement should be end of the same year
         return QDate(lastBookingDate.year(), 12, 31);
 }
-bool contract::needsAnnualSettlement(const QDate intendedNextBooking)
+
+QDate contract::dateOf_lastAS()
+{
+    return QDate();
+}
+bool contract::needsAS_before(const QDate intendedNextBooking)
 {
     const booking lastB =latestBooking();
     if( lastB.type == bookingType::non) // inactive contract
@@ -398,6 +419,7 @@ bool contract::needsAnnualSettlement(const QDate intendedNextBooking)
 
     RETURN_OK( true, QString(__FUNCTION__), qsl("OK"));
 }
+
 year contract::annualSettlement( year y)
 {   LOG_CALL_W(i2s(y));
     // es werden so lange Jahresabrechnungen durchgeführt, bis das Jahr "year" abgerechent ist
@@ -405,15 +427,13 @@ year contract::annualSettlement( year y)
     qInfo() << "\nJahresabrechnung für Vertrag " << label();
 
     // no initial booking?
-    if( not initialPaymentReceived()){
-        qInfo() << "Keine Einzahlung -> keine Jahresabrechnung!";
-        return 0;
-    }
+    if( not initialPaymentReceived())
+        RETURN_OK(0, qsl("Keine Einzahlung -> keine Jahresabrechnung!"));
 
     executeSql_wNoRecords(qsl("SAVEPOINT as_savepoint"));
 
     QDate requestedSettlementDate(y, 12, 31);
-    QDate nextAnnualSettlementDate =nextDateForAnnualSettlement();
+    QDate nextAnnualSettlementDate =dateOf_next_AS();
     if( nextAnnualSettlementDate == EndOfTheFuckingWorld) {
         RETURN_ERR(0, qsl("contract has no booking -> no settlement"));
     }
@@ -446,7 +466,7 @@ year contract::annualSettlement( year y)
         if( bookingSuccess) {
             qInfo() << "Successfull annual settlement: contract id " << id_aS() << ": " << nextAnnualSettlementDate << " Zins: " << zins;
             // latest booking has changes, so ...
-            nextAnnualSettlementDate = nextDateForAnnualSettlement();
+            nextAnnualSettlementDate = dateOf_next_AS();
             lastBD =latestBookingDate();
             continue;
         } else {
@@ -454,22 +474,22 @@ year contract::annualSettlement( year y)
             break;
         }
     }
-    if( bookingSuccess){
-        // there was a booking
-        //
-        executeSql_wNoRecords(qsl("RELEASE SAVEPOINT as_savepoint"));
-        /////
-        return lastBD.year();//nextAnnualSettlementDate.year();
-    } else {
+    if( not bookingSuccess)
+    {
         qInfo() << "there was no annual settlement, so we do a rollback";
         executeSql_wNoRecords(qsl("ROLLBACK TO as_savepoint"));
         return 0;
     }
+    // there was a successful AS booking
+    //
+    executeSql_wNoRecords(qsl("RELEASE SAVEPOINT as_savepoint"));
+    /////
+    return lastBD.year();//nextAnnualSettlementDate.year();
 }
 
 // booking actions
 bool contract::deposit(const QDate d, double amount, bool payoutInterest)
-{   LOG_CALL;
+{   LOG_CALL_W(QString::number(amount));
     double actualAmount = qFabs(amount);
     const booking lastBooking =latestBooking ();
     QString error;
@@ -481,7 +501,7 @@ bool contract::deposit(const QDate d, double amount, bool payoutInterest)
         error = qsl("bookings have to be in a consecutive order. Last booking: ")
                 + lastBooking.date.toString() + qsl(" this booking: ") + d.toString();
     if( error.size()) {
-        qCritical() << error;
+        qCritical().noquote() << error;
         return false;
     }
     QDate actualD =avoidYearEndBookings(d);
@@ -506,10 +526,14 @@ bool contract::payout(const QDate d, double amount, bool payoutInterest)
 
     const QDate lbd =latestBookingDate();
     QString error;
-    if( actualAmount > value()) error = qsl("Payout impossible. The account has not enough coverage");
-    else if( not d.isValid()) error =qsl("Invalid Date in payout");
-    else if(  lbd >= d) error = qsl("Bookings have to be in a consecutive order. Last booking: ")
+    if( not d.isValid())
+        error =qsl("Invalid Date in payout");
+    else if(  lbd >= d)
+            error = qsl("Bookings have to be in a consecutive order. Last booking: ")
                 + lbd.toString() + qsl(" this booking: ") + d.toString();
+    else if( actualAmount > value())
+        error = qsl("Payout impossible. The account has not enough coverage");
+
     if( error.size()) {
         qCritical() << error;
         return false;
@@ -566,7 +590,7 @@ bool contract::finalize(bool simulate, const QDate finDate,
         // adjust interest model, as there could be no payouts during finalize
         setInterestModel( interestModel::reinvest);
 
-    if( needsAnnualSettlement(finDate)){
+    if( needsAS_before(finDate)) {
         if( annualSettlement(finDate.year() -1)) {
             lastBookingDate =latestBookingDate();
         } else {
@@ -625,7 +649,7 @@ bool contract::bookInBetweenInterest(const QDate nextBookingDate, bool payout)
         qCritical() << error;
         return false;
     }
-    if( needsAnnualSettlement(nextBookingDate)) {
+    if( needsAS_before(nextBookingDate)) {
         qInfo() << "Perform annual settlement first - this is unusual";
         if(0 == annualSettlement(nextBookingDate.year() -1)) {
             qCritical() << "annual settlement during interest booking failed";
@@ -873,7 +897,7 @@ void saveRandomContracts(int count)
         saveRandomContract(creditorIds[rand->bounded(creditorIds.size())].toLongLong());
 }
 // test helper ?!
-int activateAllContracts(int year)
+int activateAllContracts(year y)
 {
     QVector<dbfield> idField {contract::getTableDef().Fields()[0]};
     QVector<QSqlRecord> ids= executeSql(idField);
@@ -881,9 +905,9 @@ int activateAllContracts(int year)
     for( const auto& id : std::as_const(ids)) {
         contract c(id.value (0).toLongLong ());
         if( not c.interestActive ())
-            c.bookActivateInterest (QDate(year, 1, 1).addYears (-1));
-        c.bookInitialPayment (QDate(year, 1, 1).addYears (-1).addDays (10), c.plannedInvest ());
-        if(year == c.annualSettlement (year))  res++;
+            c.bookActivateInterest (QDate(y, 1, 1).addYears (-1));
+        c.bookInitialPayment (QDate(y, 1, 1).addYears (-1).addDays (10), c.plannedInvest ());
+        if(y == c.annualSettlement (y))  res++;
     }
     return res;
 }

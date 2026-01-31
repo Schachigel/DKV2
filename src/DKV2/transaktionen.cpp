@@ -118,13 +118,14 @@ void editCreditor(qlonglong creditorId) {
         }
     }
 }
-void changeContractComment(contract *pc) {
+
+void changeContractComment(contract *pContract) {
     LOG_CALL;
-    creditor cred(pc->creditorId());
+    creditor cred(pContract->creditorId());
     QInputDialog ipd(getMainWindow());
     ipd.setInputMode(QInputDialog::TextInput);
     ipd.setWindowTitle(qsl("Anmerkung zum Vertrag ändern"));
-    ipd.setTextValue(pc->comment());
+    ipd.setTextValue(pContract->comment());
     ipd.setLabelText(qsl("Ändere den Kommentar zum Vertrag von ") +
                      cred.firstname() + qsl(" ") + cred.lastname());
     ipd.setOption(QInputDialog::UsePlainTextEditForTextInput, true);
@@ -133,33 +134,33 @@ void changeContractComment(contract *pc) {
         return;
     }
     busyCursor bc;
-    if (pc->updateComment(ipd.textValue().trimmed()))
+    if (pContract->updateComment(ipd.textValue().trimmed()))
         qInfo() << "successfully updated comment";
     else
         qCritical() << "update comment failed";
 }
-void changeContractTermination(contract *pc) {
+
+void changeContractTermination(contract *pContract) {
     LOG_CALL;
-    qInfo() << pc->toString();
-    creditor cred(pc->creditorId());
+    qInfo() << pContract->toString();
     dlgChangeContractTermination dlg(getMainWindow());
 
-    if (pc->initialPaymentReceived())
-        dlg.setMinContractTerminationDate(pc->latestBooking().date);
+    if (pContract->initialPaymentReceived())
+        dlg.setMinContractTerminationDate(pContract->latestBooking().date);
     else
-        dlg.setMinContractTerminationDate(pc->conclusionDate().addDays(1));
+        dlg.setMinContractTerminationDate(pContract->conclusionDate().addDays(1));
 
-    dlg.setEndDate(pc->plannedEndDate());
-    dlg.setNoticePeriod(pc->noticePeriod());
+    dlg.setEndDate(pContract->plannedEndDate());
+    dlg.setNoticePeriod(pContract->noticePeriod());
 
     if (QDialog::Accepted == dlg.exec())
-        pc->updateTerminationDate(dlg.endDate(), dlg.noticePeriod());
+        pContract->updateTerminationDate(dlg.endDate(), dlg.noticePeriod());
     return;
 }
 
-void changeContractDate(contract *v) {
-    QDate oldCD {v->conclusionDate()};
-    QDate actD {v->initialPaymentDate()};
+void changeContractDate(contract *pContract) {
+    QDate oldCD {pContract->conclusionDate()};
+    QDate actD {pContract->initialPaymentDate()};
 
     dlgAskDate dlg;
     dlg.setDate(oldCD);
@@ -183,7 +184,7 @@ void changeContractDate(contract *v) {
                         qsl("Das Vertragsdatum muss vor dem ersten Geldeingang liegen."));
             continue;
         }
-        if (v->updateConclusionDate(dlg.date())) {
+        if (pContract->updateConclusionDate(dlg.date())) {
             qInfo() << __FUNCTION__ << " contract date was changed successfully to "
                     << dlg.date();
             return;
@@ -200,8 +201,8 @@ void changeContractDate(contract *v) {
     qInfo() << __FUNCTION__ << " Dialog was canceled";
 }
 
-void changeContractLabel(contract *v) {
-    QString currentLabel = v->label();
+void changeContractLabel(contract *pContract) {
+    QString currentLabel = pContract->label();
     dlgAskContractLabel dlg(currentLabel);
 
     while (QDialog::Accepted == dlg.exec()) {
@@ -216,7 +217,7 @@ void changeContractLabel(contract *v) {
                         qsl("Die Kennung wird bereits verwendet. Bitte wähle eine andere."));
             continue;
         }
-        if (v->updateLabel(dlg.newLabel())) {
+        if (pContract->updateLabel(dlg.newLabel())) {
             qInfo() << "Label was changed to " << dlg.newLabel();
             return;
         } else {
@@ -231,15 +232,15 @@ void changeContractLabel(contract *v) {
     qInfo() << __FUNCTION__ << " Dialog was canceld";
 }
 
-void changeInitialPaymentDate(contract *v) {
-    if (not v->initialPaymentReceived()) {
+void changeInitialPaymentDate(contract *pContract) {
+    if (not pContract->initialPaymentReceived()) {
         qCritical()
             << "Contract has no initial payment -> ui should prevent us from comeing here";
         return;
     }
 
-    QDate conclusionDate{v->conclusionDate()}; // b-date has to be > conclusion
-    QDate currentIPDate{v->initialPaymentDate()};
+    QDate conclusionDate{pContract->conclusionDate()}; // b-date has to be > conclusion
+    QDate currentIPDate{pContract->initialPaymentDate()};
     dlgAskDate dlg;
     dlg.setDate(currentIPDate);
     dlg.setHeader(qsl("Datum des Geldeingangs ändern"));
@@ -261,7 +262,7 @@ void changeInitialPaymentDate(contract *v) {
                         .arg(conclusionDate.toString(qsl("dd.MM.yyyy"))));
             continue;
         }
-        if (v->updateInitialPaymentDate(dlg.date())) {
+        if (pContract->updateInitialPaymentDate(dlg.date())) {
             qInfo() << __FUNCTION__ << " initial payment date successfully changed";
             return;
         } else {
@@ -277,25 +278,25 @@ void changeInitialPaymentDate(contract *v) {
     qInfo() << __FUNCTION__ << " dialog was canceled";
 }
 
-void receiveInitialBooking(contract *v) {
+void receiveInitialBooking(contract *contract) {
     LOG_CALL;
-    creditor cred(v->creditorId());
+    creditor cred(contract->creditorId());
 
     wizInitialPayment wiz(getMainWindow());
-    wiz.label = v->label();
+    wiz.label = contract->label();
     wiz.creditorName = cred.firstname() + qsl(" ") + cred.lastname();
-    wiz.expectedAmount = v->plannedInvest();
-    wiz.setField(fnAmount, QLocale().toString(v->plannedInvest(), 'f', 2));
-    wiz.setField(fnDate, v->conclusionDate());
-    wiz.minimalActivationDate = v->conclusionDate();
-    wiz.delayedInterest = not v->interestActive();
+    wiz.expectedAmount = contract->plannedInvest();
+    wiz.setField(fnAmount, QLocale().toString(wiz.expectedAmount, 'f', 2));
+    wiz.setField(fnDate, contract->conclusionDate());
+    wiz.minimalActivationDate = contract->conclusionDate();
+    wiz.delayedInterest = not contract->interestActive();
     wiz.exec();
     if (not wiz.field(qsl("confirmed")).toBool()) {
         qInfo() << "contract activation canceled by the user";
         return;
     }
 
-    if (not v->bookInitialPayment(
+    if (not contract->bookInitialPayment(
                 wiz.field(fnDate).toDate(),
                 QLocale().toDouble(wiz.field(fnAmount).toString()))) {
         qCritical() << Q_FUNC_INFO <<  "contract activation failed";
@@ -303,9 +304,9 @@ void receiveInitialBooking(contract *v) {
     return;
 }
 
-void activateInterest(contract *v) {
+void activateInterest(contract *ctr) {
     LOG_CALL;
-    booking lastB = v->latestBooking();
+    booking lastB = ctr->latestBooking();
     Q_ASSERT(lastB.type != bookingType::non);
     QDate earlierstActivation = lastB.date.addDays(1);
     dlgAskDate dlg(getMainWindow());
@@ -327,7 +328,7 @@ void activateInterest(contract *v) {
         }
         break;
     } while (true);
-    booking_success booking_OK {v->bookActivateInterest(dlg.date())};
+    booking_success booking_OK {ctr->bookActivateInterest(dlg.date())};
     if (not booking_OK) {
         QString msg{qsl("Beim der Buchung ist ein Fehler eingetreten:\n %1").arg(booking_OK.error)};
         QMessageBox::warning(getMainWindow(), qsl("Buchungsfehler"), msg);
@@ -335,24 +336,24 @@ void activateInterest(contract *v) {
 }
 
 namespace {
-bool isLastDaysOfYear(QDate d) { return 12 == d.month()
+inline bool isLastDaysOfYear(QDate d) { return 12 == d.month()
            && (30 == d.day() || 31 == d.day()); }
 }
-void doDeposit_or_payout(contract *pc) {
+void doDeposit_or_payout(contract *pContract) {
     LOG_CALL;
-    if (not pc->initialPaymentReceived()) {
+    if (not pContract->initialPaymentReceived()) {
         qCritical() << "tried to changeContractValue of an inactive contract"
             "; should be prevented by UI";
         Q_UNREACHABLE();
         return;
     }
 
-    creditor cre(pc->creditorId());
+    creditor cre(pContract->creditorId());
     wizChangeContract wiz(getMainWindow());
     wiz.creditorName = cre.firstname() + qsl(" ") + cre.lastname();
-    wiz.contractLabel = pc->label();
-    wiz.currentAmount = pc->value();
-    wiz.earlierstDate = [&pc =*pc]() -> QDate{
+    wiz.contractLabel = pContract->label();
+    wiz.currentAmount = pContract->value();
+    wiz.earlierstDate = [&pc =*pContract]() -> QDate{
         QDate lbd =pc.latestBookingDate();
         if( isLastDaysOfYear(lbd))
             return QDate(lbd.year() +1, 1, 1);
@@ -360,7 +361,7 @@ void doDeposit_or_payout(contract *pc) {
             return (lbd.addDays(1));
     }();
     wiz.interestPayoutPossible =
-            pc->iModel() == interestModel::payout && pc->interestActive();
+            pContract->iModel() == interestModel::payout && pContract->interestActive();
     wiz.setField(fnDeposit_notPayment, QVariant(true));
 
     wiz.exec();
@@ -369,9 +370,9 @@ void doDeposit_or_payout(contract *pc) {
         double amount{QLocale().toDouble(wiz.field(qsl("amount")).toString())};
         QDate date{wiz.field(qsl("date")).toDate()};
         if (wiz.field(qsl("deposit_notPayment")).toBool()) {
-            pc->deposit(date, amount, wiz.field(fnPayoutInterest).toBool());
+            pContract->deposit(date, amount, wiz.field(fnPayoutInterest).toBool());
         } else {
-            pc->payout(date, amount, wiz.field(fnPayoutInterest).toBool());
+            pContract->payout(date, amount, wiz.field(fnPayoutInterest).toBool());
         }
     } else
         qInfo() << "contract change was canceld by the user";
@@ -507,7 +508,7 @@ void annualSettlement() {
 
     busyCursor bc;
     // annual settlement takes place HERE
-    if( not executeAnnualSettlement( yearOfSettlement)) {
+    if( not executeCompleteAS( yearOfSettlement)) {
         // annual settlement takes place HERE
         qCritical() << "annual settlement failed !!";
     }

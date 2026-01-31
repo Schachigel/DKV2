@@ -25,6 +25,7 @@ QString absoluteCanonicalPath(const QString &path);
 
 QString fileToString( const QString& filename);
 bool stringToFile( const QString& string, const QString& fullFileName);
+QString makeSafeFileName(QString name, int maxSize =8);
 
 //
 // open a text file to signal that a database was opened

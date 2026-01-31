@@ -55,23 +55,6 @@ using year = int;
 
 struct contract
 {
-    // field names
-    static const QString tnContracts;
-    static const QString tnExContracts;
-    static const QString fnId;
-    static const QString fnKreditorId;
-    static const QString fnKennung;
-    static const QString fnAnmerkung;
-    static const QString fnZSatz;
-    static const QString fnBetrag;
-    static const QString fnThesaurierend;
-    static const QString fnVertragsDatum;
-    static const QString fnKFrist;
-    static const QString fnAnlagenId;
-    static const QString fnLaufzeitEnde;
-    static const QString fnZAktiv;
-    static const QString fnDateCanceled;
-    static const QString fnZeitstempel;
     // static & friends
     static const dbtable& getTableDef();
     static const dbtable& getTableDef_deletedContracts();
@@ -81,6 +64,7 @@ struct contract
 
     // construction
     contract(const tableindex_t CONTRACTid =SQLITE_invalidRowId, bool isTerminated =false);
+    contract(const QSqlRecord &r);
     void loadFromDb(const tableindex_t id);
     void loadExFromDb(const tableindex_t id);
     void initContractDefaults(const tableindex_t creditorId =SQLITE_invalidRowId);
@@ -178,8 +162,12 @@ struct contract
     bool noBookingButInitial();
 
     // other booking actions
-    bool needsAnnualSettlement( const QDate d);
+    bool needsAS_before( const QDate d);
+    QDate dateOf_next_AS();
+    QDate dateOf_lastAS();
     year annualSettlement(const year y);
+
+
     bool deposit(const QDate d, double amount, bool payoutInterest =false);
     bool payout(const QDate d, double amount, bool payoutInterest =false);
     bool cancel(const QDate d_plannedContractEnd, const QDate dCancelation);
@@ -194,7 +182,6 @@ struct contract
     bool isTerminated =false;
 private:
     bool updateSetInterestActive();
-    QDate nextDateForAnnualSettlement();
 
     // data
     TableDataInserter td;
@@ -205,13 +192,32 @@ private:
     bool storeTerminationDate(const QDate d) const;
     bool archive();
     void reset() {initContractDefaults();}
+public:
+    // field names
+    static const QString tnContracts;
+    static const QString tnExContracts;
+    static const QString fnId;
+    static const QString fnKreditorId;
+    static const QString fnKennung;
+    static const QString fnAnmerkung;
+    static const QString fnZSatz;
+    static const QString fnBetrag;
+    static const QString fnThesaurierend;
+    static const QString fnVertragsDatum;
+    static const QString fnKFrist;
+    static const QString fnAnlagenId;
+    static const QString fnLaufzeitEnde;
+    static const QString fnZAktiv;
+    static const QString fnDateCanceled;
+    static const QString fnZeitstempel;
+
 };
 
 // test helper
 contract saveRandomContract(const tableindex_t creditorId);
 void saveRandomContractPerCreditor();
 void saveRandomContracts(const int count);
-int activateAllContracts(int year);
+int activateAllContracts(year y);
 QDate activateRandomContracts(const int percent);
 
 #endif // VERTRAG_H

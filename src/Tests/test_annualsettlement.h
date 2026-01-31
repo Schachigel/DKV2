@@ -12,10 +12,12 @@ private slots:
     void cleanup();
 
     void test_noContract_noAS();
-    void test_oneContract_InitMidYear_onContract();
-    void test_oneContract_InitMidYear_globally();
-    void test_oneContract_InitOnYearEnd_onContract();
-    void test_oneContract_InitOnYearEnd_globally();
+    void test_oneContract_Mid_Year();
+    void test_contract_intrest_activation();
+    void test_contract_intrest_activation_yearEnd();
+    void test_multipleContracts();
+    // void test_oneContract_InitOnYearEnd_onContract();
+    // void test_oneContract_InitOnYearEnd_globally();
 signals:
 };
 

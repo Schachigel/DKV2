@@ -22,7 +22,7 @@ public:
     }
     functionlogging(const functionlogging&) =delete;
     ~functionlogging() {
-        QString fill{ QString(qsl("<")).repeated(depth) +fuName +qsl("\n")};
+        QString fill{ QString(qsl("<")).repeated(depth) +" " +fuName +qsl("\n")};
         qInfo().noquote() << fill;
         depth--;
 

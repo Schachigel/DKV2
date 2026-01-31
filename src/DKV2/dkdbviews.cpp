@@ -359,14 +359,46 @@ per_contract AS (
   )
 )
 SELECT MIN(nextJzaDatum) AS date FROM per_contract
-)str")};
+)str"
+)};
+
+const QString sqlContractDataForAnnualSettlement { qsl(
+R"str(
+-- Parameter: :YEAR  (z.B. 2025)
+WITH
+last_booking AS (
+  SELECT
+    b.VertragsId,
+    MAX(b.Datum) AS lastDatum
+  FROM Buchungen b
+  GROUP BY b.VertragsId
+),
+has_deposit AS (
+  SELECT DISTINCT b.VertragsId
+  FROM Buchungen b
+  WHERE b.BuchungsArt = 1
+)
+SELECT
+  v.*
+FROM Vertraege v
+JOIN last_booking lb ON lb.VertragsId = v.id
+JOIN has_deposit  hd ON hd.VertragsId = v.id
+WHERE
+  v.zActive = TRUE
+  -- last AS or interest activation year end last year
+  AND ( lb.lastDatum = printf('%04d-12-31', (:YEAR - 1))
+  -- any booking in  YEAR
+  OR ( lb.lastDatum >= printf('%04d-01-01', :YEAR)
+  AND lb.lastDatum <  printf('%04d-12-31', :YEAR))
+  );
+)str")
+};
 
 // SQL to collect all data for csv creation for a given year
-const QString sqlAnnualSettlementCSV {qsl(
-R"str("
+// const QString sqlAnnualSettlementCSV {qsl(
+// R"str(
 
-")str")
-};
+// )str")};
 
 
 

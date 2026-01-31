@@ -316,7 +316,7 @@ QList <QPair<QString, QString>> Cities {{qsl("68305"), qsl("Mannheim")}, {qsl("6
 }
 
 creditor saveRandomCreditor()
-{
+{   LOG_CALL;
     static QRandomGenerator* rand { QRandomGenerator::system()};
     static int count =0;
     creditor c;
