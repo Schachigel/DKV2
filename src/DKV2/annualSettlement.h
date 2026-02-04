@@ -1,12 +1,12 @@
 #ifndef ANNUALSETTLEMENT_H
 #define ANNUALSETTLEMENT_H
-#include "contract.h"
 
+#include "contract.h"
 
 QDate dateOfnextSettlement();
 // for all(?) contracts
 int executeCompleteAS(year y);
-//int executeAnnualSettlement(int year, QString &csv);
+QString formulate_AS_as_CSV(year y);
 
 //
 // void writeAnnualSettlementCsv(int year);

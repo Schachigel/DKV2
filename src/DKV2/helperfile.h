@@ -14,11 +14,6 @@ bool moveToBackup(const QString &fn);
 
 bool backupFile(const QString& filename, const QString& subfolder=QString());
 
-#define showFolder true
-#define showFile   false
-
-void showInExplorer(const QString &fullPath, bool fileOrFolder =showFile);
-
 void printHtmlToPdf( const QString &html, const QString& css, const QString &fn);
 
 QString absoluteCanonicalPath(const QString &path);

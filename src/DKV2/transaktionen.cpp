@@ -3,7 +3,7 @@
 #include "appconfig.h"
 #include "dkdbhelper.h"
 #include "helper.h"
-#include "helperfile.h"
+#include "filewriter.h"
 #include "helperfin.h"
 #include "helpersql.h"
 
@@ -482,7 +482,9 @@ void print_as_csv(const QDate &bookingDate,
     QString filename{qsl("%1_Jahresabrechnung-%2.csv")};
     filename = filename.arg(QDate::currentDate().toString(Qt::ISODate),
                             i2s(bookingDate.year()));
-    csv.saveAndShowInExplorer(filename);
+
+    saveStringToUtf8File(filename, csv.toString());
+    showInExplorer(filename);
 }
 
 void print_annaul_settlement_csv(int year) {

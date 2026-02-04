@@ -2,6 +2,7 @@
 #define DKDBVIEWS_H
 
 #include "qsqldatabase.h"
+
 bool createDkDbViews( const QMap<QString, QString>& views, const QSqlDatabase& db =QSqlDatabase::database ());
 
 //  views
@@ -18,11 +19,12 @@ extern const QString vnBookingsOverview;
 // statistics w/o time dep. saved as views
 extern const QMap<QString, QString> views;
 
-    //bool remove_all_views(const QSqlDatabase& db =QSqlDatabase::database());
-
 // annual interest calculation
 extern const QString sqlNextAnnualSettlement;
 extern const QString sqlContractDataForAnnualSettlement;
+extern const QString sqlComplete_AS_data;
+
+QString sqltableToCsvString(QString sql, QVector<QPair<QString, QVariant>> params);
 
 // printing lists
 extern const QString sqlContractsActiveDetailsView;

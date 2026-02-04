@@ -1,6 +1,5 @@
 #include "helperfile.h"
 #include "helper_core.h"
-#include "appconfig.h"
 
 QString getUniqueTempFilename(const QString &templateFileName, const QString& purpose)
 {
@@ -60,91 +59,24 @@ bool backupFile(const QString&  fn, const QString& subfolder)
     return true;
 }
 
-void showInExplorer(const QString &pathOrFilename, bool fileOrFolder)
-{   LOG_CALL_W(pathOrFilename);
-#ifdef _WIN32    //Code for Windows
-    QString fullPath {pathOrFilename};
-    QFileInfo fi(fullPath);
-    if(fi.isRelative ())
-        fullPath = appconfig::Outdir ().append (qsl("/").append (pathOrFilename));
-
-    QString explorerW_selectedFile = QDir::toNativeSeparators(fullPath);
-    if( fileOrFolder == showFile)
-        explorerW_selectedFile =qsl(" /select,\"%1\"").arg(explorerW_selectedFile);
-    if( fileOrFolder == showFolder)
-        explorerW_selectedFile =qsl(" \"%1\"").arg(explorerW_selectedFile);
-
-    QProcess p;
-    p.setNativeArguments(explorerW_selectedFile);
-    p.setProgram(qsl("explorer.exe"));
-    qint64 pid;
-    p.startDetached(&pid);
-//  ?! debugging showed, that .waitForStarted always returns an error (on my system...)
-//    if( not p.waitForStarted(-1))
-//        qDebug().noquote ()<< "failed to start explorer. Arg was: " << explorerW_selectedFile << " Error was " << p.error ();
-
-#elif defined(__APPLE__)    //Code for Mac
-    Q_UNUSED(fileOrFolder);
-
-    QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to reveal POSIX file \"" + pathOrFilename + "\""});
-    QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to activate"});
-#else
-    Q_UNUSED (fileOrFolder);
-#endif
-}
-
-// void printHtmlToPdf( const QString &html, const QString &css, const QString &fn)
-// {   LOG_CALL;
-//     QTextDocument td;
-//     td.setDefaultStyleSheet (css);
-//     td.setHtml(html);
-
-//     QPdfWriter pdfw(fn);
-//     pdfw.setCreator(qsl("Esperanza Franklin GmbH 4 MHS"));
-//     //pdfw.setPageSize(QPagedPaintDevice::A4);
-//     pdfw.setPageSize(QPageSize(QPageSize::A4));
-//     pdfw.setPageOrientation(QPageLayout::Portrait);
-//     pdfw.setPdfVersion(QPagedPaintDevice::PdfVersion_1_6);
-// //    pdfw.setResolution(120 );
-
-//     QPageSize ps(QPageSize::A4);
-//     QMarginsF qmf( 188,235, 141, 235);
-//     QPageLayout pl(ps, QPageLayout::Portrait, qmf, QPageLayout::Unit::Millimeter);
-//     pl.setMode(QPageLayout::FullPageMode/*respect margins*/);
-
-//     pdfw.setPageLayout(pl);
-//     QPainter painter(&pdfw);
-//     td.adjustSize();
-//     td.drawContents(&painter);
-
-//     td.print( &pdfw);
-// }
-
 QString absoluteCanonicalPath(const QString &path)
 {
     QString newpath = QFileInfo(path).canonicalFilePath();
     return newpath.isEmpty() ? path : newpath;
 }
 
-QString fileToString( const QString& filename)
-{   LOG_CALL_W(filename);
-    QFile f(filename);
-    if( not f.open(QFile::ReadOnly))
+QString fileToString( const QString& filepath)
+{   LOG_CALL_W(filepath);
+    QFile f(filepath);
+    if( not f.open(QFile::ReadOnly|QIODevice::Text))
         return qsl("file open error");
+    QTextStream ts(&f);
+    ts.setEncoding(QStringConverter::Utf8);
+    ts.setAutoDetectUnicode(true);
     return f.readAll();
 }
 
-bool stringToFile( const QString& string, const QString& fullFileName)
-{   LOG_CALL;
-    QFile file(fullFileName);
-    if( not file.open (QFile::WriteOnly)) {
-        qCritical() << "opening file failed";
-        return false;
-    }
-    return file.write( string.toUtf8 ()) > 0;
-}
-
-QString makeSafeFileName(QString name, int maxSize)
+QString makeSafeFileName(QString name)
 {
     // Windows-compatible superset (safe on all platforms)
     static const QRegularExpression illegalChars(
@@ -228,6 +160,7 @@ void createSignalFile(const QString& filename)
     }
 #endif
 }
+
 void deleteSignalFile()
 {
 #if defined(Q_OS_WIN)
@@ -239,6 +172,7 @@ void deleteSignalFile()
 }
 #endif
 }
+
 bool checkSignalFile(const QString& filename) {
 #if defined(Q_OS_WIN)
     {

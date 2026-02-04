@@ -1,6 +1,7 @@
 #include "dkdbviews.h"
 #include "helper_core.h"
 #include "helpersql.h"
+#include "csvwriter.h"
 
 //////////////////////////////////////
 // VIEWs to be created temporarily in the database
@@ -321,7 +322,7 @@ bool createDkDbViews( const QMap<QString, QString>& vs, const QSqlDatabase& db)
 // SQL Statemends (stored here to not clutter the source code with long constant strings)
 //////////////////////////////////////
 
-// annual interest calculation
+// find date for next annual settlement
 const QString sqlNextAnnualSettlement {qsl(
 R"str(
 -- Ein einziges Datum: nächstes (frühestes) Jahresende, zu dem *irgendein* Vertrag
@@ -362,6 +363,7 @@ SELECT MIN(nextJzaDatum) AS date FROM per_contract
 )str"
 )};
 
+// input for AS calculation
 const QString sqlContractDataForAnnualSettlement { qsl(
 R"str(
 -- Parameter: :YEAR  (z.B. 2025)
@@ -395,14 +397,149 @@ WHERE
 };
 
 // SQL to collect all data for csv creation for a given year
-// const QString sqlAnnualSettlementCSV {qsl(
-// R"str(
+const QString sqlComplete_AS_data { qsl(R"str(
+WITH
+JA_Buchungen AS (
+    SELECT
+        b.VertragsId,
+        b.Betrag              AS Jahreszins_ct
+    FROM Buchungen b
+    WHERE b.BuchungsArt = 8
+      AND b.Datum = printf('%04d-12-31', :year)
+),
 
-// )str")};
+LetzteZinsbuchung AS (
+    SELECT
+        x.VertragsId,
+        MAX(x.Datum) AS Beginn
+    FROM (
+        SELECT b.VertragsId, b.Datum
+        FROM Buchungen b
+        WHERE b.BuchungsArt = 8
+          AND b.Datum <= date(printf('%04d-12-31', :year), '-1 year')
+
+        UNION ALL
+
+        SELECT b.VertragsId, b.Datum
+        FROM Buchungen b
+        WHERE b.BuchungsArt = 16
+          AND b.Datum >= date(printf('%04d-12-31', :year), '-1 year')
+          AND b.Datum <  printf('%04d-12-31', :year)
+
+        UNION ALL
+
+        SELECT b.VertragsId, b.Datum
+        FROM Buchungen b
+        WHERE (b.BuchungsArt = 4 OR b.BuchungsArt = 2 OR b.BuchungsArt = 1)
+        -- alle buchungsarten - falls später Einzahlungen ohne Zinsbuchungen möglich werden
+          AND b.Datum >= date(printf('%04d-12-31', :year), '-1 year')
+          AND b.Datum <  printf('%04d-12-31', :year)
+    ) x
+    GROUP BY x.VertragsId
+),
+
+verzinslichesDarlehen AS (
+    SELECT
+        v.id AS VertragsId,
+        CASE v.thesaurierend
+            WHEN 2 THEN
+                IFNULL((
+                    SELECT SUM(b2.Betrag)
+                    FROM Buchungen b2
+                    WHERE b2.VertragsId = v.id
+                      AND b2.BuchungsArt IN (1,2)
+                      AND b2.Datum < printf('%04d-12-31', :year)
+                ), 0)
+            ELSE
+                IFNULL((
+                    SELECT SUM(b2.Betrag)
+                    FROM Buchungen b2
+                    WHERE b2.VertragsId = v.id
+                      AND b2.Datum < printf('%04d-12-31', :year)
+                ), 0)
+        END AS verzinslichesDarlehen_ct
+    FROM Vertraege v
+),
+
+Endbetrag AS (
+    SELECT
+        v.id AS VertragsId,
+        CASE v.thesaurierend
+            WHEN 2 THEN
+                IFNULL((
+                    SELECT SUM(b2.Betrag)
+                    FROM Buchungen b2
+                    WHERE b2.VertragsId = v.id
+                      AND b2.BuchungsArt IN (1,2)
+                      AND b2.Datum <= printf('%04d-12-31', :year)
+                ), 0)
+            ELSE
+                IFNULL((
+                    SELECT SUM(b2.Betrag)
+                    FROM Buchungen b2
+                    WHERE b2.VertragsId = v.id
+                      AND b2.Datum <= printf('%04d-12-31', :year)
+                ), 0)
+        END AS Endbetrag_ct
+    FROM Vertraege v
+)
+
+SELECT
+    k.Vorname,
+    k.Nachname,
+    k.Strasse,
+    k.Plz,
+    k.Stadt,
+    k.Email,
+    k.Buchungskonto,
+    k.IBAN,
+    k.BIC,
+
+    v.Kennung,
+    CASE v.thesaurierend
+        WHEN 0 THEN 'auszahlend'
+        WHEN 1 THEN 'ansparend'
+        WHEN 2 THEN 'fest'
+        WHEN 3 THEN 'zinslos'
+        ELSE 'Fehler im Verzinsungsmodus'
+    END AS Auszahlungsart,
+
+    lz.Beginn AS Beginn,
+    printf('%04d-12-31', :year) AS Buchungsdatum,
+
+    -- Kreditbetrag in Euro als REAL
+    REPLACE( printf('%.2f', kb.verzinslichesDarlehen_ct / 100.0), '.', ',') AS Kreditbetrag,
+
+    -- Zinssatz in % als REAL (z.B. 0.10 für 10%)
+    REPLACE( printf('%.2f', v.ZSatz /10000.0, 2), '.', ',') AS Zinssatz,
+
+    -- Zins (Typ 8) in Euro als REAL
+    REPLACE( printf('%.2f', ja.Jahreszins_ct / 100.0), '.', ',') AS Zins,
+
+    -- Endbetrag in Euro als REAL
+    REPLACE( printf('%.2f', eb.Endbetrag_ct / 100.0), '.', ',') AS Endbetrag
 
 
+FROM JA_Buchungen ja
+JOIN Vertraege v
+  ON v.id = ja.VertragsId
+JOIN Kreditoren k
+  ON k.id = v.KreditorId
+LEFT JOIN LetzteZinsbuchung lz
+  ON lz.VertragsId = v.id
+LEFT JOIN verzinslichesDarlehen kb
+  ON kb.VertragsId = v.id
+LEFT JOIN Endbetrag eb
+  ON eb.VertragsId = v.id
 
+ORDER BY k.Nachname, k.Vorname, v.id
+)str")
+};
+
+
+//////////////////////////////////////
 // Listenausdruck createCsvActiveContracts
+//////////////////////////////////////
 const QString sqlContractsActiveDetailsView{ qsl(
 R"str(
 SELECT
@@ -430,8 +567,7 @@ SELECT
 FROM Vertraege
     INNER JOIN Buchungen  ON Buchungen.VertragsId = Vertraege.id
     INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId
-GROUP BY Vertraege.id
-)str"
+GROUP BY Vertraege.id)str"
 )};
 // uebersicht contract use and other uses
 const QString sqlContractsActiveView { qsl(
@@ -448,6 +584,47 @@ SELECT id
   ,KreditorId
 FROM (%1)
 )str").arg(sqlContractsActiveDetailsView)};
+
+QString sqltableToCsvString(QString sql, QVector<QPair<QString, QVariant>> params)
+{
+    QVector<QSqlRecord> records;
+    if( params.size()){
+        if( not executeSql(sql, params, records)) {
+            qCritical() << "extracting data for table w params as csv failed";
+            return QString();
+        }
+    } else {
+        if( not executeSql(sql, records)){
+            qCritical() << "extracting data for table as csv failed";
+            return QString();
+        }
+    }
+
+    if( records.isEmpty() || records[0].isEmpty()) {
+        qInfo() << "no data for AS csv found";
+        return QString();
+    }
+    csvWriter csv;
+    // add column header
+    for( int cIndex =0; cIndex < records[0].count(); cIndex++) {
+        csv.addColumn(records[0].fieldName(cIndex));
+    }
+    // add data
+    for (const auto& record : std::as_const(records)) {
+
+        qDebug() /*todo remvoe*/ << record;
+        if( record.isEmpty()) {
+            qCritical() << "empty data in AS result";
+            continue;
+        }
+        for( int fIndex =0; fIndex < record.count(); fIndex++) {
+            csv.appendValueToNextRecord(record.value(fIndex).toString());
+        }
+    }
+
+    return csv.toString();
+
+}
 
 // Übersichten
 // Übersicht: contractRuntimeDistribution, used in sqlContractsAllView

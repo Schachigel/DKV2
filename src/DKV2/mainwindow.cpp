@@ -12,6 +12,7 @@
 
 #include "busycursor.h"
 #include "helperfile.h"
+#include "filewriter.h"
 #include "helpersql.h"
 #include "appconfig.h"
 #include "investment.h"

@@ -56,6 +56,7 @@ void test_annualSettlement::test_contract_intrest_activation()
     c.setCreditorId(1);
     c.setInterestRate(10.f);
     c.setInterestActive(false);
+    c.setLabel(qsl("Vertrag 001"));
     QDate cDate (2000, 6, 15);
     c.setConclusionDate(cDate.addDays(15));
     c.saveNewContract();
@@ -72,6 +73,8 @@ void test_annualSettlement::test_contract_intrest_activation()
     QVERIFY(c.bookActivateInterest(cDate.addMonths(1)));
     QCOMPARE(yearEnd2000, dateOfnextSettlement());
     QCOMPARE(executeCompleteAS(yearEnd2000.year()), 1);
+    qInfo().noquote().nospace() << "\n" << formulate_AS_as_CSV(yearEnd2000.year());
+dbgDumpDB(); // todo: remove
 }
 
 void test_annualSettlement::test_contract_intrest_activation_yearEnd()

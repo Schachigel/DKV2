@@ -1,7 +1,5 @@
 #include "csvwriter.h"
-#include "helperfile.h"
-#include "appconfig.h"
-
+#include "filewriter.h"
 
 QString csvWriter::prepStringAsField(const QString& s)
 {
@@ -57,6 +55,7 @@ void csvWriter::startNextRecord()
     records.append(next);
     next.clear();
 }
+
 void csvWriter::appendRecord(const QList<QString> record)
 {
     Q_ASSERT( headers.size() > 0 // ONLY with NO header, there could be more data then headers
@@ -113,24 +112,6 @@ QString csvWriter::toString() const
     return Output;
 }
 
-bool csvWriter::saveAndShowInExplorer(const QString& proposedFileName) const
-{   LOG_CALL_W(proposedFileName);
-    QString fqFilePath {appconfig::Outdir() + qsl("/") + proposedFileName};
-    moveToBackup (fqFilePath);
-
-    QFile file(fqFilePath);
-    if( not file.open(QIODevice::WriteOnly|QIODevice::Truncate))
-        RETURN_ERR(false, qsl("could not open csv file for writing: "), proposedFileName);
-
-    QTextStream s;
-    s.setDevice (&file);
-    s.setGenerateByteOrderMark(true);
-    s << toString();
-
-    showInExplorer(fqFilePath);
-    return true;
-}
-
 bool StringLists2csv(const QString& filename, const QList<QString>& header, const QVector<QList<QString>>& data)
 {
     LOG_CALL;
@@ -144,5 +125,5 @@ bool StringLists2csv(const QString& filename, const QList<QString>& header, cons
         }
         csv.appendRecord(line);
     }
-    return csv.saveAndShowInExplorer (filename);
+    return saveStringToUtf8File(filename, csv.toString()) && showInExplorer (filename);
 }

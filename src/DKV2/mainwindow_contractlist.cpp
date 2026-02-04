@@ -5,6 +5,7 @@
 
 #include "busyCursor.h"
 #include "csvwriter.h"
+#include "filewriter.h"
 #include "contracttablemodel.h"
 #include "uiitemformatter.h"
 #include "dlgdisplaycolumns.h"
@@ -609,9 +610,13 @@ void MainWindow::on_btnSave2Csv_clicked()
             }
         }
     }
-    csv.saveAndShowInExplorer((showDeletedContracts
-                               ? QDate::currentDate().toString(qsl("yyyy-MM-dd") +qsl("_beendeteVertraege.csv"))
-                               : QDate::currentDate().toString(qsl("yyyy-MM-dd") +qsl("_laufendeVertraege.csv"))));
+
+    QString filename =showDeletedContracts ? qsl("%1_beendeteVertraege.csv") : qsl("%1_laufendeVertraege.csv");
+    filename =filename.arg(QDate::currentDate().toString("yyyy-MM-dd"));
+
+    saveStringToUtf8File(filename, csv.toString());
+    showInExplorer (filename);
+
 }
 
 /////////////////////////////////////////////////

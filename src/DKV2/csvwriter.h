@@ -41,11 +41,7 @@ public:
     void startNextRecord();
     void appendRecord(const QList<QString> record);
 
-    QString& appendFieldToString(QString& l, const csvField& f) const;
-    QString& appendRecordToString(QString& line, const csvRecord& newRecord) const;
     QString toString() const;
-
-    bool saveAndShowInExplorer(const QString& filname) const;
 private:
     // const data / configuration
     const QString fieldSeparator/*{qsl(";")}*/;
@@ -60,9 +56,12 @@ private:
     // functions
     // make sure to write any data into csv, so that it can be read from most csv reade and ms excel
     QString prepStringAsField(const QString& s);
-
+    QString& appendFieldToString(QString& l, const csvField& f) const;
+    QString& appendRecordToString(QString& line, const csvRecord& newRecord) const;
 };
 
 bool StringLists2csv(const QString& filename, const QStringList& header, const QVector<QStringList>& lists);
+QString queryToCsvString(QString Sql);
+
 
 #endif // CSVWRITER_H

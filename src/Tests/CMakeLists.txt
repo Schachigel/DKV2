@@ -187,7 +187,7 @@ ${_run_table}
 
     int rc = 0;
 
-    dbgTimer totalTimer(QStringLiteral(\"test_all: total\"), dbgTimer::initialState::stopped);
+    dbgTimer totalTimer(QStringLiteral(\"test_all\"), dbgTimer::initialState::stopped);
     totalTimer.start(QStringLiteral(\"test_all: total duration\"));
 
     for (int i = 1; i <= repetitions; ++i) {
@@ -261,6 +261,7 @@ ${_run_table}
 
     totalTimer.end();
     totalTimer.dump();
+    qInfo() << \"avg Time per run: \" << totalTimer.final.timeInMs/ repetitions;
 
     return rc;
 }

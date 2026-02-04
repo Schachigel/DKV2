@@ -4,8 +4,8 @@
 #include "appconfig.h"
 #include "dkdbviews.h"
 #include "creditor.h"
+#include "filewriter.h"
 #include "csvwriter.h"
-
 
 // NON MEMBER FUNCTIONS
 namespace {
@@ -47,10 +47,6 @@ QString print_as_csv(const QDate &bookingDate,
         csv.appendValueToNextRecord(l.toString(c.value(), 'f', 2));
     }
     return csv.toString();
-    // QString filename{qsl("%1_Jahresabrechnung-%2.csv")};
-    // filename = filename.arg(QDate::currentDate().toString(Qt::ISODate),
-    //                         i2s(bookingDate.year()));
-    // csv.saveAndShowInExplorer(filename);
 }
 } // Eo local namespace
 
@@ -82,7 +78,6 @@ int executeCompleteAS( year AS_year/*, QString &csv*/)
         qCritical() << "nothing to do: There are no contracts for AS";
         return 0;
     }
-
     int nbrOfSuccessfull_AS {0};
     for (const auto &C : std::as_const(contractData))
     {
@@ -111,7 +106,7 @@ int executeCompleteAS( year AS_year/*, QString &csv*/)
 
 QString formulate_AS_as_CSV(year y)
 {
-    return QString();
+    return sqltableToCsvString( sqlComplete_AS_data, QVector<QPair<QString, QVariant>> {{ qsl(":year"), {y}}});
 }
 
 QString AS_filename(year y)
