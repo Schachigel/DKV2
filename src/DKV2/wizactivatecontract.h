@@ -1,7 +1,7 @@
 #ifndef ACTIVATECONTRACTWIZ_H
 #define ACTIVATECONTRACTWIZ_H
 
-#include "helper.h"
+#include "uihelper.h"
 
 struct wpInitialPayment_IntroPage : public QWizardPage {
     wpInitialPayment_IntroPage(QWidget* w =nullptr);

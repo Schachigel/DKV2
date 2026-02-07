@@ -14,7 +14,7 @@ QString print_as_csv(const QDate &bookingDate,
                   const QVector<QDate> &startOfInterrestCalculation,
                   const QVector<booking> &asBookings) {
 
-    csvWriter csv;
+    CsvWriter csv;
     csv.addColumns({{"Vorname"}, {"Nachname"}, {"Email"}, {"Strasse"}, {"Plz"},
                     {"Stadt"}, {"IBAN"}, {"Kennung"}, {"Auszahlend"}, {"Beginn"},
                     {"Buchungsdatum"}, {"Zinssatz"}, {"Kreditbetrag"},

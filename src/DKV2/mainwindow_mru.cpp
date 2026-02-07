@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 
-#include "helper.h"
+#include "uihelper.h"
 #include "busycursor.h"
 #include "opendatabase.h"
 

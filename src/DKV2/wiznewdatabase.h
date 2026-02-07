@@ -1,7 +1,7 @@
 #ifndef FILESELECTIONWIZ_H
 #define FILESELECTIONWIZ_H
 
-#include "helper.h"
+#include "uihelper.h"
 
 /* file selection Page  */
 class wpFileSelection_IntroPage : public QWizardPage

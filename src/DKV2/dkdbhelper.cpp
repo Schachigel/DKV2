@@ -6,7 +6,7 @@
 #include "appconfig.h"
 #include "dkv2version.h"
 //#include "busycursor.h"
-#include "csvwriter.h"
+#include "dkdbviews.h"
 #include "contract.h"
 #include "creditor.h"
 #include "investment.h"
@@ -231,75 +231,9 @@ void create_sampleData(int datensaetze)
 
 }
 
-bool createCsvActiveContracts()
+QString createCsvActiveContracts()
 {   LOG_CALL;
-    QString tempViewContractsCsv {qsl("tvActiveContractsCsv")};
-    if( not createTemporaryDbView(tempViewContractsCsv, sqlContractsActiveDetailsView))
-        RETURN_ERR( false, qsl("failed to create view "), tempViewContractsCsv);
-
-    QStringList header;
-    dbtable t(tempViewContractsCsv);
-    t.append(dbfield(contract::fnId, QMetaType::Int));
-    header.append(qsl("Vertragsnummer"));
-    t.append(dbfield(creditor::fnId, QMetaType::Int));
-    header.append (qsl("Kundennummer"));
-    t.append(dbfield(creditor::fnVorname));
-    header.append (qsl("Vorname"));
-    t.append(dbfield(creditor::fnNachname));
-    header.append (qsl("Nachname"));
-    t.append(dbfield(creditor::fnStrasse));
-    header.append (qsl("Strasse"));
-    t.append(dbfield(creditor::fnPlz));
-    header.append (qsl("PLZ"));
-    t.append(dbfield(creditor::fnStadt));
-    header.append (qsl("Stadt"));
-    t.append(dbfield(creditor::fnEmail));
-    header.append (qsl("E-Mail"));
-    t.append(dbfield(creditor::fnIBAN));
-    header.append (qsl("IBAN"));
-    t.append(dbfield(creditor::fnBIC));
-    header.append (qsl("BIC"));
-    t.append(dbfield(qsl("Zinssatz"), QMetaType::Double));
-    header.append (qsl("Zinssatz"));
-    t.append(dbfield(qsl("Wert"), QMetaType::Double));
-    header.append (qsl("Vertragswert"));
-    t.append(dbfield(qsl("Aktivierungsdatum"), QMetaType::QDate));
-    header.append (qsl("Aktivierungsdatum"));
-    t.append(dbfield(qsl("Kuendigungsfrist"), QMetaType::Int));
-    header.append (qsl("Kündigungsfrist"));
-    t.append(dbfield(qsl("Vertragsende"), QMetaType::QDate));
-    header.append (qsl("Vertragsende"));
-    t.append(dbfield(qsl("thesa"), QMetaType::Int));
-    header.append (qsl("Zinsmodus"));
-
-    QVector<QSqlRecord> qResult =executeSql (t.Fields ());
-
-    QVector<QStringList> data;
-    for(const auto& record : std::as_const( qResult)) {
-        QStringList col;
-        col.append (record.value(contract::fnId).toString());
-        col.append (record.value(creditor::fnId).toString());
-        col.append (record.value(creditor::fnVorname).toString());
-        col.append (record.value(creditor::fnNachname).toString());
-        col.append (record.value(creditor::fnStrasse).toString());
-        col.append (record.value(creditor::fnPlz).toString());
-        col.append (record.value(creditor::fnStadt).toString());
-        col.append (record.value(creditor::fnEmail).toString());
-        col.append (record.value(creditor::fnIBAN).toString());
-        col.append (record.value(creditor::fnBIC).toString());
-        col.append (prozent2prozent_str (record.value(qsl("Zinssatz")).toDouble ()));
-        col.append (s_d2euro (record.value(qsl("Wert")).toDouble ()));
-        col.append (record.value(qsl("Aktivierungsdatum")).toDate().toString ("dd.MM.yyyy"));
-        col.append (record.value(qsl("Kuendigungsfrist")).toString());
-        col.append (record.value(qsl("Vertragsende")).toDate().toString ("dd.MM.yyyy"));
-        col.append (interestModelDisplayString(interestModelFromInt(record.value(qsl("thesa")).toInt())));
-        data.append(col);
-    }
-
-    QString filename(QDate::currentDate().toString(Qt::ISODate) + "-Aktive-Vertraege.csv");
-    if( StringLists2csv( filename, header, data))
-        return true;
-    RETURN_ERR(false, qsl("failed to print table"));
+    return sqltableToCsvString(sqlContractsActiveDetailsView);
 }
 
 // calculate data for start page

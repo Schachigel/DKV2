@@ -1,7 +1,7 @@
 #ifndef WIZNEW_H
 #define WIZNEW_H
 
-#include "helper.h"
+#include "uihelper.h"
 
 #include "creditor.h"
 #include "contract.h"

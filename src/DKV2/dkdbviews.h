@@ -24,7 +24,7 @@ extern const QString sqlNextAnnualSettlement;
 extern const QString sqlContractDataForAnnualSettlement;
 extern const QString sqlComplete_AS_data;
 
-QString sqltableToCsvString(QString sql, QVector<QPair<QString, QVariant>> params);
+QString sqltableToCsvString(QString sql, QVector<QPair<QString, QVariant>> params ={});
 
 // printing lists
 extern const QString sqlContractsActiveDetailsView;

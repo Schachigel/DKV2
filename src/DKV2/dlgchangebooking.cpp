@@ -1,6 +1,6 @@
 #include "dlgchangebooking.h"
 
-#include "helper.h"
+#include "uihelper.h"
 #include "helperfin.h"
 #include "qevent.h"
 #include "qlineedit.h"

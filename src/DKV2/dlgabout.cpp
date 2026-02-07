@@ -1,4 +1,4 @@
-#include "helper.h"
+#include "uihelper.h"
 #include "dlgabout.h"
 #include "qboxlayout.h"
 

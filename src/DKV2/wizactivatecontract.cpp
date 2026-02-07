@@ -1,6 +1,6 @@
 
 
-#include "helper.h"
+#include "uihelper.h"
 #include "helperfin.h"
 #include "appconfig.h"
 #include "wizactivatecontract.h"

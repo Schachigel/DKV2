@@ -1,5 +1,5 @@
-#ifndef HELPER_H
-#define HELPER_H
+#ifndef UIHELPER_H
+#define UIHELPER_H
 
 #define qsl(x) QStringLiteral(x)
 
@@ -17,4 +17,11 @@ QMainWindow* getMainWindow();
 
 QString getDbFileFromCommandline();
 
-#endif // HELPER_H
+enum showObject{
+    file,
+    folder
+};
+
+bool showInExplorer(const QString &pathOrFilename, showObject fileOrFolder =showObject::file);
+
+#endif // UIHELPER_H

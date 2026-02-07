@@ -1,91 +1,108 @@
 #include "csvwriter.h"
-#include "filewriter.h"
+#include <qassert.h>
+//#include "filewriter.h"
 
-QString csvWriter::prepStringAsField(const QString& s)
+QString CsvWriter::prepStringAsField(const QString& s)
 {
-    QString preped {(trim_fields == trim_input::remove_leading_and_trailing_whitespace) ? s.trimmed() : s};
-    preped.replace(fieldDelimiter, fieldDelimiter+fieldDelimiter);
-    if( preped.contains(fieldSeparator)
-        || preped.contains(fieldDelimiter)
-        || preped.contains(reWhiteSpace)
-        || preped.contains(reLineBreak))
-    {
-        preped.prepend(fieldDelimiter);
-        preped.append(fieldDelimiter);
+    QString out = (trim_fields == TrimInput::TrimWhitespace)
+    ? s.trimmed() : s;
+
+    // explizit: leeres Feld
+    if (out.isEmpty())
+        return QString(2,quotingChar); // ""
+
+    const bool hasQuote = out.contains(quotingChar);
+    if (hasQuote)
+        out.replace(quotingChar, QString(2, quotingChar));
+
+    const bool hasOuterSpace =
+        (trim_fields == TrimInput::NoTrimming) &&
+        !out.isEmpty() &&
+        (out.front().isSpace() || out.back().isSpace());
+
+    const bool mustQuote =
+        quoteMode == QuoteMode::AllFields ||
+        hasQuote ||
+        out.contains(fieldSeparator) ||
+        out.contains('\n') ||
+        out.contains('\r') ||
+        hasOuterSpace;   // <- add this
+
+    if (mustQuote) {
+        out.prepend(quotingChar);
+        out.append(quotingChar);
     }
-    return preped;
+
+    return out;
 }
 
-void csvWriter::addColumn(const QString& header)
+void CsvWriter::addColumn(const QString& header)
 {
     if (records.size()){
-        qCritical() << "csvWriter::addColumn: a row can only be added before records were added";
+        qCritical() << "CsvWriter::addColumn: a row can only be added before records were added";
         return;
     }
     headers.append({prepStringAsField(header)});
 }
 
-void csvWriter::addColumns(const QStringList HeadersToBeAdded)
+void CsvWriter::addColumns(const QList<QString>& HeadersToBeAdded)
 {
     for(auto& s : std::as_const(HeadersToBeAdded))
         addColumn(s);
 }
 
-void csvWriter::appendValueToNextRecord(const QString& value)
+void CsvWriter::appendValueToNextRecord(const QString& value)
 {
-
     if( headers.isEmpty()) {
         // no headers- we can not check validity of records
         next.append({prepStringAsField(value)});
     } else {
-        Q_ASSERT( next.size() < headers.size());
+        if( next.size() >= headers.size()) {
+            qCritical() << "appendValueToNextRecord: mixed header / non header mode csv? this should not be possible";
+            Q_UNREACHABLE();
+            return;
+        }
         // if headers are given, record size must not exceed headers size
         next.append({prepStringAsField(value)});
-        if( next.size() == headers.size()){
+        if( next.size() == headers.size()) {
             records.append(next);
             next.clear();
         }
     }
 }
 
-void csvWriter::startNextRecord()
+void CsvWriter::startNextRecord()
 {
-    if( headers.size())
+    if( headers.size()) {
         qCritical() << "with a header row given, records are stored automatically when complete";
+        return;
+    }
     records.append(next);
     next.clear();
 }
 
-void csvWriter::appendRecord(const QList<QString> record)
+void CsvWriter::appendRecord(const QList<QString>& record)
 {
-    Q_ASSERT( headers.size() > 0 // ONLY with NO header, there could be more data then headers
-             && record.size() == headers.size());
-    for (const auto& recordEntry : record ) {
-        appendValueToNextRecord(recordEntry);
+    if( headers.size() <= 0 || record.size() == headers.size()) {
+        for (const auto& recordEntry : record ) {
+            appendValueToNextRecord(recordEntry);
+        }
+        return;
     }
+    qCritical() << "appendRecord: mixed header / non header mode csv? this should not be possible";
+    Q_UNREACHABLE();
+    return;
 }
 
-bool atStartOfLine (const QString& c) {
-    if( c.size() == 0) return true;
-    if( c.endsWith("\r")
-        or c.endsWith("\n")
-        or c.endsWith(lineSeparator))
-        return true;
-    return false;
-}
-
-QString& csvWriter::appendFieldToString(QString& str, const csvField& newField) const
+QString& CsvWriter::appendFieldToString(QString& str, const csvField& newField, bool firstInLine) const
 {
-    if (atStartOfLine(str))
-        if( newField.size())
-            str += newField;
-        else
-            str += fieldSeparator;
-    else
-        str += fieldSeparator + newField;
-    return str;
+    if (!firstInLine)
+        str += fieldSeparator;
+
+    return str += newField;
 }
-QString& csvWriter::appendRecordToString(QString& str, const csvRecord& newRecord) const
+
+QString& CsvWriter::appendRecordToString(QString& str, const csvRecord& newRecord) const
 {
     if( newRecord.size() == 0) return str;
 
@@ -93,14 +110,16 @@ QString& csvWriter::appendRecordToString(QString& str, const csvRecord& newRecor
         str +=lineSeparator;
 
     QString thisLine;
+    bool firstInLine =true;
     for( const auto& field : newRecord) {
-        appendFieldToString(thisLine, field);
+        appendFieldToString(thisLine, field, firstInLine);
+        firstInLine =false;
     }
     str += thisLine;
     return str;
 }
 
-QString csvWriter::toString() const
+QString CsvWriter::toString() const
 {
     QString Output;
     if( headers.size())
@@ -109,21 +128,9 @@ QString csvWriter::toString() const
         for (const auto & record : records) {
             appendRecordToString(Output, record);
         }
+    if( next.size())
+        appendRecordToString(Output, next);
     return Output;
 }
 
-bool StringLists2csv(const QString& filename, const QList<QString>& header, const QVector<QList<QString>>& data)
-{
-    LOG_CALL;
-    qsizetype numColumns =header.size();
-    csvWriter csv;
-    csv.addColumns(header);
-    for( auto& line : std::as_const(data)) {
-        if(line.size() not_eq numColumns){
-            qCritical() << "csv file not created due to wrong number of elements in " << line;
-            return false;
-        }
-        csv.appendRecord(line);
-    }
-    return saveStringToUtf8File(filename, csv.toString()) && showInExplorer (filename);
-}
+QString sqltableToCsvString(QString sql, QVector<QPair<QString, QVariant>> params ={});

@@ -18,8 +18,8 @@ void printHtmlToPdf( const QString &html, const QString& css, const QString &fn)
 
 QString absoluteCanonicalPath(const QString &path);
 
-QString fileToString( const QString& filename);
-bool stringToFile( const QString& string, const QString& fullFileName);
+QString readFileToString( const QString& filename);
+
 QString makeSafeFileName(QString name, int maxSize =8);
 
 //

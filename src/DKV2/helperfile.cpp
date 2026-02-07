@@ -65,7 +65,7 @@ QString absoluteCanonicalPath(const QString &path)
     return newpath.isEmpty() ? path : newpath;
 }
 
-QString fileToString( const QString& filepath)
+QString readFileToString( const QString& filepath)
 {   LOG_CALL_W(filepath);
     QFile f(filepath);
     if( not f.open(QFile::ReadOnly|QIODevice::Text))
@@ -76,7 +76,7 @@ QString fileToString( const QString& filepath)
     return f.readAll();
 }
 
-QString makeSafeFileName(QString name)
+QString makeSafeFileName(QString name, int maxSize)
 {
     // Windows-compatible superset (safe on all platforms)
     static const QRegularExpression illegalChars(

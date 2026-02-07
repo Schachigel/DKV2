@@ -1,15 +1,14 @@
 #ifndef FILEWRITER_H
 #define FILEWRITER_H
 
-bool savePdfFromHtmlTemplate(const QString &templateName, const QString &fileName, const QVariantMap &data);
+QString appendFilenameToOutputDir(QString filename);
 
+bool savePdfFromHtmlTemplate(const QString &templateName, const QString &fileName, const QVariantMap &data);
 
 #define showFolder true
 #define showFile   false
 
-bool showInExplorer(const QString &pathOrFilename, bool fileOrFolder =showFile);
-
-bool saveStringToUtf8File(const QString& filename, const QString& content);
+QString saveStringToUtf8File(const QString& filename, const QString& content);
 
 QString sqltableToCsvString(QString sql, QVector<QPair<QString, QVariant>> params);
 

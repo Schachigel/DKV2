@@ -1,7 +1,7 @@
 #ifndef WIZOPENORNEWDATABASE_H
 #define WIZOPENORNEWDATABASE_H
 
-#include "helper.h"
+#include "uihelper.h"
 
 enum { NewOrOpen, selectNewFile, Zinssusance, selectExistingFile};
 

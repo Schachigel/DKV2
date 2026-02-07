@@ -2,10 +2,11 @@
 
 #include "appconfig.h"
 #include "dkdbhelper.h"
-#include "helper.h"
+#include "uihelper.h"
 #include "filewriter.h"
 #include "helperfin.h"
 #include "helpersql.h"
+#include "uihelper.h"
 
 #include "csvwriter.h"
 #include "dbstructure.h"
@@ -447,7 +448,7 @@ void print_as_csv(const QDate &bookingDate,
                   const QVector<QDate> &startOfInterrestCalculation,
                   const QVector<booking> &asBookings) {
 
-    csvWriter csv;
+    CsvWriter csv;
     csv.addColumns({{"Vorname"}, {"Nachname"}, {"Email"}, {"Strasse"}, {"Plz"},
                     {"Stadt"}, {"IBAN"}, {"Kennung"}, {"Auszahlend"}, {"Beginn"},
                     {"Buchungsdatum"}, {"Zinssatz"}, {"Kreditbetrag"},
@@ -762,7 +763,7 @@ void annualSettlementLetters() {
                 printData);
 
     bc.finish();
-    showInExplorer(appconfig::Outdir(), showFolder);
+    showInExplorer(appconfig::Outdir(), showObject::folder);
     qInfo() << "Alles OK";
 }
 
@@ -880,7 +881,7 @@ void finalizeContractLetter(contract *c) {
     writeRenderedTemplate(qsl("Endabrechnung.csv"),
                           qsl("Endabrechnung-") + filenamepattern + qsl(".csv"),
                           printData);
-    showInExplorer(appconfig::Outdir(), showFolder);
+    showInExplorer(appconfig::Outdir(), showObject::folder);
     qInfo() << "Vertragsabschlussdokument erfolgreich angelegt";
 }
 

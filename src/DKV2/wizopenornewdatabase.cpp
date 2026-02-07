@@ -1,6 +1,6 @@
 #include "wizopenornewdatabase.h"
 
-#include "helper.h"
+#include "uihelper.h"
 #include "appconfig.h"
 
 /*

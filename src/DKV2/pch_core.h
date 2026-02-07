@@ -43,6 +43,6 @@
 #include <QPair>
 #include <QList>
 #include <QBitArray>
-
+#include <QTextDocument>
 
 #endif // PCH_CORE_H

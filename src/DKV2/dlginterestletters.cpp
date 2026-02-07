@@ -1,5 +1,5 @@
 #include "dlginterestletters.h"
-#include "helper.h"
+#include "uihelper.h"
 #include "helperfin.h"
 
 void dlgInterestLetters::setYear(int y)

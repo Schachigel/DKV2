@@ -60,7 +60,7 @@ target_link_libraries(${CORE_TARGET} PUBLIC Qt6::PrintSupport)
 # --- UI (Widgets/Dialoge/Wizards) ---
 set(DKV2_UI_SOURCES
     pch.h
-    helper.cpp helper.h
+    uihelper.cpp uihelper.h
 
     mainwindow.cpp mainwindow.h mainwindow.ui
     mainwindow_contractlist.cpp
@@ -92,22 +92,15 @@ set(DKV2_UI_SOURCES
 
 add_library(${UI_TARGET} STATIC
     ${DKV2_UI_SOURCES}
-    opendatabase.cpp
-    opendatabase.h
-
-
-    ibanvalidator.h
-    ibanvalidator.cpp
-    uebersichten.h
-    uebersichten.cpp
-    busycursor.h
-
-
-    contractsheadersortingadapter.h
-    contractsheadersortingadapter.cpp
     dkv2version.h
-    contracttablemodel.cpp
-    contracttablemodel.h
+    busycursor.h
+    uihelper.cpp uihelper.h
+    opendatabase.cpp opendatabase.h
+    ibanvalidator.cpp ibanvalidator.h
+    uebersichten.cpp uebersichten.h
+
+    contractsheadersortingadapter.cpp contractsheadersortingadapter.h
+    contracttablemodel.cpp contracttablemodel.h
 )
 
 target_precompile_headers(${UI_TARGET} PRIVATE pch.h)

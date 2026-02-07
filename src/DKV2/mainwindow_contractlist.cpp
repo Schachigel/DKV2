@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "helper.h"
+#include "uihelper.h"
 
 #include "busyCursor.h"
 #include "csvwriter.h"
@@ -585,7 +585,7 @@ void MainWindow::on_btnSave2Csv_clicked()
                        toQBitArray(getMetaInfo (visibilityPattern_d_MetaInfoName, defaultVisibilityPattern_deletedContracts))
                       : toQBitArray(getMetaInfo (visibilityPatternMetaInfoName, defaultVisibilityPattern_contracts)));
 
-    csvWriter csv;
+    CsvWriter csv;
     // header
     for( int headerNbr=0; headerNbr < rec.count(); headerNbr++) {
         if( ba.at(headerNbr)){

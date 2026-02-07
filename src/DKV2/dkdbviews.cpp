@@ -538,36 +538,41 @@ ORDER BY k.Nachname, k.Vorname, v.id
 
 
 //////////////////////////////////////
-// Listenausdruck createCsvActiveContracts
+// Listenausdruck  in createCsvActiveContracts
 //////////////////////////////////////
 const QString sqlContractsActiveDetailsView{ qsl(
 R"str(
 SELECT
-  Vertraege.id          AS id,
-  Vertraege.Kennung     AS Vertragskennung,
-  Vertraege.ZSatz /100. AS Zinssatz,
-  SUM(Buchungen.Betrag) /100. AS Wert,
-  MIN(Buchungen.Datum)  AS Aktivierungsdatum,
-  Vertraege.Kfrist      AS Kuendigungsfrist,
-  Vertraege.LaufzeitEnde  AS Vertragsende,
-  Vertraege.thesaurierend AS thesa,
-  Kreditoren.Nachname || ', ' || Kreditoren.Vorname AS Kreditorin,
-  Kreditoren.id         AS KreditorId,
-  Kreditoren.Nachname   AS Nachname,
+  Vertraege.id          AS Vertragsnummer,
+  Kreditoren.id         AS Kundennummer,
   Kreditoren.Vorname    AS Vorname,
+  Kreditoren.Nachname   AS Nachname,
   Kreditoren.Strasse    AS Strasse,
-  Kreditoren.Plz        AS Plz,
+  Kreditoren.Plz        AS PLZ,
   Kreditoren.Stadt      AS Stadt,
-  Kreditoren.Email      AS Email,
-  Kreditoren.Telefon    AS Telefon,
-  Kreditoren.Kontakt    AS Kontakt,
-  Kreditoren.Buchungskonto AS Buchungskonto,
-  Kreditoren.IBAN       AS Iban,
-  Kreditoren.BIC        AS Bic
+  Kreditoren.Email      AS "E-Mail",
+  Kreditoren.IBAN       AS IBAN,
+  Kreditoren.BIC        AS BIC,
+  Vertraege.Kennung     AS Vertragskennung,
+  REPLACE( printf('%.2f', Vertraege.Betrag /100.0), '.', ',') AS Vertragswert,
+  REPLACE( printf('%.2f', Vertraege.ZSatz /10000.0, 2), '.', ',') AS Zinssatz,
+  CASE Vertraege.thesaurierend
+    WHEN 0 THEN 'Auszahlend'
+    WHEN 1 THEN 'Ansparend'
+    WHEN 2 THEN 'Fest'
+    WHEN 3 THEN 'Zinslos'
+    ELSE 'ERROR'
+  END AS Zinsmodus,
+  REPLACE( printf('%.2f', SUM(Buchungen.Betrag) / 100.0), '.', ',') AS Vertragswert,
+  strftime('%d.%m.%Y', MIN(Buchungen.Datum))  AS Aktivierungsdatum,
+    -- MIN(Buchungen.Datum)  AS Aktivierungsdatum,
+  Vertraege.Kfrist      AS Kuendigungsfrist,
+  COALESCE(strftime('%d.%m.%Y', Vertraege.LaufzeitEnde), '-') AS Vertragsende
 FROM Vertraege
     INNER JOIN Buchungen  ON Buchungen.VertragsId = Vertraege.id
     INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId
-GROUP BY Vertraege.id)str"
+GROUP BY Vertraege.id
+)str"
 )};
 // uebersicht contract use and other uses
 const QString sqlContractsActiveView { qsl(
@@ -588,7 +593,7 @@ FROM (%1)
 QString sqltableToCsvString(QString sql, QVector<QPair<QString, QVariant>> params)
 {
     QVector<QSqlRecord> records;
-    if( params.size()){
+    if( params.size()) {
         if( not executeSql(sql, params, records)) {
             qCritical() << "extracting data for table w params as csv failed";
             return QString();
@@ -604,7 +609,7 @@ QString sqltableToCsvString(QString sql, QVector<QPair<QString, QVariant>> param
         qInfo() << "no data for AS csv found";
         return QString();
     }
-    csvWriter csv;
+    CsvWriter csv;
     // add column header
     for( int cIndex =0; cIndex < records[0].count(); cIndex++) {
         csv.addColumn(records[0].fieldName(cIndex));

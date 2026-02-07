@@ -26,7 +26,7 @@ void create_sampleData(int datensaetze =20);
 
 int createNewInvestmentsFromContracts( bool fortlaufend);
 int automatchInvestmentsToContracts();
-bool createCsvActiveContracts();
+QString createCsvActiveContracts();
 
 struct contractRuntimeDistrib_rowData
 {

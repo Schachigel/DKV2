@@ -7,57 +7,37 @@
 #include "appconfig.h"
 #include "mustache.h"
 
-bool showInExplorer(const QString &pathOrFilename, bool fileOrFolder)
-{   LOG_CALL_W(pathOrFilename);
-#ifdef _WIN32    //Code for Windows
-    QString fullPath {pathOrFilename};
-    QFileInfo fi(fullPath);
-    if(fi.isRelative ())
-        fullPath = appconfig::Outdir ().append (qsl("/").append (pathOrFilename));
-
-    QString explorerW_selectedFile = QDir::toNativeSeparators(fullPath);
-    if( fileOrFolder == showFile)
-        explorerW_selectedFile =qsl(" /select,\"%1\"").arg(explorerW_selectedFile);
-    if( fileOrFolder == showFolder)
-        explorerW_selectedFile =qsl(" \"%1\"").arg(explorerW_selectedFile);
-
-    QProcess p;
-    p.setNativeArguments(explorerW_selectedFile);
-    p.setProgram(qsl("explorer.exe"));
-    qint64 pid;
-    return p.startDetached(&pid);
-//  ?! debugging showed, that .waitForStarted always returns an error (on my system...)
-//    if( not p.waitForStarted(-1))
-//        qDebug().noquote ()<< "failed to start explorer. Arg was: " << explorerW_selectedFile << " Error was " << p.error ();
-
-#elif defined(__APPLE__)    //Code for Mac
-    Q_UNUSED(fileOrFolder);
-
-    QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to reveal POSIX file \"" + pathOrFilename + "\""});
-    QProcess::execute("/usr/bin/osascript", {"-e", "tell application \"Finder\" to activate"});
-#else
-    Q_UNUSED (fileOrFolder);
-    return true;
-#endif
+QString appendFilenameToOutputDir(QString filename)
+{
+    if( filename.startsWith("/"))
+        return appconfig::Outdir() + filename;
+    else
+        return appconfig::Outdir() + qsl("/") + filename;
 }
 
-
-bool saveStringToUtf8File(const QString& filename, const QString& content)
+QString saveStringToUtf8File(const QString& filename, const QString& content)
 {   LOG_CALL_W(filename);
-    QString fqFilePath {appconfig::Outdir() + qsl("/") + filename};
+
+    QString fqFilePath {appendFilenameToOutputDir(filename)};
     moveToBackup (fqFilePath);
 
     QFile file(fqFilePath);
-    if( not file.open(QIODevice::WriteOnly|QIODevice::Truncate|QIODevice::Text))
-        RETURN_ERR(false, qsl("could not open csv file for writing: "), filename);
+    if( not file.open(QIODevice::WriteOnly|QIODevice::Truncate|QIODevice::Text)) {
+        qCritical() << "File Open of " << fqFilePath << " failed: " << file.errorString();
+        return QString();
+    }
+        //RETURN_ERR(false, qsl("could not open csv file for writing: "), filename);
 
     QTextStream s(&file);
     s.setEncoding(QStringConverter::Utf8);
     s.setGenerateByteOrderMark(true);
     s << content;
-
-    showInExplorer(fqFilePath);
-    return true;
+    if( s.status() == QTextStream::Ok)
+        return fqFilePath;
+    else{
+        qCritical() << qsl("writing file %1 failed in TextSteam").arg(fqFilePath);
+        return QString();
+    }
 }
 
 bool extractTemplateFileFromResource(const QString& path, const QString& file, const QString& outname)
@@ -101,7 +81,7 @@ QString mustachReplace(const QString &templateFileName, const QVariantMap &data)
     Mustache::QtVariantContext context(data);
     Mustache::Renderer renderer;
 
-    QString Content{ fileToString (appconfig::Outdir() + "/vorlagen/" + templateFileName)};
+    QString Content{ readFileToString (appendFilenameToOutputDir(qsl("/vorlagen/") + templateFileName))};
     // We need 3 passes to replace all mustache variables.
     for (int pass = 1; pass <= 3; pass++)
         Content = renderer.render( Content, &context);
@@ -126,12 +106,12 @@ bool writeRenderedTemplate(const QString &templateFileName, const QString &outpu
     QFileInfo fi(outputFileName);
     QString fullOutputFileName{outputFileName};
     if (fi.isRelative())
-        fullOutputFileName = appconfig::Outdir() + qsl("/") + outputFileName;
+        fullOutputFileName = appendFilenameToOutputDir( outputFileName);
 
     // render the content.
     QString renderedText = mustachReplace(templateFileName, data);
     // Write the html content to file. (e.g. for editing)
-    saveStringToUtf8File(renderedText, appconfig::Outdir() +qsl("/") +outputFileName);
+    saveStringToUtf8File(renderedText, appendFilenameToOutputDir(outputFileName));
 
     return true;
 }
@@ -139,11 +119,7 @@ bool writeRenderedTemplate(const QString &templateFileName, const QString &outpu
 bool savePdfFromHtmlTemplate(const QString &templateFileName, const QString &outputFileName, const QVariantMap &data)
 {   LOG_CALL;
     QFileInfo fi( outputFileName);
-    QString fullOutputFileName {outputFileName};
-    if(fi.isRelative ())
-        fullOutputFileName =appconfig::Outdir () +qsl("/") +outputFileName;
-    QString css{fileToString (appconfig::Outdir ()+qsl("/vorlagen/") +qsl("zinsbrief.css"))};
-
+    QString css{ readFileToString (appendFilenameToOutputDir(qsl("zinsbrief.css")))};
     // DEBUG   printHtmlToPdf(renderedHtml, css, htmlFileName);
 
     // Prepare the printer
@@ -156,7 +132,7 @@ bool savePdfFromHtmlTemplate(const QString &templateFileName, const QString &out
     double bottomB = cm2Pt(2.);
     pl.setPageSize (QPageSize(QPageSize::A4), QMargins(leftB, topB,rightB, bottomB));
     printer.setPageLayout (pl);
-    printer.setOutputFileName(fullOutputFileName);
+    printer.setOutputFileName(outputFileName);
 
     //Prepare the document
     QTextDocument doc;
@@ -170,8 +146,11 @@ bool savePdfFromHtmlTemplate(const QString &templateFileName, const QString &out
     doc.print(&printer);
 
     // Write the html content to file. (just in case ... e.g. for editing)
-    QString htmlFileName {appconfig::Outdir () +qsl("/html/") +replaceExtension(outputFileName, qsl(".html"))};
-    stringToFile( renderedHtml, htmlFileName);
 
+    QString htmlFileName {appendFilenameToOutputDir(qsl("html/") +replaceExtension(outputFileName, qsl(".html")))};
+    if( saveStringToUtf8File( renderedHtml, outputFileName).isEmpty()){
+        qCritical() << "failed to write template";
+        return false;
+    }
     return true;
 }

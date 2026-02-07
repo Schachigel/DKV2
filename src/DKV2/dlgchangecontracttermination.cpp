@@ -1,6 +1,6 @@
 #include "dlgchangecontracttermination.h"
 
-#include "helper.h"
+#include "uihelper.h"
 #include "helperfin.h"
 
 dlgChangeContractTermination::dlgChangeContractTermination(QWidget *parent) : QDialog(parent)

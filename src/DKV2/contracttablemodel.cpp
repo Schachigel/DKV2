@@ -1,5 +1,5 @@
 #include "contracttablemodel.h"
-#include "helper.h"
+#include "uihelper.h"
 #include "contract.h"
 
 namespace {

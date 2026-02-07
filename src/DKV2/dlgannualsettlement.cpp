@@ -1,6 +1,6 @@
 #include "dlgannualsettlement.h"
 
-#include "helper.h"
+#include "uihelper.h"
 #include "helper_core.h"
 #include "helperfin.h"
 

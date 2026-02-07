@@ -1,7 +1,7 @@
 #ifndef CHANGECONTRACTVALUEWIZ_H
 #define CHANGECONTRACTVALUEWIZ_H
 
-#include "helper.h"
+#include "uihelper.h"
 
 const QString fnDeposit_notPayment {qsl("deposit_notPayment")};
 

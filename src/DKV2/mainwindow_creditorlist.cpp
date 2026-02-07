@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "helper.h"
+#include "uihelper.h"
 #include "dlgdisplaycolumns.h"
 #include "busyCursor.h"
 #include "transaktionen.h"

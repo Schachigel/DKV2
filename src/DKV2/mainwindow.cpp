@@ -606,11 +606,11 @@ void MainWindow::on_comboUebersicht_currentIndexChanged(int i)
 }
 void MainWindow::on_pbPrint_clicked()
 {   LOG_CALL;
-    QString filename = appconfig::Outdir();
-    filename += qsl("/") + QDate::currentDate().toString(qsl("yyyy-MM-dd_"));
-    filename += Statistics_Filenames[ui->comboUebersicht->currentIndex()];
-    filename += qsl(".pdf");
-    QPdfWriter write(filename);
+
+    QString filename {QDate::currentDate().toString(qsl("yyyy-MM-dd_"))};
+    filename += Statistics_Filenames[ui->comboUebersicht->currentIndex()] +qsl(".pdf");
+
+    QPdfWriter write(appendFilenameToOutputDir(filename));
     ui->txtOverview->print(&write);
     showInExplorer(filename);
 }
@@ -802,10 +802,33 @@ void MainWindow::on_action_menu_contracts_interestLetters_triggered()
 /////////////////////////////////////////////////
 // list creation csv, printouts
 /////////////////////////////////////////////////
+
+namespace{
+QString contractListFilename() {
+    QString projectName {dbConfig::readValue(projectConfiguration::GMBH_PROJECT).toString()};
+    projectName =makeSafeFileName(projectName, 9);
+
+    return qsl("%1_AktiveVerträge_%2.csv")
+        .arg(QDate::currentDate().toString(Qt::ISODate), projectName);
+}
+}// EO namespace
+
 void MainWindow::on_action_menu_contracts_print_lists_triggered()
 {   LOG_CALL;
-    if( not createCsvActiveContracts())
+    QString csv =createCsvActiveContracts();
+    if( csv.isEmpty()) {
         QMessageBox::critical(this, qsl("Fehler"), qsl("Die Datei konnte nicht angelegt werden. Ist sie z.B. in Excel geöffnet?"));
+        return;
+    }
+
+    QString path {saveStringToUtf8File(contractListFilename(), csv)};
+    if( path.isEmpty()) {
+        QMessageBox::critical(this, qsl("Fehler"), qsl("Die Datei konnte nicht angelegt werden. Ist sie z.B. in Excel geöffnet?"));
+        return;
+    }
+    else {
+        showInExplorer(path);
+    }
 }
 
 /////////////////////////////////////////////////
