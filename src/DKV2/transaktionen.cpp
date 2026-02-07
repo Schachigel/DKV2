@@ -329,7 +329,7 @@ void activateInterest(contract *ctr) {
         }
         break;
     } while (true);
-    booking_success booking_OK {ctr->bookActivateInterest(dlg.date())};
+    BookingResult booking_OK {ctr->bookActivateInterest(dlg.date())};
     if (not booking_OK) {
         QString msg{qsl("Beim der Buchung ist ein Fehler eingetreten:\n %1").arg(booking_OK.error)};
         QMessageBox::warning(getMainWindow(), qsl("Buchungsfehler"), msg);

@@ -37,19 +37,20 @@ inline int toInt(const interestModel m) {
     return static_cast<int>(m);
 }
 inline interestModel interestModelFromInt(const int i) {
-    if( i < 0 or i >toInt(interestModel::maxId)){
+    if( i < 0 or i >= toInt(interestModel::maxId)){
         Q_ASSERT(not "Invalid interestModel");
-        return static_cast<interestModel>(interestModel::maxId);;
+        return static_cast<interestModel>(interestModel::maxId);
     }
     return static_cast<interestModel>(i);
 }
 
-struct booking_success {
+struct BookingResult {
     QString error;
-    explicit operator bool(){return error.isEmpty();}
+    bool ok() const { return error.isEmpty(); }
+    explicit operator bool() const { return ok(); }
+    static BookingResult success() { return {}; }
+    static BookingResult fail(QString msg) { return {std::move(msg)}; }
 };
-const booking_success booking_result_success {{}};
-#define booking_error(x) {x}
 
 using year = int;
 
@@ -83,7 +84,8 @@ struct contract
 
     void setInterestRate( const double percent) {
         td.setValue(fnZSatz, QVariant (qRound(percent * 100.)));
-        if( percent == 0) td.setValue(fnThesaurierend, toInt(interestModel::zero));
+        if( percent == 0)
+            td.setValue(fnThesaurierend, toInt(interestModel::zero));
     }
     double interestRate() const {
         QVariant p {td.getValue(fnZSatz)}; // stored as a int (100th percent)
@@ -116,7 +118,8 @@ struct contract
     void setNoticePeriod(const int m) {
         td.setValue(fnKFrist, m);
         if( -1 not_eq m)
-            setPlannedEndDate( EndOfTheFuckingWorld);}
+            setPlannedEndDate( EndOfTheFuckingWorld);
+    }
     int noticePeriod() const { return td.getValue(fnKFrist).toInt();}
 
     bool hasEndDate() const {return -1 == td.getValue(fnKFrist);}
@@ -157,16 +160,14 @@ struct contract
     // contract activation / initial deposit
     bool bookInitialPayment(const QDate aDate, const double amount);
     bool initialPaymentReceived() const;
-    booking_success bookActivateInterest(const QDate d);
+    BookingResult bookActivateInterest(const QDate d);
     QDate initialPaymentDate();
     bool noBookingButInitial();
 
     // other booking actions
     bool needsAS_before( const QDate d);
     QDate dateOf_next_AS();
-    QDate dateOf_lastAS();
     year annualSettlement(const year y);
-
 
     bool deposit(const QDate d, double amount, bool payoutInterest =false);
     bool payout(const QDate d, double amount, bool payoutInterest =false);

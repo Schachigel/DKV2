@@ -12,6 +12,53 @@ inline bool isValidRowId(tableindex_t i) {
     return i not_eq SQLITE_invalidRowId; // id / rowid could have other values, if not autoinc
 }
 
+QString DbInsertableString(const QVariant &v);
+QString dbCreatetable_type(const QMetaType t);
+QString dbAffinityType(const QMetaType t);
+
+int rowCount(const QString& table, const QString& where ="", const QSqlDatabase& db =QSqlDatabase::database());
+bool tableExists(const QString& tablename, const QSqlDatabase& db = QSqlDatabase::database());
+bool verifyTable( const dbtable& table, const QSqlDatabase& db);
+bool ensureTable(const dbtable& table, const QSqlDatabase& db =QSqlDatabase::database());
+
+bool executeSql(const QString& sql, QVector<QSqlRecord>& result, const QSqlDatabase& db =QSqlDatabase::database());
+bool executeSql(const QString& sql, const QVector<QPair<QString, QVariant>>& params, QVector<QSqlRecord>& result, const QSqlDatabase& db =QSqlDatabase::database());
+bool executeSql(const QString& sql, const QVector<QVariant>& params,                 QVector<QSqlRecord>& result, const QSqlDatabase& db =QSqlDatabase::database());
+
+
+QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString(), const QSqlDatabase& db =QSqlDatabase::database());
+
+#define fkh_on  true
+#define fkh_off false
+bool getForeignKeyHandlingStatus(const QString& alias =QString(), const QSqlDatabase& db =QSqlDatabase::database());
+//bool switchForeignKeyHandling(const QSqlDatabase& db, const QString& alias, bool OnOff =fkh_on);
+bool switchForeignKeyHandling(bool OnOff =fkh_on, const QSqlDatabase& db =QSqlDatabase::database());
+bool switchForeignKeyHandling(bool OnOff, const QString& alias, const QSqlDatabase& db=QSqlDatabase::database ());
+
+QString selectQueryFromFields(const QVector<dbfield>& fields,
+                              const QString& where =QString(), const QString& order =QString());
+
+QVariant executeSingleValueSql(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database());
+QVariant executeSingleValueSql(const QString& sql, const QVector<QVariant> params, const QSqlDatabase& db =QSqlDatabase::database());
+QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where =QString(), const QSqlDatabase& db = QSqlDatabase::database());
+QVariant executeSingleValueSql(const dbfield&, const QString& where, const QSqlDatabase& db=QSqlDatabase::database());
+
+// QVector<QVariant> executeSingleColumnSql( const QString field, const QString table, const QString& where);
+QVector<QVariant> executeSingleColumnSql(const dbfield& dbField, const QString& where =QString());
+
+QSqlRecord executeSingleRecordSql(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database ());
+QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString(), const QSqlDatabase& db=QSqlDatabase::database());
+
+bool executeSql_wNoRecords(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database());
+bool executeSql_wNoRecords(const QString& sql, const QVariant& v, const QSqlDatabase& db = QSqlDatabase::database());
+bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& v, const QSqlDatabase& db = QSqlDatabase::database());
+
+int getHighestRowId(const QString& tablename);
+
+//////////////////////////////
+//   RAII classes for db handling
+//////////////////////////////
+
 struct dbCloser
 {   // RAII class for db connections
     dbCloser(const QString& connectionString) : conName (connectionString){}
@@ -56,17 +103,66 @@ struct autoRollbackTransaction
         QSqlDatabase::database(con).transaction();
     };
     autoRollbackTransaction(const autoRollbackTransaction&) =delete;
-    void commit() { LOG_CALL;
-        if( not comitted) QSqlDatabase::database(connection).commit();
-        comitted =true;
+    bool commit() { LOG_CALL;
+        if( not committed) {
+            committed =QSqlDatabase::database(connection).commit();
+        }
+        return committed;
     }
     ~autoRollbackTransaction() {
-        if( not comitted)
+        if( not committed)
             QSqlDatabase::database(connection).rollback();
     }
 private:
     QString connection;
-    bool comitted =false;
+    bool committed =false;
+};
+
+class SavepointGuard
+{
+public:
+    explicit SavepointGuard(const QString& name,
+                            const QString& connection = QString())
+        : m_name(name), m_connection(connection)
+    {
+        executeSql_wNoRecords(
+            qsl("SAVEPOINT %1").arg(m_name),
+            m_connection
+            );
+    }
+
+    SavepointGuard(const SavepointGuard&) = delete;
+    SavepointGuard& operator=(const SavepointGuard&) = delete;
+
+    void commit()
+    {
+        if (!m_committed) {
+            executeSql_wNoRecords(
+                qsl("RELEASE SAVEPOINT %1").arg(m_name),
+                m_connection
+                );
+            m_committed = true;
+        }
+    }
+
+    ~SavepointGuard()
+    {
+        if (!m_committed) {
+            executeSql_wNoRecords(
+                qsl("ROLLBACK TO %1").arg(m_name),
+                m_connection
+                );
+            executeSql_wNoRecords(
+                qsl("RELEASE SAVEPOINT %1").arg(m_name),
+                m_connection
+                );
+        }
+    }
+
+private:
+    QString m_name;
+    QString m_connection;
+    bool m_committed = false;
 };
 
 struct autoDetachDb
@@ -88,49 +184,7 @@ private:
 
 void closeAllDatabaseConnections();
 
-QString DbInsertableString(const QVariant &v);
-QString dbCreatetable_type(const QMetaType t);
-QString dbAffinityType(const QMetaType t);
-
-int rowCount(const QString& table, const QString& where ="", const QSqlDatabase& db =QSqlDatabase::database());
-bool tableExists(const QString& tablename, const QSqlDatabase& db = QSqlDatabase::database());
-bool verifyTable( const dbtable& table, const QSqlDatabase& db);
-bool ensureTable(const dbtable& table, const QSqlDatabase& db =QSqlDatabase::database());
-
-bool executeSql(const QString& sql, QVector<QSqlRecord>& result, const QSqlDatabase& db =QSqlDatabase::database());
-bool executeSql(const QString& sql, const QVector<QPair<QString, QVariant>>& params, QVector<QSqlRecord>& result, const QSqlDatabase& db =QSqlDatabase::database());
-bool executeSql(const QString& sql, const QVector<QVariant>& params,                 QVector<QSqlRecord>& result, const QSqlDatabase& db =QSqlDatabase::database());
-
-
-QVector<QSqlRecord> executeSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString(), const QSqlDatabase& db =QSqlDatabase::database());
-
-#define fkh_on  true
-#define fkh_off false
-bool getForeignKeyHandlingStatus(const QString& alias =QString(), const QSqlDatabase& db =QSqlDatabase::database());
-//bool switchForeignKeyHandling(const QSqlDatabase& db, const QString& alias, bool OnOff =fkh_on);
-bool switchForeignKeyHandling(bool OnOff =fkh_on, const QSqlDatabase& db =QSqlDatabase::database());
-bool switchForeignKeyHandling(bool OnOff, const QString& alias, const QSqlDatabase& db=QSqlDatabase::database ());
-
-QString selectQueryFromFields(const QVector<dbfield>& fields,
-                              const QString& where =QString(), const QString& order =QString());
-
-QVariant executeSingleValueSql(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database());
-QVariant executeSingleValueSql(const QString& sql, const QVector<QVariant> params, const QSqlDatabase& db =QSqlDatabase::database());
-QVariant executeSingleValueSql(const QString& fieldName, const QString& tableName, const QString& where =QString(), const QSqlDatabase& db = QSqlDatabase::database());
-QVariant executeSingleValueSql(const dbfield&, const QString& where, const QSqlDatabase& db=QSqlDatabase::database());
-
-// QVector<QVariant> executeSingleColumnSql( const QString field, const QString table, const QString& where);
-QVector<QVariant> executeSingleColumnSql(const dbfield& dbField, const QString& where =QString());
-
-QSqlRecord executeSingleRecordSql(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database ());
-QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString(), const QSqlDatabase& db=QSqlDatabase::database());
-
-bool executeSql_wNoRecords(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database());
-bool executeSql_wNoRecords(const QString& sql, const QVariant& v, const QSqlDatabase& db = QSqlDatabase::database());
-bool executeSql_wNoRecords(const QString& sql, const QVector<QVariant>& v, const QSqlDatabase& db = QSqlDatabase::database());
-
-int getHighestRowId(const QString& tablename);
-
+//////////////////////////////
 struct dbViewDev{
     const QString name;
     const QString sql;
