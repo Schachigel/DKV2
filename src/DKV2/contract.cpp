@@ -401,7 +401,7 @@ bool contract::needsAS_before(const QDate intendedNextBooking)
     if (not intendedNextBooking.isValid()) return false;
     if (not latestBookingDate().isValid()) return false;
     const QDate nextAS {dateOf_next_AS()};
-    return  nextAS <= intendedNextBooking;
+    return  nextAS < intendedNextBooking;
 }
 
 year contract::annualSettlement( year y)

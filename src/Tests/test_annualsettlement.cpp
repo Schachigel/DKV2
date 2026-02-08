@@ -91,10 +91,10 @@ void test_annualSettlement::test_contract_intrest_activation_yearEnd()
     // init payment
     c.bookInitialPayment(cDate.addMonths(1), 1000);
     // act. interest
-    c.bookActivateInterest(QDate(2000, 12, 31));
+    QVERIFY(c.bookActivateInterest(QDate(2000, 12, 31)));
     // AS should work in 2001
     QDate yearEnd2001(2001, 12, 31);
-    QCOMPARE(yearEnd2001, dateOfnextSettlement());
+    QCOMPARE(dateOfnextSettlement(), yearEnd2001);
     QCOMPARE(executeCompleteAS(yearEnd2001.addYears(-1).year()), 0);
     QCOMPARE(executeCompleteAS(yearEnd2001.year()), 1);
 }
