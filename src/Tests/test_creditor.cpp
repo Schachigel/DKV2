@@ -121,13 +121,16 @@ void test_creditor::test_deleteCredtior_wActiveContractFails()
     QCOMPARE(c.remove(), false);
 }
 
-void test_creditor::test_deleteCreditor_wTerminatedContractFails()
+void test_creditor::test_deleteCreditor_wTerminatedContract_Fails()
 {
     creditor c = saveRandomCreditor();
     contract co = saveRandomContract(c.id());
-    co.bookInitialPayment(QDate(2000, 6, 1), 1000);
-    double interestPayout =0, payout =0.;
-    co.finalize(false, QDate(2020, 5, 31), interestPayout, payout);
+    co.updateConclusionDate(QDate(2000,5,1));
+
+    QVERIFY(co.bookInitialPayment(QDate(2000, 6, 1), 1000));
+    double interestPayout =0., payout =0.;
+    QVERIFY(co.finalize(false, QDate(2020, 6, 30), interestPayout, payout));
+dbgDumpDB(); // todo: remove
     QCOMPARE(c.remove(), false);
 }
 

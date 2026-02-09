@@ -20,7 +20,7 @@ private slots:
     void test_deleteCreditor_woContract();
     void test_deleteCreditor_wInactiveContract();
     void test_deleteCredtior_wActiveContractFails();
-    void test_deleteCreditor_wTerminatedContractFails();
+    void test_deleteCreditor_wTerminatedContract_Fails();
     void test_getAllCreditorInfoSorted ();
 };
 

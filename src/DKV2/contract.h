@@ -152,6 +152,7 @@ struct contract
     tableindex_t saveNewContract();
     bool updateComment(const QString&);
     bool updateConclusionDate( const QDate& newD);
+    bool updateInterestActive( const bool activ);
     bool updateInitialPaymentDate(const QDate& newD);
     bool updateTerminationDate(QDate termination, int noticePeriod);
     bool updateInvestment(tableindex_t id);

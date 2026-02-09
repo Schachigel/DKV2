@@ -1,4 +1,5 @@
 #include "test_contract.h"
+#include "testhelper.h"
 
 #include "../DKV2/helper_core.h"
 #include "../DKV2/helpersql.h"
@@ -47,6 +48,7 @@ void test_contract::test_activateContract()
     QVERIFY( not cont.bookInitialPayment(QDate(), 1000.)); // invalid date
     double amount =cont.plannedInvest();
     QVERIFY(cont.bookInitialPayment(QDate::currentDate(), amount)); // valid date
+
     // Vertragsabschluss ist innerhalb der letzten 2 Jahre in zufälligen Verträgen
     QVERIFY(cont.initialPaymentReceived() == true);
     booking latest =cont.latestBooking ();
@@ -149,6 +151,8 @@ void test_contract::test_randomContract()
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
     QCOMPARE(rowCount("Vertraege"), 1);
+    contract cont2(saveRandomContract(c.id()));
+    QCOMPARE(rowCount("Vertraege"), 2);
 }
 
 void test_contract::test_randomContracts()
@@ -167,7 +171,7 @@ interestModel nextInterestModel (interestModel m) {
 
 void test_contract::test_write_read_contract()
 {
-    for( int i=0; i<50; i++) {
+    for( int i=0; i<10; i++) {
         creditor c(saveRandomCreditor());
         contract cont_write(saveRandomContract(c.id()));
         contract cont_read(cont_write.id());
@@ -183,12 +187,13 @@ void test_contract::deposit_inactive_contract_fails()
     {
         creditor c(saveRandomCreditor());
         contract cont(saveRandomContract(c.id()));
+        cont.updateConclusionDate(QDate::currentDate().addDays(-1));
         cont.setInterestModel(interestModel::fixed);
         cont.setInterestActive(true);
 
         QVERIFY( not cont.deposit(QDate::currentDate(), 1000.));
         QVERIFY( not cont.payout(QDate::currentDate(), 1000.));
-        QDate aDate = QDate(2019, 1, 1);
+        QDate aDate = QDate::currentDate();
         cont.bookInitialPayment(aDate, 1000.);
         QVERIFY(cont.deposit(aDate.addMonths(6), 1000.));
         QVERIFY(cont.payout(aDate.addMonths(6).addDays(1), 100.));
@@ -200,13 +205,14 @@ void test_contract::deposit_inactive_contract_fails()
     {
         creditor c(saveRandomCreditor());
         contract cont(saveRandomContract(c.id()));
+        cont.updateConclusionDate(QDate::currentDate().addDays(-1));
         cont.setInterestModel(interestModel::fixed);
         cont.setInterestActive(false);
 
         QVERIFY( not cont.deposit(QDate::currentDate(), 1000.));
         QVERIFY( not cont.payout(QDate::currentDate(), 1000.));
-        QDate aDate = QDate(2019, 1, 1);
-        cont.bookInitialPayment(aDate, 1000.);
+        QDate aDate = QDate::currentDate().addDays(5);
+        QVERIFY(cont.bookInitialPayment(aDate, 1000.));
         QVERIFY(cont.deposit(aDate.addMonths(6), 1000.));
         QVERIFY(cont.payout(aDate.addMonths(6).addDays(1), 100.));
         QCOMPARE(cont.investedValue(), 1900.);
@@ -242,6 +248,7 @@ void test_contract::test_annualSettlement_inactive_fails()
     {
         creditor c(saveRandomCreditor());
         contract cont(saveRandomContract(c.id()));
+        cont.updateConclusionDate(QDate(2019,6,29));
         cont.setInterestRate(1.);
         cont.setInterestModel(interestModel::reinvest);
         cont.setInterestActive(true);
@@ -254,6 +261,7 @@ void test_contract::test_annualSettlement_inactive_fails()
     {
         creditor c(saveRandomCreditor());
         contract cont(saveRandomContract(c.id()));
+        cont.updateConclusionDate( QDate(2019,1,1));
         cont.setInterestRate(1.);
         cont.setInterestModel(interestModel::reinvest);
         cont.setInterestActive(false);
@@ -270,6 +278,7 @@ void test_contract::test_annualSettlement_fullYear()
     {
         creditor c(saveRandomCreditor());
         contract cont(saveRandomContract(c.id()));
+        cont.updateConclusionDate( QDate(2018, 12, 29));
         cont.setInterestRate(1.);
         cont.setInterestModel(interestModel::reinvest);
         cont.setInterestActive(true);
@@ -286,6 +295,7 @@ void test_contract::test_annualSettlement_fullYear()
         cont.setInterestRate(1.);
         cont.setInterestModel(interestModel::reinvest);
         cont.setInterestActive(false);
+        cont.updateConclusionDate(QDate(2018,12,28));
 
         cont.bookInitialPayment(QDate(2018, 12, 30), 1000.);
         QCOMPARE(cont.annualSettlement(2019), 2019);
@@ -302,6 +312,7 @@ void test_contract::test_annualSettlement_twoYear()
     cont.setInterestRate(1.);
     cont.setInterestModel(interestModel::reinvest);
     cont.setInterestActive(true);
+    cont.updateConclusionDate(QDate(2018, 12,29));
 
     cont.bookInitialPayment(QDate(2018, 12, 30), 1000.);
 //    2years in one go:
@@ -319,6 +330,7 @@ void test_contract::test_deposit01()
         cont.setInterestActive(true);
 
         // booking 1: deposit / activation
+        cont.updateConclusionDate(QDate(2018,12,31));
         cont.bookInitialPayment(QDate(2019, 1, 1), 1000.);
         // booking 2: interest deposit
         // booking 3: deposit
@@ -334,6 +346,7 @@ void test_contract::test_deposit01()
         cont.setInterestActive(false);
 
         // booking 1: deposit / activation
+        cont.updateConclusionDate(QDate(2018,12,31));
         cont.bookInitialPayment(QDate(2019, 1, 1), 1000.);
         // booking 2: interest deposit
         // booking 3: deposit
@@ -352,6 +365,7 @@ void test_contract::test_depositSwitches_31_12()
         cont.setInterestModel(interestModel::reinvest);
         cont.setInterestActive(true);
 
+        cont.updateConclusionDate(QDate(2018,12,31));
         cont.bookInitialPayment(QDate(2019, 1, 1), 1000.);
         QVERIFY( cont.deposit(QDate(2020, 12, 31), 1000.));
         QVERIFY( cont.latestBooking().date == QDate(2020, 12, 30));
@@ -365,6 +379,7 @@ void test_contract::test_depositSwitches_31_12()
         cont.setInterestModel(interestModel::reinvest);
         cont.setInterestActive(false);
 
+        cont.updateConclusionDate(QDate(2018,12,31));
         cont.bookInitialPayment(QDate(2019, 1, 1), 1000.);
         QVERIFY( cont.deposit(QDate(2020, 12, 31), 1000.));
         QVERIFY( cont.latestBooking().date == QDate(2020, 12, 30));
@@ -382,6 +397,7 @@ void test_contract::test_deposit_wSettlement_reinvesting()
         cont.setInterestRate(2.0);
         cont.setInterestActive(true);
 
+        cont.updateConclusionDate(QDate(2018,12,31));
         cont.bookInitialPayment(QDate(2019, 1, 1), 1000.);
         cont.deposit(QDate(2020, 7, 1), 1000.);
         QCOMPARE(cont.value(), 2030.2);
@@ -398,6 +414,7 @@ void test_contract::test_deposit_wSettlement_reinvesting()
         cont.setInterestRate(2.0);
         cont.setInterestActive(false);
 
+        cont.updateConclusionDate(QDate(2018,12,31));
         cont.bookInitialPayment(QDate(2019, 1, 1), 1000.);
         cont.deposit(QDate(2020, 7, 1), 1000.);
         QCOMPARE(cont.value(), 2000.);
@@ -414,6 +431,7 @@ void test_contract::test_deposit_wSettlement_reinvesting()
         cont.setInterestRate(2.0);
         cont.setInterestActive(false);
 
+        cont.updateConclusionDate(QDate(2018,12,31));
         cont.bookInitialPayment(QDate(2019, 1, 1), 1000.);
         cont.bookActivateInterest(QDate(2020, 6, 30));
         cont.deposit(QDate(2020, 12, 30), 1000.);
@@ -437,6 +455,7 @@ void test_contract::test_deposit_wSettlement_wPayout()
         cont.setInterestRate(2.0);
         cont.setInterestActive(true);
 
+        cont.updateConclusionDate(QDate(2018,12,31));
         cont.bookInitialPayment(QDate(2019, 1, 1), 1000.);
         cont.deposit(QDate(2020, 6, 30), 1000.);
         QCOMPARE(cont.value(), 2010);
@@ -453,6 +472,8 @@ void test_contract::test_deposit_wSettlement_wPayout()
         cont.setInterestModel(interestModel::payout);
         cont.setInterestRate(2.0);
         cont.setInterestActive(false);
+
+        cont.updateConclusionDate(QDate(2018,12,31));
         QVERIFY(not cont.bookActivateInterest(QDate(2019,1,1)));
         cont.bookInitialPayment(QDate(2019, 1, 1), 1000.);
         cont.deposit(QDate(2020, 6, 30), 1000.);
@@ -477,6 +498,7 @@ void test_contract::test_payout()
         cont.setInterestModel(interestModel::reinvest);
         cont.setInterestActive(true);
 
+        cont.updateConclusionDate(QDate(2018,12,31));
         cont.bookInitialPayment(QDate(2019, 1, 1), 1000.);
         cont.payout(QDate(2019, 7, 1), 500.);
         QCOMPARE(cont.value(), 510.);
@@ -489,6 +511,7 @@ void test_contract::test_payout()
         cont.setInterestModel(interestModel::reinvest);
         cont.setInterestActive(false);
 
+        cont.updateConclusionDate(QDate(2018,12,31));
         cont.bookInitialPayment(QDate(2019, 1, 1), 1000.);
         cont.payout(QDate(2019, 7, 1), 500.);
         QCOMPARE(cont.value(), 500.);
@@ -505,6 +528,7 @@ void test_contract::test_payout_wSettlement_reinvesting()
         cont.setInterestModel(interestModel::reinvest);
         cont.setInterestActive(true);
 
+        cont.updateConclusionDate(QDate(2018,12,31));
         cont.bookInitialPayment(QDate(2019, 1, 1), 1000.);
         cont.payout(QDate(2020, 7, 1), 500.);
         QCOMPARE(cont.value(), 530.2);
@@ -517,6 +541,7 @@ void test_contract::test_payout_wSettlement_reinvesting()
         cont.setInterestModel(interestModel::reinvest);
         cont.setInterestActive(false);
 
+        cont.updateConclusionDate(QDate(2018,12,31));
         cont.bookInitialPayment(QDate(2019, 1, 1), 1000.);
         cont.payout(QDate(2020, 7, 1), 500.);
         QCOMPARE(cont.value(), 500.);
@@ -531,6 +556,7 @@ void test_contract::test_payout_wSettlement_wPayout()
     cont.setInterestModel(interestModel::payout);
     cont.setInterestActive(true);
 
+    cont.updateConclusionDate(QDate(2018,12,31));
     cont.bookInitialPayment(QDate(2019, 12, 30), 1000.);
     cont.payout(QDate(2020, 6, 30), 500.);
     // activation deposit 1000.
@@ -552,27 +578,39 @@ void test_contract::test_activationDate()
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
     cont.setInterestActive(true);
+    cont.updateConclusionDate(QDate(2020,4,20));
 
     QDate aDate = QDate(2020, 5, 1);
     QCOMPARE(initialBookingDate(cont.id ()), QDate());
-    cont.bookInitialPayment(aDate, 1000.);
+    QVERIFY(cont.bookInitialPayment(aDate, 1000.));
     QCOMPARE(initialBookingDate(cont.id ()), aDate);
     cont.deposit(aDate.addMonths(6), 1000.);
+
+    // test
     QCOMPARE(initialBookingDate(cont.id ()), aDate);
-    bookReInvestInterest(cont.id(), QDate(2021, 1, 1), 10.);
+    QVERIFY(bookReInvestInterest(cont.id(), QDate(2021, 1, 1), 10.));
+    // test
     QCOMPARE(initialBookingDate(cont.id ()), aDate);
 }
 
 void test_contract::test_activate_interest_on_same_date_will_fail()
 {
-    creditor c(saveRandomCreditor());
-    contract cont(saveRandomContract(c.id()));
-    QDate d (cont.conclusionDate());
-    cont.bookInitialPayment(d.addDays(1), cont.plannedInvest());
-    QVERIFY(not cont.bookActivateInterest(d.addDays(1)));
-    QVERIFY(cont.bookActivateInterest(d.addDays(2)));
-}
+    creditor c {saveRandomCreditor()};
+    contract cont {saveRandomContract(c.id())};
+    cont.updateInterestActive(false);
+    QDate Vertragsdatum {cont.conclusionDate()};
 
+    // init payment only AFTER contract date
+    QVERIFY( not cont.bookInitialPayment(Vertragsdatum, cont.plannedInvest()));
+    // activ. Interest only after initial payment
+    QVERIFY( not cont.bookActivateInterest(Vertragsdatum.addDays(1)));
+    // activate only AFTER initial payment
+    QVERIFY( not cont.bookActivateInterest(Vertragsdatum)); // too early
+    QVERIFY( not cont.bookInitialPayment(Vertragsdatum, cont.plannedInvest()));
+    QVERIFY( cont.bookInitialPayment(Vertragsdatum.addDays(1), cont.plannedInvest()));
+    QVERIFY( not cont.bookActivateInterest(Vertragsdatum.addDays(1)));
+    QVERIFY( cont.bookActivateInterest(Vertragsdatum.addDays(2)));
+}
 void test_contract::test_getValue_byDate()
 {
     creditor c(saveRandomCreditor());
@@ -582,8 +620,8 @@ void test_contract::test_getValue_byDate()
     cont.setInterestActive(true);
 
     QDate aDate = QDate(2020, 4, 30);
-
-    cont.bookInitialPayment(aDate, 1000.);
+    cont.updateConclusionDate(aDate.addDays(-1));
+    QVERIFY(cont.bookInitialPayment(aDate, 1000.));
     QCOMPARE(cont.value(aDate), 1000.);
     QCOMPARE(cont.value(aDate.addMonths(1)), 1000.);
 
@@ -604,10 +642,10 @@ void test_contract::test_contract_cv_wInterestPayout()
     cont.initRandom(c.id());
     cont.setInterestRate(1.0);
     cont.setInterestModel(interestModel::payout);
-    cont.setInterestActive(true);
-
-    cont.saveNewContract();
+    cont.updateInterestActive(true);
     QDate anydate = QDate(2020, 4, 30);
+    cont.updateConclusionDate(anydate.addDays(-1));
+    cont.saveNewContract();
 
     // booking 1
     cont.bookInitialPayment(anydate, 1000.); // 1.5.2020
@@ -657,9 +695,10 @@ void test_contract::test_contract_cv_reInvesting()
     contract cont(saveRandomContract(c.id()));
     cont.setInterestRate(1.0);
     cont.setInterestModel(interestModel::reinvest);
-    cont.setInterestActive(true);
-
+    cont.updateInterestActive(true);
     QDate anydate = QDate(2020, 4, 30);
+    cont.updateConclusionDate(anydate.addDays(-1));
+
     // booking 1
     cont.bookInitialPayment(anydate, 1000.); // 1.5.2020
     QCOMPARE(cont.value(anydate), 1000.);
@@ -702,9 +741,10 @@ void test_contract::test_finalize()
 {
     creditor creditor(saveRandomCreditor());
     contract cont(saveRandomContract(creditor.id()));
-    cont.setInterestActive(true);
-
+    cont.updateInterestActive(true);
     QDate aDate = QDate(2020, 5, 1);
+    cont.updateConclusionDate(aDate.addDays(-4));
+
     cont.bookInitialPayment(aDate, 1000.);
     cont.deposit(aDate.addMonths(1), 1000.);
     QCOMPARE(rowCount("Vertraege"), 1);

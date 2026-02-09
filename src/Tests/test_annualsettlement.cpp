@@ -30,15 +30,16 @@ void test_annualSettlement::test_oneContract_Mid_Year()
     c.setCreditorId(1);
     c.setInterestRate(10.f);
     c.setInterestActive(true);
+
     QDate cDate (2000, 6, 15);
-    c.setConclusionDate(cDate.addDays(15));
+    c.setConclusionDate(cDate);
     c.saveNewContract();
     // TEST: no AS
     QDate yearEnd2000(2000,12,31);
     QCOMPARE(QDate(), dateOfnextSettlement());
     QCOMPARE(executeCompleteAS(yearEnd2000.year()), 0);
     // init payment
-    c.bookInitialPayment(cDate.addDays(15), 1000);
+    QVERIFY( c.bookInitialPayment(cDate.addDays(15), 1000));
     // TEST first AS
     QCOMPARE(yearEnd2000, dateOfnextSettlement());
     QCOMPARE(executeCompleteAS(yearEnd2000.year()), 1);
@@ -58,23 +59,22 @@ void test_annualSettlement::test_contract_intrest_activation()
     c.setInterestActive(false);
     c.setLabel(qsl("Vertrag 001"));
     QDate cDate (2000, 6, 15);
-    c.setConclusionDate(cDate.addDays(15));
+    c.setConclusionDate(cDate);
     c.saveNewContract();
 
     QDate yearEnd2000(2000,12,31);
     // TEST: zActive false -> no AS
     QCOMPARE(QDate(), dateOfnextSettlement());
-    QCOMPARE(executeCompleteAS(yearEnd2000.year()), 0);
+    QCOMPARE(executeCompleteAS(yearEnd2000.year()), 0); // no AS executed
     // interest activation fails w/o init payment
-    QVERIFY(not c.bookActivateInterest(cDate.addMonths(1)));
+    QVERIFY(not c.bookActivateInterest(cDate.addDays(14)));
     // TEST: with initial payment
-    c.bookInitialPayment(cDate.addDays(15), 1000);
+    QVERIFY(c.bookInitialPayment(cDate.addDays(15), 1000));
     // interest activation after initial payment
     QVERIFY(c.bookActivateInterest(cDate.addMonths(1)));
     QCOMPARE(yearEnd2000, dateOfnextSettlement());
     QCOMPARE(executeCompleteAS(yearEnd2000.year()), 1);
     qInfo().noquote().nospace() << "\n" << formulate_AS_as_CSV(yearEnd2000.year());
-dbgDumpDB(); // todo: remove
 }
 
 void test_annualSettlement::test_contract_intrest_activation_yearEnd()

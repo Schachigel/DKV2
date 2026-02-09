@@ -246,6 +246,9 @@ bool contract::updateLabel( const QString& newLabel)
 bool contract::updateConclusionDate( const QDate& newD) {
     return td.updateValue(fnVertragsDatum, QVariant(newD), id());
 }
+bool contract::updateInterestActive( const bool active) {
+    RETURN_OK( td.updateValue(fnZAktiv, active ? 1 : 0, id()), qsl("contract zActive updated"));
+}
 bool contract::updateComment(const QString &c)
 {
     RETURN_OK( td.updateValue(fnAnmerkung, c, id()), qsl("Contract Comment updated"));
@@ -315,6 +318,8 @@ bool contract::bookInitialPayment(const QDate date, const double amount)
         error = qsl("Already active contract can not be activated");
     } else if ( not date.isValid()) {
         error = qsl("Invalid Date");
+    } else if (date <= conclusionDate()) {
+        error = qsl("activate only after conclusion date");
     } else if( amount < 0) {
         error =qsl("Invalid amount");
     }
@@ -353,14 +358,17 @@ bool contract::noBookingButInitial()
 BookingResult contract::bookActivateInterest(const QDate d)
 {
     if( not initialPaymentReceived())
-        return BookingResult::fail({qsl("could not activate interest w/o initial payment")});
+        return BookingResult::fail({qsl("Der Vertrag kann erst nach dem Geldeingang aktiviert werden")});
     if ( d <= latestBookingDate())
-        return BookingResult::fail({qsl("could not activate interest on same date or before as last booking")});
+        return BookingResult::fail({qsl("Die Aktivierung der Zinsanrechnung muss nach der letzten Buchung erfolgen")});
+    if( interestActive())
+        return BookingResult::fail({qsl("Der Vertrag ist bereits aktiviert")});
+
     autoRollbackTransaction art;
     // durch diese Zinsbuchung mit Wert 0 wird sichergestellt, dass die nächste Zinsbuchung zum richtigen Zeitpunkt beginnt
     // kein Payout
     if( not bookInBetweenInterest(d))
-        return BookingResult::fail({qsl("could not book inbetween interest on ")});
+        return BookingResult::fail({qsl("Die Zinsbuchung für den Zwischenzeitraum konnte nicht erstellt werden")});
     if( updateSetInterestActive() // update contract
             &&
         bookInterestActive(id(), d)) // insert booking
@@ -369,8 +377,7 @@ BookingResult contract::bookActivateInterest(const QDate d)
         qInfo() << qsl("successfully activated interest payment for contract %1").arg( id_aS());
         return BookingResult::success();
     }
-
-    return BookingResult::fail(qsl("failed to activate interest payment for contract ").arg(id_aS()));
+    return BookingResult::fail(qsl("Die Aktivierung der Verzinsung für Vertrag %1 ist fehlgeschlagen").arg(id_aS()));
 }
 
 inline bool isLastDayOfTheYear(const QDate& d)

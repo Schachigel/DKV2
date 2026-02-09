@@ -12,7 +12,7 @@ private slots:
     void test_defaults();
     void test_dateONSettlement_noContracts();
     void test_dateONSettlement_nextSettlement();
-    void test_dateONSettlement_activatedContracts();
+    void test_dateOfNextSettlement_activatedContracts();
     void test_dateONSettelment_contractsW_interestBookings00();
     void test_dateONSettelment_contractsW_and_wo_interestBookings01();
     void test_dateONSettelment_contractsW_and_wo_interestBookings02();
