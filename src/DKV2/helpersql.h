@@ -121,14 +121,11 @@ private:
 class SavepointGuard
 {
 public:
-    explicit SavepointGuard(const QString& name,
-                            const QString& connection = QString())
-        : m_name(name), m_connection(connection)
+    explicit SavepointGuard(const QString& name)
+        : m_name(name)
     {
         executeSql_wNoRecords(
-            qsl("SAVEPOINT %1").arg(m_name),
-            m_connection
-            );
+            qsl("SAVEPOINT %1").arg(m_name));
     }
 
     SavepointGuard(const SavepointGuard&) = delete;
@@ -138,9 +135,7 @@ public:
     {
         if (!m_committed) {
             executeSql_wNoRecords(
-                qsl("RELEASE SAVEPOINT %1").arg(m_name),
-                m_connection
-                );
+                qsl("RELEASE SAVEPOINT %1").arg(m_name));
             m_committed = true;
         }
     }
@@ -149,19 +144,14 @@ public:
     {
         if (!m_committed) {
             executeSql_wNoRecords(
-                qsl("ROLLBACK TO %1").arg(m_name),
-                m_connection
-                );
+                qsl("ROLLBACK TO %1").arg(m_name));
             executeSql_wNoRecords(
-                qsl("RELEASE SAVEPOINT %1").arg(m_name),
-                m_connection
-                );
+                qsl("RELEASE SAVEPOINT %1").arg(m_name));
         }
     }
 
 private:
     QString m_name;
-    QString m_connection;
     bool m_committed = false;
 };
 

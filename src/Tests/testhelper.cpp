@@ -6,7 +6,6 @@
 #include "../DKV2/creditor.h"
 #include "../DKV2/contract.h"
 
-
 void getRidOfFile(QString filename)
 {
     if( QFile::exists(filename))
