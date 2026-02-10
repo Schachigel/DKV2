@@ -94,7 +94,6 @@ int getNbrOfExBookings(const tableindex_t contract, const QDate from =BeginingOf
 
 double getBookingsSum(QVector<booking> bl, bookingType bt);
 
-QVector<booking> getAnnualSettlements(const int year);
 QVector<int> yearsWithAnnualBookings();
 
 #endif // BOOKING_H

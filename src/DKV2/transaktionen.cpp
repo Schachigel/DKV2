@@ -602,24 +602,6 @@ void annualSettlementLetters() {
     }
 
     busyCursor bc;
-#if 0
-    QVector<booking> annualBookings =
-            getAnnualSettlements(yearOfSettlement);
-
-    if (annualBookings.isEmpty())
-
-    {
-        bc.finish();
-        QMessageBox::information(
-                    nullptr, qsl("Fehler"),
-                    qsl("Im Jahr %1 konnten keine Zinsbuchungen gefunden werden. "
-                        "Es gibt keine Verträge für die eine Abrechnung gemacht werden "
-                        "kann.")
-                    .arg(yearOfSettlement));
-        return;
-    }
-#endif
-
     createInitialLetterTemplates();
 
     QList<qlonglong> creditorIds;

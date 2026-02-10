@@ -37,14 +37,14 @@ void test_booking::test_defaults()
     }
 }
 
-void test_booking::test_dateONSettlement_noContracts()
+void test_booking::test_dateOfNextSettlement_noContracts()
 {
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
     // kein aktiver Vertrag -> keine Jahresabrechnung
     QCOMPARE( dateOfnextSettlement(), QDate());
 }
-void test_booking::test_dateONSettlement_nextSettlement()
+void test_booking::test_dateOfNextSettlement_nextSettlement()
 {
     creditor c(saveRandomCreditor());
     contract cont1(saveRandomContract(c.id()));
@@ -85,7 +85,7 @@ void test_booking::test_dateOfNextSettlement_activatedContracts()
     cont4.bookInitialPayment(QDate( 1998,4,3), 1000.);
     QCOMPARE( dateOfnextSettlement(), QDate( 1998, 12, 31));
 }
-void test_booking::test_dateONSettelment_contractsW_interestBookings00()
+void test_booking::test_dateOfNextSettelment_contractsW_interestBookings00()
 {
     creditor cred(saveRandomCreditor());
     contract cont(saveRandomContract(cred.id()));
@@ -94,7 +94,7 @@ void test_booking::test_dateONSettelment_contractsW_interestBookings00()
     bookReInvestInterest(cred.id(), QDate(2001,1,1), 5.);
     QCOMPARE( dateOfnextSettlement(), QDate( 2001, 12, 31));
 }
-void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings01()
+void test_booking::test_dateOfNextSettelment_contractsW_and_wo_interestBookings01()
 {
     creditor cred(saveRandomCreditor());
     contract cont(saveRandomContract(cred.id()));
@@ -108,7 +108,7 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings01()
 
     QCOMPARE( dateOfnextSettlement(), QDate( 2000, 12, 31));
 }
-void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings02()
+void test_booking::test_dateOfNextSettelment_contractsW_and_wo_interestBookings02()
 {
     creditor cred(saveRandomCreditor());
     contract cont(saveRandomContract(cred.id()));
@@ -122,7 +122,7 @@ void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings02()
 
     QCOMPARE( dateOfnextSettlement(), QDate( 2001, 12, 31));
 }
-void test_booking::test_dateONSettelment_contractsW_and_wo_interestBookings03()
+void test_booking::test_dateOfNextSettelment_contractsW_and_wo_interestBookings03()
 {
     for( int i=0; i<2; i++) {
         saveRandomCreditors(7);
@@ -319,4 +319,13 @@ void test_booking::test_yearsWAnnualBookings()
     QCOMPARE( annualI_bookings.size(), 2);
     QCOMPARE (annualI_bookings[0], 2020);
     QCOMPARE (annualI_bookings[1], 2019);
+}
+void test_booking::test_changeBookingValue() {
+    contract cont;
+    cont.initRandom(saveRandomCreditor().id());
+    cont.saveNewContract();
+    cont.bookInitialPayment(cont.conclusionDate().addDays(1), cont.plannedInvest() +1.);
+    writeBookingUpdate( 1, cont.plannedInvest());
+    booking b =cont.latestBooking();
+    QCOMPARE(b.amount*100., cont.plannedInvest());
 }
