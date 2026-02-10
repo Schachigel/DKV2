@@ -86,8 +86,6 @@ bool writeBookingUpdate( qlonglong bookingId, int newValeuInCt);
 //QVector<booking> bookingsFromDB(const QString& where, const QString& order ="", bool terminated =false);
 QVector<booking> getBookings(   const tableindex_t contractId,  const QDate from = BeginingOfTime, const QDate to = EndOfTheFuckingWorld,
                                 const QString order = qsl("Datum DESC"), bool terminatedContract =false);
-QVector<booking> getExBookings(   const tableindex_t contractId,  const QDate from = BeginingOfTime, const QDate to = EndOfTheFuckingWorld,
-                                const QString order = qsl("Datum DESC"));
 
 int getNbrOfBookings(const tableindex_t contract, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld, const bool terminated =false);
 int getNbrOfExBookings(const tableindex_t contract, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld);

@@ -253,11 +253,10 @@ void test_booking::test_getBookings()
     qlonglong invalidCreditorId {42};
     QCOMPARE(getBookings(invalidCreditorId), QVector<booking>());
     QCOMPARE(getBookings(cont.id()), QVector<booking>());
-    QCOMPARE(getExBookings(invalidCreditorId), QVector<booking>());
-    QCOMPARE(getExBookings(cont.id()), QVector<booking>());
 
     QDate d1 (2020, 1, 1);
     QDate d2 =d1.addDays (5);
+    QDate d3 =d2.addDays (3);
     double deposit_amount =100.;
     double payout_amount =50.;
     QVERIFY( bookDeposit (cont.id(), d1, deposit_amount));
@@ -282,7 +281,6 @@ void test_booking::test_getBookings()
         QCOMPARE( bookings[0], booking(cont.id(), bookingType::deposit, d1, deposit_amount));
         QCOMPARE( bookings[1], booking(cont.id(), bookingType::payout,  d2, -1 *fabs(payout_amount)));
 
-        QDate d3 =d2.addDays (3);
         QVERIFY(bookInterestActive (cont.id(), d3));
         bookings =getBookings(cont.id());
         QVERIFY (bookings.size() == 3);
@@ -290,6 +288,18 @@ void test_booking::test_getBookings()
         QVERIFY ( getBookings(cont.id(), d2, d3).size() == 2);
         QVERIFY ( getBookings(cont.id(), d3).size() == 1);
         QVERIFY ( getBookings(cont.id(), d3.addDays (1)).isEmpty());
+    }
+    {
+        // provided dates are included
+        QVector<booking> twobookings =getBookings(SQLITE_invalidRowId, d1.addDays(1), d3, "DATUM ASC");
+        QCOMPARE(twobookings.size(), 2);
+
+        QVector<booking> allbookings =getBookings(SQLITE_invalidRowId, d1, d3, "DATUM ASC");
+        QCOMPARE(allbookings.size(), 3);
+
+        twobookings.clear();
+        twobookings =getBookings(SQLITE_invalidRowId, d1, d3.addDays(-1), "DATUM ASC");
+        QCOMPARE(twobookings.size(), 2);
     }
 }
 void test_booking::test_yearsWAnnualBookings()

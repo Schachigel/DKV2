@@ -108,10 +108,10 @@ bool writeBookingUpdate( qlonglong bookingId, int newValeuInCt)
                          QString::number(bookingId))};
     return executeSql_wNoRecords (sql);
 }
-///////////// bookingS start here
 
+///////////// bookingS start here
 int getNbrOfBookings(const qlonglong contract, const QDate from, const QDate to, const bool terminated)
-{
+{   // for testing mainly
     QString where {qsl(" VertragsId=%1").arg(contract)};
     if( from > BeginingOfTime)
         where += qsl(" AND Datum >='%1'").arg(from.toString(Qt::ISODate));
@@ -123,42 +123,52 @@ int getNbrOfExBookings(const qlonglong contract, const QDate from, const QDate t
 {
     return getNbrOfBookings(contract, from, to, true);
 }
-
-QVector<booking> bookingsFromDB(const QString& where, const QString& order ="", bool terminated =false)
+namespace {
+QVector<booking> bookingsFromDB(const QString& sql, const QVector<QVariant>& params, bool terminated =false)
 {
-    qInfo().noquote () << QString(__FUNCTION__) << qsl(" Where: %1\n").arg( where) << qsl("Order: %1\n").arg( order) << qsl("terminated: %1").arg((terminated ? "true" : "false"));
-    QVector<QSqlRecord> records = terminated ?
-               executeSql( booking::getTableDef_deletedBookings ().Fields (), where, order)
-             : executeSql( booking::getTableDef().Fields(), where, order);
+    qInfo().noquote() << QString(__FUNCTION__)
+                      << qsl(" Sql: %1\n").arg(sql)
+                      << qsl("terminated: %1").arg((terminated ? "true" : "false"));
+    QVector<QSqlRecord> records;
+    if (not executeSql(sql, params, records)) {
+        qCritical() << "bookingsFromDB: query failed";
+        return {};
+    }
 
     QVector<booking> vRet;
-    for (auto& rec : std::as_const(records)) {
-        booking b (rec.value(fn_bVertragsId).toLongLong(),
-                   bookingType(rec.value(fn_bBuchungsArt).toInt()),
-                   rec.value(fn_bDatum).toDate(),
-                   euroFromCt(rec.value(fn_bBetrag).toInt()));
-        qInfo() << "bookingFromDB: " << b.toString ();
+    for (const auto& rec : std::as_const(records)) {
+        booking b(rec.value(fn_bVertragsId).toLongLong(),
+                  bookingType(rec.value(fn_bBuchungsArt).toInt()),
+                  rec.value(fn_bDatum).toDate(),
+                  euroFromCt(rec.value(fn_bBetrag).toInt()));
+        qInfo() << "bookingFromDB: " << b.toString();
         vRet.push_back(b);
     }
     return vRet;
 }
-QVector<booking> getBookings(const tableindex_t contractId, QDate from, const QDate to,
+} // namespace
+
+// annual settlement letter creation
+QVector<booking> getBookings(const tableindex_t contractId, QDate inclFrom, const QDate inclTo,
                     QString order, bool terminated)
 {
     QString tablename = terminated ? tn_ExBuchungen : tn_Buchungen;
-    // used in tests
-    QString where = qsl("%9.%1=%6 "
-                  "AND %9.%2 >='%7' "
-                  "AND %9.%2 <='%8'").arg(fn_bVertragsId, fn_bDatum);
-    where = where.arg(i2s(contractId), from.toString(Qt::ISODate), to.toString(Qt::ISODate), tablename);
+    QString sql = qsl("SELECT * FROM %1 WHERE %2 >= ? AND %2 <= ?")
+                      .arg(tablename, fn_bDatum);
+    QVector<QVariant> params {inclFrom.toString(Qt::ISODate), inclTo.toString(Qt::ISODate)};
 
-    return bookingsFromDB(where, order, terminated);
+    if (isValidRowId(contractId)) {
+        sql += qsl(" AND %1 = ?").arg(fn_bVertragsId);
+        params.push_back(QVariant::fromValue<qlonglong>(contractId));
+    }
+
+    if (not order.isEmpty()) {
+        sql += qsl(" ORDER BY %1").arg(order);
+    }
+
+    return bookingsFromDB(sql, params, terminated);
 }
-QVector<booking> getExBookings(const qlonglong cid, QDate from, const QDate to,
-                    QString order)
-{
-    return getBookings(cid, from, to, order, true);
-}
+
 double getBookingsSum(QVector<booking> bl, bookingType bt)
 {
     double sum = 0.;
