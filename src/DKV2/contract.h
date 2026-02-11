@@ -80,7 +80,6 @@ struct contract
 
     void setLabel(const QString &l) { td.setValue(fnKennung, l); }
     QString label() const { return td.getValue(fnKennung).toString();};
-    bool updateLabel(const QString& newLabel);
 
     void setInterestRate( const double percent) {
         td.setValue(fnZSatz, QVariant (qRound(percent * 100.)));
@@ -150,6 +149,7 @@ struct contract
 
     // write to db
     tableindex_t saveNewContract();
+    bool updateLabel(const QString& newLabel);
     bool updateComment(const QString&);
     bool updateConclusionDate( const QDate& newD);
     bool updateInterestActive( const bool activ);

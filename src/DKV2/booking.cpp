@@ -38,14 +38,15 @@
 {
     switch(t)
     {
+    case bookingType::non :                  return qsl("Alle Buchungstypen");
     case bookingType::deposit :              return qsl("Einzahlung");
     case bookingType::payout :               return qsl("Auszahlung");
     case bookingType::reInvestInterest:      return qsl("Zinsanrechnung");
     case bookingType::annualInterestDeposit: return qsl("Jahreszins");
     case bookingType::setInterestActive:     return qsl("Aktivierung d. Zinszahlung");
     default:
-        qCritical() << "Ungültigen Buchungstyp";
-        Q_UNREACHABLE();
+        qCritical() << "Ungültiger Buchungstyp";
+        return qsl("-- schwerer Fehler - ungültiger Buchungstyp --");
     }
 }
 

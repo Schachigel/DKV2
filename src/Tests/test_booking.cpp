@@ -6,7 +6,6 @@
 #include "../DKV2/creditor.h"
 #include "../DKV2/contract.h"
 #include "../DKV2/booking.h"
-#include "../DKV2/annualSettlement.h"
 
 #include <QtTest/QTest>
 
@@ -37,108 +36,6 @@ void test_booking::test_defaults()
     }
 }
 
-void test_booking::test_dateOfNextSettlement_noContracts()
-{
-    creditor c(saveRandomCreditor());
-    contract cont(saveRandomContract(c.id()));
-    // kein aktiver Vertrag -> keine Jahresabrechnung
-    QCOMPARE( dateOfnextSettlement(), QDate());
-}
-void test_booking::test_dateOfNextSettlement_nextSettlement()
-{
-    creditor c(saveRandomCreditor());
-    contract cont1(saveRandomContract(c.id()));
-    cont1.updateConclusionDate(QDate(2000,5,1));
-
-    cont1.bookInitialPayment(QDate( 2000,6,1), 1000.);
-    QCOMPARE(cont1.annualSettlement (2000), 2000);
-    QCOMPARE(cont1.annualSettlement (2001), 2001);
-
-    contract cont2(saveRandomContract(c.id()));
-    cont2.updateConclusionDate(QDate(2000,5,1));
-    QVERIFY(cont2.bookInitialPayment(QDate( 2001,6,1), 1000.));
-    QCOMPARE(cont2.annualSettlement (2001), 2001);
-    QCOMPARE(cont2.annualSettlement (2002), 2002);
-    // cont1 is not yet up to date (not a possible if executeAllAS is used
-    QCOMPARE( dateOfnextSettlement(), QDate(2002,12,31));
-}
-void test_booking::test_dateOfNextSettlement_activatedContracts()
-{
-    creditor c(saveRandomCreditor());
-    contract cont1(saveRandomContract(c.id()));
-    cont1.updateConclusionDate(QDate(2000,11,30));
-    cont1.bookInitialPayment(QDate( 2000,12,31), 1000.);
-    QCOMPARE( dateOfnextSettlement(), QDate( 2001, 12, 31));
-
-    contract cont2(saveRandomContract(c.id()));
-    cont2.updateConclusionDate(QDate(1999,11,30));
-    cont2.bookInitialPayment(QDate( 2000, 1, 1), 1000.);
-    QCOMPARE( dateOfnextSettlement(), QDate( 2000, 12, 31));
-
-    contract cont3(saveRandomContract(c.id()));
-    cont3.updateConclusionDate(QDate(1998,11,30));
-    cont3.bookInitialPayment(QDate( 1998,12,31), 1000.);
-    QCOMPARE( dateOfnextSettlement(), QDate( 1999, 12, 31));
-
-    contract cont4(saveRandomContract(c.id()));
-    cont4.updateConclusionDate(QDate(1998,4,2));
-    cont4.bookInitialPayment(QDate( 1998,4,3), 1000.);
-    QCOMPARE( dateOfnextSettlement(), QDate( 1998, 12, 31));
-}
-void test_booking::test_dateOfNextSettelment_contractsW_interestBookings00()
-{
-    creditor cred(saveRandomCreditor());
-    contract cont(saveRandomContract(cred.id()));
-    cont.updateConclusionDate(QDate(2000,5,5));
-    cont.bookInitialPayment(QDate( 2000,6,1), 1000.);
-    bookReInvestInterest(cred.id(), QDate(2001,1,1), 5.);
-    QCOMPARE( dateOfnextSettlement(), QDate( 2001, 12, 31));
-}
-void test_booking::test_dateOfNextSettelment_contractsW_and_wo_interestBookings01()
-{
-    creditor cred(saveRandomCreditor());
-    contract cont(saveRandomContract(cred.id()));
-    cont.updateConclusionDate(QDate(2000,5,15));
-    cont.bookInitialPayment(QDate( 2000,6,1), 1000.);
-    bookReInvestInterest(cred.id(), QDate(2001,1,1), 5.);
-
-    contract cont2(saveRandomContract(cred.id()));
-    cont2.updateConclusionDate(QDate(2000,5,30));
-    cont2.bookInitialPayment(QDate(2000, 6,1), 1000.); // EARLIER
-
-    QCOMPARE( dateOfnextSettlement(), QDate( 2000, 12, 31));
-}
-void test_booking::test_dateOfNextSettelment_contractsW_and_wo_interestBookings02()
-{
-    creditor cred(saveRandomCreditor());
-    contract cont(saveRandomContract(cred.id()));
-    cont.updateConclusionDate(QDate(2000,5,4));
-    cont.bookInitialPayment(QDate( 2000,6,1), 1000.);
-    bookReInvestInterest(cred.id(), QDate(2001,1,1), 5.); // EARLIER
-
-    contract cont2(saveRandomContract(cred.id()));
-    cont2.updateConclusionDate(QDate(2002,5,5));
-    cont2.bookInitialPayment(QDate(2002, 6,1), 1000.);
-
-    QCOMPARE( dateOfnextSettlement(), QDate( 2001, 12, 31));
-}
-void test_booking::test_dateOfNextSettelment_contractsW_and_wo_interestBookings03()
-{
-    for( int i=0; i<2; i++) {
-        saveRandomCreditors(7);
-        saveRandomContracts(5);    // contract date: 3 to 1 years back
-        QDate minimalActivationDate =activateRandomContracts(90);// activation date: > contract date
-        if( minimalActivationDate.month () == 12 and minimalActivationDate.day() == 31){
-            minimalActivationDate =minimalActivationDate.addYears (1);
-            qInfo() << "fixed minimalActivationDate for year end";
-        }
-        QDate dateOfNextS =dateOfnextSettlement();
-        QVERIFY(dateOfNextS.isValid());
-        if( dateOfNextS not_eq QDate(minimalActivationDate.year(), 12, 31)) {
-            QCOMPARE(dateOfNextS, QDate(minimalActivationDate.year(), 12, 31));
-        }
-    }
-}
 void test_booking::test_bookDeposit()
 {
     creditor c(saveRandomCreditor());
@@ -318,7 +215,7 @@ void test_booking::test_yearsWAnnualBookings()
     QCOMPARE( annualI_bookings[0], 2019);
 
     contract cont1(saveRandomContract (c.id()));
-    bookAnnualInterestDeposit (cont.id(), QDate(2019, 12, 31), 1.);
+    bookAnnualInterestDeposit (cont1.id(), QDate(2019, 12, 31), 1.);
     annualI_bookings =yearsWithAnnualBookings();
     QCOMPARE( annualI_bookings.size(), 1);
     QCOMPARE( annualI_bookings[0], 2019);
@@ -338,4 +235,48 @@ void test_booking::test_changeBookingValue() {
     writeBookingUpdate( 1, cont.plannedInvest());
     booking b =cont.latestBooking();
     QCOMPARE(b.amount*100., cont.plannedInvest());
+}
+void test_booking::test_bookingTypeFunctions()
+{
+    for (int i=0; i< 20; i++) {
+        switch (i)
+        {
+        case 0:{
+            QString bt =bookingTypeDisplayString(bookingtypeFromInt(i));
+            QCOMPARE(bt, qsl("Alle Buchungstypen"));
+            break;
+        }
+        case 1:{
+            QString bt =bookingTypeDisplayString(bookingtypeFromInt(i));
+            QCOMPARE(bt, qsl("Einzahlung"));
+            break;
+        }
+        case 2:{
+            QString bt =bookingTypeDisplayString(bookingtypeFromInt(i));
+            QCOMPARE(bt, qsl("Auszahlung"));
+            break;
+        }
+        case 4:{
+            QString bt =bookingTypeDisplayString(bookingtypeFromInt(i));
+            QCOMPARE(bt, qsl("Zinsanrechnung"));
+            break;
+        }
+        case 8:{
+            QString bt =bookingTypeDisplayString(bookingtypeFromInt(i));
+            QCOMPARE( bt, qsl("Jahreszins"));
+            break;
+        }
+        case 16:{
+            QString bt =bookingTypeDisplayString(bookingtypeFromInt(i));
+            QCOMPARE(bt, qsl("Aktivierung d. Zinszahlung"));
+            break;
+        }
+        default:{
+           QTest::ignoreMessage(QtCriticalMsg, "invalid booking type");
+            QString bt =bookingTypeDisplayString(bookingtypeFromInt(i));
+            QCOMPARE(bt, qsl("Alle Buchungstypen"));
+            break;
+        }
+        }
+    }
 }

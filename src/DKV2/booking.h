@@ -25,11 +25,11 @@ enum class bookingType{
 };
 QString bookingTypeDisplayString(const bookingType t);
 inline int bookingTypeToInt(const bookingType t) { return static_cast<int>(t);}
-inline bookingType fromInt(int i)
+inline bookingType bookingtypeFromInt(int i)
 {
     switch(i)
     {
-    case  0: // non
+    case  0: // non / all
     case  1: // deposit
     case  2: // payout
     case  4: // reinvest
@@ -38,7 +38,7 @@ inline bookingType fromInt(int i)
         return static_cast<bookingType>(i);
     default:
         qCritical() << "invalid booking type";
-        Q_UNREACHABLE();
+        return bookingType::non;
     }
 }
 inline QString bookingTypeToNbrString( const bookingType t) {return i2s(bookingTypeToInt(t));};

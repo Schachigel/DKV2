@@ -421,7 +421,7 @@ LIMIT 1
         qCritical() << "die jüngste Buchung konnte nicht abgerufen werden";
         return;
     }
-    QString BArt =bookingTypeDisplayString(fromInt(rec.value (qsl("Buchungen.BuchungsArt")).toLongLong ()));
+    QString BArt =bookingTypeDisplayString(bookingtypeFromInt(rec.value (qsl("Buchungen.BuchungsArt")).toLongLong ()));
     QString BBetrag =s_ct2euro (rec.value (qsl("Buchungen.Betrag")).toInt ());
     QString BDatum =rec.value (qsl("Buchungen.Datum")).toDate ().toString (Qt::TextDate);
     QString VKennung = rec.value (qsl("Vertraege.Kennung")).toString ();

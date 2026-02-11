@@ -10,13 +10,6 @@ private slots:
     void cleanup();
     // the actual tests
     void test_defaults();
-    void test_dateOfNextSettlement_noContracts();
-    void test_dateOfNextSettlement_nextSettlement();
-    void test_dateOfNextSettlement_activatedContracts();
-    void test_dateOfNextSettelment_contractsW_interestBookings00();
-    void test_dateOfNextSettelment_contractsW_and_wo_interestBookings01();
-    void test_dateOfNextSettelment_contractsW_and_wo_interestBookings02();
-    void test_dateOfNextSettelment_contractsW_and_wo_interestBookings03();
 
     void test_bookDeposit();
     void test_bookPayout();
@@ -27,6 +20,7 @@ private slots:
     void test_getBookings();
     void test_yearsWAnnualBookings();
     void test_changeBookingValue();
+    void test_bookingTypeFunctions();
 };
 
 #endif // TEST_BOOKING_H

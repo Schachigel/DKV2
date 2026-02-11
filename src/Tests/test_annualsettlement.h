@@ -15,10 +15,14 @@ private slots:
     void test_oneContract_Mid_Year();
     void test_contract_intrest_activation();
     void test_contract_intrest_activation_yearEnd();
+    void test_dateOfNextSettlement_nextSettlement();
+    void test_dateOfNextSettlement_activatedContracts();
+    void test_dateOfNextSettlement_mixedStates_earliestWins();
+    void test_dateOfNextSettlement_mixedStates_laterContractIgnored();
+    void test_dateOfNextSettlement_mixedStates_deterministic();
     void test_multipleContracts();
-    // void test_oneContract_InitOnYearEnd_onContract();
-    // void test_oneContract_InitOnYearEnd_globally();
-signals:
+    void test_csvCreation_fails_with_no_AS();
+    void test_csvCreation_check_headers();
 };
 
 #endif // TEST_ANNUALSETTLEMENT_H

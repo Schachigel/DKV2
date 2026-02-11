@@ -52,10 +52,9 @@ QString print_as_csv(const QDate &bookingDate,
 
 QDate dateOfnextSettlement()
 {
-    /*
-     * Man sollte eine Jahresendbuchung auch mehrmals machen können, für den Fall, dass es nachträglich
-     * gebuchte Geldeingänge für Neuverträge (=Aktivierungen) gab
-    */
+    //  * Man sollte eine Jahresendbuchung auch mehrmals machen können, für den Fall, dass es nachträglich
+    //  * gebuchte Geldeingänge für Neuverträge (=Aktivierungen) gab
+
     QVariant ret =executeSingleValueSql(qsl("SELECT date FROM (%1)").arg(sqlNextAnnualSettlement));
 
     if( ret.canConvert<QDate>()) {
@@ -118,9 +117,4 @@ QString AS_filename(year y)
     filename = filename.arg(QDate::currentDate().toString(Qt::ISODate),
                              i2s(y), projectName);
     return filename;
-}
-
-void writeAnnualSettlementCsv(year y)
-{
-    QString content =formulate_AS_as_CSV(y);
 }

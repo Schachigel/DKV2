@@ -87,7 +87,7 @@ void test_statistics::test_randomContracts_50pActivated()
 {
     saveRandomCreditors(10);
     saveRandomContracts(8);
-    activateRandomContracts(50/* % */);
+    /*QDate firstActivation =*/activateRandomContracts(50/* % */);
     // activation date can be ahead of today
     QDate somefuturedate =QDate::currentDate().addYears(2);
     stats active_data =getStatsActiveContracts( somefuturedate);

@@ -132,7 +132,7 @@ void contract::initRandom(const tableindex_t creditorId)
     setPlannedInvest(    rand->bounded(50)  *1000.
                        + rand->bounded(1,3) *500.
                        + rand->bounded(10)  *100.);
-    setConclusionDate(QDate::currentDate().addYears(-3).addDays(rand->bounded(720)));
+    setConclusionDate(QDate::currentDate().addYears(-2).addDays(rand->bounded(720)));
     if( rand->bounded(100)%5 > 0)
         // in 4 von 5 Fällen
         setNoticePeriod(3 + rand->bounded(21));
@@ -205,7 +205,6 @@ NOTE to self: DKV2 stellt sicher, dass bei Verträgen mit verzögerter Zinszahlu
     qInfo() << "no lastestBookingDate as the contract has no bookings";
     return QDate();
 }
-
 const booking contract::latestBooking()
 {
     /*
@@ -235,7 +234,7 @@ tableindex_t contract::saveNewContract()
     }
     RETURN_ERR( SQLITE_invalidRowId, qsl("Fehler beim Einfügen eines neuen Vertrags"));
 }
-
+// bool contract::updateDB_Contract()
 bool contract::updateLabel( const QString& newLabel)
 {   LOG_CALL;
     if( isValidNewContractLabel(newLabel)) {
@@ -925,7 +924,10 @@ int activateAllContracts(year y)
 QDate activateRandomContracts(const int percent)
 {   LOG_CALL;
     QDate minimumActivationDate =EndOfTheFuckingWorld; // needed for tests
-    if( percent < 0 or percent > 100) return minimumActivationDate;
+    if( percent < 0 or percent > 100) {
+        qCritical() << "invalid parameter for activateRandomContracts";
+        return minimumActivationDate;
+    }
 
     QVector<QVariant> contractData = executeSingleColumnSql (contract::getTableDef ().Fields ()[0]);
 
@@ -940,7 +942,8 @@ QDate activateRandomContracts(const int percent)
             // some contracts get activated with a different amount
             amount = amount * rand->bounded(90, 110) / 100;
         }
-        QDate activationDate(c.conclusionDate ().addDays(rand->bounded(50)));
+        // Activation must be after conclusion date; avoid random 0-day offset.
+        QDate activationDate(c.conclusionDate().addDays(rand->bounded(1, 51)));
         if( c.bookInitialPayment(activationDate, amount)) {
             if( activationDate < minimumActivationDate)
                 minimumActivationDate =activationDate;
