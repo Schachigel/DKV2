@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include "uihelper.h"
+#include "idwrapper.h"
 #include "dlgdisplaycolumns.h"
 #include "busyCursor.h"
 #include "transaktionen.h"
@@ -126,7 +127,7 @@ void MainWindow::on_CreditorsTableView_customContextMenuRequested(QPoint pos)
 }
 void MainWindow::on_action_cmenu_edit_creditor_triggered()
 {   LOG_CALL;
-    editCreditor(id_SelectedCreditor());
+    editCreditor(creditorId_t{id_SelectedCreditor()});
     updateViews();
 }
 void MainWindow::on_action_cmenu_delete_creditor_triggered()
@@ -134,21 +135,21 @@ void MainWindow::on_action_cmenu_delete_creditor_triggered()
 //    const QTableView * const tv = ui->CreditorsTableView;
 //    QModelIndex mi(tv->currentIndex());
 //    qlonglong index = tv->model()->data(mi.siblingAtColumn(0)).toLongLong();
-    int creditorId =id_SelectedCreditor();
-    if( creditorId <=0 ) {
+    int creditId =id_SelectedCreditor();
+    if( creditId <=0 ) {
         QMessageBox::critical(this, qsl("Fehler"), qsl("Beim Löschen ist ein Fehler aufgetreten. Details findest Du im der LOG Datei"));
         return;
     }
 
-    creditor c (id_SelectedCreditor());
+    creditor cred{ creditorId_t{ id_SelectedCreditor()}};
     QString msg( qsl("Soll der Kreditgeber %1 %2 (id %3) gelöscht werden?"));
-    msg =msg.arg(c.getValue(creditor::fnVorname).toString(), c.getValue(creditor::fnNachname).toString(), i2s(id_SelectedCreditor()));
+    msg =msg.arg(cred.getValue(creditor::fnVorname).toString(), cred.getValue(creditor::fnNachname).toString(), i2s(id_SelectedCreditor()));
 
     if( QMessageBox::Yes not_eq QMessageBox::question(this, qsl("Kreditgeber löschen?"), msg))
         return;
     busyCursor b;
 
-    if( c.remove())
+    if( cred.remove())
         prepare_CreditorsListPage();
     else
         QMessageBox::information(this, qsl("Löschen unmöglich"), qsl("Ein Kreditor mit aktiven oder beendeten Verträgen kann nicht gelöscht werden"));

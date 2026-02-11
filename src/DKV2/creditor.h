@@ -3,6 +3,7 @@
 
 #include "helper_core.h"
 #include "tabledatainserter.h"
+#include "idwrapper.h"
 
 struct creditor
 {
@@ -26,7 +27,7 @@ struct creditor
     static const dbtable& getTableDef();
     // constructors
     creditor() : ti(getTableDef()) {}
-    creditor (qlonglong i) : ti(getTableDef()) { fromDb(i);}
+    creditor (creditorId_t i) : ti(getTableDef()) { fromDb(i);}
     // comparison
     bool operator==(const creditor& c) const;
     // setter
@@ -56,20 +57,20 @@ struct creditor
     void setIban(const QString& i)     { ti.setValue(qsl("IBAN"), i);}
     QString bic() const        {return getValue(qsl("BIC")).toString();}
     void setBic(const QString& b)      { ti.setValue(qsl("BIC"), b);}
-    tableindex_t id() const        {return getValue(qsl("id")).toLongLong();}
-    void setId(const tableindex_t i)     { ti.setValue(qsl("id"), i);}
+    creditorId_t id() const        {return creditorId_t{getValue(qsl("id")).toLongLong()};}
+    void setId(const creditorId_t i)     { ti.setValue(qsl("id"), i.v);}
     // interface
-    bool fromDb(const tableindex_t id);
+    bool fromDb(const creditorId_t id);
     QVariant getValue(const QString& f) const { return ti.getValue(f);}
     QVariantMap getVariantMap();
     bool isValid(QString &errortext) const;
     bool isValid() const;
-    tableindex_t save();
-    tableindex_t update() const;
+    creditorId_t save();
+    creditorId_t update() const;
     bool hasActiveContracts(){return hasActiveContracts(id());};
-    static bool hasActiveContracts(const qlonglong i);
+    static bool hasActiveContracts(const creditorId_t i);
     bool remove();
-    static bool remove(const tableindex_t index);
+    static bool remove(const creditorId_t index);
 private:
     // data
     TableDataInserter ti;

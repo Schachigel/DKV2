@@ -567,10 +567,10 @@ void test_contract::test_payout_wSettlement_wPayout()
     QCOMPARE(getNbrOfBookings(cont.id()), 5);
 }
 
-QDate initialBookingDate(qlonglong cId)
+QDate initialBookingDate(contractId_t cId)
 {
     QString where = qsl("%1.%2=%3").arg(tn_Buchungen, fn_bVertragsId);
-    return executeSingleValueSql(qsl("MIN(%1)").arg(fn_bDatum), tn_Buchungen, where.arg(cId)).toDate();
+    return executeSingleValueSql(qsl("MIN(%1)").arg(fn_bDatum), tn_Buchungen, where.arg(cId.v)).toDate();
 }
 
 void test_contract::test_activationDate()
@@ -749,18 +749,18 @@ void test_contract::test_finalize()
     cont.deposit(aDate.addMonths(1), 1000.);
     QCOMPARE(rowCount("Vertraege"), 1);
     QCOMPARE(rowCount("Buchungen"), 3);
-    int contractId = cont.id();
+    contractId_t contractId = cont.id();
     double fi =0., fp =0.;
     QVERIFY(cont.finalize(false, aDate.addMonths(2), fi, fp));
     // finalize should reset the cont object
-    QCOMPARE(cont.id(), SQLITE_invalidRowId);
+    QCOMPARE(cont.id(), Invalid_contract_id);
     QCOMPARE(rowCount("Vertraege"), 0);
     QCOMPARE(getNbrOfBookings(contractId), 0);
     QCOMPARE(rowCount("exVertraege"), 1);
     QCOMPARE( getNbrOfExBookings(contractId), 5);
     QCOMPARE(executeSingleValueSql(
              contract::getTableDef_deletedContracts()["LaufzeitEnde"],
-             "id=" +i2s(contractId)), QDate(aDate.addMonths(2)));
+             "id=" +i2s(contractId.v)), QDate(aDate.addMonths(2)));
     contract ex(contractId, true);
     QCOMPARE(ex.value (), 0.);
 }

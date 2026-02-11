@@ -5,6 +5,7 @@
 #include "helperfin.h"
 #include "helpersql.h"
 #include "dbtable.h"
+#include "idwrapper.h"
 
 inline const QString tn_Buchungen   {qsl("Buchungen")};
 inline const QString tn_ExBuchungen {qsl("ExBuchungen")};
@@ -45,14 +46,14 @@ inline QString bookingTypeToNbrString( const bookingType t) {return i2s(bookingT
 
 struct booking
 {
-    tableindex_t contractId =SQLITE_invalidRowId;
+    contractId_t contId =Invalid_contract_id;
     bookingType type =bookingType::non;
     QDate date =EndOfTheFuckingWorld;
     double amount =0.;
     // construction
-    booking(const tableindex_t cId =SQLITE_invalidRowId, const bookingType t = bookingType::non,
+    booking(const contractId_t cId =Invalid_contract_id, const bookingType t = bookingType::non,
             const QDate d =EndOfTheFuckingWorld, const double a =0.)
-        : contractId(cId), type(t), date(d), amount(a) {};
+        : contId(cId), type(t), date(d), amount(a) {};
     // statics
     static const dbtable& getTableDef();
     static const dbtable& getTableDef_deletedBookings();
@@ -65,7 +66,7 @@ struct booking
          if( (lhs.type not_eq rhs.type)) error =qsl("comparing bookings: different types");
          if( (lhs.date not_eq rhs.date)) error += qsl(", comparing bookings: different dates");
          if( (lhs.amount not_eq rhs.amount)) error += qsl(", comparing bookings: different amounts");
-         if( (lhs.contractId not_eq rhs.contractId)) error += qsl(", comparing bookings: different contractIds");
+         if( (lhs.contId.v not_eq rhs.contId.v)) error += qsl(", comparing bookings: different contractIds");
          if(error.isEmpty())
              return true;
          else
@@ -74,21 +75,21 @@ struct booking
 };
 Q_DECLARE_TYPEINFO(booking, Q_PRIMITIVE_TYPE );
 
-bool writeBookingToDB(bookingType, const tableindex_t contrId, QDate date, const double);
+bool writeBookingToDB(bookingType, const contractId_t contrId, QDate date, const double);
 
-bool bookDeposit(   const tableindex_t contractId, QDate date, const double amount);
-bool bookPayout(    const tableindex_t contractId, QDate date, const double amount);
-bool bookReInvestInterest(const tableindex_t contractId, QDate date, const double amount);
-bool bookAnnualInterestDeposit( const tableindex_t contractId, QDate date, const double amount);
-bool bookInterestActive(const tableindex_t contractId, QDate date);
-bool writeBookingUpdate( qlonglong bookingId, int newValeuInCt);
+bool bookDeposit(   const contractId_t cId, QDate date, const double amount);
+bool bookPayout(    const contractId_t cId, QDate date, const double amount);
+bool bookReInvestInterest(const contractId_t cId, QDate date, const double amount);
+bool bookAnnualInterestDeposit( const contractId_t cId, QDate date, const double amount);
+bool bookInterestActive(const contractId_t cId, QDate date);
+bool writeBookingUpdate( bookingId_t bookingId, int newValeuInCt);
 
 //QVector<booking> bookingsFromDB(const QString& where, const QString& order ="", bool terminated =false);
-QVector<booking> getBookings(   const tableindex_t contractId,  const QDate from = BeginingOfTime, const QDate to = EndOfTheFuckingWorld,
+QVector<booking> getBookings(   const contractId_t contractId,  const QDate from = BeginingOfTime, const QDate to = EndOfTheFuckingWorld,
                                 const QString order = qsl("Datum DESC"), bool terminatedContract =false);
 
-int getNbrOfBookings(const tableindex_t contract, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld, const bool terminated =false);
-int getNbrOfExBookings(const tableindex_t contract, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld);
+int getNbrOfBookings(const contractId_t contract, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld, const bool terminated =false);
+int getNbrOfExBookings(const contractId_t contract, const QDate from =BeginingOfTime, const QDate to =EndOfTheFuckingWorld);
 
 double getBookingsSum(QVector<booking> bl, bookingType bt);
 

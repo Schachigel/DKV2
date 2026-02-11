@@ -135,6 +135,7 @@ endif()
 
 qt_add_executable(${APP_TARGET} ${PLATFORM_GUI_FLAG}
     ${DKV2_APP_SOURCES}
+    idwrapper.h
 )
 
 # Link: GUI (die wiederum Core zieht, wenn UI_TARGET PUBLIC gegen CORE_TARGET linkt)

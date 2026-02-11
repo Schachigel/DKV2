@@ -23,14 +23,14 @@ void test_booking::test_defaults()
     {
         booking b;
         QCOMPARE(b.amount, 0.);
-        QCOMPARE(b.contractId, SQLITE_invalidRowId);
+        QCOMPARE(b.contId, Invalid_contract_id);
         QCOMPARE(b.type, bookingType::non);
         QCOMPARE(b.date, EndOfTheFuckingWorld);
     }
     {
-        booking b(13, bookingType::annualInterestDeposit, QDate::currentDate (), 42.);
+        booking b(contractId_t{13}, bookingType::annualInterestDeposit, QDate::currentDate (), 42.);
         QCOMPARE(b.amount, 42.);
-        QCOMPARE(b.contractId, 13);
+        QCOMPARE(b.contId.v, 13);
         QCOMPARE(b.type, bookingType::annualInterestDeposit);
         QCOMPARE(b.date, QDate::currentDate ());
     }
@@ -49,14 +49,13 @@ void test_booking::test_bookDeposit()
     }
     {
         // no booking w/o creditor
-        qlonglong invalidCreditorId {42};
-        QVERIFY( not bookDeposit(invalidCreditorId, validDate, amount));
+        QVERIFY( not bookDeposit(Invalid_contract_id, validDate, amount));
     }
     {
         QVERIFY(bookDeposit(cont.id (), validDate, amount));
         QVector<booking> v= getBookings(cont.id());
         QCOMPARE(v.size (), 1);
-        QCOMPARE( v[0], booking(cont.id (), bookingType::deposit, validDate, amount));
+        QCOMPARE( v[0], booking(cont.id(), bookingType::deposit, validDate, amount));
     }
 }
 void test_booking::test_bookPayout()
@@ -70,8 +69,8 @@ void test_booking::test_bookPayout()
         QVERIFY( bookPayout(cont.id(), validDate, -1 *amount));
         QVector<booking> v= getBookings(cont.id());
         QCOMPARE(v.size (), 2);
-        QCOMPARE( v[0], booking(cont.id (), bookingType::payout, validDate, -1 *amount));
-        QCOMPARE( v[1], booking(cont.id (), bookingType::payout, validDate, -1 *amount));
+        QCOMPARE( v[0], booking(cont.id(), bookingType::payout, validDate, -1 *amount));
+        QCOMPARE( v[1], booking(cont.id(), bookingType::payout, validDate, -1 *amount));
     }
 }
 void test_booking::test_bookReInvest()
@@ -122,9 +121,8 @@ void test_booking::test_getNbrOfBookings()
     creditor c(saveRandomCreditor());
     contract cont(saveRandomContract(c.id()));
 
-    qlonglong invalidCreditorId {42};
-    QCOMPARE( 0, getNbrOfBookings (invalidCreditorId));
-    QCOMPARE( 0, getNbrOfBookings (cont.id ()));
+    QCOMPARE( 0, getNbrOfBookings (Invalid_contract_id));
+    QCOMPARE( 0, getNbrOfBookings (cont.id()));
 
     QDate d1 (2020, 1, 1);
     QDate later  ( d1.addDays ( 2));
@@ -148,7 +146,7 @@ void test_booking::test_getBookings()
     contract cont(saveRandomContract(c.id()));
 
     qlonglong invalidCreditorId {42};
-    QCOMPARE(getBookings(invalidCreditorId), QVector<booking>());
+    QCOMPARE(getBookings(Invalid_contract_id), QVector<booking>());
     QCOMPARE(getBookings(cont.id()), QVector<booking>());
 
     QDate d1 (2020, 1, 1);
@@ -188,14 +186,14 @@ void test_booking::test_getBookings()
     }
     {
         // provided dates are included
-        QVector<booking> twobookings =getBookings(SQLITE_invalidRowId, d1.addDays(1), d3, "DATUM ASC");
+        QVector<booking> twobookings =getBookings(Invalid_contract_id, d1.addDays(1), d3, "DATUM ASC");
         QCOMPARE(twobookings.size(), 2);
 
-        QVector<booking> allbookings =getBookings(SQLITE_invalidRowId, d1, d3, "DATUM ASC");
+        QVector<booking> allbookings =getBookings(Invalid_contract_id, d1, d3, "DATUM ASC");
         QCOMPARE(allbookings.size(), 3);
 
         twobookings.clear();
-        twobookings =getBookings(SQLITE_invalidRowId, d1, d3.addDays(-1), "DATUM ASC");
+        twobookings =getBookings(Invalid_contract_id, d1, d3.addDays(-1), "DATUM ASC");
         QCOMPARE(twobookings.size(), 2);
     }
 }
@@ -232,7 +230,7 @@ void test_booking::test_changeBookingValue() {
     cont.initRandom(saveRandomCreditor().id());
     cont.saveNewContract();
     cont.bookInitialPayment(cont.conclusionDate().addDays(1), cont.plannedInvest() +1.);
-    writeBookingUpdate( 1, cont.plannedInvest());
+    writeBookingUpdate( bookingId_t{1}, cont.plannedInvest());
     booking b =cont.latestBooking();
     QCOMPARE(b.amount*100., cont.plannedInvest());
 }

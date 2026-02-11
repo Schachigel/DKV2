@@ -111,7 +111,7 @@ void test_annualSettlement::test_dateOfNextSettlement_nextSettlement()
     QCOMPARE(executeCompleteAS(2001), 1);
     QCOMPARE(dateOfnextSettlement(), c1.dateOf_next_AS()); // contract local vs. global
     // prep contract earlier
-    contract c2(saveRandomContract(c1.creditorId()));
+    contract c2(saveRandomContract(c1.credId()));
     c2.updateInterestActive(true);
     c2.updateConclusionDate(QDate(2001, 5, 1));
     QVERIFY(c2.bookInitialPayment(QDate(2001, 6, 1), 1000.));
@@ -132,7 +132,7 @@ void test_annualSettlement::test_dateOfNextSettlement_activatedContracts()
     QCOMPARE(dateOfnextSettlement(), c1.dateOf_next_AS());
     QCOMPARE(dateOfnextSettlement(), ye_2001);
 
-    contract c2(saveRandomContract(c1.creditorId()));
+    contract c2(saveRandomContract(c1.credId()));
     c2.updateInterestActive(true);
     c2.updateConclusionDate(QDate(1999, 11, 30));
     QVERIFY(c2.bookInitialPayment(ys_2000, 1000.));
@@ -141,7 +141,7 @@ void test_annualSettlement::test_dateOfNextSettlement_activatedContracts()
     QCOMPARE(c2.dateOf_next_AS(), ye_2000);
     QCOMPARE(dateOfnextSettlement(), ye_2000);
 
-    contract c3(saveRandomContract(c1.creditorId()));
+    contract c3(saveRandomContract(c1.credId()));
     c3.updateInterestActive(true);
     c3.updateConclusionDate(QDate(1998, 11, 30));
     QVERIFY(c3.bookInitialPayment(ye_1998, 1000.));
@@ -150,7 +150,7 @@ void test_annualSettlement::test_dateOfNextSettlement_activatedContracts()
     QCOMPARE(c3.dateOf_next_AS(), ye_1999);
     QCOMPARE(dateOfnextSettlement(), ye_1999);
 
-    contract c4(saveRandomContract(c1.creditorId()));
+    contract c4(saveRandomContract(c1.credId()));
     c4.updateInterestActive(true);
     c4.updateConclusionDate(QDate(1998, 4, 2));
     QCOMPARE(c1.dateOf_next_AS(), ye_2001); // unchanged
@@ -175,7 +175,7 @@ void test_annualSettlement::test_dateOfNextSettlement_mixedStates_earliestWins()
     QVERIFY(progressed.bookInitialPayment(QDate(2000, 6, 1), 1000.));
     QCOMPARE(executeCompleteAS(2000), 1);
 
-    contract newer(saveRandomContract(progressed.creditorId()));
+    contract newer(saveRandomContract(progressed.credId()));
     newer.updateInterestActive(true);
     newer.updateConclusionDate(QDate(2000, 5, 30));
     QVERIFY(newer.bookInitialPayment(QDate(2000, 6, 1), 1000.));
@@ -194,7 +194,7 @@ void test_annualSettlement::test_dateOfNextSettlement_mixedStates_laterContractI
     QVERIFY(progressed.bookInitialPayment(QDate(2000, 6, 1), 1000.));
     QCOMPARE(executeCompleteAS(2000), 1);
 
-    contract later(saveRandomContract(progressed.creditorId()));
+    contract later(saveRandomContract(progressed.credId()));
     later.updateInterestActive(true);
     later.updateConclusionDate(QDate(2002, 5, 5));
     QVERIFY(later.bookInitialPayment(QDate(2002, 6, 1), 1000.));
@@ -211,12 +211,12 @@ void test_annualSettlement::test_dateOfNextSettlement_mixedStates_deterministic(
     noActivation.updateInterestActive(true);
     noActivation.updateConclusionDate(QDate(2003, 4, 5));
 
-    contract activatedLate(saveRandomContract(noActivation.creditorId()));
+    contract activatedLate(saveRandomContract(noActivation.credId()));
     activatedLate.updateInterestActive(true);
     activatedLate.updateConclusionDate(QDate(2003, 5, 5));
     QVERIFY(activatedLate.bookInitialPayment(ye_2003, 1000.));
 
-    contract alreadySettled(saveRandomContract(noActivation.creditorId()));
+    contract alreadySettled(saveRandomContract(noActivation.credId()));
     alreadySettled.updateInterestActive(true);
     alreadySettled.updateConclusionDate(QDate(2002, 5, 5));
     QVERIFY(alreadySettled.bookInitialPayment(QDate(2002, 6, 1), 1000.));
@@ -259,7 +259,7 @@ void test_annualSettlement::test_multipleContracts()
     int i {0};
     for (const auto& dataset : contractData) {
         contract c1;
-        c1.setCreditorId(dataset.creditor);
+        c1.setCreditorId(creditorId_t{dataset.creditor});
         c1.setInterestRate(dataset.interestRate);
         c1.setInterestActive(dataset.interestActive);
         c1.setInterestModel(dataset.iModel);
@@ -290,7 +290,7 @@ void test_annualSettlement::test_csvCreation_check_headers()
     ctor.setIban(       qsl("DE03 2345 2345 2345 234 E33"));
     ctor.setBic(        qsl("Bicß0394586"));
     contract cont;
-    cont.setCreditorId(    ctor.save());
+    cont.setCreditorId( ctor.save());
     cont.setLabel(         qsl("ESP-DK-2022-1029456"));
     cont.setConclusionDate(conclusionDate);
     cont.setInterestActive(true);

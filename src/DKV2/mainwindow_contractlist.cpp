@@ -13,6 +13,7 @@
 #include "dkdbviews.h"
 #include "investment.h"
 #include "transaktionen.h"
+#include "idwrapper.h"
 
 
 /////////////////////////////////////////////////
@@ -365,7 +366,7 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
     if( not index.isValid ())
         return;
 
-    int contractId = index.data().toInt();
+    contractId_t contractId {index.data().toLongLong()};
     contract c;
     contractUnderMouseMenu = &c;
     QMenu menu( qsl("ContractContextMenu"), this);
@@ -425,7 +426,7 @@ void MainWindow::on_bookingsTableView_customContextMenuRequested(const QPoint &p
     if( not index.isValid ())
         return;
 
-    bookingIdUnderMouseMenu =index.data().toLongLong ();
+    bookingIdUnderMouseMenu=index.data().toLongLong ();
     QMenu menu(qsl("bookingsContextMenu"), this);
     menu.addAction (ui->action_cmenu_change_booking);
     bc.finish();
@@ -436,7 +437,7 @@ void MainWindow::on_bookingsTableView_customContextMenuRequested(const QPoint &p
 
 void MainWindow::on_action_cmenu_change_booking_triggered()
 {
-    changeBookingValue(bookingIdUnderMouseMenu);
+    changeBookingValue(bookingId_t{bookingIdUnderMouseMenu});
     updateViews();
 }
 

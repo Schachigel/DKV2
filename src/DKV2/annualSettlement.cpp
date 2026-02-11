@@ -24,7 +24,7 @@ QString print_as_csv(const QDate &bookingDate,
         const contract &c = changedContracts[i];
         const booking &b = asBookings[i];
         // write data to CSV
-        creditor cont(c.creditorId());
+        creditor cont(c.credId());
         csv.appendValueToNextRecord(cont.firstname());
         csv.appendValueToNextRecord(cont.lastname());
         csv.appendValueToNextRecord(cont.email());

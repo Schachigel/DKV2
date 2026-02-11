@@ -53,17 +53,17 @@
 QString booking::toString( ) const
 {
     return qsl("%1 zum Vertrag# %2: Betrag: %3, Datum: %4")
-            .arg(bookingTypeDisplayString (type), i2s(contractId), s_d2euro(amount), date.toString(Qt::ISODate));
+            .arg(bookingTypeDisplayString (type), i2s(contId.v), s_d2euro(amount), date.toString(Qt::ISODate));
 }
 
 /////////////// BOOKING functions (friends, not family ;) )
 ///
-bool writeBookingToDB(bookingType t, const tableindex_t contractId, QDate date, const double amount)
-{   LOG_CALL_W (booking(contractId, t, date, amount).toString());
+bool writeBookingToDB(bookingType t, const contractId_t cId, QDate date, const double amount)
+{   LOG_CALL_W (booking(cId, t, date, amount).toString());
     if( not date.isValid ())
         RETURN_ERR(false, qsl(">> invalid booking date <<"));
     TableDataInserter tdi(booking::getTableDef());
-    tdi.setValue(fn_bVertragsId,  contractId);
+    tdi.setValue(fn_bVertragsId,  cId.v);
     tdi.setValue(fn_bBuchungsArt, static_cast<int>(t));
     tdi.setValue(fn_bBetrag,      ctFromEuro(amount));
     tdi.setValue(fn_bDatum,       date);
@@ -73,54 +73,54 @@ bool writeBookingToDB(bookingType t, const tableindex_t contractId, QDate date, 
     else
         RETURN_ERR( false, qsl(">> Buchung gescheitert <<"));
 }
-bool bookDeposit(const tableindex_t contractId, QDate date, const double amount)
+bool bookDeposit(const contractId_t cId, QDate date, const double amount)
 {
     if( amount <= 0)
         RETURN_ERR(false, qsl(">> Einzahlungen müssen einen Wert größer als 0 haben <<"));
-    return writeBookingToDB( bookingType::deposit, contractId, date, amount);
+    return writeBookingToDB( bookingType::deposit, cId, date, amount);
 }
-bool bookPayout(const tableindex_t contractId, QDate date, const double amount)
+bool bookPayout(const contractId_t cId, QDate date, const double amount)
 {
     // contract has to check that a payout is possible
-    return writeBookingToDB(bookingType::payout, contractId, date, -1*qFabs(amount));
+    return writeBookingToDB(bookingType::payout, cId, date, -1*qFabs(amount));
 }
-bool bookReInvestInterest(const tableindex_t contractId, QDate date, const double amount)
+bool bookReInvestInterest(const contractId_t cId, QDate date, const double amount)
 {
     if( amount < 0)
         RETURN_ERR(false, qsl(">> booking ReInvestInterest failed due to negative amount <<"));
-    return writeBookingToDB(bookingType::reInvestInterest, contractId, date, amount);
+    return writeBookingToDB(bookingType::reInvestInterest, cId, date, amount);
 }
-bool bookAnnualInterestDeposit(const tableindex_t contractId, QDate date, const double amount)
+bool bookAnnualInterestDeposit(const contractId_t cId, QDate date, const double amount)
 {
     if( amount < 0)
         RETURN_ERR(false, qsl(">> booking Annual Interest Deposit failed due to negative amount <<"));
-    return writeBookingToDB(bookingType::annualInterestDeposit, contractId, date, amount);
+    return writeBookingToDB(bookingType::annualInterestDeposit, cId, date, amount);
 }
-bool bookInterestActive(const tableindex_t contractId, QDate date)
+bool bookInterestActive(const contractId_t cId, QDate date)
 {
-    return writeBookingToDB(bookingType::setInterestActive, contractId, date, 0.);
+    return writeBookingToDB(bookingType::setInterestActive, cId, date, 0.);
 }
 
-bool writeBookingUpdate( qlonglong bookingId, int newValeuInCt)
+bool writeBookingUpdate( bookingId_t bookingId, int newValeuInCt)
 {
     QString sql {qsl("UPDATE %0 SET %1=%2, %3='%4' WHERE id=%5")
             .arg(tn_Buchungen, fn_bBetrag, QString::number(newValeuInCt),
                  fn_bModifiziert, QDate::currentDate().toString(Qt::ISODate),
-                         QString::number(bookingId))};
+                         QString::number(bookingId.v))};
     return executeSql_wNoRecords (sql);
 }
 
 ///////////// bookingS start here
-int getNbrOfBookings(const qlonglong contract, const QDate from, const QDate to, const bool terminated)
+int getNbrOfBookings(const contractId_t contract, const QDate from, const QDate to, const bool terminated)
 {   // for testing mainly
-    QString where {qsl(" VertragsId=%1").arg(contract)};
+    QString where {qsl(" VertragsId=%1").arg(contract.v)};
     if( from > BeginingOfTime)
         where += qsl(" AND Datum >='%1'").arg(from.toString(Qt::ISODate));
     if( to < EndOfTheFuckingWorld)
         where += qsl(" AND Datum <='%1'").arg(to.toString(Qt::ISODate));
     return rowCount((terminated ? tn_ExBuchungen : tn_Buchungen), where);
 }
-int getNbrOfExBookings(const qlonglong contract, const QDate from, const QDate to)
+int getNbrOfExBookings(const contractId_t contract, const QDate from, const QDate to)
 {
     return getNbrOfBookings(contract, from, to, true);
 }
@@ -138,7 +138,8 @@ QVector<booking> bookingsFromDB(const QString& sql, const QVector<QVariant>& par
 
     QVector<booking> vRet;
     for (const auto& rec : std::as_const(records)) {
-        booking b(rec.value(fn_bVertragsId).toLongLong(),
+        const contractId_t cid{rec.value(fn_bVertragsId).toLongLong()};
+        const booking b(cid,
                   bookingType(rec.value(fn_bBuchungsArt).toInt()),
                   rec.value(fn_bDatum).toDate(),
                   euroFromCt(rec.value(fn_bBetrag).toInt()));
@@ -150,7 +151,7 @@ QVector<booking> bookingsFromDB(const QString& sql, const QVector<QVariant>& par
 } // namespace
 
 // annual settlement letter creation
-QVector<booking> getBookings(const tableindex_t contractId, QDate inclFrom, const QDate inclTo,
+QVector<booking> getBookings(const contractId_t contractId, QDate inclFrom, const QDate inclTo,
                     QString order, bool terminated)
 {
     QString tablename = terminated ? tn_ExBuchungen : tn_Buchungen;
@@ -158,9 +159,9 @@ QVector<booking> getBookings(const tableindex_t contractId, QDate inclFrom, cons
                       .arg(tablename, fn_bDatum);
     QVector<QVariant> params {inclFrom.toString(Qt::ISODate), inclTo.toString(Qt::ISODate)};
 
-    if (isValidRowId(contractId)) {
+    if (isValidRowId(contractId.v)) {
         sql += qsl(" AND %1 = ?").arg(fn_bVertragsId);
-        params.push_back(QVariant::fromValue<qlonglong>(contractId));
+        params.push_back(QVariant::fromValue<qlonglong>(contractId.v));
     }
 
     if (not order.isEmpty()) {

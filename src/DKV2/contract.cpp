@@ -6,7 +6,6 @@
 #include "helperfin.h"
 #include "dbstructure.h"
 #include "dkdbhelper.h"
-#include "booking.h"
 
 // statics & friends
 /*static*/ const QString contract::tnContracts{qsl("Vertraege")};
@@ -70,17 +69,18 @@
 }
 
 // construction
-contract::contract(qlonglong contractId /*=-1*/, bool isTerminated /*=false*/)
+contract::contract(contractId_t cId /*=-1*/, bool isTerminated /*=false*/)
     : td(getTableDef())
 {
     initContractDefaults();
-    if( contractId < SQLITE_minimalRowId)
+    if( cId.v < Minimal_contract_id.v)
         return;
     if( isTerminated)
-        loadExFromDb( contractId);
+        loadExFromDb( cId);
      else
-        loadFromDb( contractId);
+        loadFromDb( cId);
 }
+
 contract::contract(const QSqlRecord &record) : td(getTableDef())
 {   LOG_CALL;
     isTerminated =false;
@@ -88,26 +88,26 @@ contract::contract(const QSqlRecord &record) : td(getTableDef())
         qCritical() << "contract could not be created from record";
 }
 
-void contract::loadFromDb( qlonglong id)
-{   LOG_CALL_W(i2s(id)); // id_aS() might not be initialized yet!!
+void contract::loadFromDb( contractId_t id)
+{   LOG_CALL_W(i2s(id.v)); // id_aS() might not be initialized yet!!
     isTerminated =false;
-    QSqlRecord rec =executeSingleRecordSql( getTableDef().Fields(), qsl("id=%1").arg( id));
+    QSqlRecord rec =executeSingleRecordSql( getTableDef().Fields(), qsl("id=%1").arg( id.v));
     if (not td.setValues(rec))
         qCritical() << "contract from id could not be created";
 }
 
-void contract::loadExFromDb(const tableindex_t id)
-{   LOG_CALL_W(i2s(id));
+void contract::loadExFromDb(const contractId_t id)
+{   LOG_CALL_W(i2s(id.v));
     isTerminated =true;
-    QSqlRecord rec = executeSingleRecordSql(getTableDef_deletedContracts ().Fields(), qsl("id=%1").arg(id));
+    QSqlRecord rec = executeSingleRecordSql(getTableDef_deletedContracts ().Fields(), qsl("id=%1").arg(id.v));
     if (not td.setValues(rec))
         qCritical() << "exContract from id could not be created";
 }
 
-void contract::initContractDefaults( const qlonglong CREDITORid /*=-1*/)
+void contract::initContractDefaults(const creditorId_t credId )
 {
     setId(SQLITE_invalidRowId);
-    setCreditorId(CREDITORid);
+    setCreditorId(credId);
     setNoticePeriod(6);
     //setPlannedEndDate(EndOfTheFuckingWorld); - implicit
     setInterestModel(interestModel::reinvest);
@@ -120,11 +120,11 @@ void contract::initContractDefaults( const qlonglong CREDITORid /*=-1*/)
     initCancelationDate();
 }
 
-void contract::initRandom(const tableindex_t creditorId)
+void contract::initRandom(const creditorId_t credId)
 {
     static QRandomGenerator *rand = QRandomGenerator::system();
     setLabel(proposeContractLabel());
-    setCreditorId(creditorId);
+    setCreditorId(credId);
     setInterestRate( rand->bounded(25)* 0.15);
 
     setInterestModel(interestModelFromInt(rand->bounded(100)%4));
@@ -221,36 +221,36 @@ NOTE to self:
     }
     booking latestB(id(), bookingType(rec.value(fn_bBuchungsArt).toInt()), rec.value(fn_bDatum).toDate(), euroFromCt(rec.value(fn_bBetrag).toInt()));
     RETURN_OK (latestB, qsl("Latest Booking:"), qsl("Typ: "), bookingTypeDisplayString(latestB.type), qsl("/"), latestB.date.toString (Qt::ISODate), qsl("/"),
-                         s_d2euro(latestB.amount), qsl("/"), qsl("cId:"), i2s(latestB.contractId));
+                         s_d2euro(latestB.amount), qsl("/"), qsl("cId:"), i2s(latestB.contId.v));
 }
 
 // write to db
-tableindex_t contract::saveNewContract()
+contractId_t contract::saveNewContract()
 {
     tableindex_t lastid =td.InsertRecord();
-    if( lastid >= SQLITE_minimalRowId) {
+    if( lastid >= Minimal_contract_id.v) {
         setId(lastid);
-        RETURN_OK( lastid, qsl("contract::saveNewContract: Neuer Vertrag wurde eingefügt mit id: %1").arg(i2s(lastid)));
+        RETURN_OK( contractId_t{lastid}, qsl("contract::saveNewContract: Neuer Vertrag wurde eingefügt mit id: %1").arg(i2s(lastid)));
     }
-    RETURN_ERR( SQLITE_invalidRowId, qsl("Fehler beim Einfügen eines neuen Vertrags"));
+    RETURN_ERR( Invalid_contract_id, qsl("Fehler beim Einfügen eines neuen Vertrags"));
 }
 // bool contract::updateDB_Contract()
 bool contract::updateLabel( const QString& newLabel)
 {   LOG_CALL;
     if( isValidNewContractLabel(newLabel)) {
-        return td.updateValue (fnKennung, newLabel, id());
+        return td.updateValue (fnKennung, newLabel, id_l());
     }
     return false;
 }
 bool contract::updateConclusionDate( const QDate& newD) {
-    return td.updateValue(fnVertragsDatum, QVariant(newD), id());
+    return td.updateValue(fnVertragsDatum, QVariant(newD), id().v);
 }
 bool contract::updateInterestActive( const bool active) {
-    RETURN_OK( td.updateValue(fnZAktiv, active ? 1 : 0, id()), qsl("contract zActive updated"));
+    RETURN_OK( td.updateValue(fnZAktiv, active ? 1 : 0, id().v), qsl("contract zActive updated"));
 }
 bool contract::updateComment(const QString &c)
 {
-    RETURN_OK( td.updateValue(fnAnmerkung, c, id()), qsl("Contract Comment updated"));
+    RETURN_OK( td.updateValue(fnAnmerkung, c, id().v), qsl("Contract Comment updated"));
 }
 bool contract::updateInitialPaymentDate(const QDate& newD)
 {
@@ -264,8 +264,8 @@ bool contract::updateInitialPaymentDate(const QDate& newD)
 bool contract::updateTerminationDate(QDate termination, int noticePeriod)
 {
     autoRollbackTransaction art;
-    bool res =td.updateValue(fnKFrist, noticePeriod, id());
-    res &= td.updateValue(fnLaufzeitEnde, termination, id());
+    bool res =td.updateValue(fnKFrist, noticePeriod, id().v);
+    res &= td.updateValue(fnLaufzeitEnde, termination, id().v);
     if( res) {
         if( not art.commit()) {
             qCritical() << "updateTerminationDate: failed to commit transaction";
@@ -278,12 +278,12 @@ bool contract::updateTerminationDate(QDate termination, int noticePeriod)
 }
 bool contract::updateInvestment(tableindex_t investmentId)
 {
-    RETURN_OK( td.updateValue(fnAnlagenId, investmentId, id()), qsl("Updated the contract investment ref"), i2s(investmentId));
+    RETURN_OK( td.updateValue(fnAnlagenId, investmentId, id().v), qsl("Updated the contract investment ref"), i2s(investmentId));
 }
 bool contract::updateSetInterestActive()
 {
     // for now we only support activation but not deactivation
-    RETURN_OK( td.updateValue(fnZAktiv, true, id()), qsl("activated interest payment"));
+    RETURN_OK( td.updateValue(fnZAktiv, true, id().v), qsl("activated interest payment"));
 }
 bool contract::deleteInactive() {
     QString sql=qsl("DELETE FROM Vertraege WHERE id=%1").arg( id_aS ());
@@ -306,7 +306,7 @@ QDate avoidYearEndBookings(const QDate d)
 // First payment may or may not start interest payment
 bool contract::bookInitialPayment(const QDate date, const double amount)
 {   LOG_CALL;
-    Q_ASSERT(id() >= 0);
+    Q_ASSERT(id().v >= 0);
     QString error;
 
     // QDate actualBookingDate =avoidYearEndBookings(date);
@@ -555,7 +555,7 @@ bool contract::cancel(const QDate dPlannedContractEnd, const QDate dCancelation)
     }
     QDate actualD =avoidYearEndBookings(dPlannedContractEnd);
     QString sql =qsl("UPDATE Vertraege SET LaufzeitEnde=?, Kfrist=?, KueDatum=? WHERE id=?");
-    QVector<QVariant> v {actualD.toString(Qt::ISODate), -1, dCancelation.toString(Qt::ISODate), id()};
+    QVector<QVariant> v {actualD.toString(Qt::ISODate), -1, dCancelation.toString(Qt::ISODate), id().v};
     if( not executeSql_wNoRecords(sql, v)) {
         qCritical() << "faild to cancel contract ";
         return false;
@@ -572,12 +572,12 @@ bool contract::finalize(bool simulate, const QDate finDate,
         RETURN_ERR( false, qsl("invalid date to finalize contract"));
     if( finDate < lastBookingDate)
         RETURN_ERR( false, qsl("finalize date before last booking"));
-    if( not isValidRowId(id()))
+    if( not isValidRowId(id().v))
         RETURN_ERR( false, qsl("invalid contract id"));
     if( not initialPaymentReceived())
         RETURN_ERR( false, qsl("could not finalize inactive contract"));
 
-    const qlonglong id_to_be_deleted { id()};
+    const qlonglong id_to_be_deleted { id().v};
     qInfo() << "Finalization startet at value " << interestBearingValue ();
 
     bool ok {false};
@@ -676,7 +676,7 @@ bool contract::bookInBetweenInterest(const QDate nextBookingDate, bool payout)
 }
 bool contract::storeTerminationDate(const QDate d) const
 {   LOG_CALL;
-    QVector<QVariant> v {d, id()};
+    QVector<QVariant> v {d, id().v};
     return executeSql_wNoRecords(qsl("UPDATE Vertraege SET LaufzeitEnde=? WHERE id=?"), v);
 }
 bool contract::archive()
@@ -686,7 +686,7 @@ bool contract::archive()
     // secured by the transaction of finalize()
 
     // move all bookings and the contract to the archive tables
-    qlonglong ContractToDelete =id();
+    qlonglong ContractToDelete =id().v;
     if( executeSql_wNoRecords(qsl("INSERT INTO exVertraege SELECT * FROM Vertraege WHERE id=?"), ContractToDelete))
      if( executeSql_wNoRecords(qsl("INSERT INTO exBuchungen SELECT * FROM Buchungen WHERE VertragsId=?"), ContractToDelete))
       if( executeSql_wNoRecords(qsl("DELETE FROM Buchungen WHERE VertragsId=?"), ContractToDelete))
@@ -705,10 +705,10 @@ QString contract::toString(const QString &title) const
     QString ret;
     QTextStream stream(&ret);
     stream << title << qsl("\n");
-    if( id() <=0)
+    if( id().v <=0)
         stream << qsl("[contract was not saved or loaded from DB]\n");
     else
-        stream << qsl("[id, cred.Id:") << id_aS() << qsl(", ") << i2s(creditorId()) << qsl("]\n");
+        stream << qsl("[id, cred.Id:") << id_aS() << qsl(", ") << i2s(credId().v) << qsl("]\n");
     if( not initialPaymentReceived()) {
         stream << qsl("Wert (gepl.):     %1\n").arg(plannedInvest()) << qsl("\n");
         stream << qsl("Zinssatz (gepl.): %1\n").arg(interestRate());
@@ -728,9 +728,9 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
         fromDate = td.getValue(fnVertragsDatum).toDate();
     if (toDate == EndOfTheFuckingWorld)
         toDate = latestB.date;
-    v["id"] = id();
+    v["id"] = id().v;
     v["strId"] = id_aS();
-    v["KreditorId"] = i2s(creditorId());
+    v["KreditorId"] = i2s(credId().v);
     v["VertragsNr"] = label();
 
     double d = value(fromDate);
@@ -835,7 +835,7 @@ double contract::getAnnualInterest(year y, bookingType interestType)
         return 0;
 
     QString where{qsl("VertragsId=%1 AND BuchungsArt=%2 AND SUBSTR(Buchungen.Datum, 1, 4)=%3")};
-    where =where.arg(DbInsertableString (id()), DbInsertableString (bookingTypeToNbrString(interestType)),
+    where =where.arg(DbInsertableString (id().v), DbInsertableString (bookingTypeToNbrString(interestType)),
                      DbInsertableString (i2s(y))); // conversion to string is needed as this is not an integer but part of a date string
 
     return euroFromCt(executeSingleValueSql (qsl("SUM(Betrag)"), tn_Buchungen, where).toInt());
@@ -876,10 +876,10 @@ void contract::initCancelationDate() {
     td.setValue (qsl("KueDatum"), EndOfTheFuckingWorld);
 }
 
-contract saveRandomContract(const tableindex_t creditorId)
+contract saveRandomContract(const creditorId_t credId)
 {   LOG_CALL;
     contract c;
-    c.initRandom(creditorId);
+    c.initRandom(credId);
     c.saveNewContract();
     return c;
 }
@@ -887,8 +887,8 @@ contract saveRandomContract(const tableindex_t creditorId)
 void saveRandomContractPerCreditor()
 {
     QVector<QVariant> creditorIds = executeSingleColumnSql(dkdbstructur[qsl("Kreditoren")][contract::fnId]);
-    for( const QVariant& creditorId: std::as_const(creditorIds)) {
-        saveRandomContract (creditorId.toLongLong ());
+    for( const QVariant& credId: std::as_const(creditorIds)) {
+        saveRandomContract ( creditorId_t{ credId.toLongLong()});
     }
 }
 
@@ -901,7 +901,7 @@ void saveRandomContracts(int count)
 
     static QRandomGenerator* rand = QRandomGenerator::system();
     for (int i = 0; i<count; i++)
-        saveRandomContract(creditorIds[rand->bounded(creditorIds.size())].toLongLong());
+        saveRandomContract(creditorId_t{creditorIds[rand->bounded(creditorIds.size())].toLongLong()});
 }
 // test helper ?!
 int activateAllContracts(year y)
@@ -910,7 +910,7 @@ int activateAllContracts(year y)
     QVector<QSqlRecord> ids= executeSql(idField);
     int res =0;
     for( const auto& id : std::as_const(ids)) {
-        contract c(id.value (0).toLongLong ());
+        contract c(contractId_t{id.value (0).toLongLong ()});
         if( not c.interestActive ())
             c.bookActivateInterest (QDate(y, 1, 1).addYears (-1));
         c.bookInitialPayment (QDate(y, 1, 1).addYears (-1).addDays (10), c.plannedInvest ());
@@ -935,7 +935,7 @@ QDate activateRandomContracts(const int percent)
     static QRandomGenerator* rand = QRandomGenerator::system();
 
     for (int i=0; i < activations; i++) {
-        contract c(contractData[i].toLongLong ());
+        contract c(contractId_t {contractData[i].toLongLong ()});
 
         double amount = c.plannedInvest ();
         if( rand->bounded(100)%10 == 0) {
@@ -952,4 +952,7 @@ QDate activateRandomContracts(const int percent)
         }
     }
     RETURN_OK( minimumActivationDate, minimumActivationDate.toString());
+}
+void contract::setCreditorId(const creditorId_t kid) {
+    td.setValue(fnKreditorId, kid.v);
 }

@@ -5,7 +5,7 @@
 
 void newCreditorAndContract();
 
-void editCreditor(qlonglong creditorId);
+void editCreditor(creditorId_t creditorId);
 void changeContractComment(contract* pContract);
 void changeContractTermination(contract* c);
 
@@ -17,7 +17,7 @@ void receiveInitialBooking(contract* contract);
 void activateInterest(contract* v);
 
 void doDeposit_or_payout(contract* v);
-void changeBookingValue(qlonglong bookingId);
+void changeBookingValue(bookingId_t bookingId);
 
 void undoLastBooking(contract* v);
 void annualSettlement();

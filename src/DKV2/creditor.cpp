@@ -28,7 +28,7 @@ bool creditor::operator==(const creditor& c) const
 {
     bool ret = false;
     do{
-        if( id()        not_eq c.id()) break;
+        if( id().v        not_eq c.id().v) break;
         if( firstname() not_eq c.firstname()) break;
         if( lastname()  not_eq c.lastname()) break;
         if( street()    not_eq c.street()) break;
@@ -44,7 +44,7 @@ bool creditor::operator==(const creditor& c) const
         ret = true;
     } while(false);
     if( not ret) {
-        qInfo() << id() << " vs. " << c.id();
+        qInfo() << id().v << " vs. " << c.id().v;
         qInfo() << firstname() << " vs. " << c.firstname();
         qInfo() << lastname() << " vs. " << c.lastname();
         qInfo() << street() << " vs. " << c.street();
@@ -62,10 +62,10 @@ bool creditor::operator==(const creditor& c) const
     return ret;
 }
 
-bool creditor::fromDb( const qlonglong id)
+bool creditor::fromDb( const creditorId_t id)
 {   LOG_CALL;
 
-    QSqlRecord rec = executeSingleRecordSql(dkdbstructur[qsl("Kreditoren")].Fields(), qsl("id=")+i2s(id));
+    QSqlRecord rec = executeSingleRecordSql(dkdbstructur[qsl("Kreditoren")].Fields(), qsl("id=")+i2s(id.v));
     if( rec.isEmpty()) return false;
 
     for(int i=0; i<rec.count(); i++)
@@ -141,46 +141,46 @@ QVariantMap creditor::getVariantMap()
     return v;
 }
 
-tableindex_t creditor::save()
+creditorId_t creditor::save()
 {   LOG_CALL;
     if( ti.getRecord().isEmpty() )
-        return SQLITE_invalidRowId;
-    setId(ti.InsertRecord());
+        return Invalid_creditor_id;
+    setId(creditorId_t{ti.InsertRecord()});
     return id();
 }
 
-tableindex_t creditor::update() const
+creditorId_t creditor::update() const
 {   LOG_CALL;
     if( ti.getRecord().isEmpty())
-        return SQLITE_invalidRowId;
-    return ti.UpdateRecord();
+        return Invalid_creditor_id;
+    return creditorId_t{ti.UpdateRecord()};
 }
 
 bool creditor::remove()
 {
     bool ret = creditor::remove(id());
-    if( ret) setId( SQLITE_invalidRowId);
+    if( ret) setId( Invalid_creditor_id);
     return ret;
 }
 
-/* static */ bool creditor::remove(const tableindex_t index)
+/* static */ bool creditor::remove(const creditorId_t index)
 {   LOG_CALL;
     // referential integrity will delete [inactive] contracts (this is w/o bookings)
     // [ creditor <-> contract ] On Delete Cascade
     // deletion with active contracts will fail due to ref. integrity contracts <> bookings
     // [ contract <-> booking ] On Delete Restrict
-    if( executeSql_wNoRecords(qsl("DELETE FROM Kreditoren WHERE Id=") +i2s(index)))
+    if( executeSql_wNoRecords(qsl("DELETE FROM Kreditoren WHERE Id=") +i2s(index.v)))
         return true;
     else
         return false;
 }
 
-/* static */ bool creditor::hasActiveContracts(const qlonglong i)
+/* static */ bool creditor::hasActiveContracts(const creditorId_t i)
 {
     // SELECT sum(Buchungen.Betrag) FROM Buchungen
     // WHERE Buchungen.VertragsId IN (SELECT Vertraege.id FROM Vertraege WHERE Vertraege.KreditorId = 14)
     QString where = qsl("Buchungen.VertragsId IN (SELECT Vertraege.id FROM Vertraege WHERE Vertraege.KreditorId = %1)");
-    where = where.arg(i);
+    where = where.arg(i.v);
     QVariant a = executeSingleValueSql(qsl("SUM(%1.%2)").arg(tn_Buchungen, fn_bBetrag), tn_Buchungen, where);
     if( a.toDouble() > 0)
         return true;

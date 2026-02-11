@@ -82,7 +82,7 @@ bool wpNewOrExisting::validatePage()
     {
         wizNew *wiz = qobject_cast<wizNew *>(wizard());
         wiz->existingCreditorId = cbCreditors->itemData(field(pnCreditor).toInt()).toLongLong();
-        creditor c(wiz->existingCreditorId);
+        creditor c(creditorId_t{wiz->existingCreditorId});
         setField(pnFName, c.firstname());
         setField(pnLName, c.lastname());
         setField(pnStreet, c.street());
@@ -917,7 +917,7 @@ wizNew::wizNew(creditor& c, QWidget *p) : QWizard(p), cred(c)
         setField(pnIban,    cred.iban());
         setField(pnBic,     cred.bic());
         setField(pnAccount, cred.account());
-        existingCreditorId =cred.id ();
+        existingCreditorId =cred.id ().v;
         selectCreateContract = false;
     }
 }

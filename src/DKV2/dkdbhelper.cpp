@@ -214,7 +214,7 @@ int automatchInvestmentsToContracts()
         QVector<investment> suitableInvestments =openInvestments(interestRate, contractDate);
         if( suitableInvestments.length() not_eq 1)
             continue; // no match if ambiguous or not existing
-        contract c(rec.value(qsl("id")).toLongLong());
+        contract c(contractId_t{rec.value(qsl("id")).toLongLong()});
         if( c.updateInvestment(suitableInvestments[0].rowid))
             successcount++;
         else

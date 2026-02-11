@@ -7,6 +7,7 @@
 #include "helperfin.h"
 #include "helpersql.h"
 #include "uihelper.h"
+#include "idwrapper.h"
 
 #include "csvwriter.h"
 #include "dbstructure.h"
@@ -54,7 +55,7 @@ void newCreditorAndContract() {
             return;
         }
 
-        if (cred.save() >= 0)
+        if (cred.save().v >= 0)
             qInfo() << "creditor created successfully";
         else {
             QMessageBox::critical(
@@ -64,7 +65,7 @@ void newCreditorAndContract() {
             return;
         }
     } else {
-        wiz.cred.setId(wiz.existingCreditorId);
+        wiz.cred.setId(creditorId_t{wiz.existingCreditorId});
         qInfo() << "contract for existing creditor will be created";
     }
 
@@ -86,7 +87,7 @@ void newCreditorAndContract() {
     cont.setInterestModel(wiz.iPaymentMode);
     cont.setComment(wiz.field(pnContractComment).toString());
     cont.setInterestActive(not wiz.field(pnIPaymentDelayed).toBool());
-    if (SQLITE_invalidRowId == cont.saveNewContract()) {
+    if (Invalid_contract_id.v == cont.saveNewContract().v) {
         qCritical() << "New contract could not be saved";
         QMessageBox::critical(
                     getMainWindow(), qsl("Fehler"),
@@ -98,7 +99,7 @@ void newCreditorAndContract() {
     return;
 }
 
-void editCreditor(qlonglong creditorId) {
+void editCreditor(creditorId_t creditorId) {
     LOG_CALL;
     creditor cred(creditorId);
     wizNew wiz(cred, getMainWindow());
@@ -107,7 +108,7 @@ void editCreditor(qlonglong creditorId) {
     if (QDialog::Accepted == wiz.exec()) {
         busyCursor bc;
         wiz.cred.setId(creditorId);
-        if (wiz.cred.update())
+        if (wiz.cred.update().v not_eq Invalid_creditor_id.v)
             qInfo() << "successfully updated creditor";
         else {
             bc.finish();
@@ -122,7 +123,7 @@ void editCreditor(qlonglong creditorId) {
 
 void changeContractComment(contract *pContract) {
     LOG_CALL;
-    creditor cred(pContract->creditorId());
+    creditor cred(pContract->credId());
     QInputDialog ipd(getMainWindow());
     ipd.setInputMode(QInputDialog::TextInput);
     ipd.setWindowTitle(qsl("Anmerkung zum Vertrag ändern"));
@@ -281,7 +282,7 @@ void changeInitialPaymentDate(contract *pContract) {
 
 void receiveInitialBooking(contract *contract) {
     LOG_CALL;
-    creditor cred(contract->creditorId());
+    creditor cred(contract->credId());
 
     wizInitialPayment wiz(getMainWindow());
     wiz.label = contract->label();
@@ -349,7 +350,7 @@ void doDeposit_or_payout(contract *pContract) {
         return;
     }
 
-    creditor cre(pContract->creditorId());
+    creditor cre(pContract->credId());
     wizChangeContract wiz(getMainWindow());
     wiz.creditorName = cre.firstname() + qsl(" ") + cre.lastname();
     wiz.contractLabel = pContract->label();
@@ -379,10 +380,10 @@ void doDeposit_or_payout(contract *pContract) {
         qInfo() << "contract change was canceld by the user";
 }
 
-void changeBookingValue(qlonglong bookingId)
+void changeBookingValue(bookingId_t bookingId)
 {
     changeBookingData cbd;
-    getChangeBookingData (cbd, bookingId);
+    getChangeBookingData (cbd, bookingId.v);
     dlgChangeBooking dlg;
     dlg.Kennung      =cbd.VKennung;
     dlg.Buchungsdatum=cbd.Buchungsdatum;
@@ -394,7 +395,7 @@ void changeBookingValue(qlonglong bookingId)
         QMessageBox::information (getMainWindow (), qsl("Abbruch"), qsl("Die Änderung der Buchung wurde abgebrochen"));
         return;
     }
-    qInfo() << qsl("Änderung der Buchung %1 auf %2").arg(QString::number(bookingId), s_ct2euro( dlg.neuerWertInCt));
+    qInfo() << qsl("Änderung der Buchung %1 auf %2").arg(QString::number(bookingId.v), s_ct2euro( dlg.neuerWertInCt));
     if( not writeBookingUpdate(bookingId, dlg.neuerWertInCt)) {
         QMessageBox::warning (getMainWindow (), "Fehler", "Die Buchung konnte nicht angepasst werden");
     }
@@ -414,7 +415,7 @@ FROM Vertraege
 WHERE Buchungen.VertragsId = %1
 ORDER BY Buchungen.rowid DESC
 LIMIT 1
-)str").arg(v->id ())};
+)str").arg(v->id ().v)};
 
     QSqlRecord rec =executeSingleRecordSql (sqlMsg);
     if( rec.isEmpty ()) {
@@ -458,7 +459,7 @@ void print_as_csv(const QDate &bookingDate,
         const contract &c = changedContracts[i];
         const booking &b = asBookings[i];
         // write data to CSV
-        creditor cont(c.creditorId());
+        creditor cont(c.credId());
         csv.appendValueToNextRecord(cont.firstname());
         csv.appendValueToNextRecord(cont.lastname());
         csv.appendValueToNextRecord(cont.email());
@@ -580,7 +581,7 @@ QVariantList getContractList(qlonglong creditorId, QDate startDate,
             qsl(" %1=%2 GROUP BY id").arg(contract::fnKreditorId, i2s(creditorId)));
 
     for (const auto &id : std::as_const(ids)) {
-        contract contr(id.toLongLong(), isTerminated);
+        contract contr(contractId_t {id.toLongLong()}, isTerminated);
         /* Forget contracts that don't exist in the period.
 i.e. conclusionDate must be before end of period
 and contract must not have been finalized before start of period */
@@ -629,7 +630,7 @@ void annualSettlementLetters() {
     double interestForPayout2 = 0.;
     double interestCredit2 = 0.;
     for (const auto &cred : std::as_const(creditorIds)) {
-        creditor credRecord(cred);
+        creditor credRecord{creditorId_t {cred}};
         QVariantMap currCreditorMap = credRecord.getVariantMap();
         printData["creditor"] = currCreditorMap;
 
@@ -770,7 +771,7 @@ void deleteInactiveContract(contract *c) {
                 getMainWindow(), qsl("Kreditor*in löschen?"),
                 qsl("Soll die zugehörige Kreditgeber*in gelöscht werden?")) ==
             QMessageBox::Yes) {
-        creditor::remove(c->creditorId());
+        creditor::remove(c->credId());
     }
 }
 void terminateContract(contract *pc) {
@@ -815,7 +816,7 @@ void cancelContract(contract &c) {
     LOG_CALL;
     wizCancelContract wiz(getMainWindow());
     wiz.c = c;
-    wiz.creditorName = Vor_Nachname_Kreditor(c.creditorId());
+    wiz.creditorName = Vor_Nachname_Kreditor(c.credId().v);
 
     wiz.contractualEnd = QDate::currentDate().addMonths(c.noticePeriod());
     wiz.exec();
@@ -838,7 +839,7 @@ void finalizeContractLetter(contract *c) {
             QVariant(appconfig::Outdir() + qsl("/vorlagen/brieflogo.png"));
     printData[qsl("meta")] = getMetaTableAsMap();
 
-    creditor credRecord(c->creditorId());
+    creditor credRecord(c->credId());
     printData[qsl("creditor")] = QVariant(credRecord.getVariantMap());
     printData[qsl("Vertrag")] = c->toVariantMap();
     printData[qsl("endBetrag")] = s_d2euro(c->value());
@@ -882,7 +883,7 @@ void deleteFinalizedContract(contract *c) {
     executeSql_wNoRecords(
                 qsl("DELETE FROM exVertraege WHERE id = %1").arg(c->id_aS()));
     executeSql_wNoRecords(
-                qsl("DELETE FROM Kreditoren  WHERE id = %1").arg(c->creditorId()));
+                qsl("DELETE FROM Kreditoren  WHERE id = %1").arg(c->credId().v));
     arbt.commit();
 }
 

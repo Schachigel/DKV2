@@ -1,10 +1,7 @@
 #ifndef DBSTRUCTURE_H
 #define DBSTRUCTURE_H
 
-
-
 #include "dbtable.h"
-
 
 class dbstructure
 {

@@ -2,8 +2,9 @@
 #define VERTRAG_H
 
 #include "helper_core.h"
-#include "helperfin.h"
 #include "tabledatainserter.h"
+#include "idwrapper.h"
+
 #include "booking.h"
 
 enum class interestModel
@@ -54,6 +55,7 @@ struct BookingResult {
 
 using year = int;
 
+
 struct contract
 {
     // static & friends
@@ -64,23 +66,37 @@ struct contract
     friend bool operator!=(const contract& lhs, const contract& rhs);
 
     // construction
-    contract(const tableindex_t CONTRACTid =SQLITE_invalidRowId, bool isTerminated =false);
+    explicit contract(const contractId_t cId =Invalid_contract_id, bool isTerminated =false);
     contract(const QSqlRecord &r);
-    void loadFromDb(const tableindex_t id);
-    void loadExFromDb(const tableindex_t id);
-    void initContractDefaults(const tableindex_t creditorId =SQLITE_invalidRowId);
-    void initRandom(const tableindex_t creditorId =SQLITE_invalidRowId);
+    void loadFromDb(const contractId_t id);
+    void loadExFromDb(const contractId_t id);
+    void initContractDefaults(const creditorId_t cId =Invalid_creditor_id);
+    void initRandom(const creditorId_t creditorId =Invalid_creditor_id);
 
     // getter & setter
-    void setId(tableindex_t id) { td.setValue(qsl("id"), id);}
-    tableindex_t id() const { return td.getValue(qsl("id")).toLongLong();}
-    QString id_aS()   const { Q_ASSERT( id() >= SQLITE_minimalRowId); return i2s(id());}
-    void setCreditorId(tableindex_t kid) {td.setValue(fnKreditorId, kid);}
-    tableindex_t creditorId() const{ return td.getValue(fnKreditorId).toLongLong();}
+    void setId(tableindex_t id) {
+        td.setValue(qsl("id"), id);
+    }
+    contractId_t id() const {
+        return contractId_t{ td.getValue(qsl("id")).toLongLong()};
+    }
+    qlonglong id_l() const {
+        return td.getValue(qsl("id")).toLongLong();
+    }
+    QString id_aS() const {
+        Q_ASSERT( id().v >= Minimal_contract_id.v); return i2s(id().v);
+    }
+    void setCreditorId(const creditorId_t kid);
 
-    void setLabel(const QString &l) { td.setValue(fnKennung, l); }
-    QString label() const { return td.getValue(fnKennung).toString();};
-
+    creditorId_t credId() const {
+        return creditorId_t{td.getValue(fnKreditorId).toLongLong()};
+    }
+    void setLabel(const QString &l) {
+        td.setValue(fnKennung, l);
+    }
+    QString label() const {
+        return td.getValue(fnKennung).toString();
+    };
     void setInterestRate( const double percent) {
         td.setValue(fnZSatz, QVariant (qRound(percent * 100.)));
         if( percent == 0)
@@ -94,49 +110,69 @@ struct contract
         return td.getValue(fnZSatz).toInt();
     }
     double actualInterestRate() const {
-        if( interestActive()) return interestRate();
+        if( interestActive())
+            return interestRate();
         else return 0.;
     }
 
-    void setInvestmentId(tableindex_t rId) { td.setValue(fnAnlagenId,
-                                                         (isValidRowId (rId)
-                                                              ?
-                                                              QVariant(rId)
-                                                              :QVariant()));}
-    tableindex_t investmentId() const { return td.getValue(fnAnlagenId).toLongLong();}
-
-    void setPlannedInvest(const double d) { td.setValue(fnBetrag, ctFromEuro(d));}
-    double plannedInvest() const { return euroFromCt( td.getValue(fnBetrag).toInt());}
+    void setInvestmentId(tableindex_t rId) {
+        td.setValue(fnAnlagenId,
+             (isValidRowId (rId)
+                  ? QVariant(rId) : QVariant()));}
+    tableindex_t investmentId() const {
+        return td.getValue(fnAnlagenId).toLongLong();
+    }
+    void setPlannedInvest(const double d) {
+        td.setValue(fnBetrag, ctFromEuro(d));
+    }
+    double plannedInvest() const {
+        return euroFromCt( td.getValue(fnBetrag).toInt());
+    }
 
     void setInterestModel( const interestModel b =interestModel::reinvest) {
         td.setValue(fnThesaurierend, toInt(b));
         if( b == interestModel::zero) td.setValue(fnZSatz, 0);
     }
-    interestModel iModel() const { return interestModelFromInt(td.getValue(fnThesaurierend).toInt());}
-
+    interestModel iModel() const {
+        return interestModelFromInt(td.getValue(fnThesaurierend).toInt());
+    }
     void setNoticePeriod(const int m) {
         td.setValue(fnKFrist, m);
         if( -1 not_eq m)
             setPlannedEndDate( EndOfTheFuckingWorld);
     }
-    int noticePeriod() const { return td.getValue(fnKFrist).toInt();}
-
-    bool hasEndDate() const {return -1 == td.getValue(fnKFrist);}
+    int noticePeriod() const {
+        return td.getValue(fnKFrist).toInt();
+    }
+    bool hasEndDate() const {
+        return -1 == td.getValue(fnKFrist);
+    }
     void setPlannedEndDate( const QDate d) {
         td.setValue(fnLaufzeitEnde, d);
         if( d not_eq EndOfTheFuckingWorld)
-            setNoticePeriod(-1);}
-    QDate plannedEndDate() const { return td.getValue(fnLaufzeitEnde).toDate();}
-
-    void setConclusionDate(const QDate d) { td.setValue(fnVertragsDatum, d);}
-    QDate conclusionDate() const { return td.getValue(fnVertragsDatum).toDate();}
-
-    void setInterestActive(bool active){ td.setValue(fnZAktiv, active);}
-    bool interestActive() const { return td.getValue(fnZAktiv).toBool();}
-
-    void setComment(const QString& q) {td.setValue(fnAnmerkung, q);}
-    QString comment() const {return td.getValue(fnAnmerkung).toString();}
-
+            setNoticePeriod(-1);
+    }
+    QDate plannedEndDate() const {
+        return td.getValue(fnLaufzeitEnde).toDate();
+    }
+    void setConclusionDate(const QDate d) {
+        td.setValue(fnVertragsDatum, d);
+    }
+    QDate conclusionDate() const {
+        return td.getValue(fnVertragsDatum).toDate();
+    }
+    void setInterestActive(bool active){
+        td.setValue(fnZAktiv, active);
+    }
+    bool interestActive() const {
+        return td.getValue(fnZAktiv).toBool();
+    }
+    void setComment(const QString& q) {
+        td.setValue(fnAnmerkung, q);
+    }
+    QString comment() const {
+        return td.getValue(fnAnmerkung).toString();
+    }
     // interface
     // value -> sum of all bookings to a contract
     double value(const QDate d =EndOfTheFuckingWorld) const;
@@ -148,7 +184,7 @@ struct contract
     const booking latestBooking();
 
     // write to db
-    tableindex_t saveNewContract();
+    contractId_t saveNewContract();
     bool updateLabel(const QString& newLabel);
     bool updateComment(const QString&);
     bool updateConclusionDate( const QDate& newD);
@@ -216,7 +252,7 @@ public:
 };
 
 // test helper
-contract saveRandomContract(const tableindex_t creditorId);
+contract saveRandomContract(const creditorId_t credId);
 void saveRandomContractPerCreditor();
 void saveRandomContracts(const int count);
 int activateAllContracts(year y);
