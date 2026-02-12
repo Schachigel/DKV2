@@ -445,6 +445,11 @@ LIMIT 1
 }
 
 namespace {
+QString sanitizeFilename(QString name) {
+    static const QRegularExpression invalidChars(R"([\\/:*?"<>|])");
+    return name.replace(invalidChars, "#");
+}
+
 void print_as_csv(const QDate &bookingDate,
                   const QVector<contract> &changedContracts,
                   const QVector<QDate> &startOfInterrestCalculation,
@@ -485,6 +490,7 @@ void print_as_csv(const QDate &bookingDate,
     QString filename{qsl("%1_Jahresabrechnung-%2.csv")};
     filename = filename.arg(QDate::currentDate().toString(Qt::ISODate),
                             i2s(bookingDate.year()));
+    filename = sanitizeFilename(filename);
 
     saveStringToUtf8File(filename, csv.toString());
     showInExplorer(filename);
@@ -571,11 +577,6 @@ int askUserForYearOfPrintouts() {
 
     return dlg.getYear();
 }
-
-QString sanitizeFilename(QString name) {
-    static const QRegularExpression invalidChars(R"([\\/:*?"<>|])");
-    return name.replace(invalidChars, "#");
-}
 } // namespace
 
 QVariantList getContractList(qlonglong creditorId, QDate startDate,
@@ -622,13 +623,13 @@ void annualSettlementLetters() {
         return;
     }
 
-    QVariantMap printData = {};
-    printData[qsl("Zinsjahr")] = yearOfSettlement;
-    printData[qsl("Zinsdatum")] =
+    QVariantMap basePrintData = {};
+    basePrintData[qsl("Zinsjahr")] = yearOfSettlement;
+    basePrintData[qsl("Zinsdatum")] =
             QDate(yearOfSettlement, 12, 31).toString(qsl("dd.MM.yyyy"));
-    printData[qsl("gmbhLogo")] =
+    basePrintData[qsl("gmbhLogo")] =
             QVariant(appconfig::Outdir() + qsl("/vorlagen/brieflogo.png"));
-    printData[qsl("meta")] = getMetaTableAsMap();
+    basePrintData[qsl("meta")] = getMetaTableAsMap();
 
     /* storage for data of all Kreditoren */
     QVariantList Kreditoren;
@@ -642,6 +643,7 @@ void annualSettlementLetters() {
     for (const auto &cred : std::as_const(creditorIds)) {
         creditor credRecord{creditorId_t {cred}};
         QVariantMap currCreditorMap = credRecord.getVariantMap();
+        QVariantMap printData = basePrintData;
         printData["creditor"] = currCreditorMap;
 
         QVariantList vl;
@@ -731,30 +733,31 @@ void annualSettlementLetters() {
     }
 
     // Create the eMail Batch file.
-    printData[qsl("Kreditoren")] = Kreditoren;
-    printData[qsl("Auszahlungen")] = Auszahlungen;
-    printData[qsl("Sum2Betrag")] = s_d2euro(totalBetrag2);
-    printData[qsl("Sum2JahresZinsen")] = s_d2euro(annualInterest2);
-    printData[qsl("Sum2SonstigeZinsen")] = s_d2euro(otherInterest2);
-    printData[qsl("Sum2Auszahlung")] = s_d2euro(interestForPayout2);
-    printData[qsl("Sum2Zinsgutschrift")] = s_d2euro(interestCredit2);
+    QVariantMap summaryData = basePrintData;
+    summaryData[qsl("Kreditoren")] = Kreditoren;
+    summaryData[qsl("Auszahlungen")] = Auszahlungen;
+    summaryData[qsl("Sum2Betrag")] = s_d2euro(totalBetrag2);
+    summaryData[qsl("Sum2JahresZinsen")] = s_d2euro(annualInterest2);
+    summaryData[qsl("Sum2SonstigeZinsen")] = s_d2euro(otherInterest2);
+    summaryData[qsl("Sum2Auszahlung")] = s_d2euro(interestForPayout2);
+    summaryData[qsl("Sum2Zinsgutschrift")] = s_d2euro(interestCredit2);
 
     writeRenderedTemplate(
                 qsl("zinsmails.bat"),
                 qsl("zinsmails").append(i2s(yearOfSettlement)).append(qsl(".bat")),
-                printData);
+                summaryData);
 
     // Create the list of yearly bookings
     savePdfFromHtmlTemplate(
                 qsl("zinsliste.html"),
                 qsl("Zinsliste-").append(i2s(yearOfSettlement)).append(qsl(".pdf")),
-                printData);
+                summaryData);
 
     // Create the csv of annual interest bookings
     writeRenderedTemplate(
                 qsl("zinsbuchungen.csv"),
                 qsl("zinsbuchungen").append(i2s(yearOfSettlement)).append(qsl(".csv")),
-                printData);
+                summaryData);
 
     bc.finish();
     showInExplorer(appconfig::Outdir(), showObject::folder);
@@ -859,10 +862,8 @@ void finalizeContractLetter(contract *c) {
     printData[qsl("mitAusbezahltemZins")] = !qFuzzyCompare(ausbezZins, 0.);
     QString filenamepattern =
             qsl("%1_%2,%3")
-            .arg(c->label().replace("/", "_"), credRecord.lastname(),
-                 credRecord.firstname());
-    // TODO: make sure there are no chars, which might not be part of a Windows /
-    // Linux filename (:, ...)
+            .arg(c->label(), credRecord.lastname(), credRecord.firstname());
+    filenamepattern = sanitizeFilename(filenamepattern);
 
     savePdfFromHtmlTemplate(qsl("Endabrechnung.html"),
                             qsl("Endabrechnung-") + filenamepattern + qsl(".pdf"),
