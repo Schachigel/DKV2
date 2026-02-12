@@ -32,6 +32,7 @@
 #include "dlgchangebooking.h"
 #include "wiznew.h"
 #include "wiznewinvestment.h"
+#include <QRegularExpression>
 
 void newCreditorAndContract() {
     LOG_CALL;
@@ -569,6 +570,11 @@ int askUserForYearOfPrintouts() {
 
     return dlg.getYear();
 }
+
+QString sanitizeFilename(QString name) {
+    static const QRegularExpression invalidChars(R"([\\/:*?"<>|])");
+    return name.replace(invalidChars, "#");
+}
 } // namespace
 
 QVariantList getContractList(qlonglong creditorId, QDate startDate,
@@ -679,10 +685,11 @@ void annualSettlementLetters() {
 
             printData[qsl("totalBetrag")] = s_d2euro(totalBetrag);
 
-            QString fileName = qsl("Jahresinfo %1_%3, %4")
-                               .arg(i2s(yearOfSettlement), credRecord.lastname(),
-                                    credRecord.firstname().append(qsl(".pdf")));
-            fileName = fileName.replace("/", "-").replace("*", "#").replace(":", "#");
+            QString fileName = qsl("Jahresinfo %1_%2, %3.pdf")
+                               .arg(i2s(yearOfSettlement),
+                                    credRecord.lastname(),
+                                    credRecord.firstname());
+            fileName = sanitizeFilename(fileName);
             /* save data for eMail batch file */
             currCreditorMap[qsl("Vertraege")] = vl;
             currCreditorMap["SumBetrag"] = s_d2euro(totalBetrag);
