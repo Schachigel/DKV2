@@ -23,7 +23,7 @@ QString saveStringToUtf8File(const QString& filename, const QString& content)
     moveToBackup (fqFilePath);
 
     QFile file(fqFilePath);
-    if( not file.open(QIODevice::WriteOnly|QIODevice::Truncate|QIODevice::Text)) {
+    if( not file.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
         qCritical() << "File Open of " << fqFilePath << " failed: " << file.errorString();
         return QString();
     }

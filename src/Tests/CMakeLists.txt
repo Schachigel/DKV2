@@ -212,7 +212,15 @@ ${_run_table}
             dbgTimer singleTimer(QString(), dbgTimer::initialState::stopped);
             singleTimer.start(QLatin1String(\"test_all: \") % QLatin1String(entry.name));
 
+            // keep appconfig test in normal (non-test) mode
+            const bool isAppConfig = (QString::fromLatin1(entry.name) == QStringLiteral(\"test_appconfig\"));
+            if (isAppConfig)
+                appconfig::setTestMode(false);
+
             entry.fn(rc, argc, argv);
+
+            if (isAppConfig)
+                appconfig::setTestMode(true);
 
             singleTimer.end();
 

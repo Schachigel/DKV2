@@ -507,17 +507,17 @@ SELECT
     lz.Beginn AS Beginn,
     printf('%04d-12-31', :year) AS Buchungsdatum,
 
-    -- Kreditbetrag in Euro als REAL
-    REPLACE( printf('%.2f', kb.verzinslichesDarlehen_ct / 100.0), '.', ',') AS Kreditbetrag,
+    -- Kreditbetrag in Euro (formatiert)
+    REPLACE( printf('%.2f', kb.verzinslichesDarlehen_ct / 100.0), '.', ',') || ' €' AS Kreditbetrag,
 
-    -- Zinssatz in % als REAL (z.B. 0.10 für 10%)
-    REPLACE( printf('%.2f', v.ZSatz /10000.0, 2), '.', ',') AS Zinssatz,
+    -- Zinssatz in % (formatiert, z.B. 10,13%)
+    REPLACE( printf('%.2f', v.ZSatz /10000.0), '.', ',') || '%' AS Zinssatz,
 
-    -- Zins (Typ 8) in Euro als REAL
-    REPLACE( printf('%.2f', ja.Jahreszins_ct / 100.0), '.', ',') AS Zins,
+    -- Zins (Typ 8) in Euro (formatiert)
+    REPLACE( printf('%.2f', ja.Jahreszins_ct / 100.0), '.', ',') || ' €' AS Zins,
 
-    -- Endbetrag in Euro als REAL
-    REPLACE( printf('%.2f', eb.Endbetrag_ct / 100.0), '.', ',') AS Endbetrag
+    -- Endbetrag in Euro (formatiert)
+    REPLACE( printf('%.2f', eb.Endbetrag_ct / 100.0), '.', ',') || ' €' AS Endbetrag
 
 
 FROM JA_Buchungen ja

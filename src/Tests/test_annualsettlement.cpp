@@ -4,6 +4,7 @@
 #include "creditor.h"
 #include "contract.h"
 #include "testhelper.h"
+#include "filewriter.h"
 
 #include <QtTest/QTest>
 
@@ -282,7 +283,7 @@ void test_annualSettlement::test_csvCreation_check_headers()
     creditor ctor;
     ctor.setFirstname(  qsl("first name"));
     ctor.setLastname(   qsl("lastname_ÄÖÜ"));
-    ctor.setStreet(     qsl("Streetname with number 44"));
+    ctor.setStreet(     qsl("Streetname  number 44"));
     ctor.setPostalCode( qsl("D-123456"));
     ctor.setCity(       qsl("San Franzis KO -CA"));
     ctor.setEmail(      qsl("ganzlangeemailadresse@mailprovider.uk.co"));
@@ -303,6 +304,7 @@ void test_annualSettlement::test_csvCreation_check_headers()
     // TEST csv
     QString csv =formulate_AS_as_CSV(2002);
     QVERIFY(not csv.isEmpty());
+//     saveStringToUtf8File(qsl("test_csvCreation_check_headers.%1").arg("csv"),  csv);
 
     const QStringList lines = csv.replace(qsl("\r\n"), qsl("\n")).split('\n', Qt::KeepEmptyParts);
     QCOMPARE(lines.size(), 2); // header + one data line
