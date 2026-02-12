@@ -205,7 +205,7 @@ NOTE to self: DKV2 stellt sicher, dass bei Verträgen mit verzögerter Zinszahlu
     qInfo() << "no lastestBookingDate as the contract has no bookings";
     return QDate();
 }
-const booking contract::latestBooking()
+const booking contract::latestBooking() const
 {
     /*
 NOTE to self:
@@ -720,7 +720,7 @@ QString contract::toString(const QString &title) const
     stream << "Buchungen:" << getNbrOfBookings (id()) << qsl("\n");
     return ret;
 }
-QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
+QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate) const
 {   LOG_CALL;
     QVariantMap v;
     booking latestB = latestBooking();

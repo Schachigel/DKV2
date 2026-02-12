@@ -473,6 +473,71 @@ struct CreditorLetterData {
     bool hasContracts = false;
 };
 
+struct ContractSummary {
+    double annualInterest = 0.;
+    double otherInterest = 0.;
+    double interestForPayout = 0.;
+    double interestCredit = 0.;
+    double totalBetrag = 0.;
+};
+
+ContractSummary summarizeContracts(const QVariantList &contracts)
+{
+    ContractSummary summary;
+    for (const QVariant &v : std::as_const(contracts)) {
+        const QVariantMap vm = v.toMap();
+        summary.otherInterest += vm["dSonstigeZinsen"].toDouble();
+        summary.annualInterest += vm["dJahresZinsen"].toDouble();
+        summary.interestForPayout += vm["dAuszahlung"].toDouble();
+        summary.interestCredit += vm["dZinsgutschrift"].toDouble();
+        summary.totalBetrag += vm["dEndBetrag"].toDouble();
+    }
+    return summary;
+}
+
+void writeCreditorLetterFiles(const CreditorLetterData &data)
+{
+    savePdfFromHtmlTemplate(qsl("zinsbrief.html"), data.fileName, data.printData);
+}
+
+QVariantMap buildSummaryData(const QVariantMap &basePrintData,
+                             const QVariantList &creditors,
+                             const QVariantList &payouts,
+                             double totalBetrag,
+                             double annualInterest,
+                             double otherInterest,
+                             double interestForPayout,
+                             double interestCredit)
+{
+    QVariantMap summaryData = basePrintData;
+    summaryData[qsl("Kreditoren")] = creditors;
+    summaryData[qsl("Auszahlungen")] = payouts;
+    summaryData[qsl("Sum2Betrag")] = s_d2euro(totalBetrag);
+    summaryData[qsl("Sum2JahresZinsen")] = s_d2euro(annualInterest);
+    summaryData[qsl("Sum2SonstigeZinsen")] = s_d2euro(otherInterest);
+    summaryData[qsl("Sum2Auszahlung")] = s_d2euro(interestForPayout);
+    summaryData[qsl("Sum2Zinsgutschrift")] = s_d2euro(interestCredit);
+    return summaryData;
+}
+
+void writeYearSummaryFiles(const QVariantMap &summaryData, int yearOfSettlement)
+{
+    writeRenderedTemplate(
+                qsl("zinsmails.bat"),
+                qsl("zinsmails").append(i2s(yearOfSettlement)).append(qsl(".bat")),
+                summaryData);
+
+    savePdfFromHtmlTemplate(
+                qsl("zinsliste.html"),
+                qsl("Zinsliste-").append(i2s(yearOfSettlement)).append(qsl(".pdf")),
+                summaryData);
+
+    writeRenderedTemplate(
+                qsl("zinsbuchungen.csv"),
+                qsl("zinsbuchungen").append(i2s(yearOfSettlement)).append(qsl(".csv")),
+                summaryData);
+}
+
 CreditorLetterData buildCreditorLetterData(qlonglong creditorId,
                                            int yearOfSettlement,
                                            const QVariantMap &basePrintData)
@@ -492,35 +557,33 @@ CreditorLetterData buildCreditorLetterData(qlonglong creditorId,
                               QDate(yearOfSettlement, 12, 31), true));
 
     if (vl.size() > 0) {
-        for (const QVariant &v : std::as_const(vl)) {
-            QVariantMap vm = v.toMap();
-            data.otherInterest += vm["dSonstigeZinsen"].toDouble();
-            data.annualInterest += vm["dJahresZinsen"].toDouble();
-            data.interestForPayout += vm["dAuszahlung"].toDouble();
-            data.interestCredit += vm["dZinsgutschrift"].toDouble();
-            data.totalBetrag += vm["dEndBetrag"].toDouble();
-        }
+        const ContractSummary summary = summarizeContracts(vl);
+        data.annualInterest = summary.annualInterest;
+        data.otherInterest = summary.otherInterest;
+        data.interestForPayout = summary.interestForPayout;
+        data.interestCredit = summary.interestCredit;
+        data.totalBetrag = summary.totalBetrag;
 
-        const double payedInterest = data.otherInterest + data.interestForPayout;
+        const double payedInterest = summary.otherInterest + summary.interestForPayout;
         printData[qsl("ausbezahlterZins")] =
                 payedInterest == 0. ? "" : s_d2euro(payedInterest);
         printData[qsl("mitAusbezahltemZins")] = payedInterest > 0.;
-        printData[qsl("mitZins")] = payedInterest + data.interestCredit > 0.;
+        printData[qsl("mitZins")] = payedInterest + summary.interestCredit > 0.;
         printData[qsl("SumAuszahlung")] =
-                data.interestForPayout == 0. ? "" : s_d2euro(data.interestForPayout);
-        printData[qsl("dSumJahresZinsen")] = data.annualInterest;
+                summary.interestForPayout == 0. ? "" : s_d2euro(summary.interestForPayout);
+        printData[qsl("dSumJahresZinsen")] = summary.annualInterest;
 
         printData[qsl("SumJahresZinsen")] =
-                data.annualInterest == 0. ? "" : s_d2euro(data.annualInterest);
+                summary.annualInterest == 0. ? "" : s_d2euro(summary.annualInterest);
 
         printData[qsl("sonstigerZins")] =
-                data.otherInterest == 0. ? "" : s_d2euro(data.otherInterest);
+                summary.otherInterest == 0. ? "" : s_d2euro(summary.otherInterest);
 
         printData["SumZinsgutschrift"] =
-                data.interestCredit == 0. ? "" : s_d2euro(data.interestCredit);
+                summary.interestCredit == 0. ? "" : s_d2euro(summary.interestCredit);
 
         printData[qsl("Vertraege")] = vl;
-        printData[qsl("totalBetrag")] = s_d2euro(data.totalBetrag);
+        printData[qsl("totalBetrag")] = s_d2euro(summary.totalBetrag);
 
         data.fileName = qsl("Jahresinfo %1_%2, %3.pdf")
                            .arg(i2s(yearOfSettlement),
@@ -530,23 +593,23 @@ CreditorLetterData buildCreditorLetterData(qlonglong creditorId,
 
         /* save data for eMail batch file */
         currCreditorMap[qsl("Vertraege")] = vl;
-        currCreditorMap["SumBetrag"] = s_d2euro(data.totalBetrag);
+        currCreditorMap["SumBetrag"] = s_d2euro(summary.totalBetrag);
         currCreditorMap[qsl("Attachment")] = data.fileName;
         currCreditorMap[qsl("SumJahresZinsen")] =
-                data.annualInterest == 0. ? "" : s_d2euro(data.annualInterest);
+                summary.annualInterest == 0. ? "" : s_d2euro(summary.annualInterest);
 
         currCreditorMap[qsl("SumSonstigeZinsen")] =
-                data.otherInterest == 0. ? "" : s_d2euro(data.otherInterest);
+                summary.otherInterest == 0. ? "" : s_d2euro(summary.otherInterest);
 
         currCreditorMap[qsl("SumZinsgutschrift")] =
-                data.interestCredit == 0. ? "" : s_d2euro(data.interestCredit);
+                summary.interestCredit == 0. ? "" : s_d2euro(summary.interestCredit);
 
         if (currCreditorMap[qsl("Email")] == "") {
             currCreditorMap.remove(qsl("Email"));
         }
 
-        if (data.interestForPayout > 0.) {
-            currCreditorMap[qsl("SumAuszahlung")] = s_d2euro(data.interestForPayout);
+        if (summary.interestForPayout > 0.) {
+            currCreditorMap[qsl("SumAuszahlung")] = s_d2euro(summary.interestForPayout);
         } else {
             currCreditorMap[qsl("SumAuszahlung")] = "";
         }
@@ -716,8 +779,9 @@ QVector<contract> collectContractsForYear(qlonglong creditorId,
 QVariantList getContractList(qlonglong creditorId, QDate startDate,
                              QDate endDate, bool isTerminated) {
     QVariantList vl;
-    for (const auto &contr : std::as_const(
-             collectContractsForYear(creditorId, startDate, endDate, isTerminated))) {
+    const QVector<contract> contracts =
+            collectContractsForYear(creditorId, startDate, endDate, isTerminated);
+    for (const auto &contr : std::as_const(contracts)) {
         QVariantMap contractMap = contr.toVariantMap(startDate, endDate);
         vl.append(contractMap);
     }
@@ -768,36 +832,16 @@ void annualSettlementLetters() {
         totalBetrag2 += data.totalBetrag;
         Kreditoren.append(data.creditorMap);
         /////////////////////////////////////////////////
-        savePdfFromHtmlTemplate(qsl("zinsbrief.html"), data.fileName, data.printData);
+        writeCreditorLetterFiles(data);
         /////////////////////////////////////////////////
     }
 
     // Create the eMail Batch file.
-    QVariantMap summaryData = basePrintData;
-    summaryData[qsl("Kreditoren")] = Kreditoren;
-    summaryData[qsl("Auszahlungen")] = Auszahlungen;
-    summaryData[qsl("Sum2Betrag")] = s_d2euro(totalBetrag2);
-    summaryData[qsl("Sum2JahresZinsen")] = s_d2euro(annualInterest2);
-    summaryData[qsl("Sum2SonstigeZinsen")] = s_d2euro(otherInterest2);
-    summaryData[qsl("Sum2Auszahlung")] = s_d2euro(interestForPayout2);
-    summaryData[qsl("Sum2Zinsgutschrift")] = s_d2euro(interestCredit2);
-
-    writeRenderedTemplate(
-                qsl("zinsmails.bat"),
-                qsl("zinsmails").append(i2s(yearOfSettlement)).append(qsl(".bat")),
-                summaryData);
-
-    // Create the list of yearly bookings
-    savePdfFromHtmlTemplate(
-                qsl("zinsliste.html"),
-                qsl("Zinsliste-").append(i2s(yearOfSettlement)).append(qsl(".pdf")),
-                summaryData);
-
-    // Create the csv of annual interest bookings
-    writeRenderedTemplate(
-                qsl("zinsbuchungen.csv"),
-                qsl("zinsbuchungen").append(i2s(yearOfSettlement)).append(qsl(".csv")),
-                summaryData);
+    const QVariantMap summaryData = buildSummaryData(
+                basePrintData, Kreditoren, Auszahlungen,
+                totalBetrag2, annualInterest2, otherInterest2,
+                interestForPayout2, interestCredit2);
+    writeYearSummaryFiles(summaryData, yearOfSettlement);
 
     bc.finish();
     showInExplorer(appconfig::Outdir(), showObject::folder);

@@ -181,7 +181,7 @@ struct contract
     // interestBearingValue depends on interestMode
     double interestBearingValue() const;
     const QDate latestBookingDate();
-    const booking latestBooking();
+    const booking latestBooking() const;
 
     // write to db
     contractId_t saveNewContract();
@@ -212,7 +212,7 @@ struct contract
     bool finalize(const bool simulate, const QDate finDate, double& finInterest, double& finPayout);
     // helper
     QString toString(const QString &name =QString()) const;
-    QVariantMap toVariantMap(QDate fromDate = BeginingOfTime, QDate toDate = EndOfTheFuckingWorld);
+    QVariantMap toVariantMap(QDate fromDate = BeginingOfTime, QDate toDate = EndOfTheFuckingWorld) const;
     double payedInterestAtTermination();
     double getAnnualInterest(year y, bookingType interestType = bookingType::annualInterestDeposit);
     void initCancelationDate();
