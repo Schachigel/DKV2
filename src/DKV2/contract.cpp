@@ -804,20 +804,26 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
         }
     }
 
-    QVariantList bl;
-
-    for (const auto &b : std::as_const(yearBookings))
-    {
-        QVariantMap bookMap = {};
-        bookMap["Date"] = b.date.toString(qsl("dd.MM.yyyy"));
-        bookMap["Text"] = bookingTypeDisplayString(b.type);
-        bookMap["Betrag"] = s_d2euro(b.amount);
-
-        bl.append(bookMap);
+    // Only include booking list if there is more than just the AS booking.
+    bool includeBookingList = !yearBookings.isEmpty();
+    if (yearBookings.size() == 1 &&
+        yearBookings[0].type == bookingType::annualInterestDeposit) {
+        includeBookingList = false;
     }
+    if (includeBookingList) {
+        QVariantList bl;
+        for (const auto &b : std::as_const(yearBookings))
+        {
+            QVariantMap bookMap = {};
+            bookMap["Date"] = b.date.toString(qsl("dd.MM.yyyy"));
+            bookMap["Text"] = bookingTypeDisplayString(b.type);
+            bookMap["Betrag"] = s_d2euro(b.amount);
 
-    if (bl.size() > 0) {
-        v["Buchungen"] = bl;
+            bl.append(bookMap);
+        }
+        if (!bl.isEmpty()) {
+            v["Buchungen"] = bl;
+        }
     }
 
     return v;
