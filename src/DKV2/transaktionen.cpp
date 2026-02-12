@@ -526,8 +526,9 @@ namespace {
 void createInitialLetterTemplates() {
     LOG_CALL;
     QDir outDir(appconfig::Outdir());
-    outDir.mkdir(qsl("vorlagen"));
-    outDir.mkdir(qsl("html"));
+    outDir.mkpath(qsl("."));
+    outDir.mkpath(qsl("vorlagen"));
+    outDir.mkpath(qsl("html"));
     const QString vorlagenVerzeichnis = appconfig::Outdir() + qsl("/vorlagen/");
     extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("brieflogo.png"));
     extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.css"));
