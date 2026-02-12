@@ -25,6 +25,7 @@
 #include "dkdbviews.h"
 #include "dkdbcopy.h"
 #include "transaktionen.h"
+#include "annual_letters.h"
 #include "uebersichten.h"
 
 

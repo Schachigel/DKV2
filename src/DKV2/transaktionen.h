@@ -21,8 +21,6 @@ void changeBookingValue(bookingId_t bookingId);
 
 void undoLastBooking(contract* v);
 void annualSettlement();
-QVariantList getContractList(qlonglong creditorId, QDate startDate, QDate endDate, bool isTerminated);
-void annualSettlementLetters();
 void finalizeContractLetter(contract *c);
 void deleteFinalizedContract(contract *c);
 

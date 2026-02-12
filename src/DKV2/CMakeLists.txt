@@ -85,6 +85,7 @@ set(DKV2_UI_SOURCES
     wizopenornewdatabase.cpp wizopenornewdatabase.h
     wizterminatecontract.cpp wizterminatecontract.h
     transaktionen.cpp transaktionen.h
+    annual_letters.cpp annual_letters.h
 
     uiitemformatter.cpp uiitemformatter.h
     resource.qrc
