@@ -9,6 +9,7 @@
 
 QString appendFilenameToOutputDir(QString filename)
 {
+    QDir().mkdir(appconfig::Outdir());
     if( filename.startsWith("/"))
         return appconfig::Outdir() + filename;
     else

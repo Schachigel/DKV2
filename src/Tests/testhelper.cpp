@@ -1,6 +1,7 @@
 #include "testhelper.h"
 
 #include <QTest>
+#include "../DKV2/appconfig.h"
 #include "../DKV2/helpersql.h"
 #include "../DKV2/dkdbhelper.h"
 #include "../DKV2/creditor.h"
@@ -236,7 +237,10 @@ void dbgDumpDatabase(const QString& testname)
     filename.replace('<', '#');
     filename.replace('>', '#');
 
-    QFile filePath{filename};
+    const QString baseDir = appconfig::testBaseDir();
+    QDir().mkpath(baseDir);
+    const QString fullPath = QDir(baseDir).filePath(filename);
+    QFile filePath{fullPath};
     getRidOfFile(filePath.fileName());
 
     qInfo() << "removing file for replacement: " << filePath.fileName();

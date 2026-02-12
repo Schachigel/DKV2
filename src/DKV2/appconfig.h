@@ -45,11 +45,16 @@ struct appconfig
     // for testing only
     static void deleteUserData(const QString& name);
     static void deleteRuntimeData(const QString& name);
+    static void setTestMode(bool on);
+    static bool isTestMode();
+    static QString testBaseDir();
+    static QString testOutDir();
 private:
     static QString keyOutdir;
     static QString keyLastDb;
     static QString keyCurrentDb;
     static bool testmode;
+    static QString makeUserKey(const QString& name);
     static void setUserData(const QString& name, const QString& value);
     static QString getUserData( const QString& name, const QString& defaultvalue ="");
     // QString getNumUserData(QString name);

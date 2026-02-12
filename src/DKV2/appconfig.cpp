@@ -84,6 +84,27 @@ void setNumMetaInfo(const QString& name, const double value, const QSqlDatabase&
 /* statics */
 bool appconfig::testmode = false;
 
+void appconfig::setTestMode(bool on)
+{
+    testmode = on;
+}
+
+bool appconfig::isTestMode()
+{
+    return testmode;
+}
+
+QString appconfig::testBaseDir()
+{
+    const QString cwd = QDir::currentPath();
+    return QDir::cleanPath(QDir(cwd).filePath(qsl("../data")));
+}
+
+QString appconfig::testOutDir()
+{
+    return QDir::cleanPath(QDir(testBaseDir()).filePath(qsl("output")));
+}
+
 /* static methods */
 /* static */
 void appconfig::setOutDir(const QString& od)
@@ -94,15 +115,18 @@ void appconfig::setOutDir(const QString& od)
 QString appconfig::Outdir()
 {
     QString od;
-    QString defaultDir {QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/DKV2")};
+    QString defaultDir;
+    if (testmode)
+        defaultDir = testOutDir();
+    else
+        defaultDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/DKV2");
     return getUserData(keyOutdir, defaultDir);
 }
 /* static */ /* for testing puropose */
 void appconfig::delOutDir()
 {
     qInfo() << "deleting outdir";
-    QSettings set;
-    set.remove(keyOutdir);
+    deleteUserData(keyOutdir);
 }
 
 /* static */
@@ -114,7 +138,7 @@ void appconfig::setLastDb(const QString& filename)
 bool appconfig::hasLastDb()
 {
     QSettings config;
-    return config.contains(keyLastDb);
+    return config.contains(makeUserKey(keyLastDb));
 }
 /* static */
 QString appconfig::LastDb()
@@ -183,22 +207,31 @@ QVariantMap getMetaTableAsMap(const QSqlDatabase &db)
 void appconfig::setUserData(const QString& name, const QString& value)
 {
     QSettings config;
-    qInfo() << "setUserData " << name << " : " << value;
-    config.setValue(name, value);
+    const QString key = makeUserKey(name);
+    qInfo() << "setUserData " << key << " : " << value;
+    config.setValue(key, value);
     config.sync();
 }
 /* static */
 QString appconfig::getUserData( const QString& name, const QString& defaultvalue)
 {
     QSettings config;
-    qInfo() << "getUserData " << name << "; def.Value: " << defaultvalue;
-    return config.value(name, defaultvalue).toString();
+    const QString key = makeUserKey(name);
+    qInfo() << "getUserData " << key << "; def.Value: " << defaultvalue;
+    return config.value(key, defaultvalue).toString();
 }
 /* static */
 void appconfig::deleteUserData(const QString& name)
 {   LOG_CALL_W(name);
     QSettings config;
-    config.remove(name);
+    config.remove(makeUserKey(name));
+}
+
+QString appconfig::makeUserKey(const QString& name)
+{
+    if (testmode)
+        return qsl("test/") + name;
+    return name;
 }
 // QString getNumUserData(QString name);
 

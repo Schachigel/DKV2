@@ -75,6 +75,7 @@ function(_dkv2_write_single_main out_path class_name main_header)
 #include <QCoreApplication>
 #include <QtTest>
 
+#include \"../DKV2/appconfig.h\"
 #include \"${main_header}\"
 
 int main(int argc, char** argv)
@@ -84,6 +85,10 @@ int main(int argc, char** argv)
     // Required for tests that indirectly use QSettings
     QCoreApplication::setOrganizationName(QStringLiteral(\"HoMsoft\"));
     QCoreApplication::setApplicationName(QStringLiteral(\"DKV2_All_Tests\"));
+
+    // default: run tests in testmode; keep appconfig tests in normal mode
+    if (QStringLiteral(\"${class_name}\") != QStringLiteral(\"test_appconfig\"))
+        appconfig::setTestMode(true);
 
     ${class_name} tc;
     return QTest::qExec(&tc, argc, argv);
@@ -118,6 +123,7 @@ function(_dkv2_write_runall_main out_path class_names main_headers)
 #include <QStringBuilder>
 
 #include \"testhelper.h\"   // dbgTimer (+ addLab)
+#include \"../DKV2/appconfig.h\"
 
 ${_inc}
 
@@ -164,6 +170,7 @@ int main(int argc, char** argv)
     QCoreApplication app(argc, argv);
     QCoreApplication::setOrganizationName(QStringLiteral(\"HoMsoft\"));
     QCoreApplication::setApplicationName(QStringLiteral(\"DKV2_All_Tests\"));
+    appconfig::setTestMode(true);
 
     std::vector<TestEntry> tests = {
 ${_run_table}
