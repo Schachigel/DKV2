@@ -733,7 +733,9 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate)
     v["KreditorId"] = i2s(credId().v);
     v["VertragsNr"] = label();
 
-    double d = value(fromDate);
+    // "Start" should include last settlement before the period, but exclude bookings on fromDate.
+    const QDate startValueDate = fromDate.addDays(-1);
+    double d = value(startValueDate);
     v["dStartBetrag"] = d;
     v["startBetrag"] = s_d2euro(d);
     v["startDatum"] = fromDate.toString(qsl("dd.MM.yyyy"));
