@@ -352,7 +352,26 @@ void wpContractMinValues_Page::initializePage()
 
 bool wpContractMinValues_Page::validatePage()
 {
-    return leMa->hasAcceptableInput() and leMc->hasAcceptableInput() and leMi->hasAcceptableInput() and leMaxINbr->hasAcceptableInput() and leMaxISum->hasAcceptableInput();
+    QStringList errors;
+
+    const auto addErrorIfInvalid = [&errors](QLineEdit* le, const QString& msg) {
+        if (not le->hasAcceptableInput()) {
+            errors << msg.arg(le->text().trimmed());
+        }
+    };
+
+    addErrorIfInvalid(leMa,      qsl("Der kleinste Auszahlungsbetrag (%1) ist ungültig."));
+    addErrorIfInvalid(leMc,      qsl("Der geringste Vertragswert (%1) ist ungültig."));
+    addErrorIfInvalid(leMi,      qsl("Der Wert für den größtmöglichen Zins (%1) ist ungültig."));
+    addErrorIfInvalid(leMaxINbr, qsl("Der Wert für die höchste Anzahl an Verträgen pro Investment (%1) ist ungültig."));
+    addErrorIfInvalid(leMaxISum, qsl("Der Wert für die Summe der Vertragswerte pro Investment (%1) ist ungültig."));
+
+    if (errors.isEmpty()) {
+        return true;
+    }
+
+    QMessageBox::information(this, qsl("Eingaben ungültig"), errors.join(qsl("\n")));
+    return false;
 }
 
 wpNewDatabase_SummaryPage::wpNewDatabase_SummaryPage(QWidget *p) : QWizardPage(p)
@@ -415,24 +434,27 @@ wizConfigureNewDatabaseWiz::wizConfigureNewDatabaseWiz(QWidget *p) : QWizard(p)
     addPage(new wpNewDatabase_SummaryPage);
 }
 
-void wizConfigureNewDatabaseWiz::updateDbConfig(const QString &dbFile)
+bool wizConfigureNewDatabaseWiz::updateDbConfig(const QString &dbFile)
 {
     LOG_CALL;
     dbCloser closer{qsl("updateDbConfig")};
     QSqlDatabase db = QSqlDatabase::addDatabase(dbTypeName, closer.conName);
     db.setDatabaseName(dbFile);
-    if (not db.open())
-    {
-        qCritical() << "failed to open db" << db.lastError();
-        return;
+    if (db.open()) {
+        return updateDbConfig(db);
     }
-    updateDbConfig(db);
-    return;
+    qCritical() << "failed to open db" << db.lastError();
+    return false;
 }
 
-void wizConfigureNewDatabaseWiz::updateDbConfig(const QSqlDatabase &db)
+bool wizConfigureNewDatabaseWiz::updateDbConfig(const QSqlDatabase &db)
 {
     LOG_CALL;
+    if (not db.isValid() or not db.isOpen()) {
+        qCritical() << "invalid or closed db connection in updateDbConfig";
+        return false;
+    }
+
     dbConfig::writeValue(GMBH_PROJECT, field(dbConfig::paramName(GMBH_PROJECT)), db);
     dbConfig::writeValue(GMBH_ADDRESS1, field(dbConfig::paramName(GMBH_ADDRESS1)), db);
     dbConfig::writeValue(GMBH_ADDRESS2, field(dbConfig::paramName(GMBH_ADDRESS2)), db);
@@ -443,7 +465,11 @@ void wizConfigureNewDatabaseWiz::updateDbConfig(const QSqlDatabase &db)
     dbConfig::writeValue(GMBH_URL, field(dbConfig::paramName(GMBH_URL)), db);
     dbConfig::writeValue(GMBH_INITIALS, field(dbConfig::paramName(GMBH_INITIALS)), db);
     dbConfig::writeValue(STARTINDEX, field(dbConfig::paramName(STARTINDEX)), db);
-    dbConfig::writeValue(DBID, QVariant(dbConfig::readValue(GMBH_INITIALS).toString() + dbConfig::readValue(STARTINDEX).toString()), db);
+
+    const QString initials = field(dbConfig::paramName(GMBH_INITIALS)).toString();
+    const QString startIdx = field(dbConfig::paramName(STARTINDEX)).toString();
+    dbConfig::writeValue(DBID, initials + startIdx, db);
+
     dbConfig::writeValue(GMBH_HRE, field(dbConfig::paramName(GMBH_HRE)), db);
     dbConfig::writeValue(GMBH_GEFUE1, field(dbConfig::paramName(GMBH_GEFUE1)), db);
     dbConfig::writeValue(GMBH_GEFUE2, field(dbConfig::paramName(GMBH_GEFUE2)), db);
@@ -454,6 +480,13 @@ void wizConfigureNewDatabaseWiz::updateDbConfig(const QSqlDatabase &db)
     dbConfig::writeValue(MAX_INTEREST, field(dbConfig::paramName(MAX_INTEREST)), db);
     dbConfig::writeValue(MAX_INVESTMENT_NBR, field(dbConfig::paramName(MAX_INVESTMENT_NBR)), db);
     dbConfig::writeValue(MAX_INVESTMENT_SUM, field(dbConfig::paramName(MAX_INVESTMENT_SUM)), db);
+
+    const QString initialsWritten = dbConfig::readValue(GMBH_INITIALS, db).toString().trimmed();
+    if (initialsWritten.isEmpty()) {
+        qCritical() << "db project config write failed: initials empty";
+        return false;
+    }
+    return true;
 }
 
 wpConfigure_IntroPage::wpConfigure_IntroPage(QWidget *p) : QWizardPage(p)

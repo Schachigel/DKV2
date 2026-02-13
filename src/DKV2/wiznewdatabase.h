@@ -110,8 +110,8 @@ private:
 struct wizConfigureNewDatabaseWiz : public QWizard
 {
     wizConfigureNewDatabaseWiz(QWidget* p =nullptr);
-    void updateDbConfig(const QString &dbFile);
-    void updateDbConfig(const QSqlDatabase &db=QSqlDatabase::database());
+    bool updateDbConfig(const QString &dbFile);
+    bool updateDbConfig(const QSqlDatabase &db=QSqlDatabase::database());
     Q_OBJECT
 
 private:

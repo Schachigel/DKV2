@@ -123,10 +123,12 @@ bool askUserForNextDb() {
                                                       (wizOpenOrNew.field(qsl("Zinssusance")).toBool()
                                                        ? zs_30360 : zs_actact))) {
             wizConfigureNewDatabaseWiz wizProjectData;
-            if( wizProjectData.Accepted not_eq wizProjectData.exec())
+            if( wizProjectData.Accepted == wizProjectData.exec())
+                wizProjectData.updateDbConfig(wizOpenOrNew.selectedFile);
+            else { 
                 qInfo() << "Project configuration failed or was aborted";
-
-            wizProjectData.updateDbConfig(wizOpenOrNew.selectedFile);
+                return false;
+            }
             return tryToUseDb (wizOpenOrNew.selectedFile);
         } else {
                 qInfo() << "existing file " << wizOpenOrNew.selectedFile << " was selected";

@@ -320,6 +320,8 @@ void MainWindow::on_actionProjektkonfiguration_ndern_triggered()
     wizConfigureProjectWiz wiz(getMainWindow());
     if(wiz.exec() == QDialog::Accepted)
         wiz.updateDbConfig();
+    else
+        QMessageBox::information(this, qsl("Data not saved"), qsl("Die Projekt Konfiguration wurde nicht gespeichert"));
     updateViews();
 }
 void MainWindow::on_action_menu_database_configure_outdir_triggered()
