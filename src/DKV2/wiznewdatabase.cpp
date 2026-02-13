@@ -465,6 +465,7 @@ bool wizConfigureNewDatabaseWiz::updateDbConfig(const QSqlDatabase &db)
     dbConfig::writeValue(GMBH_URL, field(dbConfig::paramName(GMBH_URL)), db);
     dbConfig::writeValue(GMBH_INITIALS, field(dbConfig::paramName(GMBH_INITIALS)), db);
     dbConfig::writeValue(STARTINDEX, field(dbConfig::paramName(STARTINDEX)), db);
+    dbConfig::writeValue(NEXT_CONTRACT_LABEL_INDEX, field(dbConfig::paramName(STARTINDEX)), db);
 
     const QString initials = field(dbConfig::paramName(GMBH_INITIALS)).toString();
     const QString startIdx = field(dbConfig::paramName(STARTINDEX)).toString();

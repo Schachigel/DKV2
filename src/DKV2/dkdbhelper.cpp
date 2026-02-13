@@ -12,9 +12,12 @@
 #include "investment.h"
 #include "dkdbviews.h"
 #include "dkdbindices.h"
+#include <QRegularExpression>
 
 
 namespace  {
+
+qlonglong extractContractLabelIndex(const QString& label);
 
 bool updateViewsAndIndices_if_needed(const QSqlDatabase& db =QSqlDatabase::database ())
 {   LOG_CALL;
@@ -67,6 +70,47 @@ void getBookingDateInfoBySql(const QString &sql, QVector<BookingDateData>& dates
         dates.push_back({rec.value(0).toInt(), rec.value(1).toString(), rec.value(2).toDate()});
     }
     qInfo() << "getDatesBySql added " << dates.size() << " dates to the vector";
+}
+
+qlonglong configuredNextContractLabelIndex(const QSqlDatabase& db =QSqlDatabase::database())
+{
+    static const QString missingMarker {qsl("__missing_next_contract_label_index__")};
+    QString nextIdxAsString = getMetaInfo(dbConfig::paramName(NEXT_CONTRACT_LABEL_INDEX), missingMarker, db);
+
+    qlonglong nextIdx =0;
+    if (nextIdxAsString == missingMarker) {
+        // One-time migration path for older DBs without explicit "next label" state.
+        qlonglong startIdx = dbConfig::readValue(STARTINDEX, db).toLongLong();
+        qlonglong maxUsedIdx = -1;
+        QVector<QSqlRecord> records;
+        QString sql = qsl("SELECT Kennung FROM %1 UNION ALL SELECT Kennung FROM %2")
+                      .arg(contract::tnContracts, contract::tnExContracts);
+        if (executeSql(sql, records, db)) {
+            for (const QSqlRecord& rec : std::as_const(records)) {
+                qlonglong idx = extractContractLabelIndex(rec.value(0).toString());
+                if (idx > maxUsedIdx)
+                    maxUsedIdx = idx;
+            }
+        }
+        nextIdx = (maxUsedIdx >= 0) ? qMax(startIdx, maxUsedIdx + 1) : startIdx;
+        dbConfig::writeValue(NEXT_CONTRACT_LABEL_INDEX, nextIdx, db);
+    } else {
+        nextIdx = nextIdxAsString.toLongLong();
+    }
+    if (nextIdx <= 0)
+        nextIdx = 1;
+    return nextIdx;
+}
+
+qlonglong extractContractLabelIndex(const QString& label)
+{
+    static QRegularExpression re(qsl("-(\\d+)$"));
+    QRegularExpressionMatch m = re.match(label.trimmed());
+    if (not m.hasMatch())
+        return -1;
+    bool ok =false;
+    qlonglong idx = m.captured(1).toLongLong(&ok);
+    return ok ? idx : -1;
 }
 } // EO local namespace
 
@@ -167,7 +211,7 @@ bool isValidNewContractLabel(const QString& newLabel)
 
 QString proposeContractLabel()
 {   LOG_CALL;
-    qlonglong nextId = dbConfig::readValue(STARTINDEX).toInt() + getHighestRowId(contract::tnContracts);
+    qlonglong nextId = nextContractLabelIndex();
     QString kennung;
     do {
         QString maxid = i2s(nextId).rightJustified(6, '0');
@@ -179,6 +223,24 @@ QString proposeContractLabel()
             nextId++;
     } while(1);
     return kennung;
+}
+
+qlonglong nextContractLabelIndex(const QSqlDatabase& db)
+{
+    return configuredNextContractLabelIndex(db);
+}
+
+bool advanceContractLabelIndex(const QString& usedLabel, const QSqlDatabase& db)
+{
+    qlonglong currentIdx = configuredNextContractLabelIndex(db);
+    qlonglong parsedIdx = extractContractLabelIndex(usedLabel);
+
+    qlonglong newIdx = currentIdx + 1;
+    if (parsedIdx >= 0)
+        newIdx = qMax(newIdx, parsedIdx + 1);
+
+    dbConfig::writeValue(NEXT_CONTRACT_LABEL_INDEX, newIdx, db);
+    return dbConfig::readValue(NEXT_CONTRACT_LABEL_INDEX, db).toLongLong() == newIdx;
 }
 
 int createNewInvestmentsFromContracts( bool fortlaufend)

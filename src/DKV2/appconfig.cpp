@@ -3,6 +3,7 @@
 #include "helpersql.h"
 #include "dbstructure.h"
 #include "dkv2version.h"
+#include <QRandomGenerator>
 
 
 /* static data */
@@ -248,6 +249,7 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
     {GMBH_URL,       {qsl("gmbh.url"),         QVariant(qsl("www.esperanza-mannheim.de"))}},
     {GMBH_INITIALS,  {qsl("gmbh.Projektinitialen"), QVariant(qsl("ESP"))}},
     {STARTINDEX,     {qsl("startindex"),       QVariant(111)}},
+    {NEXT_CONTRACT_LABEL_INDEX, {qsl("nextContractLabelIndex"), QVariant(111)}},
     {MIN_PAYOUT,     {qsl("minAuszahlung"),    QVariant(100)}},
     {MIN_AMOUNT,     {qsl("minVertragswert"),  QVariant(500)}},
     {MAX_INTEREST,   {qsl("maxZins"),          QVariant(200)}},
@@ -290,9 +292,13 @@ QMap<projectConfiguration, QPair<QString, QVariant>> dbConfig::defaultParams ={
 
 /*static*/ void dbConfig::writeDefaults(const QSqlDatabase &db /*=QSqlDatabase::database()*/)
 {
+    const int startIndex = QRandomGenerator::system()->bounded(1000, 10000);
     for( int i =0; i< MAX_PC_INDEX; i++) {
         projectConfiguration pc {static_cast<projectConfiguration>(i)};
-        writeValue(pc, defaultParams.value(pc).second, db);
+        if (pc == STARTINDEX || pc == NEXT_CONTRACT_LABEL_INDEX)
+            writeValue(pc, startIndex, db);
+        else
+            writeValue(pc, defaultParams.value(pc).second, db);
     }
 }
 

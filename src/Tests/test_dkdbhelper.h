@@ -12,6 +12,9 @@ private slots:
     void test_querySingleValueInvalidQuery();
     void test_querySingleValue();
     void test_querySingleValue_multipleResults();
+    void test_nextContractLabelIndex_advancesOnSave();
+    void test_nextContractLabelIndex_legacyGuessFromLabels();
+    void test_nextContractLabelIndex_legacyGuessHonorsHigherStartIndex();
 
 };
 

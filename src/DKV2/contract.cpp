@@ -230,6 +230,9 @@ contractId_t contract::saveNewContract()
     tableindex_t lastid =td.InsertRecord();
     if( lastid >= Minimal_contract_id.v) {
         setId(lastid);
+        if( not advanceContractLabelIndex(label())) {
+            qWarning() << "failed to advance contract label index after insert";
+        }
         RETURN_OK( contractId_t{lastid}, qsl("contract::saveNewContract: Neuer Vertrag wurde eingefügt mit id: %1").arg(i2s(lastid)));
     }
     RETURN_ERR( Invalid_contract_id, qsl("Fehler beim Einfügen eines neuen Vertrags"));

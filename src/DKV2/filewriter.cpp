@@ -112,14 +112,18 @@ bool writeRenderedTemplate(const QString &templateFileName, const QString &outpu
     // render the content.
     QString renderedText = mustachReplace(templateFileName, data);
     // Write the html content to file. (e.g. for editing)
-    saveStringToUtf8File(renderedText, appendFilenameToOutputDir(outputFileName));
+    saveStringToUtf8File(outputFileName, renderedText);
 
     return true;
 }
 
 bool savePdfFromHtmlTemplate(const QString &templateFileName, const QString &outputFileName, const QVariantMap &data)
 {   LOG_CALL;
-    QFileInfo fi( outputFileName);
+    QFileInfo fi(outputFileName);
+    QString fullOutputFileName{outputFileName};
+    if (fi.isRelative())
+        fullOutputFileName = appendFilenameToOutputDir(outputFileName);
+
     QString css{ readFileToString (appendFilenameToOutputDir(qsl("zinsbrief.css")))};
     // DEBUG   printHtmlToPdf(renderedHtml, css, htmlFileName);
 
@@ -133,7 +137,7 @@ bool savePdfFromHtmlTemplate(const QString &templateFileName, const QString &out
     double bottomB = cm2Pt(2.);
     pl.setPageSize (QPageSize(QPageSize::A4), QMargins(leftB, topB,rightB, bottomB));
     printer.setPageLayout (pl);
-    printer.setOutputFileName(outputFileName);
+    printer.setOutputFileName(fullOutputFileName);
 
     //Prepare the document
     QTextDocument doc;
@@ -148,8 +152,10 @@ bool savePdfFromHtmlTemplate(const QString &templateFileName, const QString &out
 
     // Write the html content to file. (just in case ... e.g. for editing)
 
-    QString htmlFileName {appendFilenameToOutputDir(qsl("html/") +replaceExtension(outputFileName, qsl(".html")))};
-    if( saveStringToUtf8File( renderedHtml, outputFileName).isEmpty()){
+    QString htmlFileName {
+        qsl("html/") + QFileInfo(outputFileName).completeBaseName() + qsl(".html")
+    };
+    if (saveStringToUtf8File(htmlFileName, renderedHtml).isEmpty()) {
         qCritical() << "failed to write template";
         return false;
     }

@@ -22,6 +22,8 @@ bool postDB_UpgradeActions(int /*sourceVersion*/, const QString & dbName);
 
 bool isValidNewContractLabel(const QString& newLabel);
 QString proposeContractLabel();
+qlonglong nextContractLabelIndex(const QSqlDatabase& db =QSqlDatabase::database());
+bool advanceContractLabelIndex(const QString& usedLabel, const QSqlDatabase& db =QSqlDatabase::database());
 void create_sampleData(int datensaetze =20);
 
 int createNewInvestmentsFromContracts( bool fortlaufend);
