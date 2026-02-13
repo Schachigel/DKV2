@@ -296,7 +296,7 @@ void uebersichten::renderPayedInterestByYear()
             subsection =records[i].value(qsl("BA")).toString();
             currentSec.data.push_back ({MAGIC_SUBHEADER_MARKER, subsection});
         }
-        if (records[i].value(qsl("Summe")).toDouble() != 0.0) {
+        if (records[i].value(qsl("Summe")).toDouble() not_eq 0.0) {
             currentSec.data.push_back(
                 {
 //                    records[i].value(qsl("BA")).toString(),

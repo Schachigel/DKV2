@@ -212,7 +212,7 @@ int automatchInvestmentsToContracts()
         int interestRate   =rec.value(qsl("ZSatz")).toInt();
         QDate contractDate =rec.value(qsl("Vertragsdatum")).toDate();
         QVector<investment> suitableInvestments =openInvestments(interestRate, contractDate);
-        if( suitableInvestments.length() not_eq 1)
+        if( suitableInvestments.length() != 1)
             continue; // no match if ambiguous or not existing
         contract c(contractId_t{rec.value(qsl("id")).toLongLong()});
         if( c.updateInvestment(suitableInvestments[0].rowid))

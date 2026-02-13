@@ -233,7 +233,7 @@ QSqlField adjustTypeOfField(const QSqlField& f, QMetaType t)
 
 QSqlRecord adjustSqlRecordTypesToDbFieldTypes(const QVector<dbfield>& fields, const QSqlRecord& record)
 {
-    if( fields.size () != record.count ())
+    if( fields.size () not_eq record.count ())
         RETURN_ERR(QSqlRecord(), QString(__FUNCTION__), qsl("Anzahl der Felder stimmt nicht überein"));
 
     QSqlRecord result;
@@ -457,7 +457,7 @@ QVariant executeSingleValueSql(const dbfield& field, const QString& where, const
     // set the type to what was defined in dkdbstructure
     QMetaType mt =dkdbstructur[field.tableName()][field.name()].metaType();
 
-    Q_ASSERT(mt != QMetaType(QMetaType::UnknownType));
+    Q_ASSERT(mt not_eq QMetaType(QMetaType::UnknownType));
     QVariant result = executeSingleValueSql(field.name(), field.tableName(), where, db);
     if( not result.isValid())
         RETURN_OK( result, QString(__FUNCTION__), qsl("found no result"));

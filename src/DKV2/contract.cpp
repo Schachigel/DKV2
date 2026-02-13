@@ -839,7 +839,7 @@ double contract::payedInterestAtTermination()
 }
 double contract::getAnnualInterest(year y, bookingType interestType)
 {
-    if( iModel() not_eq interestModel::payout)
+    if( iModel() != interestModel::payout)
         return 0;
 
     QString where{qsl("VertragsId=%1 AND BuchungsArt=%2 AND SUBSTR(Buchungen.Datum, 1, 4)=%3")};
@@ -854,7 +854,7 @@ double contract::getAnnualInterest(year y, bookingType interestType)
 bool operator==(const contract& lhs, const contract& rhs)
 {   // friend functions - even in the class definition - are not member
     bool ret =true;
-    if( lhs.td.getRecord().count() not_eq rhs.td.getRecord().count()) {
+    if( lhs.td.getRecord().count() != rhs.td.getRecord().count()) {
         qInfo() << "contract comparison: field count mismatch " << lhs.td.getRecord().count() << " / " << rhs.td.getRecord().count();
         ret =false;
     }

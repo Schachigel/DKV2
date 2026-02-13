@@ -310,7 +310,7 @@ void receiveInitialBooking(contract *contract) {
 void activateInterest(contract *ctr) {
     LOG_CALL;
     booking lastB = ctr->latestBooking();
-    Q_ASSERT(lastB.type != bookingType::non);
+    Q_ASSERT(lastB.type not_eq bookingType::non);
     QDate earlierstActivation = lastB.date.addDays(1);
     dlgAskDate dlg(getMainWindow());
     dlg.setDate(earlierstActivation);
@@ -434,7 +434,7 @@ LIMIT 1
                      " Vertrags %4 von %5 %6 <p>rückgängig gemacht werden?")
                 .arg(BArt, BBetrag, BDatum,
                      VKennung, VN, NN)};
-    if( QMessageBox::question (NULL, qsl("Buchung löschen?"), msg) != QMessageBox::Yes) {
+    if( QMessageBox::question (NULL, qsl("Buchung löschen?"), msg) not_eq QMessageBox::Yes) {
         qInfo() << "Löschen der Buchung wurde abgebrochen";
         return;
     }
@@ -643,7 +643,7 @@ void finalizeContractLetter(contract *c) {
 }
 
 void deleteFinalizedContract(contract *c) {
-    if (QMessageBox::Yes !=
+    if (QMessageBox::Yes not_eq
             QMessageBox::question(getMainWindow(), qsl("Beendeten Vertrag löschen"),
                                   qsl("Soll der Vertrag %1 entgültig aus der "
                                       "Datenbank gelöscht werden?")
