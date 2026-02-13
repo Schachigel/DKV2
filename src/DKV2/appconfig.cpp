@@ -7,13 +7,8 @@
 
 
 /* static data */
-#ifndef QT_DEBUG
 QString appconfig::keyOutdir = qsl("outdir");
 QString appconfig::keyLastDb = qsl("db/last");
-#else
-QString appconfig::keyOutdir = qsl("dbg-outdir");
-QString appconfig::keyLastDb = qsl("dbg-db/last");
-#endif
 const QString appconfig::tnMeta { qsl("Meta")};
 const QString appconfig::fnName { qsl("Name")};
 const QString appconfig::fnWert { qsl("Wert")};
@@ -110,18 +105,45 @@ QString appconfig::testOutDir()
 /* static */
 void appconfig::setOutDir(const QString& od)
 {   LOG_CALL_W(od);
-    setUserData(keyOutdir, od);
+    const QString cleanOutDir = QDir::cleanPath(od.trimmed());
+    if (cleanOutDir.isEmpty()) {
+        qWarning() << "setOutDir ignored empty path";
+        return;
+    }
+
+    if (!QDir(cleanOutDir).exists() && !QDir().mkpath(cleanOutDir)) {
+        qCritical() << "setOutDir failed to create folder:" << cleanOutDir;
+        return;
+    }
+
+    setUserData(keyOutdir, cleanOutDir);
 }
 /* static */
 QString appconfig::Outdir()
 {
-    QString od;
-    QString defaultDir;
-    if (testmode)
-        defaultDir = testOutDir();
-    else
-        defaultDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/DKV2");
-    return getUserData(keyOutdir, defaultDir);
+    const QString defaultDir = testmode
+            ? testOutDir()
+            : (QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + qsl("/DKV2"));
+
+    QString configuredOutDir = getUserData(keyOutdir, defaultDir).trimmed();
+    if (configuredOutDir.isEmpty()) {
+        const QString legacyDbgOutDir = getUserData(qsl("dbg-outdir"), QString()).trimmed();
+        if (!legacyDbgOutDir.isEmpty()) {
+            configuredOutDir = legacyDbgOutDir;
+            setUserData(keyOutdir, configuredOutDir);
+        }
+    }
+    if (configuredOutDir.isEmpty())
+        configuredOutDir = defaultDir;
+
+    QDir dir(configuredOutDir);
+    if (!dir.exists() && !QDir().mkpath(configuredOutDir)) {
+        qCritical() << "could not create outdir, fallback to default:" << configuredOutDir;
+        configuredOutDir = defaultDir;
+        QDir().mkpath(configuredOutDir);
+    }
+
+    return QDir::cleanPath(configuredOutDir);
 }
 /* static */ /* for testing puropose */
 void appconfig::delOutDir()
@@ -145,7 +167,14 @@ bool appconfig::hasLastDb()
 QString appconfig::LastDb()
 {
     static QString defaultDb = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +qsl("/Dkv2.dkdb");
-    QString ldb = getUserData(keyLastDb, defaultDb);
+    QString ldb = getUserData(keyLastDb, defaultDb).trimmed();
+    if (ldb.isEmpty()) {
+        const QString legacyDbgLastDb = getUserData(qsl("dbg-db/last"), QString()).trimmed();
+        if (!legacyDbgLastDb.isEmpty()) {
+            ldb = legacyDbgLastDb;
+            setUserData(keyLastDb, ldb);
+        }
+    }
     qInfo() << "lastDb read as " << ldb;
     return ldb;
 }

@@ -89,32 +89,16 @@ QString mustachReplace(const QString &templateFileName, const QVariantMap &data)
 
     return Content;
 }
-QString replaceExtension(const QString& pdfFileName, const QString& ext)
-{   LOG_CALL;
-
-    QFileInfo fi(pdfFileName);
-    QString newPath = fi.path() + "/" + fi.completeBaseName() + ext;
-
-    return newPath;
-}
 } // namespace
 
 
 
 bool writeRenderedTemplate(const QString &templateFileName, const QString &outputFileName, const QVariantMap &data)
 {   LOG_CALL;
-    // get file extension from templateName
-    QFileInfo fi(outputFileName);
-    QString fullOutputFileName{outputFileName};
-    if (fi.isRelative())
-        fullOutputFileName = appendFilenameToOutputDir( outputFileName);
-
     // render the content.
     QString renderedText = mustachReplace(templateFileName, data);
     // Write the html content to file. (e.g. for editing)
-    saveStringToUtf8File(outputFileName, renderedText);
-
-    return true;
+    return !saveStringToUtf8File(outputFileName, renderedText).isEmpty();
 }
 
 bool savePdfFromHtmlTemplate(const QString &templateFileName, const QString &outputFileName, const QVariantMap &data)
@@ -124,7 +108,10 @@ bool savePdfFromHtmlTemplate(const QString &templateFileName, const QString &out
     if (fi.isRelative())
         fullOutputFileName = appendFilenameToOutputDir(outputFileName);
 
-    QString css{ readFileToString (appendFilenameToOutputDir(qsl("zinsbrief.css")))};
+    QString css{readFileToString(appendFilenameToOutputDir(qsl("vorlagen/zinsbrief.css")))};
+    if (css.isEmpty()) {
+        css = readFileToString(appendFilenameToOutputDir(qsl("zinsbrief.css")));
+    }
     // DEBUG   printHtmlToPdf(renderedHtml, css, htmlFileName);
 
     // Prepare the printer

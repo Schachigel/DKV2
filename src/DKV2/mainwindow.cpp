@@ -329,7 +329,8 @@ void MainWindow::on_action_menu_database_configure_outdir_triggered()
     QString dir{appconfig::Outdir()};
     dir = QFileDialog::getExistingDirectory(this, qsl("Ausgabeverzeichnis"), dir,
                                             QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    appconfig::setOutDir(dir);
+    if (!dir.isEmpty())
+        appconfig::setOutDir(dir);
 }
 void MainWindow::on_action_menu_database_program_exit_triggered()
 {   LOG_CALL;
