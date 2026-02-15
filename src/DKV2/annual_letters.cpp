@@ -1,6 +1,7 @@
 #include "annual_letters.h"
 
 #include "appconfig.h"
+#include "csvwriter.h"
 #include "dkdbhelper.h"
 #include "filewriter.h"
 #include "helperfin.h"
@@ -28,8 +29,6 @@ bool ensureLetterTemplates() {
     ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.css")) && ok;
     ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.html")) && ok;
     ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsliste.html")) && ok;
-    ok = extractTemplateFileFromResource(vorlagenVerzeichnis,
-                                         qsl("zinsbuchungen.csv")) && ok;
 #ifdef Q_OS_WIN
     ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsmails-win.bat"),
                                          qsl("zinsmails.bat")) && ok;
@@ -144,10 +143,51 @@ bool writeYearSummaryFiles(const QVariantMap &summaryData, int yearOfSettlement)
                 qsl("Zinsliste-").append(i2s(yearOfSettlement)).append(qsl(".pdf")),
                 summaryData) && ok;
 
-    ok = writeRenderedTemplate(
-                qsl("zinsbuchungen.csv"),
-                qsl("zinsbuchungen").append(i2s(yearOfSettlement)).append(qsl(".csv")),
-                summaryData) && ok;
+    CsvWriter csv;
+    csv.addColumns({
+        qsl("Vorname"), qsl("Nachname"), qsl("Strasse"), qsl("Plz"), qsl("Stadt"),
+        qsl("Email"), qsl("Buchungskonto"), qsl("IBAN"), qsl("BIC"),
+        qsl("VertragsNr"), qsl("Zinsmodell"), qsl("Beginn"), qsl("Buchungsdatum"),
+        qsl("SonstigeZinsen"), qsl("JahresZinsen"), qsl("Auszahlung"),
+        qsl("Zinsgutschrift"), qsl("Endbetrag")
+    });
+
+    const QVariantList creditors = summaryData.value(qsl("Kreditoren")).toList();
+    const QString bookingDate = QDate(yearOfSettlement, 12, 31).toString(qsl("dd.MM.yyyy"));
+    for (const QVariant &creditorV : creditors) {
+        const QVariantMap creditor = creditorV.toMap();
+        const QVariantList contracts = creditor.value(qsl("Vertraege")).toList();
+        for (const QVariant &contractV : contracts) {
+            const QVariantMap contract = contractV.toMap();
+
+            csv.appendValueToNextRecord(creditor.value(qsl("Vorname")).toString());
+            csv.appendValueToNextRecord(creditor.value(qsl("Nachname")).toString());
+            csv.appendValueToNextRecord(creditor.value(qsl("Strasse")).toString());
+            csv.appendValueToNextRecord(creditor.value(qsl("Plz")).toString());
+            csv.appendValueToNextRecord(creditor.value(qsl("Stadt")).toString());
+            csv.appendValueToNextRecord(creditor.value(qsl("Email")).toString());
+            csv.appendValueToNextRecord(creditor.value(qsl("Buchungskonto")).toString());
+            csv.appendValueToNextRecord(creditor.value(qsl("IBAN")).toString());
+            csv.appendValueToNextRecord(creditor.value(qsl("BIC")).toString());
+            csv.appendValueToNextRecord(contract.value(qsl("VertragsNr")).toString());
+            csv.appendValueToNextRecord(contract.value(qsl("Zinsmodell")).toString());
+            csv.appendValueToNextRecord(contract.value(qsl("startDatum")).toString());
+            csv.appendValueToNextRecord(bookingDate);
+            csv.appendValueToNextRecord(s_d2euro(contract.value(qsl("dSonstigeZinsen")).toDouble()));
+            csv.appendValueToNextRecord(s_d2euro(contract.value(qsl("dJahresZinsen")).toDouble()));
+            csv.appendValueToNextRecord(s_d2euro(contract.value(qsl("dAuszahlung")).toDouble()));
+            csv.appendValueToNextRecord(s_d2euro(contract.value(qsl("dZinsgutschrift")).toDouble()));
+            csv.appendValueToNextRecord(contract.value(qsl("endBetrag")).toString());
+        }
+    }
+
+    const QString csvFilename = qsl("%1_JA-%2.csv")
+            .arg(QDate::currentDate().toString(Qt::ISODate), i2s(yearOfSettlement));
+    if (saveStringToUtf8File(csvFilename, csv.toString()).isEmpty()) {
+        qCritical() << "failed to write annual settlement csv file for year:"
+                    << yearOfSettlement;
+        ok = false;
+    }
     return ok;
 }
 
