@@ -4,6 +4,7 @@ body {
     height: 297mm;
     font-size: 9pt;
     font-family: Verdana, Arial;
+    padding-bottom: 22mm;
 }
 
 table {
@@ -26,8 +27,10 @@ table {
 
 .divFirmenname {
     text-align: left;
-    font-size: 9pt;
-    font-weight: bold;
+    font-size: 5pt;
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
 }
 
 .GmbHAnschrift {
@@ -35,7 +38,7 @@ table {
     vertical-align: bottom;
     text-align: left;
     padding-left: 0px;
-    padding-top: 30px;
+    padding-top: 0px;
 }
 
 .KreditorAdresse {
@@ -114,8 +117,15 @@ table {
     font-size: 8pt;
 }
 
-footer {
-    font-size:5pt;
+.footer {
+    position: fixed;
+    left: 10mm;
+    right: 10mm;
+    bottom: 8mm;
+    font-size: 5pt;
+    line-height: 1.2;
+    text-align: left;
+    background: white;
 }
 
 .headLine {

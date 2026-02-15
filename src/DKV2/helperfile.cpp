@@ -68,8 +68,10 @@ QString absoluteCanonicalPath(const QString &path)
 QString readFileToString( const QString& filepath)
 {   LOG_CALL_W(filepath);
     QFile f(filepath);
-    if( not f.open(QFile::ReadOnly|QIODevice::Text))
+    if( not f.open(QFile::ReadOnly|QIODevice::Text)) {
+        qCritical() << "readFileToString: open failed:" << filepath << "-" << f.errorString();
         return qsl("file open error");
+    }
     QTextStream ts(&f);
     ts.setEncoding(QStringConverter::Utf8);
     ts.setAutoDetectUnicode(true);

@@ -88,7 +88,6 @@ set(DKV2_UI_SOURCES
     annual_letters.cpp annual_letters.h
 
     uiitemformatter.cpp uiitemformatter.h
-    resource.qrc
 )
 
 add_library(${UI_TARGET} STATIC
@@ -120,6 +119,7 @@ target_link_libraries(${UI_TARGET} PUBLIC
 # --- Executable: nur main + Plattformwrapper ---
 set(DKV2_APP_SOURCES
     main.cpp
+    resource.qrc
 )
 
 if(WIN32)

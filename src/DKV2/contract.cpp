@@ -742,11 +742,13 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate) const
     v["dStartBetrag"] = d;
     v["startBetrag"] = s_d2euro(d);
     v["startDatum"] = fromDate.toString(qsl("dd.MM.yyyy"));
+    v["showStartSaldo"] = td.getValue(fnVertragsDatum).toDate() < fromDate;
 
     d = value(toDate);
     v["dEndBetrag"] = d;
     v["endBetrag"] = s_d2euro(d);
     v["endDatum"] = toDate.toString(qsl("dd.MM.yyyy"));
+    v["showEndSaldo"] = !isTerminated;
 
     v["Vertragsdatum"] = td.getValue(fnVertragsDatum).toDate().toString(qsl("dd.MM.yyyy"));
     v["Vertragsende"] = hasEndDate() ? td.getValue(fnLaufzeitEnde).toDate().toString(qsl("dd.MM.yyyy")) : "offen";
@@ -819,7 +821,11 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate) const
         {
             QVariantMap bookMap = {};
             bookMap["Date"] = b.date.toString(qsl("dd.MM.yyyy"));
-            bookMap["Text"] = bookingTypeDisplayString(b.type);
+            QString bookingText = bookingTypeDisplayString(b.type);
+            if (isTerminated && b.type == bookingType::payout) {
+                bookingText = qsl("Finale Auszahlung");
+            }
+            bookMap["Text"] = bookingText;
             bookMap["Betrag"] = s_d2euro(b.amount);
 
             bl.append(bookMap);

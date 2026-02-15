@@ -512,11 +512,13 @@ void annualSettlement() {
         return;
     }
 
-    qInfo() << QString("Next AS possible for %1; lets ask the user").arg( nextAS_dateForAnyContract.year());
+    qInfo().noquote() << QString("Next AS possible for %1; lets ask the user").arg( nextAS_dateForAnyContract.year());
     int yearOfSettlement =nextAS_dateForAnyContract.year();
     dlgAnnualSettlement dlg(yearOfSettlement, getMainWindow());
-    if (dlg.exec() == QDialog::Rejected || not dlg.confirmed())
+    if (dlg.exec() == QDialog::Rejected || not dlg.confirmed()) {
+        qInfo() << "AS canceld by user";
         return;
+    }
 
     busyCursor bc;
     // annual settlement takes place HERE
@@ -608,7 +610,13 @@ void finalizeContractLetter(contract *c) {
 
     busyCursor bc;
     // copy Templates (if not available)
-    ensureLetterTemplates();
+    if (!ensureLetterTemplates()) {
+        QMessageBox::critical(getMainWindow(),
+                              qsl("Fehler bei Vorlagen"),
+                              qsl("Vorlagen für Abschlussdokumente konnten nicht vorbereitet werden. "
+                                  "Bitte Log prüfen."));
+        return;
+    }
 
     QVariantMap printData = {};
     printData[qsl("gmbhLogo")] =
@@ -627,17 +635,23 @@ void finalizeContractLetter(contract *c) {
             .arg(c->label(), credRecord.lastname(), credRecord.firstname());
     filenamepattern = sanitizeFilename(filenamepattern);
 
-    savePdfFromHtmlTemplate(qsl("Endabrechnung.html"),
-                            qsl("Endabrechnung-") + filenamepattern + qsl(".pdf"),
-                            printData);
+    if (!savePdfFromHtmlTemplate(qsl("Endabrechnung.html"),
+                                 qsl("Endabrechnung-") + filenamepattern + qsl(".pdf"),
+                                 printData)) {
+        qCritical() << "failed to create Endabrechnung pdf for contract:" << c->label();
+    }
     if (printData[qsl("mitAusbezahltemZins")].toBool())
-        savePdfFromHtmlTemplate(
+        if (!savePdfFromHtmlTemplate(
                     qsl("endabr-Zinsnachw.html"),
-                    qsl("FinalerZinsnachweis-") + filenamepattern + qsl(".pdf"), printData);
+                    qsl("FinalerZinsnachweis-") + filenamepattern + qsl(".pdf"), printData)) {
+            qCritical() << "failed to create final interest proof pdf for contract:" << c->label();
+        }
 
-    writeRenderedTemplate(qsl("Endabrechnung.csv"),
-                          qsl("Endabrechnung-") + filenamepattern + qsl(".csv"),
-                          printData);
+    if (!writeRenderedTemplate(qsl("Endabrechnung.csv"),
+                               qsl("Endabrechnung-") + filenamepattern + qsl(".csv"),
+                               printData)) {
+        qCritical() << "failed to create Endabrechnung csv for contract:" << c->label();
+    }
     showInExplorer(appconfig::Outdir(), showObject::folder);
     qInfo() << "Vertragsabschlussdokument erfolgreich angelegt";
 }

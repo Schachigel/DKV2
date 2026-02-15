@@ -8,8 +8,7 @@
     <table width=98%>
         <tr>
             <td width=40% class="colFirmenname">
-              <span class="divFirmenname">{{meta.gmbhaddress1}}<p></span>
-              <span class="GmbHAnschrift"> {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}}<br></span>
+              <span class="GmbHAnschrift"> {{meta.gmbhaddress1}} | {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}}<br></span>
               <span class="KreditorAdresse" ><br>
                   {{creditor.Vorname}} {{creditor.Nachname}}<p>
                   {{creditor.Strasse}}<br>
@@ -59,15 +58,17 @@
         <tr>
             <td width=20></td>
             <td width=100><strong>Datum</strong></td>
-            <td width=150><strong>Text</strong></td>
+            <td width=150><strong>Buchung</strong></td>
             <td class="colBuchungsBetrag" width=150 float="right"><strong>Betrag</strong></td>
         </tr>
+        {{#showStartSaldo}}
         <tr>
             <td width=20></td>
             <td class="colBuchungsdatum">{{startDatum}}</td>
             <td class="colBuchungstext">letzter Saldo</td>
             <td class="colBuchungsBetrag">{{startBetrag}}</td>
         </tr>
+        {{/showStartSaldo}}
         {{#Buchungen}}
         <tr>
             <td width=20></td>
@@ -76,12 +77,14 @@
             <td class="colBuchungsBetrag">{{Betrag}}</td>
         </tr>
         {{/Buchungen}}
+        {{#showEndSaldo}}
         <tr>
             <td width=20></td>
             <td class="colBuchungsdatum">{{endDatum}}</td>
             <td class="colBuchungstext">neuer Saldo</td>
             <td class="colBuchungsBetrag">{{endBetrag}}</td>
         </tr>
+        {{/showEndSaldo}}
     </table>
     </div>
 {{/Vertraege}}
@@ -97,8 +100,7 @@
 Empfehle uns daher bitte weiter an Freund*innen, Bekannte und Verwandte!
 <p>Solltest Du Fragen zur Abrechnung haben, so zögere bitte nicht Dich - am besten per E-Mail - an uns zu wenden.
 <p><p>Mit freundlichen Grüßen<br>
-<p>{{meta.gmbhdkv}}<p>
-<small>DK Verwaltung<p></small>
+<p>DK Verwaltung{{#meta.gmbhdkv}} {{meta.gmbhdkv}}{{/meta.gmbhdkv}}<p>
         </td>
     </tr>
     <tr>
@@ -113,8 +115,7 @@ Empfehle uns daher bitte weiter an Freund*innen, Bekannte und Verwandte!
     <table width=98%>
         <tr>
             <td width=40%>
-              <div class="colFirmenname"> <b>{{meta.gmbhaddress1}}</b><p></div>
-              <div class="GmbHAnschrift"> {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}}</div>
+              <div class="GmbHAnschrift"> {{meta.gmbhaddress1}} | {{meta.gmbhstrasse}} | {{meta.gmbhplz}} {{meta.gmbhstadt}}</div>
               <div class="KreditorAdresse" ><br>
                   {{creditor.Vorname}} {{creditor.Nachname}}<p>
                   {{creditor.Strasse}}<br>
@@ -145,7 +146,7 @@ Empfehle uns daher bitte weiter an Freund*innen, Bekannte und Verwandte!
     Sehr geehrte Damen und Herren,
     <p>{{creditor.Vorname}} {{creditor.Nachname}} hat der {{meta.gmbhaddress1}} einen zinsgünstigen Direktkredit zur Unterstützung des sozialen, selbstorganisierten Miethausprojekts
     {{meta.gmbhprojekt}} gewährt.
-    <p>
+<p>
       Für das Jahr {{Zinsjahr}} wurden Zinsen
       <!-- auszahlend -->
       {{#ausbezahlterZins}}
@@ -159,8 +160,7 @@ Empfehle uns daher bitte weiter an Freund*innen, Bekannte und Verwandte!
     </p>
 
 <p><p>Mit freundlichen Grüßen<br>
-<p>{{meta.gmbhdkv}}<p>
-<small>DK Verwaltung<p></small>
+<p>DK Verwaltung{{#meta.gmbhdkv}} {{meta.gmbhdkv}}{{/meta.gmbhdkv}}<p>
         </td>
     </tr>
     <tr>

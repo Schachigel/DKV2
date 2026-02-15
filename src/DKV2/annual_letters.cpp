@@ -16,36 +16,42 @@
 
 #include <QRegularExpression>
 
-void ensureLetterTemplates() {
+bool ensureLetterTemplates() {
     LOG_CALL;
+    bool ok = true;
     QDir outDir(appconfig::Outdir());
-    outDir.mkpath(qsl("."));
-    outDir.mkpath(qsl("vorlagen"));
-    outDir.mkpath(qsl("html"));
+    ok = outDir.mkpath(qsl(".")) && ok;
+    ok = outDir.mkpath(qsl("vorlagen")) && ok;
+    ok = outDir.mkpath(qsl("html")) && ok;
     const QString vorlagenVerzeichnis = appconfig::Outdir() + qsl("/vorlagen/");
-    extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("brieflogo.png"));
-    extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.css"));
-    extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.html"));
-    extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsliste.html"));
-    extractTemplateFileFromResource(vorlagenVerzeichnis,
-                                    qsl("zinsbuchungen.csv"));
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("brieflogo.png")) && ok;
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.css")) && ok;
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.html")) && ok;
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsliste.html")) && ok;
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis,
+                                         qsl("zinsbuchungen.csv")) && ok;
 #ifdef Q_OS_WIN
-    extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsmails-win.bat"),
-                                    qsl("zinsmails.bat"));
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsmails-win.bat"),
+                                         qsl("zinsmails.bat")) && ok;
 #else
-    extractTemplateFileFromResource(
-                vorlagenVerzeichnis, qsl("zinsmails-linux.bat"), qsl("zinsmails.bat"));
+    ok = extractTemplateFileFromResource(
+                vorlagenVerzeichnis, qsl("zinsmails-linux.bat"), qsl("zinsmails.bat")) && ok;
 #endif
-    extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("dkv2mail.bat"));
-    extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("dkv2mail"));
-    extractTemplateFileFromResource(vorlagenVerzeichnis,
-                                    qsl("endabrechnung.html"));
-    extractTemplateFileFromResource(vorlagenVerzeichnis,
-                                    qsl("endabr-Zinsnachw.html"));
-    extractTemplateFileFromResource(vorlagenVerzeichnis,
-                                    qsl("endabrechnung.csv"));
-    extractTemplateFileFromResource(appconfig::Outdir() + qsl("/html/"),
-                                    qsl("zinsbrief.css"));
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("dkv2mail.bat")) && ok;
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("dkv2mail")) && ok;
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis,
+                                         qsl("endabrechnung.html")) && ok;
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis,
+                                         qsl("endabr-Zinsnachw.html")) && ok;
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis,
+                                         qsl("endabrechnung.csv")) && ok;
+    ok = extractTemplateFileFromResource(appconfig::Outdir() + qsl("/html/"),
+                                         qsl("zinsbrief.css")) && ok;
+    if (!ok) {
+        qCritical() << "ensureLetterTemplates: failed to prepare one or more template files in"
+                    << appconfig::Outdir();
+    }
+    return ok;
 }
 
 namespace {
@@ -99,9 +105,9 @@ ContractSummary summarizeContracts(const QVariantList &contracts)
     return summary;
 }
 
-void writeCreditorLetterFiles(const CreditorLetterData &data)
+bool writeCreditorLetterFiles(const CreditorLetterData &data)
 {
-    savePdfFromHtmlTemplate(qsl("zinsbrief.html"), data.fileName, data.printData);
+    return savePdfFromHtmlTemplate(qsl("zinsbrief.html"), data.fileName, data.printData);
 }
 
 QVariantMap buildSummaryData(const QVariantMap &basePrintData,
@@ -116,6 +122,7 @@ QVariantMap buildSummaryData(const QVariantMap &basePrintData,
     QVariantMap summaryData = basePrintData;
     summaryData[qsl("Kreditoren")] = creditors;
     summaryData[qsl("Auszahlungen")] = payouts;
+    summaryData[qsl("showAuszahlungen")] = !payouts.isEmpty();
     summaryData[qsl("Sum2Betrag")] = s_d2euro(totalBetrag);
     summaryData[qsl("Sum2JahresZinsen")] = s_d2euro(annualInterest);
     summaryData[qsl("Sum2SonstigeZinsen")] = s_d2euro(otherInterest);
@@ -124,22 +131,24 @@ QVariantMap buildSummaryData(const QVariantMap &basePrintData,
     return summaryData;
 }
 
-void writeYearSummaryFiles(const QVariantMap &summaryData, int yearOfSettlement)
+bool writeYearSummaryFiles(const QVariantMap &summaryData, int yearOfSettlement)
 {
-    writeRenderedTemplate(
+    bool ok = true;
+    ok = writeRenderedTemplate(
                 qsl("zinsmails.bat"),
                 qsl("zinsmails").append(i2s(yearOfSettlement)).append(qsl(".bat")),
-                summaryData);
+                summaryData) && ok;
 
-    savePdfFromHtmlTemplate(
+    ok = savePdfFromHtmlTemplate(
                 qsl("zinsliste.html"),
                 qsl("Zinsliste-").append(i2s(yearOfSettlement)).append(qsl(".pdf")),
-                summaryData);
+                summaryData) && ok;
 
-    writeRenderedTemplate(
+    ok = writeRenderedTemplate(
                 qsl("zinsbuchungen.csv"),
                 qsl("zinsbuchungen").append(i2s(yearOfSettlement)).append(qsl(".csv")),
-                summaryData);
+                summaryData) && ok;
+    return ok;
 }
 
 int askUserForYearOfPrintouts() {
@@ -243,7 +252,7 @@ CreditorLetterData buildCreditorLetterData(qlonglong creditorId,
         printData[qsl("Vertraege")] = vl;
         printData[qsl("totalBetrag")] = s_d2euro(summary.totalBetrag);
 
-        data.fileName = qsl("Jahresinfo %1_%2, %3.pdf")
+        data.fileName = qsl("Jahresinfo-%1_%2-%3.pdf")
                            .arg(i2s(yearOfSettlement),
                                 credRecord.lastname(),
                                 credRecord.firstname());
@@ -290,7 +299,13 @@ void annualSettlementLetters() {
     }
 
     busyCursor bc;
-    ensureLetterTemplates();
+    if (!ensureLetterTemplates()) {
+        QMessageBox::critical(getMainWindow(),
+                              qsl("Fehler bei Vorlagen"),
+                              qsl("Briefvorlagen konnten nicht vorbereitet werden. "
+                                  "Bitte Log prüfen."));
+        return;
+    }
 
     QList<qlonglong> creditorIds;
     creditorsWithAnnualSettlement(creditorIds, yearOfSettlement);
@@ -310,6 +325,7 @@ void annualSettlementLetters() {
     double otherInterest2 = 0;
     double interestForPayout2 = 0.;
     double interestCredit2 = 0.;
+    int creditorLetterErrors = 0;
     for (const auto &cred : std::as_const(creditorIds)) {
         const CreditorLetterData data =
                 buildCreditorLetterData(cred, yearOfSettlement, basePrintData);
@@ -326,7 +342,10 @@ void annualSettlementLetters() {
         totalBetrag2 += data.totalBetrag;
         Kreditoren.append(data.creditorMap);
         /////////////////////////////////////////////////
-        writeCreditorLetterFiles(data);
+        if (!writeCreditorLetterFiles(data)) {
+            creditorLetterErrors++;
+            qCritical() << "failed to create letter pdf:" << data.fileName;
+        }
         /////////////////////////////////////////////////
     }
 
@@ -335,9 +354,20 @@ void annualSettlementLetters() {
                 basePrintData, Kreditoren, Auszahlungen,
                 totalBetrag2, annualInterest2, otherInterest2,
                 interestForPayout2, interestCredit2);
-    writeYearSummaryFiles(summaryData, yearOfSettlement);
+    const bool summaryOk = writeYearSummaryFiles(summaryData, yearOfSettlement);
 
     bc.finish();
     showInExplorer(appconfig::Outdir(), showObject::folder);
-    qInfo() << "Alles OK";
+    if (creditorLetterErrors == 0 && summaryOk) {
+        qInfo() << "Alles OK";
+    } else {
+        QMessageBox::critical(
+                    getMainWindow(),
+                    qsl("Fehler beim Erstellen"),
+                    qsl("Nicht alle Briefe/Ausgaben konnten erzeugt werden.\n"
+                        "Fehler bei Briefen: %1\n"
+                        "Zusammenfassung erfolgreich: %2")
+                    .arg(creditorLetterErrors)
+                    .arg(summaryOk ? qsl("Ja") : qsl("Nein")));
+    }
 }
