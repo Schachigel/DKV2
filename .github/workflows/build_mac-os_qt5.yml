@@ -1,0 +1,54 @@
+name: macOS Qt5 build
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build-macos:
+    runs-on: macos-13
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt 5.15.2 (qmake)
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '5.15.2'
+        host: 'mac'
+        target: 'desktop'
+        arch: 'clang_64'
+
+      - name: Build (release)
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p build-dist-mac
+        cd build-dist-mac
+        qmake ../dkv2.pro CONFIG+=release
+        make -j3
+
+      - name: Locate DMG
+      shell: bash
+      run: |
+        set -euo pipefail
+        DMG=$(find build-dist-mac -name "*.dmg" | head -n1)
+        test -n "$DMG"
+        echo "DMG_PATH=$DMG" >> "$GITHUB_ENV"
+        ls -lh "$DMG"
+
+      - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: DKV2-macos-dmg
+        path: ${{ env.DMG_PATH }}
+
+      - name: Release (tags only)
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v2
+      with:
+        files: ${{ env.DMG_PATH }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
