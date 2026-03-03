@@ -8,18 +8,19 @@ on:
 
 jobs:
   build-macos:
-    runs-on: macos-13
+    runs-on: macos-12   # fallback runner for Qt5
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Qt 5.15.2 (qmake)
-        uses: jurplel/install-qt-action@v4
+        uses: jurplel/install-qt-action@v3
         with:
           version: '5.15.2'
           host: 'mac'
           target: 'desktop'
           arch: 'clang_64'
+          aqtversion: '==3.1.*'
 
       - name: Build (release)
         shell: bash
