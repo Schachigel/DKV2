@@ -1,79 +1,55 @@
-name: MacOS Universal Build
+name: macOS Qt5 build
 
 on:
+  workflow_dispatch:
   push:
-    branches: ["*"]
-    tags: ["*"]
-  pull_request:
-    branches: ["main"]
+    tags:
+      - '*'
 
 jobs:
   build-macos:
-    strategy:
-      matrix:
-        include:
-          - runner: macos-13
-            deployment_target: "11.0"
-            name_suffix: "Ventura"
-          - runner: macos-14
-            deployment_target: "12.0"
-            name_suffix: "Sonoma"
-          - runner: macos-15
-            deployment_target: "13.0"
-            name_suffix: "Sequoia"
-    
-    runs-on: ${{ matrix.runner }}
-    env:
-      BUILD_TYPE: Release
-      APP_NAME: DKV2
-      DEPLOYMENT_TARGET: ${{ matrix.deployment_target }}
-    
+    runs-on: macos-13   # Changed from macos-14 to macos-13
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install tools
-        run: |
-          brew update
-          brew install ninja create-dmg
-
-      - name: Install Qt 6.9.3
-        uses: jurplel/install-qt-action@v4
+      - name: Install Qt 5.15.2 (qmake)
+        uses: jurplel/install-qt-action@v3
         with:
-          version: "6.9.3"
-          host: "mac"
-          target: "desktop"
-          cache: true
-          aqtversion: "==3.*"
+          version: '5.15.2'
+          host: 'mac'
+          target: 'desktop'
+          arch: 'clang_64'
+          aqtversion: '==3.1.*'
 
-      - name: Configure (CMake + Ninja)
+      - name: Build (release)
+        shell: bash
         run: |
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-            -DCMAKE_PREFIX_PATH="${Qt6_DIR}/lib/cmake" \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET=${DEPLOYMENT_TARGET}
+          set -euo pipefail
+          mkdir -p build-dist-mac
+          cd build-dist-mac
+          qmake ../DKV2/DKV2.pro CONFIG+=release
+          make -j3
 
-      - name: Build
-        run: cmake --build build --config ${BUILD_TYPE} -j3
-
-      - name: Install to bundle staging
-        run: cmake --install build --config ${BUILD_TYPE} --prefix "${PWD}/build/install"
-
-      - name: Bundle with macdeployqt (+ DMG)
+      - name: Locate DMG
+        shell: bash
         run: |
-          APP_PATH="build/install/${APP_NAME}.app"
-          "${QT_ROOT_DIR}/bin/macdeployqt" "$APP_PATH" -always-overwrite -verbose=2
+          set -euo pipefail
+          DMG=$(find build-dist-mac -name "*.dmg" | head -n1)
+          test -n "$DMG"
+          echo "DMG_PATH=$DMG" >> "$GITHUB_ENV"
+          ls -lh "$DMG"
 
-      - name: Create DMG (hdiutil)
-        run: |
-          APP_PATH="build/install/${APP_NAME}.app"
-          DMG_PATH="build/install/${APP_NAME}.dmg"
-          rm -f "$DMG_PATH"
-          hdiutil create -volname "${APP_NAME}" -srcfolder "$APP_PATH" -ov -format UDZO "$DMG_PATH"
-
-      - name: Upload artifacts (DMG + .app)
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}-macOS-${{ matrix.name_suffix }}
-          path: |
-            build/install/${{ env.APP_NAME }}.dmg
+          name: DKV2-macos-dmg
+          path: ${{ env.DMG_PATH }}
+
+      - name: Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.DMG_PATH }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
