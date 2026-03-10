@@ -12,13 +12,13 @@ jobs:
       matrix:
         include:
           - runner: macos-13
-            qt_version: '5.15.13'
+            qt_version: '5.15.2'
             name_suffix: "Ventura"
           - runner: macos-14
             qt_version: '5.15.13'
             name_suffix: "Sonoma"
           - runner: macos-15
-            qt_version: '5.15.13'
+            qt_version: '5.15.14'
             name_suffix: "Sequoia"
     
     runs-on: ${{ matrix.runner }}
@@ -33,7 +33,7 @@ jobs:
           host: 'mac'
           target: 'desktop'
           arch: 'clang_64'
-          aqtversion: '==3.2.*'
+          aqtversion: '==3.*'
 
       - name: Build (release)
         shell: bash
