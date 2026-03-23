@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-class test_annualSettlement : public QObject
+class test_annualsettlement : public QObject
 {
     Q_OBJECT
 

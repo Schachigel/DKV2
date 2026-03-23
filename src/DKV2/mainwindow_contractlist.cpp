@@ -3,7 +3,7 @@
 
 #include "uihelper.h"
 
-#include "busyCursor.h"
+#include "busycursor.h"
 #include "csvwriter.h"
 #include "filewriter.h"
 #include "contracttablemodel.h"

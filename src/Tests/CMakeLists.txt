@@ -29,7 +29,7 @@ set(DKV2_TEST_PCH
 #   target_name|class_name|main_header|file4|file5|...
 set(DKV2_TEST_SPECS
   "test_appconfig|test_appconfig|test_appconfig.h|test_appconfig.cpp"
-  "test_annualSettlement|test_annualSettlement|test_annualSettlement.h|test_annualSettlement.cpp"
+  "test_annualsettlement|test_annualsettlement|test_annualsettlement.h|test_annualsettlement.cpp"
   "test_booking|test_booking|test_booking.h|test_booking.cpp"
   "test_contract|test_contract|test_contract.h|test_contract.cpp"
   "test_creditor|test_creditor|test_creditor.h|test_creditor.cpp"

@@ -4,7 +4,7 @@
 #include "uihelper.h"
 #include "idwrapper.h"
 #include "dlgdisplaycolumns.h"
-#include "busyCursor.h"
+#include "busycursor.h"
 #include "transaktionen.h"
 #include "creditor.h"
 #include "helpersql.h"

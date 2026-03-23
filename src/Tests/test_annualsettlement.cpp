@@ -18,22 +18,22 @@ static const QDate ye_2004 {2004,12,31};
 static const QDate ys_2000 {2000, 1, 1};
 
 
-void test_annualSettlement::init()
+void test_annualsettlement::init()
 {
     initTestDkDb_InMemory();
 }
 
-void test_annualSettlement::cleanup()
+void test_annualsettlement::cleanup()
 {
     cleanupTestDb_InMemory();
 }
 
-void test_annualSettlement::test_noContract_noAS()
+void test_annualsettlement::test_noContract_noAS()
 {
     QCOMPARE(QDate(), dateOfnextSettlement());
 }
 
-void test_annualSettlement::test_oneContract_Mid_Year()
+void test_annualsettlement::test_oneContract_Mid_Year()
 {
     // prep one contract
     contract c{saveRandomContract(saveRandomCreditor().id())};
@@ -54,7 +54,7 @@ void test_annualSettlement::test_oneContract_Mid_Year()
     QCOMPARE(executeCompleteAS(ye_2001.year()), 1);
 }
 
-void test_annualSettlement::test_contract_intrest_activation()
+void test_annualsettlement::test_contract_intrest_activation()
 {
     // prep one contract
     contract c(saveRandomContract(saveRandomCreditor().id()));
@@ -76,7 +76,7 @@ void test_annualSettlement::test_contract_intrest_activation()
     QCOMPARE(executeCompleteAS(ye_2000.year()), 1);
 }
 
-void test_annualSettlement::test_contract_intrest_activation_yearEnd()
+void test_annualsettlement::test_contract_intrest_activation_yearEnd()
 {
     // prep one contract
     contract c(saveRandomContract(saveRandomCreditor().id()));
@@ -95,7 +95,7 @@ void test_annualSettlement::test_contract_intrest_activation_yearEnd()
     QCOMPARE(executeCompleteAS(ye_2001.year()), 1);
 }
 
-void test_annualSettlement::test_dateOfNextSettlement_nextSettlement()
+void test_annualsettlement::test_dateOfNextSettlement_nextSettlement()
 {
     // prep contract w AS until 2001
     contract c1(saveRandomContract(saveRandomCreditor().id()));
@@ -123,7 +123,7 @@ void test_annualSettlement::test_dateOfNextSettlement_nextSettlement()
     QCOMPARE(executeCompleteAS(2002), 2);
 }
 
-void test_annualSettlement::test_dateOfNextSettlement_activatedContracts()
+void test_annualsettlement::test_dateOfNextSettlement_activatedContracts()
 {
     contract c1(saveRandomContract(saveRandomCreditor().id()));
     c1.updateInterestActive(true);
@@ -168,7 +168,7 @@ void test_annualSettlement::test_dateOfNextSettlement_activatedContracts()
     QCOMPARE(dateOfnextSettlement(), ye_1998);
 }
 
-void test_annualSettlement::test_dateOfNextSettlement_mixedStates_earliestWins()
+void test_annualsettlement::test_dateOfNextSettlement_mixedStates_earliestWins()
 {
     contract progressed(saveRandomContract(saveRandomCreditor().id()));
     progressed.updateInterestActive(true);
@@ -187,7 +187,7 @@ void test_annualSettlement::test_dateOfNextSettlement_mixedStates_earliestWins()
     QCOMPARE(dateOfnextSettlement(), ye_2000);
 }
 
-void test_annualSettlement::test_dateOfNextSettlement_mixedStates_laterContractIgnored()
+void test_annualsettlement::test_dateOfNextSettlement_mixedStates_laterContractIgnored()
 {
     contract progressed(saveRandomContract(saveRandomCreditor().id()));
     progressed.updateInterestActive(true);
@@ -206,7 +206,7 @@ void test_annualSettlement::test_dateOfNextSettlement_mixedStates_laterContractI
     QCOMPARE(dateOfnextSettlement(), ye_2001);
 }
 
-void test_annualSettlement::test_dateOfNextSettlement_mixedStates_deterministic()
+void test_annualsettlement::test_dateOfNextSettlement_mixedStates_deterministic()
 {
     contract noActivation(saveRandomContract(saveRandomCreditor().id()));
     noActivation.updateInterestActive(true);
@@ -232,7 +232,7 @@ void test_annualSettlement::test_dateOfNextSettlement_mixedStates_deterministic(
     QCOMPARE(dateOfnextSettlement(), ye_2004);
 }
 
-void test_annualSettlement::test_multipleContracts()
+void test_annualsettlement::test_multipleContracts()
 {
     // prep creditors and contracts
     saveRandomCreditor();
@@ -270,12 +270,12 @@ void test_annualSettlement::test_multipleContracts()
     }
 }
 
-void test_annualSettlement::test_csvCreation_fails_with_no_AS()
+void test_annualsettlement::test_csvCreation_fails_with_no_AS()
 {
     QVERIFY( formulate_AS_as_CSV(1999).isEmpty());
 }
 
-void test_annualSettlement::test_csvCreation_check_headers()
+void test_annualsettlement::test_csvCreation_check_headers()
 {
     // prep one contract w initial payment and AS
     QDate conclusionDate{2001,12,19};
