@@ -28,7 +28,7 @@ SELECT
     , V.Betrag /100., '[soll: ' || CAST( V.Betrag /100. AS TEXT) || ' €]' )) AS Nominalwert
   , IIF(IFNULL(AnlagenId, 0) == 0
       , CAST(V.Zsatz / 100. AS VARCHAR) || ' % (ohne Anlage)'
-      , CAST(V.Zsatz / 100. AS VARCHAR) || ' % - ' || GA.Typ ) AS Zinssatz
+      , CAST(V.Zsatz / 100. AS VARCHAR) || ' % - ' || GA.Typ || ' (Id ' || AnlagenId ||')') AS Zinssatz
 
 -- Zinsmodus
   , V.thesaurierend AS Zinsmodus
@@ -80,17 +80,19 @@ LEFT JOIN
 )str")};
 
 const QString vnExContractView {qsl("vVertraege_geloescht")};
-const QString sqlExContractView {qsl(
-R"str(
+const QString sqlExContractView{qsl(
+    R"str(
 SELECT
   V.id AS VertragsId
   , K.id AS KreditorId
   , K.Nachname || ', ' || K.Vorname AS KreditorIn
   , V.Kennung AS Vertragskennung
-  , strftime('%d.%m.%Y',Aktivierungsdatum) AS Aktivierung
-  , strftime('%d.%m.%Y', Vertragsende) AS Vertragsende
-  , ifnull(AktivierungsWert, V.Betrag / 100.) AS Anfangswert
-  , CAST(V.Zsatz / 100. AS VARCHAR) || ' %'    AS Zinssatz
+  , STRFTIME('%d.%m.%Y',Aktivierungsdatum) AS Aktivierung
+  , STRFTIME('%d.%m.%Y', Vertragsende) AS Vertragsende
+  , IFNULL(AktivierungsWert, V.Betrag / 100.) AS Anfangswert
+  , IIF (IFNULL(V.AnlagenId, 0) == 0
+       , CAST(V.Zsatz / 100. AS VARCHAR) || ' %'
+       , CAST(V.Zsatz / 100. AS VARCHAR) || ' % (Anl. ' || V.AnlagenId || ')') AS Zinssatz
   , IIF(V.thesaurierend = 0, 'Auszahlend',
        IIF( V.thesaurierend = 1, 'Thesaur.',
           IIF( V.thesaurierend = 2, 'Fester Zins',
@@ -152,8 +154,7 @@ LEFT JOIN ( SELECT
             WHERE B.BuchungsArt = 1 OR B.BuchungsArt = 2 OR B.BuchungsArt = 8
             GROUP BY B.VertragsId  )
 ON V.id = vid_mit_Zinsen
-)str"
-)};
+)str")};
 
 const QString vnInvestmentsView {qsl("vInvestmentsOverview")};
 const QString sqlInvestmentsView {qsl(

@@ -102,7 +102,7 @@ const QVector<tableViewColTexts> columnTextsContracts {
     /*cp_InitialBooking,  */ {qsl("Geldeingang"), qsl("'Wertstellung' der ersten Überweisung")},
     /*cp_InterestActive,  */ {qsl("Zins Status"), qsl("Ist die Zinsanrechnung aktiv?")},
     /*cp_ContractValue,   */ {qsl("Nominalwert"), qsl("Bei aktiven Verträgen: Höhe der Einlage, sonst der im Vertrag vereinbarte Kreditbetrag")},
-    /*cp_InterestRate,    */ {qsl("Zinssatz"), qsl("Zinssatz in %")},
+    /*cp_InterestRate,    */ {qsl("Zinssatz"), qsl("Zinssatz in %, ggf. zugeordnete Geldanlage und Anlagen Id")},
     /*cp_InterestMode,    */ {qsl("Zinsmodus"), qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein")},
     /*cp_InterestBearing, */ {qsl("Verzinsliches\nGuthaben"), qsl("Bei thesaurierenden Verträgen: Einlage und angesparte Zinsen")},
     /*cp_Interest,        */ {qsl("Angesparter\nZins"), qsl("Nicht ausgezahlte Zinsen bei Verträgen mit fester Verzinsung und thesaurierenden Verträgen")},
@@ -121,7 +121,7 @@ const QVector<tableViewColTexts> columnTexts_d_Contracts {
     /*cp_d_InitialValue,       */ {qsl("Nominalwert"), qsl("Ursprünglich vereinbarter Kreditbetrag")},
     /*cp_d_InterestRate,       */ {qsl("Zinssatz"), qsl("Vereinbarter Zinssatz")},
     /*cp_d_InterestMode,       */ {qsl("Zinsmodus"), qsl("Verträge können Auszahlend, Thesaurierend oder mit festem Zins vereinbart sein")},
-    /*cp_d_Interest,           */ {qsl("Zins"), ""},
+    /*cp_d_Interest,           */ {qsl("Zins"), "Zins, ggf. Id der Geldanlage"},
     /*cp_d_TotalDeposit,       */ {qsl("Einzahlungen"), qsl("Summe aller Einzahlungen")},
     /*cp_d_FinalPayout,        */ {qsl("Abschl. Auszahlung"), ""},
     /*cp_CancelDate       */      {qsl("Kündigungsdatum"), qsl("Datum, zu dem die Kündigung ausgesprochen wurde")}
