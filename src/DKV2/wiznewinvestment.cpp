@@ -96,13 +96,13 @@ wpTimeFrame::wpTimeFrame(QWidget* w) : QWizardPage(w)
     deVon->setDisplayFormat(qsl("dd.MM.yyyy"));
     lVon->setBuddy(deVon);
     deVon->setToolTip(lVon->toolTip());
-    registerField(pnVon, deVon/*, "date", "dateChanged(QDate)"*/);
+    registerField(pnVon, deVon, "date" /*, "dateChanged(QDate)"*/);
 
     deBis =new QDateEdit();
     deBis->setDisplayFormat(qsl("dd.MM.yyyy"));
     lBis->setBuddy(deBis);
     deBis->setToolTip(lBis->toolTip());
-    registerField(pnBis, deBis/*, "date", "dateChanged(QDate)"*/);
+    registerField(pnBis, deBis, "date" /*, "dateChanged(QDate)"*/);
 
     connect(deVon, &QDateTimeEdit::dateChanged, this, &wpTimeFrame::onStartDate_changed);
 

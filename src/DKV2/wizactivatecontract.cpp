@@ -1,6 +1,3 @@
-
-
-#include "uihelper.h"
 #include "helperfin.h"
 #include "appconfig.h"
 #include "wizactivatecontract.h"
@@ -30,9 +27,9 @@ wpInitialPayment_DatePage::wpInitialPayment_DatePage(QWidget* p) : QWizardPage(p
 {
     subTitleLabel = new QLabel(qsl("Keine Daten!"));
     subTitleLabel->setWordWrap(true);
-    QDateEdit *de = new QDateEdit;
+    QDateEdit* de = new QDateEdit;
     de->setDisplayFormat(qsl("dd.MM.yyyy"));
-    registerField(fnDate, de);
+    registerField(fnDate, de, "date");
 
     QVBoxLayout*  layout = new QVBoxLayout;
     layout->addWidget(subTitleLabel);
@@ -50,7 +47,7 @@ void wpInitialPayment_DatePage::initializePage()
 
 bool wpInitialPayment_DatePage::validatePage()
 {
-    if( field(fnDate).toDate() < minDate) {
+    if (field(fnDate).toDate() < minDate) {
         QMessageBox::information(this, qsl("Fehlerhaftes Datum"), qsl("Das Datum muss nach dem oder am Vertragsdatum liegen"));
         setField(fnDate, minDate);
         return false;

@@ -9,7 +9,7 @@ wpTerminateContract_DatePage::wpTerminateContract_DatePage(QWidget* p) : QWizard
 
     QDateEdit *de = new QDateEdit;
     de->setDisplayFormat(qsl("dd.MM.yyyy"));
-    registerField(qsl("date"), de);
+    registerField(qsl("date"), de, "date");
     de->setToolTip(qsl("Rückerstattungsdatum"));
     QVBoxLayout* layout = new QVBoxLayout;
     layout->addWidget(subTitleLabel);

@@ -29,12 +29,12 @@ wpCancelContract_DatePage::wpCancelContract_DatePage(QWidget* p) : QWizardPage(p
     QLabel *lblVEnde =new QLabel(qsl("Datum, zu dem der Vertrag beendet wird"));
     QDateEdit *de = new QDateEdit;
     de->setDisplayFormat(qsl("dd.MM.yyyy"));
-    registerField(qsl("date"), de);
+    registerField(qsl("date"), de, "date");
 
     QLabel *lblK = new QLabel( qsl("Datum, zu dem die Kündigung ausgesprochen wurde"));
     QDateEdit *deK = new QDateEdit;
     deK->setDisplayFormat(qsl("dd.MM.yyyy"));
-    registerField(qsl("KüDatum"), deK);
+    registerField(qsl("KüDatum"), deK, "date");
 
     QVBoxLayout*  layout = new QVBoxLayout;
     layout->addWidget(subTitleLabel);

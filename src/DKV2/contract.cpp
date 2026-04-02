@@ -320,9 +320,9 @@ bool contract::bookInitialPayment(const QDate date, const double amount)
         error = qsl("Already active contract can not be activated");
     } else if ( not date.isValid()) {
         error = qsl("Invalid Date");
-    } else if (date <= conclusionDate()) {
+    } else if (date < conclusionDate()) {
         error = qsl("activate only after conclusion date");
-    } else if( amount < 0) {
+    } else if (amount < 0) {
         error =qsl("Invalid amount");
     }
     if ( error.size())
