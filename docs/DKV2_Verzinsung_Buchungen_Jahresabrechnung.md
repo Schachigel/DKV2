@@ -96,17 +96,9 @@ Ein *Vertrag* repräsentiert eine verzinsliche Geldanlage eines Kreditors.
 Wichtige Felder:
 
 * **Kennung**: eindeutige, **alphanumerische** Vertragskennung (nicht zwingend numerisch)
-* **ZSatz**: Zinssatz als ganze Zahl in 1/100 %
+* **ZSatz**: Zinssatz als ganze Zahl in Hundertstel‑Prozent (z. B. 250 = 2,50 %)
 * **thesaurierend**: steuert die Behandlung der Zinsen; die einzelnen Zinsmodelle und ihre Auswirkungen werden im Abschnitt **4. Buchungen** erläutert
-* **zActive**: gibt an, ob der Vertrag aktuell verzinst wird; gespeichert als **1 (wahr)** bzw. **0 (falsch)**
-
-Ein Vertrag kann zunächst unverzinst sein (`zActive = FALSE`). Für diese Verträge wird in der Liste der Verträge der Zinsstatus „ausgesetzt“ angezeigt. Die Aktivierung findet man im Kontextmenü als „Zinszahlung aktivieren“.
-
-* Die Aktivierung erfolgt über **Buchung Typ 16**.
-* Typ 16 definiert den Start der Verzinsung ab seinem Buchungsdatum.
-* Eine Buchung vom Typ 16 erfolgt **pro Vertrag genau einmal** und **nach dem ersten Geldeingang** (Buchung Typ 1).
-* **Ein- und Auszahlungen vor der Aktivierung** der Verzinsung sind zulässig.
-* **Alle Zinsberechnungen vor der Aktivierung** (d. h. bis einschließlich des Tages vor der Typ‑16‑Buchung) erfolgen **mit dem Zinssatz 0**.
+* **zActive**: gibt an, ob der Vertrag aktuell verzinst wird; gespeichert als **1 (wahr)** bzw. **0 (falsch)**. Mit diesem Feld kann ein Vertrag vorübergehend unverzinslich begonnen werden, um nach der Aktivierung der Zinszahlung (s. u.) normal verzinst zu werden. Der Übergang von verzinst zu unverzinst ist nicht vorgesehen.
 
 ---
 
@@ -139,8 +131,6 @@ Regeln:
 
 ### 4.3 Ersteinzahlung und Verzinsungsbeginn
 
-### 4.3 Ersteinzahlung und Verzinsungsbeginn
-
 Für die erste Einzahlung eines Vertrags gelten besondere Regeln, da sie den Beginn des Kreditverhältnisses und der Verzinsung definieren:
 
 * Die **erste Buchung eines Vertrags ist immer vom Typ 1 (Einzahlung)**.
@@ -159,17 +149,60 @@ Zusätzlich gelten für die **Aktivierung der Zinszahlung** folgende Regeln:
 * **Am Tag der Aktivierung** wird **unmittelbar vor der Aktivierungsbuchung (Typ 16)** eine **Zinsanrechnung (Buchung Typ 4) mit dem Betrag 0** erfasst.
 * Erfolgt die **Aktivierung am 31.12.x**, so erfolgt **keine Jahresabrechnung für das Jahr x**.
 
-### 4.4 Zinsmodelle (`thesaurierend`)
+Zusätzlich gilt für zunächst unverzinste Verträge (`zActive = FALSE`):
 
-Die Auswirkung des Feldes `thesaurierend` auf die Behandlung von Zinsen wird wie folgt festgelegt:
+In der Liste der Verträge wird der Zinsstatus „ausgesetzt“ angezeigt. Die Aktivierung findet man im Kontextmenü als „Zinszahlung aktivieren“.
 
-* **Zinsmodus 0 – auszahlend**: Jahreszinsen (Buchung Typ 8) werden **ausgezahlt**. Unterjährige Zinsen (Buchung Typ 4), die im Zusammenhang mit Ein- oder Auszahlungen entstehen, können wahlweise **ausgezahlt** oder **angerechnet** werden.
+* Die Aktivierung wird als **Buchung Typ 16 (ohne Betrag)** gespeichert.
+* Typ 16 definiert den Start der Verzinsung ab seinem Buchungsdatum.
+* Eine Buchung vom Typ 16 erfolgt **pro Vertrag genau einmal** und **nach dem ersten Geldeingang** (Buchung Typ 1).
+* **Ein- und Auszahlungen vor der Aktivierung** der Verzinsung sind zulässig.
+* **Alle Zinsberechnungen vor der Aktivierung** (d. h. bis einschließlich des Tages vor der Typ-16-Buchung) erfolgen **mit dem Zinssatz 0**.
 
-* **Zinsmodus 1 – anrechnend (thesaurierend)**: Zinsen werden **nicht ausgezahlt**, sondern dem *verzinslichen Darlehen* zugeschlagen. Dadurch entsteht ein **Zinseszins-Effekt**; die jährlichen Zinsen steigen bei unverändertem Kapitalfluss im Zeitverlauf.
+### 4.4 Zinsmodelle und Buchungslogik (`thesaurierend`)
 
-* **Zinsmodus 2 – fest**: Die Zinsberechnung bezieht sich ausschließlich auf **Ein- und Auszahlungen** (Buchung Typ 1 und 2). Zinsen werden **nicht ausgezahlt**, gehören aber auch **nicht zum verzinslichen Darlehen**. Ohne weitere Kapitalbewegungen bleibt der jährliche Zins **konstant**.
+#### 4.4.1 Jahreszinsanrechnung (Typ 8, 31.12.)
 
-* **Zinsmodus 3 – zinslos**: Es werden **keine Zinsen berechnet** und entsprechend auch **keine Zinsen ausgezahlt**.
+Die folgenden Beschreibungen definieren die **Buchungsfolge bei der Jahreszinsanrechnung**. Alle Buchungen erfolgen am **31.12.** und gehen **gemeinsam (gleichzeitig)** in die Bewertung des Vertrags ein. Die Buchung **Typ 8** ist dabei die **letzte Buchung des Jahres**.
+
+* **Zinsmodus 0 – auszahlend**:
+
+  * **Typ 2 (Auszahlung der Zinsen)**
+  * **Typ 8 (Jahreszinsanrechnung)**
+  * **Wirkung**: Vertragsbetrag und *verzinsliches Darlehen* bleiben unverändert.
+
+* **Zinsmodus 1 – anrechnend (thesaurierend)**:
+
+  * **Typ 8 (Jahreszinsanrechnung)**
+  * **Wirkung**: Vertragsbetrag und *verzinsliches Darlehen* erhöhen sich um den Zins (Zinseszins-Effekt).
+
+* **Zinsmodus 2 – fest**:
+
+  * **Typ 8 (Jahreszinsanrechnung)**
+  * **Wirkung**: Der Vertragsbetrag erhöht sich um den Zins, das *verzinsliche Darlehen* bleibt unverändert.
+
+* **Zinsmodus 3 – zinslos**:
+
+  * **Typ 8 (Jahreszinsanrechnung, Betrag 0 Euro)**
+  * **Wirkung**: Keine Änderung von Vertragsbetrag oder *verzinslichem Darlehen*.
+
+#### 4.4.2 Ein- und Auszahlungen (Typ 1 / 2) mit unterjähriger Zinsanrechnung (Typ 4)
+
+* **Zinsmodus 0 – auszahlend**:
+
+  * Nutzer wählt **Anrechnung** oder **Auszahlung** der bis zum Buchungsdatum aufgelaufenen Zinsen.
+  * **Anrechnung**: **Typ 4 → Typ 1/2**
+  * **Auszahlung**: **Typ 2 (Zinsauszahlung) → Typ 4 → Typ 1/2**
+
+* **Zinsmodus 1, 2 und 3**:
+
+  * **Typ 4 → Typ 1/2**
+  * Bei **Zinsmodus 3** erfolgt **Typ 4 mit 0 Euro**.
+
+**Zusammenfassung:**
+
+* Bei Ein- und Auszahlungen erfolgt die **Zinsanrechnung (Typ 4)** grundsätzlich **vor** der eigentlichen Buchung (Typ 1 oder 2).
+* Im **Zinsmodus 0** kann zusätzlich eine **vorgelagerte Zinsauszahlung (Typ 2)** erfolgen.
 
 ---
 
@@ -177,7 +210,7 @@ Die Auswirkung des Feldes `thesaurierend` auf die Behandlung von Zinsen wird wie
 
 ### 5.1 Zinsusance (Zinsmethode)
 
-Festgelegt im Feld `der Tabelle`. Die *Zinsusance* bezeichnet die verwendete Zinsmethode. Die Zinsusance definiert, **wie Zinstage gezählt** und **wie Teilzeiträume bewertet** werden.
+Die Zinsusance wird im Feld **Zinsusance** der Tabelle **Meta** festgelegt. Dieses Feld gilt für **alle Verträge einer Datenbank**. Mögliche Werte sind "act/act" und "30/360". Die *Zinsusance* bezeichnet die verwendete Zinsmethode. Die Zinsusance definiert, **wie Zinstage gezählt** und **wie Teilzeiträume bewertet** werden.
 
 #### 5.1.1 Gemeinsame Grundregeln
 
@@ -188,30 +221,44 @@ Festgelegt im Feld `der Tabelle`. Die *Zinsusance* bezeichnet die verwendete Zin
 
 #### 5.1.2 Zinsmethode `act/act` (tatsächliche Tage)
 
+* Für **volle Jahre** ergibt sich der Zins als: *verzinsliches Darlehen × Zinssatz*.
+* Unterschiede zu anderen Methoden entstehen **nur bei Zeiträumen, die kein volles Jahr umfassen**.
+
+Für solche Zeiträume gilt:
+
 * Es werden die **tatsächlichen Kalendertage** gezählt.
 * Schaltjahre werden korrekt berücksichtigt.
-* Jeder Kalendertag innerhalb des Zinszeitraums zählt als Zinstag (unter Beachtung der Grundregeln).
+* Der Zins wird **anteilig pro Kalendertag** berechnet.
+
+  * Das entspricht **1/365 des Jahreszinses je Tag**, in Schaltjahren **1/366**.
 
 #### 5.1.3 Zinsmethode `30/360` (kaufmännisch)
 
-* Der Jahreszins wird auf **12 gleich gewichtete Monate** verteilt; **jeder volle Monat entspricht 1/12 des Jahreszinses**.
-* Für volle Monate ergibt sich damit **kein Unterschied** zur Zinsmethode `act/act`.
-* Abweichungen entstehen ausschließlich bei **angebrochenen Monaten** am Vertragsanfang oder -ende.
+* Für **volle Jahre** ergibt sich ebenfalls der Zins als: *verzinsliches Darlehen × Zinssatz*.
+* Unterschiede zu `act/act` entstehen **nur bei Zeiträumen, die kein volles Jahr umfassen**.
 
-Für angebrochene Monate gilt:
+Für solche Zeiträume gilt:
+
+* Jeder volle Monat entspricht **1/12 des Jahreszinses**.
+* Für angebrochene Monate wird der Zins anteilig berechnet.
+
+Für angebrochene Monate gilt im Detail:
 
 * Es wird mit **kaufmännischen Zinstagen** gerechnet (Monat = 30 Zinstage, Jahr = 360 Zinstage).
-* Der **31. eines Monats zählt dabei nicht als Zinstag**.
+* Der anteilige Zins entspricht **1/(12×30)** des Jahreszinses je Zinstag.
+* Der **31. eines Monats zählt nicht als Zinstag**.
 
 Konsequenzen:
 
-* Kurze Monate (z. B. **Februar**) sind im Verhältnis **günstiger verzinst** als bei `act/act`.
-* Zeiträume, die ausschließlich den **31. eines Monats** betreffen, ergeben einen **Zins von 0**.
+* Monate mit weniger als 30 Tagen (z. B. **Februar**) sind im Verhältnis **günstiger verzinst** als bei `act/act`.
+* Monate mit 31 Tagen liefern im Vergleich zu `act/act` einen **geringeren anteiligen Zins**, da der 31. nicht zählt.
 
 #### 5.1.4 Bezug zur Jahresabrechnung
 
+Bezug zur Jahresabrechnung
+
 * Für die Jahresabrechnung (Buchung Typ 8 – Jahreszinsanrechnung – am 31.12.) wird der Zins **für den Zeitraum seit der letzten relevanten Zinsbuchung** berechnet.
-* Der zugrunde liegende Zeitraum und die Tageszählung ergeben sich ausschließlich aus der gewählten Zinsusance.
+* Der zugrunde liegende Zeitraum ergibt sich aus den relevanten Buchungen. Die Zinsusance bestimmt ausschließlich, wie dieser Zeitraum bewertet wird (Tageszählung und Gewichtung).
 
 ### 5.2 Verzinsliches Darlehen
 
@@ -229,47 +276,55 @@ Beim Zinsmodell **fest (2)** ergibt sich das verzinsliche Darlehen **ausschließ
 
 ---
 
-## 6. Jahresabrechnung
+## 6. Beenden von Verträgen
 
-Für jeden Vertrag wird jährlich ein Zins berechnet und zum Buchungsdatum 31.12. als Buchung Typ 8 gespeichert.
+Verträge können **befristet** oder **unbefristet** sein.
 
----
+* Bei **befristeten Verträgen** ist das Vertragsende bereits bei der Anlage im Feld *LaufzeitEnde* festgelegt.
+* Bei **unbefristeten Verträgen** wird das Vertragsende erst durch eine Kündigung bestimmt.
 
-## 8. Beenden von Verträgen
+Für beide Fälle gilt:
 
-### 8.1 Konsistenzbedingungen
+* Ein Vertrag kann beendet werden, sobald im Feld *LaufzeitEnde* ein von **9999-12-31** abweichendes Datum hinterlegt ist.
+* Dieses Datum kann entweder bereits bei der Anlage (befristet) oder durch eine Kündigung (unbefristet) gesetzt werden.
 
-* Die erste Einzahlung (Buchung Typ 1) darf nicht vor dem Vertragsdatum liegen
-* Buchungen sind streng chronologisch
+(Hinweis: DKV2 erzwingt nicht, dass das Beenden erst nach Erreichen von *LaufzeitEnde* erfolgt.)
 
-### 8.2 Laufzeit und Kündigung
+### 6.1 Relevante Felder
 
-* Kündigungsfrist: `Kfrist >= 0`, `LaufzeitEnde = 9999-12-31`
-* Feste Laufzeit: `Kfrist = -1`, `LaufzeitEnde` gesetzt
+* **KueDatum**: Datum der Kündigung. Wird initial mit **9999-12-31** belegt und beim Start des Kündigungsprozesses gesetzt.
+* **LaufzeitEnde**: Datum, zu dem der Vertrag beendet werden soll.
 
-### 8.3 Kündigung
+  * Bei **befristeten Verträgen** ist dieses Datum bereits bei Vertragsanlage gesetzt.
+  * Bei **unbefristeten Verträgen** ist es initial **9999-12-31**.
+* **Kfrist**: Kündigungsfrist in Monaten (ganzzahlig). Beschreibt den Zeitraum zwischen Kündigung und Vertragsende.
 
-* `Kfrist = -1`
-* `KueDatum` gesetzt
-* `LaufzeitEnde = KueDatum + Kündigungsfrist`
+### 6.2 Kündigung
 
-### 8.4 Technisches Beenden
+* Eine Kündigung ist nur bei **unbefristeten Verträgen** erforderlich.
 
-* Ausstehende Jahresabrechnungen durchführen
-* Abschlusszins als Typ 4 (unterjährige Zinsanrechnung)
-* Gesamtauszahlung als Typ 2
+* Die Kündigung wird in DKV2 über das Kontextmenü ausgelöst.
 
-### 8.5 Archivierung
+* Dabei wird ein Vertragsende vorgeschlagen, das **Kfrist Monate in der Zukunft** liegt.
 
-* Vertrag → `exVertraege`
-* Buchungen → `exBuchungen`
-* Originaldaten löschen
+* Dieses Datum kann angepasst werden und wird in **LaufzeitEnde** gespeichert.
 
----
+* Ein Vertrag kann beendet werden, sobald **LaufzeitEnde** ein von **9999-12-31** abweichendes Datum enthält.
 
-## 9. Konsequenzen für SQL
+* Dies gilt sowohl für:
 
-* Vertragslebenszyklus vollständig datengetrieben
-* Buchungen sind alleiniger Zustandsträger
-* Beendete Verträge nur über Archivtabellen
-* Zinsen werden **nicht in SQL berechnet**, sondern als **fachliches Ergebnis** ermittelt und ausschließlich in Form von **Buchungen** (Typ 4 und Typ 8) persistiert.
+  * befristete Verträge
+  * gekündigte unbefristete Verträge
+
+(Hinweis: DKV2 erzwingt nicht, dass das Beenden erst nach Erreichen von LaufzeitEnde erfolgt.)
+
+### 6.4 Technisches Beenden
+
+Beim Beenden eines Vertrags erfolgt die folgende Verarbeitung in festgelegter Reihenfolge:
+
+1. Durchführung ggf. ausstehender **Jahreszinsanrechnungen**
+2. Berechnung und Buchung der seit der letzten Zinsanrechnung aufgelaufenen Zinsen als **unterjährige Zinsanrechnung (Typ 4)**
+3. Buchung der **Gesamtauszahlung (Typ 2)**
+4. Verschieben aller Vertrags- und Buchungsdaten in die Tabellen **exVertraege** und **exBuchungen**
+
+Ein einmal beendeter Vertrag ist damit vollständig aus den aktiven Tabellen entfernt.
