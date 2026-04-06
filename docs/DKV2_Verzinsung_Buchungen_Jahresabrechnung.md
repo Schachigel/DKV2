@@ -418,3 +418,93 @@ Beim Beenden eines Vertrags erfolgt die folgende Verarbeitung in festgelegter Re
 4. Verschieben aller Vertrags- und Buchungsdaten in die Tabellen **exVertraege** und **exBuchungen**
 
 Ein einmal beendeter Vertrag ist damit vollständig aus den aktiven Tabellen entfernt.
+
+## 7. Geldanlagen
+
+*Geldanlagen* (Investments) sind in DKV2 ein **optionales organisatorisches Modell** zur Gruppierung von Verträgen. Sie dienen insbesondere der Überwachung gesetzlicher bzw. projektinterner Grenzen für Anzahl und Volumen angenommener Verträge (z. B. „20 Verträge“ bzw. „100.000 €“).
+
+Geldanlagen sind **nicht erforderlich**, um Verträge zu führen. Ein Vertrag kann daher:
+
+* genau **einer Geldanlage zugeordnet sein**, oder
+* **keiner Geldanlage** zugeordnet sein.
+
+### 7.1 Zweck
+
+Geldanlagen dienen in DKV2 der **Organisation, Auswertung und Plausibilisierung**:
+
+* Gruppierung von Verträgen nach gemeinsamen Merkmalen (z. B. Zinssatz, Zeitraum)
+* Anzeige aggregierter Werte (Anzahl, Summen)
+* Warnung vor Überschreitung globaler Grenzen
+* Unterstützung bei der Verwaltung von Angebotszeiträumen
+
+Sie bilden eine projektspezifische Sicht auf Verträge ab.
+
+### 7.2 Grundregeln
+
+* Ein Vertrag gehört zu **höchstens einer Geldanlage**.
+* Die Zuordnung ist **optional**.
+* Geldanlagen können **parallel existieren**.
+* Die globalen Grenzen werden **nicht pro Geldanlage**, sondern über die Tabelle *Meta* gesteuert.
+
+### 7.3 Globale Parameter
+
+Die folgenden Felder in der Tabelle *Meta* definieren die relevanten Grenzen:
+
+* *maxInvestNbr*: maximale Anzahl von Verträgen pro Geldanlage (Standard: 20)
+* *maxInvestSum*: maximale Gesamtsumme angenommener Beträge pro Geldanlage (Standard: 100.000)
+
+Diese Werte gelten **einheitlich für alle Geldanlagen** einer Datenbank.
+
+### 7.4 Tabelle Geldanlagen
+
+Die Tabelle *Geldanlagen* beschreibt die organisatorischen Eigenschaften einer Geldanlage:
+
+* *rowid*: eindeutiger Schlüssel
+* *ZSatz*: Zinssatz der typischerweise zugeordneten Verträge (in Hundertstel-Prozent)
+* *Anfang*, *Ende*: optionaler Zeitraum der Geldanlage
+* *Typ*: frei wählbarer Bezeichner zur Identifikation der Geldanlage
+* *Offen*: gibt an, ob neue Verträge dieser Geldanlage zugeordnet werden können
+
+Das Feld *Typ* dient ausschließlich der **Beschreibung** und hat keine festgelegte fachliche Bedeutung.
+
+Das Feld *ZSatz* existiert zusätzlich in *Vertraege*. Dort beschreibt es den tatsächlich wirksamen Zinssatz des Vertrags. In der Geldanlage dient es der **Gruppierung und Orientierung**.
+
+### 7.5 Zeitliche Modelle
+
+DKV2 unterstützt zwei Formen von Geldanlagen:
+
+* **zeitlich begrenzte Geldanlagen** mit explizitem *Anfang* und *Ende*
+* **fortlaufende Geldanlagen** ohne feste Begrenzung
+
+In der Praxis wird überwiegend das Modell der **fortlaufenden Geldanlage** verwendet. Dabei gilt:
+
+* Für jedes Vertragsdatum ist der jeweils **zurückliegende Zwölfmonatszeitraum** maßgeblich.
+* Die Datumsfelder *Anfang* und *Ende* sind in diesem Fall von untergeordneter Bedeutung.
+
+### 7.6 Zuordnung von Verträgen
+
+Die Zuordnung eines Vertrags zu einer Geldanlage kann erfolgen:
+
+* manuell bei der Anlage eines Vertrags
+* automatisiert auf Basis von Zinssatz und Zeitraum
+
+Bei der automatischen Zuordnung werden passende Geldanlagen ermittelt oder – falls erforderlich – neu erzeugt.
+
+### 7.7 Auswertungen und Anzeige
+
+Das UI „Geldanlagen“ stellt für jede Geldanlage aggregierte Kennzahlen bereit, u. a.:
+
+* Anzahl der zugeordneten Verträge
+* Summe der Vertragswerte
+* Summe der eingezahlten Beträge
+* aktuelle Bewertung (inkl. Zinsen, berechnet)
+* Status (*Offen* / geschlossen)
+
+Grenzwerte werden visuell hervorgehoben, um eine mögliche Überschreitung frühzeitig zu erkennen.
+
+### 7.8 Lebenszyklus von Geldanlagen
+
+* Geldanlagen können neu angelegt werden.
+* Abgelaufene Geldanlagen (basierend auf *Ende*) können als geschlossen markiert werden (*Offen = FALSE*).
+* Geldanlagen können aus bestehenden Verträgen automatisch erzeugt werden.
+* Die Löschung von Geldanlagen ist möglich und hat keine Auswirkungen auf die Verträge selbst.
