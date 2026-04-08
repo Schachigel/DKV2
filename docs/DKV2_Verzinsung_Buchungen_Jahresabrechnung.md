@@ -14,7 +14,7 @@ Dieses Dokument legt fest:
 * welche Bedeutung einzelnen Tabellen und Feldern zukommt,
 * wie sich aus Buchungen, Vertragsparametern und Stichtagen relevante Größen ableiten lassen.
 
-Der Schwerpunkt liegt auf **Konsistenz** und **Nachvollziehbarkeit** der Prozesse rund um Ein- und Auszahlungen, Verzinsung und Jahresabschluss. Technische Details (konkrete SQL-Abfragen, Implementierungen) sind nachgeordnet.
+Der Schwerpunkt liegt auf **Konsistenz** und **Nachvollziehbarkeit** der Prozesse rund um Ein- und Auszahlungen, Verzinsung und Jahresabschluss. Technische Details, z. B. konkrete SQL-Abfragen oder Implementierungen, sind nachgeordnet.
 
 ---
 
@@ -87,7 +87,7 @@ CREATE TABLE "Buchungen" (
 
 ### 3.1 Kreditor
 
-Ein *Kreditor* ist die natürliche oder juristische Person, zu der ein Vertrag gehört. Relevante Stammdaten sind u. a. Name, Adresse, E-Mail und IBAN.
+Ein *Kreditor* ist die natürliche oder juristische Person, zu der ein Vertrag gehört. Relevante Stammdaten sind u. a. Name, Adresse, E-Mail und IBAN.
 
 ### 3.2 Vertrag
 
@@ -95,10 +95,10 @@ Ein *Vertrag* repräsentiert eine verzinsliche Geldanlage eines Kreditors.
 
 Wichtige Felder:
 
-* **Kennung**: eindeutige, **alphanumerische** Vertragskennung (nicht zwingend numerisch)
-* **ZSatz**: Zinssatz als ganze Zahl in Hundertstel‑Prozent (z. B. 250 = 2,50 %)
-* **thesaurierend**: steuert die Behandlung der Zinsen; die einzelnen Zinsmodelle und ihre Auswirkungen werden im Abschnitt **4. Buchungen** erläutert
-* **zActive**: gibt an, ob der Vertrag aktuell verzinst wird; gespeichert als **1 (wahr)** bzw. **0 (falsch)**. Mit diesem Feld kann ein Vertrag vorübergehend unverzinslich begonnen werden, um nach der Aktivierung der Zinszahlung (s. u.) normal verzinst zu werden. Der Übergang von verzinst zu unverzinst ist nicht vorgesehen.
+* **Kennung**: eindeutige, alphanumerische Vertragskennung (nicht zwingend numerisch)
+* **ZSatz**: Zinssatz als ganze Zahl in Hundertstel-Prozent (z. B. 250 = 2,50 %)
+* **thesaurierend**: steuert die Behandlung der Zinsen; die einzelnen Zinsmodelle und ihre Auswirkungen werden in Abschnitt **4.4 Zinsmodelle und Buchungslogik** erläutert
+* **zActive**: gibt an, ob der Vertrag aktuell verzinst wird; gespeichert als **1 (wahr)** bzw. **0 (falsch)**. Mit diesem Feld kann ein Vertrag vorübergehend unverzinslich begonnen werden, um nach der Aktivierung der Zinszahlung normal verzinst zu werden. Der Übergang von verzinst zu unverzinst ist nicht vorgesehen.
 
 ---
 
@@ -113,95 +113,95 @@ Wichtige Felder:
 
 ### 4.2 Buchungsarten
 
-| Typ | Bedeutung                                                                       |
-| --- | ------------------------------------------------------------------------------- |
-| 1   | Einzahlung (Betrag ganzzahlig in ct, positiv)                                   |
-| 2   | Auszahlung (Betrag ganzzahlig in ct, negativ)                                   |
-| 4   | Zinsanrechnung (unterjährig; Betrag ganzzahlig in ct)                           |
-| 8   | Jahreszins / Jahresabschluss (Betrag ganzzahlig in ct)                          |
-| 16  | Aktivierung der Zinszahlung für einen Vertrag (Betrag ganzzahlig in ct, Wert 0) |
+| Typ | Bezeichnung          | Bedeutung                                                                      |
+| --- | -------------------- | ------------------------------------------------------------------------------ |
+| 1   | Einzahlung           | Betrag ganzzahlig in ct, positiv                                               |
+| 2   | Auszahlung           | Betrag ganzzahlig in ct, negativ                                               |
+| 4   | Zinsanrechnung       | unterjährig; Betrag ganzzahlig in ct                                           |
+| 8   | Jahreszinsanrechnung | Jahreszins / Jahresabschluss; Betrag ganzzahlig in ct                          |
+| 16  | Aktivierung          | Aktivierung der Zinszahlung für einen Vertrag; Betrag ganzzahlig in ct, Wert 0 |
 
 Regeln:
 
-* Erste Buchung eines Vertrags ist immer Typ 1.
-* Typ 1 und 2 sind grundsätzlich **nicht am 31.12.** zulässig.
-* Ausnahme: erste Einzahlung darf am 31.12. erfolgen.
-* Typ 8 ist immer die letzte Buchung eines Jahres (31.12.).
-* Typ 16 darf am 31.12. gebucht werden.
+* Die erste Buchung eines Vertrags ist immer **Typ 1 (Einzahlung)**.
+* **Typ 1** und **Typ 2** sind grundsätzlich **nicht am 31.12.** zulässig.
+* Ausnahme: Die erste Einzahlung darf am **31.12.** erfolgen.
+* **Typ 8** ist immer die letzte Buchung eines Jahres.
+* **Typ 16** darf am **31.12.** gebucht werden.
 
 ### 4.3 Ersteinzahlung und Verzinsungsbeginn
 
-Für die erste Einzahlung eines Vertrags gelten besondere Regeln, da sie den Beginn des Kreditverhältnisses und der Verzinsung definieren:
+Für die erste Einzahlung eines Vertrags gelten besondere Regeln, da sie den Beginn des Kreditverhältnisses und der Verzinsung definiert.
 
-* Die **erste Buchung eines Vertrags ist immer vom Typ 1 (Einzahlung)**.
-* Die **Ersteinzahlung darf am 31.12.x erfolgen**. In diesem Fall erfolgt **keine Jahresabrechnung für das Jahr x**, da der **erste Tag eines Kredits zinsfrei** ist.
+* Die **erste Buchung eines Vertrags** ist immer **Typ 1 (Einzahlung)**.
+* Die **Ersteinzahlung** darf am **31.12.x** erfolgen. In diesem Fall erfolgt **keine Jahresabrechnung für das Jahr x**, da der **erste Tag eines Kredits zinsfrei** ist.
 
   * Zum Ausgleich wird der **Auszahlungstag verzinst**.
-* Erfolgt die **Ersteinzahlung am 30.12.x**, wird der Vertrag grundsätzlich in die Jahresendabrechnung für das Jahr x einbezogen.
+* Erfolgt die **Ersteinzahlung am 30.12.x**, wird der Vertrag grundsätzlich in die Jahresabrechnung für das Jahr x einbezogen.
 
   * Bei der Zinsmethode **30/360** ergibt sich dennoch ein **Zins von 0**, da der **31. eines Monats nicht verzinst wird**.
 
 Diese Regeln sind unabhängig vom später gewählten Zinsmodell (`thesaurierend`) und betreffen ausschließlich den **Start des Vertrags und der Verzinsung**.
 
-Zusätzlich gelten für die **Aktivierung der Zinszahlung** folgende Regeln:
+Für die **Aktivierung der Zinszahlung** gelten zusätzlich folgende Regeln:
 
-* Die **Aktivierung der Zinszahlung (Buchung Typ 16)** kann **erst nach der Ersteinzahlung** erfolgen.
-* **Am Tag der Aktivierung** wird **unmittelbar vor der Aktivierungsbuchung (Typ 16)** eine **Zinsanrechnung (Buchung Typ 4) mit dem Betrag 0** erfasst.
+* Die Aktivierung der Zinszahlung (**Typ 16**) kann **erst nach der Ersteinzahlung** erfolgen.
+* Am Tag der Aktivierung wird **unmittelbar vor der Aktivierungsbuchung** eine **Zinsanrechnung (Typ 4) mit dem Betrag 0** erfasst.
 * Erfolgt die **Aktivierung am 31.12.x**, so erfolgt **keine Jahresabrechnung für das Jahr x**.
 
-Zusätzlich gilt für zunächst unverzinste Verträge (`zActive = FALSE`):
+Für zunächst unverzinste Verträge (`zActive = FALSE`) gilt zusätzlich:
 
-In der Liste der Verträge wird der Zinsstatus „ausgesetzt“ angezeigt. Die Aktivierung findet man im Kontextmenü als „Zinszahlung aktivieren“.
-
+* In der Liste der Verträge wird der Zinsstatus **„ausgesetzt“** angezeigt.
+* Die Aktivierung findet man im Kontextmenü als **„Zinszahlung aktivieren“**.
 * Die Aktivierung wird als **Buchung Typ 16 (ohne Betrag)** gespeichert.
-* Typ 16 definiert den Start der Verzinsung ab seinem Buchungsdatum.
-* Eine Buchung vom Typ 16 erfolgt **pro Vertrag genau einmal** und **nach dem ersten Geldeingang** (Buchung Typ 1).
+* **Typ 16** definiert den Start der Verzinsung ab seinem Buchungsdatum.
+* Eine Buchung vom Typ 16 erfolgt **pro Vertrag genau einmal** und **nach dem ersten Geldeingang** (Typ 1).
 * **Ein- und Auszahlungen vor der Aktivierung** der Verzinsung sind zulässig.
-* **Alle Zinsberechnungen vor der Aktivierung** (d. h. bis einschließlich des Tages vor der Typ-16-Buchung) erfolgen **mit dem Zinssatz 0**.
+* **Alle Zinsberechnungen vor der Aktivierung** erfolgen **mit dem Zinssatz 0**, d. h. bis einschließlich des Tages vor der Typ-16-Buchung.
 
 ### 4.4 Zinsmodelle und Buchungslogik (`thesaurierend`)
 
-#### 4.4.1 Jahreszinsanrechnung (Typ 8, 31.12.)
+#### 4.4.1 Jahreszinsanrechnung (31.12.)
 
-Die folgenden Beschreibungen definieren die **Buchungsfolge bei der Jahreszinsanrechnung**. Alle Buchungen erfolgen am **31.12.** und gehen **gemeinsam (gleichzeitig)** in die Bewertung des Vertrags ein. Die Buchung **Typ 8** ist dabei die **letzte Buchung des Jahres**.
+Die folgenden Beschreibungen definieren die **Buchungsfolge bei der Jahreszinsanrechnung**. Alle Buchungen erfolgen am **31.12.** und gehen **gemeinsam** in die Bewertung des Vertrags ein. **Typ 8** ist dabei die **letzte Buchung des Jahres**.
 
-* **Zinsmodus 0 – auszahlend**:
+* **Zinsmodus 0 – auszahlend**
 
-  * **Typ 2 (Auszahlung der Zinsen)**
-  * **Typ 8 (Jahreszinsanrechnung)**
+  * **Typ 2**: Auszahlung der Zinsen
+  * **Typ 8**: Jahreszinsanrechnung
   * **Wirkung**: Vertragsbetrag und *verzinsliches Darlehen* bleiben unverändert.
 
-* **Zinsmodus 1 – anrechnend (thesaurierend)**:
+* **Zinsmodus 1 – anrechnend (thesaurierend)**
 
-  * **Typ 8 (Jahreszinsanrechnung)**
+  * **Typ 8**: Jahreszinsanrechnung
   * **Wirkung**: Vertragsbetrag und *verzinsliches Darlehen* erhöhen sich um den Zins (Zinseszins-Effekt).
 
-* **Zinsmodus 2 – fest**:
+* **Zinsmodus 2 – fest**
 
-  * **Typ 8 (Jahreszinsanrechnung)**
-  * **Wirkung**: Der Vertragsbetrag erhöht sich um den Zins, das *verzinsliche Darlehen* bleibt unverändert.
+  * **Typ 8**: Jahreszinsanrechnung
+  * **Wirkung**: Der Vertragsbetrag erhöht sich um den Zins; das *verzinsliche Darlehen* bleibt unverändert.
 
-* **Zinsmodus 3 – zinslos**:
+* **Zinsmodus 3 – zinslos**
 
-  * **Typ 8 (Jahreszinsanrechnung, Betrag 0 Euro)**
+  * **Typ 8**: Jahreszinsanrechnung mit dem Betrag 0 Euro
   * **Wirkung**: Keine Änderung von Vertragsbetrag oder *verzinslichem Darlehen*.
 
-#### 4.4.2 Ein- und Auszahlungen (Typ 1 / 2) mit unterjähriger Zinsanrechnung (Typ 4)
+#### 4.4.2 Ein- und Auszahlungen mit unterjähriger Zinsanrechnung
 
-* **Zinsmodus 0 – auszahlend**:
+* **Zinsmodus 0 – auszahlend**
 
-  * Nutzer wählt **Anrechnung** oder **Auszahlung** der bis zum Buchungsdatum aufgelaufenen Zinsen.
+  * Der Nutzer wählt **Anrechnung** oder **Auszahlung** der bis zum Buchungsdatum aufgelaufenen Zinsen.
   * **Anrechnung**: **Typ 4 → Typ 1/2**
   * **Auszahlung**: **Typ 2 (Zinsauszahlung) → Typ 4 → Typ 1/2**
 
-* **Zinsmodus 1, 2 und 3**:
+* **Zinsmodus 1, 2 und 3**
 
   * **Typ 4 → Typ 1/2**
-  * Bei **Zinsmodus 3** erfolgt **Typ 4 mit 0 Euro**.
+  * Bei **Zinsmodus 3** erfolgt **Typ 4** mit **0 Euro**.
 
-**Zusammenfassung:**
+Zusammenfassung:
 
-* Bei Ein- und Auszahlungen erfolgt die **Zinsanrechnung (Typ 4)** grundsätzlich **vor** der eigentlichen Buchung (Typ 1 oder 2).
+* Bei Ein- und Auszahlungen erfolgt die **Zinsanrechnung (Typ 4)** grundsätzlich **vor** der eigentlichen Buchung (**Typ 1** oder **Typ 2**).
 * Im **Zinsmodus 0** kann zusätzlich eine **vorgelagerte Zinsauszahlung (Typ 2)** erfolgen.
 
 ---
@@ -210,14 +210,14 @@ Die folgenden Beschreibungen definieren die **Buchungsfolge bei der Jahreszinsan
 
 ### 5.1 Zinsusance (Zinsmethode)
 
-Die Zinsusance wird im Feld **Zinsusance** der Tabelle **Meta** festgelegt. Dieses Feld gilt für **alle Verträge einer Datenbank**. Mögliche Werte sind "act/act" und "30/360". Die *Zinsusance* bezeichnet die verwendete Zinsmethode. Die Zinsusance definiert, **wie Zinstage gezählt** und **wie Teilzeiträume bewertet** werden.
+Die *Zinsusance* bezeichnet die verwendete Zinsmethode. Sie wird im Feld **Zinsusance** der Tabelle **Meta** festgelegt. Dieses Feld gilt für **alle Verträge einer Datenbank**. Mögliche Werte sind **„act/act“** und **„30/360“**.
 
 #### 5.1.1 Gemeinsame Grundregeln
 
-* Der **erste Tag eines Kreditzeitraums ist zinsfrei**.
+* Der **erste Tag eines Kreditzeitraums** ist zinsfrei.
 * Der **letzte Tag (Auszahlungstag)** wird verzinst.
-* Die Zinsberechnung erfolgt **zeitraumbezogen** zwischen zwei relevanten Buchungen (z. B. Ersteinzahlung, Typ 4 (unterjährige Zinsanrechnung), Typ 8 (Jahreszinsanrechnung), Vertragsende).
-* Die Regeln aus **4.3 Ersteinzahlung und Verzinsungsbeginn** sind zu beachten.
+* Die Zinsberechnung erfolgt **zeitraumbezogen** zwischen zwei relevanten Buchungen, z. B. Ersteinzahlung, **Typ 4**, **Typ 8** oder Vertragsende.
+* Die Regeln aus **Abschnitt 4.3 Ersteinzahlung und Verzinsungsbeginn** sind zu beachten.
 
 #### 5.1.2 Zinsmethode `act/act` (tatsächliche Tage)
 
@@ -246,125 +246,33 @@ Für angebrochene Monate gilt im Detail:
 
 * Es wird mit **kaufmännischen Zinstagen** gerechnet (Monat = 30 Zinstage, Jahr = 360 Zinstage).
 * Der anteilige Zins entspricht **1/(12×30)** des Jahreszinses je Zinstag.
-* Der **31. eines Monats zählt nicht als Zinstag**.
+* Der **31. eines Monats** zählt nicht als Zinstag.
 
 Konsequenzen:
 
-* Monate mit weniger als 30 Tagen (z. B. **Februar**) sind im Verhältnis **günstiger verzinst** als bei `act/act`.
+* Monate mit weniger als 30 Tagen, z. B. **Februar**, sind im Verhältnis **günstiger verzinst** als bei `act/act`.
 * Monate mit 31 Tagen liefern im Vergleich zu `act/act` einen **geringeren anteiligen Zins**, da der 31. nicht zählt.
 
 #### 5.1.4 Bezug zur Jahresabrechnung
 
-Bezug zur Jahresabrechnung
-
-* Für die Jahresabrechnung (Buchung Typ 8 – Jahreszinsanrechnung – am 31.12.) wird der Zins **für den Zeitraum seit der letzten relevanten Zinsbuchung** berechnet.
-* Der zugrunde liegende Zeitraum ergibt sich aus den relevanten Buchungen. Die Zinsusance bestimmt ausschließlich, wie dieser Zeitraum bewertet wird (Tageszählung und Gewichtung).
+* Für die Jahresabrechnung (**Typ 8**) wird der Zins **für den Zeitraum seit der letzten relevanten Zinsbuchung** berechnet.
+* Der zugrunde liegende Zeitraum ergibt sich aus den **relevanten Buchungen**.
+* Die Zinsusance bestimmt ausschließlich, **wie dieser Zeitraum bewertet wird**, d. h. Tageszählung und Gewichtung.
 
 ### 5.2 Verzinsliches Darlehen
 
-Die folgenden Definitionen gelten **unter Beachtung der Regeln zum Verzinsungsbeginn gemäß Abschnitt 4.3 (Ersteinzahlung und Verzinsungsbeginn)**.
+Die folgenden Definitionen gelten **unter Beachtung der Regeln zum Verzinsungsbeginn gemäß Abschnitt 4.3**.
 
-**Verzinsliches Darlehen**
-
-Das *verzinsliche Darlehen* ist die **Bemessungsgrundlage für alle Zinsberechnungen** eines Vertrags. Es wird sowohl bei **unterjährigen Zinsanrechnungen (Buchung Typ 4)** als auch bei der **Jahreszinsanrechnung (Buchung Typ 8)** verwendet.
+Das *verzinsliche Darlehen* ist die **Bemessungsgrundlage für alle Zinsberechnungen** eines Vertrags. Es wird sowohl bei **unterjährigen Zinsanrechnungen (Typ 4)** als auch bei der **Jahreszinsanrechnung (Typ 8)** verwendet.
 
 Welche Buchungen in das verzinsliche Darlehen eingehen, hängt vom im Vertrag festgelegten Zinsmodell (`thesaurierend`) ab.
 
-Bei den Zinsmodellen **auszahlend (0)**, **ansparend (1)** und **zinslos (3)** entspricht das verzinsliche Darlehen jeweils der **Summe aller Buchungen** des Vertrags. Beim zinslosen Modell ist der Zinssatz dabei stets **0**.
+* Bei den Zinsmodellen **auszahlend (0)**, **ansparend (1)** und **zinslos (3)** entspricht das verzinsliche Darlehen der **Summe aller Buchungen** des Vertrags.
 
-Beim Zinsmodell **fest (2)** ergibt sich das verzinsliche Darlehen **ausschließlich aus Ein- und Auszahlungen** (Buchung Typ 1 und 2); Zinsanrechnungen gehen nicht in die Bemessungsgrundlage ein.
+  * Beim zinslosen Modell ist der Zinssatz stets **0**.
+* Beim Zinsmodell **fest (2)** ergibt sich das verzinsliche Darlehen **ausschließlich aus Ein- und Auszahlungen** (**Typ 1** und **Typ 2**); Zinsanrechnungen gehen nicht in die Bemessungsgrundlage ein.
 
 ---
-
-### 3.3 Geldanlagen
-
-*Geldanlagen* (Investments) sind in DKV2 ein **optionales organisatorisches Modell** zur Gruppierung von Verträgen. Sie dienen insbesondere der Überwachung gesetzlicher bzw. projektinterner Grenzen für Anzahl und Volumen angenommener Verträge (z. B. „20 Verträge“ bzw. „100.000 €“).
-
-Geldanlagen sind **nicht erforderlich**, um Verträge zu führen. Ein Vertrag kann daher:
-
-* genau **einer Geldanlage zugeordnet sein**, oder
-* **keiner Geldanlage** zugeordnet sein.
-
-#### Zweck
-
-Geldanlagen dienen in DKV2 ausschließlich der **Organisation, Auswertung und Plausibilisierung**:
-
-* Gruppierung von Verträgen nach gemeinsamen Merkmalen (z. B. Zinssatz, Zeitraum)
-* Anzeige aggregierter Werte (Anzahl, Summen)
-* Warnung vor Überschreitung globaler Grenzen
-* Unterstützung bei der Verwaltung von Angebotszeiträumen
-
-Sie stellen **keine eigenständige fachliche oder rechtliche Einheit** dar, sondern bilden eine projektspezifische Sicht auf Verträge ab.
-
-#### Grundregeln
-
-* Ein Vertrag gehört zu **höchstens einer Geldanlage**.
-* Die Zuordnung ist **optional**.
-* Geldanlagen können **parallel existieren**.
-* Die globalen Grenzen werden **nicht pro Geldanlage**, sondern über die Tabelle *Meta* gesteuert.
-
-#### Globale Parameter
-
-Die folgenden Felder in der Tabelle *Meta* definieren die relevanten Grenzen:
-
-* *maxInvestNbr*: maximale Anzahl von Verträgen pro Geldanlage (Standard: 20)
-* *maxInvestSum*: maximale Gesamtsumme angenommener Beträge pro Geldanlage (Standard: 100.000)
-
-Diese Werte gelten **einheitlich für alle Geldanlagen** einer Datenbank.
-
-#### Tabelle Geldanlagen
-
-Die Tabelle *Geldanlagen* beschreibt die organisatorischen Eigenschaften einer Geldanlage:
-
-* *rowid*: eindeutiger Schlüssel
-* *ZSatz*: Zinssatz der typischerweise zugeordneten Verträge (in 1/100 %)
-* *Anfang*, *Ende*: optionaler Zeitraum der Geldanlage
-* *Typ*: frei wählbarer Bezeichner zur Identifikation der Geldanlage
-* *Offen*: gibt an, ob neue Verträge dieser Geldanlage zugeordnet werden können
-
-Das Feld *Typ* dient ausschließlich der **Beschreibung** und hat keine festgelegte fachliche Bedeutung.
-
-Das Feld *ZSatz* existiert zusätzlich in *Vertraege*. Dort beschreibt es den tatsächlich wirksamen Zinssatz des Vertrags. In der Geldanlage dient es der **Gruppierung und Orientierung**.
-
-#### Zeitliche Modelle
-
-DKV2 unterstützt zwei Formen von Geldanlagen:
-
-* **zeitlich begrenzte Geldanlagen** mit explizitem *Anfang* und *Ende*
-* **fortlaufende Geldanlagen** ohne feste Begrenzung
-
-In der Praxis wird überwiegend das Modell der **fortlaufenden Geldanlage** verwendet. Dabei gilt:
-
-* Für jedes Vertragsdatum ist der jeweils **zurückliegende Zwölfmonatszeitraum** maßgeblich.
-* Die Datumsfelder *Anfang* und *Ende* sind in diesem Fall von untergeordneter Bedeutung.
-
-#### Zuordnung von Verträgen
-
-Die Zuordnung eines Vertrags zu einer Geldanlage kann erfolgen:
-
-* manuell bei der Anlage eines Vertrags
-* automatisiert auf Basis von Zinssatz und Zeitraum
-
-Bei der automatischen Zuordnung werden passende Geldanlagen ermittelt oder – falls erforderlich – neu erzeugt.
-
-#### Auswertungen und Anzeige
-
-Das UI „Geldanlagen“ stellt für jede Geldanlage aggregierte Kennzahlen bereit, u. a.:
-
-* Anzahl der zugeordneten Verträge
-* Summe der Vertragswerte
-* Summe der eingezahlten Beträge
-* aktuelle Bewertung (inkl. Zinsen, berechnet)
-* Status (*Offen* / geschlossen)
-
-Grenzwerte werden visuell hervorgehoben, um eine mögliche Überschreitung frühzeitig zu erkennen.
-
-#### Lebenszyklus von Geldanlagen
-
-* Geldanlagen können neu angelegt werden.
-* Abgelaufene Geldanlagen (basierend auf *Ende*) können als geschlossen markiert werden (*Offen = FALSE*).
-* Geldanlagen können aus bestehenden Verträgen automatisch erzeugt werden.
-* Die Löschung von Geldanlagen ist möglich und hat keine Auswirkungen auf die Verträge selbst.
 
 ## 6. Beenden von Verträgen
 
@@ -377,8 +285,7 @@ Für beide Fälle gilt:
 
 * Ein Vertrag kann beendet werden, sobald im Feld *LaufzeitEnde* ein von **9999-12-31** abweichendes Datum hinterlegt ist.
 * Dieses Datum kann entweder bereits bei der Anlage (befristet) oder durch eine Kündigung (unbefristet) gesetzt werden.
-
-(Hinweis: DKV2 erzwingt nicht, dass das Beenden erst nach Erreichen von *LaufzeitEnde* erfolgt.)
+* DKV2 erzwingt nicht, dass das Beenden erst nach Erreichen von *LaufzeitEnde* erfolgt.
 
 ### 6.1 Relevante Felder
 
@@ -392,23 +299,11 @@ Für beide Fälle gilt:
 ### 6.2 Kündigung
 
 * Eine Kündigung ist nur bei **unbefristeten Verträgen** erforderlich.
-
 * Die Kündigung wird in DKV2 über das Kontextmenü ausgelöst.
-
 * Dabei wird ein Vertragsende vorgeschlagen, das **Kfrist Monate in der Zukunft** liegt.
-
 * Dieses Datum kann angepasst werden und wird in **LaufzeitEnde** gespeichert.
 
-* Ein Vertrag kann beendet werden, sobald **LaufzeitEnde** ein von **9999-12-31** abweichendes Datum enthält.
-
-* Dies gilt sowohl für:
-
-  * befristete Verträge
-  * gekündigte unbefristete Verträge
-
-(Hinweis: DKV2 erzwingt nicht, dass das Beenden erst nach Erreichen von LaufzeitEnde erfolgt.)
-
-### 6.4 Technisches Beenden
+### 6.3 Technisches Beenden
 
 Beim Beenden eines Vertrags erfolgt die folgende Verarbeitung in festgelegter Reihenfolge:
 
@@ -419,92 +314,78 @@ Beim Beenden eines Vertrags erfolgt die folgende Verarbeitung in festgelegter Re
 
 Ein einmal beendeter Vertrag ist damit vollständig aus den aktiven Tabellen entfernt.
 
+---
+
 ## 7. Geldanlagen
 
-*Geldanlagen* (Investments) sind in DKV2 ein **optionales organisatorisches Modell** zur Gruppierung von Verträgen. Sie dienen insbesondere der Überwachung gesetzlicher bzw. projektinterner Grenzen für Anzahl und Volumen angenommener Verträge (z. B. „20 Verträge“ bzw. „100.000 €“).
+*Geldanlagen* sind ein **optionales organisatorisches Modell** zur Gruppierung von Verträgen. Sie haben **keinen Einfluss auf Zinsberechnung oder Buchungslogik**.
 
-Geldanlagen sind **nicht erforderlich**, um Verträge zu führen. Ein Vertrag kann daher:
+### 7.1 Grundprinzip
 
-* genau **einer Geldanlage zugeordnet sein**, oder
-* **keiner Geldanlage** zugeordnet sein.
+* Ein Vertrag kann **optional genau einer Geldanlage** zugeordnet sein (über das Feld **Vertraege.AnlagenId**).
+* Die Zuordnung dient der **Organisation, Auswertung und Überwachung von Grenzen**.
 
-### 7.1 Zweck
+### 7.2 Fachliche Möglichkeiten in DKV2
 
-Geldanlagen dienen in DKV2 der **Organisation, Auswertung und Plausibilisierung**:
+DKV2 unterstützt folgende Arbeitsweisen:
 
-* Gruppierung von Verträgen nach gemeinsamen Merkmalen (z. B. Zinssatz, Zeitraum)
-* Anzeige aggregierter Werte (Anzahl, Summen)
-* Warnung vor Überschreitung globaler Grenzen
-* Unterstützung bei der Verwaltung von Angebotszeiträumen
+* Beim Anlegen eines Vertrags kann statt eines Zinssatzes eine **Geldanlage ausgewählt** werden.
+* Geldanlagen können **automatisch aus bestehenden Verträgen erzeugt** werden, mit oder ohne Zeitintervall.
+* Bestehende Geldanlagen können **automatisch Verträgen zugeordnet** werden, wenn Zinssatz und ggf. Zeitraum passen.
+* Geldanlagen, deren **Ende überschritten ist**, können automatisch als **geschlossen** markiert werden.
 
-Sie bilden eine projektspezifische Sicht auf Verträge ab.
+### 7.3 Tabelle Geldanlagen
 
-### 7.2 Grundregeln
+| Feld             | Bedeutung                                                                                                                                                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| *rowid*          | eindeutiger Schlüssel                                                                                                                                                                                             |
+| *ZSatz*          | Zinssatz der Geldanlage; dient der Zuordnung und UI-Validierung. Verträge werden konsistent mit diesem Zinssatz angelegt; der tatsächlich wirksame Zinssatz steht im Vertrag und wird für Berechnungen verwendet. |
+| *Anfang*, *Ende* | optionaler Zeitraum der Geldanlage                                                                                                                                                                                |
+| *Typ*            | freier Bezeichner                                                                                                                                                                                                 |
+| *Offen*          | gibt an, ob neue Verträge zugeordnet werden können oder ob die Geldanlage als geschlossen betrachtet wird, sodass sie nicht für zukünftige Verträge angeboten wird                                                |
 
-* Ein Vertrag gehört zu **höchstens einer Geldanlage**.
-* Die Zuordnung ist **optional**.
-* Geldanlagen können **parallel existieren**.
-* Die globalen Grenzen werden **nicht pro Geldanlage**, sondern über die Tabelle *Meta* gesteuert.
+### 7.4 Verhalten bei Löschung
 
-### 7.3 Globale Parameter
+* Beim Löschen einer Geldanlage werden die **AnlagenId** aller betroffenen Verträge automatisch auf **NULL** gesetzt (**ON DELETE SET NULL**).
 
-Die folgenden Felder in der Tabelle *Meta* definieren die relevanten Grenzen:
+### 7.5 Globale Parameter (Meta)
 
-* *maxInvestNbr*: maximale Anzahl von Verträgen pro Geldanlage (Standard: 20)
-* *maxInvestSum*: maximale Gesamtsumme angenommener Beträge pro Geldanlage (Standard: 100.000)
+Die folgenden Felder der Tabelle *Meta* gelten für alle Geldanlagen:
 
-Diese Werte gelten **einheitlich für alle Geldanlagen** einer Datenbank.
+| Feld           | Bedeutung                     |
+| -------------- | ----------------------------- |
+| *maxInvestNbr* | maximale Anzahl von Verträgen |
+| *maxInvestSum* | maximale Gesamtsumme          |
 
-### 7.4 Tabelle Geldanlagen
+### 7.6 Auswertungen
 
-Die Tabelle *Geldanlagen* beschreibt die organisatorischen Eigenschaften einer Geldanlage:
+DKV2 stellt verschiedene Auswertungen bereit, u. a.:
 
-* *rowid*: eindeutiger Schlüssel
-* *ZSatz*: Zinssatz der typischerweise zugeordneten Verträge (in Hundertstel-Prozent)
-* *Anfang*, *Ende*: optionaler Zeitraum der Geldanlage
-* *Typ*: frei wählbarer Bezeichner zur Identifikation der Geldanlage
-* *Offen*: gibt an, ob neue Verträge dieser Geldanlage zugeordnet werden können
+* Anzahl von Geldanlagen
+* Summen der zugeordneten Verträge
+* zeitlicher Verlauf dieser Werte
 
-Das Feld *Typ* dient ausschließlich der **Beschreibung** und hat keine festgelegte fachliche Bedeutung.
+Aktueller Stand:
 
-Das Feld *ZSatz* existiert zusätzlich in *Vertraege*. Dort beschreibt es den tatsächlich wirksamen Zinssatz des Vertrags. In der Geldanlage dient es der **Gruppierung und Orientierung**.
+* In die Auswertungen gehen **alle laufenden Verträge** ein.
 
-### 7.5 Zeitliche Modelle
+Geplante Erweiterung:
 
-DKV2 unterstützt zwei Formen von Geldanlagen:
+* Zusätzlich sollen **beendete Verträge** berücksichtigt werden, sofern die Beendigung **weniger als 1 Jahr zurückliegt**.
 
-* **zeitlich begrenzte Geldanlagen** mit explizitem *Anfang* und *Ende*
-* **fortlaufende Geldanlagen** ohne feste Begrenzung
+Diese Auswertungen dienen der **Überwachung und Analyse** des Gesamtbestands.
 
-In der Praxis wird überwiegend das Modell der **fortlaufenden Geldanlage** verwendet. Dabei gilt:
+### 7.7 Zeitfenster und „fortlaufende“ Geldanlagen
 
-* Für jedes Vertragsdatum ist der jeweils **zurückliegende Zwölfmonatszeitraum** maßgeblich.
-* Die Datumsfelder *Anfang* und *Ende* sind in diesem Fall von untergeordneter Bedeutung.
+Geldanlagen ohne explizites Zeitfenster (*Anfang*, *Ende*) werden in DKV2 als **„fortlaufend“** bezeichnet.
 
-### 7.6 Zuordnung von Verträgen
+Für fortlaufende Geldanlagen gilt:
 
-Die Zuordnung eines Vertrags zu einer Geldanlage kann erfolgen:
+* Es wird ein **dynamisches Zeitfenster** verwendet.
+* Maßgeblich ist ein Zeitraum von **1 Jahr rückwirkend ab dem aktuellen Buchungsdatum**.
+* Dieses Zeitfenster dient insbesondere der **Erfüllung gesetzlicher Anforderungen**.
 
-* manuell bei der Anlage eines Vertrags
-* automatisiert auf Basis von Zinssatz und Zeitraum
+Konsequenzen:
 
-Bei der automatischen Zuordnung werden passende Geldanlagen ermittelt oder – falls erforderlich – neu erzeugt.
-
-### 7.7 Auswertungen und Anzeige
-
-Das UI „Geldanlagen“ stellt für jede Geldanlage aggregierte Kennzahlen bereit, u. a.:
-
-* Anzahl der zugeordneten Verträge
-* Summe der Vertragswerte
-* Summe der eingezahlten Beträge
-* aktuelle Bewertung (inkl. Zinsen, berechnet)
-* Status (*Offen* / geschlossen)
-
-Grenzwerte werden visuell hervorgehoben, um eine mögliche Überschreitung frühzeitig zu erkennen.
-
-### 7.8 Lebenszyklus von Geldanlagen
-
-* Geldanlagen können neu angelegt werden.
-* Abgelaufene Geldanlagen (basierend auf *Ende*) können als geschlossen markiert werden (*Offen = FALSE*).
-* Geldanlagen können aus bestehenden Verträgen automatisch erzeugt werden.
-* Die Löschung von Geldanlagen ist möglich und hat keine Auswirkungen auf die Verträge selbst.
+* Die Zuordnung und Auswertung erfolgen relativ zum aktuellen Zeitpunkt.
+* Mit der geplanten Erweiterung (siehe 7.6) werden auch **kürzlich beendete Verträge** in dieses Zeitfenster einbezogen.
