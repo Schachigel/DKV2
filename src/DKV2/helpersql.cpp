@@ -237,8 +237,10 @@ QSqlRecord adjustSqlRecordTypesToDbFieldTypes(const QVector<dbfield>& fields, co
         RETURN_ERR(QSqlRecord(), QString(__FUNCTION__), qsl("Anzahl der Felder stimmt nicht überein"));
 
     QSqlRecord result;
-    for( const auto& field: std::as_const(fields))
-        result.append(adjustTypeOfField(record.field(field.name()), field.metaType ()));
+    for (const auto& field : std::as_const(fields)) {
+        qDebug() << field; // todo: remove
+        result.append(adjustTypeOfField(record.field(field.name()), field.metaType()));
+    }
 
     return result;
 }
