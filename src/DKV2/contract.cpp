@@ -91,7 +91,7 @@ contract::contract(const QSqlRecord &record) : td(getTableDef())
 void contract::loadFromDb( contractId_t id)
 {   LOG_CALL_W(i2s(id.v)); // id_aS() might not be initialized yet!!
     isTerminated =false;
-    QSqlRecord rec =executeSingleRecordSql( getTableDef().Fields(), qsl("id=%1").arg( id.v));
+    QSqlRecord rec = executeSingleRecordSql(getTableDef().Fields(), qsl("id=%1").arg(id.v));
     if (not td.setValues(rec))
         qCritical() << "contract from id could not be created";
 }
@@ -147,10 +147,10 @@ void contract::initRandom(const creditorId_t credId)
 double contract::value(const QDate d) const
 {
     // what is the value of the contract at a given time?
-    QString where {qsl("%1=%3 AND %2<='%4'").arg(fn_bVertragsId, fn_bDatum)};
+    QString where {qsl("%1=%3 AND %2<='%4'").arg(booking::fn_bVertragsId, booking::fn_bDatum)};
     where =where.arg(id_aS (), d.toString(Qt::ISODate));
     QVariant v = executeSingleValueSql(qsl("SUM(Betrag)"),
-        isTerminated ? tn_ExBuchungen : tn_Buchungen, where);
+        isTerminated ? booking::tn_ExBuchungen : booking::tn_Buchungen, where);
     if( v.isValid())
         return euroFromCt(v.toInt());
     // todo: error handling
@@ -159,11 +159,11 @@ double contract::value(const QDate d) const
 double contract::investedValue(const QDate d) const
 {
     // how many money was put into the contract by the creditor?
-    QString where{ qsl("%1=%5 AND %2<='%6' AND (%3=%7 OR %3=%8) ").arg(fn_bVertragsId, fn_bDatum, fn_bBuchungsArt) };
+    QString where{ qsl("%1=%5 AND %2<='%6' AND (%3=%7 OR %3=%8) ").arg(booking::fn_bVertragsId, booking::fn_bDatum, booking::fn_bBuchungsArt) };
     where = where.arg(id_aS(), d.toString(Qt::ISODate),
         bookingTypeToNbrString(bookingType::deposit),
         bookingTypeToNbrString(bookingType::payout));
-    QVariant v = executeSingleValueSql(qsl("SUM(Betrag)"), tn_Buchungen, where);
+    QVariant v = executeSingleValueSql(qsl("SUM(Betrag)"), booking::tn_Buchungen, where);
     if (v.isValid())
         return euroFromCt(v.toInt());
     return 0.;
@@ -191,7 +191,7 @@ NOTE to self: DKV2 stellt sicher, dass bei Verträgen mit verzögerter Zinszahlu
     SONST müsste hier sichergestellt werden, dass die letzte Buchung vom Typ Ein/Auszahlung oder Zinszahlung ist
 */
     QString sql {qsl("SELECT MAX(%1) FROM %2 WHERE %3=%4")
-                .arg(fn_bDatum, isTerminated ? tn_ExBuchungen : tn_Buchungen, fn_bVertragsId, id_aS())};
+                .arg(booking::fn_bDatum, isTerminated ? booking::tn_ExBuchungen : booking::tn_Buchungen, booking::fn_bVertragsId, id_aS())};
     QVariant date =executeSingleValueSql(sql);
     if( date.isValid() && date.canConvert<QDate>()) {
         QDate d {date.toDate()};
@@ -214,12 +214,12 @@ NOTE to self:
     SONST müsste hier sichergestellt werden, dass die letzte Buchung vom Typ Ein/Auszahlung oder Zinszahlung ist
     */
     QString sql {qsl("SELECT id, %1, %2, %3, %4 FROM %6 WHERE %1=%5 ORDER BY %2 DESC, id DESC LIMIT 1").arg(
-        fn_bVertragsId, fn_bDatum, fn_bBuchungsArt, fn_bBetrag, id_aS(), isTerminated ? tn_ExBuchungen : tn_Buchungen)};
+        booking::fn_bVertragsId, booking::fn_bDatum, booking::fn_bBuchungsArt, booking::fn_bBetrag, id_aS(), isTerminated ? booking::tn_ExBuchungen : booking::tn_Buchungen)};
     QSqlRecord rec = executeSingleRecordSql(sql);
     if( 0 == rec.count()) {
         RETURN_OK( booking(), qsl("latestBooking returns empty value"));
     }
-    booking latestB(id(), bookingType(rec.value(fn_bBuchungsArt).toInt()), rec.value(fn_bDatum).toDate(), euroFromCt(rec.value(fn_bBetrag).toInt()));
+    booking latestB(id(), bookingType(rec.value(booking::fn_bBuchungsArt).toInt()), rec.value(booking::fn_bDatum).toDate(), euroFromCt(rec.value(booking::fn_bBetrag).toInt()));
     RETURN_OK (latestB, qsl("Latest Booking:"), qsl("Typ: "), bookingTypeDisplayString(latestB.type), qsl("/"), latestB.date.toString (Qt::ISODate), qsl("/"),
                          s_d2euro(latestB.amount), qsl("/"), qsl("cId:"), i2s(latestB.contId.v));
 }
@@ -320,7 +320,7 @@ bool contract::bookInitialPayment(const QDate date, const double amount)
         error = qsl("Already active contract can not be activated");
     } else if ( not date.isValid()) {
         error = qsl("Invalid Date");
-    } else if (date < conclusionDate()) {
+    } else if (date <= conclusionDate()) {
         error = qsl("activate only after conclusion date");
     } else if (amount < 0) {
         error =qsl("Invalid amount");
@@ -339,20 +339,20 @@ bool contract::initialPaymentReceived() const
     // "true" wenn es Einzahlungen in den Vertrag gibt
     // DKV2 stellt sicher, dass Zinsaktivierung erst nach der Ersteinzahlung gemacht werden kann
     QString where= qsl("%1=%2 AND %3=%4")
-            .arg( fn_bVertragsId, id_aS (), fn_bBuchungsArt, bookingTypeToNbrString(bookingType::deposit));
-    return (0 < rowCount (tn_Buchungen, where));
+            .arg( booking::fn_bVertragsId, id_aS (), booking::fn_bBuchungsArt, bookingTypeToNbrString(bookingType::deposit));
+    return (0 < rowCount (booking::tn_Buchungen, where));
 }
 QDate contract::initialPaymentDate()
 {
     QVariant ipd =executeSingleValueSql (qsl("SELECT MIN(Datum) FROM Buchungen WHERE %1 = %2 AND %3 = %4")
-                                         .arg(fn_bVertragsId, id_aS (), fn_bBuchungsArt, bookingTypeToNbrString( bookingType::deposit)));
+                                         .arg(booking::fn_bVertragsId, id_aS (), booking::fn_bBuchungsArt, bookingTypeToNbrString( bookingType::deposit)));
     return ipd.toDate ();
 }
 bool contract::noBookingButInitial()
 {
     // an initial booking is always a deposit
     QString sql {qsl("SELECT count(*) FROM %1 WHERE %2 = %3 AND %4 = %5")
-                .arg(tn_Buchungen, fn_bVertragsId, id_aS (), fn_bBuchungsArt,
+                .arg(booking::tn_Buchungen, booking::fn_bVertragsId, id_aS (), booking::fn_bBuchungsArt,
                      bookingTypeToNbrString(bookingType::deposit))};
     return 1 == executeSingleValueSql (sql).toInt ();
 }
@@ -855,7 +855,7 @@ double contract::getAnnualInterest(year y, bookingType interestType)
     where =where.arg(DbInsertableString (id().v), DbInsertableString (bookingTypeToNbrString(interestType)),
                      DbInsertableString (i2s(y))); // conversion to string is needed as this is not an integer but part of a date string
 
-    return euroFromCt(executeSingleValueSql (qsl("SUM(Betrag)"), tn_Buchungen, where).toInt());
+    return euroFromCt(executeSingleValueSql (qsl("SUM(Betrag)"), booking::tn_Buchungen, where).toInt());
 }
 
 // test helper

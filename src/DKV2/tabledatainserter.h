@@ -12,8 +12,8 @@ struct TableDataInserter
     //TableDataInserter(){}
     TableDataInserter(const dbtable& t);
     TableDataInserter(const QString& tname, const QSqlRecord& rec) : tablename(tname), record(rec){};
-    enum treatNull {allowNullValues, notAllowNullValues};
-    bool setValue(const QString& field, const QVariant& v, treatNull allowNull =treatNull::notAllowNullValues);
+    enum class NullPolicy { keepNull, useDefaultForNull };
+    bool setValue(const QString& field, const QVariant& v, NullPolicy nullPolicy =NullPolicy::useDefaultForNull);
     bool setValueToDefault(const QString& field);
     bool setValues(const QSqlRecord &rec);
     bool updateValue(const QString& n, const QVariant& v, qlonglong index);
@@ -30,13 +30,6 @@ private:
     // data
     QString tablename;
     QSqlRecord record;
-    //int lastRecord;
-    // helper
-    QString getInsertRecordSQL() const;
-    QString getInsertOrReplaceRecordSQL() const;
-    QString getInsert_noAuto_RecordSQL() const;
-    QString getUpdateRecordSQL(tableindex_t &autovalue) const;
-
 };
 
 

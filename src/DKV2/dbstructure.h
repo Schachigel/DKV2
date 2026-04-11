@@ -36,7 +36,7 @@ enum zinssusance {
 
 
 
-bool createNewDatabaseFileWDefaultContent(const QString& filename, const zinssusance sz =zs_30360, const dbstructure& dbs =dkdbstructur);
+bool createNewDatabaseFileWDefaultContent(const QString& filename, const zinssusance sz =zs_30360, const dbstructure& dbs =dkdbstructur, bool includeTriggers =true);
 // compare current structure to an actual database
 bool hasAllTablesAndFields(const QSqlDatabase& db, const dbstructure& dbs =dkdbstructur);
 // check schema

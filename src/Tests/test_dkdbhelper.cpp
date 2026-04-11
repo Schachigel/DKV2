@@ -8,10 +8,20 @@
 #include "../DKV2/dkdbhelper.h"
 #include "../DKV2/creditor.h"
 #include "../DKV2/contract.h"
+#include "../DKV2/booking.h"
 
 #include "testhelper.h"
 
 #include <QtTest/QTest>
+
+namespace {
+int countTriggersForTable(const QString& tableName, const QSqlDatabase& db =QSqlDatabase::database())
+{
+    return executeSingleValueSql(qsl("SELECT COUNT(*) FROM sqlite_master WHERE type = ? AND tbl_name = ?"),
+                                 QVector<QVariant>{qsl("trigger"), tableName},
+                                 db).toInt();
+}
+}
 
 void test_dkdbhelper::init()
 {   LOG_CALL;
@@ -125,6 +135,112 @@ void test_dkdbhelper::test_nextContractLabelIndex_legacyGuessHonorsHigherStartIn
                                   QVector<QVariant>{dbConfig::paramName(NEXT_CONTRACT_LABEL_INDEX)}));
 
     QCOMPARE(nextContractLabelIndex(), 3000);
+}
+
+void test_dkdbhelper::test_fillDkDbDefaultContent_createsZeitstempelTriggers()
+{
+    QVERIFY(fill_DkDbDefaultContent(QSqlDatabase::database(), false));
+
+    QCOMPARE(countTriggersForTable(creditor::tablename), 2);
+    QCOMPARE(countTriggersForTable(contract::tnContracts), 2);
+    QCOMPARE(countTriggersForTable(contract::tnExContracts), 2);
+    QCOMPARE(countTriggersForTable(booking::tn_Buchungen), 2);
+    QCOMPARE(countTriggersForTable(booking::tn_ExBuchungen), 2);
+
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Kreditoren (id, Vorname, Nachname, Strasse, Plz, Stadt, Zeitstempel) "
+            "VALUES (1, 'Ada', 'Lovelace', 'Memory Lane 1', '68167', 'Mannheim', NULL)")));
+
+    const QString zeitstempel =executeSingleValueSql(qsl("Zeitstempel"),
+                                                     creditor::tablename,
+                                                     qsl("id = 1")).toString();
+    QVERIFY(not zeitstempel.isEmpty());
+}
+
+void test_dkdbhelper::test_postDbUpgradeActions_backfillsZeitstempelHistorically()
+{
+    TestTempDir tmp(this);
+    QVERIFY(tmp.isValid());
+    const QString filename =QDir(tmp.path()).filePath(qsl("upgrade.sqlite"));
+
+    QVERIFY(createNewDatabaseFileWDefaultContent(filename, zs_30360, dkdbstructur, false));
+
+    {
+        autoDb db(filename, qsl("seed-old-db"));
+        QVERIFY(db.db.isOpen());
+
+        QVERIFY(executeSql_wNoRecords(
+            qsl("INSERT INTO Kreditoren "
+                "(id, Vorname, Nachname, Strasse, Plz, Stadt, Zeitstempel) "
+                "VALUES (1, 'Ada', 'Lovelace', 'Memory Lane 1', '68167', 'Mannheim', NULL)"), db));
+
+        QVERIFY(executeSql_wNoRecords(
+            qsl("INSERT INTO Vertraege "
+                "(id, KreditorId, Kennung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum, Zeitstempel) "
+                "VALUES (1, 1, 'DK-TST-2026-000001', 150, 10000, 1, '2024-01-15', 6, NULL, '9999-12-31', TRUE, '9999-12-31', NULL)"), db));
+
+        QVERIFY(executeSql_wNoRecords(
+            qsl("INSERT INTO Buchungen "
+                "(id, %1, %2, %3, %4, %5, Zeitstempel) "
+                "VALUES (1, 1, '2024-02-20', 1, 10000, '1900-01-01', NULL)")
+                .arg(booking::fn_bVertragsId,
+                     booking::fn_bDatum,
+                     booking::fn_bBuchungsArt,
+                     booking::fn_bBetrag,
+                     booking::fn_bModifiziert), db));
+
+        QVERIFY(executeSql_wNoRecords(
+            qsl("INSERT INTO exVertraege "
+                "(id, KreditorId, Kennung, Anmerkung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum, Zeitstempel) "
+                "VALUES (2, 1, 'DK-TST-2023-000002', '', 150, 10000, 1, '2023-05-10', 6, NULL, '2023-12-31', TRUE, '9999-12-31', NULL)"), db));
+
+        QVERIFY(executeSql_wNoRecords(
+            qsl("INSERT INTO %1 "
+                "(id, %2, %3, %4, %5, %6, Zeitstempel) "
+                "VALUES (2, 2, '2023-12-31', 8, 123, '1900-01-01', NULL)")
+                .arg(booking::tn_ExBuchungen,
+                     booking::fn_bVertragsId,
+                     booking::fn_bDatum,
+                     booking::fn_bBuchungsArt,
+                     booking::fn_bBetrag,
+                     booking::fn_bModifiziert), db));
+    }
+
+    QVERIFY(postDB_UpgradeActions(16, filename));
+
+    {
+        autoDb db(filename, qsl("verify-upgraded-db"));
+        QVERIFY(db.db.isOpen());
+
+        QCOMPARE(countTriggersForTable(creditor::tablename, db), 2);
+        QCOMPARE(countTriggersForTable(contract::tnContracts, db), 2);
+        QCOMPARE(countTriggersForTable(contract::tnExContracts, db), 2);
+        QCOMPARE(countTriggersForTable(booking::tn_Buchungen, db), 2);
+        QCOMPARE(countTriggersForTable(booking::tn_ExBuchungen, db), 2);
+
+        QCOMPARE(executeSingleValueSql(qsl("Zeitstempel"), contract::tnContracts, qsl("id = 1"), db).toString(),
+                 qsl("2024-01-15 00:00:00"));
+        QCOMPARE(executeSingleValueSql(qsl("Zeitstempel"), booking::tn_Buchungen, qsl("id = 1"), db).toString(),
+                 qsl("2024-02-20 00:00:00"));
+        QCOMPARE(executeSingleValueSql(qsl("Zeitstempel"), contract::tnExContracts, qsl("id = 2"), db).toString(),
+                 qsl("2023-05-10 00:00:00"));
+        QCOMPARE(executeSingleValueSql(qsl("Zeitstempel"), booking::tn_ExBuchungen, qsl("id = 2"), db).toString(),
+                 qsl("2023-12-31 00:00:00"));
+
+        const QString creditorZeitstempel =executeSingleValueSql(qsl("Zeitstempel"),
+                                                                 creditor::tablename,
+                                                                 qsl("id = 1"),
+                                                                 db).toString();
+        QVERIFY(not creditorZeitstempel.isEmpty());
+
+        QCOMPARE(executeSingleValueSql(qsl("Wert"), qsl("Meta"), qsl("Name = 'migration.17.Zeitstempel'"), db).toString(),
+                 qsl("historical-backfill"));
+
+        const QString oldContractTimestamp =executeSingleValueSql(qsl("Zeitstempel"), contract::tnContracts, qsl("id = 1"), db).toString();
+        QVERIFY(executeSql_wNoRecords(qsl("UPDATE Vertraege SET Anmerkung = 'changed by test' WHERE id = 1"), db));
+        const QString newContractTimestamp =executeSingleValueSql(qsl("Zeitstempel"), contract::tnContracts, qsl("id = 1"), db).toString();
+        QVERIFY(oldContractTimestamp not_eq newContractTimestamp);
+    }
 }
 
 

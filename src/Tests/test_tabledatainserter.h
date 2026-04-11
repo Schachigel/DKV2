@@ -16,6 +16,9 @@ private slots:
     void cleanup();
 
     void test_insert_and_retreive();
+    void test_insert_usesDatabaseDefaults_forOmittedFields();
+    void test_setValues_acceptsMissingTrailingField();
+    void test_setValue_defaultsNullInput();
 
 };
 

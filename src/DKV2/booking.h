@@ -7,15 +7,6 @@
 #include "dbtable.h"
 #include "idwrapper.h"
 
-inline const QString tn_Buchungen   {qsl("Buchungen")};
-inline const QString tn_ExBuchungen {qsl("ExBuchungen")};
-
-inline const QString fn_bVertragsId {qsl("VertragsId")};
-inline const QString fn_bBuchungsArt{qsl("BuchungsArt")};
-inline const QString fn_bBetrag     {qsl("Betrag")};
-inline const QString fn_bDatum      {qsl("Datum")};
-inline const QString fn_bModifiziert{qsl("Überschrieben")};
-
 enum class bookingType{
     non, // means all
     deposit                = 1,
@@ -46,6 +37,14 @@ inline QString bookingTypeToNbrString( const bookingType t) {return i2s(bookingT
 
 struct booking
 {
+    static const QString tn_Buchungen;
+    static const QString tn_ExBuchungen;
+    static const QString fn_bVertragsId;
+    static const QString fn_bBuchungsArt;
+    static const QString fn_bBetrag;
+    static const QString fn_bDatum;
+    static const QString fn_bModifiziert;
+
     contractId_t contId =Invalid_contract_id;
     bookingType type =bookingType::non;
     QDate date =EndOfTheFuckingWorld;

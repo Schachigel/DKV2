@@ -22,7 +22,7 @@ struct creditor
     static const QString fnBuchungskonto;
     static const QString fnIBAN;
     static const QString fnBIC;
-    static const QString fnZeitstepel;
+    static const QString fnZeitstempel;
 
     static const dbtable& getTableDef();
     // constructors

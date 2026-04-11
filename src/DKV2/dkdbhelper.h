@@ -3,9 +3,13 @@
 
 #include "dbstructure.h"
 
-bool insertDKDB_Views( const QSqlDatabase &db =QSqlDatabase::database());
-bool insertDKDB_Indices( const QSqlDatabase& db=QSqlDatabase::database());
-bool fill_DkDbDefaultContent(const QSqlDatabase &db = QSqlDatabase::database(), bool includeViews =true, zinssusance sz =zs_30360);
+bool insertDKDB_Views(const QSqlDatabase& db = QSqlDatabase::database());
+bool insertDKDB_Indices(const QSqlDatabase& db = QSqlDatabase::database());
+bool insertDKDB_TimestampTriggers(const QSqlDatabase& db = QSqlDatabase::database());
+bool fill_DkDbDefaultContent(const QSqlDatabase& db = QSqlDatabase::database(),
+                             bool includeViews = true,
+                             zinssusance sz = zs_30360,
+                             bool includeTriggers = true);
 
 enum version_check_result {
     noVersion =-1,
@@ -16,9 +20,9 @@ enum version_check_result {
 
 int get_db_version(const QString &filename);
 
-bool open_databaseForApplication( const QString &newDbFile="");
+bool open_databaseForApplication(const QString& newDbFile = "");
 
-bool postDB_UpgradeActions(int /*sourceVersion*/, const QString & dbName);
+bool postDB_UpgradeActions(int sourceVersion, const QString& dbName);
 
 bool isValidNewContractLabel(const QString& newLabel);
 QString proposeContractLabel();

@@ -21,35 +21,50 @@ const QString creditor::fnKontakt      {qsl("Kontakt")};
 const QString creditor::fnBuchungskonto{qsl("Buchungskonto")};
 const QString creditor::fnIBAN         {qsl("IBAN")};
 const QString creditor::fnBIC          {qsl("BIC")};
-const QString creditor::fnZeitstepel   {qsl("Zeitstempel")};
-
+const QString creditor::fnZeitstempel{qsl("Zeitstempel")};
 
 bool creditor::operator==(const creditor& c) const
 {
     bool ret = false;
-    do{
-        if( id().v        not_eq c.id().v) break;
-        if( firstname() not_eq c.firstname()) break;
-        if( lastname()  not_eq c.lastname()) break;
-        if( street()    not_eq c.street()) break;
-        if( postalCode() not_eq c.postalCode()) break;
-        if( city()      not_eq c.city()) break;
-        if( comment()   not_eq c.comment()) break;
-        if (email() not_eq c.email()) break;
-        if( tel()       not_eq c.tel()) break;
-        if (contact() not_eq c.contact()) break;
-        if (account() not_eq c.account()) break;
-        if( iban()      not_eq c.iban()) break;
-        if( bic()       not_eq c.bic()) break;
+    do {
+        if (id().v not_eq c.id().v)
+            break;
+        if (firstname() not_eq c.firstname())
+            break;
+        if (lastname() not_eq c.lastname())
+            break;
+        if (street() not_eq c.street())
+            break;
+        if (postalCode() not_eq c.postalCode())
+            break;
+        if (city() not_eq c.city())
+            break;
+        if (country() not_eq c.country())
+            break;
+        if (comment() not_eq c.comment())
+            break;
+        if (email() not_eq c.email())
+            break;
+        if (tel() not_eq c.tel())
+            break;
+        if (contact() not_eq c.contact())
+            break;
+        if (account() not_eq c.account())
+            break;
+        if (iban() not_eq c.iban())
+            break;
+        if (bic() not_eq c.bic())
+            break;
         ret = true;
-    } while(false);
-    if( not ret) {
+    } while (false);
+    if (not ret) {
         qInfo() << id().v << " vs. " << c.id().v;
         qInfo() << firstname() << " vs. " << c.firstname();
         qInfo() << lastname() << " vs. " << c.lastname();
         qInfo() << street() << " vs. " << c.street();
         qInfo() << postalCode() << " vs. " << c.postalCode();
         qInfo() << city() << " vs. " << c.city();
+        qInfo() << country() << " vs. " << c.country();
         qInfo() << comment() << " vs. " << c.comment();
         qInfo() << email() << " vs. " << c.email();
         qInfo() << tel() << " vs. " << c.tel();
@@ -58,14 +73,12 @@ bool creditor::operator==(const creditor& c) const
         qInfo() << iban() << " vs. " << c.iban();
         qInfo() << bic() << " vs. " << c.bic();
     }
-
     return ret;
 }
 
 bool creditor::fromDb( const creditorId_t id)
 {   LOG_CALL;
-
-    QSqlRecord rec = executeSingleRecordSql(dkdbstructur[qsl("Kreditoren")].Fields(), qsl("id=")+i2s(id.v));
+    QSqlRecord rec = executeSingleRecordSql(dkdbstructur[qsl("Kreditoren")].Fields(), qsl("id=") + i2s(id.v));
     if( rec.isEmpty()) return false;
 
     for(int i=0; i<rec.count(); i++)
@@ -181,7 +194,7 @@ bool creditor::remove()
     // WHERE Buchungen.VertragsId IN (SELECT Vertraege.id FROM Vertraege WHERE Vertraege.KreditorId = 14)
     QString where = qsl("Buchungen.VertragsId IN (SELECT Vertraege.id FROM Vertraege WHERE Vertraege.KreditorId = %1)");
     where = where.arg(i.v);
-    QVariant a = executeSingleValueSql(qsl("SUM(%1.%2)").arg(tn_Buchungen, fn_bBetrag), tn_Buchungen, where);
+    QVariant a = executeSingleValueSql(qsl("SUM(%1.%2)").arg(booking::tn_Buchungen, booking::fn_bBetrag), booking::tn_Buchungen, where);
     if( a.toDouble() > 0)
         return true;
     return false;
@@ -206,7 +219,7 @@ bool creditor::remove()
         creditortable.append(dbfield(fnBuchungskonto,QMetaType::QString).setDefault(emptyStringV));
         creditortable.append(dbfield(fnIBAN,     QMetaType::QString).setDefault(emptyStringV));
         creditortable.append(dbfield(fnBIC,      QMetaType::QString).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnZeitstepel, QMetaType::QDateTime).setDefaultNow());
+        creditortable.append(dbfield(fnZeitstempel, QMetaType::QDateTime).setDefaultNow());
         QVector<dbfield> unique;
         unique.append(creditortable[fnVorname]);
         unique.append(creditortable[fnNachname]);

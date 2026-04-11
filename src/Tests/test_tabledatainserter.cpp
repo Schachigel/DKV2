@@ -43,7 +43,7 @@ const QString fnBool   {qsl("type_bool")};
 const QString fnDate   {qsl("type_date")};
 
 const QVariant val_int    (42);
-const QVariant val_string {qsl("Hallo Welt")};
+const QVariant val_string {qsl("Hallo Welt's")};
 const QVariant val_bool   (true);
 const QVariant val_date   (QDate(1995, 5, 6));
 
@@ -99,11 +99,11 @@ void test_tableDataInserter::test_insert_and_retreive()
     {   /// CUT ->
         TableDataInserter tdi_update(t);
         QVERIFY( not tdi_update.updateValue(qsl("notexisting"), QVariant(4), 2));
-        QVERIFY( tdi_update.updateValue(fnString, QVariant("ho!"), 2));
+        QVERIFY( tdi_update.updateValue(fnString, QVariant("ho's"), 2));
         /// <- CUT
         QSqlRecord updatedRec = executeSingleRecordSql( t.Fields(), "id=2");
         QCOMPARE( updatedRec.value(fnInt), 24);
-        QCOMPARE( updatedRec.value(fnString), QVariant("ho!"));
+        QCOMPARE( updatedRec.value(fnString), QVariant("ho's"));
     }
 
     {
@@ -127,4 +127,61 @@ void test_tableDataInserter::test_insert_and_retreive()
         QCOMPARE( rec_updated.value(fnDate), QDate(1982, 5, 6));
         /// <- CUT
     }
+}
+
+void test_tableDataInserter::test_insert_usesDatabaseDefaults_forOmittedFields()
+{
+    dbtable t(qsl("defaults_from_db"));
+    t.append(dbfield(fnId, QMetaType::LongLong).setAutoInc());
+    t.append(dbfield(fnString, QMetaType::QString).setDefault(qsl("fallback's value")));
+    t.append(dbfield(fnInt, QMetaType::Int).setDefault(7));
+    QVERIFY(t.create());
+
+    TableDataInserter tdi(t);
+    QVERIFY(isValidRowId(tdi.InsertRecord()));
+
+    QSqlRecord inserted = executeSingleRecordSql(t.Fields(), qsl("id=1"));
+    QCOMPARE(inserted.value(fnString).toString(), qsl("fallback's value"));
+    QCOMPARE(inserted.value(fnInt).toInt(), 7);
+}
+
+void test_tableDataInserter::test_setValues_acceptsMissingTrailingField()
+{
+    dbtable t =defineTestTable();
+    QVERIFY(t.create());
+
+    TableDataInserter writer(t);
+    writer.setValue(fnInt, val_int);
+    writer.setValue(fnString, val_string);
+    writer.setValue(fnBool, val_bool);
+    writer.setValue(fnDate, val_date);
+    QVERIFY(isValidRowId(writer.InsertRecord()));
+
+    QVector<dbfield> fields =t.Fields();
+    fields.pop_back(); // simulate a legacy record missing the newest trailing field
+    QSqlRecord partialRecord =executeSingleRecordSql(fields, qsl("id=1"));
+    QCOMPARE(partialRecord.count(), 4);
+
+    TableDataInserter reader(t);
+    QVERIFY(reader.setValues(partialRecord));
+    QCOMPARE(reader.getValue(fnId).toLongLong(), 1);
+    QCOMPARE(reader.getValue(fnInt), val_int);
+    QCOMPARE(reader.getValue(fnString), val_string);
+    QCOMPARE(reader.getValue(fnBool), val_bool);
+    QVERIFY(not reader.getValue(fnDate).isValid() || reader.getValue(fnDate).isNull());
+}
+
+void test_tableDataInserter::test_setValue_defaultsNullInput()
+{
+    dbtable t(qsl("defaults"));
+    t.append(dbfield(fnId, QMetaType::LongLong).setAutoInc());
+    t.append(dbfield(fnString, QMetaType::QString).setDefault(qsl("fallback")));
+    t.append(dbfield(fnInt, QMetaType::Int).setDefault(7));
+
+    TableDataInserter tdi(t);
+    QVERIFY(tdi.setValue(fnString, QVariant()));
+    QVERIFY(tdi.setValue(fnInt, QVariant()));
+
+    QCOMPARE(tdi.getValue(fnString).toString(), qsl("fallback"));
+    QCOMPARE(tdi.getValue(fnInt).toInt(), 7);
 }

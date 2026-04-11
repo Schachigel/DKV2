@@ -88,7 +88,7 @@ void reInit_DKDBStruct()
 
 
 // db creation for newDb and copy (w & w/o de-personalisation)
-bool createFileWithDatabaseStructure (const QString& targetfn, const dbstructure& dbs/* =dkdbstructu*/)
+bool createFileWithDatabaseStructure(const QString& targetfn, const dbstructure& dbs)
 {   LOG_CALL_W(targetfn);
     if( not moveToBackup(targetfn))
         return false;
@@ -104,7 +104,7 @@ bool createFileWithDatabaseStructure (const QString& targetfn, const dbstructure
 }
 
 // database creation
-bool createNewDatabaseFileWDefaultContent(const QString& filename, zinssusance zs /*=zs30360*/, const dbstructure& dbs/* =dkdbstructu*/)
+bool createNewDatabaseFileWDefaultContent(const QString& filename, zinssusance zs, const dbstructure& dbs, bool includeTriggers)
 {   LOG_CALL_W(qsl("filename: ") + filename);
     Q_ASSERT( filename.size());
 
@@ -120,7 +120,7 @@ bool createNewDatabaseFileWDefaultContent(const QString& filename, zinssusance z
     if( not db.open())
         RETURN_ERR(false, qsl("DkDatenbankAnlegen failed in db.open"));
     if( &dbs == &dkdbstructur)
-        return fill_DkDbDefaultContent(db, true, zs);
+        return fill_DkDbDefaultContent(db, true, zs, includeTriggers);
     else
         return true;
 }

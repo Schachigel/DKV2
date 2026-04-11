@@ -7,6 +7,54 @@
 #include "../DKV2/creditor.h"
 #include "../DKV2/contract.h"
 
+namespace {
+bool ensureTestDbTemplate(const QString& templateFile, bool withDefaultContent)
+{
+    static bool contentTemplateReady = false;
+
+    bool& ready = contentTemplateReady;
+    if (ready && QFile::exists(templateFile))
+        return true;
+    ready = false;
+
+    closeAllDatabaseConnections();
+    reInit_DKDBStruct();
+
+    if (QFile::exists(templateFile))
+        QFile::remove(templateFile);
+    if (QFile::exists(templateFile))
+        return false;
+
+    openDefaultDbConnection(templateFile);
+    if (not dkdbstructur.createDb()) {
+        closeAllDatabaseConnections();
+        return false;
+    }
+    if (withDefaultContent && not fill_DkDbDefaultContent()) {
+        closeAllDatabaseConnections();
+        return false;
+    }
+
+    closeAllDatabaseConnections();
+    ready = QFile::exists(templateFile);
+    return ready;
+}
+
+bool copyPreparedTestDb(const QString& templateFile)
+{
+    closeAllDatabaseConnections();
+    if (QFile::exists(testDbFilename))
+        QFile::remove(testDbFilename);
+    if (QFile::exists(testDbFilename))
+        return false;
+    if (not QFile::copy(templateFile, testDbFilename))
+        return false;
+
+    openDefaultDbConnection();
+    return QFile::exists(testDbFilename);
+}
+}
+
 void getRidOfFile(QString filename)
 {
     if( QFile::exists(filename))
@@ -35,15 +83,13 @@ void initTestDkDb()
 
 void createTestDkDb_wData()
 {
-    initTestDkDb();
-    QVERIFY(fill_DkDbDefaultContent());
+    QVERIFY(ensureTestDbTemplate(testTemplateDb, true));
+    QVERIFY(copyPreparedTestDb(testTemplateDb));
 }
 
 void createTestDkDbTemplate()
 {
-    createTestDkDb_wData();
-    closeAllDatabaseConnections();
-    QFile::copy(testDbFilename, testTemplateDb);
+    QVERIFY(ensureTestDbTemplate(testTemplateDb, true));
 }
 void cleanupTestDkDbTemplate()
 {
@@ -52,9 +98,8 @@ void cleanupTestDkDbTemplate()
 }
 void initTestDkDbFromTemplate()
 {
-    getRidOfFile(testDbFilename);
-    QFile::copy(testTemplateDb, testDbFilename);
-    openDefaultDbConnection();
+    QVERIFY(ensureTestDbTemplate(testTemplateDb, true));
+    QVERIFY(copyPreparedTestDb(testTemplateDb));
     switchForeignKeyHandling(fkh_on);
 }
 void createTestDb_withRandomData()

@@ -145,7 +145,7 @@ QString convert_database_inplace( const QString& targetFilename, const dbstructu
     // the newly created copy will be the source for the following data copy
     const QString& sourceFileName =backupFileName;
     // create a new db file with the current database structure. This might be slightly different but compatible (no field deleted)
-    if( not createNewDatabaseFileWDefaultContent(targetFilename, zs_30360, dbs))
+    if( not createNewDatabaseFileWDefaultContent(targetFilename, zs_30360, dbs, false))
         RETURN_ERR(QString(), qsl("db creation faild for database conversion -> abort"));
 
     // copy the data  - but if fields are missing: use only the available fields, leave the new fields to their default

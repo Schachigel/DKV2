@@ -216,10 +216,9 @@ QSqlField adjustTypeOfField(const QSqlField& f, QMetaType t)
         return f;
     }
     QVariant tmpV(f.value());
-    QMetaType expected(t);
 
-    if( tmpV.canConvert(expected)) {
-        tmpV.convert(expected); // adjust content of field to expected type
+    if (tmpV.canConvert(t)) {
+        tmpV.convert(t); // adjust content of field to expected type
     };
     if( tmpV.isNull ()){
         qCritical() << QString(__FUNCTION__) << "field conversion failed" << f << " -> " << tmpV;

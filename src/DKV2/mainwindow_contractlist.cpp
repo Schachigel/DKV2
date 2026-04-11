@@ -322,11 +322,11 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
     int index =ui->contractsTableView->model()->data(indexIndex).toInt();
     QSqlTableModel* model = new QSqlTableModel(this);
     if( showDeletedContracts) {
-        model->setTable(tn_ExBuchungen);
-        model->setFilter(qsl("%1.%2=%3").arg(tn_ExBuchungen, fn_bVertragsId, i2s(index)));
+        model->setTable(booking::tn_ExBuchungen);
+        model->setFilter(qsl("%1.%2=%3").arg(booking::tn_ExBuchungen, booking::fn_bVertragsId, i2s(index)));
     } else {
-        model->setTable(tn_Buchungen);
-        model->setFilter(qsl("%1.%2=%3").arg(tn_Buchungen, fn_bVertragsId, i2s(index)));
+        model->setTable(booking::tn_Buchungen);
+        model->setFilter(qsl("%1.%2=%3").arg(booking::tn_Buchungen, booking::fn_bVertragsId, i2s(index)));
     }
     model->setSort(0, Qt::SortOrder::DescendingOrder);
 

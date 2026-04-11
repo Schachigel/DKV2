@@ -569,8 +569,8 @@ void test_contract::test_payout_wSettlement_wPayout()
 
 QDate initialBookingDate(contractId_t cId)
 {
-    QString where = qsl("%1.%2=%3").arg(tn_Buchungen, fn_bVertragsId);
-    return executeSingleValueSql(qsl("MIN(%1)").arg(fn_bDatum), tn_Buchungen, where.arg(cId.v)).toDate();
+    QString where = qsl("%1.%2=%3").arg(booking::tn_Buchungen, booking::fn_bVertragsId);
+    return executeSingleValueSql(qsl("MIN(%1)").arg(booking::fn_bDatum), booking::tn_Buchungen, where.arg(cId.v)).toDate();
 }
 
 void test_contract::test_activationDate()

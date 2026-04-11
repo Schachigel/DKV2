@@ -10,7 +10,6 @@
 #include "contract.h"
 #include "creditor.h"
 #include "investment.h"
-#include "dkdbviews.h"
 #include "dkdbindices.h"
 #include <QRegularExpression>
 
@@ -19,7 +18,100 @@ namespace  {
 
 qlonglong extractContractLabelIndex(const QString& label);
 
-bool updateViewsAndIndices_if_needed(const QSqlDatabase& db =QSqlDatabase::database ())
+struct TimestampTableSpec
+{
+    QString tableName;
+    QString historyDateField;
+};
+
+const QVector<TimestampTableSpec>& timestampTableSpecs()
+{
+    static const QVector<TimestampTableSpec> specs {
+        { creditor::tablename, QString() },
+        { contract::tnContracts, contract::fnVertragsDatum },
+        { contract::tnExContracts, contract::fnVertragsDatum },
+        { booking::tn_Buchungen, booking::fn_bDatum },
+        { booking::tn_ExBuchungen, booking::fn_bDatum }
+    };
+    return specs;
+}
+
+QString triggerSafeName(const QString& tableName)
+{
+    QString name =tableName;
+    name.replace(qsl("."), qsl("_"));
+    return name;
+}
+
+QString timestampInsertTriggerSql(const TimestampTableSpec& spec)
+{
+    const QString triggerName {qsl("trg_%1_zeitstempel_ins").arg(triggerSafeName(spec.tableName))};
+    return qsl(
+        "CREATE TRIGGER [%1] "
+        "AFTER INSERT ON [%2] "
+        "FOR EACH ROW "
+        "WHEN NEW.Zeitstempel IS NULL "
+        "BEGIN "
+        "  UPDATE [%2] "
+        "  SET Zeitstempel = CURRENT_TIMESTAMP "
+        "  WHERE id = NEW.id; "
+        "END").arg(triggerName, spec.tableName);
+}
+
+QString timestampUpdateTriggerSql(const TimestampTableSpec& spec)
+{
+    const QString triggerName {qsl("trg_%1_zeitstempel_upd").arg(triggerSafeName(spec.tableName))};
+    return qsl(
+        "CREATE TRIGGER [%1] "
+        "AFTER UPDATE ON [%2] "
+        "FOR EACH ROW "
+        "WHEN COALESCE(NEW.Zeitstempel, '') = COALESCE(OLD.Zeitstempel, '') "
+        "BEGIN "
+        "  UPDATE [%2] "
+        "  SET Zeitstempel = CURRENT_TIMESTAMP "
+        "  WHERE id = NEW.id; "
+        "END").arg(triggerName, spec.tableName);
+}
+
+bool installTimestampTriggerPair(const TimestampTableSpec& spec, const QSqlDatabase& db)
+{
+    const QString triggerBase {triggerSafeName(spec.tableName)};
+    if( not executeSql_wNoRecords(qsl("DROP TRIGGER IF EXISTS [trg_%1_zeitstempel_ins]").arg(triggerBase), db))
+        return false;
+    if( not executeSql_wNoRecords(qsl("DROP TRIGGER IF EXISTS [trg_%1_zeitstempel_upd]").arg(triggerBase), db))
+        return false;
+    if( not executeSql_wNoRecords(timestampInsertTriggerSql(spec), db))
+        return false;
+    if( not executeSql_wNoRecords(timestampUpdateTriggerSql(spec), db))
+        return false;
+    return true;
+}
+
+QString timestampBackfillExpression(const TimestampTableSpec& spec)
+{
+    if( spec.historyDateField.isEmpty())
+        return qsl("CURRENT_TIMESTAMP");
+    return qsl("COALESCE(datetime(%1 || ' 00:00:00'), CURRENT_TIMESTAMP)").arg(spec.historyDateField);
+}
+
+bool repairLegacyTimestamps(const QSqlDatabase& db)
+{
+    for (const auto& spec : std::as_const(timestampTableSpecs())) {
+        const QString sql {qsl("UPDATE [%1] SET Zeitstempel = %2 "
+                               "WHERE datetime(Zeitstempel) IS NULL")
+                               .arg(spec.tableName, timestampBackfillExpression(spec))};
+        if( not executeSql_wNoRecords(sql, db))
+            RETURN_ERR(false, qsl("failed to backfill Zeitstempel on"), spec.tableName);
+    }
+
+    const QString markerSql {qsl("INSERT OR REPLACE INTO Meta (Name, Wert) VALUES (?, ?)")};
+    return executeSql_wNoRecords(markerSql,
+                                 QVector<QVariant>{qsl("migration.17.Zeitstempel"),
+                                                   qsl("historical-backfill")},
+                                 db);
+}
+
+bool updateViewsAndIndices_if_needed(const QSqlDatabase& db = QSqlDatabase::database())
 {   LOG_CALL;
     QString lastProgramVersion = dbConfig::read_DKV2_Version(db);
     QString thisProgramVersion = QCoreApplication::applicationVersion();
@@ -43,7 +135,7 @@ bool updateViewsAndIndices_if_needed(const QSqlDatabase& db =QSqlDatabase::datab
     return false;
 }
 
-void insert_DbProperties(const QSqlDatabase &db = QSqlDatabase::database())
+void insert_DbProperties(const QSqlDatabase& db = QSqlDatabase::database())
 {
     LOG_CALL;
     dbConfig::writeDefaults(db);
@@ -114,7 +206,7 @@ qlonglong extractContractLabelIndex(const QString& label)
 }
 } // EO local namespace
 
-bool postDB_UpgradeActions(int /*sourceVersion*/, const QString & dbName)
+bool postDB_UpgradeActions(int sourceVersion, const QString& dbName)
 {
     autoDb db(dbName, qsl("postUpgradeActions"));
     bool ret = true;
@@ -135,20 +227,35 @@ bool postDB_UpgradeActions(int /*sourceVersion*/, const QString & dbName)
         QVector<QVariant> params;
         executeSql_wNoRecords (sql, params, db);
     }
+    if( sourceVersion < 17) {
+        if( not repairLegacyTimestamps(db))
+            return false;
+    }
+    if( not insertDKDB_TimestampTriggers(db))
+        return false;
     return ret;
 }
 
-bool insertDKDB_Views( const QSqlDatabase &db)
+bool insertDKDB_Views(const QSqlDatabase& db)
 {   LOG_CALL;
     return createDkDbViews (views, db);
 }// initial database tables and content
 
-bool insertDKDB_Indices( const QSqlDatabase& db)
+bool insertDKDB_Indices(const QSqlDatabase& db)
 {
     return createDkDbIndices( db);
 }
 
-bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/, zinssusance sz /*=zs30360*/)
+bool insertDKDB_TimestampTriggers(const QSqlDatabase& db)
+{
+    for (const auto& spec : std::as_const(timestampTableSpecs())) {
+        if( not installTimestampTriggerPair(spec, db))
+            RETURN_ERR(false, qsl("failed to install Zeitstempel triggers for"), spec.tableName);
+    }
+    return true;
+}
+
+bool fill_DkDbDefaultContent(const QSqlDatabase& db, bool includeViews, zinssusance sz, bool includeTriggers)
 {
     LOG_CALL;
     switchForeignKeyHandling(true, db);
@@ -157,6 +264,7 @@ bool fill_DkDbDefaultContent(const QSqlDatabase &db, bool includeViews /*=true*/
     do {
         if( includeViews) if ( not insertDKDB_Views(db)) break;
         if( includeViews) if (not insertDKDB_Indices(db)) break;
+        if( includeTriggers) if (not insertDKDB_TimestampTriggers(db)) break;
         insert_DbProperties(db);
         ret = true;
     } while (false);
@@ -183,7 +291,7 @@ int get_db_version(const QString &file)
 // ToDo: move to other file in GUI, move rest of file to core
 // TODO: manage bc in UI file
 
-bool open_databaseForApplication( const QString &newDbFile)
+bool open_databaseForApplication(const QString& newDbFile)
 {   LOG_CALL_W(newDbFile);
     Q_ASSERT( newDbFile.size());
 
@@ -197,6 +305,8 @@ bool open_databaseForApplication( const QString &newDbFile)
         RETURN_ERR(false, qsl("open database file failed:"), newDbFile);
     if( not updateViewsAndIndices_if_needed (db))
         RETURN_ERR(false, qsl("update views failed on "), newDbFile);
+    if( not insertDKDB_TimestampTriggers(db))
+        RETURN_ERR(false, qsl("update timestamp triggers failed on "), newDbFile);
     switchForeignKeyHandling(fkh_on, db);
     return true;
 }
