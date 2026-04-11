@@ -508,6 +508,18 @@ QVector<QStringList> perpetualInvestment_bookings()
 {
     QString sql {qsl(R"str(
 WITH
+alleVertraege AS
+(
+   SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM Vertraege
+   UNION ALL
+   SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM exVertraege
+)
+, alleBuchungen AS
+(
+   SELECT VertragsId, Datum, Betrag, BuchungsArt FROM Buchungen
+   UNION ALL
+   SELECT VertragsId, Datum, Betrag, BuchungsArt FROM exBuchungen
+)
 fortlaufendeGeldanlagen AS
 (
    SELECT Typ, rowid, ZSatz FROM Geldanlagen WHERE Ende = '9999-12-31'
@@ -515,15 +527,15 @@ fortlaufendeGeldanlagen AS
 , geldBewegungen AS
 (
   SELECT
-    Buchungen.Datum AS bDatum
-    , Buchungen.Betrag AS Buchungsbetrag
+    B.Datum AS bDatum
+    , B.Betrag AS Buchungsbetrag
     , Anlagen.rowid AS aId
     , Anlagen.Typ AS Anlage
     , Anlagen.ZSatz AS Zinssatz
 
-  FROM Buchungen
-  INNER JOIN Vertraege ON Vertraege.id == Buchungen.VertragsId
-  INNER JOIN fortlaufendeGeldanlagen AS Anlagen ON Anlagen.rowid = Vertraege.AnlagenId
+  FROM alleBuchungen AS B
+  INNER JOIN alleVertraege AS V ON V.id == B.VertragsId
+  INNER JOIN fortlaufendeGeldanlagen AS Anlagen ON Anlagen.rowid = V.AnlagenId
 )
 , temp AS
 (
@@ -535,17 +547,17 @@ fortlaufendeGeldanlagen AS
     , SUM(Buchungsbetrag) /100. AS Buchungsbetraege
     , COUNT(Buchungsbetrag) AS anzahlBuchungen
 
-    , (SELECT SUM(Buchungen.Betrag) /100. FROM Buchungen WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.AnlagenId == aId) AND Buchungen.Datum <= bDatum AND Buchungen.Datum > DATE(bDatum, '-1 year')
+    , (SELECT SUM(B.Betrag) /100. FROM alleBuchungen AS B WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE AnlagenId == aId) AND B.Datum <= bDatum AND B.Datum > DATE(bDatum, '-1 year')
     ) AS BuchungsSummenInclZins
-    , (SELECT COUNT(*) FROM Buchungen WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.AnlagenId == aId) AND Buchungen.Datum <= bDatum AND Buchungen.Datum > DATE(bDatum, '-1 year')
+    , (SELECT COUNT(*) FROM alleBuchungen AS B WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE AnlagenId == aId) AND B.Datum <= bDatum AND B.Datum > DATE(bDatum, '-1 year')
     ) AS BuchungsSummenInclZins_count
 
-    , (SELECT SUM(Buchungen.Betrag) /100. FROM Buchungen WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend == 0 AND Vertraege.AnlagenId == aId) AND Buchungen.Datum <= bDatum AND Buchungen.Datum > DATE(bDatum, '-1 year') AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2 OR Buchungen.BuchungsArt == 8)
+    , (SELECT SUM(B.Betrag) /100. FROM alleBuchungen AS B WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE thesaurierend == 0 AND AnlagenId == aId) AND B.Datum <= bDatum AND B.Datum > DATE(bDatum, '-1 year') AND (B.BuchungsArt == 1 OR B.BuchungsArt == 2 OR B.BuchungsArt == 8)
     ) AS BuchungsSummenExclZins_ausz
 
-    , (SELECT COUNT(*) FROM Buchungen WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend != 0 AND Vertraege.AnlagenId == aId) AND Buchungen.Datum <= bDatum AND Buchungen.Datum > DATE(bDatum, '-1 year') AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2)
+    , (SELECT COUNT(*) FROM alleBuchungen AS B WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE thesaurierend != 0 AND AnlagenId == aId) AND B.Datum <= bDatum AND B.Datum > DATE(bDatum, '-1 year') AND (B.BuchungsArt == 1 OR B.BuchungsArt == 2)
     ) AS BuchungsSummenExclZins_N_ausz_count
-    , (SELECT SUM(Buchungen.Betrag) /100. FROM Buchungen WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend != 0 AND Vertraege.AnlagenId == aId) AND Buchungen.Datum <= bDatum AND Buchungen.Datum > DATE(bDatum, '-1 year') AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2)
+    , (SELECT SUM(B.Betrag) /100. FROM alleBuchungen AS B WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE thesaurierend != 0 AND AnlagenId == aId) AND B.Datum <= bDatum AND B.Datum > DATE(bDatum, '-1 year') AND (B.BuchungsArt == 1 OR B.BuchungsArt == 2)
     ) AS BuchungsSummenExclZins_N_ausz
 
   FROM geldBewegungen
@@ -588,6 +600,12 @@ QVector<QStringList> perpetualInvestmentByContracts()
 {
     QString sql {qsl(R"str(
    WITH
+   alleVertraege AS
+   (
+      SELECT id, AnlagenId, Kennung, Vertragsdatum, Betrag, ZSatz FROM Vertraege
+      UNION ALL
+      SELECT id, AnlagenId, Kennung, Vertragsdatum, Betrag, ZSatz FROM exVertraege
+   ),
    fortlaufendeGeldanlagen AS
    (
       SELECT * FROM Geldanlagen WHERE Ende = '9999-12-31'
@@ -598,7 +616,7 @@ QVector<QStringList> perpetualInvestmentByContracts()
         , V.Kennung          AS Vertrag
         , V.Vertragsdatum AS Datum
         , V.Betrag        AS Betrag
-      FROM Vertraege AS V
+      FROM alleVertraege AS V
       INNER JOIN fortlaufendeGeldanlagen AS G ON G.rowid = V.AnlagenId
     )
     SELECT

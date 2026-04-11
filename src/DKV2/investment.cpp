@@ -86,8 +86,13 @@ investment::invStatisticData investment::getStatisticData(const QDate newContrac
     // anzahlAlleVertraege, summeAlleVertraege
     // (! Betrachtung der Vertragswerte (ohne nachträgliche Ein- oder Auszahlungen)
     QString sqlContractDataAll =qsl(R"str(
-SELECT COUNT(*), SUM(Betrag) FROM Vertraege
-WHERE AnlagenId =%0 AND Vertraege.Vertragsdatum > '%1' AND Vertraege.Vertragsdatum <= '%2'
+WITH alleVertraege AS (
+  SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM Vertraege
+  UNION ALL
+  SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM exVertraege
+)
+SELECT COUNT(*), SUM(Betrag) FROM alleVertraege
+WHERE AnlagenId =%0 AND Vertragsdatum > '%1' AND Vertragsdatum <= '%2'
 )str");
     QSqlRecord recContractDataAll =executeSingleRecordSql (
                 sqlContractDataAll.arg(id, pStart, pEnd));
@@ -98,33 +103,63 @@ WHERE AnlagenId =%0 AND Vertraege.Vertragsdatum > '%1' AND Vertraege.Vertragsdat
     // - Vertragswerte abgeschlossener Verträge ohne Einzahlung
     // - zzgl. Ein- bzw. Auszahlungen
     QString sqlContractsWithNoPayment =qsl(R"str(
-SELECT SUM(Betrag) FROM Vertraege
-WHERE Vertraege.id NOT IN (SELECT DISTINCT VertragsId FROM Buchungen)
+WITH alleVertraege AS (
+  SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM Vertraege
+  UNION ALL
+  SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM exVertraege
+),
+alleBuchungen AS (
+  SELECT VertragsId, Betrag, BuchungsArt, Datum FROM Buchungen
+  UNION ALL
+  SELECT VertragsId, Betrag, BuchungsArt, Datum FROM exBuchungen
+)
+SELECT SUM(Betrag) FROM alleVertraege
+WHERE id NOT IN (SELECT DISTINCT VertragsId FROM alleBuchungen)
   AND AnlagenId =%0
-  AND Vertraege.Vertragsdatum >  '%1'
-  AND Vertraege.Vertragsdatum <= '%2'
+  AND Vertragsdatum >  '%1'
+  AND Vertragsdatum <= '%2'
 )str");
     double valuePassiveContracts =euroFromCt(executeSingleValueSql (sqlContractsWithNoPayment
                                                          .arg(id, pStart, pEnd)).toInt ());
 
     QString sqlPayments =qsl(R"str(
-SELECT SUM(Buchungen.Betrag) FROM Buchungen
+WITH alleVertraege AS (
+  SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM Vertraege
+  UNION ALL
+  SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM exVertraege
+),
+alleBuchungen AS (
+  SELECT VertragsId, Betrag, BuchungsArt, Datum FROM Buchungen
+  UNION ALL
+  SELECT VertragsId, Betrag, BuchungsArt, Datum FROM exBuchungen
+)
+SELECT SUM(B.Betrag) FROM alleBuchungen AS B
 WHERE
-  Buchungen.VertragsId IN (SELECT DISTINCT id FROM Vertraege WHERE AnlagenId =%0)
-  AND Buchungen.BuchungsArt = 1 OR Buchungen.BuchungsArt = 2
-  AND Buchungen.Datum >  '%1'
-  AND Buchungen.Datum <= '%2'
+  B.VertragsId IN (SELECT DISTINCT id FROM alleVertraege WHERE AnlagenId =%0)
+  AND (B.BuchungsArt = 1 OR B.BuchungsArt = 2)
+  AND B.Datum >  '%1'
+  AND B.Datum <= '%2'
 )str");
     double valuePaymentsActiveContracts =euroFromCt(executeSingleValueSql (sqlPayments
                                                                 .arg(id, pStart, pEnd)).toInt ());
     ret.EinAuszahlungen =valuePassiveContracts +valuePaymentsActiveContracts;
 
     QString sqlAllBookings =qsl(R"str(
-SELECT SUM(Buchungen.Betrag) FROM Buchungen
+WITH alleVertraege AS (
+  SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM Vertraege
+  UNION ALL
+  SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM exVertraege
+),
+alleBuchungen AS (
+  SELECT VertragsId, Betrag, BuchungsArt, Datum FROM Buchungen
+  UNION ALL
+  SELECT VertragsId, Betrag, BuchungsArt, Datum FROM exBuchungen
+)
+SELECT SUM(B.Betrag) FROM alleBuchungen AS B
 WHERE
-  Buchungen.VertragsId IN (SELECT DISTINCT id FROM Vertraege WHERE AnlagenId =%0)
-  AND Buchungen.Datum >  '%1'
-  AND Buchungen.Datum <= '%2'
+  B.VertragsId IN (SELECT DISTINCT id FROM alleVertraege WHERE AnlagenId =%0)
+  AND B.Datum >  '%1'
+  AND B.Datum <= '%2'
 )str");
     double allBookingsInclInterest =euroFromCt(executeSingleValueSql ( sqlAllBookings
                                            .arg(i2s(rowid), pStart, pEnd)).toInt ());
@@ -248,22 +283,29 @@ QString redOrBlack(double d, double max)
     else return s_d2euro(d);
 }
 
+double clampToNonNegative(double d)
+{
+    return (d < 0.) ? 0. : d;
+}
+
 QVector<QString> formatedStatisticData(investment::invStatisticData data, double Vertragswert)
 {
     int maxNbr =dbConfig::readValue(MAX_INVESTMENT_NBR).toInt();
     double maxSum =dbConfig::readValue(MAX_INVESTMENT_SUM).toDouble();
 
+    const double einAuszahlungen = clampToNonNegative(data.EinAuszahlungen);
+    const double zzglZins = clampToNonNegative(data.ZzglZins);
+    const double einAuszahlungenNachVertrag = clampToNonNegative(data.EinAuszahlungen + Vertragswert);
+    const double zzglZinsNachVertrag = clampToNonNegative(data.ZzglZins + Vertragswert);
+
     QVector<QString> result;
     result.push_back (redOrBlack(data.anzahlVertraege, maxNbr));
-    result.push_back (redOrBlack(data.summeVertraege, maxSum));
-    result.push_back (redOrBlack(data.EinAuszahlungen, maxSum));
-    result.push_back (redOrBlack(data.ZzglZins, maxSum));
+    result.push_back (redOrBlack(einAuszahlungen, maxSum));
+    result.push_back (redOrBlack(zzglZins, maxSum));
 
     result.push_back (redOrBlack(data.anzahlVertraege +1, maxNbr));
-    result.push_back (redOrBlack(data.summeVertraege +Vertragswert, maxSum));
-
-    result.push_back (redOrBlack(data.EinAuszahlungen +Vertragswert, maxSum));
-    result.push_back (redOrBlack(data.ZzglZins +Vertragswert, maxSum));
+    result.push_back (redOrBlack(einAuszahlungenNachVertrag, maxSum));
+    result.push_back (redOrBlack(zzglZinsNachVertrag, maxSum));
     return result;
 }
 QString investmentInfoForNewContract(qlonglong ridInvestment, const double amount, const QDate newContractDate)
@@ -282,17 +324,16 @@ QString investmentInfoForNewContract(qlonglong ridInvestment, const double amoun
         timeSpan =qsl("von %1 bis %2").arg(start.toString (qsl("dd.MM.yyyy")), end.toString (qsl("dd.MM.yyyy")));
 
     QString idLine1 {qsl("<tr><td colspan=2><b>Anlagedaten<b></tr>")};
-    QString idLine2 {qsl("<tr><td>Zinssatz</td><td>%1</td></tr>").arg(dbInterest2_str (invest.interest))};
-    QString idLine3 {qsl("<tr><td>Laufzeit</td><td>%1</td></tr>").arg(timeSpan)};
-    QString tableInvestmentData {qsl("<table width=100%> \n %1 \n %2 \n %3 \n</table><p>").arg(idLine1, idLine2, idLine3)};
+    QString idLine2 {qsl("<tr><td>Laufzeit</td><td>%1</td></tr>").arg(timeSpan)};
+    QString tableInvestmentData {qsl("<table width=100%> \n %1 \n %2 \n</table><p>").arg(idLine1, idLine2)};
 
     QVector<QString> numbers =formatedStatisticData (invest.getStatisticData (newContractDate), amount);
     // investment details / statistics
-    QString headers  {qsl("<tr> <td style='text-align: center'><b>Anzahl</b></td><td style='text-align: right'><b>Summe d.<br> Verträge</b></td><td style='text-align: right'><b>... incl. Ein- u.<br>Ausz.</b></td><td style='text-align: right'><b>...incl. Zinsen</b></td></tr>")};
-    QString headerLine {qsl("<tr> <td colspan=4>Vor diesem Vertrag</td> </tr>")};
-    QString s1Line     {qsl("<tr> <td style='text-align: center'>%0</td> <td style='text-align: right'>%1</td> <td style='text-align: right'>%2</td> <td style='text-align: right'>%3</td> </tr>").arg(numbers[0],numbers[1],numbers[2],numbers[3])};
-    QString headerLine2{qsl("<tr> <td colspan=4>Nach diesem Vertrag</td> </tr>")};
-    QString s2Line     {qsl("<tr> <td style='text-align: center'>%0</td> <td style='text-align: right'>%1</td> <td style='text-align: right'>%2</td> <td style='text-align: right'>%3</td> </tr>").arg(numbers[4],numbers[5],numbers[6],numbers[7])};
+    QString headers  {qsl("<tr> <td style='text-align: center'><b>Anzahl</b></td><td style='text-align: right'><b>... incl. Ein- u.<br>Ausz.</b></td><td style='text-align: right'><b>... incl. Zinsen</b></td></tr>")};
+    QString headerLine {qsl("<tr> <td colspan=3>Vor diesem Vertrag</td> </tr>")};
+    QString s1Line     {qsl("<tr> <td style='text-align: center'>%0</td> <td style='text-align: right'>%1</td> <td style='text-align: right'>%2</td> </tr>").arg(numbers[0],numbers[1],numbers[2])};
+    QString headerLine2{qsl("<tr> <td colspan=3>Nach diesem Vertrag</td> </tr>")};
+    QString s2Line     {qsl("<tr> <td style='text-align: center'>%0</td> <td style='text-align: right'>%1</td> <td style='text-align: right'>%2</td> </tr>").arg(numbers[3],numbers[4],numbers[5])};
 
     QString tableStatistics {qsl("<table width=100%> \n %1 \n %2 \n %3 \n %4 \n %5 </table>").arg(
                     headers, headerLine, s1Line, headerLine2, s2Line)};

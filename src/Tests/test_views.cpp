@@ -1,8 +1,24 @@
 #include "test_views.h"
 
+#include "../DKV2/booking.h"
+#include "../DKV2/creditor.h"
+#include "../DKV2/investment.h"
 #include "testhelper.h"
 
 #include <QtTest/QTest>
+
+namespace {
+tableindex_t insertMinimalCreditor()
+{
+    TableDataInserter creditorTdi(creditor::getTableDef());
+    creditorTdi.setValue(creditor::fnVorname, qsl("Ada"));
+    creditorTdi.setValue(creditor::fnNachname, qsl("Lovelace"));
+    creditorTdi.setValue(creditor::fnStrasse, qsl("Memory Lane 1"));
+    creditorTdi.setValue(creditor::fnPlz, qsl("68167"));
+    creditorTdi.setValue(creditor::fnStadt, qsl("Mannheim"));
+    return creditorTdi.InsertRecord();
+}
+}
 
 void test_views::initTestCase()
 {
@@ -19,6 +35,82 @@ void test_views::init()
 void test_views::cleanup()
 {
     cleanupTestDkDb();
+}
+
+void test_views::test_investmentOverview_includesDeletedContractsAndBookings()
+{
+    const tableindex_t investmentId = saveNewInvestment(250, QDate(2026, 1, 1), QDate(2026, 12, 31), qsl("Testanlage"));
+    QVERIFY(isValidRowId(investmentId));
+
+    const tableindex_t creditorId = insertMinimalCreditor();
+    QVERIFY(isValidRowId(creditorId));
+
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Vertraege "
+            "(id, KreditorId, Kennung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum) "
+            "VALUES (1, %1, 'DK-TST-2026-000001', 250, 10000, 0, '2026-01-15', 6, %2, '9999-12-31', TRUE, '9999-12-31')")
+            .arg(i2s(creditorId), i2s(investmentId))));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Buchungen "
+            "(id, %1, %2, %3, %4, %5) "
+            "VALUES (1, 1, '2026-01-15', 1, 10000, '1900-01-01')")
+            .arg(booking::fn_bVertragsId,
+                 booking::fn_bDatum,
+                 booking::fn_bBuchungsArt,
+                 booking::fn_bBetrag,
+                 booking::fn_bModifiziert)));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Buchungen "
+            "(id, %1, %2, %3, %4, %5) "
+            "VALUES (2, 1, '2026-12-31', 8, 1000, '1900-01-01')")
+            .arg(booking::fn_bVertragsId,
+                 booking::fn_bDatum,
+                 booking::fn_bBuchungsArt,
+                 booking::fn_bBetrag,
+                 booking::fn_bModifiziert)));
+
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO exVertraege "
+            "(id, KreditorId, Kennung, Anmerkung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum) "
+            "VALUES (2, %1, 'DK-TST-2026-000002', '', 250, 20000, 1, '2026-02-15', 6, %2, '2026-12-31', TRUE, '9999-12-31')")
+            .arg(i2s(creditorId), i2s(investmentId))));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO exBuchungen "
+            "(id, %1, %2, %3, %4, %5) "
+            "VALUES (3, 2, '2026-02-15', 1, 20000, '1900-01-01')")
+            .arg(booking::fn_bVertragsId,
+                 booking::fn_bDatum,
+                 booking::fn_bBuchungsArt,
+                 booking::fn_bBetrag,
+                 booking::fn_bModifiziert)));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO exBuchungen "
+            "(id, %1, %2, %3, %4, %5) "
+            "VALUES (4, 2, '2026-12-31', 8, 2000, '1900-01-01')")
+            .arg(booking::fn_bVertragsId,
+                 booking::fn_bDatum,
+                 booking::fn_bBuchungsArt,
+                 booking::fn_bBetrag,
+                 booking::fn_bModifiziert)));
+
+    QSqlRecord rec = executeSingleRecordSql(
+        qsl("SELECT Anzahl, SummeVertraege, AnzahlAktive, SummeAktive, Einzahlungen, SummeInclZins "
+            "FROM vInvestmentsOverview WHERE AnlagenId = %1").arg(i2s(investmentId)));
+    QVERIFY(not rec.isEmpty());
+
+    QCOMPARE(rec.value(0).toInt(), 2);
+    QCOMPARE(rec.value(1).toDouble(), 300.0);
+    QCOMPARE(rec.value(2).toInt(), 2);
+    QCOMPARE(rec.value(3).toDouble(), 300.0);
+    QCOMPARE(rec.value(4).toDouble(), 310.0);
+    QCOMPARE(rec.value(5).toDouble(), 330.0);
+
+    investment invest(investmentId);
+    const investment::invStatisticData data = invest.getStatisticData(QDate(2026, 6, 1));
+    QCOMPARE(data.anzahlVertraege, 2);
+    QCOMPARE(data.summeVertraege, 300.0);
+    QCOMPARE(data.EinAuszahlungen, 300.0);
+    QCOMPARE(data.ZzglZins, 330.0);
 }
 
 // Todo?? insert views for SQLite User

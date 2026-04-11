@@ -596,7 +596,7 @@ void MainWindow::on_action_menu_contracts_statistics_view_triggered()
 void MainWindow::updateUebersichtView(int uebersichtIndex)
 {
     QTextDocument* td =new QTextDocument(); // ui->txtOverview->document();
-    uebersichten ue(td);
+    uebersichten ue(td, ui->txtOverview->palette());
     ue.renderDocument(uebersichten::fromInt(uebersichtIndex));
     ui->txtOverview->setDocument(td);
 }

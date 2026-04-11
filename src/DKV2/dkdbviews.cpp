@@ -159,46 +159,58 @@ ON V.id = vid_mit_Zinsen
 const QString vnInvestmentsView {qsl("vInvestmentsOverview")};
 const QString sqlInvestmentsView {qsl(
 R"str(
-WITH fortlaufend_temp AS (
+WITH alleVertraege AS (
+SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM Vertraege
+UNION ALL
+SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM exVertraege
+)
+, alleBuchungen AS (
+SELECT VertragsId, Betrag, BuchungsArt, Datum FROM Buchungen
+UNION ALL
+SELECT VertragsId, Betrag, BuchungsArt, Datum FROM exBuchungen
+)
+, fortlaufend_temp AS (
 SELECT ga.ZSatz
   , IIF( ga.Anfang == '1900-01-01', '-', ga.Anfang) AS Anfang
   , 'fortlaufend' AS Ende
   , ga.Typ
   , (SELECT count(*)
-     FROM Vertraege
-     WHERE Vertraege.AnlagenId == ga.rowid AND Vertraege.Vertragsdatum > DATE('now', '-1 year')
+     FROM alleVertraege AS V
+     WHERE V.AnlagenId == ga.rowid AND V.Vertragsdatum > DATE('now', '-1 year')
   ) AS Anzahl
   , (SELECT SUM(Betrag) /100.
-     FROM Vertraege
-     WHERE Vertraege.AnlagenId == ga.rowid AND Vertraege.Vertragsdatum > DATE('now', '-1 year')
+     FROM alleVertraege AS V
+     WHERE V.AnlagenId == ga.rowid AND V.Vertragsdatum > DATE('now', '-1 year')
   ) AS SummeVertraege
   , (SELECT count(*)
-     FROM Vertraege AS v
+     FROM alleVertraege AS v
      WHERE v.AnlagenId == ga.rowid
-       AND (SELECT count(*)
-            FROM Buchungen AS B
-            WHERE B.VertragsId == v.id)>0 AND v.Vertragsdatum > DATE('now', '-1 year')
+       AND EXISTS(
+            SELECT 1
+            FROM alleBuchungen AS B
+            WHERE B.VertragsId == v.id) AND v.Vertragsdatum > DATE('now', '-1 year')
   ) AS AnzahlAktive
   , (SELECT SUM(Betrag) /100.
-     FROM Vertraege AS v
+     FROM alleVertraege AS v
      WHERE v.AnlagenId == ga.rowid
-       AND (SELECT count(*)
-            FROM Buchungen AS B
-            WHERE B.VertragsId == v.id)>0 AND v.Vertragsdatum > DATE('now', '-1 year')
+       AND EXISTS(
+            SELECT 1
+            FROM alleBuchungen AS B
+            WHERE B.VertragsId == v.id) AND v.Vertragsdatum > DATE('now', '-1 year')
   ) AS SummeAktive
   , (SELECT SUM(Betrag) /100.
-     FROM Buchungen
-     WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend == 0 AND Vertraege.AnlagenId == ga.rowid)
-       AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2 OR Buchungen.BuchungsArt == 8)
+     FROM alleBuchungen AS B
+     WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE thesaurierend == 0 AND AnlagenId == ga.rowid)
+       AND (B.BuchungsArt == 1 OR B.BuchungsArt == 2 OR B.BuchungsArt == 8)
      ) AS EinzahlungenAuszahlenderV
   , (SELECT SUM(Betrag) /100.
-     FROM Buchungen
-     WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend != 0 AND Vertraege.AnlagenId == ga.rowid)
-       AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2)
+     FROM alleBuchungen AS B
+     WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE thesaurierend != 0 AND AnlagenId == ga.rowid)
+       AND (B.BuchungsArt == 1 OR B.BuchungsArt == 2)
      ) AS EinzahlungenRestlV
   , (SELECT SUM(Betrag) /100.
-     FROM Buchungen
-     WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.AnlagenId == ga.rowid)) AS SummeInclZins
+     FROM alleBuchungen AS B
+     WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE AnlagenId == ga.rowid)) AS SummeInclZins
   , CASE WHEN ga.Offen THEN 'Offen' ELSE 'Abgeschlossen' END AS Offen
   , ga.rowid
 FROM Geldanlagen AS ga
@@ -211,40 +223,42 @@ SELECT ga.ZSatz
   , ga.Ende AS Ende
   , ga.Typ
   , (SELECT count(*)
-     FROM Vertraege
-     WHERE Vertraege.AnlagenId == ga.rowid
+     FROM alleVertraege AS V
+     WHERE V.AnlagenId == ga.rowid
   ) AS Anzahl
   , (SELECT SUM(Betrag) /100.
-     FROM Vertraege
-     WHERE Vertraege.AnlagenId == ga.rowid
+     FROM alleVertraege AS V
+     WHERE V.AnlagenId == ga.rowid
   ) AS SummeVertraege
   , (SELECT count(*)
-     FROM Vertraege AS v
+     FROM alleVertraege AS v
      WHERE v.AnlagenId == ga.rowid
-       AND (SELECT count(*)
-            FROM Buchungen AS B
-            WHERE B.VertragsId == v.id)>0
+       AND EXISTS(
+            SELECT 1
+            FROM alleBuchungen AS B
+            WHERE B.VertragsId == v.id)
   ) AS AnzahlAktive
   , (SELECT SUM(Betrag) /100.
-     FROM Vertraege AS v
+     FROM alleVertraege AS v
      WHERE v.AnlagenId == ga.rowid
-       AND (SELECT count(*)
-            FROM Buchungen AS B
-            WHERE B.VertragsId == v.id)>0
+       AND EXISTS(
+            SELECT 1
+            FROM alleBuchungen AS B
+            WHERE B.VertragsId == v.id)
   ) AS SummeAktive
   , (SELECT SUM(Betrag) /100.
-     FROM Buchungen
-     WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend == 0 AND Vertraege.AnlagenId == ga.rowid)
-       AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2 OR Buchungen.BuchungsArt == 8)
+     FROM alleBuchungen AS B
+     WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE thesaurierend == 0 AND AnlagenId == ga.rowid)
+       AND (B.BuchungsArt == 1 OR B.BuchungsArt == 2 OR B.BuchungsArt == 8)
      ) AS EinzahlungenAuszahlenderV
   , (SELECT SUM(Betrag) /100.
-     FROM Buchungen
-     WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.thesaurierend != 0 AND Vertraege.AnlagenId == ga.rowid)
-       AND (Buchungen.BuchungsArt == 1 OR Buchungen.BuchungsArt == 2)
+     FROM alleBuchungen AS B
+     WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE thesaurierend != 0 AND AnlagenId == ga.rowid)
+       AND (B.BuchungsArt == 1 OR B.BuchungsArt == 2)
      ) AS EinzahlungenRestlV
   , (SELECT SUM(Betrag) /100.
-     FROM Buchungen
-     WHERE Buchungen.VertragsId IN (SELECT id FROM Vertraege WHERE Vertraege.AnlagenId == ga.rowid)) AS SummeInclZins
+     FROM alleBuchungen AS B
+     WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE AnlagenId == ga.rowid)) AS SummeInclZins
 
   , CASE WHEN ga.Offen THEN 'Offen' ELSE 'Abgeschlossen' END AS Offen
   , ga.rowid

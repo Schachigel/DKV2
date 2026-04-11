@@ -6,6 +6,44 @@
 #include "dkdbviews.h"
 #include "dkdbhelper.h"
 
+namespace {
+QColor mixColors(const QColor& a, const QColor& b, qreal ratioOfB)
+{
+    const qreal ratioA = 1.0 - ratioOfB;
+    return QColor::fromRgbF(a.redF() * ratioA + b.redF() * ratioOfB,
+                            a.greenF() * ratioA + b.greenF() * ratioOfB,
+                            a.blueF() * ratioA + b.blueF() * ratioOfB,
+                            a.alphaF() * ratioA + b.alphaF() * ratioOfB);
+}
+}
+
+tablelayout::tablelayout(QTextDocument* td, const QPalette& palette)
+    : td(td), palette(palette)
+{
+    initFormats();
+}
+
+void tablelayout::initFormats()
+{
+    const QColor textColor = palette.color(QPalette::Active, QPalette::Text);
+    const QColor baseColor = palette.color(QPalette::Active, QPalette::Base);
+    const QColor alternateBaseColor = palette.color(QPalette::Active, QPalette::AlternateBase);
+    const QColor headerColor = mixColors(baseColor, palette.color(QPalette::Active, QPalette::Highlight), 0.18);
+    const QColor sectionColor = mixColors(baseColor, palette.color(QPalette::Active, QPalette::Highlight), 0.12);
+    const QColor oddRowColor = mixColors(baseColor, alternateBaseColor, 0.65);
+    const QColor evenRowColor = mixColors(baseColor, alternateBaseColor, 0.35);
+
+    tableformats[colHeader]      = {fontSize_colHeader, bold,    textColor,   headerColor,   Qt::AlignCenter, 0, 0};
+    tableformats[emptyLine]      = {fontSize_emptyRow,  regular, textColor,   baseColor,     Qt::AlignCenter, 0, 0};
+    tableformats[sectionHeader]  = {fontSize_secHeader, bold,    textColor,   sectionColor,  Qt::AlignLeft,   0, 0};
+    tableformats[dataFirstColOdd]= {fontSize_data,      regular, textColor,   oddRowColor,   Qt::AlignLeft,   0, 0};
+    tableformats[dataMiddleColOdd]= {fontSize_data,     regular, textColor,   oddRowColor,   Qt::AlignCenter, 0, 0};
+    tableformats[dataLastColOdd] = {fontSize_data,      regular, textColor,   oddRowColor,   Qt::AlignRight,  0, 0};
+    tableformats[dataFirstColEven]= {fontSize_data,     regular, textColor,   evenRowColor,  Qt::AlignLeft,   0, 0};
+    tableformats[dataMiddleColEven]= {fontSize_data,    regular, textColor,   evenRowColor,  Qt::AlignCenter, 0, 0};
+    tableformats[dataLastColEven]= {fontSize_data,      regular, textColor,   evenRowColor,  Qt::AlignRight,  0, 0};
+}
+
 
 void tablelayout::setCellFormat(QTextTableCell& cell, cellType ct) {
     if(tableformats[ct].charFormatIndex) {
@@ -207,6 +245,12 @@ void uebersichten::prep( const QString& head, const QString& desc)
     QFont f =td->defaultFont();
     f.setFamily(qsl("Verdana"));
     td->setDefaultFont(f);
+    const QColor textColor = palette.color(QPalette::Active, QPalette::Text);
+    const QColor baseColor = palette.color(QPalette::Active, QPalette::Base);
+    td->setDefaultStyleSheet(
+        qsl("body { color: %1; background-color: %2; } "
+            "h2, big, p, div, td { color: %1; }")
+            .arg(textColor.name(), baseColor.name()));
 
     // add Title, project info and current date
     QTextCursor tc(td);
@@ -260,7 +304,7 @@ Für <i>aktive<i> Verträge läuft bereits die Verzinsung. Bei <i>inaktiven</i> 
 steht die Einzahlung durch die Kreditgeber*in noch aus.
 )str"));
     prep(head, describe);
-    tablelayout tl(td);
+    tablelayout tl(td, palette);
     tl.sections.push_back({qsl("Aktive und Inaktive Verträge"), overviewShortInfo(sqlOverviewAllContracts)});
     tl.sections.push_back({qsl("Aktive Verträge"), overviewShortInfo(sqlOverviewActiveContracts)});
     tl.sections.push_back({qsl("InAktive Verträge"), overviewShortInfo(sqlOverviewInActiveContracts)});
@@ -276,7 +320,7 @@ void uebersichten::renderPayedInterestByYear()
     if( not executeSql( sqlInterestByYearOverview, records)) {
         return;
     }
-    tablelayout tl(td);
+    tablelayout tl(td, palette);
     // tl.cols = QStringList...)
     tablelayout::section currentSec;
     currentSec.hasSubsections =true;
@@ -316,7 +360,7 @@ void uebersichten::renderContractsByContractEnd()
     QString desc {qsl("Anzahl und Wert der Verträge, die in den kommenden Jahren enden.")};
     prep(head, desc);
 
-    tablelayout tl (td);
+    tablelayout tl(td, palette);
     tl.cols =QStringList({qsl("Jahr"), qsl("Anzahl"), qsl("Summe")});
 
     QVector<contractEnd_rowData> data;
@@ -341,7 +385,7 @@ void uebersichten::renderInterestDistribution()
     QVector<QSqlRecord> records;
     if( not executeSql(sqlContractsByYearByInterest, records))
         return;
-    tablelayout tl(td);
+    tablelayout tl(td, palette);
     tl.cols =QStringList({qsl("Zinssatz"), qsl("Summe"), qsl("Anzahl")});
 
     tablelayout::section currentSec;
@@ -370,7 +414,7 @@ void uebersichten::renderContractRuntimeDistrib()
     QString desc{qsl("Anzahl und Wert der Verträge nach ihrer Laufzeit")};
     prep( head, desc);
     QVector<contractRuntimeDistrib_rowData> data =contractRuntimeDistribution();
-    tablelayout tl(td);
+    tablelayout tl(td, palette);
     tl.cols =QStringList({"", qsl("Anzahl"), qsl("Volumen")});
     tablelayout::section sec;
     for (int i=0; i< data.size(); i++) {
@@ -385,7 +429,7 @@ void uebersichten::renderPerpetualInvestmentsCheckContracts()
     QString head {qsl("Liste fortlaufender Geldanlagen")};
     QString desc {qsl("Diese Tabelle gibt für jede fortlaufende Geldanlage die Sumnme der Vertragswerte im Jahr vor dem jeweiligen Vertragsabschluß an.")};
     prep(head, desc);
-    tablelayout tl(td);
+    tablelayout tl(td, palette);
     tl.cols =QStringList{qsl("Vert.\nDatum"), qsl("Vertrags-\nkennung"), qsl("Anzahl"), qsl("Vertragswert(e)"), qsl("Summe der\nletzten 12M") };
 
     QVector<QStringList> data =perpetualInvestmentByContracts ();
@@ -419,7 +463,7 @@ void uebersichten::renderPerpetualInvestmentsCheckBookings()
     QString desc {qsl("Diese Tabelle gibt dür Verträge mit fortlaufenden Geldanlagen an, "
                       "wie hoch die Summe der Vertragswerte ist, die sich aus den Buchungen der letzten 12 Monate ergeben.")};
     prep(head, desc);
-    tablelayout tl(td);
+    tablelayout tl(td, palette);
     tl.cols =QStringList{qsl("Buchungs-\ndatum"), qsl("# Buchungen\nzu diesem\nDatum"), qsl("Wert d. Buchungen\nzu diesem\nDatum"), qsl("Gesamtwert\nincl. Zinsen"), qsl("Gesamtwert der\nEinzahlungen\no. Zinsen")};
 
     QVector<QStringList> data =perpetualInvestment_bookings();

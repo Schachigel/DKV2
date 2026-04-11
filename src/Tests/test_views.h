@@ -13,6 +13,7 @@ private slots:
     void cleanupTestCase();
     void init();
     void cleanup();
+    void test_investmentOverview_includesDeletedContractsAndBookings();
 
 //    void test_stat_activateContract_reinvesting();
 //    void test_stat_activateContract_wpayout();

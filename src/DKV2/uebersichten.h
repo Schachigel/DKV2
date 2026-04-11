@@ -1,6 +1,9 @@
 #ifndef UEBERSICHTEN_H
 #define UEBERSICHTEN_H
 
+#include <array>
+#include <QGuiApplication>
+
 const QString MAGIC_SUBHEADER_MARKER ="!!__--SUBHEADER--__!!";
 
 struct tablelayout
@@ -24,7 +27,7 @@ struct tablelayout
         maxCellType
     };
 
-    tablelayout(QTextDocument* td) : td (td) {};
+    tablelayout(QTextDocument* td, const QPalette& palette);
 // interface
     void renderTable();
 
@@ -33,6 +36,7 @@ struct tablelayout
     QVector<section> sections;
     QTextDocument* td;
 private:
+    void initFormats();
     int colCount();
     int rowCount();
     int insertColHeader(QTextTable* tt);
@@ -45,6 +49,7 @@ private: // data
     qsizetype _colCount =-1;
     qsizetype _rowCount =-1;
     QVector<int> optColWidth;
+    QPalette palette;
 
     const bool bold =true;
     const bool regular =false;
@@ -56,33 +61,22 @@ private: // data
     const int fontSize_emptyRow  =1;
 
     struct cellTypeFormat {
-        const int pointSize;
-        const bool bold;
-        const QColor fColor;
-        const QColor bColor;
-        const Qt::Alignment alignment;
+        int pointSize =0;
+        bool bold =false;
+        QColor fColor;
+        QColor bColor;
+        Qt::Alignment alignment =Qt::AlignLeft;
         int blockFormatIndex =0;
         int charFormatIndex  =0;
     };
 
-    cellTypeFormat tableformats[maxCellType] ={
-    /*colHeader*/      {fontSize_colHeader, bold,    Qt::black, QColor(200, 200, 240), Qt::AlignCenter, 0, 0},
-    /*emptyLine*/      {fontSize_emptyRow,  regular, Qt::white, Qt::white,             Qt::AlignCenter, 0, 0},
-    /*sectionHeader*/  {fontSize_secHeader, bold,    Qt::black, QColor(240, 210, 210), Qt::AlignLeft  , 0, 0},
-    /*dataFirstColOdd*/{fontSize_data,      regular, Qt::black, QColor(230, 230, 230), Qt::AlignLeft  , 0, 0},
-    /*dataMid.ColOdd*/ {fontSize_data,      regular, Qt::black, QColor(230, 230, 230), Qt::AlignCenter, 0, 0},
-    /*dataLastColOdd*/ {fontSize_data,      regular, Qt::black, QColor(230, 230, 230), Qt::AlignRight , 0, 0},
-    /*dataFirstColEv*/ {fontSize_data,      regular, Qt::black, QColor(245, 245, 245), Qt::AlignLeft  , 0, 0},
-    /*dataMid.ColEv*/  {fontSize_data,      regular, Qt::black, QColor(245, 245, 245), Qt::AlignCenter, 0, 0},
-    /*dataLastColEv*/  {fontSize_data,      regular, Qt::black, QColor(245, 245, 245), Qt::AlignRight , 0, 0}
-    /*subsection head*/
-    };
+    std::array<cellTypeFormat, maxCellType> tableformats;
 
 };
 
 struct uebersichten
 {
-    uebersichten(QTextDocument* td) : td(td) {
+    uebersichten(QTextDocument* td, const QPalette& palette = QGuiApplication::palette()) : td(td), palette(palette) {
         td->clear();
         td->setUndoRedoEnabled(false);
     };
@@ -101,6 +95,7 @@ struct uebersichten
     void renderDocument( uetype t);
 private:
     QTextDocument* td;
+    QPalette palette;
     void prep(const QString& head, const QString& desc);
     void renderShortInfo();
     void renderPayedInterestByYear();
