@@ -33,6 +33,7 @@ private slots:
     void test_executeSingleColumnSql();
     void test_variantTypeConservation();
     void test_createDbViews();
+    void test_boundStatements_matchFormerLiteralSql();
 };
 
 #endif // TEST_SQLHELPER_H

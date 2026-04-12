@@ -186,13 +186,15 @@ tableindex_t saveNewInvestment(int ZSatz, QDate start, QDate end, const QString 
 tableindex_t createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
 {   LOG_CALL;
 
-    QString sql{qsl("SELECT * FROM Geldanlagen WHERE ZSatz =%1 AND Anfang <= date('%2') AND Ende >= date('%3')")};
+    QString sql{qsl("SELECT COUNT(*) FROM Geldanlagen WHERE ZSatz = ? AND Anfang <= date(?) AND Ende >= date(?)")};
+    QVector<QVariant> params {ZSatz, vDate.toString(Qt::ISODate), vDate.toString(Qt::ISODate)};
     QDate endDate =vDate.addYears(1);
     if( vDate == BeginingOfTime) {
-        sql =qsl("SELECT * FROM Geldanlagen WHERE ZSatz =%1 AND Ende == date('9999-12-31')");
+        sql =qsl("SELECT COUNT(*) FROM Geldanlagen WHERE ZSatz = ? AND Ende == date('9999-12-31')");
+        params = {ZSatz};
         endDate =EndOfTheFuckingWorld;
     }
-    if( 0 < rowCount(sql.arg(i2s(ZSatz), vDate.toString(Qt::ISODate), vDate.toString(Qt::ISODate)))) {
+    if( 0 < executeSingleValueSql(sql, params).toInt()) {
         return SQLITE_invalidRowId;
     }
     TableDataInserter tdi(investment::getTableDef());
@@ -208,16 +210,13 @@ tableindex_t createInvestmentFromContractIfNeeded(const int ZSatz, QDate vDate)
 
 bool deleteInvestment(const qlonglong rowid)
 {   LOG_CALL;
-    QString sql{qsl("DELETE FROM Geldanlagen WHERE rowid=%1").arg(i2s(rowid))};
-    return executeSql_wNoRecords (sql);
+    return executeSql_wNoRecords(qsl("DELETE FROM Geldanlagen WHERE rowid=?"), rowid);
 }
 
 bool setInvestment(const qlonglong rowid, bool state)
 {   LOG_CALL;
-    QString sql{qsl("UPDATE  Geldanlagen  SET Offen = %1 WHERE rowid == %2")};
-
-    sql =sql.arg(state ? qsl("true") : qsl("false"), i2s(rowid));
-    return executeSql_wNoRecords(sql);
+    return executeSql_wNoRecords(qsl("UPDATE Geldanlagen SET Offen = ? WHERE rowid == ?"),
+                                 {state, rowid});
 }
 bool closeInvestment(const qlonglong rowid)
 {
@@ -362,9 +361,11 @@ QVector<investment> openInvestments(int rate, QDate conclusionDate)
 
 int closeInvestmentsPriorTo(QDate d)
 {   LOG_CALL_W(d.toString());
-    QString sql{qsl("UPDATE Geldanlagen SET Offen = false WHERE Offen AND Ende < date('%1')")};
+    const QString sql{qsl("UPDATE Geldanlagen SET Offen = false WHERE Offen AND Ende < date(?)")};
     QSqlQuery q;
-    if( not q.exec(sql.arg(d.toString(Qt::ISODate))))
+    q.prepare(sql);
+    q.addBindValue(d.toString(Qt::ISODate));
+    if( not q.exec())
     RETURN_ERR( -1, qsl("failed to update investments "), q.lastError ().text (), qsl("\n"), q.lastQuery ());
     return q.numRowsAffected();
 }

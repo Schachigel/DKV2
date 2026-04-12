@@ -182,7 +182,7 @@ bool creditor::remove()
     // [ creditor <-> contract ] On Delete Cascade
     // deletion with active contracts will fail due to ref. integrity contracts <> bookings
     // [ contract <-> booking ] On Delete Restrict
-    if( executeSql_wNoRecords(qsl("DELETE FROM Kreditoren WHERE Id=") +i2s(index.v)))
+    if( executeSql_wNoRecords(qsl("DELETE FROM Kreditoren WHERE Id=?"), index.v))
         return true;
     else
         return false;

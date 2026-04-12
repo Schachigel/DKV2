@@ -313,8 +313,12 @@ bool open_databaseForApplication(const QString& newDbFile)
 
 bool isValidNewContractLabel(const QString& newLabel)
 {
-    QVariant existingLabel =executeSingleValueSql(contract::fnKennung, contract::tnContracts, qsl("Kennung = ") +singleQuoted (newLabel ));
-    QVariant existingExLabel =executeSingleValueSql(contract::fnKennung, contract::tnExContracts, qsl("Kennung = ") +singleQuoted (newLabel));
+    const QVariant existingLabel = executeSingleValueSql(
+        qsl("SELECT %1 FROM %2 WHERE %1 = ?").arg(contract::fnKennung, contract::tnContracts),
+        QVector<QVariant>{newLabel});
+    const QVariant existingExLabel = executeSingleValueSql(
+        qsl("SELECT %1 FROM %2 WHERE %1 = ?").arg(contract::fnKennung, contract::tnExContracts),
+        QVector<QVariant>{newLabel});
 
     return not (existingLabel.isValid () or existingExLabel.isValid ());
 }
@@ -790,8 +794,9 @@ UNION ALL
 
 QString Vor_Nachname_Kreditor(qlonglong id)
 {
-    return executeSingleValueSql(qsl("Vorname || ' ' || Nachname"), qsl("Kreditoren"),
-                                 qsl("id=%1").arg(id)).toString ();
+    return executeSingleValueSql(
+        qsl("SELECT Vorname || ' ' || Nachname FROM Kreditoren WHERE id=?"),
+        QVector<QVariant>{id}).toString ();
 }
 
 // struct changeBookingData {
@@ -804,7 +809,7 @@ QString Vor_Nachname_Kreditor(qlonglong id)
 
 bool getChangeBookingData(changeBookingData& cbd, qlonglong bid)
 {
-    QString  sql{ qsl(R"str(
+    const QString sql{ qsl(R"str(
 SELECT
   Vertraege.Kennung
 , Kreditoren.Vorname
@@ -818,10 +823,14 @@ INNER JOIN Vertraege ON Buchungen.VertragsId = Vertraege.id
 INNER JOIN Kreditoren ON Kreditoren.id = Vertraege.KreditorId
 
 WHERE
-    Buchungen.id = %1
+    Buchungen.id = ?
 )str") };
 
-    QSqlRecord rec =executeSingleRecordSql (sql.arg(bid));
+    QVector<QSqlRecord> records;
+    if (not executeSql(sql, QVector<QVariant>{bid}, records) || records.size() != 1)
+        return false;
+
+    QSqlRecord rec =records[0];
     qDebug() << rec;
     cbd.Vorname  =rec.value("Vorname").toString ();
     cbd.Nachname =rec.value ("Nachname").toString ();

@@ -147,10 +147,11 @@ void contract::initRandom(const creditorId_t credId)
 double contract::value(const QDate d) const
 {
     // what is the value of the contract at a given time?
-    QString where {qsl("%1=%3 AND %2<='%4'").arg(booking::fn_bVertragsId, booking::fn_bDatum)};
-    where =where.arg(id_aS (), d.toString(Qt::ISODate));
-    QVariant v = executeSingleValueSql(qsl("SUM(Betrag)"),
-        isTerminated ? booking::tn_ExBuchungen : booking::tn_Buchungen, where);
+    const QString sql = qsl("SELECT SUM(Betrag) FROM %1 WHERE %2=? AND %3<=?")
+        .arg(isTerminated ? booking::tn_ExBuchungen : booking::tn_Buchungen,
+             booking::fn_bVertragsId,
+             booking::fn_bDatum);
+    const QVariant v = executeSingleValueSql(sql, QVector<QVariant>{id().v, d.toString(Qt::ISODate)});
     if( v.isValid())
         return euroFromCt(v.toInt());
     // todo: error handling
@@ -159,11 +160,19 @@ double contract::value(const QDate d) const
 double contract::investedValue(const QDate d) const
 {
     // how many money was put into the contract by the creditor?
-    QString where{ qsl("%1=%5 AND %2<='%6' AND (%3=%7 OR %3=%8) ").arg(booking::fn_bVertragsId, booking::fn_bDatum, booking::fn_bBuchungsArt) };
-    where = where.arg(id_aS(), d.toString(Qt::ISODate),
-        bookingTypeToNbrString(bookingType::deposit),
-        bookingTypeToNbrString(bookingType::payout));
-    QVariant v = executeSingleValueSql(qsl("SUM(Betrag)"), booking::tn_Buchungen, where);
+    const QString sql = qsl(
+        "SELECT SUM(Betrag) FROM %1 "
+        "WHERE %2=? AND %3<=? AND (%4=? OR %4=?)")
+        .arg(booking::tn_Buchungen,
+             booking::fn_bVertragsId,
+             booking::fn_bDatum,
+             booking::fn_bBuchungsArt);
+    const QVariant v = executeSingleValueSql(sql, QVector<QVariant>{
+        id().v,
+        d.toString(Qt::ISODate),
+        int(bookingType::deposit),
+        int(bookingType::payout)
+    });
     if (v.isValid())
         return euroFromCt(v.toInt());
     return 0.;
@@ -190,9 +199,11 @@ NOTE to self: DKV2 stellt sicher, dass bei Verträgen mit verzögerter Zinszahlu
     eine Aktivierung der Zinszahlung erst nach dem ersten Geldeingang verbuchtwerden kann.
     SONST müsste hier sichergestellt werden, dass die letzte Buchung vom Typ Ein/Auszahlung oder Zinszahlung ist
 */
-    QString sql {qsl("SELECT MAX(%1) FROM %2 WHERE %3=%4")
-                .arg(booking::fn_bDatum, isTerminated ? booking::tn_ExBuchungen : booking::tn_Buchungen, booking::fn_bVertragsId, id_aS())};
-    QVariant date =executeSingleValueSql(sql);
+    const QString sql = qsl("SELECT MAX(%1) FROM %2 WHERE %3=?")
+        .arg(booking::fn_bDatum,
+             isTerminated ? booking::tn_ExBuchungen : booking::tn_Buchungen,
+             booking::fn_bVertragsId);
+    const QVariant date = executeSingleValueSql(sql, QVector<QVariant>{id().v});
     if( date.isValid() && date.canConvert<QDate>()) {
         QDate d {date.toDate()};
         if( d.isValid()){
@@ -213,9 +224,17 @@ NOTE to self:
     eine Aktivierung der Zinszahlung erst nach dem ersten Geldeingang verbuchtwerden kann.
     SONST müsste hier sichergestellt werden, dass die letzte Buchung vom Typ Ein/Auszahlung oder Zinszahlung ist
     */
-    QString sql {qsl("SELECT id, %1, %2, %3, %4 FROM %6 WHERE %1=%5 ORDER BY %2 DESC, id DESC LIMIT 1").arg(
-        booking::fn_bVertragsId, booking::fn_bDatum, booking::fn_bBuchungsArt, booking::fn_bBetrag, id_aS(), isTerminated ? booking::tn_ExBuchungen : booking::tn_Buchungen)};
-    QSqlRecord rec = executeSingleRecordSql(sql);
+    const QString sql = qsl(
+        "SELECT id, %1, %2, %3, %4 FROM %5 "
+        "WHERE %1=? ORDER BY %2 DESC, id DESC LIMIT 1")
+        .arg(booking::fn_bVertragsId,
+             booking::fn_bDatum,
+             booking::fn_bBuchungsArt,
+             booking::fn_bBetrag,
+             isTerminated ? booking::tn_ExBuchungen : booking::tn_Buchungen);
+    QVector<QSqlRecord> records;
+    executeSql(sql, QVector<QVariant>{id().v}, records);
+    const QSqlRecord rec = (records.size() == 1) ? records[0] : QSqlRecord();
     if( 0 == rec.count()) {
         RETURN_OK( booking(), qsl("latestBooking returns empty value"));
     }
@@ -258,11 +277,11 @@ bool contract::updateComment(const QString &c)
 bool contract::updateInitialPaymentDate(const QDate& newD)
 {
 // TODO: ?? kontrolliert das UI, dass das ipd VOR jeder anderen Buchung ist?
-    QString sql { qsl("UPDATE Buchungen SET  Datum = '%1' "
-                   "WHERE id == ("
-                   "SELECT MIN(rowid) FROM Buchungen WHERE VertragsId = %2 AND BuchungsArt = 1)").arg (newD.toString (Qt::ISODate), id_aS())
-                };
-    return executeSql_wNoRecords (sql);
+    const QString sql {qsl(
+        "UPDATE Buchungen SET Datum = ? "
+        "WHERE id == ("
+        "SELECT MIN(rowid) FROM Buchungen WHERE VertragsId = ? AND BuchungsArt = 1)")};
+    return executeSql_wNoRecords(sql, {newD.toString(Qt::ISODate), id().v});
 }
 bool contract::updateTerminationDate(QDate termination, int noticePeriod)
 {
@@ -289,8 +308,7 @@ bool contract::updateSetInterestActive()
     RETURN_OK( td.updateValue(fnZAktiv, true, id().v), qsl("activated interest payment"));
 }
 bool contract::deleteInactive() {
-    QString sql=qsl("DELETE FROM Vertraege WHERE id=%1").arg( id_aS ());
-    return executeSql_wNoRecords(sql);
+    return executeSql_wNoRecords(qsl("DELETE FROM Vertraege WHERE id=?"), id().v);
 }
 // non member helper: only annual settlements or initial payments should be on the last day of the year
 // other bookings should move to dec. 30th
@@ -344,17 +362,18 @@ bool contract::initialPaymentReceived() const
 }
 QDate contract::initialPaymentDate()
 {
-    QVariant ipd =executeSingleValueSql (qsl("SELECT MIN(Datum) FROM Buchungen WHERE %1 = %2 AND %3 = %4")
-                                         .arg(booking::fn_bVertragsId, id_aS (), booking::fn_bBuchungsArt, bookingTypeToNbrString( bookingType::deposit)));
+    const QVariant ipd = executeSingleValueSql(
+        qsl("SELECT MIN(Datum) FROM Buchungen WHERE %1 = ? AND %2 = ?")
+            .arg(booking::fn_bVertragsId, booking::fn_bBuchungsArt),
+        QVector<QVariant>{id().v, int(bookingType::deposit)});
     return ipd.toDate ();
 }
 bool contract::noBookingButInitial()
 {
     // an initial booking is always a deposit
-    QString sql {qsl("SELECT count(*) FROM %1 WHERE %2 = %3 AND %4 = %5")
-                .arg(booking::tn_Buchungen, booking::fn_bVertragsId, id_aS (), booking::fn_bBuchungsArt,
-                     bookingTypeToNbrString(bookingType::deposit))};
-    return 1 == executeSingleValueSql (sql).toInt ();
+    const QString sql = qsl("SELECT count(*) FROM %1 WHERE %2 = ? AND %3 = ?")
+        .arg(booking::tn_Buchungen, booking::fn_bVertragsId, booking::fn_bBuchungsArt);
+    return 1 == executeSingleValueSql(sql, QVector<QVariant>{id().v, int(bookingType::deposit)}).toInt();
 }
 
 BookingResult contract::bookActivateInterest(const QDate d)
@@ -842,20 +861,24 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate) const
 double contract::payedInterestAtTermination()
 {
     if( not isTerminated) return 0.;
-    QString sql(qsl("SELECT Betrag FROM exBuchungen WHERE VertragsId=%1 AND BuchungsArt=%2 ORDER BY id DESC LIMIT 1"));
-    sql =sql.arg(id_aS (), bookingTypeToNbrString(bookingType::reInvestInterest));
-    return euroFromCt(executeSingleValueSql(sql).toInt());
+    const QString sql = qsl(
+        "SELECT Betrag FROM exBuchungen WHERE VertragsId=? AND BuchungsArt=? "
+        "ORDER BY id DESC LIMIT 1");
+    return euroFromCt(executeSingleValueSql(
+        sql,
+        QVector<QVariant>{id().v, int(bookingType::reInvestInterest)}).toInt());
 }
 double contract::getAnnualInterest(year y, bookingType interestType)
 {
     if( iModel() != interestModel::payout)
         return 0;
 
-    QString where{qsl("VertragsId=%1 AND BuchungsArt=%2 AND SUBSTR(Buchungen.Datum, 1, 4)=%3")};
-    where =where.arg(DbInsertableString (id().v), DbInsertableString (bookingTypeToNbrString(interestType)),
-                     DbInsertableString (i2s(y))); // conversion to string is needed as this is not an integer but part of a date string
-
-    return euroFromCt(executeSingleValueSql (qsl("SUM(Betrag)"), booking::tn_Buchungen, where).toInt());
+    const QString sql = qsl(
+        "SELECT SUM(Betrag) FROM %1 WHERE VertragsId=? AND BuchungsArt=? AND SUBSTR(%2, 1, 4)=?")
+        .arg(booking::tn_Buchungen, booking::fn_bDatum);
+    return euroFromCt(executeSingleValueSql(
+        sql,
+        QVector<QVariant>{id().v, int(interestType), i2s(y)}).toInt());
 }
 
 // test helper

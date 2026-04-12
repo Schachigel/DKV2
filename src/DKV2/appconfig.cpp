@@ -27,13 +27,19 @@ dbtable appconfig::getTableDef()
 // db config info in 'meta' table
 void initMetaInfo( const QString& name, const QString& initialValue, const QSqlDatabase& db)
 {   LOG_CALL;
-    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='%1'").arg(name), db);
+    const QVariant value = executeSingleValueSql(
+        qsl("SELECT Wert FROM Meta WHERE Name=?"),
+        QVector<QVariant>{name},
+        db);
     if( value.metaType().id() == QMetaType::UnknownType)
         setMetaInfo(name, initialValue, db);
 }
 void initNumMetaInfo( const QString& name, const double newValue, const QSqlDatabase& db)
 {   LOG_CALL;
-    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='%1'").arg(name), db);
+    const QVariant value = executeSingleValueSql(
+        qsl("SELECT Wert FROM Meta WHERE Name=?"),
+        QVector<QVariant>{name},
+        db);
     if( value.metaType().id() == QMetaType::UnknownType)
         setNumMetaInfo(name, newValue, db);
 }
@@ -42,7 +48,10 @@ QString getMetaInfo(const QString& name, const QString& def, const QSqlDatabase&
     if( not db.isValid())
         RETURN_OK(def, qsl("getMetaInfo: No database ready (yet), defaulting"));
 
-    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='%1'").arg(name), db);
+    const QVariant value = executeSingleValueSql(
+        qsl("SELECT Wert FROM Meta WHERE Name=?"),
+        QVector<QVariant>{name},
+        db);
     if( not value.isValid())
         RETURN_OK( def, qsl("getMetaInfo: read uninitialized property "), qsl(" -> using default "), def);
 
@@ -53,7 +62,10 @@ double getNumMetaInfo(const QString& name, const double def, const QSqlDatabase&
     if( not db.isValid())
         RETURN_OK( def, qsl("getNumMetaInfo: No database ready (yet), defaulting"));
 
-    QVariant value= executeSingleValueSql(dkdbstructur[qsl("Meta")][qsl("Wert")], qsl("Name='%1'").arg(name), db);
+    const QVariant value = executeSingleValueSql(
+        qsl("SELECT Wert FROM Meta WHERE Name=?"),
+        QVector<QVariant>{name},
+        db);
     if( not value.isValid())
         RETURN_OK( def, qsl("getNumMetaInfo: Read empty property "), name, qsl( "> using default"));
     RETURN_OK( value.toDouble(), qsl("getNumMetaInfo: "), name, value.toString());

@@ -6,6 +6,28 @@
 
 #include "test_sqlhelper.h"
 
+namespace {
+void compareTableContent(const QString& leftTable, const QString& rightTable)
+{
+    QVector<QSqlRecord> leftRows;
+    QVector<QSqlRecord> rightRows;
+    QVERIFY2(executeSql(qsl("SELECT * FROM [%1] ORDER BY rowid").arg(leftTable), leftRows),
+             qPrintable(qsl("failed to read comparison table %1").arg(leftTable)));
+    QVERIFY2(executeSql(qsl("SELECT * FROM [%1] ORDER BY rowid").arg(rightTable), rightRows),
+             qPrintable(qsl("failed to read comparison table %1").arg(rightTable)));
+
+    QCOMPARE(leftRows.size(), rightRows.size());
+    for (int row = 0; row < leftRows.size(); ++row) {
+        QCOMPARE(leftRows[row].count(), rightRows[row].count());
+        for (int col = 0; col < leftRows[row].count(); ++col) {
+            QCOMPARE(leftRows[row].fieldName(col), rightRows[row].fieldName(col));
+            QCOMPARE(leftRows[row].isNull(col), rightRows[row].isNull(col));
+            QCOMPARE(leftRows[row].value(col), rightRows[row].value(col));
+        }
+    }
+}
+}
+
 void test_sqlhelper::init()
 {
     reInit_DKDBStruct();
@@ -630,4 +652,150 @@ void test_sqlhelper::test_createDbViews()
         QVERIFY(not viewExistsInSqlite_Master( viewName2));
         QVERIFY(viewCanBeExecuted (viewName2));
     }
+}
+
+void test_sqlhelper::test_boundStatements_matchFormerLiteralSql()
+{
+    QVERIFY(executeSql_wNoRecords(
+        qsl("CREATE TABLE Geldanlagen_old ("
+            "rowid INTEGER PRIMARY KEY, "
+            "ZSatz INTEGER NOT NULL, "
+            "Anfang TEXT NOT NULL, "
+            "Ende TEXT NOT NULL, "
+            "Typ TEXT NOT NULL, "
+            "Offen BOOLEAN NOT NULL)")));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("CREATE TABLE Geldanlagen_new ("
+            "rowid INTEGER PRIMARY KEY, "
+            "ZSatz INTEGER NOT NULL, "
+            "Anfang TEXT NOT NULL, "
+            "Ende TEXT NOT NULL, "
+            "Typ TEXT NOT NULL, "
+            "Offen BOOLEAN NOT NULL)")));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("CREATE TABLE Buchungen_old ("
+            "id INTEGER PRIMARY KEY, "
+            "VertragsId INTEGER NOT NULL, "
+            "Datum TEXT NOT NULL, "
+            "BuchungsArt INTEGER NOT NULL, "
+            "Betrag INTEGER NOT NULL)")));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("CREATE TABLE Buchungen_new ("
+            "id INTEGER PRIMARY KEY, "
+            "VertragsId INTEGER NOT NULL, "
+            "Datum TEXT NOT NULL, "
+            "BuchungsArt INTEGER NOT NULL, "
+            "Betrag INTEGER NOT NULL)")));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("CREATE TABLE Notizen_old ("
+            "id INTEGER PRIMARY KEY, "
+            "Titel TEXT NOT NULL, "
+            "Kommentar TEXT NULL)")));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("CREATE TABLE Notizen_new ("
+            "id INTEGER PRIMARY KEY, "
+            "Titel TEXT NOT NULL, "
+            "Kommentar TEXT NULL)")));
+
+    const QString insertInvestmentSql = qsl(
+        "INSERT INTO %1 (rowid, ZSatz, Anfang, Ende, Typ, Offen) VALUES "
+        "(1, 150, '2024-01-01', '2024-12-31', 'Basis', TRUE), "
+        "(2, 150, '2024-07-01', '9999-12-31', 'Flex', TRUE), "
+        "(3, 200, '2023-01-01', '2024-02-01', 'Alt', TRUE)");
+    QVERIFY(executeSql_wNoRecords(insertInvestmentSql.arg(qsl("Geldanlagen_old"))));
+    QVERIFY(executeSql_wNoRecords(insertInvestmentSql.arg(qsl("Geldanlagen_new"))));
+
+    const QString insertBookingsSql = qsl(
+        "INSERT INTO %1 (id, VertragsId, Datum, BuchungsArt, Betrag) VALUES "
+        "(1, 1, '2024-01-15', 1, 10000), "
+        "(2, 1, '2024-03-15', 8, 500), "
+        "(3, 2, '2024-02-01', 1, 20000)");
+    QVERIFY(executeSql_wNoRecords(insertBookingsSql.arg(qsl("Buchungen_old"))));
+    QVERIFY(executeSql_wNoRecords(insertBookingsSql.arg(qsl("Buchungen_new"))));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Notizen_old (id, Titel, Kommentar) VALUES (1, 'mit Null', NULL)")));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Notizen_new (id, Titel, Kommentar) VALUES (1, 'mit Null', NULL)")));
+
+    const QString renamedType {qsl("O'Brien Spezial")};
+    QVERIFY(executeSql_wNoRecords(
+        qsl("UPDATE Geldanlagen_old SET Typ = %1 WHERE rowid = %2")
+            .arg(DbInsertableString(renamedType), DbInsertableString(1))));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("UPDATE Geldanlagen_new SET Typ = ? WHERE rowid = ?"),
+        QVector<QVariant>{renamedType, 1}));
+
+    const QDate cutoff(2024, 6, 1);
+    QVERIFY(executeSql_wNoRecords(
+        qsl("UPDATE Geldanlagen_old SET Offen = false WHERE Offen AND Ende < date(%1)")
+            .arg(DbInsertableString(cutoff))));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("UPDATE Geldanlagen_new SET Offen = false WHERE Offen AND Ende < date(?)"),
+        QVector<QVariant>{cutoff.toString(Qt::ISODate)}));
+
+    const QDate newPaymentDate(2024, 2, 20);
+    QVERIFY(executeSql_wNoRecords(
+        qsl("UPDATE Buchungen_old SET Datum = %1 "
+            "WHERE id == (SELECT MIN(rowid) FROM Buchungen_old WHERE VertragsId = %2 AND BuchungsArt = 1)")
+            .arg(DbInsertableString(newPaymentDate), DbInsertableString(1))));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("UPDATE Buchungen_new SET Datum = ? "
+            "WHERE id == (SELECT MIN(rowid) FROM Buchungen_new WHERE VertragsId = ? AND BuchungsArt = 1)"),
+        QVector<QVariant>{newPaymentDate.toString(Qt::ISODate), 1}));
+
+    QVERIFY(executeSql_wNoRecords(
+        qsl("DELETE FROM Buchungen_old WHERE Buchungen_old.id = %1").arg(DbInsertableString(2))));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("DELETE FROM Buchungen_new WHERE Buchungen_new.id = ?"), 2));
+
+    // no-match operations: should succeed and leave both tables identical
+    QVERIFY(executeSql_wNoRecords(
+        qsl("UPDATE Buchungen_old SET Datum = %1 WHERE id = %2")
+            .arg(DbInsertableString(QDate(2024, 4, 4)), DbInsertableString(999))));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("UPDATE Buchungen_new SET Datum = ? WHERE id = ?"),
+        QVector<QVariant>{QDate(2024, 4, 4).toString(Qt::ISODate), 999}));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("DELETE FROM Buchungen_old WHERE id = %1").arg(DbInsertableString(999))));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("DELETE FROM Buchungen_new WHERE id = ?"), 999));
+
+    const QDate lookupDate(2024, 8, 1);
+    const QVariant oldCount = executeSingleValueSql(
+        qsl("SELECT COUNT(*) FROM Geldanlagen_old "
+            "WHERE ZSatz = %1 AND Anfang <= date(%2) AND Ende >= date(%2)")
+            .arg(DbInsertableString(150), DbInsertableString(lookupDate)));
+    const QVariant newCount = executeSingleValueSql(
+        qsl("SELECT COUNT(*) FROM Geldanlagen_new "
+            "WHERE ZSatz = ? AND Anfang <= date(?) AND Ende >= date(?)"),
+        {150, lookupDate.toString(Qt::ISODate), lookupDate.toString(Qt::ISODate)});
+
+    QCOMPARE(oldCount, QVariant(2));
+    QCOMPARE(newCount, oldCount);
+
+    // empty result set should stay empty in both styles
+    QVector<QSqlRecord> oldEmptyResult;
+    QVector<QSqlRecord> newEmptyResult;
+    QVERIFY(executeSql(
+        qsl("SELECT * FROM Buchungen_old WHERE VertragsId = %1").arg(DbInsertableString(999)),
+        oldEmptyResult));
+    QVERIFY(executeSql(
+        qsl("SELECT * FROM Buchungen_new WHERE VertragsId = ?"),
+        QVector<QVariant>{999},
+        newEmptyResult));
+    QVERIFY(oldEmptyResult.isEmpty());
+    QCOMPARE(newEmptyResult.size(), oldEmptyResult.size());
+
+    // a NULL single-value result is currently normalized to invalid QVariant
+    const QVariant oldNull = executeSingleValueSql(
+        qsl("SELECT Kommentar FROM Notizen_old WHERE id = %1").arg(DbInsertableString(1)));
+    const QVariant newNull = executeSingleValueSql(
+        qsl("SELECT Kommentar FROM Notizen_new WHERE id = ?"),
+        QVector<QVariant>{1});
+    QVERIFY(not oldNull.isValid());
+    QCOMPARE(newNull.isValid(), oldNull.isValid());
+
+    compareTableContent(qsl("Geldanlagen_old"), qsl("Geldanlagen_new"));
+    compareTableContent(qsl("Buchungen_old"), qsl("Buchungen_new"));
+    compareTableContent(qsl("Notizen_old"), qsl("Notizen_new"));
 }

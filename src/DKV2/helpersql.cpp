@@ -435,6 +435,8 @@ QVariant executeSingleValueSql(const QString& sql, const QVector<QVariant> param
             RETURN_ERR( QVariant(), QString(__FUNCTION__), qsl("Query returned too many records"));
         if( result.isEmpty())
             RETURN_OK( QVariant(), QString(__FUNCTION__), qsl("Query returned no record"));
+        if (result[0].isNull(0))
+            RETURN_OK(QVariant(), QString(__FUNCTION__), qsl("Query returned NULL"));
         RETURN_OK( result[0].value(0), QString(__FUNCTION__));
     }
     else

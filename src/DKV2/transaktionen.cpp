@@ -438,8 +438,8 @@ LIMIT 1
         qInfo() << "Löschen der Buchung wurde abgebrochen";
         return;
     }
-    QString sqlDelete ={qsl("DELETE FROM Buchungen WHERE Buchungen.id = %1").arg(rec.value(qsl("Buchungen.id")).toLongLong ())};
-    if( not executeSql_wNoRecords (sqlDelete)) {
+    if( not executeSql_wNoRecords(qsl("DELETE FROM Buchungen WHERE Buchungen.id = ?"),
+                                  rec.value(qsl("Buchungen.id")).toLongLong())) {
         qCritical() << "failed to delete booking ";
     }
 }
@@ -666,12 +666,9 @@ void deleteFinalizedContract(contract *c) {
         return;
     }
     autoRollbackTransaction arbt;
-    executeSql_wNoRecords(
-                qsl("DELETE FROM exBuchungen WHERE VertragsId = %1").arg(c->id_aS()));
-    executeSql_wNoRecords(
-                qsl("DELETE FROM exVertraege WHERE id = %1").arg(c->id_aS()));
-    executeSql_wNoRecords(
-                qsl("DELETE FROM Kreditoren  WHERE id = %1").arg(c->credId().v));
+    executeSql_wNoRecords(qsl("DELETE FROM exBuchungen WHERE VertragsId = ?"), c->id().v);
+    executeSql_wNoRecords(qsl("DELETE FROM exVertraege WHERE id = ?"), c->id().v);
+    executeSql_wNoRecords(qsl("DELETE FROM Kreditoren WHERE id = ?"), c->credId().v);
     arbt.commit();
 }
 

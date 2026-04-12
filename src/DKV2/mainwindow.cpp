@@ -557,8 +557,8 @@ void MainWindow::on_actionTyp_Bezeichnung_aendern_triggered()
 
     QSqlTableModel* tm =qobject_cast<QSqlTableModel*>(ui->InvestmentsTableView->model());
     QSqlRecord rec =tm->record(index.row());
-    QString sql(qsl("UPDATE Geldanlagen SET Typ =? WHERE rowid =%1").arg(rec.value(qsl("AnlagenId")).toString()));
-    if( executeSql_wNoRecords(sql, {QVariant(txt)}))
+    if( executeSql_wNoRecords(qsl("UPDATE Geldanlagen SET Typ = ? WHERE rowid = ?"),
+                              {txt, rec.value(qsl("AnlagenId"))}))
         tm->select();
 }
 void MainWindow::on_action_cmenu_Vertraege_anzeigen_triggered()
