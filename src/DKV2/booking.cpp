@@ -111,22 +111,28 @@ bool bookInterestActive(const contractId_t cId, QDate date)
 
 bool writeBookingUpdate( bookingId_t bookingId, int newValeuInCt)
 {
-    QString sql {qsl("UPDATE %0 SET %1=%2, %3='%4' WHERE id=%5")
-            .arg(booking::tn_Buchungen, booking::fn_bBetrag, QString::number(newValeuInCt),
-                 booking::fn_bModifiziert, QDate::currentDate().toString(Qt::ISODate),
-                         QString::number(bookingId.v))};
-    return executeSql_wNoRecords (sql);
+    const QString sql = qsl("UPDATE %1 SET %2=?, %3=? WHERE id=?")
+            .arg(booking::tn_Buchungen, booking::fn_bBetrag, booking::fn_bModifiziert);
+    return executeSql_wNoRecords(sql, QVector<QVariant>{newValeuInCt, QDate::currentDate(), bookingId.v});
 }
 
 ///////////// bookingS start here
 int getNbrOfBookings(const contractId_t contract, const QDate from, const QDate to, const bool terminated)
 {   // for testing mainly
-    QString where {qsl(" VertragsId=%1").arg(contract.v)};
-    if( from > BeginingOfTime)
-        where += qsl(" AND Datum >='%1'").arg(from.toString(Qt::ISODate));
-    if( to < EndOfTheFuckingWorld)
-        where += qsl(" AND Datum <='%1'").arg(to.toString(Qt::ISODate));
-    return rowCount((terminated ? booking::tn_ExBuchungen : booking::tn_Buchungen), where);
+    const QString tableName = terminated ? booking::tn_ExBuchungen : booking::tn_Buchungen;
+    QString sql = qsl("SELECT count(*) FROM %1 WHERE %2=?")
+            .arg(tableName, booking::fn_bVertragsId);
+    QVector<QVariant> params{contract.v};
+
+    if( from > BeginingOfTime) {
+        sql += qsl(" AND %1>=?").arg(booking::fn_bDatum);
+        params.push_back(from.toString(Qt::ISODate));
+    }
+    if( to < EndOfTheFuckingWorld) {
+        sql += qsl(" AND %1<=?").arg(booking::fn_bDatum);
+        params.push_back(to.toString(Qt::ISODate));
+    }
+    return executeSingleValueSql(sql, params).toInt();
 }
 int getNbrOfExBookings(const contractId_t contract, const QDate from, const QDate to)
 {
@@ -193,10 +199,9 @@ double getBookingsSum(QVector<booking> bl, bookingType bt)
 QVector<int> yearsWithAnnualBookings()
 {   LOG_CALL;
     QVector<int> years;
-    QString sql{qsl("SELECT DISTINCT SUBSTR(Datum, 1, 4) AS year FROM Buchungen WHERE BuchungsArt =%1 ORDER BY year DESC")
-                .arg (bookingTypeToNbrString(bookingType::annualInterestDeposit))};
+    const QString sql{qsl("SELECT DISTINCT SUBSTR(Datum, 1, 4) AS year FROM Buchungen WHERE BuchungsArt = ? ORDER BY year DESC")};
     QVector<QSqlRecord> vYears;
-    if( executeSql (sql, vYears)) {
+    if( executeSql(sql, QVector<QVariant>{int(bookingType::annualInterestDeposit)}, vYears)) {
         for (const QSqlRecord& year : std::as_const(vYears)) {
             years.push_back (year.value (0).toInt ());
         }

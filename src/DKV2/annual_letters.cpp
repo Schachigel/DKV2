@@ -214,13 +214,17 @@ QVector<contract> collectContractsForYear(qlonglong creditorId,
                                           bool isTerminated)
 {
     QVector<contract> contracts;
-    QVector<QVariant> ids = executeSingleColumnSql(
-                                isTerminated ? dkdbstructur[contract::tnExContracts][contract::fnId]
-                            : dkdbstructur[contract::tnContracts][contract::fnId],
-            qsl(" %1=%2 GROUP BY id").arg(contract::fnKreditorId, i2s(creditorId)));
+    const QString tableName = isTerminated ? contract::tnExContracts : contract::tnContracts;
+    QVector<QSqlRecord> idRecords;
+    if (!executeSql(qsl("SELECT %1 FROM %2 WHERE %3=? GROUP BY %1")
+                        .arg(contract::fnId, tableName, contract::fnKreditorId),
+                    QVector<QVariant>{creditorId},
+                    idRecords)) {
+        return contracts;
+    }
 
-    for (const auto &id : std::as_const(ids)) {
-        contract contr(contractId_t {id.toLongLong()}, isTerminated);
+    for (const auto &idRecord : std::as_const(idRecords)) {
+        contract contr(contractId_t {idRecord.value(contract::fnId).toLongLong()}, isTerminated);
         bool finalizedInPeriod = true;
         if (isTerminated) {
             const QDate endDateContract = contr.plannedEndDate();
