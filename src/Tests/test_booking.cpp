@@ -236,7 +236,7 @@ void test_booking::test_changeBookingValue() {
 }
 void test_booking::test_bookingTypeFunctions()
 {
-    for (int i=0; i< 20; i++) {
+    for (int i=0; i< 36; i++) {
         switch (i)
         {
         case 0:{
@@ -267,6 +267,11 @@ void test_booking::test_bookingTypeFunctions()
         case 16:{
             QString bt =bookingTypeDisplayString(bookingtypeFromInt(i));
             QCOMPARE(bt, qsl("Aktivierung d. Zinszahlung"));
+            break;
+        }
+        case 32:{
+            QString bt =bookingTypeDisplayString(bookingtypeFromInt(i));
+            QCOMPARE(bt, qsl("Unterjähriger Zins nachgelagert"));
             break;
         }
         default:{

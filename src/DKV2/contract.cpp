@@ -570,6 +570,48 @@ bool contract::payout(const QDate d, double amount, bool payoutInterest)
     QSqlDatabase::database().commit();
     return true;
 }
+
+contract::midYearInterestMode contract::yearlyMidYearInterestMode(int year)
+{
+    if (year < 0 || !isValidRowId(id().v))
+        return contract::undecided;
+
+    const QString tableName = isTerminated ? booking::tn_ExBuchungen : booking::tn_Buchungen;
+    const QString sql = qsl(
+        "SELECT "
+        "MAX(CASE WHEN BuchungsArt = ? THEN 1 ELSE 0 END) AS deferredMode, "
+        "MAX(CASE WHEN BuchungsArt = ? THEN 1 ELSE 0 END) AS immediateMode "
+        "FROM %1 "
+        "WHERE VertragsId = ? AND substr(Datum, 1, 4) = ?")
+        .arg(tableName);
+
+    QVector<QSqlRecord> records;
+    if (not executeSql(sql,
+                       QVector<QVariant>{int(bookingType::deferredMidYearInterest),
+                                         int(bookingType::reInvestInterest),
+                                         id().v,
+                                         i2s(year)},
+                       records) || records.size() != 1) {
+        qCritical() << "could not determine mid year interest mode";
+        return contract::undecided;
+    }
+
+    const QSqlRecord rec = records[0];
+    const bool isDeferred = rec.value(qsl("deferredMode")).toInt() > 0;
+    const bool isImmediate = rec.value(qsl("immediateMode")).toInt() > 0;
+
+    if (isDeferred && isImmediate) {
+        qCritical() << "inconsistent mid-year interest mode markers for contract/year"
+                    << id().v << year << "- explicit deferred marker wins";
+        return contract::deferred;
+    }
+    if (isDeferred)
+        return contract::deferred;
+    if (isImmediate)
+        return contract::immediate;
+    return contract::undecided;
+}
+
 bool contract::cancel(const QDate dPlannedContractEnd, const QDate dCancelation)
 {   LOG_CALL;
     if( not initialPaymentReceived()) {

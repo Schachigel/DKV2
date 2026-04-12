@@ -208,8 +208,12 @@ struct contract
 
     bool deposit(const QDate d, double amount, bool payoutInterest =false);
     bool payout(const QDate d, double amount, bool payoutInterest =false);
+    enum midYearInterestMode { deferred = -1, undecided = 0, immediate = 1 };
+    midYearInterestMode yearlyMidYearInterestMode(int year);
+
     bool cancel(const QDate d_plannedContractEnd, const QDate dCancelation);
     bool finalize(const bool simulate, const QDate finDate, double& finInterest, double& finPayout);
+
     // helper
     QString toString(const QString &name =QString()) const;
     QVariantMap toVariantMap(QDate fromDate = BeginingOfTime, QDate toDate = EndOfTheFuckingWorld) const;

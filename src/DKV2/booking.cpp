@@ -52,6 +52,7 @@
     case bookingType::reInvestInterest:      return qsl("Zinsanrechnung");
     case bookingType::annualInterestDeposit: return qsl("Jahreszins");
     case bookingType::setInterestActive:     return qsl("Aktivierung d. Zinszahlung");
+    case bookingType::deferredMidYearInterest:return qsl("Unterjähriger Zins nachgelagert");
     default:
         qCritical() << "Ungültiger Buchungstyp";
         return qsl("-- schwerer Fehler - ungültiger Buchungstyp --");

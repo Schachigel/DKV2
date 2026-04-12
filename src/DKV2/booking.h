@@ -13,7 +13,8 @@ enum class bookingType{
     payout                 = 2,
     reInvestInterest       = 4,
     annualInterestDeposit  = 8,
-    setInterestActive      =16
+    setInterestActive      =16,
+    deferredMidYearInterest = 32
 };
 QString bookingTypeDisplayString(const bookingType t);
 inline int bookingTypeToInt(const bookingType t) { return static_cast<int>(t);}
@@ -27,6 +28,7 @@ inline bookingType bookingtypeFromInt(int i)
     case  4: // reinvest
     case  8: // annualI.Deposit
     case 16: // setI.Active
+    case 32: // deferred mid-year interest handling
         return static_cast<bookingType>(i);
     default:
         qCritical() << "invalid booking type";

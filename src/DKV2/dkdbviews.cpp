@@ -287,37 +287,7 @@ FROM alle
 //////////////////////////////////////
 // VIEWs to be created in the database
 //////////////////////////////////////
-const QString vnBookingsOverview {qsl("vBuchungen")};
-const QString sqlBookingsOverview {qsl( // clazy:exclude=non-pod-global-static
-R"str(
-SELECT
-  IFNULL(B.Datum, V.Vertragsdatum),
-  V.id,
-  V.Kennung,
-  CASE V.thesaurierend
-    WHEN 0 THEN 'Ausz.'
-    WHEN 1 THEN 'Thesa.'
-    WHEN 2 THEN 'Fix'
-    WHEN 3 THEN 'Zinslos'
-    ELSE 'ERROR'
-  END AS Zinsmodus,
-  IFNULL(B.Betrag, V.Betrag),
-  CASE B.BuchungsArt
-    WHEN 1 THEN 'Einzahlung'
-    WHEN 2 THEN 'Auszahlung'
-    WHEN 4 THEN 'unterj.Zins'
-    WHEN 8 THEN 'Jahreszins'
-    ELSE 'Vertragsabschluss'
-  END AS BuchungsArt
-FROM Vertraege AS V
-  LEFT JOIN Buchungen AS B ON V.id = B.VertragsId
-ORDER BY B.Datum, V.id
-)str"
-)};
-
 const QMap<QString, QString> views ={
-    // convenientce view
-    {vnBookingsOverview, sqlBookingsOverview},
     {vnContractView, sqlContractView},
     {vnExContractView, sqlExContractView},
     {vnInvestmentsView, sqlInvestmentsView}

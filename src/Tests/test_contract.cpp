@@ -737,6 +737,30 @@ void test_contract::test_contract_cv_reInvesting()
     QCOMPARE(cont.latestBooking().amount, 12.90);
 }
 
+void test_contract::test_yearlyMidYearInterestMode()
+{
+    creditor cred(saveRandomCreditor());
+
+    {
+        contract cont(saveRandomContract(cred.id()));
+        QCOMPARE(cont.yearlyMidYearInterestMode(2025), contract::undecided);
+    }
+
+    {
+        contract cont(saveRandomContract(cred.id()));
+        QVERIFY(writeBookingToDB(bookingType::reInvestInterest, cont.id(), QDate(2025, 6, 1), 12.34));
+        QCOMPARE(cont.yearlyMidYearInterestMode(2025), contract::immediate);
+        QCOMPARE(cont.yearlyMidYearInterestMode(2024), contract::undecided);
+    }
+
+    {
+        contract cont(saveRandomContract(cred.id()));
+        QVERIFY(writeBookingToDB(bookingType::deferredMidYearInterest, cont.id(), QDate(2025, 3, 15), 0.));
+        QCOMPARE(cont.yearlyMidYearInterestMode(2025), contract::deferred);
+        QCOMPARE(cont.yearlyMidYearInterestMode(2026), contract::undecided);
+    }
+}
+
 void test_contract::test_finalize()
 {
     creditor creditor(saveRandomCreditor());

@@ -13,9 +13,6 @@ extern const QString sqlExContractView;
 extern const QString vnInvestmentsView;
 extern const QString sqlInvestmentsView;
 
-// a nice view to check bookings, not used in the app
-extern const QString vnBookingsOverview;
-
 // statistics w/o time dep. saved as views
 extern const QMap<QString, QString> views;
 
