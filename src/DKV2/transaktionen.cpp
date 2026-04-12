@@ -544,7 +544,8 @@ void deleteInactiveContract(contract *c) {
             QMessageBox::information(getMainWindow(), qsl("Fehler"),
                                      qsl("Der Vertrag konnte nicht gelöscht werden"));
         }
-    }
+    } else
+        return;
     if (QMessageBox::question(
                 getMainWindow(), qsl("Kreditor*in löschen?"),
                 qsl("Soll die zugehörige Kreditgeber*in gelöscht werden?")) ==
