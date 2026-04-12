@@ -5,6 +5,7 @@
 #include "dbstructure.h"
 //#include "ibanvalidator.h"
 #include "booking.h"
+#include "contract.h"
 
 const QString creditor::fnId           {qsl("id")};
 const QString creditor::tablename      {qsl("Kreditoren")};
@@ -78,7 +79,10 @@ bool creditor::operator==(const creditor& c) const
 
 bool creditor::fromDb( const creditorId_t id)
 {   LOG_CALL;
-    QSqlRecord rec = executeSingleRecordSql(dkdbstructur[qsl("Kreditoren")].Fields(), qsl("id=") + i2s(id.v));
+    const QString sql = selectQueryFromFields(dkdbstructur[qsl("Kreditoren")].Fields(), qsl("id=?"));
+    QVector<QSqlRecord> records;
+    executeSql(sql, QVector<QVariant>{id.v}, records);
+    const QSqlRecord rec = (records.size() == 1) ? records[0] : QSqlRecord();
     if( rec.isEmpty()) return false;
 
     for(int i=0; i<rec.count(); i++)
@@ -192,9 +196,14 @@ bool creditor::remove()
 {
     // SELECT sum(Buchungen.Betrag) FROM Buchungen
     // WHERE Buchungen.VertragsId IN (SELECT Vertraege.id FROM Vertraege WHERE Vertraege.KreditorId = 14)
-    QString where = qsl("Buchungen.VertragsId IN (SELECT Vertraege.id FROM Vertraege WHERE Vertraege.KreditorId = %1)");
-    where = where.arg(i.v);
-    QVariant a = executeSingleValueSql(qsl("SUM(%1.%2)").arg(booking::tn_Buchungen, booking::fn_bBetrag), booking::tn_Buchungen, where);
+    const QVariant a = executeSingleValueSql(
+        qsl("SELECT SUM(%1.%2) FROM %1 "
+            "WHERE %1.%3 IN (SELECT %4.id FROM %4 WHERE %4.KreditorId = ?)")
+            .arg(booking::tn_Buchungen,
+                 booking::fn_bBetrag,
+                 booking::fn_bVertragsId,
+                 contract::tnContracts),
+        QVector<QVariant>{i.v});
     if( a.toDouble() > 0)
         return true;
     return false;

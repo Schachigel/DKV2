@@ -17,7 +17,10 @@ investment::investment(qlonglong id /*=-1*/, int Interest /*=0*/,
     : rowid(id), interest(Interest), start (Start), end (End), type(Type), state(State)
 {
     if( isValidRowId (id)) {
-        QSqlRecord rec =executeSingleRecordSql (getTableDef().Fields (), qsl("rowid=%1").arg(i2s(id)));
+        QVector<QSqlRecord> records;
+        const QString sql = selectQueryFromFields(getTableDef().Fields(), qsl("rowid=?"));
+        executeSql(sql, QVector<QVariant>{id}, records);
+        const QSqlRecord rec = (records.size() == 1) ? records[0] : QSqlRecord();
         if( rec.isEmpty ()) {
             return;
         }
@@ -229,31 +232,31 @@ bool openInvestment(const qlonglong rowid)
 
 int nbrActiveInvestments(const QDate cDate/*=EndOfTheFuckingWorld*/)
 {   LOG_CALL;
-    QString field {qsl("count(*)")};
-    QString tname {investment::getTableDef().Name()};
-    QString where;
     if(cDate == EndOfTheFuckingWorld)
-        where =qsl("Offen");
-    else {
-        where =qsl("Offen AND Anfang <= date('%1') AND Ende >= date('%1')").arg(cDate.toString(Qt::ISODate));
-    }
-    return executeSingleValueSql(field, tname, where).toInt();
+        return executeSingleValueSql(qsl("SELECT count(*) FROM Geldanlagen WHERE Offen")).toInt();
+
+    return executeSingleValueSql(
+        qsl("SELECT count(*) FROM Geldanlagen WHERE Offen AND Anfang <= date(?) AND Ende >= date(?)"),
+        QVector<QVariant>{cDate.toString(Qt::ISODate), cDate.toString(Qt::ISODate)}).toInt();
 }
 
 QVector<QPair<qlonglong, QString>> activeInvestments(const QDate cDate)
 {   LOG_CALL_W(cDate.toString(qsl("yyyy.MM.dd")));
 // fill combo box to select investment / interest for new contract
     QVector<QPair<qlonglong, QString>> investments;
-    QString where;
+    QString sql;
+    QVector<QVariant> params;
     if(cDate == EndOfTheFuckingWorld)
-        where =qsl("Offen");
+        sql = qsl("SELECT rowid, ZSatz, Typ FROM Geldanlagen WHERE Offen ORDER BY %1").arg(fnInvestmentInterest);
     else {
-        where =qsl("Offen AND Anfang <= date('%1') AND Ende >= date('%1')").arg(cDate.toString(Qt::ISODate));
+        sql = qsl("SELECT rowid, ZSatz, Typ FROM Geldanlagen "
+                  "WHERE Offen AND Anfang <= date(?) AND Ende >= date(?) ORDER BY %1")
+                  .arg(fnInvestmentInterest);
+        params = {cDate.toString(Qt::ISODate), cDate.toString(Qt::ISODate)};
     }
 
-    QString sql {(qsl("SELECT rowid, ZSatz, Typ FROM Geldanlagen WHERE %1 ORDER BY %2").arg(where, fnInvestmentInterest))};
     QVector<QSqlRecord> result;
-    if( not executeSql(sql, result)) {
+    if( not executeSql(sql, params, result)) {
         qInfo() << "no investments";
         return QVector<QPair<qlonglong, QString>>();
     }
@@ -266,9 +269,9 @@ QVector<QPair<qlonglong, QString>> activeInvestments(const QDate cDate)
 
 int interestOfInvestmentByRowId(qlonglong rid)
 {   LOG_CALL;
-    const dbfield& dbf =investment::getTableDef()[fnInvestmentInterest];
-    QString where =qsl("rowid=")+i2s(rid);
-    return executeSingleValueSql(dbf,  where).toInt();
+    return executeSingleValueSql(
+        qsl("SELECT %1 FROM Geldanlagen WHERE rowid=?").arg(fnInvestmentInterest),
+        QVector<QVariant>{rid}).toInt();
 }
 
 QString redOrBlack(int i, int max)
@@ -342,9 +345,11 @@ QString investmentInfoForNewContract(qlonglong ridInvestment, const double amoun
 QVector<investment> openInvestments(int rate, QDate conclusionDate)
 {   LOG_CALL;
 
-    QString sql{qsl("SELeCT * FROM Geldanlagen WHERE Offen AND ZSatz = %1 AND Anfang <= date('%2')  AND Ende >= date('%2')")};
+    const QString sql{qsl("SELECT * FROM Geldanlagen WHERE Offen AND ZSatz = ? AND Anfang <= date(?) AND Ende >= date(?)")};
     QVector<QSqlRecord> records;
-    if( not executeSql(sql.arg(i2s(rate), conclusionDate.toString(Qt::ISODate)), records))
+    if( not executeSql(sql,
+                       QVector<QVariant>{rate, conclusionDate.toString(Qt::ISODate), conclusionDate.toString(Qt::ISODate)},
+                       records))
         return QVector<investment>();
 
     QVector<investment> result;
