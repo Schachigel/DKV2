@@ -206,9 +206,9 @@ struct contract
     QDate dateOf_next_AS();
     year annualSettlement(const year y);
 
-    bool deposit(const QDate d, double amount, bool payoutInterest =false);
-    bool payout(const QDate d, double amount, bool payoutInterest =false);
     enum midYearInterestMode { deferred = -1, undecided = 0, immediate = 1 };
+    bool deposit(const QDate d, double amount, bool payoutInterest =false, midYearInterestMode midYearInterest = undecided);
+    bool payout(const QDate d, double amount, bool payoutInterest =false, midYearInterestMode midYearInterest = undecided);
     midYearInterestMode yearlyMidYearInterestMode(int year);
 
     bool cancel(const QDate d_plannedContractEnd, const QDate dCancelation);
@@ -224,7 +224,8 @@ struct contract
     bool isTerminated =false;
 private:
     bool updateSetInterestActive();
-    bool bookValueChange(const QDate bookingDate, double amount, bool payoutInterest, bookingType bookingKind);
+    bool ensureYearlyMidYearInterestMode(const QDate bookingDate, midYearInterestMode requestedMode);
+    bool bookValueChange(const QDate bookingDate, double amount, bool payoutInterest, bookingType bookingKind, midYearInterestMode midYearInterest);
     bool bookInterestUntilDate(const QDate date, bool payout = false);
     bool bookInterestBeforeValueChange(const QDate date, bool payout = false);
     enum class interestBookingMode {

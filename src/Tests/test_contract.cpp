@@ -489,6 +489,30 @@ void test_contract::test_deposit_wSettlement_wPayout()
     }
 }
 
+void test_contract::test_deposit_choosesDeferredMidYearInterestMode()
+{
+    creditor c(saveRandomCreditor());
+    contract cont(saveRandomContract(c.id()));
+    cont.setInterestRate(1.0);
+    cont.setInterestModel(interestModel::reinvest);
+    cont.setInterestActive(true);
+
+    const QDate initialDate(2020, 1, 15);
+    const QDate depositDate(2020, 7, 1);
+    cont.updateConclusionDate(initialDate.addDays(-1));
+
+    QVERIFY(cont.bookInitialPayment(initialDate, 1000.));
+    QVERIFY(cont.deposit(depositDate, 1000., false, contract::deferred));
+
+    const QVector<booking> bookings = getBookings(cont.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("Datum ASC, id ASC"));
+    QCOMPARE(bookings.size(), 3);
+    QCOMPARE(bookings[0], booking(cont.id(), bookingType::deposit, initialDate, 1000.));
+    QCOMPARE(bookings[1], booking(cont.id(), bookingType::deferredMidYearInterest, depositDate, 0.));
+    QCOMPARE(bookings[2], booking(cont.id(), bookingType::deposit, depositDate, 1000.));
+    QCOMPARE(cont.yearlyMidYearInterestMode(2020), contract::deferred);
+    QCOMPARE(cont.value(), 2000.);
+}
+
 void test_contract::test_payout()
 {
     {

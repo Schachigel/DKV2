@@ -28,6 +28,7 @@ private slots:
     void test_depositSwitches_31_12();
     void test_deposit_wSettlement_reinvesting();
     void test_deposit_wSettlement_wPayout();
+    void test_deposit_choosesDeferredMidYearInterestMode();
     void test_payout();
     void test_payout_wSettlement_reinvesting();
     void test_payout_wSettlement_wPayout();

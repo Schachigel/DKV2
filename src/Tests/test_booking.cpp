@@ -282,7 +282,7 @@ void test_booking::test_bookingTypeFunctions()
         }
         case 32:{
             QString bt =bookingTypeDisplayString(bookingtypeFromInt(i));
-            QCOMPARE(bt, qsl("Unterjähriger Zins nachgelagert"));
+            QCOMPARE(bt, qsl("Unterjährige Zinsen zum Jahresende"));
             break;
         }
         default:{

@@ -505,7 +505,7 @@ year contract::annualSettlement( year y)
 }
 
 // booking actions
-bool contract::deposit(const QDate d, double amount, bool payoutInterest)
+bool contract::deposit(const QDate d, double amount, bool payoutInterest, midYearInterestMode midYearInterest)
 {   LOG_CALL_W(QString::number(amount));
     double actualAmount = qFabs(amount);
     const booking lastBooking =latestBooking ();
@@ -522,10 +522,10 @@ bool contract::deposit(const QDate d, double amount, bool payoutInterest)
         return false;
     }
     QDate actualD =avoidYearEndBookings(d);
-    return bookValueChange(actualD, actualAmount, payoutInterest, bookingType::deposit);
+    return bookValueChange(actualD, actualAmount, payoutInterest, bookingType::deposit, midYearInterest);
 }
 
-bool contract::payout(const QDate d, double amount, bool payoutInterest)
+bool contract::payout(const QDate d, double amount, bool payoutInterest, midYearInterestMode midYearInterest)
 {   LOG_CALL;
     double actualAmount = qFabs(amount);
 
@@ -544,7 +544,7 @@ bool contract::payout(const QDate d, double amount, bool payoutInterest)
         return false;
     }
     QDate actualD =avoidYearEndBookings(d);
-    return bookValueChange(actualD, actualAmount, payoutInterest, bookingType::payout);
+    return bookValueChange(actualD, actualAmount, payoutInterest, bookingType::payout, midYearInterest);
 }
 
 contract::midYearInterestMode contract::yearlyMidYearInterestMode(int year)
@@ -680,9 +680,35 @@ bool contract::finalize(bool simulate, const QDate finDate,
 }
 
 // private
-bool contract::bookValueChange(const QDate bookingDate, double amount, bool payoutInterest, bookingType bookingKind)
+bool contract::ensureYearlyMidYearInterestMode(const QDate bookingDate, midYearInterestMode requestedMode)
+{
+    if( not interestActive())
+        return true;
+
+    const midYearInterestMode existingMode = yearlyMidYearInterestMode(bookingDate.year());
+    if( existingMode != contract::undecided) {
+        if( requestedMode != contract::undecided && requestedMode != existingMode) {
+            qCritical() << "conflicting mid-year interest mode for contract/year"
+                        << id().v << bookingDate.year();
+            return false;
+        }
+        return true;
+    }
+
+    if( requestedMode == contract::deferred)
+        return bookDeferredInBetweenInterest(id(), bookingDate);
+
+    return true;
+}
+
+bool contract::bookValueChange(const QDate bookingDate, double amount, bool payoutInterest, bookingType bookingKind, midYearInterestMode midYearInterest)
 {
     QSqlDatabase::database().transaction();
+
+    if( not ensureYearlyMidYearInterestMode(bookingDate, midYearInterest)) {
+        QSqlDatabase::database().rollback();
+        return false;
+    }
 
     if( not bookInterestBeforeValueChange(bookingDate, payoutInterest)) {
         QSqlDatabase::database().rollback();

@@ -341,6 +341,20 @@ void activateInterest(contract *ctr) {
 namespace {
 inline bool isLastDaysOfYear(QDate d) { return 12 == d.month()
            && (30 == d.day() || 31 == d.day()); }
+
+contract::midYearInterestMode requestedMidYearInterestMode(const wizChangeContract& wiz, contract& cont, const QDate& date)
+{
+    if (not cont.interestActive())
+        return contract::undecided;
+
+    const contract::midYearInterestMode existingMode = cont.yearlyMidYearInterestMode(date.year());
+    if (existingMode != contract::undecided)
+        return existingMode;
+
+    return wiz.field(fnDeferredMidYearInterest).toBool()
+            ? contract::deferred
+            : contract::immediate;
+}
 }
 void doDeposit_or_payout(contract *pContract) {
     LOG_CALL;
@@ -353,6 +367,7 @@ void doDeposit_or_payout(contract *pContract) {
 
     creditor cre(pContract->credId());
     wizChangeContract wiz(getMainWindow());
+    wiz.cont = pContract;
     wiz.creditorName = cre.firstname() + qsl(" ") + cre.lastname();
     wiz.contractLabel = pContract->label();
     wiz.currentAmount = pContract->value();
@@ -372,10 +387,12 @@ void doDeposit_or_payout(contract *pContract) {
     if (wiz.field(qsl("confirmed")).toBool()) {
         double amount{QLocale().toDouble(wiz.field(qsl("amount")).toString())};
         QDate date{wiz.field(qsl("date")).toDate()};
+        const contract::midYearInterestMode midYearInterest =
+                requestedMidYearInterestMode(wiz, *pContract, date);
         if (wiz.field(qsl("deposit_notPayment")).toBool()) {
-            pContract->deposit(date, amount, wiz.field(fnPayoutInterest).toBool());
+            pContract->deposit(date, amount, wiz.field(fnPayoutInterest).toBool(), midYearInterest);
         } else {
-            pContract->payout(date, amount, wiz.field(fnPayoutInterest).toBool());
+            pContract->payout(date, amount, wiz.field(fnPayoutInterest).toBool(), midYearInterest);
         }
     } else
         qInfo() << "contract change was canceld by the user";

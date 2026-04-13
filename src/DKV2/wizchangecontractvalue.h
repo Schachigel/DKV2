@@ -3,7 +3,10 @@
 
 #include "uihelper.h"
 
+struct contract;
+
 const QString fnDeposit_notPayment {qsl("deposit_notPayment")};
+const QString fnDeferredMidYearInterest {qsl("deferred_mid_year_interest")};
 
 class wpChangeContract_IntroPage : public QWizardPage
 {
@@ -42,6 +45,8 @@ struct wpChangeContract_DatePage : public QWizardPage
 
 private:
     QLabel *subTitleLabel = nullptr;
+    QLabel *modeInfoLabel = nullptr;
+    QCheckBox *deferredInterestCheckBox = nullptr;
 };
 
 const QString fnPayoutInterest {qsl("payout_interest")};
@@ -72,6 +77,7 @@ private:
 struct wizChangeContract : public QWizard
 {
     wizChangeContract(QWidget* p =nullptr);
+    contract* cont = nullptr;
     QString creditorName;
     QString contractLabel;
     double  currentAmount = 0.;
