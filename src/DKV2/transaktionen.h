@@ -19,7 +19,7 @@ void activateInterest(contract* v);
 void doDeposit_or_payout(contract* v);
 void changeBookingValue(bookingId_t bookingId);
 
-void undoLastBooking(contract* v);
+void undoLastBooking(bookingId_t bookingId);
 void annualSettlement();
 void finalizeContractLetter(contract *c);
 void deleteFinalizedContract(contract *c);

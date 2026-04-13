@@ -355,6 +355,28 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
 namespace {
 contract* contractUnderMouseMenu =nullptr;
 qlonglong bookingIdUnderMouseMenu =-1;
+
+struct selectedBookingContext {
+    contractId_t contractId = Invalid_contract_id;
+    QDate bookingDate;
+    bool isValid() const { return isValidRowId(contractId.v) && bookingDate.isValid(); }
+};
+
+selectedBookingContext getSelectedBookingContext(bookingId_t bookingId)
+{
+    const QString sql = qsl("SELECT %1, %2 FROM %3 WHERE id = ?")
+                            .arg(booking::fn_bVertragsId,
+                                 booking::fn_bDatum,
+                                 booking::tn_Buchungen);
+    QVector<QSqlRecord> records;
+    if (not executeSql(sql, QVector<QVariant>{bookingId.v}, records) || records.size() != 1)
+        return {};
+
+    selectedBookingContext ctx;
+    ctx.contractId = contractId_t{records[0].value(booking::fn_bVertragsId).toLongLong()};
+    ctx.bookingDate = records[0].value(booking::fn_bDatum).toDate();
+    return ctx;
+}
 }
 
 void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
@@ -389,7 +411,6 @@ void MainWindow::on_contractsTableView_customContextMenuRequested(QPoint pos)
             else
                 ui->action_cmenu_terminate_contract->setText(qsl("Vertrag kündigen"));
             menu.addAction(ui->action_cmenu_terminate_contract);
-            menu.addAction (ui->action_cmenu_undo_last_booking);
             menu.addAction(ui->action_cmenu_change_contract);
             // interest activation only after init.payment (not enforced by contract::)
             if( not c.interestActive())
@@ -427,8 +448,22 @@ void MainWindow::on_bookingsTableView_customContextMenuRequested(const QPoint &p
         return;
 
     bookingIdUnderMouseMenu=index.data().toLongLong ();
+    const selectedBookingContext ctx = getSelectedBookingContext(bookingId_t{bookingIdUnderMouseMenu});
     QMenu menu(qsl("bookingsContextMenu"), this);
     menu.addAction (ui->action_cmenu_change_booking);
+    if (ctx.isValid()) {
+        contract c(ctx.contractId);
+        const bool isLatestBookingDay = c.latestBookingDate() == ctx.bookingDate;
+        ui->action_cmenu_undo_last_booking->setText(
+            isLatestBookingDay
+                ? qsl("Buchungen vom %1 löschen").arg(ctx.bookingDate.toString(qsl("dd.MM.yyyy")))
+                : qsl("Buchungen des letzten Buchungstages löschen"));
+        ui->action_cmenu_undo_last_booking->setEnabled(isLatestBookingDay);
+    } else {
+        ui->action_cmenu_undo_last_booking->setText(qsl("Buchungen des letzten Buchungstages löschen"));
+        ui->action_cmenu_undo_last_booking->setEnabled(false);
+    }
+    menu.addAction (ui->action_cmenu_undo_last_booking);
     bc.finish();
 
     menu.exec (ui->bookingsTableView->mapToGlobal (pos));
@@ -479,7 +514,7 @@ void MainWindow::on_action_cmenu_change_contract_triggered()
 }
 void MainWindow::on_action_cmenu_undo_last_booking_triggered()
 {   LOG_CALL;
-    undoLastBooking(contractUnderMouseMenu);
+    undoLastBooking(bookingId_t{bookingIdUnderMouseMenu});
     updateViews ();
 }
 void MainWindow::on_action_cmenu_activate_interest_payment_triggered()

@@ -32,6 +32,7 @@
 #include "wiznew.h"
 #include "wiznewinvestment.h"
 #include <QRegularExpression>
+#include <algorithm>
 #include "annual_letters.h"
 
 void newCreditorAndContract() {
@@ -355,6 +356,52 @@ contract::midYearInterestMode requestedMidYearInterestMode(const wizChangeContra
             ? contract::deferred
             : contract::immediate;
 }
+
+QString bookingListHtml(const QVector<booking>& bookings)
+{
+    QString lines;
+    for (const booking& b : bookings) {
+        lines += qsl("<li>%1: %2</li>")
+                     .arg(bookingTypeDisplayString(b.type), s_d2euro(b.amount));
+    }
+    return qsl("<ul>%1</ul>").arg(lines);
+}
+
+bool undoBookingDateGroup(contract& cont, const QDate bookingDate)
+{
+    if (not bookingDate.isValid()) {
+        qCritical() << "ungültiges Buchungsdatum für Rückgängigmachen";
+        return false;
+    }
+
+    const QVector<booking> bookings =
+        getBookings(cont.id(), bookingDate, bookingDate, qsl("id ASC"));
+    if (bookings.isEmpty()) {
+        qCritical() << "keine Buchungen zum ausgewählten Buchungsdatum gefunden";
+        return false;
+    }
+
+    autoRollbackTransaction art;
+    const bool containsInterestActivation =
+        std::any_of(bookings.cbegin(), bookings.cend(), [](const booking& b) {
+            return b.type == bookingType::setInterestActive;
+        });
+
+    if (containsInterestActivation && not cont.updateInterestActive(false)) {
+        qCritical() << "Aktivierung der Zinszahlung konnte nicht zurückgesetzt werden";
+        return false;
+    }
+
+    const bool deleteOk = executeSql_wNoRecords(
+        qsl("DELETE FROM Buchungen WHERE VertragsId = ? AND Datum = ?"),
+        QVector<QVariant>{cont.id().v, bookingDate.toString(Qt::ISODate)});
+    if (not deleteOk) {
+        qCritical() << "fehlgeschlagen beim Löschen der Buchungsgruppe";
+        return false;
+    }
+
+    return art.commit();
+}
 }
 void doDeposit_or_payout(contract *pContract) {
     LOG_CALL;
@@ -419,45 +466,60 @@ void changeBookingValue(bookingId_t bookingId)
     }
 }
 
-void undoLastBooking(contract *v)
+void undoLastBooking(bookingId_t bookingId)
 {
-// todo: this should remove all bookings of the same date
-// todo: have a ui to select the booking, from which all "younger" bookings should be deleted
-    QString sqlMsg {qsl(R"str(
-SELECT Vertraege.Kennung
- , Kreditoren.Vorname, Kreditoren.Nachname
- , Buchungen.BuchungsArt, Buchungen.Betrag, Buchungen.Datum, Buchungen.id
-FROM Vertraege
- JOIN Buchungen ON Vertraege.id = Buchungen.VertragsId
- JOIN Kreditoren ON Vertraege.KreditorId = Kreditoren.id
-WHERE Buchungen.VertragsId = %1
-ORDER BY Buchungen.rowid DESC
-LIMIT 1
-)str").arg(v->id ().v)};
+    const QString sql{qsl(
+        "SELECT B.%1, B.%2 "
+        "FROM %3 AS B "
+        "WHERE B.id = ?")
+        .arg(booking::fn_bVertragsId,
+             booking::fn_bDatum,
+             booking::tn_Buchungen)};
 
-    QSqlRecord rec =executeSingleRecordSql (sqlMsg);
-    if( rec.isEmpty ()) {
-        qCritical() << "die jüngste Buchung konnte nicht abgerufen werden";
+    QVector<QSqlRecord> records;
+    if (not executeSql(sql, QVector<QVariant>{bookingId.v}, records) || records.size() != 1) {
+        qCritical() << "die ausgewählte Buchung konnte nicht abgerufen werden";
         return;
     }
-    QString BArt =bookingTypeDisplayString(bookingtypeFromInt(rec.value (qsl("Buchungen.BuchungsArt")).toLongLong ()));
-    QString BBetrag =s_ct2euro (rec.value (qsl("Buchungen.Betrag")).toInt ());
-    QString BDatum =rec.value (qsl("Buchungen.Datum")).toDate ().toString (Qt::TextDate);
-    QString VKennung = rec.value (qsl("Vertraege.Kennung")).toString ();
-    QString VN =rec.value( qsl("Kreditoren.Vorname")).toString ();
-    QString NN =rec.value (qsl("Kreditoren.Nachname")).toString ();
 
-    QString msg {qsl("Soll die Buchung <p>'%1' über %2 vom %3 <p>des"
-                     " Vertrags %4 von %5 %6 <p>rückgängig gemacht werden?")
-                .arg(BArt, BBetrag, BDatum,
-                     VKennung, VN, NN)};
+    const QSqlRecord rec = records[0];
+    const contractId_t contractId{rec.value(booking::fn_bVertragsId).toLongLong()};
+    const QDate bookingDate = rec.value(booking::fn_bDatum).toDate();
+    if (not bookingDate.isValid() || not isValidRowId(contractId.v)) {
+        qCritical() << "die ausgewählte Buchung enthält ungültige Daten";
+        return;
+    }
+
+    contract cont(contractId);
+    const QDate latestDate = cont.latestBookingDate();
+    if (bookingDate != latestDate) {
+        QMessageBox::information(getMainWindow(),
+                                 qsl("Buchung kann nicht gelöscht werden"),
+                                 qsl("Es können nur die zuletzt gebuchten Buchungen eines Vertrags rückgängig gemacht werden."));
+        return;
+    }
+
+    const QVector<booking> bookings =
+        getBookings(cont.id(), bookingDate, bookingDate, qsl("id ASC"));
+    if (bookings.isEmpty()) {
+        qCritical() << "keine Buchungen zum ausgewählten Buchungsdatum gefunden";
+        return;
+    }
+
+    creditor cred(cont.credId());
+    QString msg {qsl("Sollen alle Buchungen vom %1<p>des Vertrags %2 von %3 %4<p>rückgängig gemacht werden?<p>%5")
+                .arg(bookingDate.toString(qsl("dd.MM.yyyy")),
+                     cont.label(),
+                     cred.firstname(),
+                     cred.lastname(),
+                     bookingListHtml(bookings))};
     if( QMessageBox::question (NULL, qsl("Buchung löschen?"), msg) not_eq QMessageBox::Yes) {
         qInfo() << "Löschen der Buchung wurde abgebrochen";
         return;
     }
-    if( not executeSql_wNoRecords(qsl("DELETE FROM Buchungen WHERE Buchungen.id = ?"),
-                                  rec.value(qsl("Buchungen.id")).toLongLong())) {
-        qCritical() << "failed to delete booking ";
+
+    if( not undoBookingDateGroup(cont, bookingDate)) {
+        qCritical() << "failed to delete booking group";
     }
 }
 
