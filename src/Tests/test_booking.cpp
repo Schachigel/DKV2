@@ -116,6 +116,17 @@ void test_booking::test_bookInterestActive()
     QCOMPARE(v.size(), 1);
     QCOMPARE( v[0], booking(cont.id(), bookingType::setInterestActive, validDate, 0.));
 }
+void test_booking::test_bookDeferredInBetweenInterest()
+{
+    creditor c(saveRandomCreditor());
+    contract cont(saveRandomContract(c.id()));
+    QDate validDate(2020, 4, 28);
+
+    QVERIFY(bookDeferredInBetweenInterest(cont.id(), validDate));
+    QVector<booking> v = getBookings(cont.id());
+    QCOMPARE(v.size(), 1);
+    QCOMPARE(v[0], booking(cont.id(), bookingType::deferredMidYearInterest, validDate, 0.));
+}
 void test_booking::test_getNbrOfBookings()
 {
     creditor c(saveRandomCreditor());

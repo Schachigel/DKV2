@@ -389,7 +389,7 @@ BookingResult contract::bookActivateInterest(const QDate d)
     autoRollbackTransaction art;
     // durch diese Zinsbuchung mit Wert 0 wird sichergestellt, dass die nächste Zinsbuchung zum richtigen Zeitpunkt beginnt
     // kein Payout
-    if( not bookInBetweenInterest(d))
+    if( not bookInterestUntilDate(d))
         return BookingResult::fail({qsl("Die Zinsbuchung für den Zwischenzeitraum konnte nicht erstellt werden")});
     if( updateSetInterestActive() // update contract
             &&
@@ -522,19 +522,7 @@ bool contract::deposit(const QDate d, double amount, bool payoutInterest)
         return false;
     }
     QDate actualD =avoidYearEndBookings(d);
-    // update interest calculation
-    QSqlDatabase::database().transaction();
-    if( not bookInBetweenInterest(actualD, payoutInterest)) {
-        QSqlDatabase::database().rollback();
-        return false;
-    }
-    if( not bookDeposit(id(), actualD, actualAmount)) {
-        qCritical() << "booking deposit failed -> rollback";
-        QSqlDatabase::database().rollback();
-        return false;
-    }
-    QSqlDatabase::database().commit();
-    return true;
+    return bookValueChange(actualD, actualAmount, payoutInterest, bookingType::deposit);
 }
 
 bool contract::payout(const QDate d, double amount, bool payoutInterest)
@@ -556,19 +544,7 @@ bool contract::payout(const QDate d, double amount, bool payoutInterest)
         return false;
     }
     QDate actualD =avoidYearEndBookings(d);
-    // update interest calculation
-    QSqlDatabase::database().transaction();
-    if( not bookInBetweenInterest(actualD, payoutInterest)) {
-        QSqlDatabase::database().rollback();
-        return false;
-    }
-    if( not bookPayout(id(), actualD, actualAmount)) {
-        QSqlDatabase::database().rollback();
-        qCritical() << "booking of payout failed";
-        return false;
-    }
-    QSqlDatabase::database().commit();
-    return true;
+    return bookValueChange(actualD, actualAmount, payoutInterest, bookingType::payout);
 }
 
 contract::midYearInterestMode contract::yearlyMidYearInterestMode(int year)
@@ -704,10 +680,55 @@ bool contract::finalize(bool simulate, const QDate finDate,
 }
 
 // private
-bool contract::bookInBetweenInterest(const QDate nextBookingDate, bool payout)
+bool contract::bookValueChange(const QDate bookingDate, double amount, bool payoutInterest, bookingType bookingKind)
+{
+    QSqlDatabase::database().transaction();
+
+    if( not bookInterestBeforeValueChange(bookingDate, payoutInterest)) {
+        QSqlDatabase::database().rollback();
+        return false;
+    }
+
+    bool ok = false;
+    switch(bookingKind)
+    {
+    case bookingType::deposit:
+        ok = bookDeposit(id(), bookingDate, amount);
+        if( not ok)
+            qCritical() << "booking deposit failed -> rollback";
+        break;
+    case bookingType::payout:
+        ok = bookPayout(id(), bookingDate, amount);
+        if( not ok)
+            qCritical() << "booking of payout failed";
+        break;
+    default:
+        qCritical() << "invalid booking type for contract::bookValueChange";
+        break;
+    }
+
+    if( not ok) {
+        QSqlDatabase::database().rollback();
+        return false;
+    }
+
+    QSqlDatabase::database().commit();
+    return true;
+}
+bool contract::bookInterestUntilDate(const QDate date, bool payout)
+{
+    return bookInterestToDateImpl(date, payout, interestBookingMode::mustBookNow);
+}
+
+bool contract::bookInterestBeforeValueChange(const QDate date, bool payout)
+{
+    return bookInterestToDateImpl(date, payout, interestBookingMode::mayDeferToYearEnd);
+}
+
+bool contract::bookInterestToDateImpl(const QDate nextBookingDate, bool payout, interestBookingMode mode)
 {   LOG_CALL;
-    // booking interest in case of deposits, payouts or finalization
-    // performs annualSettlements if necesarry
+    // books interest up to a given date and performs annualSettlements if necessary.
+    // deposits/payouts may defer this to year end; other business actions must not.
 
     QDate latestBDate =latestBookingDate();
     QString error;
@@ -730,6 +751,12 @@ bool contract::bookInBetweenInterest(const QDate nextBookingDate, bool payout)
             // update lastB, because it was changed by the annual Settlement
             latestBDate= latestBookingDate();
         }
+    }
+
+    if( mode == interestBookingMode::mayDeferToYearEnd
+            && yearlyMidYearInterestMode(nextBookingDate.year()) == contract::deferred) {
+        qInfo() << "mid-year interest booking deferred to year end";
+        return true;
     }
                    //////////
     double zins = ZinsesZins(actualInterestRate(), interestBearingValue(), latestBDate, nextBookingDate);

@@ -761,6 +761,58 @@ void test_contract::test_yearlyMidYearInterestMode()
     }
 }
 
+void test_contract::test_deferredMidYearInterestSkipsInBetweenInterestBooking()
+{
+    creditor cred(saveRandomCreditor());
+    contract cont(saveRandomContract(cred.id()));
+    cont.setInterestRate(1.0);
+    cont.setInterestModel(interestModel::reinvest);
+    cont.updateInterestActive(true);
+
+    const QDate initialDate(2020, 1, 15);
+    const QDate decisionDate(2020, 6, 1);
+    const QDate depositDate(2020, 7, 1);
+
+    cont.updateConclusionDate(initialDate.addDays(-1));
+    QVERIFY(cont.bookInitialPayment(initialDate, 1000.));
+    QVERIFY(bookDeferredInBetweenInterest(cont.id(), decisionDate));
+
+    QCOMPARE(cont.yearlyMidYearInterestMode(2020), contract::deferred);
+    QVERIFY(cont.deposit(depositDate, 1000.));
+
+    const QVector<booking> bookings = getBookings(cont.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("Datum ASC"));
+    QCOMPARE(bookings.size(), 3);
+    QCOMPARE(bookings[0], booking(cont.id(), bookingType::deposit, initialDate, 1000.));
+    QCOMPARE(bookings[1], booking(cont.id(), bookingType::deferredMidYearInterest, decisionDate, 0.));
+    QCOMPARE(bookings[2], booking(cont.id(), bookingType::deposit, depositDate, 1000.));
+    QCOMPARE(cont.value(), 2000.);
+}
+
+void test_contract::test_deferredMidYearInterestDoesNotSkipActivationBoundaryBooking()
+{
+    creditor cred(saveRandomCreditor());
+    contract cont(saveRandomContract(cred.id()));
+    cont.setInterestRate(1.0);
+    cont.setInterestModel(interestModel::reinvest);
+    cont.updateInterestActive(false);
+
+    const QDate initialDate(2020, 1, 15);
+    const QDate decisionDate(2020, 6, 1);
+    const QDate activationDate(2020, 7, 1);
+
+    cont.updateConclusionDate(initialDate.addDays(-1));
+    QVERIFY(cont.bookInitialPayment(initialDate, 1000.));
+    QVERIFY(bookDeferredInBetweenInterest(cont.id(), decisionDate));
+    QVERIFY(cont.bookActivateInterest(activationDate));
+
+    const QVector<booking> bookings = getBookings(cont.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("id ASC"));
+    QCOMPARE(bookings.size(), 4);
+    QCOMPARE(bookings[0], booking(cont.id(), bookingType::deposit, initialDate, 1000.));
+    QCOMPARE(bookings[1], booking(cont.id(), bookingType::deferredMidYearInterest, decisionDate, 0.));
+    QCOMPARE(bookings[2], booking(cont.id(), bookingType::reInvestInterest, activationDate, 0.));
+    QCOMPARE(bookings[3], booking(cont.id(), bookingType::setInterestActive, activationDate, 0.));
+}
+
 void test_contract::test_finalize()
 {
     creditor creditor(saveRandomCreditor());

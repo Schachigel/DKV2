@@ -83,6 +83,7 @@ bool bookPayout(    const contractId_t cId, QDate date, const double amount);
 bool bookReInvestInterest(const contractId_t cId, QDate date, const double amount);
 bool bookAnnualInterestDeposit( const contractId_t cId, QDate date, const double amount);
 bool bookInterestActive(const contractId_t cId, QDate date);
+bool bookDeferredInBetweenInterest(const contractId_t cId, QDate date);
 bool writeBookingUpdate( bookingId_t bookingId, int newValeuInCt);
 
 //QVector<booking> bookingsFromDB(const QString& where, const QString& order ="", bool terminated =false);

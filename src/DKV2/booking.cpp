@@ -109,6 +109,10 @@ bool bookInterestActive(const contractId_t cId, QDate date)
 {
     return writeBookingToDB(bookingType::setInterestActive, cId, date, 0.);
 }
+bool bookDeferredInBetweenInterest(const contractId_t cId, QDate date)
+{
+    return writeBookingToDB(bookingType::deferredMidYearInterest, cId, date, 0.);
+}
 
 bool writeBookingUpdate( bookingId_t bookingId, int newValeuInCt)
 {

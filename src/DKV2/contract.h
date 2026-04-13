@@ -224,13 +224,20 @@ struct contract
     bool isTerminated =false;
 private:
     bool updateSetInterestActive();
+    bool bookValueChange(const QDate bookingDate, double amount, bool payoutInterest, bookingType bookingKind);
+    bool bookInterestUntilDate(const QDate date, bool payout = false);
+    bool bookInterestBeforeValueChange(const QDate date, bool payout = false);
+    enum class interestBookingMode {
+        mustBookNow,
+        mayDeferToYearEnd
+    };
+    bool bookInterestToDateImpl(const QDate date, bool payout, interestBookingMode mode);
 
     // data
     TableDataInserter td;
     // helper
     // moved to helperfin.cpp double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa =true);
 
-    bool bookInBetweenInterest(const QDate d, bool payout =false);
     bool storeTerminationDate(const QDate d) const;
     bool archive();
     void reset() {initContractDefaults();}

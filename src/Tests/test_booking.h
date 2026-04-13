@@ -16,6 +16,7 @@ private slots:
     void test_bookReInvest();
     void test_bookAnnualReInvest();
     void test_bookInterestActive();
+    void test_bookDeferredInBetweenInterest();
     void test_getNbrOfBookings();
     void test_getBookings();
     void test_yearsWAnnualBookings();
