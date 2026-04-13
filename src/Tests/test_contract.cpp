@@ -593,23 +593,23 @@ void test_contract::test_activationDate()
     QCOMPARE(initialBookingDate(cont.id ()), aDate);
 }
 
-void test_contract::test_activate_interest_on_same_date_will_fail()
+void test_contract::test_activate_interest_on_same_date_will_not_fail()
 {
     creditor c {saveRandomCreditor()};
     contract cont {saveRandomContract(c.id())};
     cont.updateInterestActive(false);
     QDate Vertragsdatum {cont.conclusionDate()};
 
-    // init payment only AFTER contract date
-    QVERIFY( not cont.bookInitialPayment(Vertragsdatum, cont.plannedInvest()));
+    // interest activation fails before initial payment
+    QVERIFY(not cont.bookActivateInterest(Vertragsdatum.addDays(-1)));
+    QVERIFY(not cont.bookActivateInterest(Vertragsdatum));
+    QVERIFY(not cont.bookActivateInterest(Vertragsdatum.addDays(1)));
+    // init payment only AT or AFTER contract date
+    QVERIFY(not cont.bookInitialPayment(Vertragsdatum.addDays(-1), cont.plannedInvest()));
+    QVERIFY(cont.bookInitialPayment(Vertragsdatum, cont.plannedInvest()));
     // activ. Interest only after initial payment
-    QVERIFY( not cont.bookActivateInterest(Vertragsdatum.addDays(1)));
-    // activate only AFTER initial payment
-    QVERIFY( not cont.bookActivateInterest(Vertragsdatum)); // too early
-    QVERIFY( not cont.bookInitialPayment(Vertragsdatum, cont.plannedInvest()));
-    QVERIFY( cont.bookInitialPayment(Vertragsdatum.addDays(1), cont.plannedInvest()));
-    QVERIFY( not cont.bookActivateInterest(Vertragsdatum.addDays(1)));
-    QVERIFY( cont.bookActivateInterest(Vertragsdatum.addDays(2)));
+    QVERIFY(not cont.bookActivateInterest(Vertragsdatum.addDays(-1)));
+    QVERIFY(cont.bookActivateInterest(Vertragsdatum));
 }
 void test_contract::test_getValue_byDate()
 {

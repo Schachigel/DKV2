@@ -381,7 +381,7 @@ BookingResult contract::bookActivateInterest(const QDate d)
 {
     if( not initialPaymentReceived())
         return BookingResult::fail({qsl("Der Vertrag kann erst nach dem Geldeingang aktiviert werden")});
-    if ( d <= latestBookingDate())
+    if (d < latestBookingDate())
         return BookingResult::fail({qsl("Die Aktivierung der Zinsanrechnung muss nach der letzten Buchung erfolgen")});
     if( interestActive())
         return BookingResult::fail({qsl("Der Vertrag ist bereits aktiviert")});

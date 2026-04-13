@@ -133,10 +133,14 @@ Regeln:
 
 Für die erste Einzahlung eines Vertrags gelten besondere Regeln, da sie den Beginn des Kreditverhältnisses und der Verzinsung definiert.
 
+* Die erste Einzahlung darf nicht vor dem Vertragsdatum erfolgen.
+
 * Die **erste Buchung eines Vertrags** ist immer **Typ 1 (Einzahlung)**.
+
 * Die **Ersteinzahlung** darf am **31.12.x** erfolgen. In diesem Fall erfolgt **keine Jahresabrechnung für das Jahr x**, da der **erste Tag eines Kredits zinsfrei** ist.
 
   * Zum Ausgleich wird der **Auszahlungstag verzinst**.
+
 * Erfolgt die **Ersteinzahlung am 30.12.x**, wird der Vertrag grundsätzlich in die Jahresabrechnung für das Jahr x einbezogen.
 
   * Bei der Zinsmethode **30/360** ergibt sich dennoch ein **Zins von 0**, da der **31. eines Monats nicht verzinst wird**.
@@ -145,64 +149,7 @@ Diese Regeln sind unabhängig vom später gewählten Zinsmodell (`thesaurierend`
 
 Für die **Aktivierung der Zinszahlung** gelten zusätzlich folgende Regeln:
 
-* Die Aktivierung der Zinszahlung (**Typ 16**) kann **erst nach der Ersteinzahlung** erfolgen.
-* Am Tag der Aktivierung wird **unmittelbar vor der Aktivierungsbuchung** eine **Zinsanrechnung (Typ 4) mit dem Betrag 0** erfasst.
-* Erfolgt die **Aktivierung am 31.12.x**, so erfolgt **keine Jahresabrechnung für das Jahr x**.
-
-Für zunächst unverzinste Verträge (`zActive = FALSE`) gilt zusätzlich:
-
-* In der Liste der Verträge wird der Zinsstatus **„ausgesetzt“** angezeigt.
-* Die Aktivierung findet man im Kontextmenü als **„Zinszahlung aktivieren“**.
-* Die Aktivierung wird als **Buchung Typ 16 (ohne Betrag)** gespeichert.
-* **Typ 16** definiert den Start der Verzinsung ab seinem Buchungsdatum.
-* Eine Buchung vom Typ 16 erfolgt **pro Vertrag genau einmal** und **nach dem ersten Geldeingang** (Typ 1).
-* **Ein- und Auszahlungen vor der Aktivierung** der Verzinsung sind zulässig.
-* **Alle Zinsberechnungen vor der Aktivierung** erfolgen **mit dem Zinssatz 0**, d. h. bis einschließlich des Tages vor der Typ-16-Buchung.
-
-### 4.4 Zinsmodelle und Buchungslogik (`thesaurierend`)
-
-#### 4.4.1 Jahreszinsanrechnung (31.12.)
-
-Die folgenden Beschreibungen definieren die **Buchungsfolge bei der Jahreszinsanrechnung**. Alle Buchungen erfolgen am **31.12.** und gehen **gemeinsam** in die Bewertung des Vertrags ein. **Typ 8** ist dabei die **letzte Buchung des Jahres**.
-
-* **Zinsmodus 0 – auszahlend**
-
-  * **Typ 2**: Auszahlung der Zinsen
-  * **Typ 8**: Jahreszinsanrechnung
-  * **Wirkung**: Vertragsbetrag und *verzinsliches Darlehen* bleiben unverändert.
-
-* **Zinsmodus 1 – anrechnend (thesaurierend)**
-
-  * **Typ 8**: Jahreszinsanrechnung
-  * **Wirkung**: Vertragsbetrag und *verzinsliches Darlehen* erhöhen sich um den Zins (Zinseszins-Effekt).
-
-* **Zinsmodus 2 – fest**
-
-  * **Typ 8**: Jahreszinsanrechnung
-  * **Wirkung**: Der Vertragsbetrag erhöht sich um den Zins; das *verzinsliche Darlehen* bleibt unverändert.
-
-* **Zinsmodus 3 – zinslos**
-
-  * **Typ 8**: Jahreszinsanrechnung mit dem Betrag 0 Euro
-  * **Wirkung**: Keine Änderung von Vertragsbetrag oder *verzinslichem Darlehen*.
-
-#### 4.4.2 Ein- und Auszahlungen mit unterjähriger Zinsanrechnung
-
-* **Zinsmodus 0 – auszahlend**
-
-  * Der Nutzer wählt **Anrechnung** oder **Auszahlung** der bis zum Buchungsdatum aufgelaufenen Zinsen.
-  * **Anrechnung**: **Typ 4 → Typ 1/2**
-  * **Auszahlung**: **Typ 2 (Zinsauszahlung) → Typ 4 → Typ 1/2**
-
-* **Zinsmodus 1, 2 und 3**
-
-  * **Typ 4 → Typ 1/2**
-  * Bei **Zinsmodus 3** erfolgt **Typ 4** mit **0 Euro**.
-
-Zusammenfassung:
-
-* Bei Ein- und Auszahlungen erfolgt die **Zinsanrechnung (Typ 4)** grundsätzlich **vor** der eigentlichen Buchung (**Typ 1** oder **Typ 2**).
-* Im **Zinsmodus 0** kann zusätzlich eine **vorgelagerte Zinsauszahlung (Typ 2)** erfolgen.
+* Die Aktivierung der Zinszahlung (Typ 16) kann am Tag der Ersteinzahlung oder danach erfolgen.
 
 ---
 

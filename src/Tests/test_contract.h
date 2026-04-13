@@ -33,7 +33,7 @@ private slots:
     void test_payout_wSettlement_wPayout();
 
     void test_activationDate();
-    void test_activate_interest_on_same_date_will_fail();
+    void test_activate_interest_on_same_date_will_not_fail();
     // ToDo: void test_latestSettlementDate(); hier oder in test_annualSettlement
     void test_getValue_byDate();
     void test_contract_cv_wInterestPayout();
