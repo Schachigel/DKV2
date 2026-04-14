@@ -198,7 +198,7 @@ struct contract
     bool bookInitialPayment(const QDate aDate, const double amount);
     bool initialPaymentReceived() const;
     BookingResult bookActivateInterest(const QDate d);
-    QDate initialPaymentDate();
+    QDate initialPaymentDate() const;
     bool noBookingButInitial();
 
     // other booking actions
@@ -226,6 +226,8 @@ private:
     bool updateSetInterestActive();
     bool ensureYearlyMidYearInterestMode(const QDate bookingDate, midYearInterestMode requestedMode);
     bool bookValueChange(const QDate bookingDate, double amount, bool payoutInterest, bookingType bookingKind, midYearInterestMode midYearInterest);
+    double interestBearingValueAt(const QDate date) const;
+    double deferredInterestUntilDate(const QDate periodEnd, bool &ok) const;
     bool bookInterestUntilDate(const QDate date, bool payout = false);
     bool bookInterestBeforeValueChange(const QDate date, bool payout = false);
     enum class interestBookingMode {
@@ -237,7 +239,7 @@ private:
     // data
     TableDataInserter td;
     // helper
-    // moved to helperfin.cpp double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa =true);
+    // moved to helperfin.cpp double interestForPeriod(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa =true);
 
     bool storeTerminationDate(const QDate d) const;
     bool archive();

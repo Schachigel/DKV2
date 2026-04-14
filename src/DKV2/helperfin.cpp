@@ -196,7 +196,7 @@ double ZinsesZins_act_act( const double zins, const double wert,
 
 }
 
-double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)
+double interestForPeriod(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa)
 {
    QString susance =dbConfig::readString (ZINSUSANCE);
     qInfo() << "Zinssusance configured in database: " << susance;

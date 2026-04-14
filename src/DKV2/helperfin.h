@@ -55,6 +55,6 @@ int TageBisJahresende_act_act( const QDate d);
 int TageSeitJahresAnfang_act_act( const QDate d);
 
 double ZinsesZins_act_act(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa=true);
-double ZinsesZins(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa=true);
+double interestForPeriod(const double zins, const double wert,const QDate von, const QDate bis, const bool thesa=true);
 
 #endif // HELPERFIN_H

@@ -192,6 +192,21 @@ double contract::interestBearingValue() const
         Q_UNREACHABLE();
     }
 }
+double contract::interestBearingValueAt(const QDate date) const
+{
+    switch (iModel())
+    {
+    case interestModel::fixed:
+        return investedValue(date);
+    case interestModel::payout:
+    case interestModel::reinvest:
+    case interestModel::zero:
+        return value(date);
+    default:
+        qCritical() << "invalid interest Model";
+        Q_UNREACHABLE();
+    }
+}
 const QDate contract::latestBookingDate()
 {
 /*
@@ -361,7 +376,7 @@ bool contract::initialPaymentReceived() const
             .arg( booking::fn_bVertragsId, id_aS (), booking::fn_bBuchungsArt, bookingTypeToNbrString(bookingType::deposit));
     return (0 < rowCount (booking::tn_Buchungen, where));
 }
-QDate contract::initialPaymentDate()
+QDate contract::initialPaymentDate() const
 {
     const QVariant ipd = executeSingleValueSql(
         qsl("SELECT MIN(Datum) FROM Buchungen WHERE %1 = ? AND %2 = ?")
@@ -458,11 +473,20 @@ year contract::annualSettlement( year y)
 
     while(nextAS <= requestedSettlementDate)
     {
-        double baseValue =interestBearingValue();
-        ////////// von letzter Buchung bis zum 31.12. des selben Jahres
-        double zins =ZinsesZins(actualInterestRate(),
-                                baseValue, lastBD, nextAS);
-        //////////
+        bool calcOk {false};
+        double zins {0.};
+        if (yearlyMidYearInterestMode(nextAS.year()) == contract::deferred) {
+            zins = deferredInterestUntilDate(nextAS, calcOk);
+            if (not calcOk) {
+                qCritical() << "Failed deferred annual settlement interest calculation for contract"
+                            << id_aS() << nextAS;
+                return 0;
+            }
+        } else {
+            const double baseValue = interestBearingValue();
+            zins = interestForPeriod(actualInterestRate(), baseValue, lastBD, nextAS);
+            calcOk = true;
+        }
         bool ok {false};
         switch(iModel())
         {
@@ -556,7 +580,7 @@ contract::midYearInterestMode contract::yearlyMidYearInterestMode(int year)
     const QString sql = qsl(
         "SELECT "
         "MAX(CASE WHEN BuchungsArt = ? THEN 1 ELSE 0 END) AS deferredMode, "
-        "MAX(CASE WHEN BuchungsArt = ? THEN 1 ELSE 0 END) AS immediateMode "
+        "MAX(CASE WHEN BuchungsArt = ? AND Betrag != 0 THEN 1 ELSE 0 END) AS immediateMode "
         "FROM %1 "
         "WHERE VertragsId = ? AND substr(Datum, 1, 4) = ?")
         .arg(tableName);
@@ -586,6 +610,97 @@ contract::midYearInterestMode contract::yearlyMidYearInterestMode(int year)
     if (isImmediate)
         return contract::immediate;
     return contract::undecided;
+}
+
+double contract::deferredInterestUntilDate(const QDate periodEnd, bool &ok) const
+{
+    ok = false;
+
+    if (!periodEnd.isValid()) {
+        qCritical() << "invalid end date for deferred interest calculation";
+        return 0.;
+    }
+
+    if (iModel() == interestModel::zero) {
+        ok = true;
+        return 0.;
+    }
+
+    const int y = periodEnd.year();
+    const QDate yearStart(y, 1, 1);
+    const QDate previousYearEnd(y - 1, 12, 31);
+    const QVector<booking> yearBookings = getBookings(id(), yearStart, periodEnd, qsl("Datum ASC"), isTerminated);
+
+    std::optional<QDate> activationDateInYear;
+    // make sure there is at most one activation booking and that it is the only booking on its date (except for zero-amount reInvestInterest bookings)
+    for (const booking &b : yearBookings) {
+        if (b.type == bookingType::setInterestActive) {
+            if (activationDateInYear.has_value()) {
+                qCritical() << "deferred annual settlement found multiple activation bookings"
+                            << id().v << y << activationDateInYear.value() << b.date;
+                return 0.;
+            }
+            activationDateInYear = b.date;
+        }
+    }
+    // if there is an activation booking, make sure there are no other bookings on that date except for zero-amount reInvestInterest bookings (which are used as markers for the activation date in case of deferred mid-year interest)
+    for (const booking &b : yearBookings) {
+        if (b.type != bookingType::reInvestInterest)
+            continue;
+        const bool allowedActivationBoundaryBooking = qFuzzyIsNull(b.amount)
+                && activationDateInYear.has_value()
+                && activationDateInYear.value() == b.date;
+        if (!allowedActivationBoundaryBooking) {
+            qCritical() << "deferred annual settlement found unexpected interim interest booking"
+                        << id().v << y << b.toString();
+            return 0.;
+        }
+    }
+
+    QDate openingSliceStart;
+    if (activationDateInYear.has_value()) {
+        openingSliceStart = activationDateInYear.value();
+    } else if (interestActive()) {
+        const QDate initialDate = initialPaymentDate();
+        if (!initialDate.isValid()) {
+            qCritical() << "deferred annual settlement requires a valid initial payment date";
+            return 0.;
+        }
+        openingSliceStart = (initialDate < yearStart) ? previousYearEnd : initialDate;
+    } else {
+        ok = true;
+        return 0.;
+    }
+
+    if (openingSliceStart > periodEnd) {
+        ok = true;
+        return 0.;
+    }
+
+    double totalInterest = interestForPeriod(actualInterestRate(),
+                                             interestBearingValueAt(openingSliceStart),
+                                             openingSliceStart,
+                                             periodEnd);
+
+    for (const booking &b : yearBookings) {
+        if (b.date <= openingSliceStart)
+            continue;
+
+        switch (b.type)
+        {
+        case bookingType::deposit:
+            totalInterest += interestForPeriod(actualInterestRate(), b.amount, b.date, periodEnd);
+            break;
+        case bookingType::payout:
+            totalInterest -= interestForPeriod(actualInterestRate(), qFabs(b.amount), b.date, periodEnd);
+            break;
+        default:
+            break;
+        }
+    }
+
+    ok = true;
+    return totalInterest;
 }
 
 bool contract::cancel(const QDate dPlannedContractEnd, const QDate dCancelation)
@@ -641,10 +756,22 @@ bool contract::finalize(bool simulate, const QDate finDate,
         const double preFinValue { interestBearingValue ()};
         qInfo() << "After last annual settlement: interest bearing / value " << preFinValue << " / " << value();
 
-        finInterest = ZinsesZins(actualInterestRate(), preFinValue, lastBookingDate, finDate);
+        if (yearlyMidYearInterestMode(finDate.year()) == contract::deferred) {
+            bool calcOk = false;
+            finInterest = deferredInterestUntilDate(finDate, calcOk);
+            if (not calcOk) {
+                qCritical() << "failed deferred final interest calculation";
+                needReload = true;
+                finInterest = 0.;
+            }
+        } else {
+            finInterest = interestForPeriod(actualInterestRate(), preFinValue, lastBookingDate, finDate);
+        }
         finPayout = value() +finInterest;
 
-        if( simulate) {
+        if( needReload) {
+            ok = false;
+        } else if( simulate) {
             qInfo() << "simulation will stop here";
             ok =true;
             needReload =true;
@@ -785,7 +912,7 @@ bool contract::bookInterestToDateImpl(const QDate nextBookingDate, bool payout, 
         return true;
     }
                    //////////
-    double zins = ZinsesZins(actualInterestRate(), interestBearingValue(), latestBDate, nextBookingDate);
+    double zins = interestForPeriod(actualInterestRate(), interestBearingValue(), latestBDate, nextBookingDate);
                    //////////
     // only annualSettlements can be payed out
     if( payout)

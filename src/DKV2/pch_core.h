@@ -39,10 +39,13 @@
 // #include <QRegularExpressionValidator>
 
 #include <QMap>
+#include <QSet>
 #include <QVector>
 #include <QPair>
 #include <QList>
 #include <QBitArray>
 #include <QTextDocument>
+
+#include <optional>
 
 #endif // PCH_CORE_H

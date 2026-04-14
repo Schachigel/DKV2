@@ -2,6 +2,7 @@
 #include "testhelper.h"
 
 #include "../DKV2/helper_core.h"
+#include "../DKV2/helperfin.h"
 #include "../DKV2/helpersql.h"
 #include "../DKV2/creditor.h"
 #include "../DKV2/contract.h"
@@ -783,6 +784,66 @@ void test_contract::test_yearlyMidYearInterestMode()
         QCOMPARE(cont.yearlyMidYearInterestMode(2025), contract::deferred);
         QCOMPARE(cont.yearlyMidYearInterestMode(2026), contract::undecided);
     }
+
+    {
+        contract cont(saveRandomContract(cred.id()));
+        cont.setInterestRate(1.0);
+        cont.setInterestModel(interestModel::reinvest);
+        cont.updateInterestActive(false);
+        cont.updateConclusionDate(QDate(2025, 1, 14));
+        QVERIFY(cont.bookInitialPayment(QDate(2025, 1, 15), 1000.));
+        QVERIFY(cont.bookActivateInterest(QDate(2025, 3, 1)));
+        QCOMPARE(cont.yearlyMidYearInterestMode(2025), contract::undecided);
+    }
+}
+
+void test_contract::test_deferredAnnualSettlement_usesYearSlices()
+{
+    creditor cred(saveRandomCreditor());
+    contract cont(saveRandomContract(cred.id()));
+    cont.setInterestRate(2.0);
+    cont.setInterestModel(interestModel::reinvest);
+    cont.updateInterestActive(true);
+    cont.updateConclusionDate(QDate(2019, 12, 31));
+
+    const QDate initialDate(2020, 1, 1);
+    const QDate decisionDate(2020, 6, 1);
+    const QDate depositDate(2020, 7, 1);
+
+    QVERIFY(cont.bookInitialPayment(initialDate, 1000.));
+    QVERIFY(bookDeferredInBetweenInterest(cont.id(), decisionDate));
+    QVERIFY(cont.deposit(depositDate, 1000.));
+
+    const double expectedInterestRaw =
+            interestForPeriod(cont.actualInterestRate(), 1000., initialDate, QDate(2020, 12, 31))
+            + interestForPeriod(cont.actualInterestRate(), 1000., depositDate, QDate(2020, 12, 31));
+    const double expectedInterest = euroFromCt(ctFromEuro(expectedInterestRaw));
+
+    QCOMPARE(cont.annualSettlement(2020), 2020);
+    QCOMPARE(cont.latestBooking().type, bookingType::annualInterestDeposit);
+    QCOMPARE(cont.latestBooking().date, QDate(2020, 12, 31));
+    QCOMPARE(cont.latestBooking().amount, expectedInterest);
+    QCOMPARE(cont.value(), 2000. + expectedInterest);
+
+    const QVariantMap vm = cont.toVariantMap(QDate(2020, 1, 1), QDate(2020, 12, 31));
+    QCOMPARE(vm.value(qsl("dJahresZinsen")).toDouble(), expectedInterest);
+    QCOMPARE(vm.value(qsl("dSonstigeZinsen")).toDouble(), 0.);
+}
+
+void test_contract::test_deferredAnnualSettlement_failsOnUnexpectedInterimInterest()
+{
+    creditor cred(saveRandomCreditor());
+    contract cont(saveRandomContract(cred.id()));
+    cont.setInterestRate(2.0);
+    cont.setInterestModel(interestModel::reinvest);
+    cont.updateInterestActive(true);
+    cont.updateConclusionDate(QDate(2019, 12, 31));
+
+    QVERIFY(cont.bookInitialPayment(QDate(2020, 1, 1), 1000.));
+    QVERIFY(bookDeferredInBetweenInterest(cont.id(), QDate(2020, 6, 1)));
+    QVERIFY(writeBookingToDB(bookingType::reInvestInterest, cont.id(), QDate(2020, 7, 1), 10.));
+
+    QCOMPARE(cont.annualSettlement(2020), 0);
 }
 
 void test_contract::test_deferredMidYearInterestSkipsInBetweenInterestBooking()
@@ -835,6 +896,41 @@ void test_contract::test_deferredMidYearInterestDoesNotSkipActivationBoundaryBoo
     QCOMPARE(bookings[1], booking(cont.id(), bookingType::deferredMidYearInterest, decisionDate, 0.));
     QCOMPARE(bookings[2], booking(cont.id(), bookingType::reInvestInterest, activationDate, 0.));
     QCOMPARE(bookings[3], booking(cont.id(), bookingType::setInterestActive, activationDate, 0.));
+}
+
+void test_contract::test_finalize_deferredMidYearInterest()
+{
+    creditor cred(saveRandomCreditor());
+    contract cont(saveRandomContract(cred.id()));
+    cont.setInterestRate(2.0);
+    cont.setInterestModel(interestModel::reinvest);
+    cont.updateInterestActive(true);
+    cont.updateConclusionDate(QDate(2019, 12, 31));
+
+    const QDate initialDate(2020, 1, 1);
+    const QDate decisionDate(2020, 6, 1);
+    const QDate depositDate(2020, 7, 1);
+    const QDate finalDate(2020, 9, 30);
+
+    QVERIFY(cont.bookInitialPayment(initialDate, 1000.));
+    QVERIFY(bookDeferredInBetweenInterest(cont.id(), decisionDate));
+    QVERIFY(cont.deposit(depositDate, 1000.));
+
+    const double expectedFinalInterestRaw =
+            interestForPeriod(cont.actualInterestRate(), 1000., initialDate, finalDate)
+            + interestForPeriod(cont.actualInterestRate(), 1000., depositDate, finalDate);
+    const double expectedFinalInterest = euroFromCt(ctFromEuro(expectedFinalInterestRaw));
+
+    const contractId_t contractId = cont.id();
+    double finInterest = 0.;
+    double finPayout = 0.;
+    QVERIFY(cont.finalize(false, finalDate, finInterest, finPayout));
+    QCOMPARE(finInterest, expectedFinalInterest);
+    QCOMPARE(finPayout, 2000. + expectedFinalInterest);
+    QCOMPARE(getNbrOfExBookings(contractId), 5);
+
+    contract ex(contractId, true);
+    QCOMPARE(ex.payedInterestAtTermination(), expectedFinalInterest);
 }
 
 void test_contract::test_finalize()

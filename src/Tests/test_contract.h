@@ -40,8 +40,11 @@ private slots:
     void test_contract_cv_wInterestPayout();
     void test_contract_cv_reInvesting();
     void test_yearlyMidYearInterestMode();
+    void test_deferredAnnualSettlement_usesYearSlices();
+    void test_deferredAnnualSettlement_failsOnUnexpectedInterimInterest();
     void test_deferredMidYearInterestSkipsInBetweenInterestBooking();
     void test_deferredMidYearInterestDoesNotSkipActivationBoundaryBooking();
+    void test_finalize_deferredMidYearInterest();
     void test_finalize();
     void test_readExContract();
 };
