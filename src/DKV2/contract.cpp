@@ -473,19 +473,19 @@ year contract::annualSettlement( year y)
 
     while(nextAS <= requestedSettlementDate)
     {
-        bool calcOk {false};
         double zins {0.};
         if (yearlyMidYearInterestMode(nextAS.year()) == contract::deferred) {
-            zins = deferredInterestUntilDate(nextAS, calcOk);
-            if (not calcOk) {
+            const interestBreakdown breakdown = interestBreakdownUntilDate(nextAS);
+            logInterestBreakdown(breakdown);
+            if (not breakdown.ok) {
                 qCritical() << "Failed deferred annual settlement interest calculation for contract"
                             << id_aS() << nextAS;
                 return 0;
             }
+            zins = breakdown.totalInterest;
         } else {
             const double baseValue = interestBearingValue();
             zins = interestForPeriod(actualInterestRate(), baseValue, lastBD, nextAS);
-            calcOk = true;
         }
         bool ok {false};
         switch(iModel())
@@ -498,7 +498,7 @@ year contract::annualSettlement( year y)
         }
         case interestModel::payout: {
             ok = bookPayout(id(), nextAS, zins)
-                 && bookAnnualInterestDeposit(id(), nextAS, zins);
+                 and bookAnnualInterestDeposit(id(), nextAS, zins);
             break;
         }
         case interestModel::maxId:
@@ -571,9 +571,12 @@ bool contract::payout(const QDate d, double amount, bool payoutInterest, midYear
     return bookValueChange(actualD, actualAmount, payoutInterest, bookingType::payout, midYearInterest);
 }
 
-contract::midYearInterestMode contract::yearlyMidYearInterestMode(int year)
+contract::midYearInterestMode contract::yearlyMidYearInterestMode(int year) const
 {
-    if (year < 0 || !isValidRowId(id().v))
+    if (not isValidRowId(id().v))
+        return contract::undecided;
+
+    if (year < 0)
         return contract::undecided;
 
     const QString tableName = isTerminated ? booking::tn_ExBuchungen : booking::tn_Buchungen;
@@ -591,7 +594,7 @@ contract::midYearInterestMode contract::yearlyMidYearInterestMode(int year)
                                          int(bookingType::reInvestInterest),
                                          id().v,
                                          i2s(year)},
-                       records) || records.size() != 1) {
+                       records) or records.size() not_eq 1) {
         qCritical() << "could not determine mid year interest mode";
         return contract::undecided;
     }
@@ -600,7 +603,7 @@ contract::midYearInterestMode contract::yearlyMidYearInterestMode(int year)
     const bool isDeferred = rec.value(qsl("deferredMode")).toInt() > 0;
     const bool isImmediate = rec.value(qsl("immediateMode")).toInt() > 0;
 
-    if (isDeferred && isImmediate) {
+    if (isDeferred and isImmediate) {
         qCritical() << "inconsistent mid-year interest mode markers for contract/year"
                     << id().v << year << "- explicit deferred marker wins";
         return contract::deferred;
@@ -612,18 +615,73 @@ contract::midYearInterestMode contract::yearlyMidYearInterestMode(int year)
     return contract::undecided;
 }
 
-double contract::deferredInterestUntilDate(const QDate periodEnd, bool &ok) const
+namespace {
+QString interestSliceKindToString(contract::interestSlice::kind kind)
 {
-    ok = false;
+    switch (kind)
+    {
+    case contract::interestSlice::kind::openingBalance:
+        return qsl("Anfangswert");
+    case contract::interestSlice::kind::deposit:
+        return qsl("Einzahlung");
+    case contract::interestSlice::kind::payout:
+        return qsl("Auszahlung");
+    }
+    return qsl("unknown");
+}
+}
 
-    if (!periodEnd.isValid()) {
-        qCritical() << "invalid end date for deferred interest calculation";
-        return 0.;
+contract::interestBreakdown contract::interestBreakdownUntilDate(const QDate periodEnd) const
+{
+    interestBreakdown breakdown{periodEnd};
+
+    if (not periodEnd.isValid()) {
+        breakdown.ok = false;
+        breakdown.error = qsl("invalid end date for interest calculation");
+        return breakdown;
+    }
+
+    const midYearInterestMode mode{yearlyMidYearInterestMode(periodEnd.year())};
+    if (mode == deferred)
+        return deferredInterestBreakdownUntilDate(periodEnd);
+
+    breakdown.mode = immediate;
+
+    const QVector<booking> priorBookings = getBookings(id(), BeginingOfTime, periodEnd.addDays(-1), qsl("Datum ASC"), isTerminated);
+    if (priorBookings.isEmpty()) {
+        breakdown.ok = false;
+        breakdown.error = qsl("no prior booking found to determine the interest basis");
+        return breakdown;
+    }
+
+    const QDate openingSliceStart = priorBookings.last().date;
+    const double openingBaseAmount = interestBearingValueAt(openingSliceStart);
+    const double openingInterest = interestForPeriod(actualInterestRate(),
+                                                     openingBaseAmount,
+                                                     openingSliceStart,
+                                                     periodEnd);
+    breakdown.slices.push_back({interestSlice::kind::openingBalance,
+                                openingSliceStart,
+                                periodEnd,
+                                openingBaseAmount,
+                                openingInterest});
+    breakdown.totalInterest = openingInterest;
+    return breakdown;
+}
+
+contract::interestBreakdown contract::deferredInterestBreakdownUntilDate(const QDate periodEnd) const
+{
+    interestBreakdown breakdown{periodEnd};
+    breakdown.mode = deferred;
+
+    if (not periodEnd.isValid()) {
+        breakdown.ok = false;
+        breakdown.error = qsl("invalid end date for deferred interest calculation");
+        return breakdown;
     }
 
     if (iModel() == interestModel::zero) {
-        ok = true;
-        return 0.;
+        return breakdown;
     }
 
     const int y = periodEnd.year();
@@ -636,24 +694,24 @@ double contract::deferredInterestUntilDate(const QDate periodEnd, bool &ok) cons
     for (const booking &b : yearBookings) {
         if (b.type == bookingType::setInterestActive) {
             if (activationDateInYear.has_value()) {
-                qCritical() << "deferred annual settlement found multiple activation bookings"
-                            << id().v << y << activationDateInYear.value() << b.date;
-                return 0.;
+                breakdown.ok = false;
+                breakdown.error = qsl("deferred annual settlement found multiple activation bookings");
+                return breakdown;
             }
             activationDateInYear = b.date;
         }
     }
     // if there is an activation booking, make sure there are no other bookings on that date except for zero-amount reInvestInterest bookings (which are used as markers for the activation date in case of deferred mid-year interest)
     for (const booking &b : yearBookings) {
-        if (b.type != bookingType::reInvestInterest)
+        if (b.type not_eq bookingType::reInvestInterest)
             continue;
         const bool allowedActivationBoundaryBooking = qFuzzyIsNull(b.amount)
-                && activationDateInYear.has_value()
-                && activationDateInYear.value() == b.date;
-        if (!allowedActivationBoundaryBooking) {
-            qCritical() << "deferred annual settlement found unexpected interim interest booking"
-                        << id().v << y << b.toString();
-            return 0.;
+                and activationDateInYear.has_value()
+                and activationDateInYear.value() == b.date;
+        if (not allowedActivationBoundaryBooking) {
+            breakdown.ok = false;
+            breakdown.error = qsl("deferred annual settlement found unexpected interim interest booking");
+            return breakdown;
         }
     }
 
@@ -662,25 +720,31 @@ double contract::deferredInterestUntilDate(const QDate periodEnd, bool &ok) cons
         openingSliceStart = activationDateInYear.value();
     } else if (interestActive()) {
         const QDate initialDate = initialPaymentDate();
-        if (!initialDate.isValid()) {
-            qCritical() << "deferred annual settlement requires a valid initial payment date";
-            return 0.;
+        if (not initialDate.isValid()) {
+            breakdown.ok = false;
+            breakdown.error = qsl("deferred annual settlement requires a valid initial payment date");
+            return breakdown;
         }
         openingSliceStart = (initialDate < yearStart) ? previousYearEnd : initialDate;
     } else {
-        ok = true;
-        return 0.;
+        return breakdown;
     }
 
     if (openingSliceStart > periodEnd) {
-        ok = true;
-        return 0.;
+        return breakdown;
     }
 
-    double totalInterest = interestForPeriod(actualInterestRate(),
-                                             interestBearingValueAt(openingSliceStart),
-                                             openingSliceStart,
-                                             periodEnd);
+    const double openingBaseAmount = interestBearingValueAt(openingSliceStart);
+    const double openingInterest = interestForPeriod(actualInterestRate(),
+                                                     openingBaseAmount,
+                                                     openingSliceStart,
+                                                     periodEnd);
+    breakdown.slices.push_back({interestSlice::kind::openingBalance,
+                                openingSliceStart,
+                                periodEnd,
+                                openingBaseAmount,
+                                openingInterest});
+    breakdown.totalInterest += openingInterest;
 
     for (const booking &b : yearBookings) {
         if (b.date <= openingSliceStart)
@@ -688,19 +752,56 @@ double contract::deferredInterestUntilDate(const QDate periodEnd, bool &ok) cons
 
         switch (b.type)
         {
-        case bookingType::deposit:
-            totalInterest += interestForPeriod(actualInterestRate(), b.amount, b.date, periodEnd);
+        case bookingType::deposit: {
+            const double interest = interestForPeriod(actualInterestRate(), b.amount, b.date, periodEnd);
+            breakdown.slices.push_back({interestSlice::kind::deposit,
+                                        b.date,
+                                        periodEnd,
+                                        b.amount,
+                                        interest});
+            breakdown.totalInterest += interest;
             break;
-        case bookingType::payout:
-            totalInterest -= interestForPeriod(actualInterestRate(), qFabs(b.amount), b.date, periodEnd);
+        }
+        case bookingType::payout: {
+            const double baseAmount = qFabs(b.amount);
+            const double interest = -interestForPeriod(actualInterestRate(), baseAmount, b.date, periodEnd);
+            breakdown.slices.push_back({interestSlice::kind::payout,
+                                        b.date,
+                                        periodEnd,
+                                        baseAmount,
+                                        interest});
+            breakdown.totalInterest += interest;
             break;
+        }
         default:
             break;
         }
     }
 
-    ok = true;
-    return totalInterest;
+    return breakdown;
+}
+
+void contract::logInterestBreakdown(const interestBreakdown &breakdown)
+{
+    if (not breakdown.ok) {
+        qCritical().noquote() << qsl("Deferred interest breakdown failed:")
+                              << breakdown.error
+                              << qsl(" periodEnd=") << breakdown.periodEnd.toString(Qt::ISODate)
+                              << qsl(" total=") << breakdown.totalInterest;
+        return;
+    }
+
+    qInfo().noquote() << qsl("Deferred interest breakdown until %1: total %2")
+                             .arg(breakdown.periodEnd.toString(Qt::ISODate),
+                                  s_d2euro(breakdown.totalInterest));
+    for (const interestSlice &slice : breakdown.slices) {
+        qInfo().noquote() << qsl("  %1 | %2 -> %3 | base %4 | interest %5")
+                                 .arg(interestSliceKindToString(slice.type),
+                                      slice.from.toString(Qt::ISODate),
+                                      slice.to.toString(Qt::ISODate),
+                                      s_d2euro(slice.baseAmount),
+                                      s_d2euro(slice.interest));
+    }
 }
 
 bool contract::cancel(const QDate dPlannedContractEnd, const QDate dCancelation)
@@ -757,12 +858,14 @@ bool contract::finalize(bool simulate, const QDate finDate,
         qInfo() << "After last annual settlement: interest bearing / value " << preFinValue << " / " << value();
 
         if (yearlyMidYearInterestMode(finDate.year()) == contract::deferred) {
-            bool calcOk = false;
-            finInterest = deferredInterestUntilDate(finDate, calcOk);
-            if (not calcOk) {
+            const interestBreakdown breakdown = interestBreakdownUntilDate(finDate);
+            logInterestBreakdown(breakdown);
+            if (not breakdown.ok) {
                 qCritical() << "failed deferred final interest calculation";
                 needReload = true;
                 finInterest = 0.;
+            } else {
+                finInterest = breakdown.totalInterest;
             }
         } else {
             finInterest = interestForPeriod(actualInterestRate(), preFinValue, lastBookingDate, finDate);
@@ -777,10 +880,10 @@ bool contract::finalize(bool simulate, const QDate finDate,
             needReload =true;
         } else {
             ok = bookReInvestInterest(id(), finDate, finInterest)
-            && bookPayout(id(), finDate, finPayout)
-            && (value() == 0.)
-            && storeTerminationDate(finDate)
-            && archive();
+            and bookPayout(id(), finDate, finPayout)
+            and (value() == 0.)
+            and storeTerminationDate(finDate)
+            and archive();
             if( ok) sp.commit();
             else {
                 needReload =true;
@@ -813,8 +916,8 @@ bool contract::ensureYearlyMidYearInterestMode(const QDate bookingDate, midYearI
         return true;
 
     const midYearInterestMode existingMode = yearlyMidYearInterestMode(bookingDate.year());
-    if( existingMode != contract::undecided) {
-        if( requestedMode != contract::undecided && requestedMode != existingMode) {
+    if( existingMode not_eq contract::undecided) {
+        if( requestedMode not_eq contract::undecided and requestedMode not_eq existingMode) {
             qCritical() << "conflicting mid-year interest mode for contract/year"
                         << id().v << bookingDate.year();
             return false;
@@ -907,7 +1010,7 @@ bool contract::bookInterestToDateImpl(const QDate nextBookingDate, bool payout, 
     }
 
     if( mode == interestBookingMode::mayDeferToYearEnd
-            && yearlyMidYearInterestMode(nextBookingDate.year()) == contract::deferred) {
+            and yearlyMidYearInterestMode(nextBookingDate.year()) == contract::deferred) {
         qInfo() << "mid-year interest booking deferred to year end";
         return true;
     }

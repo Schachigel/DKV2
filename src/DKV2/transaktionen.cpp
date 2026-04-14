@@ -29,6 +29,7 @@
 #include "dlgaskdate.h"
 #include "dlgchangecontracttermination.h"
 #include "dlgchangebooking.h"
+#include "dlginterestbreakdown.h"
 #include "wiznew.h"
 #include "wiznewinvestment.h"
 #include <QRegularExpression>
@@ -466,6 +467,43 @@ void changeBookingValue(bookingId_t bookingId)
     }
 }
 
+void showInterestBreakdown(bookingId_t bookingId)
+{
+    const QString sql{qsl("SELECT %1, %2, %3 FROM %4 WHERE id = ?")
+                            .arg(booking::fn_bVertragsId,
+                                 booking::fn_bDatum,
+                                 booking::fn_bBuchungsArt,
+                                 booking::tn_Buchungen)};
+
+    const QSqlRecord rec{executeSingleRecordSql(sql, QVector<QVariant>{bookingId.v})};
+    if (rec.isEmpty()) {
+        QMessageBox::critical(getMainWindow(), qsl("Fehler"),
+                              qsl("Die Zinsdetails konnten nicht geladen werden."));
+        return;
+    }
+
+    const contractId_t contractId{rec.value(booking::fn_bVertragsId).toLongLong()};
+    const QDate bookingDate{rec.value(booking::fn_bDatum).toDate()};
+    const bookingType type{bookingtypeFromInt(rec.value(booking::fn_bBuchungsArt).toInt())};
+    if (type not_eq bookingType::annualInterestDeposit) {
+        QMessageBox::information(getMainWindow(), qsl("Hinweis"),
+                                 qsl("Zinsdetails können nur für Jahreszinsbuchungen angezeigt werden."));
+        return;
+    }
+
+    contract c{contractId};
+    creditor cred{c.credId()};
+    const contract::interestBreakdown breakdown{c.interestBreakdownUntilDate(bookingDate)};
+
+    dlgInterestBreakdown dlg(qsl("%1, %2").arg(cred.lastname(), cred.firstname()),
+                             c.label(),
+                             c.id(),
+                             bookingDate,
+                             breakdown,
+                             getMainWindow());
+    dlg.exec();
+}
+
 void undoLastBooking(bookingId_t bookingId)
 {
     const QString sql{qsl(
@@ -482,16 +520,16 @@ void undoLastBooking(bookingId_t bookingId)
         return;
     }
 
-    const QSqlRecord rec = records[0];
+    const QSqlRecord rec{records[0]};
     const contractId_t contractId{rec.value(booking::fn_bVertragsId).toLongLong()};
-    const QDate bookingDate = rec.value(booking::fn_bDatum).toDate();
+    const QDate bookingDate{rec.value(booking::fn_bDatum).toDate()};
     if (not bookingDate.isValid() || not isValidRowId(contractId.v)) {
         qCritical() << "die ausgewählte Buchung enthält ungültige Daten";
         return;
     }
 
-    contract cont(contractId);
-    const QDate latestDate = cont.latestBookingDate();
+    contract cont{contractId};
+    const QDate latestDate{cont.latestBookingDate()};
     if (bookingDate != latestDate) {
         QMessageBox::information(getMainWindow(),
                                  qsl("Buchung kann nicht gelöscht werden"),

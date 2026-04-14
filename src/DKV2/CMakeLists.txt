@@ -74,6 +74,7 @@ set(DKV2_UI_SOURCES
     dlgchangebooking.cpp dlgchangebooking.h
     dlgchangecontracttermination.cpp dlgchangecontracttermination.h
     dlgdisplaycolumns.cpp dlgdisplaycolumns.h
+    dlginterestbreakdown.cpp dlginterestbreakdown.h
     dlginterestletters.cpp dlginterestletters.h
 
     wizactivatecontract.cpp wizactivatecontract.h

@@ -353,29 +353,32 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
 // this ugly global makes the contract, on which the context menu was called,
 // available in the handler functions
 namespace {
-contract* contractUnderMouseMenu =nullptr;
-qlonglong bookingIdUnderMouseMenu =-1;
+contract* contractUnderMouseMenu{nullptr};
+qlonglong bookingIdUnderMouseMenu{-1};
 
 struct selectedBookingContext {
-    contractId_t contractId = Invalid_contract_id;
+    contractId_t contractId{Invalid_contract_id};
     QDate bookingDate;
-    bool isValid() const { return isValidRowId(contractId.v) && bookingDate.isValid(); }
+    bookingType type{bookingType::non};
+    bool isValid() const { return isValidRowId(contractId.v) and bookingDate.isValid(); }
 };
 
 selectedBookingContext getSelectedBookingContext(bookingId_t bookingId)
 {
-    const QString sql = qsl("SELECT %1, %2 FROM %3 WHERE id = ?")
+    const QString sql = qsl("SELECT %1, %2, %3 FROM %4 WHERE id = ?")
                             .arg(booking::fn_bVertragsId,
                                  booking::fn_bDatum,
+                                 booking::fn_bBuchungsArt,
                                  booking::tn_Buchungen);
     QVector<QSqlRecord> records;
     if (not executeSql(sql, QVector<QVariant>{bookingId.v}, records) || records.size() != 1)
         return {};
 
-    selectedBookingContext ctx;
-    ctx.contractId = contractId_t{records[0].value(booking::fn_bVertragsId).toLongLong()};
-    ctx.bookingDate = records[0].value(booking::fn_bDatum).toDate();
-    return ctx;
+    return {
+        contractId_t{records[0].value(booking::fn_bVertragsId).toLongLong()},
+        records[0].value(booking::fn_bDatum).toDate(),
+        bookingtypeFromInt(records[0].value(booking::fn_bBuchungsArt).toInt())
+    };
 }
 }
 
@@ -448,26 +451,29 @@ void MainWindow::on_bookingsTableView_customContextMenuRequested(const QPoint &p
         return;
 
     bookingIdUnderMouseMenu=index.data().toLongLong ();
-    const selectedBookingContext ctx = getSelectedBookingContext(bookingId_t{bookingIdUnderMouseMenu});
-    QMenu menu(qsl("bookingsContextMenu"), this);
+    const selectedBookingContext ctx{getSelectedBookingContext(bookingId_t{bookingIdUnderMouseMenu})};
+    QMenu menu{qsl("bookingsContextMenu"), this};
     menu.addAction (ui->action_cmenu_change_booking);
     if (ctx.isValid()) {
-        contract c(ctx.contractId);
-        const bool isLatestBookingDay = c.latestBookingDate() == ctx.bookingDate;
-        ui->action_cmenu_undo_last_booking->setText(
-            isLatestBookingDay
-                ? qsl("Buchungen vom %1 löschen").arg(ctx.bookingDate.toString(qsl("dd.MM.yyyy")))
-                : qsl("Buchungen des letzten Buchungstages löschen"));
-        ui->action_cmenu_undo_last_booking->setEnabled(isLatestBookingDay);
-    } else {
-        ui->action_cmenu_undo_last_booking->setText(qsl("Buchungen des letzten Buchungstages löschen"));
-        ui->action_cmenu_undo_last_booking->setEnabled(false);
+        contract c{ctx.contractId};
+        const bool isLatestBookingDay{c.latestBookingDate() == ctx.bookingDate};
+        if (isLatestBookingDay) {
+            ui->action_cmenu_undo_last_booking->setText(
+                qsl("Buchungen vom %1 löschen").arg(ctx.bookingDate.toString(qsl("dd.MM.yyyy"))));
+            menu.addAction(ui->action_cmenu_undo_last_booking);
+        }
+        if (ctx.type == bookingType::annualInterestDeposit) {
+            QAction* detailsAction{menu.addAction(qsl("Zinsdetails anzeigen"))};
+            const bookingId_t selectedBookingId{bookingIdUnderMouseMenu};
+            connect(detailsAction, &QAction::triggered, this, [selectedBookingId]() {
+                showInterestBreakdown(selectedBookingId);
+            });
+        }
     }
-    menu.addAction (ui->action_cmenu_undo_last_booking);
     bc.finish();
 
     menu.exec (ui->bookingsTableView->mapToGlobal (pos));
-    bookingIdUnderMouseMenu =-1;
+    bookingIdUnderMouseMenu = -1;
 }
 
 void MainWindow::on_action_cmenu_change_booking_triggered()

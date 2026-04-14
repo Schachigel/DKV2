@@ -207,9 +207,26 @@ struct contract
     year annualSettlement(const year y);
 
     enum midYearInterestMode { deferred = -1, undecided = 0, immediate = 1 };
+    struct interestSlice {
+        enum class kind { openingBalance, deposit, payout };
+        kind type = kind::openingBalance;
+        QDate from;
+        QDate to;
+        double baseAmount = 0.;
+        double interest = 0.;
+    };
+    struct interestBreakdown {
+        QDate periodEnd;
+        midYearInterestMode mode = undecided;
+        double totalInterest = 0.;
+        QVector<interestSlice> slices;
+        bool ok = true;
+        QString error;
+    };
     bool deposit(const QDate d, double amount, bool payoutInterest =false, midYearInterestMode midYearInterest = undecided);
     bool payout(const QDate d, double amount, bool payoutInterest =false, midYearInterestMode midYearInterest = undecided);
-    midYearInterestMode yearlyMidYearInterestMode(int year);
+    midYearInterestMode yearlyMidYearInterestMode(int year) const;
+    interestBreakdown interestBreakdownUntilDate(const QDate periodEnd) const;
 
     bool cancel(const QDate d_plannedContractEnd, const QDate dCancelation);
     bool finalize(const bool simulate, const QDate finDate, double& finInterest, double& finPayout);
@@ -227,7 +244,8 @@ private:
     bool ensureYearlyMidYearInterestMode(const QDate bookingDate, midYearInterestMode requestedMode);
     bool bookValueChange(const QDate bookingDate, double amount, bool payoutInterest, bookingType bookingKind, midYearInterestMode midYearInterest);
     double interestBearingValueAt(const QDate date) const;
-    double deferredInterestUntilDate(const QDate periodEnd, bool &ok) const;
+    interestBreakdown deferredInterestBreakdownUntilDate(const QDate periodEnd) const;
+    static void logInterestBreakdown(const interestBreakdown& breakdown);
     bool bookInterestUntilDate(const QDate date, bool payout = false);
     bool bookInterestBeforeValueChange(const QDate date, bool payout = false);
     enum class interestBookingMode {

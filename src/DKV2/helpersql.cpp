@@ -404,6 +404,22 @@ QSqlRecord executeSingleRecordSql(const QString& sql, const QSqlDatabase& db)
         return QSqlRecord(); // error handling in called function
 }
 
+QSqlRecord executeSingleRecordSql(const QString& sql, const QVector<QVariant>& params, const QSqlDatabase& db)
+{
+    QVector<QSqlRecord> records;
+    if (executeSql(sql, params, records, db)) {
+        if (records.isEmpty() or records.size() > 1) {
+            qInfo() << qsl("ExecuteSingleRecordSql: nbr of records mismatch: %1/1").arg(records.size());
+            return QSqlRecord();
+        }
+        else {
+            RETURN_OK(records[0], qsl("exec.SingleRecordSql returned one Record: %1").arg(records[0].value(0).toString()));
+        }
+    }
+    else
+        return QSqlRecord();
+}
+
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where, const QString& order, const QSqlDatabase& db)
 {
     QString sql =selectQueryFromFields(fields, where, order);

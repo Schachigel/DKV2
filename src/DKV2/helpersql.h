@@ -11,7 +11,7 @@ inline const tableindex_t SQLITE_minimalRowId =1;
 inline const tableindex_t SQLITE_invalidRowId =-1;
 
 inline bool isValidRowId(tableindex_t i) {
-    return i not_eq SQLITE_invalidRowId; // id / rowid could have other values, if not autoinc
+    return i >= SQLITE_minimalRowId;
 }
 
 QString DbInsertableString(const QVariant &v);
@@ -49,6 +49,7 @@ QVariant executeSingleValueSql(const dbfield&, const QString& where, const QSqlD
 QVector<QVariant> executeSingleColumnSql(const dbfield& dbField, const QString& where =QString());
 
 QSqlRecord executeSingleRecordSql(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database ());
+QSqlRecord executeSingleRecordSql(const QString& sql, const QVector<QVariant>& params, const QSqlDatabase& db =QSqlDatabase::database());
 QSqlRecord executeSingleRecordSql(const QVector<dbfield>& fields, const QString& where =QString(), const QString& order =QString(), const QSqlDatabase& db=QSqlDatabase::database());
 
 bool executeSql_wNoRecords(const QString& sql, const QSqlDatabase& db =QSqlDatabase::database());
