@@ -208,8 +208,9 @@ struct contract
 
     enum midYearInterestMode { deferred = -1, undecided = 0, immediate = 1 };
     struct interestSlice {
-        enum class kind { openingBalance, deposit, payout };
+        enum class kind { openingBalance, deposit, payout, interimInterest, annualInterest };
         kind type = kind::openingBalance;
+        QDate recognitionDate;
         QDate from;
         QDate to;
         double baseAmount = 0.;

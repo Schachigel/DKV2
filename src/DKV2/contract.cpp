@@ -626,6 +626,10 @@ QString interestSliceKindToString(contract::interestSlice::kind kind)
         return qsl("Einzahlung");
     case contract::interestSlice::kind::payout:
         return qsl("Auszahlung");
+    case contract::interestSlice::kind::interimInterest:
+        return qsl("Unterjähriger Zins");
+    case contract::interestSlice::kind::annualInterest:
+        return qsl("Jahreszins");
     }
     return qsl("unknown");
 }
@@ -647,25 +651,87 @@ contract::interestBreakdown contract::interestBreakdownUntilDate(const QDate per
 
     breakdown.mode = immediate;
 
-    const QVector<booking> priorBookings = getBookings(id(), BeginingOfTime, periodEnd.addDays(-1), qsl("Datum ASC"), isTerminated);
-    if (priorBookings.isEmpty()) {
-        breakdown.ok = false;
-        breakdown.error = qsl("no prior booking found to determine the interest basis");
+    const int y{periodEnd.year()};
+    const QDate yearStart{y, 1, 1};
+    const QDate previousYearEnd{y - 1, 12, 31};
+    const QVector<booking> yearBookings{getBookings(id(), yearStart, periodEnd, qsl("Datum ASC, id ASC"), isTerminated)};
+
+    std::optional<QDate> activationDateInYear;
+    for (const booking& b : yearBookings) {
+        if (b.type == bookingType::setInterestActive) {
+            if (activationDateInYear.has_value()) {
+                breakdown.ok = false;
+                breakdown.error = qsl("multiple activation bookings found in interest year");
+                return breakdown;
+            }
+            activationDateInYear = b.date;
+        }
+    }
+
+    QDate sliceStart;
+    if (activationDateInYear.has_value()) {
+        sliceStart = activationDateInYear.value();
+    } else if (interestActive()) {
+        const QDate initialDate{initialPaymentDate()};
+        if (not initialDate.isValid()) {
+            breakdown.ok = false;
+            breakdown.error = qsl("no prior booking found to determine the interest basis");
+            return breakdown;
+        }
+        sliceStart = (initialDate < yearStart) ? previousYearEnd : initialDate;
+    } else {
         return breakdown;
     }
 
-    const QDate openingSliceStart = priorBookings.last().date;
-    const double openingBaseAmount = interestBearingValueAt(openingSliceStart);
-    const double openingInterest = interestForPeriod(actualInterestRate(),
-                                                     openingBaseAmount,
-                                                     openingSliceStart,
-                                                     periodEnd);
-    breakdown.slices.push_back({interestSlice::kind::openingBalance,
-                                openingSliceStart,
-                                periodEnd,
-                                openingBaseAmount,
-                                openingInterest});
-    breakdown.totalInterest = openingInterest;
+    if (sliceStart > periodEnd)
+        return breakdown;
+
+    double currentBaseAmount{interestBearingValueAt(sliceStart)};
+    for (const booking& b : yearBookings) {
+        if (b.date < sliceStart)
+            continue;
+
+        if (b.type == bookingType::reInvestInterest and qFuzzyIsNull(b.amount))
+            continue;
+
+        if (b.type == bookingType::reInvestInterest and not qFuzzyIsNull(b.amount)) {
+            breakdown.slices.push_back({interestSlice::kind::interimInterest,
+                                        b.date,
+                                        sliceStart,
+                                        b.date,
+                                        currentBaseAmount,
+                                        b.amount});
+            breakdown.totalInterest += b.amount;
+            sliceStart = b.date;
+            currentBaseAmount = interestBearingValueAt(b.date);
+            continue;
+        }
+
+        if (b.type == bookingType::annualInterestDeposit and b.date == periodEnd) {
+            breakdown.slices.push_back({interestSlice::kind::annualInterest,
+                                        b.date,
+                                        sliceStart,
+                                        periodEnd,
+                                        currentBaseAmount,
+                                        b.amount});
+            breakdown.totalInterest += b.amount;
+            break;
+        }
+    }
+
+    if (breakdown.slices.isEmpty()) {
+        const double annualInterest{interestForPeriod(actualInterestRate(),
+                                                      currentBaseAmount,
+                                                      sliceStart,
+                                                      periodEnd)};
+        breakdown.slices.push_back({interestSlice::kind::annualInterest,
+                                    periodEnd,
+                                    sliceStart,
+                                    periodEnd,
+                                    currentBaseAmount,
+                                    annualInterest});
+        breakdown.totalInterest = annualInterest;
+    }
     return breakdown;
 }
 
@@ -740,6 +806,7 @@ contract::interestBreakdown contract::deferredInterestBreakdownUntilDate(const Q
                                                      openingSliceStart,
                                                      periodEnd);
     breakdown.slices.push_back({interestSlice::kind::openingBalance,
+                                periodEnd,
                                 openingSliceStart,
                                 periodEnd,
                                 openingBaseAmount,
@@ -755,6 +822,7 @@ contract::interestBreakdown contract::deferredInterestBreakdownUntilDate(const Q
         case bookingType::deposit: {
             const double interest = interestForPeriod(actualInterestRate(), b.amount, b.date, periodEnd);
             breakdown.slices.push_back({interestSlice::kind::deposit,
+                                        periodEnd,
                                         b.date,
                                         periodEnd,
                                         b.amount,
@@ -766,6 +834,7 @@ contract::interestBreakdown contract::deferredInterestBreakdownUntilDate(const Q
             const double baseAmount = qFabs(b.amount);
             const double interest = -interestForPeriod(actualInterestRate(), baseAmount, b.date, periodEnd);
             breakdown.slices.push_back({interestSlice::kind::payout,
+                                        periodEnd,
                                         b.date,
                                         periodEnd,
                                         baseAmount,
@@ -795,8 +864,9 @@ void contract::logInterestBreakdown(const interestBreakdown &breakdown)
                              .arg(breakdown.periodEnd.toString(Qt::ISODate),
                                   s_d2euro(breakdown.totalInterest));
     for (const interestSlice &slice : breakdown.slices) {
-        qInfo().noquote() << qsl("  %1 | %2 -> %3 | base %4 | interest %5")
+        qInfo().noquote() << qsl("  %1 | recognition %2 | %3 -> %4 | base %5 | interest %6")
                                  .arg(interestSliceKindToString(slice.type),
+                                      slice.recognitionDate.toString(Qt::ISODate),
                                       slice.from.toString(Qt::ISODate),
                                       slice.to.toString(Qt::ISODate),
                                       s_d2euro(slice.baseAmount),

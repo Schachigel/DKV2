@@ -40,7 +40,7 @@ dlgInterestBreakdown::dlgInterestBreakdown(const QString& creditorName,
 
     summaryLabel = new QLabel(this);
     summaryLabel->setText(qsl("Modus: %1<br>Gesamtzins: <b>%2</b>")
-                              .arg(modeText(this->breakdown.mode),
+                              .arg(modeText(this->breakdown),
                                    s_d2euro(this->breakdown.totalInterest)));
     summaryLabel->setTextFormat(Qt::RichText);
 
@@ -52,8 +52,9 @@ dlgInterestBreakdown::dlgInterestBreakdown(const QString& creditorName,
                                 .arg(this->breakdown.error));
 
     table = new QTableWidget(this);
-    table->setColumnCount(5);
-    table->setHorizontalHeaderLabels({qsl("Art"), qsl("Von"), qsl("Bis"), qsl("Basisbetrag"), qsl("Zins")});
+    table->setColumnCount(6);
+    table->setHorizontalHeaderLabels({qsl("Wertstellung"), qsl("Art"), qsl("Von"), qsl("Bis"), qsl("Basisbetrag"), qsl("Zins")});
+    table->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     table->horizontalHeader()->setStretchLastSection(true);
     table->verticalHeader()->setVisible(false);
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -64,11 +65,18 @@ dlgInterestBreakdown::dlgInterestBreakdown(const QString& creditorName,
     table->setRowCount(this->breakdown.slices.size());
     for (int row = 0; row < this->breakdown.slices.size(); ++row) {
         const contract::interestSlice& slice = this->breakdown.slices[row];
-        table->setItem(row, 0, new QTableWidgetItem(sliceKindText(slice.type)));
-        table->setItem(row, 1, new QTableWidgetItem(slice.from.toString(qsl("dd.MM.yyyy"))));
-        table->setItem(row, 2, new QTableWidgetItem(slice.to.toString(qsl("dd.MM.yyyy"))));
-        table->setItem(row, 3, new QTableWidgetItem(s_d2euro(slice.baseAmount)));
-        table->setItem(row, 4, new QTableWidgetItem(s_d2euro(slice.interest)));
+        table->setItem(row, 0, new QTableWidgetItem(slice.recognitionDate.toString(qsl("dd.MM.yyyy"))));
+        table->setItem(row, 1, new QTableWidgetItem(sliceKindText(slice.type)));
+        table->setItem(row, 2, new QTableWidgetItem(slice.from.toString(qsl("dd.MM.yyyy"))));
+        table->setItem(row, 3, new QTableWidgetItem(slice.to.toString(qsl("dd.MM.yyyy"))));
+
+        QTableWidgetItem* baseAmountItem{new QTableWidgetItem(s_d2euro(slice.baseAmount))};
+        baseAmountItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        table->setItem(row, 4, baseAmountItem);
+
+        QTableWidgetItem* interestItem{new QTableWidgetItem(s_d2euro(slice.interest))};
+        interestItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        table->setItem(row, 5, interestItem);
     }
     table->resizeColumnsToContents();
 
@@ -102,18 +110,28 @@ QString dlgInterestBreakdown::sliceKindText(contract::interestSlice::kind kind)
     switch (kind)
     {
     case contract::interestSlice::kind::openingBalance:
-        return qsl("Startwert");
+        return qsl("Jahreszins: Anfangswert");
     case contract::interestSlice::kind::deposit:
-        return qsl("Einzahlung");
+        return qsl("Jahreszins: Einzahlung");
     case contract::interestSlice::kind::payout:
-        return qsl("Auszahlung");
+        return qsl("Jahreszins: Auszahlung");
+    case contract::interestSlice::kind::interimInterest:
+        return qsl("Unterjähriger Zins");
+    case contract::interestSlice::kind::annualInterest:
+        return qsl("Jahreszins");
     }
     return qsl("Unbekannt");
 }
 
-QString dlgInterestBreakdown::modeText(contract::midYearInterestMode mode)
+QString dlgInterestBreakdown::modeText(const contract::interestBreakdown& breakdown)
 {
-    switch (mode)
+    if (breakdown.mode == contract::immediate
+        and breakdown.slices.size() == 1
+        and breakdown.slices[0].type == contract::interestSlice::kind::annualInterest) {
+        return qsl("Zinsen für den Gesamtzeitraum");
+    }
+
+    switch (breakdown.mode)
     {
     case contract::deferred:
         return qsl("Zinsen zum Jahresende");
@@ -129,14 +147,15 @@ QString dlgInterestBreakdown::toCsv() const
 {
     CsvWriter csv;
     csv.addColumns({qsl("Kreditor"), qsl("Vertrag"), qsl("VertragsId"), qsl("Buchungsdatum"), qsl("Modus"),
-                    qsl("Art"), qsl("Von"), qsl("Bis"), qsl("Basisbetrag"), qsl("Zins")});
+                    qsl("Wertstellung"), qsl("Art"), qsl("Von"), qsl("Bis"), qsl("Basisbetrag"), qsl("Zins")});
 
     for (const contract::interestSlice& slice : breakdown.slices) {
         csv.appendValueToNextRecord(creditorName);
         csv.appendValueToNextRecord(contractLabel);
         csv.appendValueToNextRecord(i2s(contractId.v));
         csv.appendValueToNextRecord(bookingDate.toString(qsl("dd.MM.yyyy")));
-        csv.appendValueToNextRecord(modeText(breakdown.mode));
+        csv.appendValueToNextRecord(modeText(breakdown));
+        csv.appendValueToNextRecord(slice.recognitionDate.toString(qsl("dd.MM.yyyy")));
         csv.appendValueToNextRecord(sliceKindText(slice.type));
         csv.appendValueToNextRecord(slice.from.toString(qsl("dd.MM.yyyy")));
         csv.appendValueToNextRecord(slice.to.toString(qsl("dd.MM.yyyy")));
@@ -153,10 +172,11 @@ QString dlgInterestBreakdown::toText() const
     stream << creditorName << "\n";
     stream << qsl("Vertrag ") << contractLabel << qsl(" (#") << contractId.v << qsl(")\n");
     stream << qsl("Buchung vom ") << bookingDate.toString(qsl("dd.MM.yyyy")) << qsl("\n");
-    stream << qsl("Modus: ") << modeText(breakdown.mode) << qsl("\n");
+    stream << qsl("Modus: ") << modeText(breakdown) << qsl("\n");
     stream << qsl("Gesamtzins: ") << s_d2euro(breakdown.totalInterest) << qsl("\n\n");
     for (const contract::interestSlice& slice : breakdown.slices) {
-        stream << sliceKindText(slice.type) << qsl(": ")
+        stream << slice.recognitionDate.toString(qsl("dd.MM.yyyy")) << qsl(" | ")
+               << sliceKindText(slice.type) << qsl(": ")
                << slice.from.toString(qsl("dd.MM.yyyy")) << qsl(" -> ")
                << slice.to.toString(qsl("dd.MM.yyyy")) << qsl(", Basis ")
                << s_d2euro(slice.baseAmount) << qsl(", Zins ")

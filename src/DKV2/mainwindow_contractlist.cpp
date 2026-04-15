@@ -316,22 +316,46 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
 //// every time the selection in the contract tree view changes
 //// the bookings table below needs to be updated
     busyCursor bc;
-    // todo: do all init only once, this function should only do the
-    // setFilter and the select()
     QModelIndex indexIndex = newI.siblingAtColumn(0);
-    int index =ui->contractsTableView->model()->data(indexIndex).toInt();
-    QSqlTableModel* model = new QSqlTableModel(this);
-    if( showDeletedContracts) {
-        model->setTable(booking::tn_ExBuchungen);
-        model->setFilter(qsl("%1.%2=%3").arg(booking::tn_ExBuchungen, booking::fn_bVertragsId, i2s(index)));
-    } else {
-        model->setTable(booking::tn_Buchungen);
-        model->setFilter(qsl("%1.%2=%3").arg(booking::tn_Buchungen, booking::fn_bVertragsId, i2s(index)));
+    const int index{ui->contractsTableView->model()->data(indexIndex).toInt()};
+    const QString tableName{showDeletedContracts ? booking::tn_ExBuchungen : booking::tn_Buchungen};
+    const QString sql{qsl(
+        "SELECT B.id"
+        "  , B.%1"
+        "  , B.%2"
+        "  , B.%3"
+        "  , B.%4"
+        "  , B.%5"
+        "  , ("
+        "      SELECT SUM(B2.%4)"
+        "      FROM %6 AS B2"
+        "      WHERE B2.%1 = B.%1"
+        "        AND B2.%2 <= B.%2"
+        "    ) AS WertZumBuchungstag"
+        " FROM %6 AS B"
+        " WHERE B.%1 = ?"
+        " ORDER BY B.id DESC")
+        .arg(booking::fn_bVertragsId,
+             booking::fn_bDatum,
+             booking::fn_bBuchungsArt,
+             booking::fn_bBetrag,
+             booking::fn_bModifiziert,
+             tableName)};
+    QSqlQueryModel* model = new QSqlQueryModel(this);
+    model->setQuery(QSqlQuery());
+    {
+        QSqlQuery q;
+        q.prepare(sql);
+        q.addBindValue(index);
+        q.exec();
+        model->setQuery(std::move(q));
     }
-    model->setSort(0, Qt::SortOrder::DescendingOrder);
+    model->setHeaderData(2, Qt::Horizontal, qsl("Datum"));
+    model->setHeaderData(3, Qt::Horizontal, qsl("Art"));
+    model->setHeaderData(4, Qt::Horizontal, qsl("Betrag"));
+    model->setHeaderData(6, Qt::Horizontal, qsl("Wert z. Buchungstag"));
 
     ui->bookingsTableView->setModel(model);
-    model->select();
     ui->bookingsTableView->setEditTriggers(QTableView::NoEditTriggers);
     ui->bookingsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->bookingsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -343,6 +367,7 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
     ui->bookingsTableView->setItemDelegateForColumn(3, new bookingTypeFormatter);
     ui->bookingsTableView->setItemDelegateForColumn(4, new BookingAmountItemFormatter);
     ui->bookingsTableView->hideColumn(5);
+    ui->bookingsTableView->setItemDelegateForColumn(6, new BookingAmountItemFormatter);
     ui->bookingsTableView->resizeColumnsToContents();
 }
 

@@ -22,7 +22,7 @@ public:
 
 private:
     static QString sliceKindText(contract::interestSlice::kind kind);
-    static QString modeText(contract::midYearInterestMode mode);
+    static QString modeText(const contract::interestBreakdown& breakdown);
     QString toCsv() const;
     QString toText() const;
     void saveToFile();
