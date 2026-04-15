@@ -699,7 +699,7 @@ contract::interestBreakdown contract::interestBreakdownUntilDate(const QDate per
                                         b.date,
                                         sliceStart,
                                         b.date,
-                                        value(b.date),
+                                        value(sliceStart),
                                         currentBaseAmount,
                                         b.amount});
             breakdown.totalInterest += b.amount;

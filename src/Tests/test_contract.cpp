@@ -6,6 +6,7 @@
 #include "../DKV2/helpersql.h"
 #include "../DKV2/creditor.h"
 #include "../DKV2/contract.h"
+#include "../DKV2/appconfig.h"
 
 #include "testhelper.h"
 
@@ -797,6 +798,302 @@ void test_contract::test_yearlyMidYearInterestMode()
     }
 }
 
+void test_contract::test_manual_referenceCase_payoutImmediateThenDeferred()
+{
+    dbConfig::writeValue(ZINSUSANCE, qsl("30/360"));
+
+    creditor cred{saveRandomCreditor()};
+    contract cont{saveRandomContract(cred.id())};
+    cont.setInterestModel(interestModel::payout);
+    cont.setInterestRate(1.5);
+    cont.updateInterestActive(true);
+    cont.setPlannedInvest(1000.);
+    cont.updateConclusionDate(QDate(2024, 12, 1));
+
+    const QDate initialDate{2024, 12, 30};
+    const QDate deposit2025{2025, 3, 15}; // 3,13 EUR at 30/360 with 1,5%
+    const QDate payout2026{2026, 6, 1};
+    const QDate deposit2026{2026, 10, 1};
+
+    QVERIFY(cont.bookInitialPayment(initialDate, 1000.));
+    QVERIFY(cont.deposit(deposit2025, 500., true));
+
+    QCOMPARE(cont.getAnnualInterest(2024), 0.0);
+    QCOMPARE(cont.value(), 1500.0);
+    QCOMPARE(cont.interestBearingValue(), 1500.0);
+
+    const contract::interestBreakdown breakdown2024{cont.interestBreakdownUntilDate(QDate(2024, 12, 31))};
+    QVERIFY(breakdown2024.ok);
+    QCOMPARE(breakdown2024.slices.size(), 1);
+    QCOMPARE(breakdown2024.slices[0].type, contract::interestSlice::kind::annualInterest);
+    QCOMPARE(breakdown2024.slices[0].interest, 0.0);
+
+    const QVector<booking> bookingsAfterDeposit2025{
+        getBookings(cont.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("id ASC"))};
+    QCOMPARE(bookingsAfterDeposit2025.size(), 6);
+    QCOMPARE(bookingsAfterDeposit2025[0], booking(cont.id(), bookingType::deposit, initialDate, 1000.));
+    QCOMPARE(bookingsAfterDeposit2025[1], booking(cont.id(), bookingType::payout, QDate(2024, 12, 31), 0.));
+    QCOMPARE(bookingsAfterDeposit2025[2], booking(cont.id(), bookingType::annualInterestDeposit, QDate(2024, 12, 31), 0.));
+    QCOMPARE(bookingsAfterDeposit2025[3], booking(cont.id(), bookingType::payout, deposit2025, -3.13));
+    QCOMPARE(bookingsAfterDeposit2025[4], booking(cont.id(), bookingType::reInvestInterest, deposit2025, 3.13));
+    QCOMPARE(bookingsAfterDeposit2025[5], booking(cont.id(), bookingType::deposit, deposit2025, 500.));
+
+    QCOMPARE(cont.annualSettlement(2025), 2025);
+    QCOMPARE(cont.getAnnualInterest(2025), 17.81);
+
+    const contract::interestBreakdown breakdown2025{cont.interestBreakdownUntilDate(QDate(2025, 12, 31))};
+    QVERIFY(breakdown2025.ok);
+    QCOMPARE(breakdown2025.slices.size(), 2);
+    QCOMPARE(breakdown2025.slices[0].recognitionDate, deposit2025);
+    QCOMPARE(breakdown2025.slices[0].type, contract::interestSlice::kind::interimInterest);
+    // DKV2 uses the prior day as the slice start so that "first day free, last day counts"
+    // covers the full 2025 period without losing 01.01.2025.
+    QCOMPARE(breakdown2025.slices[0].from, QDate(2024, 12, 31));
+    QCOMPARE(breakdown2025.slices[0].to, deposit2025);
+    QCOMPARE(breakdown2025.slices[0].contractValue, 1000.0);
+    QCOMPARE(breakdown2025.slices[0].baseAmount, 1000.0);
+    QCOMPARE(breakdown2025.slices[0].interest, 3.13);
+    QCOMPARE(breakdown2025.slices[1].recognitionDate, QDate(2025, 12, 31));
+    QCOMPARE(breakdown2025.slices[1].type, contract::interestSlice::kind::annualInterest);
+    QCOMPARE(breakdown2025.slices[1].from, deposit2025);
+    QCOMPARE(breakdown2025.slices[1].to, QDate(2025, 12, 31));
+    QCOMPARE(breakdown2025.slices[1].contractValue, 1500.0);
+    QCOMPARE(breakdown2025.slices[1].baseAmount, 1500.0);
+    QCOMPARE(breakdown2025.slices[1].interest, 17.81);
+
+    QVERIFY(cont.payout(payout2026, 500., false, contract::deferred));
+    const QVector<booking> bookingsAfterPayout2026{
+        getBookings(cont.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("id ASC"))};
+    QCOMPARE(bookingsAfterPayout2026[8], booking(cont.id(), bookingType::deferredMidYearInterest, payout2026, 0.));
+    QCOMPARE(bookingsAfterPayout2026[9], booking(cont.id(), bookingType::payout, payout2026, -500.));
+
+    QVERIFY(cont.deposit(deposit2026, 100.));
+    const QVector<booking> bookingsAfterDeposit2026{
+        getBookings(cont.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("id ASC"))};
+    QCOMPARE(bookingsAfterDeposit2026.size(), 11);
+    QCOMPARE(bookingsAfterDeposit2026[10], booking(cont.id(), bookingType::deposit, deposit2026, 100.));
+
+    QCOMPARE(cont.annualSettlement(2026), 2026);
+    QCOMPARE(cont.getAnnualInterest(2026), 18.52);
+
+    const contract::interestBreakdown breakdown2026{cont.interestBreakdownUntilDate(QDate(2026, 12, 31))};
+    QVERIFY(breakdown2026.ok);
+    QCOMPARE(breakdown2026.mode, contract::deferred);
+    QCOMPARE(breakdown2026.slices.size(), 4);
+    QCOMPARE(breakdown2026.slices[0].type, contract::interestSlice::kind::openingBalance);
+    QCOMPARE(breakdown2026.slices[0].interest, 22.50);
+    QCOMPARE(breakdown2026.slices[1].type, contract::interestSlice::kind::payout);
+    QCOMPARE(breakdown2026.slices[1].interest, -4.35);
+    QCOMPARE(breakdown2026.slices[2].type, contract::interestSlice::kind::deposit);
+    QCOMPARE(breakdown2026.slices[2].interest, 0.37);
+    QCOMPARE(breakdown2026.slices[3].type, contract::interestSlice::kind::payout);
+    QCOMPARE(breakdown2026.slices[3].interest, 0.0);
+}
+
+void test_contract::test_manual_referenceCase_payoutImmediateThenDeferred_actAct()
+{
+    dbConfig::writeValue(ZINSUSANCE, qsl("act/act"));
+
+    creditor cred(saveRandomCreditor());
+    contract cont(saveRandomContract(cred.id()));
+    cont.setInterestRate(1.5);
+    cont.setInterestModel(interestModel::payout);
+    cont.updateInterestActive(true);
+
+    const QDate conclusionDate{2024, 12, 1};
+    const QDate initialDate{2024, 12, 30};
+    const QDate deposit2025{2025, 3, 15}; // keep the same story as the 30/360 reference case
+    const QDate payout2026{2026, 6, 1};
+    const QDate deposit2026{2026, 10, 1};
+
+    const double expectedAnnual2024{interestForPeriod(cont.actualInterestRate(), 1000., initialDate, QDate(2024, 12, 31))};
+    const double expectedInterim2025{interestForPeriod(cont.actualInterestRate(), 1000., QDate(2024, 12, 31), deposit2025)};
+    const double expectedAnnual2025{interestForPeriod(cont.actualInterestRate(), 1500., deposit2025, QDate(2025, 12, 31))};
+    const double expectedOpening2026{interestForPeriod(cont.actualInterestRate(), 1500., QDate(2025, 12, 31), QDate(2026, 12, 31))};
+    const double expectedPayoutSlice2026{-interestForPeriod(cont.actualInterestRate(), 500., payout2026, QDate(2026, 12, 31))};
+    const double expectedDepositSlice2026{interestForPeriod(cont.actualInterestRate(), 100., deposit2026, QDate(2026, 12, 31))};
+    const double expectedAnnual2026{r2(expectedOpening2026 + expectedPayoutSlice2026 + expectedDepositSlice2026)};
+
+    cont.updateConclusionDate(conclusionDate);
+    QVERIFY(cont.bookInitialPayment(initialDate, 1000.));
+    QVERIFY(cont.deposit(deposit2025, 500., true));
+
+    QCOMPARE(cont.getAnnualInterest(2024), expectedAnnual2024);
+    QCOMPARE(cont.value(), 1500.0);
+    QCOMPARE(cont.interestBearingValue(), 1500.0);
+
+    const contract::interestBreakdown breakdown2024{cont.interestBreakdownUntilDate(QDate(2024, 12, 31))};
+    QVERIFY(breakdown2024.ok);
+    QCOMPARE(breakdown2024.slices.size(), 1);
+    QCOMPARE(breakdown2024.slices[0].type, contract::interestSlice::kind::annualInterest);
+    QCOMPARE(breakdown2024.slices[0].interest, expectedAnnual2024);
+
+    const QVector<booking> bookingsAfterDeposit2025{
+        getBookings(cont.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("id ASC"))};
+    QCOMPARE(bookingsAfterDeposit2025.size(), 6);
+    QCOMPARE(bookingsAfterDeposit2025[0], booking(cont.id(), bookingType::deposit, initialDate, 1000.));
+    QCOMPARE(bookingsAfterDeposit2025[1], booking(cont.id(), bookingType::payout, QDate(2024, 12, 31), -expectedAnnual2024));
+    QCOMPARE(bookingsAfterDeposit2025[2], booking(cont.id(), bookingType::annualInterestDeposit, QDate(2024, 12, 31), expectedAnnual2024));
+    QCOMPARE(bookingsAfterDeposit2025[3], booking(cont.id(), bookingType::payout, deposit2025, -expectedInterim2025));
+    QCOMPARE(bookingsAfterDeposit2025[4], booking(cont.id(), bookingType::reInvestInterest, deposit2025, expectedInterim2025));
+    QCOMPARE(bookingsAfterDeposit2025[5], booking(cont.id(), bookingType::deposit, deposit2025, 500.));
+
+    QCOMPARE(cont.annualSettlement(2025), 2025);
+    QCOMPARE(cont.getAnnualInterest(2025), expectedAnnual2025);
+
+    const contract::interestBreakdown breakdown2025{cont.interestBreakdownUntilDate(QDate(2025, 12, 31))};
+    QVERIFY(breakdown2025.ok);
+    QCOMPARE(breakdown2025.slices.size(), 2);
+    QCOMPARE(breakdown2025.slices[0].recognitionDate, deposit2025);
+    QCOMPARE(breakdown2025.slices[0].type, contract::interestSlice::kind::interimInterest);
+    QCOMPARE(breakdown2025.slices[0].from, QDate(2024, 12, 31));
+    QCOMPARE(breakdown2025.slices[0].to, deposit2025);
+    QCOMPARE(breakdown2025.slices[0].contractValue, 1000.0);
+    QCOMPARE(breakdown2025.slices[0].baseAmount, 1000.0);
+    QCOMPARE(breakdown2025.slices[0].interest, expectedInterim2025);
+    QCOMPARE(breakdown2025.slices[1].recognitionDate, QDate(2025, 12, 31));
+    QCOMPARE(breakdown2025.slices[1].type, contract::interestSlice::kind::annualInterest);
+    QCOMPARE(breakdown2025.slices[1].from, deposit2025);
+    QCOMPARE(breakdown2025.slices[1].to, QDate(2025, 12, 31));
+    QCOMPARE(breakdown2025.slices[1].contractValue, 1500.0);
+    QCOMPARE(breakdown2025.slices[1].baseAmount, 1500.0);
+    QCOMPARE(breakdown2025.slices[1].interest, expectedAnnual2025);
+
+    QVERIFY(cont.payout(payout2026, 500., false, contract::deferred));
+    const QVector<booking> bookingsAfterPayout2026{
+        getBookings(cont.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("id ASC"))};
+    QCOMPARE(bookingsAfterPayout2026[8], booking(cont.id(), bookingType::deferredMidYearInterest, payout2026, 0.));
+    QCOMPARE(bookingsAfterPayout2026[9], booking(cont.id(), bookingType::payout, payout2026, -500.));
+
+    QVERIFY(cont.deposit(deposit2026, 100.));
+    const QVector<booking> bookingsAfterDeposit2026{
+        getBookings(cont.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("id ASC"))};
+    QCOMPARE(bookingsAfterDeposit2026.size(), 11);
+    QCOMPARE(bookingsAfterDeposit2026[10], booking(cont.id(), bookingType::deposit, deposit2026, 100.));
+
+    QCOMPARE(cont.annualSettlement(2026), 2026);
+    QCOMPARE(cont.getAnnualInterest(2026), expectedAnnual2026);
+
+    const contract::interestBreakdown breakdown2026{cont.interestBreakdownUntilDate(QDate(2026, 12, 31))};
+    QVERIFY(breakdown2026.ok);
+    QCOMPARE(breakdown2026.mode, contract::deferred);
+    QCOMPARE(breakdown2026.slices.size(), 4);
+    QCOMPARE(breakdown2026.slices[0].type, contract::interestSlice::kind::openingBalance);
+    QCOMPARE(breakdown2026.slices[0].interest, expectedOpening2026);
+    QCOMPARE(breakdown2026.slices[1].type, contract::interestSlice::kind::payout);
+    QCOMPARE(breakdown2026.slices[1].interest, expectedPayoutSlice2026);
+    QCOMPARE(breakdown2026.slices[2].type, contract::interestSlice::kind::deposit);
+    QCOMPARE(breakdown2026.slices[2].interest, expectedDepositSlice2026);
+    QCOMPARE(breakdown2026.slices[3].type, contract::interestSlice::kind::payout);
+    QCOMPARE(breakdown2026.slices[3].interest, 0.0);
+}
+
+void test_contract::test_manual_referenceCase_reinvestImmediateThenDeferred()
+{
+    dbConfig::writeValue(ZINSUSANCE, qsl("30/360"));
+
+    creditor cred(saveRandomCreditor());
+    contract cont(saveRandomContract(cred.id()));
+    cont.setInterestRate(1.5);
+    cont.setInterestModel(interestModel::reinvest);
+    cont.updateInterestActive(true);
+
+    const QDate conclusionDate{2024, 12, 1};
+    const QDate initialDate{2024, 12, 30};
+    const QDate deposit2025{2025, 3, 15}; // same booking story, but thesaurierend
+    const QDate payout2026{2026, 6, 1};
+    const QDate deposit2026{2026, 10, 1};
+
+    const double expectedAnnual2024{interestForPeriod(cont.actualInterestRate(), 1000., initialDate, QDate(2024, 12, 31))};
+    const double expectedInterim2025{interestForPeriod(cont.actualInterestRate(), 1000., QDate(2024, 12, 31), deposit2025)};
+    const double expectedValueAfterDeposit2025{r2(1000. + expectedInterim2025 + 500.)};
+    const double expectedAnnual2025{interestForPeriod(cont.actualInterestRate(),
+                                                      expectedValueAfterDeposit2025,
+                                                      deposit2025,
+                                                      QDate(2025, 12, 31))};
+    const double expectedValueAtStart2026{r2(expectedValueAfterDeposit2025 + expectedAnnual2025)};
+    const double expectedOpening2026{interestForPeriod(cont.actualInterestRate(),
+                                                       expectedValueAtStart2026,
+                                                       QDate(2025, 12, 31),
+                                                       QDate(2026, 12, 31))};
+    const double expectedPayoutSlice2026{-interestForPeriod(cont.actualInterestRate(), 500., payout2026, QDate(2026, 12, 31))};
+    const double expectedDepositSlice2026{interestForPeriod(cont.actualInterestRate(), 100., deposit2026, QDate(2026, 12, 31))};
+    const double expectedAnnual2026{r2(expectedOpening2026 + expectedPayoutSlice2026 + expectedDepositSlice2026)};
+
+    cont.updateConclusionDate(conclusionDate);
+    QVERIFY(cont.bookInitialPayment(initialDate, 1000.));
+    QVERIFY(cont.deposit(deposit2025, 500.));
+
+    QCOMPARE(cont.value(), expectedValueAfterDeposit2025);
+    QCOMPARE(cont.interestBearingValue(), expectedValueAfterDeposit2025);
+
+    const contract::interestBreakdown breakdown2024{cont.interestBreakdownUntilDate(QDate(2024, 12, 31))};
+    QVERIFY(breakdown2024.ok);
+    QCOMPARE(breakdown2024.slices.size(), 1);
+    QCOMPARE(breakdown2024.slices[0].type, contract::interestSlice::kind::annualInterest);
+    QCOMPARE(breakdown2024.slices[0].interest, expectedAnnual2024);
+
+    const QVector<booking> bookingsAfterDeposit2025{
+        getBookings(cont.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("id ASC"))};
+    QCOMPARE(bookingsAfterDeposit2025.size(), 4);
+    QCOMPARE(bookingsAfterDeposit2025[0], booking(cont.id(), bookingType::deposit, initialDate, 1000.));
+    QCOMPARE(bookingsAfterDeposit2025[1], booking(cont.id(), bookingType::annualInterestDeposit, QDate(2024, 12, 31), expectedAnnual2024));
+    QCOMPARE(bookingsAfterDeposit2025[2], booking(cont.id(), bookingType::reInvestInterest, deposit2025, expectedInterim2025));
+    QCOMPARE(bookingsAfterDeposit2025[3], booking(cont.id(), bookingType::deposit, deposit2025, 500.));
+
+    QCOMPARE(cont.annualSettlement(2025), 2025);
+    QCOMPARE(cont.latestBooking().type, bookingType::annualInterestDeposit);
+    QCOMPARE(cont.latestBooking().date, QDate(2025, 12, 31));
+    QCOMPARE(cont.latestBooking().amount, expectedAnnual2025);
+    QCOMPARE(cont.value(), expectedValueAtStart2026);
+
+    const contract::interestBreakdown breakdown2025{cont.interestBreakdownUntilDate(QDate(2025, 12, 31))};
+    QVERIFY(breakdown2025.ok);
+    QCOMPARE(breakdown2025.slices.size(), 2);
+    QCOMPARE(breakdown2025.slices[0].recognitionDate, deposit2025);
+    QCOMPARE(breakdown2025.slices[0].type, contract::interestSlice::kind::interimInterest);
+    QCOMPARE(breakdown2025.slices[0].from, QDate(2024, 12, 31));
+    QCOMPARE(breakdown2025.slices[0].to, deposit2025);
+    QCOMPARE(breakdown2025.slices[0].contractValue, 1000.0);
+    QCOMPARE(breakdown2025.slices[0].baseAmount, 1000.0);
+    QCOMPARE(breakdown2025.slices[0].interest, expectedInterim2025);
+    QCOMPARE(breakdown2025.slices[1].recognitionDate, QDate(2025, 12, 31));
+    QCOMPARE(breakdown2025.slices[1].type, contract::interestSlice::kind::annualInterest);
+    QCOMPARE(breakdown2025.slices[1].from, deposit2025);
+    QCOMPARE(breakdown2025.slices[1].to, QDate(2025, 12, 31));
+    QCOMPARE(breakdown2025.slices[1].contractValue, expectedValueAfterDeposit2025);
+    QCOMPARE(breakdown2025.slices[1].baseAmount, expectedValueAfterDeposit2025);
+    QCOMPARE(breakdown2025.slices[1].interest, expectedAnnual2025);
+
+    QVERIFY(cont.payout(payout2026, 500., false, contract::deferred));
+    const QVector<booking> bookingsAfterPayout2026{
+        getBookings(cont.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("id ASC"))};
+    QCOMPARE(bookingsAfterPayout2026[5], booking(cont.id(), bookingType::deferredMidYearInterest, payout2026, 0.));
+    QCOMPARE(bookingsAfterPayout2026[6], booking(cont.id(), bookingType::payout, payout2026, -500.));
+
+    QVERIFY(cont.deposit(deposit2026, 100.));
+    const QVector<booking> bookingsAfterDeposit2026{
+        getBookings(cont.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("id ASC"))};
+    QCOMPARE(bookingsAfterDeposit2026.size(), 8);
+    QCOMPARE(bookingsAfterDeposit2026[7], booking(cont.id(), bookingType::deposit, deposit2026, 100.));
+
+    QCOMPARE(cont.annualSettlement(2026), 2026);
+    QCOMPARE(cont.latestBooking().type, bookingType::annualInterestDeposit);
+    QCOMPARE(cont.latestBooking().date, QDate(2026, 12, 31));
+    QCOMPARE(cont.latestBooking().amount, expectedAnnual2026);
+
+    const contract::interestBreakdown breakdown2026{cont.interestBreakdownUntilDate(QDate(2026, 12, 31))};
+    QVERIFY(breakdown2026.ok);
+    QCOMPARE(breakdown2026.mode, contract::deferred);
+    QCOMPARE(breakdown2026.slices.size(), 3);
+    QCOMPARE(breakdown2026.slices[0].type, contract::interestSlice::kind::openingBalance);
+    QCOMPARE(breakdown2026.slices[0].interest, expectedOpening2026);
+    QCOMPARE(breakdown2026.slices[1].type, contract::interestSlice::kind::payout);
+    QCOMPARE(breakdown2026.slices[1].interest, expectedPayoutSlice2026);
+    QCOMPARE(breakdown2026.slices[2].type, contract::interestSlice::kind::deposit);
+    QCOMPARE(breakdown2026.slices[2].interest, expectedDepositSlice2026);
+}
+
 void test_contract::test_deferredAnnualSettlement_usesYearSlices()
 {
     creditor cred(saveRandomCreditor());
@@ -896,6 +1193,40 @@ void test_contract::test_deferredMidYearInterestDoesNotSkipActivationBoundaryBoo
     QCOMPARE(bookings[1], booking(cont.id(), bookingType::deferredMidYearInterest, decisionDate, 0.));
     QCOMPARE(bookings[2], booking(cont.id(), bookingType::reInvestInterest, activationDate, 0.));
     QCOMPARE(bookings[3], booking(cont.id(), bookingType::setInterestActive, activationDate, 0.));
+}
+
+void test_contract::test_firstDeferredBookingOfNewYear_keepsPriorAnnualSettlement()
+{
+    creditor cred(saveRandomCreditor());
+    contract cont(saveRandomContract(cred.id()));
+    cont.setInterestRate(1.0);
+    cont.setInterestModel(interestModel::reinvest);
+    cont.updateInterestActive(true);
+
+    const QDate initialDate(2025, 1, 1);
+    const QDate deposit2025(2025, 6, 1);
+    const QDate deposit2026(2026, 4, 13);
+
+    cont.updateConclusionDate(initialDate.addDays(-1));
+    QVERIFY(cont.bookInitialPayment(initialDate, 1000.));
+    QVERIFY(cont.deposit(deposit2025, 100.));
+
+    QVector<booking> bookings = getBookings(cont.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("id ASC"));
+    QCOMPARE(bookings.size(), 3);
+    QVERIFY(cont.deposit(deposit2026, 50., false, contract::deferred));
+
+    QCOMPARE(cont.yearlyMidYearInterestMode(2026), contract::deferred);
+    bookings = getBookings(cont.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("id ASC"));
+
+    QCOMPARE(bookings.size(), 6);
+    QCOMPARE(bookings[0], booking(cont.id(), bookingType::deposit, initialDate, 1000.));
+    QCOMPARE(bookings[1], booking(cont.id(), bookingType::reInvestInterest, deposit2025, 4.17));
+    QCOMPARE(bookings[2], booking(cont.id(), bookingType::deposit, deposit2025, 100.));
+    QCOMPARE(bookings[3].type, bookingType::annualInterestDeposit);
+    QCOMPARE(bookings[3].date, QDate(2025, 12, 31));
+    QVERIFY(bookings[3].amount > 0.0);
+    QCOMPARE(bookings[4], booking(cont.id(), bookingType::deferredMidYearInterest, deposit2026, 0.));
+    QCOMPARE(bookings[5], booking(cont.id(), bookingType::deposit, deposit2026, 50.));
 }
 
 void test_contract::test_finalize_deferredMidYearInterest()
