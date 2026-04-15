@@ -52,8 +52,8 @@ dlgInterestBreakdown::dlgInterestBreakdown(const QString& creditorName,
                                 .arg(this->breakdown.error));
 
     table = new QTableWidget(this);
-    table->setColumnCount(6);
-    table->setHorizontalHeaderLabels({qsl("Wertstellung"), qsl("Art"), qsl("Von"), qsl("Bis"), qsl("Basisbetrag"), qsl("Zins")});
+    table->setColumnCount(7);
+    table->setHorizontalHeaderLabels({qsl("Wertstellung"), qsl("Art"), qsl("Von"), qsl("Bis"), qsl("Vertragswert"), qsl("Verzinslicher Anteil"), qsl("Zins")});
     table->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     table->horizontalHeader()->setStretchLastSection(true);
     table->verticalHeader()->setVisible(false);
@@ -70,13 +70,17 @@ dlgInterestBreakdown::dlgInterestBreakdown(const QString& creditorName,
         table->setItem(row, 2, new QTableWidgetItem(slice.from.toString(qsl("dd.MM.yyyy"))));
         table->setItem(row, 3, new QTableWidgetItem(slice.to.toString(qsl("dd.MM.yyyy"))));
 
+        QTableWidgetItem* contractValueItem{new QTableWidgetItem(s_d2euro(slice.contractValue))};
+        contractValueItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        table->setItem(row, 4, contractValueItem);
+
         QTableWidgetItem* baseAmountItem{new QTableWidgetItem(s_d2euro(slice.baseAmount))};
         baseAmountItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        table->setItem(row, 4, baseAmountItem);
+        table->setItem(row, 5, baseAmountItem);
 
         QTableWidgetItem* interestItem{new QTableWidgetItem(s_d2euro(slice.interest))};
         interestItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-        table->setItem(row, 5, interestItem);
+        table->setItem(row, 6, interestItem);
     }
     table->resizeColumnsToContents();
 
@@ -147,7 +151,7 @@ QString dlgInterestBreakdown::toCsv() const
 {
     CsvWriter csv;
     csv.addColumns({qsl("Kreditor"), qsl("Vertrag"), qsl("VertragsId"), qsl("Buchungsdatum"), qsl("Modus"),
-                    qsl("Wertstellung"), qsl("Art"), qsl("Von"), qsl("Bis"), qsl("Basisbetrag"), qsl("Zins")});
+                    qsl("Wertstellung"), qsl("Art"), qsl("Von"), qsl("Bis"), qsl("Vertragswert"), qsl("Verzinslicher Anteil"), qsl("Zins")});
 
     for (const contract::interestSlice& slice : breakdown.slices) {
         csv.appendValueToNextRecord(creditorName);
@@ -159,6 +163,7 @@ QString dlgInterestBreakdown::toCsv() const
         csv.appendValueToNextRecord(sliceKindText(slice.type));
         csv.appendValueToNextRecord(slice.from.toString(qsl("dd.MM.yyyy")));
         csv.appendValueToNextRecord(slice.to.toString(qsl("dd.MM.yyyy")));
+        csv.appendValueToNextRecord(s_d2euro(slice.contractValue));
         csv.appendValueToNextRecord(s_d2euro(slice.baseAmount));
         csv.appendValueToNextRecord(s_d2euro(slice.interest));
     }
@@ -178,7 +183,8 @@ QString dlgInterestBreakdown::toText() const
         stream << slice.recognitionDate.toString(qsl("dd.MM.yyyy")) << qsl(" | ")
                << sliceKindText(slice.type) << qsl(": ")
                << slice.from.toString(qsl("dd.MM.yyyy")) << qsl(" -> ")
-               << slice.to.toString(qsl("dd.MM.yyyy")) << qsl(", Basis ")
+               << slice.to.toString(qsl("dd.MM.yyyy")) << qsl(", Vertragswert ")
+               << s_d2euro(slice.contractValue) << qsl(", Verzinslicher Anteil ")
                << s_d2euro(slice.baseAmount) << qsl(", Zins ")
                << s_d2euro(slice.interest) << qsl("\n");
     }

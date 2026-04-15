@@ -319,6 +319,16 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
     QModelIndex indexIndex = newI.siblingAtColumn(0);
     const int index{ui->contractsTableView->model()->data(indexIndex).toInt()};
     const QString tableName{showDeletedContracts ? booking::tn_ExBuchungen : booking::tn_Buchungen};
+    const contract currentContract{contractId_t{index}, showDeletedContracts};
+    const QString interestBearingValueExpression{
+        currentContract.iModel() == interestModel::fixed
+            ? qsl("CASE WHEN B2.%1 = %2 OR B2.%1 = %3 THEN B2.%4 ELSE 0 END")
+                  .arg(booking::fn_bBuchungsArt,
+                       bookingTypeToNbrString(bookingType::deposit),
+                       bookingTypeToNbrString(bookingType::payout),
+                       booking::fn_bBetrag)
+            : qsl("B2.%1").arg(booking::fn_bBetrag)
+    };
     const QString sql{qsl(
         "SELECT B.id"
         "  , B.%1"
@@ -332,6 +342,12 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
         "      WHERE B2.%1 = B.%1"
         "        AND B2.%2 <= B.%2"
         "    ) AS WertZumBuchungstag"
+        "  , ("
+        "      SELECT SUM(%7)"
+        "      FROM %6 AS B2"
+        "      WHERE B2.%1 = B.%1"
+        "        AND B2.%2 <= B.%2"
+        "    ) AS VerzinslicherAnteilZumBuchungstag"
         " FROM %6 AS B"
         " WHERE B.%1 = ?"
         " ORDER BY B.id DESC")
@@ -340,7 +356,8 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
              booking::fn_bBuchungsArt,
              booking::fn_bBetrag,
              booking::fn_bModifiziert,
-             tableName)};
+             tableName,
+             interestBearingValueExpression)};
     QSqlQueryModel* model = new QSqlQueryModel(this);
     model->setQuery(QSqlQuery());
     {
@@ -354,6 +371,7 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
     model->setHeaderData(3, Qt::Horizontal, qsl("Art"));
     model->setHeaderData(4, Qt::Horizontal, qsl("Betrag"));
     model->setHeaderData(6, Qt::Horizontal, qsl("Wert z. Buchungstag"));
+    model->setHeaderData(7, Qt::Horizontal, qsl("Verzinsl. Anteil"));
 
     ui->bookingsTableView->setModel(model);
     ui->bookingsTableView->setEditTriggers(QTableView::NoEditTriggers);
@@ -368,6 +386,7 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
     ui->bookingsTableView->setItemDelegateForColumn(4, new BookingAmountItemFormatter);
     ui->bookingsTableView->hideColumn(5);
     ui->bookingsTableView->setItemDelegateForColumn(6, new BookingAmountItemFormatter);
+    ui->bookingsTableView->setItemDelegateForColumn(7, new BookingAmountItemFormatter);
     ui->bookingsTableView->resizeColumnsToContents();
 }
 

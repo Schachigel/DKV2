@@ -699,6 +699,7 @@ contract::interestBreakdown contract::interestBreakdownUntilDate(const QDate per
                                         b.date,
                                         sliceStart,
                                         b.date,
+                                        value(b.date),
                                         currentBaseAmount,
                                         b.amount});
             breakdown.totalInterest += b.amount;
@@ -712,6 +713,7 @@ contract::interestBreakdown contract::interestBreakdownUntilDate(const QDate per
                                         b.date,
                                         sliceStart,
                                         periodEnd,
+                                        value(sliceStart),
                                         currentBaseAmount,
                                         b.amount});
             breakdown.totalInterest += b.amount;
@@ -728,6 +730,7 @@ contract::interestBreakdown contract::interestBreakdownUntilDate(const QDate per
                                     periodEnd,
                                     sliceStart,
                                     periodEnd,
+                                    value(sliceStart),
                                     currentBaseAmount,
                                     annualInterest});
         breakdown.totalInterest = annualInterest;
@@ -809,6 +812,7 @@ contract::interestBreakdown contract::deferredInterestBreakdownUntilDate(const Q
                                 periodEnd,
                                 openingSliceStart,
                                 periodEnd,
+                                value(openingSliceStart),
                                 openingBaseAmount,
                                 openingInterest});
     breakdown.totalInterest += openingInterest;
@@ -825,6 +829,7 @@ contract::interestBreakdown contract::deferredInterestBreakdownUntilDate(const Q
                                         periodEnd,
                                         b.date,
                                         periodEnd,
+                                        value(b.date),
                                         b.amount,
                                         interest});
             breakdown.totalInterest += interest;
@@ -837,6 +842,7 @@ contract::interestBreakdown contract::deferredInterestBreakdownUntilDate(const Q
                                         periodEnd,
                                         b.date,
                                         periodEnd,
+                                        value(b.date),
                                         baseAmount,
                                         interest});
             breakdown.totalInterest += interest;
@@ -864,11 +870,12 @@ void contract::logInterestBreakdown(const interestBreakdown &breakdown)
                              .arg(breakdown.periodEnd.toString(Qt::ISODate),
                                   s_d2euro(breakdown.totalInterest));
     for (const interestSlice &slice : breakdown.slices) {
-        qInfo().noquote() << qsl("  %1 | recognition %2 | %3 -> %4 | base %5 | interest %6")
+        qInfo().noquote() << qsl("  %1 | recognition %2 | %3 -> %4 | contract %5 | base %6 | interest %7")
                                  .arg(interestSliceKindToString(slice.type),
                                       slice.recognitionDate.toString(Qt::ISODate),
                                       slice.from.toString(Qt::ISODate),
                                       slice.to.toString(Qt::ISODate),
+                                      s_d2euro(slice.contractValue),
                                       s_d2euro(slice.baseAmount),
                                       s_d2euro(slice.interest));
     }
@@ -1004,6 +1011,13 @@ bool contract::ensureYearlyMidYearInterestMode(const QDate bookingDate, midYearI
 bool contract::bookValueChange(const QDate bookingDate, double amount, bool payoutInterest, bookingType bookingKind, midYearInterestMode midYearInterest)
 {
     QSqlDatabase::database().transaction();
+
+    if( needsAS_before(bookingDate)) {
+        if(0 == annualSettlement(bookingDate.year() -1)) {
+            QSqlDatabase::database().rollback();
+            return false;
+        }
+    }
 
     if( not ensureYearlyMidYearInterestMode(bookingDate, midYearInterest)) {
         QSqlDatabase::database().rollback();

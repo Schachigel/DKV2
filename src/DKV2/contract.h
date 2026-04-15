@@ -213,6 +213,7 @@ struct contract
         QDate recognitionDate;
         QDate from;
         QDate to;
+        double contractValue = 0.;
         double baseAmount = 0.;
         double interest = 0.;
     };
