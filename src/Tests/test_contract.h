@@ -43,6 +43,8 @@ private slots:
     void test_manual_referenceCase_payoutImmediateThenDeferred();
     void test_manual_referenceCase_payoutImmediateThenDeferred_actAct();
     void test_manual_referenceCase_reinvestImmediateThenDeferred();
+    void test_manual_referenceCases_data();
+    void test_manual_referenceCases();
     void test_deferredAnnualSettlement_usesYearSlices();
     void test_deferredAnnualSettlement_failsOnUnexpectedInterimInterest();
     void test_deferredMidYearInterestSkipsInBetweenInterestBooking();
