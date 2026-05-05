@@ -21,9 +21,10 @@ inline double euroFromCt( const int i)
 inline double dbInterest2Interest(int p) {
     return r2(double(p)/100.);
 }
-
-inline QString i2s(qlonglong x)       {
-    return QString::number(x);
+template<typename t>
+inline QString i2s(t x)
+{
+    return QString::number({x});
 }
 
 inline QString s_d2euro(double x) {

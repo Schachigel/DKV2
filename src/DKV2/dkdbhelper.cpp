@@ -524,7 +524,7 @@ alleVertraege AS
    UNION ALL
    SELECT VertragsId, Datum, Betrag, BuchungsArt FROM exBuchungen
 )
-fortlaufendeGeldanlagen AS
+, fortlaufendeGeldanlagen AS
 (
    SELECT Typ, rowid, ZSatz FROM Geldanlagen WHERE Ende = '9999-12-31'
 )
@@ -593,8 +593,8 @@ FROM temp
         zeile.push_back (rec[i].value(col++).toDate().toString ("dd.MM.yyyy")); // Buchungsdatum
         zeile.push_back (i2s(rec[i].value(col++).toInt())); // Anzahl Buchungen
         zeile.push_back (s_d2euro(rec[i].value(col++).toDouble ())); // buchungen zu diesem Buchungsdatum
-        zeile.push_back (decorateHighValues (rec[i].value(col++).toDouble ())); // Wert nur Einzahlungen
-        zeile.push_back (decorateHighValues (rec[i].value(col++).toDouble ())); // Wert incl. Zinsen
+        zeile.push_back (decorateHighValues (rec[i].value(col + 1).toDouble ())); // Wert incl. Zinsen
+        zeile.push_back (decorateHighValues (rec[i].value(col).toDouble ())); // Wert nur Einzahlungen
         result.push_back (zeile);
     }
     return result;

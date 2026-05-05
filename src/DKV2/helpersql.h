@@ -10,8 +10,10 @@ typedef qlonglong tableindex_t;
 inline const tableindex_t SQLITE_minimalRowId =1;
 inline const tableindex_t SQLITE_invalidRowId =-1;
 
-inline bool isValidRowId(tableindex_t i) {
-    return i >= SQLITE_minimalRowId;
+template<typename t>
+inline bool isValidRowId(t i)
+{
+    return i >= t{SQLITE_minimalRowId};
 }
 
 QString DbInsertableString(const QVariant &v);

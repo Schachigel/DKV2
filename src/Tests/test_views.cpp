@@ -1,14 +1,20 @@
 #include "test_views.h"
 
+#include "../DKV2/appconfig.h"
 #include "../DKV2/booking.h"
+#include "../DKV2/contract.h"
 #include "../DKV2/creditor.h"
+#include "../DKV2/dkdbhelper.h"
+#include "../DKV2/dkdbviews.h"
+#include "../DKV2/helpersql.h"
 #include "../DKV2/investment.h"
 #include "testhelper.h"
 
 #include <QtTest/QTest>
+#include <optional>
 
 namespace {
-tableindex_t insertMinimalCreditor()
+creditorId_t insertMinimalCreditor()
 {
     TableDataInserter creditorTdi(creditor::getTableDef());
     creditorTdi.setValue(creditor::fnVorname, qsl("Ada"));
@@ -16,7 +22,7 @@ tableindex_t insertMinimalCreditor()
     creditorTdi.setValue(creditor::fnStrasse, qsl("Memory Lane 1"));
     creditorTdi.setValue(creditor::fnPlz, qsl("68167"));
     creditorTdi.setValue(creditor::fnStadt, qsl("Mannheim"));
-    return creditorTdi.InsertRecord();
+    return {creditorTdi.InsertRecord()};
 }
 }
 
@@ -42,14 +48,14 @@ void test_views::test_investmentOverview_includesDeletedContractsAndBookings()
     const tableindex_t investmentId = saveNewInvestment(250, QDate(2026, 1, 1), QDate(2026, 12, 31), qsl("Testanlage"));
     QVERIFY(isValidRowId(investmentId));
 
-    const tableindex_t creditorId = insertMinimalCreditor();
-    QVERIFY(isValidRowId(creditorId));
+    const creditorId_t creditorId{insertMinimalCreditor()};
+    QVERIFY(isValidRowId(creditorId.v));
 
     QVERIFY(executeSql_wNoRecords(
         qsl("INSERT INTO Vertraege "
             "(id, KreditorId, Kennung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum) "
             "VALUES (1, %1, 'DK-TST-2026-000001', 250, 10000, 0, '2026-01-15', 6, %2, '9999-12-31', TRUE, '9999-12-31')")
-            .arg(i2s(creditorId), i2s(investmentId))));
+            .arg(i2s(creditorId.v), i2s(investmentId))));
     QVERIFY(executeSql_wNoRecords(
         qsl("INSERT INTO Buchungen "
             "(id, %1, %2, %3, %4, %5) "
@@ -73,7 +79,7 @@ void test_views::test_investmentOverview_includesDeletedContractsAndBookings()
         qsl("INSERT INTO exVertraege "
             "(id, KreditorId, Kennung, Anmerkung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum) "
             "VALUES (2, %1, 'DK-TST-2026-000002', '', 250, 20000, 1, '2026-02-15', 6, %2, '2026-12-31', TRUE, '9999-12-31')")
-            .arg(i2s(creditorId), i2s(investmentId))));
+            .arg(i2s(creditorId.v), i2s(investmentId))));
     QVERIFY(executeSql_wNoRecords(
         qsl("INSERT INTO exBuchungen "
             "(id, %1, %2, %3, %4, %5) "
@@ -111,6 +117,205 @@ void test_views::test_investmentOverview_includesDeletedContractsAndBookings()
     QCOMPARE(data.summeVertraege, 300.0);
     QCOMPARE(data.EinAuszahlungen, 300.0);
     QCOMPARE(data.ZzglZins, 330.0);
+}
+
+void test_views::test_interestByYearOverview_classifiesInterimInterestByContractMode()
+{
+    dbConfig::writeValue(ZINSUSANCE, qsl("30/360"));
+
+    const creditorId_t creditorId{insertMinimalCreditor()};
+    QVERIFY(isValidRowId(creditorId.v));
+    creditor cred1{creditorId};
+
+    const QDate conclusionDate{2024, 12, 1};
+    const QDate initialDate{2024, 12, 30};
+    const QDate commonDepositDate{2025, 3, 15};
+
+    contract payoutContract;
+    payoutContract.initContractDefaults(cred1.id());
+    payoutContract.setInterestModel(interestModel::payout);
+    payoutContract.setInterestRate(1.5);
+    payoutContract.setPlannedInvest(1000.);
+    payoutContract.updateConclusionDate(conclusionDate);
+    payoutContract.saveNewContract();
+
+    QVERIFY(payoutContract.bookInitialPayment(initialDate, 1000.));
+    QVERIFY(payoutContract.deposit(commonDepositDate, 500., true));
+    QCOMPARE(payoutContract.annualSettlement(2025), 2025);
+
+    contract reinvestContract;
+    reinvestContract.initContractDefaults(cred1.id());
+    reinvestContract.setInterestModel(interestModel::reinvest);
+    reinvestContract.setInterestRate(1.5);
+    reinvestContract.setPlannedInvest(1000.);
+    reinvestContract.updateConclusionDate(conclusionDate);
+    reinvestContract.saveNewContract();
+
+    QVERIFY(reinvestContract.bookInitialPayment(initialDate, 1000.));
+    QVERIFY(reinvestContract.deposit(commonDepositDate, 500.));
+    QCOMPARE(reinvestContract.annualSettlement(2025), 2025);
+
+    QVector<QSqlRecord> records;
+    QVERIFY(executeSql(sqlInterestByYearOverview, records));
+
+    auto findYearRow = [&records](const QString& year, const QString& ba, const QString& thesa) -> std::optional<QSqlRecord>
+    {
+        for (const QSqlRecord& rec : records) {
+            if (rec.value(qsl("Year")).toString() == year
+                and rec.value(qsl("BA")).toString() == ba
+                and rec.value(qsl("Thesa")).toString() == thesa)
+                return rec;
+        }
+        return std::nullopt;
+    };
+
+    const auto interimPayoutRow = findYearRow(qsl("2025"), qsl("Unterjährige Zinsen"), qsl(" ausgezahlte Zinsen "));
+    QVERIFY(interimPayoutRow.has_value());
+    QCOMPARE(interimPayoutRow->value(qsl("Summe")).toDouble(), 3.13);
+
+    const auto interimReinvestRow = findYearRow(qsl("2025"), qsl("Unterjährige Zinsen"), qsl(" angerechnete Zinsen "));
+    QVERIFY(interimReinvestRow.has_value());
+    QCOMPARE(interimReinvestRow->value(qsl("Summe")).toDouble(), 3.13);
+
+    const auto interimTotalRow = findYearRow(qsl("2025"), qsl("Unterjährige Zinsen"), qsl(" gesamte Zinsen"));
+    QVERIFY(interimTotalRow.has_value());
+    QCOMPARE(interimTotalRow->value(qsl("Summe")).toDouble(), 6.26);
+
+    const auto annualPayoutRow = findYearRow(qsl("2025"), qsl("Zins aus Jahresendabrechnungen"), qsl(" ausbezahlte Zinsen "));
+    QVERIFY(annualPayoutRow.has_value());
+    QCOMPARE(annualPayoutRow->value(qsl("Summe")).toDouble(), 17.81);
+
+    const auto annualReinvestRow = findYearRow(qsl("2025"), qsl("Zins aus Jahresendabrechnungen"), qsl(" angerechnete Zinsen "));
+    QVERIFY(annualReinvestRow.has_value());
+    QCOMPARE(annualReinvestRow->value(qsl("Summe")).toDouble(), 17.85);
+
+    const auto annualTotalRow = findYearRow(qsl("2025"), qsl("Zins aus Jahresendabrechnungen"), qsl(" gesamte Zinsen "));
+    QVERIFY(annualTotalRow.has_value());
+    QCOMPARE(annualTotalRow->value(qsl("Summe")).toDouble(), 35.66);
+}
+
+void test_views::test_shortInfo_overviews_keepDeferredMarkerNeutral()
+{
+    const creditorId_t creditorId{insertMinimalCreditor()};
+    QVERIFY(isValidRowId(creditorId.v));
+    creditor cred{creditorId};
+
+    contract payoutContract;
+    payoutContract.initContractDefaults(cred.id());
+    payoutContract.setInterestModel(interestModel::payout);
+    payoutContract.setInterestRate(1.0);
+    payoutContract.setPlannedInvest(1000.);
+    payoutContract.updateConclusionDate(QDate(2025, 1, 1));
+    payoutContract.saveNewContract();
+    QVERIFY(payoutContract.bookInitialPayment(QDate(2025, 1, 15), 1000.));
+
+    contract deferredReinvestContract;
+    deferredReinvestContract.initContractDefaults(cred.id());
+    deferredReinvestContract.setInterestModel(interestModel::reinvest);
+    deferredReinvestContract.setInterestRate(2.0);
+    deferredReinvestContract.setPlannedInvest(2000.);
+    deferredReinvestContract.updateConclusionDate(QDate(2025, 2, 1));
+    deferredReinvestContract.saveNewContract();
+    QVERIFY(deferredReinvestContract.bookInitialPayment(QDate(2025, 2, 15), 2000.));
+    QVERIFY(bookDeferredInBetweenInterest(deferredReinvestContract.id(), QDate(2025, 6, 1)));
+
+    contract inactiveFixedContract;
+    inactiveFixedContract.initContractDefaults(cred.id());
+    inactiveFixedContract.setInterestModel(interestModel::fixed);
+    inactiveFixedContract.setInterestRate(3.0);
+    inactiveFixedContract.setPlannedInvest(3000.);
+    inactiveFixedContract.updateConclusionDate(QDate(2025, 3, 1));
+    inactiveFixedContract.saveNewContract();
+
+    const QVector<QStringList> activeInfo{overviewShortInfo(sqlOverviewActiveContracts)};
+    QCOMPARE(activeInfo.size(), 7);
+    const QSqlRecord activeRec{executeSingleRecordSql(sqlOverviewActiveContracts)};
+    QVERIFY(not activeRec.isEmpty());
+    QCOMPARE(activeRec.value(qsl("AnzahlKreditoren")).toInt(), 1);
+    QCOMPARE(activeRec.value(qsl("AnzahlVertraege")).toInt(), 2);
+    QCOMPARE(activeRec.value(qsl("GesamtVolumen")).toDouble(), 3000.0);
+    QCOMPARE(activeRec.value(qsl("MittlererVertragswert")).toDouble(), 1500.0);
+    QCOMPARE(activeRec.value(qsl("JahresZins")).toDouble(), 50.0);
+    QCOMPARE(r2(activeRec.value(qsl("ZinsRate")).toDouble()), 1.67);
+    QCOMPARE(activeRec.value(qsl("MittelZins")).toDouble(), 1.5);
+
+    const QVector<QStringList> inactiveInfo{overviewShortInfo(sqlOverviewInActiveContracts)};
+    QCOMPARE(inactiveInfo.size(), 7);
+    const QSqlRecord inactiveRec{executeSingleRecordSql(sqlOverviewInActiveContracts)};
+    QVERIFY(not inactiveRec.isEmpty());
+    QCOMPARE(inactiveRec.value(qsl("AnzahlKreditoren")).toInt(), 1);
+    QCOMPARE(inactiveRec.value(qsl("AnzahlVertraege")).toInt(), 1);
+    QCOMPARE(inactiveRec.value(qsl("GesamtVolumen")).toDouble(), 3000.0);
+    QCOMPARE(inactiveRec.value(qsl("MittlererVertragswert")).toDouble(), 3000.0);
+    QCOMPARE(inactiveRec.value(qsl("JahresZins")).toDouble(), 90.0);
+    QCOMPARE(inactiveRec.value(qsl("ZinsRate")).toDouble(), 3.0);
+    QCOMPARE(inactiveRec.value(qsl("MittelZins")).toDouble(), 3.0);
+
+    const QVector<QStringList> allInfo{overviewShortInfo(sqlOverviewAllContracts)};
+    QCOMPARE(allInfo.size(), 7);
+    const QSqlRecord allRec{executeSingleRecordSql(sqlOverviewAllContracts)};
+    QVERIFY(not allRec.isEmpty());
+    QCOMPARE(allRec.value(qsl("AnzahlKreditoren")).toInt(), 1);
+    QCOMPARE(allRec.value(qsl("AnzahlVertraege")).toInt(), 3);
+    QCOMPARE(allRec.value(qsl("GesamtVolumen")).toDouble(), 6000.0);
+    QCOMPARE(allRec.value(qsl("MittlererVertragswert")).toDouble(), 2000.0);
+    QCOMPARE(allRec.value(qsl("JahresZins")).toDouble(), 140.0);
+    QCOMPARE(r2(allRec.value(qsl("ZinsRate")).toDouble()), 2.33);
+    QCOMPARE(allRec.value(qsl("MittelZins")).toDouble(), 2.0);
+}
+
+void test_views::test_perpetualInvestmentBookings_executesForOpenInvestment()
+{
+    const tableindex_t investmentId{saveNewInvestment(250,
+                                                      QDate(2026, 1, 1),
+                                                      EndOfTheFuckingWorld,
+                                                      qsl("Offene Testanlage"))};
+    QVERIFY(isValidRowId(investmentId));
+
+    const creditorId_t creditorId{insertMinimalCreditor()};
+    QVERIFY(isValidRowId(creditorId.v));
+
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Vertraege "
+            "(id, KreditorId, Kennung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum) "
+            "VALUES (1, %1, 'DK-TST-2026-000101', 250, 10000, 1, '2026-01-15', 6, %2, '9999-12-31', TRUE, '9999-12-31')")
+            .arg(i2s(creditorId.v), i2s(investmentId))));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Buchungen "
+            "(id, %1, %2, %3, %4, %5) "
+            "VALUES (1, 1, '2026-01-15', 1, 10000, '1900-01-01')")
+            .arg(booking::fn_bVertragsId,
+                 booking::fn_bDatum,
+                 booking::fn_bBuchungsArt,
+                 booking::fn_bBetrag,
+                 booking::fn_bModifiziert)));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Buchungen "
+            "(id, %1, %2, %3, %4, %5) "
+            "VALUES (2, 1, '2026-12-31', 8, 1000, '1900-01-01')")
+            .arg(booking::fn_bVertragsId,
+                 booking::fn_bDatum,
+                 booking::fn_bBuchungsArt,
+                 booking::fn_bBetrag,
+                 booking::fn_bModifiziert)));
+
+    const QVector<QStringList> data{perpetualInvestment_bookings()};
+    QVERIFY(not data.isEmpty());
+    QCOMPARE(data.size(), 2);
+    QCOMPARE(data[0].size(), 6);
+    QCOMPARE(data[1].size(), 6);
+
+    QCOMPARE(data[0][1], qsl("15.01.2026"));
+    QCOMPARE(data[0][2], qsl("1"));
+    QCOMPARE(data[0][3], s_d2euro(100.0));
+    QCOMPARE(data[0][4], s_d2euro(100.0));
+    QCOMPARE(data[0][5], s_d2euro(100.0));
+
+    QCOMPARE(data[1][1], qsl("31.12.2026"));
+    QCOMPARE(data[1][2], qsl("1"));
+    QCOMPARE(data[1][3], s_d2euro(10.0));
+    QCOMPARE(data[1][4], s_d2euro(110.0));
+    QCOMPARE(data[1][5], s_d2euro(100.0));
 }
 
 // Todo?? insert views for SQLite User

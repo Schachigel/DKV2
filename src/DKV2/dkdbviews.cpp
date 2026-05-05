@@ -641,7 +641,9 @@ SELECT
   'Unterjährige Zinsen' as BA,
   ' ausgezahlte Zinsen ' as Thesa
 FROM alleBuchungen INNER JOIN alleVertraege ON alleBuchungen.VertragsId = alleVertraege.id
-WHERE alleBuchungen.BuchungsArt = 4 AND (SELECT COUNT(*) FROM alleBuchungen WHERE Datum = date) = 3
+WHERE alleBuchungen.BuchungsArt = 4
+  AND alleBuchungen.Betrag != 0
+  AND alleVertraege.thesaurierend = 0
 GROUP BY Year
 
 UNION
@@ -653,7 +655,9 @@ SELECT
   'Unterjährige Zinsen' as BA,
   ' angerechnete Zinsen ' as Thesa
 FROM alleBuchungen INNER JOIN alleVertraege ON alleBuchungen.VertragsId = alleVertraege.id
-WHERE alleBuchungen.BuchungsArt = 4 AND (SELECT COUNT(*) FROM alleBuchungen WHERE Datum = date) = 2
+WHERE alleBuchungen.BuchungsArt = 4
+  AND alleBuchungen.Betrag != 0
+  AND alleVertraege.thesaurierend != 0
 GROUP BY Year
 
 UNION
@@ -666,6 +670,7 @@ SELECT
   ' gesamte Zinsen' as Thesa
 FROM alleBuchungen INNER JOIN alleVertraege ON alleBuchungen.VertragsId = alleVertraege.id
 WHERE alleBuchungen.BuchungsArt = 4
+  AND alleBuchungen.Betrag != 0
 GROUP BY Year
 
 )
