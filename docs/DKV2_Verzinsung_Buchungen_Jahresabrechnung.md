@@ -113,13 +113,14 @@ Wichtige Felder:
 
 ### 4.2 Buchungsarten
 
-| Typ | Bezeichnung          | Bedeutung                                                                      |
-| --- | -------------------- | ------------------------------------------------------------------------------ |
-| 1   | Einzahlung           | Betrag ganzzahlig in ct, positiv                                               |
-| 2   | Auszahlung           | Betrag ganzzahlig in ct, negativ                                               |
-| 4   | Zinsanrechnung       | unterjährig; Betrag ganzzahlig in ct                                           |
-| 8   | Jahreszinsanrechnung | Jahreszins / Jahresabschluss; Betrag ganzzahlig in ct                          |
-| 16  | Aktivierung          | Aktivierung der Zinszahlung für einen Vertrag; Betrag ganzzahlig in ct, Wert 0 |
+| Typ | Bezeichnung             | Bedeutung                                                                                   |
+| --- | ----------------------- | ------------------------------------------------------------------------------------------- |
+| 1   | Einzahlung              | Betrag ganzzahlig in ct, positiv                                                            |
+| 2   | Auszahlung              | Betrag ganzzahlig in ct, negativ                                                            |
+| 4   | Zinsanrechnung          | unterjährig; Betrag ganzzahlig in ct                                                        |
+| 8   | Jahreszinsanrechnung    | Jahreszins / Jahresabschluss; Betrag ganzzahlig in ct                                       |
+| 16  | Aktivierung             | Aktivierung der Zinszahlung für einen Vertrag; Betrag ganzzahlig in ct, Wert 0              |
+| 32  | Markierung (Jahresende) | markiert unterjährige Zinsbehandlung „zum Jahresende" für das laufende Jahr; Betrag stets 0 |
 
 Regeln:
 
@@ -150,6 +151,17 @@ Diese Regeln sind unabhängig vom später gewählten Zinsmodell (`thesaurierend`
 Für die **Aktivierung der Zinszahlung** gelten zusätzlich folgende Regeln:
 
 * Die Aktivierung der Zinszahlung (Typ 16) kann am Tag der Ersteinzahlung oder danach erfolgen.
+
+### 4.4 Zinsmodelle und Buchungslogik
+
+Für unterjährige Ein- und Auszahlungen wird pro Vertrag und Kalenderjahr festgelegt, wie die dadurch entstehenden Zinsen behandelt werden:
+
+* **Sofortige Verzinsung** (`immediate`): Zu jeder Ein-/Auszahlung wird sofort eine unterjährige Zinsanrechnung (Typ 4) gebucht. Dies ist die ursprüngliche Verhaltensweise und wird aus Kompatibilitätsgründen weiterhin unterstützt; sie führt zu einem **Zinseszins-Effekt**, da die gebuchten Zwischenzinsen in die Bemessungsgrundlage nachfolgender Zinsberechnungen eingehen.
+* **Zinsen zum Jahresende** (`deferred`): Es erfolgt während des Jahres **keine** unterjährige Zinsbuchung. Stattdessen wird bei der Jahreszinsanrechnung (Typ 8) der Jahreszins für jede Zeitspanne zwischen relevanten Buchungen (Jahresanfang/Aktivierung, Einzahlungen, Auszahlungen, Jahresende) **einzeln** auf Basis des jeweiligen Ursprungsbetrags berechnet und summiert. Dadurch entsteht **kein Zinseszins-Effekt**.
+
+Der Modus wird durch die **erste Ein- oder Auszahlung eines Kalenderjahres** festgelegt (Standard: Zinsen zum Jahresende) und gilt danach für alle weiteren Buchungen desselben Jahres.
+
+Zur technischen Kennzeichnung des Modus „Zinsen zum Jahresende" wird eine Buchung vom **Typ 32 (Markierung)** mit Betrag 0 angelegt (siehe 4.2).
 
 ---
 
