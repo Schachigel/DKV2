@@ -388,7 +388,7 @@ bool undoBookingDateGroup(contract& cont, const QDate bookingDate)
             return b.type == bookingType::setInterestActive;
         });
 
-    if (containsInterestActivation && not cont.updateInterestActive(false)) {
+    if (containsInterestActivation && not cont.markInterestPaymentDelayed()) {
         qCritical() << "Aktivierung der Zinszahlung konnte nicht zurückgesetzt werden";
         return false;
     }

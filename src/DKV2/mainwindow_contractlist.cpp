@@ -334,20 +334,29 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
         "  , B.%1"
         "  , B.%2"
         "  , B.%3"
-        "  , B.%4"
+        "  , CASE"
+        "      WHEN B.%3 = %8 THEN NULL"
+        "      ELSE B.%4"
+        "    END AS BetragAnzeige"
         "  , B.%5"
-        "  , ("
+        "  , CASE"
+        "      WHEN B.%3 = %8 THEN NULL"
+        "      ELSE ("
         "      SELECT SUM(B2.%4)"
         "      FROM %6 AS B2"
         "      WHERE B2.%1 = B.%1"
         "        AND B2.%2 <= B.%2"
-        "    ) AS WertZumBuchungstag"
-        "  , ("
+        "    )"
+        "    END AS WertZumBuchungstag"
+        "  , CASE"
+        "      WHEN B.%3 = %8 THEN NULL"
+        "      ELSE ("
         "      SELECT SUM(%7)"
         "      FROM %6 AS B2"
         "      WHERE B2.%1 = B.%1"
         "        AND B2.%2 <= B.%2"
-        "    ) AS VerzinslicherAnteilZumBuchungstag"
+        "    )"
+        "    END AS VerzinslicherAnteilZumBuchungstag"
         " FROM %6 AS B"
         " WHERE B.%1 = ?"
         " ORDER BY B.id DESC")
@@ -357,7 +366,8 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
              booking::fn_bBetrag,
              booking::fn_bModifiziert,
              tableName,
-             interestBearingValueExpression)};
+             interestBearingValueExpression,
+             bookingTypeToNbrString(bookingType::deferredMidYearInterest))};
     QSqlQueryModel* model = new QSqlQueryModel(this);
     model->setQuery(QSqlQuery());
     {
@@ -382,7 +392,8 @@ void MainWindow::currentChange_ctv(const QModelIndex & newI, const QModelIndex &
     ui->bookingsTableView->hideColumn(0);
     ui->bookingsTableView->hideColumn(1);
     ui->bookingsTableView->setItemDelegateForColumn(2, new DateItemFormatter);
-    ui->bookingsTableView->setItemDelegateForColumn(3, new bookingTypeFormatter);
+    // TODO: make the active/deleted contract context more visible in the UI overall.
+    ui->bookingsTableView->setItemDelegateForColumn(3, new bookingTypeFormatter(this, showDeletedContracts));
     ui->bookingsTableView->setItemDelegateForColumn(4, new BookingAmountItemFormatter);
     ui->bookingsTableView->hideColumn(5);
     ui->bookingsTableView->setItemDelegateForColumn(6, new BookingAmountItemFormatter);

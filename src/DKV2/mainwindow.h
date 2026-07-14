@@ -227,7 +227,6 @@ private:
         qsl("Zinsen"),
         qsl("Vertragsenden"),
         qsl("Zinsverteilungen"),
-        qsl("Laufzeiten"),
         qsl("Gesamtübersicht")
     };
     std::unique_ptr<contractsHeaderSortingAdapter> contractsSortingAdapter;

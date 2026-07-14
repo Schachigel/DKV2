@@ -17,6 +17,10 @@ private slots:
     void test_interestByYearOverview_classifiesInterimInterestByContractMode();
     void test_shortInfo_overviews_keepDeferredMarkerNeutral();
     void test_perpetualInvestmentBookings_executesForOpenInvestment();
+    void test_perpetualInvestmentBookings_keepsFinalizedContractsPositiveForOneYear();
+    void test_perpetualInvestmentBookings_skipsZeroNetValueChangeDates();
+    void test_perpetualInvestmentBookings_referenceCases_data();
+    void test_perpetualInvestmentBookings_referenceCases();
 
 //    void test_stat_activateContract_reinvesting();
 //    void test_stat_activateContract_wpayout();

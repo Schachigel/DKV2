@@ -98,7 +98,7 @@ Wichtige Felder:
 * **Kennung**: eindeutige, alphanumerische Vertragskennung (nicht zwingend numerisch)
 * **ZSatz**: Zinssatz als ganze Zahl in Hundertstel-Prozent (z. B. 250 = 2,50 %)
 * **thesaurierend**: steuert die Behandlung der Zinsen; die einzelnen Zinsmodelle und ihre Auswirkungen werden in Abschnitt **4.4 Zinsmodelle und Buchungslogik** erläutert
-* **zActive**: gibt an, ob der Vertrag aktuell verzinst wird; gespeichert als **1 (wahr)** bzw. **0 (falsch)**. Mit diesem Feld kann ein Vertrag vorübergehend unverzinslich begonnen werden, um nach der Aktivierung der Zinszahlung normal verzinst zu werden. Der Übergang von verzinst zu unverzinst ist nicht vorgesehen.
+* **zActive**: gibt an, ob der Vertrag aktuell verzinst wird; gespeichert als **1 (wahr)** bzw. **0 (falsch)**. Mit diesem Feld kann ein Vertrag vorübergehend unverzinslich begonnen werden, um nach der Aktivierung der Zinszahlung normal verzinst zu werden. Hintergrund: entgegenkommende Kreditgeber können auf Zinsen verzichten, bis das Projekt regelmäßige Einnahmen hat; der Vertrag läuft in dieser Zeit mit **verzögerter Zinszahlung**. Der Übergang von verzinst zu unverzinst ist als reguläre Geschäftsoperation nicht vorgesehen; er existiert im Code nur, um eine irrtümliche Aktivierungsbuchung rückgängig zu machen (`contract::markInterestPaymentDelayed()`, Gegenstück zu `contract::activateInterestPayment()`).
 
 ---
 
@@ -312,39 +312,59 @@ DKV2 unterstützt folgende Arbeitsweisen:
 Die folgenden Felder der Tabelle *Meta* gelten für alle Geldanlagen:
 
 | Feld           | Bedeutung                     |
-| -------------- | ----------------------------- |
-| *maxInvestNbr* | maximale Anzahl von Verträgen |
-| *maxInvestSum* | maximale Gesamtsumme          |
+| -------------- | ------------------------------ |
+| *maxInvestNbr* | gesetzliche Obergrenze für die Anzahl von Verträgen |
+| *maxInvestSum* | gesetzliche Obergrenze für die Gesamtsumme |
+
+`maxInvestNbr`/`maxInvestSum` bilden eine **gesetzliche Vorgabe** ab (siehe
+auch 7.7, „Erfüllung gesetzlicher Anforderungen"), deren Einhaltung in der
+Verantwortung des jeweiligen Projekts liegt. DKV2 setzt diese Grenzen
+**nicht technisch durch** (keine Sperre bei Vertragszuweisung oder
+Einzahlung), sondern unterstützt die Einhaltung nur durch eine visuelle
+Warnung: Bei Erreichen/Überschreiten wird die betroffene Zahl im UI rot
+dargestellt (`redOrBlack()` in `investment.cpp`, genutzt von
+`formatedStatisticData()` und `InvestmentsTableModel`). Diese bewusste
+Entscheidung liegt darin begründet, dass DKV2 nichts verbieten, sondern nur
+unterstützen soll — die rechtliche Verantwortung bleibt bei den Projekten.
 
 ### 7.6 Auswertungen
 
-DKV2 stellt verschiedene Auswertungen bereit, u. a.:
+Für fortlaufende Geldanlagen stellt DKV2 eine Compliance-Übersicht bereit
+(„Prüfung der Grenzwerte für fortlaufende Geldanlagen anhand aller
+Buchungen”, `perpetualInvestment_bookings()` in `dkdbhelper.cpp`), die pro
+Geldanlage und Buchungsdatum zeigt:
 
-* Anzahl von Geldanlagen
-* Summen der zugeordneten Verträge
-* zeitlicher Verlauf dieser Werte
+* Anzahl und Wert der Buchungen an diesem Datum
+* **Anzahl der Verträge** in den laufenden 12 Monaten (siehe 7.7)
+* **Gesamtwert** in den laufenden 12 Monaten, sowohl inkl. Zinsen als auch nur die Einzahlungen
 
-Aktueller Stand:
+Diese Auswertung dient dem Vergleich mit `maxInvestNbr`/`maxInvestSum`
+(7.5) und damit der **Überwachung und Analyse** des Gesamtbestands.
 
-* In die Auswertungen gehen **alle laufenden Verträge** ein.
+Es gab früher zusätzlich eine separate, rein vertragsdatenbasierte Tabelle
+(“Liste fortlaufender Geldanlagen”). Diese wurde entfernt: reine
+Vertragsdaten ohne Bezug zu tatsächlichen Buchungen wurden als nicht
+relevant für die Prüfung eingeschätzt — nur eine Tabelle wird benötigt.
 
-Geplante Erweiterung:
+**In die Auswertung gehen sowohl laufende als auch beendete Verträge ein**
+(siehe 7.7 für die genaue Regel, wie lange ein beendeter Vertrag
+mitzählt).
 
-* Zusätzlich sollen **beendete Verträge** berücksichtigt werden, sofern die Beendigung **weniger als 1 Jahr zurückliegt**.
+### 7.7 Zeitfenster und „fortlaufende” Geldanlagen
 
-Diese Auswertungen dienen der **Überwachung und Analyse** des Gesamtbestands.
-
-### 7.7 Zeitfenster und „fortlaufende“ Geldanlagen
-
-Geldanlagen ohne explizites Zeitfenster (*Anfang*, *Ende*) werden in DKV2 als **„fortlaufend“** bezeichnet.
+Geldanlagen ohne explizites Zeitfenster (*Anfang*, *Ende*) werden in DKV2 als **„fortlaufend”** bezeichnet.
 
 Für fortlaufende Geldanlagen gilt:
 
 * Es wird ein **dynamisches Zeitfenster** verwendet.
-* Maßgeblich ist ein Zeitraum von **1 Jahr rückwirkend ab dem aktuellen Buchungsdatum**.
-* Dieses Zeitfenster dient insbesondere der **Erfüllung gesetzlicher Anforderungen**.
+* Maßgeblich ist ein Zeitraum von **1 Jahr rückwirkend ab dem jeweils betrachteten Buchungsdatum**.
+* Dieses Zeitfenster dient insbesondere der **Erfüllung gesetzlicher Anforderungen** (vgl. 7.5).
 
-Konsequenzen:
-
-* Die Zuordnung und Auswertung erfolgen relativ zum aktuellen Zeitpunkt.
-* Mit der geplanten Erweiterung (siehe 7.6) werden auch **kürzlich beendete Verträge** in dieses Zeitfenster einbezogen.
+**Beendete Verträge:** Ein Vertrag zählt gegen `maxInvestNbr`/`maxInvestSum`
+seiner Geldanlage für genau **1 Jahr ab seiner Ersteinzahlung** (dem Tag,
+an dem das Geld tatsächlich auf dem Konto des Projekts eingegangen ist —
+nicht das Vertragsdatum). Eine spätere Vertragsbeendigung innerhalb dieses
+Jahres ändert daran nichts: der Vertrag zählt bis zum Ablauf seines
+eigenen 1-Jahres-Fensters unverändert weiter mit, unabhängig vom
+Beendigungsstatus. Erst nach Ablauf des Jahres fällt er aus dem
+rollierenden Fenster.

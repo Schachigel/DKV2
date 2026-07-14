@@ -29,24 +29,72 @@ Bei einer ersten Prüfung wurden folgende Abweichungen zwischen Code und
 Dokument gefunden. Diese sind mit dem Nutzer gemeinsam zu klären (siehe auch
 Projekt-Memory `code_doc_deviations`):
 
-1. **31.12.-Regel bei Ein-/Auszahlungen** (Doc 4.2): Dokument verlangt, dass
-   Typ 1/Typ 2 grundsätzlich nicht am 31.12. zulässig sind. Der Code
-   (`avoidYearEndBookings()` in `contract.cpp:330`) lehnt solche Buchungen
-   nicht ab, sondern verschiebt sie still auf den 30.12.
-2. **zActive: Rückwechsel verzinst → unverzinst** (Doc 3.2): Dokument sagt,
-   der Übergang ist nicht vorgesehen. `contract::updateInterestActive(bool)`
-   (`contract.cpp:285`) erlaubt technisch beide Richtungen; nur an einer
-   Aufrufstelle (Undo einer Aktivierungsbuchung) wird tatsächlich
-   deaktiviert, aber es gibt keine generische Sperre.
-3. **maxInvestNbr / maxInvestSum** (Doc 7.5): Werden im Code nur als
-   visuelle Warnindikatoren (Rot-Färbung) verwendet, nicht als harte,
-   durchgesetzte Obergrenzen.
-4. **Geldanlagen-Auswertungen und beendete Verträge** (Doc 7.6): Dokument
-   beschreibt den aktuellen Stand als "nur laufende Verträge" und die
-   Einbeziehung beendeter Verträge (< 1 Jahr) als geplante Erweiterung.
-   Tatsächlich bezieht `vInvestmentsOverview` (`dkdbviews.cpp`) bereits jetzt
-   `exVertraege` (beendete Verträge) ein, in Teilen sogar ohne jede
-   Zeitbegrenzung.
+~~1. **31.12.-Regel bei Ein-/Auszahlungen** (Doc 4.2)~~ — **geklärt am
+   2026-07-14**: kein echter Widerspruch. Das Dokument nennt die Ausnahme für
+   die Ersteinzahlung bereits selbst (4.2, Zeile 129: "Ausnahme: Die erste
+   Einzahlung darf am 31.12. erfolgen"). Die UI implementiert genau das über
+   zwei getrennte Wizards: `wizInitialPayment`
+   (`wizactivatecontract.cpp`, nur für die Ersteinzahlung, kein 31.12.-Verbot;
+   `contract::bookInitialPayment()` in `contract.cpp:343-370` umgeht
+   `avoidYearEndBookings()` bewusst) vs. `wizChangeContract`
+   (`wizchangecontractvalue.cpp:237-254`, blockt 31.12. aktiv per
+   Fehlermeldung für alle Folgebuchungen, gated über
+   `initialPaymentReceived()`). Der stille Shift in `avoidYearEndBookings()`
+   (`contract.cpp:330`, weiterhin aufgerufen von `deposit()`/`payout()`) ist
+   nur ein Backend-Backstop, der bei UI-geführten Buchungen praktisch nie
+   greift.
+~~2. **zActive: Rückwechsel verzinst → unverzinst** (Doc 3.2)~~ — **behoben
+   am 2026-07-14**: der generische, richtungslose Setter
+   `contract::updateInterestActive(bool)` wurde entfernt und durch zwei
+   eindeutig benannte, einseitige Methoden ersetzt:
+   `contract::activateInterestPayment()` (setzt immer `zActive = true`,
+   nutzt intern die vormals private `updateSetInterestActive()`) und
+   `contract::markInterestPaymentDelayed()` (setzt immer `zActive = false`,
+   nur für den Undo-Fall in `undoBookingDateGroup()`,
+   `transaktionen.cpp:391`, sowie Testfixtures für Verträge, die mit
+   verzögerter Zinszahlung starten). Damit ist die Einbahnstraßen-Regel aus
+   der Doku im Code strukturell abgebildet statt nur durch Konvention.
+   Hintergrund/Motivation vom Nutzer ergänzt: entgegenkommende Kreditgeber
+   können auf Zinsen verzichten, bis das Projekt regelmäßige Einnahmen hat
+   (Doc 3.2 entsprechend ergänzt). Alle ~30 Testaufrufstellen in
+   `test_contract.cpp`/`test_annualsettlement.cpp` angepasst, betroffene
+   Testsuiten grün (`test_contract` 43/43, `test_annualsettlement` 14/14,
+   `test_booking` 14/14, `test_views` 10/10).
+~~3. **maxInvestNbr / maxInvestSum** (Doc 7.5)~~ — **geklärt am
+   2026-07-14**: kein zu behebender Bug, aber Doku-Formulierung präzisiert.
+   `maxInvestNbr`/`maxInvestSum` bilden eine **gesetzliche Vorgabe** ab (vgl.
+   7.7, "Erfüllung gesetzlicher Anforderungen"). Nutzerentscheidung: DKV2
+   soll diese Grenze bewusst **nicht technisch durchsetzen** — nur durch
+   visuelle Warnung (Rot-Färbung, `redOrBlack()` in `investment.cpp`)
+   unterstützen. Die Verantwortung für die Einhaltung bleibt bei den
+   Projekten, DKV2 verbietet nichts. Doc 7.5 entsprechend präzisiert
+   ("gesetzliche Obergrenze" statt der irreführenden ersten Formulierung
+   "empfohlene Obergrenze" — es ist kein bloßer Ratschlag, sondern eine
+   gesetzliche Pflicht der Projekte, nur eben nicht softwareseitig
+   erzwungen).
+~~4. **Geldanlagen-Auswertungen und beendete Verträge** (Doc 7.6)~~ —
+   **behoben am 2026-07-14**: Ersteinzahlungsdatum als Anker entschieden
+   (siehe Memory `code_doc_deviations_2026_07`) und implementiert in
+   `perpetualInvestment_bookings()` (`dkdbhelper.cpp`): neue CTE
+   `ersteinzahlungen` ermittelt je Vertrag das Datum der ersten Typ-1-Buchung
+   und zählt ihn für genau 1 Jahr danach mit — unabhängig von einer
+   zwischenzeitlichen Vertragsbeendigung. Zusätzlich auf Nutzerwunsch die
+   beiden bisherigen UI-Tabellen zusammengelegt: "Liste fortlaufender
+   Geldanlagen" (`perpetualInvestmentByContracts()`, rein
+   vertragsdatumsbasiert, nominelle Vertragswerte) wurde ersatzlos entfernt
+   (Combo-Eintrag, Enum-Wert `PERPETUAL_INVESTMENTS_CHECK_BY_CONTRACTS`,
+   Render-Funktion, SQL-Funktion), da reine Vertragsdaten ohne Buchungsbezug
+   als nicht relevant eingeschätzt wurden. "Prüfung der Grenzwerte für
+   fortlaufende Geldanlagen anhand aller Buchungen"
+   (`perpetualInvestment_bookings()`) ist jetzt die einzige verbleibende
+   Tabelle und wurde um die Spalte "Anzahl Verträge (lfd. 12M)" erweitert,
+   damit sowohl `maxInvestNbr` als auch `maxInvestSum` (Doc 7.5) aus einer
+   Tabelle ablesbar sind. Das ungenutzte `vInvestmentsOverview`-DB-View
+   (`dkdbviews.cpp`, nur von einem Test referenziert, nirgends im UI
+   gerendert) wurde dabei bewusst nicht angefasst — außerhalb des
+   besprochenen Scopes. Doc 7.6/7.7 entsprechend überarbeitet. Tests
+   `test_perpetualInvestmentBookings_*` in `test_views.cpp` angepasst und
+   grün (10/10).
 
 ~~5. Buchungsart 32 (`deferredMidYearInterest`) war im Dokument nicht
    erwähnt~~ — **behoben am 2026-07-13**: Implementierung geprüft (43/43,

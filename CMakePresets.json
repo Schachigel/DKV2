@@ -1,0 +1,27 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "qt-msvc-debug",
+      "displayName": "DKV2 Qt6 MSVC Debug",
+      "description": "Use the Qt-provided CMake and the existing Qt Creator JOM toolchain for VS Code.",
+      "generator": "NMake Makefiles JOM",
+      "binaryDir": "${sourceDir}/build/Desktop_Qt_6_11_0_MSVC2022_64bit-Debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_PREFIX_PATH": "X:/tools/Qt/6.11.0/msvc2022_64"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "qt-msvc-debug",
+      "configurePreset": "qt-msvc-debug"
+    }
+  ]
+}

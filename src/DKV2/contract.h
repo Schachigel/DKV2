@@ -188,7 +188,13 @@ struct contract
     bool updateLabel(const QString& newLabel);
     bool updateComment(const QString&);
     bool updateConclusionDate( const QDate& newD);
-    bool updateInterestActive( const bool activ);
+    // interest starts active by default; a contract can begin with delayed interest
+    // (verzögerte Zinszahlung) instead, see initRandom/initContractDefaults and
+    // markInterestPaymentDelayed(). The transition back from active to delayed is not
+    // a supported business operation and exists only to undo an accidental activation
+    // booking (see undoBookingDateGroup in transaktionen.cpp).
+    bool activateInterestPayment();
+    bool markInterestPaymentDelayed();
     bool updateInitialPaymentDate(const QDate& newD);
     bool updateTerminationDate(QDate termination, int noticePeriod);
     bool updateInvestment(tableindex_t id);
@@ -242,7 +248,6 @@ struct contract
     // allow contract objects from deleted contracts
     bool isTerminated =false;
 private:
-    bool updateSetInterestActive();
     bool ensureYearlyMidYearInterestMode(const QDate bookingDate, midYearInterestMode requestedMode);
     bool bookValueChange(const QDate bookingDate, double amount, bool payoutInterest, bookingType bookingKind, midYearInterestMode midYearInterest);
     double interestBearingValueAt(const QDate date) const;

@@ -37,7 +37,7 @@ void test_annualsettlement::test_oneContract_Mid_Year()
 {
     // prep one contract
     contract c{saveRandomContract(saveRandomCreditor().id())};
-    c.updateInterestActive(true);
+    c.activateInterestPayment();
     QDate cDate (2000, 6, 15);
     c.updateConclusionDate(cDate);
 
@@ -58,7 +58,7 @@ void test_annualsettlement::test_contract_intrest_activation()
 {
     // prep one contract
     contract c(saveRandomContract(saveRandomCreditor().id()));
-    c.updateInterestActive(false);
+    c.markInterestPaymentDelayed();
     QDate cDate (2000, 6, 15);
     c.updateConclusionDate(cDate);
 
@@ -80,7 +80,7 @@ void test_annualsettlement::test_contract_intrest_activation_yearEnd()
 {
     // prep one contract
     contract c(saveRandomContract(saveRandomCreditor().id()));
-    c.updateInterestActive(false);
+    c.markInterestPaymentDelayed();
     QDate cDate (2000, 11, 15);
     c.updateConclusionDate(cDate);
 
@@ -99,7 +99,7 @@ void test_annualsettlement::test_dateOfNextSettlement_nextSettlement()
 {
     // prep contract w AS until 2001
     contract c1(saveRandomContract(saveRandomCreditor().id()));
-    c1.updateInterestActive(true);
+    c1.activateInterestPayment();
     c1.updateConclusionDate(QDate(2000, 5, 1));
 
     QCOMPARE(dateOfnextSettlement(), QDate());
@@ -113,7 +113,7 @@ void test_annualsettlement::test_dateOfNextSettlement_nextSettlement()
     QCOMPARE(dateOfnextSettlement(), c1.dateOf_next_AS()); // contract local vs. global
     // prep contract earlier
     contract c2(saveRandomContract(c1.credId()));
-    c2.updateInterestActive(true);
+    c2.activateInterestPayment();
     c2.updateConclusionDate(QDate(2001, 5, 1));
     QVERIFY(c2.bookInitialPayment(QDate(2001, 6, 1), 1000.));
     QCOMPARE(dateOfnextSettlement(), c2.dateOf_next_AS()); // contract local vs. global
@@ -126,7 +126,7 @@ void test_annualsettlement::test_dateOfNextSettlement_nextSettlement()
 void test_annualsettlement::test_dateOfNextSettlement_activatedContracts()
 {
     contract c1(saveRandomContract(saveRandomCreditor().id()));
-    c1.updateInterestActive(true);
+    c1.activateInterestPayment();
     c1.updateConclusionDate(QDate(2000, 11, 30));
     QVERIFY(c1.bookInitialPayment(ye_2000, 1000.));
     // test
@@ -134,7 +134,7 @@ void test_annualsettlement::test_dateOfNextSettlement_activatedContracts()
     QCOMPARE(dateOfnextSettlement(), ye_2001);
 
     contract c2(saveRandomContract(c1.credId()));
-    c2.updateInterestActive(true);
+    c2.activateInterestPayment();
     c2.updateConclusionDate(QDate(1999, 11, 30));
     QVERIFY(c2.bookInitialPayment(ys_2000, 1000.));
     // test
@@ -143,7 +143,7 @@ void test_annualsettlement::test_dateOfNextSettlement_activatedContracts()
     QCOMPARE(dateOfnextSettlement(), ye_2000);
 
     contract c3(saveRandomContract(c1.credId()));
-    c3.updateInterestActive(true);
+    c3.activateInterestPayment();
     c3.updateConclusionDate(QDate(1998, 11, 30));
     QVERIFY(c3.bookInitialPayment(ye_1998, 1000.));
     QCOMPARE(c1.dateOf_next_AS(), ye_2001); // unchanged
@@ -152,7 +152,7 @@ void test_annualsettlement::test_dateOfNextSettlement_activatedContracts()
     QCOMPARE(dateOfnextSettlement(), ye_1999);
 
     contract c4(saveRandomContract(c1.credId()));
-    c4.updateInterestActive(true);
+    c4.activateInterestPayment();
     c4.updateConclusionDate(QDate(1998, 4, 2));
     QCOMPARE(c1.dateOf_next_AS(), ye_2001); // unchanged
     QCOMPARE(c2.dateOf_next_AS(), ye_2000); // unchanged
@@ -171,13 +171,13 @@ void test_annualsettlement::test_dateOfNextSettlement_activatedContracts()
 void test_annualsettlement::test_dateOfNextSettlement_mixedStates_earliestWins()
 {
     contract progressed(saveRandomContract(saveRandomCreditor().id()));
-    progressed.updateInterestActive(true);
+    progressed.activateInterestPayment();
     progressed.updateConclusionDate(QDate(2000, 5, 15));
     QVERIFY(progressed.bookInitialPayment(QDate(2000, 6, 1), 1000.));
     QCOMPARE(executeCompleteAS(2000), 1);
 
     contract newer(saveRandomContract(progressed.credId()));
-    newer.updateInterestActive(true);
+    newer.activateInterestPayment();
     newer.updateConclusionDate(QDate(2000, 5, 30));
     QVERIFY(newer.bookInitialPayment(QDate(2000, 6, 1), 1000.));
 
@@ -190,13 +190,13 @@ void test_annualsettlement::test_dateOfNextSettlement_mixedStates_earliestWins()
 void test_annualsettlement::test_dateOfNextSettlement_mixedStates_laterContractIgnored()
 {
     contract progressed(saveRandomContract(saveRandomCreditor().id()));
-    progressed.updateInterestActive(true);
+    progressed.activateInterestPayment();
     progressed.updateConclusionDate(QDate(2000, 5, 4));
     QVERIFY(progressed.bookInitialPayment(QDate(2000, 6, 1), 1000.));
     QCOMPARE(executeCompleteAS(2000), 1);
 
     contract later(saveRandomContract(progressed.credId()));
-    later.updateInterestActive(true);
+    later.activateInterestPayment();
     later.updateConclusionDate(QDate(2002, 5, 5));
     QVERIFY(later.bookInitialPayment(QDate(2002, 6, 1), 1000.));
 
@@ -209,16 +209,16 @@ void test_annualsettlement::test_dateOfNextSettlement_mixedStates_laterContractI
 void test_annualsettlement::test_dateOfNextSettlement_mixedStates_deterministic()
 {
     contract noActivation(saveRandomContract(saveRandomCreditor().id()));
-    noActivation.updateInterestActive(true);
+    noActivation.activateInterestPayment();
     noActivation.updateConclusionDate(QDate(2003, 4, 5));
 
     contract activatedLate(saveRandomContract(noActivation.credId()));
-    activatedLate.updateInterestActive(true);
+    activatedLate.activateInterestPayment();
     activatedLate.updateConclusionDate(QDate(2003, 5, 5));
     QVERIFY(activatedLate.bookInitialPayment(ye_2003, 1000.));
 
     contract alreadySettled(saveRandomContract(noActivation.credId()));
-    alreadySettled.updateInterestActive(true);
+    alreadySettled.activateInterestPayment();
     alreadySettled.updateConclusionDate(QDate(2002, 5, 5));
     QVERIFY(alreadySettled.bookInitialPayment(QDate(2002, 6, 1), 1000.));
     QCOMPARE(executeCompleteAS(2002), 1);

@@ -63,7 +63,10 @@ void runReferenceCase(const referenceCase& c)
     contract cont(saveRandomContract(cred.id()));
     cont.setInterestRate(c.rate);
     cont.setInterestModel(c.model);
-    cont.updateInterestActive(c.interestActive);
+    if (c.interestActive)
+        cont.activateInterestPayment();
+    else
+        cont.markInterestPaymentDelayed();
     cont.updateConclusionDate(c.conclusionDate);
 
     QVERIFY(cont.bookInitialPayment(c.initialPaymentDate, c.initialPaymentAmount));
@@ -718,7 +721,7 @@ void test_contract::test_activate_interest_on_same_date_will_not_fail()
 {
     creditor c {saveRandomCreditor()};
     contract cont {saveRandomContract(c.id())};
-    cont.updateInterestActive(false);
+    cont.markInterestPaymentDelayed();
     QDate Vertragsdatum {cont.conclusionDate()};
 
     // interest activation fails before initial payment
@@ -763,7 +766,7 @@ void test_contract::test_contract_cv_wInterestPayout()
     cont.initRandom(c.id());
     cont.setInterestRate(1.0);
     cont.setInterestModel(interestModel::payout);
-    cont.updateInterestActive(true);
+    cont.activateInterestPayment();
     QDate anydate = QDate(2020, 4, 30);
     cont.updateConclusionDate(anydate.addDays(-1));
     cont.saveNewContract();
@@ -816,7 +819,7 @@ void test_contract::test_contract_cv_reInvesting()
     contract cont(saveRandomContract(c.id()));
     cont.setInterestRate(1.0);
     cont.setInterestModel(interestModel::reinvest);
-    cont.updateInterestActive(true);
+    cont.activateInterestPayment();
     QDate anydate = QDate(2020, 4, 30);
     cont.updateConclusionDate(anydate.addDays(-1));
 
@@ -885,7 +888,7 @@ void test_contract::test_yearlyMidYearInterestMode()
         contract cont(saveRandomContract(cred.id()));
         cont.setInterestRate(1.0);
         cont.setInterestModel(interestModel::reinvest);
-        cont.updateInterestActive(false);
+        cont.markInterestPaymentDelayed();
         cont.updateConclusionDate(QDate(2025, 1, 14));
         QVERIFY(cont.bookInitialPayment(QDate(2025, 1, 15), 1000.));
         QVERIFY(cont.bookActivateInterest(QDate(2025, 3, 1)));
@@ -901,7 +904,7 @@ void test_contract::test_manual_referenceCase_payoutImmediateThenDeferred()
     contract cont{saveRandomContract(cred.id())};
     cont.setInterestModel(interestModel::payout);
     cont.setInterestRate(1.5);
-    cont.updateInterestActive(true);
+    cont.activateInterestPayment();
     cont.setPlannedInvest(1000.);
     cont.updateConclusionDate(QDate(2024, 12, 1));
 
@@ -994,7 +997,7 @@ void test_contract::test_manual_referenceCase_payoutImmediateThenDeferred_actAct
     contract cont(saveRandomContract(cred.id()));
     cont.setInterestRate(1.5);
     cont.setInterestModel(interestModel::payout);
-    cont.updateInterestActive(true);
+    cont.activateInterestPayment();
 
     const QDate conclusionDate{2024, 12, 1};
     const QDate initialDate{2024, 12, 30};
@@ -1086,7 +1089,7 @@ void test_contract::test_manual_referenceCase_reinvestImmediateThenDeferred()
     contract cont(saveRandomContract(cred.id()));
     cont.setInterestRate(1.5);
     cont.setInterestModel(interestModel::reinvest);
-    cont.updateInterestActive(true);
+    cont.activateInterestPayment();
 
     const QDate conclusionDate{2024, 12, 1};
     const QDate initialDate{2024, 12, 30};
@@ -1322,7 +1325,7 @@ void test_contract::test_deferredAnnualSettlement_usesYearSlices()
     contract cont(saveRandomContract(cred.id()));
     cont.setInterestRate(2.0);
     cont.setInterestModel(interestModel::reinvest);
-    cont.updateInterestActive(true);
+    cont.activateInterestPayment();
     cont.updateConclusionDate(QDate(2019, 12, 31));
 
     const QDate initialDate(2020, 1, 1);
@@ -1355,7 +1358,7 @@ void test_contract::test_deferredAnnualSettlement_failsOnUnexpectedInterimIntere
     contract cont(saveRandomContract(cred.id()));
     cont.setInterestRate(2.0);
     cont.setInterestModel(interestModel::reinvest);
-    cont.updateInterestActive(true);
+    cont.activateInterestPayment();
     cont.updateConclusionDate(QDate(2019, 12, 31));
 
     QVERIFY(cont.bookInitialPayment(QDate(2020, 1, 1), 1000.));
@@ -1371,7 +1374,7 @@ void test_contract::test_deferredMidYearInterestSkipsInBetweenInterestBooking()
     contract cont(saveRandomContract(cred.id()));
     cont.setInterestRate(1.0);
     cont.setInterestModel(interestModel::reinvest);
-    cont.updateInterestActive(true);
+    cont.activateInterestPayment();
 
     const QDate initialDate(2020, 1, 15);
     const QDate decisionDate(2020, 6, 1);
@@ -1398,7 +1401,7 @@ void test_contract::test_deferredMidYearInterestDoesNotSkipActivationBoundaryBoo
     contract cont(saveRandomContract(cred.id()));
     cont.setInterestRate(1.0);
     cont.setInterestModel(interestModel::reinvest);
-    cont.updateInterestActive(false);
+    cont.markInterestPaymentDelayed();
 
     const QDate initialDate(2020, 1, 15);
     const QDate decisionDate(2020, 6, 1);
@@ -1423,7 +1426,7 @@ void test_contract::test_firstDeferredBookingOfNewYear_keepsPriorAnnualSettlemen
     contract cont(saveRandomContract(cred.id()));
     cont.setInterestRate(1.0);
     cont.setInterestModel(interestModel::reinvest);
-    cont.updateInterestActive(true);
+    cont.activateInterestPayment();
 
     const QDate initialDate(2025, 1, 1);
     const QDate deposit2025(2025, 6, 1);
@@ -1457,7 +1460,7 @@ void test_contract::test_finalize_deferredMidYearInterest()
     contract cont(saveRandomContract(cred.id()));
     cont.setInterestRate(2.0);
     cont.setInterestModel(interestModel::reinvest);
-    cont.updateInterestActive(true);
+    cont.activateInterestPayment();
     cont.updateConclusionDate(QDate(2019, 12, 31));
 
     const QDate initialDate(2020, 1, 1);
@@ -1490,7 +1493,7 @@ void test_contract::test_finalize()
 {
     creditor creditor(saveRandomCreditor());
     contract cont(saveRandomContract(creditor.id()));
-    cont.updateInterestActive(true);
+    cont.activateInterestPayment();
     QDate aDate = QDate(2020, 5, 1);
     cont.updateConclusionDate(aDate.addDays(-4));
 

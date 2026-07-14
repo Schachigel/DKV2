@@ -87,7 +87,6 @@ struct uebersichten
         BY_CONTRACT_ENDING,
         INTEREST_DISTRIBUTION,
         CONTRACT_RUNTIME_DISTRIB,
-        PERPETUAL_INVESTMENTS_CHECK_BY_CONTRACTS,
         PERPETUAL_INVESTMENTS_CHECK_BY_BOOKINGS
     };
     //static int fromUeType(uetype t) { return static_cast<int>(t);}
@@ -102,7 +101,6 @@ private:
     void renderContractsByContractEnd();
     void renderInterestDistribution();
     void renderContractRuntimeDistrib();
-    void renderPerpetualInvestmentsCheckContracts();
     void renderPerpetualInvestmentsCheckBookings();
 //    void renderContractsByInterestByYear();
 private: /*static*/

@@ -62,6 +62,8 @@ void PercentFrom100sItemFormatter::paint(QPainter *painter, const QStyleOptionVi
 
 QString CurrencyFormatter::displayText(const QVariant& value, const QLocale& )const
 {
+    if( not value.isValid() or value.isNull())
+        return QString();
     QVariant vv(value);
     if( not vv.convert(QMetaType(QMetaType::Double)))
         return value.toString();
@@ -84,6 +86,8 @@ void BookingAmountItemFormatter::paint(QPainter *painter, const QStyleOptionView
 
 QString BookingAmountItemFormatter::displayText(const QVariant& value, const QLocale& )const
 {
+    if( not value.isValid() or value.isNull())
+        return QString();
     double w = r2(value.toDouble()/100.);
     if( w <= 0)
         return "[" + s_d2euro(-1 *w) + " "  + "]";
@@ -93,7 +97,10 @@ QString BookingAmountItemFormatter::displayText(const QVariant& value, const QLo
 
 QString bookingTypeFormatter::displayText(const QVariant &value, const QLocale &) const
 {
-    return bookingTypeDisplayString( bookingtypeFromInt(value.toInt()));
+    const bookingType type{bookingtypeFromInt(value.toInt())};
+    if( finalPayoutForTerminatedContracts and type == bookingType::payout)
+        return qsl("Finale Auszahlung");
+    return bookingTypeDisplayString(type);
 }
 void bookingTypeFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {

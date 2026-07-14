@@ -532,7 +532,8 @@ alleVertraege AS
 (
   SELECT
     B.Datum AS bDatum
-    , B.Betrag AS Buchungsbetrag
+    , COUNT(*) AS anzahlBuchungen
+    , SUM(B.Betrag) AS Buchungsbetrag
     , Anlagen.rowid AS aId
     , Anlagen.Typ AS Anlage
     , Anlagen.ZSatz AS Zinssatz
@@ -540,33 +541,69 @@ alleVertraege AS
   FROM alleBuchungen AS B
   INNER JOIN alleVertraege AS V ON V.id == B.VertragsId
   INNER JOIN fortlaufendeGeldanlagen AS Anlagen ON Anlagen.rowid = V.AnlagenId
+  GROUP BY Anlagen.rowid, B.Datum
+)
+, relevanteBuchungen AS
+(
+  SELECT
+    B.Datum AS bDatum
+    , Anlagen.rowid AS aId
+    , CASE
+        WHEN B.BuchungsArt == 1 THEN B.Betrag /100.
+        WHEN V.thesaurierend != 0 AND B.Betrag > 0 AND (B.BuchungsArt == 4 OR B.BuchungsArt == 8) THEN B.Betrag /100.
+        ELSE 0.
+      END AS WertInclZinsBeitrag
+    , CASE
+        WHEN B.BuchungsArt == 1 THEN B.Betrag /100.
+        ELSE 0.
+      END AS WertOhneZinsBeitrag
+  FROM alleBuchungen AS B
+  INNER JOIN alleVertraege AS V ON V.id == B.VertragsId
+  INNER JOIN fortlaufendeGeldanlagen AS Anlagen ON Anlagen.rowid = V.AnlagenId
+)
+, ersteinzahlungen AS
+(
+  -- a contract counts against maxInvestNbr for exactly 1 year from its first
+  -- deposit (Ersteinzahlung), independent of whether it gets terminated
+  -- within that year (see CLAUDE.md deviation #4)
+  SELECT
+    V.id AS VertragsId
+    , Anlagen.rowid AS aId
+    , MIN(B.Datum) AS ersteDatum
+  FROM alleBuchungen AS B
+  INNER JOIN alleVertraege AS V ON V.id == B.VertragsId
+  INNER JOIN fortlaufendeGeldanlagen AS Anlagen ON Anlagen.rowid = V.AnlagenId
+  WHERE B.BuchungsArt == 1
+  GROUP BY V.id
 )
 , temp AS
 (
   SELECT
-    aId
-    , Zinssatz
-    , Anlage
-    , bDatum
-    , SUM(Buchungsbetrag) /100. AS Buchungsbetraege
-    , COUNT(Buchungsbetrag) AS anzahlBuchungen
-
-    , (SELECT SUM(B.Betrag) /100. FROM alleBuchungen AS B WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE AnlagenId == aId) AND B.Datum <= bDatum AND B.Datum > DATE(bDatum, '-1 year')
-    ) AS BuchungsSummenInclZins
-    , (SELECT COUNT(*) FROM alleBuchungen AS B WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE AnlagenId == aId) AND B.Datum <= bDatum AND B.Datum > DATE(bDatum, '-1 year')
-    ) AS BuchungsSummenInclZins_count
-
-    , (SELECT SUM(B.Betrag) /100. FROM alleBuchungen AS B WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE thesaurierend == 0 AND AnlagenId == aId) AND B.Datum <= bDatum AND B.Datum > DATE(bDatum, '-1 year') AND (B.BuchungsArt == 1 OR B.BuchungsArt == 2 OR B.BuchungsArt == 8)
-    ) AS BuchungsSummenExclZins_ausz
-
-    , (SELECT COUNT(*) FROM alleBuchungen AS B WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE thesaurierend != 0 AND AnlagenId == aId) AND B.Datum <= bDatum AND B.Datum > DATE(bDatum, '-1 year') AND (B.BuchungsArt == 1 OR B.BuchungsArt == 2)
-    ) AS BuchungsSummenExclZins_N_ausz_count
-    , (SELECT SUM(B.Betrag) /100. FROM alleBuchungen AS B WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE thesaurierend != 0 AND AnlagenId == aId) AND B.Datum <= bDatum AND B.Datum > DATE(bDatum, '-1 year') AND (B.BuchungsArt == 1 OR B.BuchungsArt == 2)
-    ) AS BuchungsSummenExclZins_N_ausz
-
-  FROM geldBewegungen
-  GROUP BY aId, bDatum
-  ORDER BY aId DESC, bDatum DESC
+    G.aId
+    , G.Zinssatz
+    , G.Anlage
+    , G.bDatum
+    , G.anzahlBuchungen
+    , G.Buchungsbetrag /100. AS Buchungsbetraege
+    , (SELECT COUNT(*)
+       FROM ersteinzahlungen AS E
+       WHERE E.aId == G.aId
+         AND E.ersteDatum <= G.bDatum
+         AND E.ersteDatum > DATE(G.bDatum, '-1 year')
+      ) AS AnzahlVertraegeLd12M
+    , (SELECT SUM(R.WertInclZinsBeitrag)
+       FROM relevanteBuchungen AS R
+       WHERE R.aId == G.aId
+         AND R.bDatum <= G.bDatum
+         AND R.bDatum > DATE(G.bDatum, '-1 year')
+      ) AS BuchungsSummenInclZins
+    , (SELECT SUM(R.WertOhneZinsBeitrag)
+       FROM relevanteBuchungen AS R
+       WHERE R.aId == G.aId
+         AND R.bDatum <= G.bDatum
+         AND R.bDatum > DATE(G.bDatum, '-1 year')
+      ) AS BuchungsSummenOhneZins
+  FROM geldBewegungen AS G
 )
 SELECT
   aId
@@ -575,9 +612,11 @@ SELECT
   , bDatum
   , anzahlBuchungen AS zumDatum_anzahlBuchungen
   , IFNULL(Buchungsbetraege, 0.) AS zumDatum_Gebucht
-  , IFNULL(BuchungsSummenExclZins_ausz, 0.) + IFNULL(BuchungsSummenExclZins_N_ausz, 0.) AS ly_einAusZahlungen_oZ
+  , IFNULL(AnzahlVertraegeLd12M, 0) AS ly_AnzahlVertraege
+  , IFNULL(BuchungsSummenOhneZins, 0.) AS ly_einAusZahlungen_oZ
   , IFNULL(BuchungsSummenInclZins, 0.) AS ly_Wert_incl_Zinsen
 FROM temp
+ORDER BY aId DESC, bDatum ASC
     )str")};
 
     QVector<QSqlRecord> rec;
@@ -585,7 +624,28 @@ FROM temp
         return QVector<QStringList>();
     }
     QVector<QStringList> result;
+    tableindex_t currentInvestmentId{0};
+    int lastShownContractCount{0};
+    double lastShownValueInclZins{0.};
+    double lastShownValueOhneZins{0.};
+    bool haveLastShownValues{false};
     for( int i=0; i< rec.size (); i++) {
+        const tableindex_t investmentId{rec[i].value(0).toLongLong()};
+        const int contractCount{rec[i].value(6).toInt()};
+        const double valueOhneZins{rec[i].value(7).toDouble()};
+        const double valueInclZins{rec[i].value(8).toDouble()};
+
+        if( investmentId not_eq currentInvestmentId) {
+            currentInvestmentId =investmentId;
+            haveLastShownValues =false;
+        }
+        else if( haveLastShownValues
+                 and lastShownContractCount == contractCount
+                 and qFuzzyCompare(1. + valueInclZins, 1. + lastShownValueInclZins)
+                 and qFuzzyCompare(1. + valueOhneZins, 1. + lastShownValueOhneZins)) {
+            continue;
+        }
+
         QStringList zeile;
         int col =1;
         QString anlage =qsl("%1 (%2%)").arg(rec[i].value(col++).toString());
@@ -593,70 +653,15 @@ FROM temp
         zeile.push_back (rec[i].value(col++).toDate().toString ("dd.MM.yyyy")); // Buchungsdatum
         zeile.push_back (i2s(rec[i].value(col++).toInt())); // Anzahl Buchungen
         zeile.push_back (s_d2euro(rec[i].value(col++).toDouble ())); // buchungen zu diesem Buchungsdatum
+        zeile.push_back (i2s(rec[i].value(col++).toInt())); // Anzahl Verträge (lfd. 12M)
         zeile.push_back (decorateHighValues (rec[i].value(col + 1).toDouble ())); // Wert incl. Zinsen
         zeile.push_back (decorateHighValues (rec[i].value(col).toDouble ())); // Wert nur Einzahlungen
         result.push_back (zeile);
-    }
-    return result;
-}
 
-QVector<QStringList> perpetualInvestmentByContracts()
-{
-    QString sql {qsl(R"str(
-   WITH
-   alleVertraege AS
-   (
-      SELECT id, AnlagenId, Kennung, Vertragsdatum, Betrag, ZSatz FROM Vertraege
-      UNION ALL
-      SELECT id, AnlagenId, Kennung, Vertragsdatum, Betrag, ZSatz FROM exVertraege
-   ),
-   fortlaufendeGeldanlagen AS
-   (
-      SELECT * FROM Geldanlagen WHERE Ende = '9999-12-31'
-   ),
-    Abschluesse AS (
-      SELECT G.rowid    AS AnlageId
-        , G.Typ || ' (' || printf("%.2f%", V.zSatz/100.) || ')' AS Anlage
-        , V.Kennung          AS Vertrag
-        , V.Vertragsdatum AS Datum
-        , V.Betrag        AS Betrag
-      FROM alleVertraege AS V
-      INNER JOIN fortlaufendeGeldanlagen AS G ON G.rowid = V.AnlagenId
-    )
-    SELECT
-    Abschluesse.Anlage AS Anlage
-    , Abschluesse.Datum AS Vertragsdatum
-    , Abschluesse.Vertrag
-    , count(Abschluesse.Vertrag) AS AnzahlVerträge
-    , sum(Abschluesse.Betrag/100.) AS AnlageSumme_Tag
-    , (SELECT SUM(Betrag)/100.
-      FROM ( SELECT Betrag
-             FROM Abschluesse AS _ab
-             WHERE _ab.AnlageId = Abschluesse.AnlageId
-               AND _ab.Datum > DATE(Abschluesse.Datum, '-1 years')
-               AND _ab.Datum <= Abschluesse.Datum
-           )
-      ) AS periodenSumme
-    FROM Abschluesse
-    GROUP BY Datum, AnlageId
-    ORDER BY Anlage ASC, Datum DESC
-    )str")};
-    QVector<QSqlRecord> rec;
-    if( not executeSql (sql, rec)) {
-        return QVector<QStringList>();
-    }
-    QVector<QStringList> result;
-    for( int i=0; i< rec.size (); i++) {
-        QStringList zeile;
-        int col =0;
-        zeile.push_back (rec[i].value(col++).toString ()), // Anlage
-        zeile.push_back (rec[i].value(col++).toDate().toString("dd.MM.yyyy")); // Vertragsdatum
-        zeile.push_back (rec[i].value(col++).toString());  //Kennung
-        zeile.push_back (rec[i].value(col++).toString ()); // contract count
-        zeile.push_back (s_d2euro(rec[i].value(col++).toDouble ())); // new contract sum by day
-        double periodSum =rec[i].value(col++).toDouble ();
-        zeile.push_back (decorateHighValues (periodSum));
-        result.push_back (zeile);
+        lastShownContractCount =contractCount;
+        lastShownValueInclZins =valueInclZins;
+        lastShownValueOhneZins =valueOhneZins;
+        haveLastShownValues =true;
     }
     return result;
 }

@@ -282,8 +282,11 @@ bool contract::updateLabel( const QString& newLabel)
 bool contract::updateConclusionDate( const QDate& newD) {
     return td.updateValue(fnVertragsDatum, QVariant(newD), id().v);
 }
-bool contract::updateInterestActive( const bool active) {
-    RETURN_OK( td.updateValue(fnZAktiv, active ? 1 : 0, id().v), qsl("contract zActive updated"));
+bool contract::activateInterestPayment() {
+    RETURN_OK( td.updateValue(fnZAktiv, true, id().v), qsl("activated interest payment"));
+}
+bool contract::markInterestPaymentDelayed() {
+    RETURN_OK( td.updateValue(fnZAktiv, false, id().v), qsl("interest payment marked as delayed"));
 }
 bool contract::updateComment(const QString &c)
 {
@@ -316,11 +319,6 @@ bool contract::updateTerminationDate(QDate termination, int noticePeriod)
 bool contract::updateInvestment(tableindex_t investmentId)
 {
     RETURN_OK( td.updateValue(fnAnlagenId, investmentId, id().v), qsl("Updated the contract investment ref"), i2s(investmentId));
-}
-bool contract::updateSetInterestActive()
-{
-    // for now we only support activation but not deactivation
-    RETURN_OK( td.updateValue(fnZAktiv, true, id().v), qsl("activated interest payment"));
 }
 bool contract::deleteInactive() {
     return executeSql_wNoRecords(qsl("DELETE FROM Vertraege WHERE id=?"), id().v);
@@ -406,7 +404,7 @@ BookingResult contract::bookActivateInterest(const QDate d)
     // kein Payout
     if( not bookInterestUntilDate(d))
         return BookingResult::fail({qsl("Die Zinsbuchung für den Zwischenzeitraum konnte nicht erstellt werden")});
-    if( updateSetInterestActive() // update contract
+    if( activateInterestPayment() // update contract
             &&
         bookInterestActive(id(), d)) // insert booking
     {

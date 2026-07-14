@@ -279,9 +279,6 @@ void uebersichten::renderDocument( uebersichten::uetype t)
     case uetype::CONTRACT_RUNTIME_DISTRIB:
         renderContractRuntimeDistrib();
         break;
-    case uetype::PERPETUAL_INVESTMENTS_CHECK_BY_CONTRACTS:
-        renderPerpetualInvestmentsCheckContracts ();
-        break;
     case uetype::PERPETUAL_INVESTMENTS_CHECK_BY_BOOKINGS:
         renderPerpetualInvestmentsCheckBookings ();
         break;
@@ -424,47 +421,17 @@ void uebersichten::renderContractRuntimeDistrib()
     tl.renderTable();
 }
 
-void uebersichten::renderPerpetualInvestmentsCheckContracts()
-{
-    QString head {qsl("Liste fortlaufender Geldanlagen")};
-    QString desc {qsl("Diese Tabelle gibt für jede fortlaufende Geldanlage die Sumnme der Vertragswerte im Jahr vor dem jeweiligen Vertragsabschluß an.")};
-    prep(head, desc);
-    tablelayout tl(td, palette);
-    tl.cols =QStringList{qsl("Vert.\nDatum"), qsl("Vertrags-\nkennung"), qsl("Anzahl"), qsl("Vertragswert(e)"), qsl("Summe der\nletzten 12M") };
-
-    QVector<QStringList> data =perpetualInvestmentByContracts ();
-    if( data.isEmpty())
-        return;
-    QString investment;
-    tablelayout::section curSec;
-    for( int i=0; i< data.length (); i++) {
-        if( data[i][0] not_eq investment) {
-            // new section starts here
-            if( i>0) {
-                tl.sections.push_back (curSec);
-                curSec.data.clear ();
-            }
-            curSec.header =investment =data[i][0];
-        }
-        QStringList row;
-        for (int j=1; j<data[i].length (); j++) {
-            row.append (data[i][j]);
-        }
-        curSec.data.append(row);
-    }
-    if( curSec.data.size ())
-        tl.sections.push_back (curSec);
-    tl.renderTable ();
-}
-
 void uebersichten::renderPerpetualInvestmentsCheckBookings()
 {
     QString head {qsl("Prüfung der Grenzwerte für fortlaufende Geldanlagen anhand aller Buchungen")};
-    QString desc {qsl("Diese Tabelle gibt dür Verträge mit fortlaufenden Geldanlagen an, "
-                      "wie hoch die Summe der Vertragswerte ist, die sich aus den Buchungen der letzten 12 Monate ergeben.")};
+    QString desc {qsl("Diese Tabelle zeigt für Verträge mit fortlaufenden Geldanlagen, welche Anzahl "
+                      "Verträge und welche Summe sich aus den relevanten Buchungen der jeweils "
+                      "letzten 12 Monate (gerechnet ab dem Datum der Ersteinzahlung je Vertrag) ergibt. "
+                      "Ein beendeter Vertrag zählt bis zum Ablauf seines eigenen 12-Monats-Fensters "
+                      "unverändert weiter mit.")};
     prep(head, desc);
     tablelayout tl(td, palette);
-    tl.cols =QStringList{qsl("Buchungs-\ndatum"), qsl("# Buchungen\nzu diesem\nDatum"), qsl("Wert d. Buchungen\nzu diesem\nDatum"), qsl("Gesamtwert\nincl. Zinsen"), qsl("Gesamtwert der\nEinzahlungen\no. Zinsen")};
+    tl.cols =QStringList{qsl("Buchungs-\ndatum"), qsl("# Buchungen\nzu diesem\nDatum"), qsl("Wert d. Buchungen\nzu diesem\nDatum"), qsl("Anzahl Verträge\n(lfd. 12M)"), qsl("Gesamtwert\nincl. Zinsen"), qsl("Gesamtwert der\nEinzahlungen\no. Zinsen")};
 
     QVector<QStringList> data =perpetualInvestment_bookings();
     if( data.isEmpty())

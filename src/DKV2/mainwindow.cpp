@@ -585,7 +585,6 @@ void MainWindow::on_action_menu_contracts_statistics_view_triggered()
                                      qsl("Anzahl auslaufender Verträge nach Jahr"),
                                      qsl("Anzahl Verträge nach Zinssatz und Jahr"),
                                      qsl("Anzahl Verträge nach Laufzeiten"),
-                                     qsl("Verlauf fortlaufender Geldanlagen (Vertragswert)"),
                                      qsl("Verlauf fortlaufender Geldanlagen (Buchungen)")}));
     } else {
         updateUebersichtView(combo->currentIndex());
@@ -696,8 +695,6 @@ void MainWindow::on_pbNext_clicked()
 }
 void MainWindow::on_pbLetzter_clicked()
 {
-    currentDateIndex =0;
-    on_pbNext_clicked();
     prepare_statisticsPage();
 }
 

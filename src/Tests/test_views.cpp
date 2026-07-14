@@ -6,6 +6,7 @@
 #include "../DKV2/creditor.h"
 #include "../DKV2/dkdbhelper.h"
 #include "../DKV2/dkdbviews.h"
+#include "../DKV2/helperfin.h"
 #include "../DKV2/helpersql.h"
 #include "../DKV2/investment.h"
 #include "testhelper.h"
@@ -24,7 +25,107 @@ creditorId_t insertMinimalCreditor()
     creditorTdi.setValue(creditor::fnStadt, qsl("Mannheim"));
     return {creditorTdi.InsertRecord()};
 }
+
+// Scenarios drive the real contract lifecycle API (saveNewContract/bookInitialPayment/
+// deposit/payout/annualSettlement/finalize) instead of injecting raw rows, so a scenario
+// can only represent a state the application could actually produce. Expected interest
+// amounts are computed via the same reference formulas (ZinsesZins_act_act/_30_360) used
+// by test_contract.cpp, independently of whatever the business functions end up booking.
+struct piAction
+{
+    enum class kind { openContract, deposit, payout, annualSettlement, terminate };
+    kind type{kind::openContract};
+    int contractIndex{0};
+    QDate date;
+    double amount{0.0};              // openContract: initial payment; deposit/payout: amount
+    double interestRate{0.0};        // openContract only
+    interestModel model{interestModel::reinvest}; // openContract only
+    int year{0};                     // annualSettlement only
+};
+
+struct piExpectedOverviewRow
+{
+    QDate date;
+    int bookingCount{0};
+    double bookedAtDate{0.0};
+    int contractCount{0};
+    double totalInclInterest{0.0};
+    double totalWithoutInterest{0.0};
+};
+
+struct piScenario
+{
+    QString name;
+    QString zinsusance{qsl("act/act")};
+    QVector<piAction> actions;
+    QVector<piExpectedOverviewRow> expectedRows;
+};
+
+void runPerpetualInvestmentActions(const piScenario& scenario)
+{
+    dbConfig::writeValue(ZINSUSANCE, scenario.zinsusance);
+
+    const tableindex_t investmentId{saveNewInvestment(200,
+                                                      QDate(2024, 1, 1),
+                                                      EndOfTheFuckingWorld,
+                                                      qsl("Offene Testanlage DDT"))};
+    QVERIFY(isValidRowId(investmentId));
+
+    const creditorId_t creditorId{insertMinimalCreditor()};
+    QVERIFY(isValidRowId(creditorId.v));
+
+    QVector<contract> contracts;
+    for (const piAction& action : scenario.actions) {
+        switch (action.type) {
+        case piAction::kind::openContract: {
+            contract c;
+            c.initContractDefaults(creditorId);
+            c.setInterestRate(action.interestRate);
+            c.setInterestModel(action.model);
+            c.setConclusionDate(action.date);
+            c.setInvestmentId(investmentId);
+            c.saveNewContract();
+            QVERIFY(isValidRowId(c.id().v));
+            QVERIFY(c.bookInitialPayment(action.date, action.amount));
+            contracts.push_back(c);
+            break;
+        }
+        case piAction::kind::deposit:
+            QVERIFY(contracts[action.contractIndex].deposit(action.date, action.amount));
+            break;
+        case piAction::kind::payout:
+            QVERIFY(contracts[action.contractIndex].payout(action.date, action.amount));
+            break;
+        case piAction::kind::annualSettlement:
+            QCOMPARE(contracts[action.contractIndex].annualSettlement(action.year), action.year);
+            break;
+        case piAction::kind::terminate: {
+            double finInterest{0.};
+            double finPayout{0.};
+            QVERIFY(contracts[action.contractIndex].finalize(false, action.date, finInterest, finPayout));
+            break;
+        }
+        }
+    }
 }
+
+void comparePerpetualInvestmentOverview(const QVector<QStringList>& data, const QVector<piExpectedOverviewRow>& expectedRows)
+{
+    QCOMPARE(data.size(), expectedRows.size());
+    for (qsizetype i =0; i < expectedRows.size(); ++i) {
+        const auto& expected{expectedRows[i]};
+        QCOMPARE(data[i].size(), 7);
+        QCOMPARE(data[i][1], expected.date.toString(qsl("dd.MM.yyyy")));
+        QCOMPARE(data[i][2], i2s(expected.bookingCount));
+        QCOMPARE(data[i][3], s_d2euro(expected.bookedAtDate));
+        QCOMPARE(data[i][4], i2s(expected.contractCount));
+        QCOMPARE(data[i][5], s_d2euro(expected.totalInclInterest));
+        QCOMPARE(data[i][6], s_d2euro(expected.totalWithoutInterest));
+    }
+}
+}
+
+Q_DECLARE_METATYPE(piScenario)
 
 void test_views::initTestCase()
 {
@@ -266,6 +367,8 @@ void test_views::test_shortInfo_overviews_keepDeferredMarkerNeutral()
 
 void test_views::test_perpetualInvestmentBookings_executesForOpenInvestment()
 {
+    dbConfig::writeValue(ZINSUSANCE, qsl("act/act"));
+
     const tableindex_t investmentId{saveNewInvestment(250,
                                                       QDate(2026, 1, 1),
                                                       EndOfTheFuckingWorld,
@@ -275,47 +378,220 @@ void test_views::test_perpetualInvestmentBookings_executesForOpenInvestment()
     const creditorId_t creditorId{insertMinimalCreditor()};
     QVERIFY(isValidRowId(creditorId.v));
 
-    QVERIFY(executeSql_wNoRecords(
-        qsl("INSERT INTO Vertraege "
-            "(id, KreditorId, Kennung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum) "
-            "VALUES (1, %1, 'DK-TST-2026-000101', 250, 10000, 1, '2026-01-15', 6, %2, '9999-12-31', TRUE, '9999-12-31')")
-            .arg(i2s(creditorId.v), i2s(investmentId))));
-    QVERIFY(executeSql_wNoRecords(
-        qsl("INSERT INTO Buchungen "
-            "(id, %1, %2, %3, %4, %5) "
-            "VALUES (1, 1, '2026-01-15', 1, 10000, '1900-01-01')")
-            .arg(booking::fn_bVertragsId,
-                 booking::fn_bDatum,
-                 booking::fn_bBuchungsArt,
-                 booking::fn_bBetrag,
-                 booking::fn_bModifiziert)));
-    QVERIFY(executeSql_wNoRecords(
-        qsl("INSERT INTO Buchungen "
-            "(id, %1, %2, %3, %4, %5) "
-            "VALUES (2, 1, '2026-12-31', 8, 1000, '1900-01-01')")
-            .arg(booking::fn_bVertragsId,
-                 booking::fn_bDatum,
-                 booking::fn_bBuchungsArt,
-                 booking::fn_bBetrag,
-                 booking::fn_bModifiziert)));
+    contract cont;
+    cont.initContractDefaults(creditorId);
+    cont.setInterestRate(2.5);
+    cont.setInterestModel(interestModel::reinvest);
+    cont.setConclusionDate(QDate(2026, 1, 1));
+    cont.setInvestmentId(investmentId);
+    cont.saveNewContract();
+    QVERIFY(isValidRowId(cont.id().v));
+    QVERIFY(cont.bookInitialPayment(QDate(2026, 1, 15), 10000.));
+    QCOMPARE(cont.annualSettlement(2026), 2026);
+
+    const double interest{ZinsesZins_act_act(2.5, 10000.0, QDate(2026, 1, 15), QDate(2026, 12, 31), true)};
+    const QVector<booking> bookings{getBookings(cont.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("id ASC"))};
+    QCOMPARE(bookings.size(), 2);
+    QCOMPARE(bookings[1], booking(cont.id(), bookingType::annualInterestDeposit, QDate(2026, 12, 31), interest));
 
     const QVector<QStringList> data{perpetualInvestment_bookings()};
     QVERIFY(not data.isEmpty());
     QCOMPARE(data.size(), 2);
-    QCOMPARE(data[0].size(), 6);
-    QCOMPARE(data[1].size(), 6);
+    QCOMPARE(data[0].size(), 7);
+    QCOMPARE(data[1].size(), 7);
 
     QCOMPARE(data[0][1], qsl("15.01.2026"));
     QCOMPARE(data[0][2], qsl("1"));
-    QCOMPARE(data[0][3], s_d2euro(100.0));
-    QCOMPARE(data[0][4], s_d2euro(100.0));
-    QCOMPARE(data[0][5], s_d2euro(100.0));
+    QCOMPARE(data[0][3], s_d2euro(10000.0));
+    QCOMPARE(data[0][4], qsl("1"));
+    QCOMPARE(data[0][5], s_d2euro(10000.0));
+    QCOMPARE(data[0][6], s_d2euro(10000.0));
 
     QCOMPARE(data[1][1], qsl("31.12.2026"));
     QCOMPARE(data[1][2], qsl("1"));
-    QCOMPARE(data[1][3], s_d2euro(10.0));
-    QCOMPARE(data[1][4], s_d2euro(110.0));
-    QCOMPARE(data[1][5], s_d2euro(100.0));
+    QCOMPARE(data[1][3], s_d2euro(interest));
+    QCOMPARE(data[1][4], qsl("1"));
+    QCOMPARE(data[1][5], s_d2euro(10000.0 + interest));
+    QCOMPARE(data[1][6], s_d2euro(10000.0));
+}
+
+void test_views::test_perpetualInvestmentBookings_keepsFinalizedContractsPositiveForOneYear()
+{
+    dbConfig::writeValue(ZINSUSANCE, qsl("act/act"));
+
+    const tableindex_t investmentId{saveNewInvestment(250,
+                                                      QDate(2026, 1, 1),
+                                                      EndOfTheFuckingWorld,
+                                                      qsl("Offene Testanlage"))};
+    QVERIFY(isValidRowId(investmentId));
+
+    const creditorId_t creditorId{insertMinimalCreditor()};
+    QVERIFY(isValidRowId(creditorId.v));
+
+    // stays active for the whole year: a single deposit plus its year-end interest
+    contract activeContract;
+    activeContract.initContractDefaults(creditorId);
+    activeContract.setInterestRate(2.5);
+    activeContract.setInterestModel(interestModel::reinvest);
+    activeContract.setConclusionDate(QDate(2026, 1, 1));
+    activeContract.setInvestmentId(investmentId);
+    activeContract.saveNewContract();
+    QVERIFY(isValidRowId(activeContract.id().v));
+    QVERIFY(activeContract.bookInitialPayment(QDate(2026, 1, 15), 10000.));
+    QCOMPARE(activeContract.annualSettlement(2026), 2026);
+    const double activeInterest{ZinsesZins_act_act(2.5, 10000.0, QDate(2026, 1, 15), QDate(2026, 12, 31), true)};
+
+    // deposited, then terminated mid-year: must still count toward maxInvestNbr/maxInvestSum
+    // until its own 1-year window (from first payment) runs out, per CLAUDE.md deviation #4
+    contract finalizedContract;
+    finalizedContract.initContractDefaults(creditorId);
+    finalizedContract.setInterestRate(2.5);
+    finalizedContract.setInterestModel(interestModel::reinvest);
+    finalizedContract.setConclusionDate(QDate(2026, 2, 1));
+    finalizedContract.setInvestmentId(investmentId);
+    finalizedContract.saveNewContract();
+    QVERIFY(isValidRowId(finalizedContract.id().v));
+    QVERIFY(finalizedContract.bookInitialPayment(QDate(2026, 2, 15), 20000.));
+
+    double finInterest{0.};
+    double finPayout{0.};
+    QVERIFY(finalizedContract.finalize(false, QDate(2026, 6, 1), finInterest, finPayout));
+    const double expectedFinInterest{ZinsesZins_act_act(2.5, 20000.0, QDate(2026, 2, 15), QDate(2026, 6, 1), true)};
+    QCOMPARE(finInterest, expectedFinInterest);
+    QCOMPARE(finPayout, 20000.0 + expectedFinInterest);
+
+    const QVector<QStringList> data{perpetualInvestment_bookings()};
+    QVERIFY(not data.isEmpty());
+    QCOMPARE(data.size(), 4);
+
+    QCOMPARE(data[0][1], qsl("15.01.2026"));
+    QCOMPARE(data[0][2], qsl("1"));
+    QCOMPARE(data[0][3], s_d2euro(10000.0));
+    QCOMPARE(data[0][4], qsl("1"));
+    QCOMPARE(data[0][5], s_d2euro(10000.0));
+    QCOMPARE(data[0][6], s_d2euro(10000.0));
+
+    QCOMPARE(data[1][1], qsl("15.02.2026"));
+    QCOMPARE(data[1][2], qsl("1"));
+    QCOMPARE(data[1][3], s_d2euro(20000.0));
+    QCOMPARE(data[1][4], qsl("2"));
+    QCOMPARE(data[1][5], s_d2euro(30000.0));
+    QCOMPARE(data[1][6], s_d2euro(30000.0));
+
+    // finalize() books the final interest (Typ4) and the full payout (Typ2) on the same day;
+    // together they net out to exactly -principal on the "booked at this date" column, while
+    // the interest still adds to the rolling incl.-interest total.
+    QCOMPARE(data[2][1], qsl("01.06.2026"));
+    QCOMPARE(data[2][2], qsl("2"));
+    QCOMPARE(data[2][3], s_d2euro(-20000.0));
+    QCOMPARE(data[2][4], qsl("2"));
+    QCOMPARE(data[2][5], s_d2euro(30000.0 + expectedFinInterest));
+    QCOMPARE(data[2][6], s_d2euro(30000.0));
+
+    // the terminated contract keeps counting (AnzahlVerträge stays 2) even though it has no
+    // more bookings from here on - this is the behavior deviation #4 fixed.
+    QCOMPARE(data[3][1], qsl("31.12.2026"));
+    QCOMPARE(data[3][2], qsl("1"));
+    QCOMPARE(data[3][3], s_d2euro(activeInterest));
+    QCOMPARE(data[3][4], qsl("2"));
+    QCOMPARE(data[3][5], s_d2euro(30000.0 + expectedFinInterest + activeInterest));
+    QCOMPARE(data[3][6], s_d2euro(30000.0));
+}
+
+void test_views::test_perpetualInvestmentBookings_skipsZeroNetValueChangeDates()
+{
+    dbConfig::writeValue(ZINSUSANCE, qsl("act/act"));
+
+    const tableindex_t investmentId{saveNewInvestment(250,
+                                                      QDate(2026, 1, 1),
+                                                      EndOfTheFuckingWorld,
+                                                      qsl("Offene Testanlage"))};
+    QVERIFY(isValidRowId(investmentId));
+
+    const creditorId_t creditorId{insertMinimalCreditor()};
+    QVERIFY(isValidRowId(creditorId.v));
+
+    // interestModel::payout means thesaurierend==0: annualSettlement() books the interest
+    // both as a payout (Typ2) and as a same-amount recognition record (Typ8) on the same
+    // date. Since relevanteBuchungen only counts Typ4/Typ8 when thesaurierend != 0, neither
+    // contributes to the rolling totals here, so this date's net value change is exactly
+    // zero and the view must skip it as a separate row.
+    contract cont;
+    cont.initContractDefaults(creditorId);
+    cont.setInterestRate(2.5);
+    cont.setInterestModel(interestModel::payout);
+    cont.setConclusionDate(QDate(2026, 1, 1));
+    cont.setInvestmentId(investmentId);
+    cont.saveNewContract();
+    QVERIFY(isValidRowId(cont.id().v));
+    QVERIFY(cont.bookInitialPayment(QDate(2026, 1, 15), 10000.));
+    QCOMPARE(cont.annualSettlement(2026), 2026);
+
+    const QVector<booking> bookings{getBookings(cont.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("id ASC"))};
+    QCOMPARE(bookings.size(), 3);
+
+    const QVector<QStringList> data{perpetualInvestment_bookings()};
+    QVERIFY(not data.isEmpty());
+    QCOMPARE(data.size(), 1);
+    QCOMPARE(data[0].size(), 7);
+
+    QCOMPARE(data[0][1], qsl("15.01.2026"));
+    QCOMPARE(data[0][2], qsl("1"));
+    QCOMPARE(data[0][3], s_d2euro(10000.0));
+    QCOMPARE(data[0][4], qsl("1"));
+    QCOMPARE(data[0][5], s_d2euro(10000.0));
+    QCOMPARE(data[0][6], s_d2euro(10000.0));
+}
+
+void test_views::test_perpetualInvestmentBookings_referenceCases_data()
+{
+    QTest::addColumn<piScenario>("scenario");
+
+    {
+        piScenario basicReinvestYearEnd;
+        basicReinvestYearEnd.name = qsl("basic_reinvest_year_end");
+        basicReinvestYearEnd.actions = {
+            {piAction::kind::openContract, 0, QDate(2026, 1, 15), 10000.0, 2.5, interestModel::reinvest, 0},
+            {piAction::kind::annualSettlement, 0, {}, 0.0, 0.0, interestModel::reinvest, 2026}
+        };
+        const double interest{ZinsesZins_act_act(2.5, 10000.0, QDate(2026, 1, 15), QDate(2026, 12, 31), true)};
+        basicReinvestYearEnd.expectedRows = {
+            {QDate(2026, 1, 15), 1, 10000.0, 1, 10000.0, 10000.0},
+            {QDate(2026, 12, 31), 1, interest, 1, 10000.0 + interest, 10000.0}
+        };
+        QTest::newRow("basic_reinvest_year_end") << basicReinvestYearEnd;
+    }
+
+    {
+        // a contract that gets terminated the same day as its first (and only) payment is
+        // still a real, reachable state via contract::finalize() - unlike the previous
+        // version of this test, which faked a "deleted contract with a deposit and nothing
+        // else" state directly via SQL, a state the application itself can never produce.
+        piScenario terminatedShortlyAfterDeposit;
+        terminatedShortlyAfterDeposit.name = qsl("terminated_contract_shortly_after_deposit");
+        terminatedShortlyAfterDeposit.actions = {
+            {piAction::kind::openContract, 0, QDate(2026, 2, 15), 20000.0, 2.0, interestModel::reinvest, 0},
+            {piAction::kind::terminate, 0, QDate(2026, 2, 15), 0.0, 0.0, interestModel::reinvest, 0}
+        };
+        terminatedShortlyAfterDeposit.expectedRows = {
+            // deposit + zero-day final interest (Typ4, 0.0) + full payout (Typ2) all land on
+            // the same date; they net to 0 on "booked at this date" but the deposit still
+            // counts toward the rolling totals and the contract count.
+            {QDate(2026, 2, 15), 3, 0.0, 1, 20000.0, 20000.0}
+        };
+        QTest::newRow("terminated_contract_shortly_after_deposit") << terminatedShortlyAfterDeposit;
+    }
+
+    // Add future manually checked scenarios here. The test runner below is generic on purpose.
+}
+
+void test_views::test_perpetualInvestmentBookings_referenceCases()
+{
+    QFETCH(piScenario, scenario);
+    runPerpetualInvestmentActions(scenario);
+    const QVector<QStringList> data{perpetualInvestment_bookings()};
+    QVERIFY2(not data.isEmpty(), scenario.name.toUtf8().constData());
+    comparePerpetualInvestmentOverview(data, scenario.expectedRows);
 }
 
 // Todo?? insert views for SQLite User
