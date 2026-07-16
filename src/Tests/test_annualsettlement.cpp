@@ -70,6 +70,11 @@ void test_annualsettlement::test_contract_intrest_activation()
     QVERIFY(not c.bookActivateInterest(cDate.addDays(14)));
     // TEST: with initial payment
     QVERIFY(c.bookInitialPayment(cDate.addDays(14), 1000));
+    // delayed-interest contracts are still included in the annual-settlement batch (0
+    // interest while inactive, since actualInterestRate() is 0) so every creditor keeps
+    // getting a yearly settlement record for their annual letter, legally required
+    // regardless of activation status - see sqlContractDataForAnnualSettlement.
+    QCOMPARE(ye_2000, dateOfnextSettlement());
     // interest activation after initial payment
     QVERIFY(c.bookActivateInterest(cDate.addMonths(1)));
     QCOMPARE(ye_2000, dateOfnextSettlement());
@@ -230,6 +235,33 @@ void test_annualsettlement::test_dateOfNextSettlement_mixedStates_deterministic(
     QCOMPARE(alreadySettled.dateOf_next_AS(), ye_2004);
     QCOMPARE(dateOfnextSettlement(), activatedLate.dateOf_next_AS());
     QCOMPARE(dateOfnextSettlement(), ye_2004);
+}
+
+void test_annualsettlement::test_dateOfNextSettlement_includesDelayedInterestContract()
+{
+    // delayed-interest contracts (zActive = FALSE) are deliberately included in the annual-
+    // settlement batch: actualInterestRate() is 0 while inactive, so they get a 0-interest
+    // yearly settlement record just like an active contract would. This matters because every
+    // creditor needs a yearly settlement record for their annual letter (legally required,
+    // and part of keeping up the relationship), regardless of whether interest activation
+    // has happened yet.
+    contract active(saveRandomContract(saveRandomCreditor().id()));
+    active.activateInterestPayment();
+    active.updateConclusionDate(QDate(2000, 5, 1));
+    QVERIFY(active.bookInitialPayment(QDate(2000, 6, 1), 1000.));
+
+    contract delayed(saveRandomContract(active.credId()));
+    delayed.markInterestPaymentDelayed();
+    delayed.updateConclusionDate(QDate(2000, 7, 1));
+    QVERIFY(delayed.bookInitialPayment(QDate(2000, 8, 1), 1000.));
+
+    QCOMPARE(dateOfnextSettlement(), ye_2000);
+    QCOMPARE(executeCompleteAS(2000), 2);
+
+    const QVector<booking> delayedBookings{
+        getBookings(delayed.id(), BeginingOfTime, EndOfTheFuckingWorld, qsl("id ASC"))};
+    QCOMPARE(delayedBookings.size(), 2);
+    QCOMPARE(delayedBookings[1], booking(delayed.id(), bookingType::annualInterestDeposit, ye_2000, 0.0));
 }
 
 void test_annualsettlement::test_multipleContracts()

@@ -43,6 +43,7 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *event) override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 private slots:
     void onMRU_MenuItem();
     void currentChange_ctv(const QModelIndex & , const QModelIndex & );
@@ -145,6 +146,12 @@ private slots:
 
     void on_pbLetzter_clicked();
 
+    void on_pbErster_clicked();
+
+    void on_sbVerlaufFromYear_valueChanged(int year);
+
+    void on_sbVerlaufToYear_valueChanged(int year);
+
     void on_action_cmenu_Anmerkung_aendern_triggered();
 
     void on_action_cmenu_changeContractTermination_triggered();
@@ -195,6 +202,9 @@ private:
     void getDatesFromContractStates();
     void prepare_statisticsPage();
     void fillStatisticsTableView();
+    void renderVerlaufChart();
+    void highlightVerlaufDate(const QDate& d);
+    void fitVerlaufChart();
     void prepare_investmentsListView();
     void prepare_startPage();
 

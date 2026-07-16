@@ -14,6 +14,7 @@
 #include "helperfile.h"
 #include "filewriter.h"
 #include "helpersql.h"
+#include "helperfin.h"
 #include "appconfig.h"
 #include "investment.h"
 #include "opendatabase.h"
@@ -27,6 +28,12 @@
 #include "transaktionen.h"
 #include "annual_letters.h"
 #include "uebersichten.h"
+
+#include <QGraphicsScene>
+#include <QGraphicsLineItem>
+#include <QGraphicsEllipseItem>
+#include <QGraphicsSimpleTextItem>
+#include <QPainter>
 
 
 QVariant InvestmentsTableModel::data(const QModelIndex& i, int role) const
@@ -120,6 +127,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->InvestmentsTableView->setStyleSheet(tableCellStyle);
     ui->InvestmentsTableView->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
     ui->InvestmentsTableView->setStyleSheet(tableCellStyle);
+    // rescale the Verlauf chart to fill the widget whenever it (or the splitter
+    // holding it) is resized, instead of showing it at a fixed pixel size.
+    ui->graphicsView->installEventFilter(this);
 
     QSettings settings;
     restoreGeometry(settings.value(qsl("geometry")).toByteArray());
@@ -129,6 +139,13 @@ MainWindow::MainWindow(QWidget *parent) :
         useDb(appconfig::LastDb ());
         dbLoadedSuccessfully =true;
     }
+}
+
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    if( watched == ui->graphicsView and event->type() == QEvent::Resize)
+        fitVerlaufChart();
+    return QMainWindow::eventFilter(watched, event);
 }
 
 MainWindow::~MainWindow()
@@ -658,6 +675,106 @@ QString bookingDateDesc( const BookingDateData &bdd)
 
 qsizetype currentDateIndex =0;
 
+QString currentSnapshotSql(const Ui::MainWindow* ui)
+{
+    if( ui->rbActive->isChecked())
+        return sqlStat_activeContracts_byIMode_toDate;
+    if( ui->rbInactive->isChecked())
+        return sqlStat_inactiveContracts_byIMode_toDate;
+    if( ui->rbFinished->isChecked())
+        return sqlStat_finishedContracts_toDate;
+    if( ui->rbAll->isChecked())
+        return sqlStat_allContracts_byIMode_toDate;
+    Q_ASSERT(not "never reach this point");
+    return {};
+}
+
+struct verlaufDataPoint {
+    QDate date;
+    int anzahlVertraege{0};
+    double kreditVolumen{0.};
+};
+
+// shared chart geometry, used both to draw the chart and to place the current-date
+// highlight marker without redrawing the whole chart on every Back/Next click
+constexpr qreal verlaufChartWidth{760.};
+constexpr qreal verlaufChartHeight{306.};
+constexpr qreal verlaufMarginLeft{70.};  // room for Kreditvolumen axis labels
+constexpr qreal verlaufMarginRight{45.}; // room for Anzahl-Verträge axis labels
+constexpr qreal verlaufMarginTop{50.};   // two rows: legend (y=0) and highlight-date label (y=22)
+constexpr qreal verlaufMarginBottom{22.};
+constexpr qreal verlaufHighlightLabelY{22.};
+constexpr qreal verlaufPlotW{verlaufChartWidth -verlaufMarginLeft -verlaufMarginRight};
+constexpr qreal verlaufPlotH{verlaufChartHeight -verlaufMarginTop -verlaufMarginBottom};
+
+QVector<verlaufDataPoint> verlaufPoints;
+QGraphicsLineItem* verlaufHighlightLine {nullptr};
+QGraphicsSimpleTextItem* verlaufHighlightLabel {nullptr};
+// set once, the first time the statistics page has real data, from the actual date
+// range found; left alone afterwards so re-filtering (Aktiv/Inaktiv/...) doesn't
+// blow away a range the user narrowed by hand.
+bool verlaufYearRangeInitialized {false};
+
+qreal verlaufXForIndex(qsizetype i)
+{
+    if( verlaufPoints.size() < 2)
+        return verlaufMarginLeft;
+    return verlaufMarginLeft + verlaufPlotW * qreal(i) / qreal(verlaufPoints.size() -1);
+}
+
+// re-runs the "as of date" snapshot query (columns: iMode, AnzahlVertraege, AnzahlKreditoren,
+// Kreditvolumen, jaehrlZinsen, durchschnZins) for each distinct date in `dates` and takes its
+// pre-aggregated iMode='all' row, giving one aggregate point per date for the trend chart.
+QVector<verlaufDataPoint> collectVerlaufTrendData(const Ui::MainWindow* ui)
+{
+    QVector<verlaufDataPoint> points;
+    if( dates.isEmpty())
+        return points;
+
+    // `dates` is newest-first and (for "alle Verträge") not always deduplicated by date
+    // across its underlying UNION ALL blocks; collect unique dates in ascending order,
+    // restricted to the user-chosen year range.
+    const QDate rangeFrom {ui->sbVerlaufFromYear->value(), 1, 1};
+    const QDate rangeTo {ui->sbVerlaufToYear->value(), 12, 31};
+    QVector<QDate> ascendingDates;
+    for( auto it =dates.crbegin(); it not_eq dates.crend(); ++it) {
+        if( it->date < rangeFrom or it->date > rangeTo)
+            continue;
+        if( ascendingDates.isEmpty() or ascendingDates.last() not_eq it->date)
+            ascendingDates.push_back(it->date);
+    }
+    // cap how many points we compute, since each point re-runs a full snapshot query
+    constexpr qsizetype maxPoints =100;
+    if( ascendingDates.size() > maxPoints) {
+        QMessageBox::warning(getMainWindow(), qsl("Zu viele Datenpunkte"),
+            qsl("Der gewählte Zeitraum enthält %1 Buchungstage. Angezeigt werden nur die neuesten %2.")
+                .arg(ascendingDates.size()).arg(maxPoints));
+        ascendingDates =ascendingDates.mid(ascendingDates.size() -maxPoints);
+    }
+
+    const QString sqlTemplate {currentSnapshotSql(ui)};
+    for( const QDate& d : std::as_const(ascendingDates)) {
+        QString sql {sqlTemplate};
+        sql.replace(qsl(":date"), d.toString(Qt::ISODate));
+        QVector<QSqlRecord> recs;
+        if( not executeSql(sql, recs))
+            continue;
+        verlaufDataPoint p;
+        p.date =d;
+        // the snapshot queries return one row per iMode plus a pre-aggregated
+        // iMode='all' summary row; summing every row would double-count.
+        for( const QSqlRecord& r : std::as_const(recs)) {
+            if( r.value(0).toString() == qsl("all")) {
+                p.anzahlVertraege =r.value(1).toInt();
+                p.kreditVolumen =r.value(3).toDouble();
+                break;
+            }
+        }
+        points.push_back(p);
+    }
+    return points;
+}
+
 void MainWindow::on_rbActive_toggled(bool checked)
 {
     if( checked) prepare_statisticsPage();
@@ -683,6 +800,7 @@ void MainWindow::on_pbBack_clicked()
     ui->pbBack->setEnabled(currentDateIndex < maxIndex);
     ui->pbNext->setEnabled(true);
     fillStatisticsTableView();
+    highlightVerlaufDate(dates[currentDateIndex].date);
 }
 void MainWindow::on_pbNext_clicked()
 {
@@ -692,10 +810,34 @@ void MainWindow::on_pbNext_clicked()
     ui->pbBack->setEnabled(true);
     ui->pbNext->setEnabled(currentDateIndex not_eq 0);
     fillStatisticsTableView();
+    highlightVerlaufDate(dates[currentDateIndex].date);
 }
 void MainWindow::on_pbLetzter_clicked()
 {
     prepare_statisticsPage();
+}
+void MainWindow::on_pbErster_clicked()
+{
+    // jump to the oldest date; unlike pbLetzter this doesn't need to re-query
+    // dates, since the oldest booking day can't have changed since page load.
+    const qsizetype maxIndex =dates.size() -1l;
+    currentDateIndex =maxIndex;
+    ui->lblBookingDate->setText(bookingDateDesc(dates[currentDateIndex]));
+    ui->pbBack->setEnabled(false);
+    ui->pbNext->setEnabled(true);
+    fillStatisticsTableView();
+    highlightVerlaufDate(dates[currentDateIndex].date);
+}
+
+void MainWindow::on_sbVerlaufFromYear_valueChanged(int year)
+{
+    Q_UNUSED(year);
+    renderVerlaufChart();
+}
+void MainWindow::on_sbVerlaufToYear_valueChanged(int year)
+{
+    Q_UNUSED(year);
+    renderVerlaufChart();
 }
 
 void MainWindow::getDatesFromContractStates()
@@ -723,17 +865,7 @@ void MainWindow::getDatesFromContractStates()
 }
 void MainWindow::fillStatisticsTableView()
 {   LOG_CALL_W(dates[currentDateIndex].date.toString(Qt::ISODate));
-    QString sql;
-    if( ui->rbActive->isChecked()) {
-        sql =sqlStat_activeContracts_byIMode_toDate;
-    } else if (ui->rbInactive->isChecked()){
-        sql =sqlStat_inactiveContracts_byIMode_toDate;
-    } else if (ui->rbFinished->isChecked()) {
-        sql =sqlStat_finishedContracts_toDate;
-    }    else if (ui->rbAll->isChecked()) {
-        sql =sqlStat_allContracts_byIMode_toDate;
-    } else
-        Q_ASSERT (not "never reach this point");
+    QString sql {currentSnapshotSql(ui)};
     sql.replace(qsl(":date"), dates[currentDateIndex].date.toString(Qt::ISODate)).replace(qsl("\n"), qsl(" "));
 
     QSqlQueryModel *mod =new QSqlQueryModel();
@@ -752,6 +884,182 @@ void MainWindow::fillStatisticsTableView()
 
     ui->tvData->setModel(mod);
 }
+// scene->clear() deletes all items (incl. any previous highlight line), so the raw
+// pointer must be reset whenever we clear/replace the scene.
+QGraphicsScene* verlaufFreshScene(Ui::MainWindow* ui, QObject* parent)
+{
+    QGraphicsScene* scene {ui->graphicsView->scene()};
+    if( not scene) {
+        scene =new QGraphicsScene(parent);
+        ui->graphicsView->setScene(scene);
+    } else {
+        scene->clear();
+    }
+    verlaufHighlightLine =nullptr;
+    verlaufHighlightLabel =nullptr;
+    return scene;
+}
+
+void MainWindow::renderVerlaufChart()
+{
+    QGraphicsScene* scene {verlaufFreshScene(ui, this)};
+    ui->graphicsView->setRenderHint(QPainter::Antialiasing);
+
+    verlaufPoints =collectVerlaufTrendData(ui);
+    if( verlaufPoints.size() < 2) {
+        scene->addSimpleText(qsl("Nicht genügend Datenpunkte für einen Verlauf"));
+        return;
+    }
+
+    scene->setSceneRect(0, 0, verlaufChartWidth, verlaufChartHeight);
+    scene->addRect(verlaufMarginLeft, verlaufMarginTop, verlaufPlotW, verlaufPlotH, QPen(QColor(180, 180, 180)));
+
+    double minVolume{verlaufPoints.first().kreditVolumen};
+    double maxVolume{verlaufPoints.first().kreditVolumen};
+    int minCount{verlaufPoints.first().anzahlVertraege};
+    int maxCount{verlaufPoints.first().anzahlVertraege};
+    for( const auto& p : std::as_const(verlaufPoints)) {
+        minVolume =qMin(minVolume, p.kreditVolumen);
+        maxVolume =qMax(maxVolume, p.kreditVolumen);
+        minCount =qMin(minCount, p.anzahlVertraege);
+        maxCount =qMax(maxCount, p.anzahlVertraege);
+    }
+
+    auto yForVolume =[&](double v) {
+        const double range {maxVolume -minVolume};
+        const double t {range > 0. ? (v -minVolume) /range : 0.5};
+        return verlaufMarginTop + verlaufPlotH * (1. -t);
+    };
+    auto yForCount =[&](int v) {
+        const double range {double(maxCount -minCount)};
+        const double t {range > 0. ? (v -minCount) /range : 0.5};
+        return verlaufMarginTop + verlaufPlotH * (1. -t);
+    };
+
+    const QColor volumeColor{0x2b, 0x6c, 0xb0}; // blue
+    const QColor countColor{0xd0, 0x7a, 0x1e};  // orange
+
+    // axis ticks: both series share the same y pixel range but have independent value
+    // scales, so each tick row shows the Kreditvolumen value on the left (blue) and the
+    // matching Anzahl-Verträge value on the right (orange) at that same height.
+    constexpr int tickRows{5};
+    for( int i =0; i < tickRows; ++i) {
+        const qreal t {qreal(i) / qreal(tickRows -1)}; // 0 = top = max, 1 = bottom = min
+        const qreal y {verlaufMarginTop + verlaufPlotH * t};
+
+        if( i > 0 and i < tickRows -1)
+            scene->addLine(verlaufMarginLeft, y, verlaufMarginLeft +verlaufPlotW, y, QPen(QColor(230, 230, 230)));
+
+        const double volumeValue {maxVolume - t * (maxVolume -minVolume)};
+        QGraphicsSimpleTextItem* volumeTick {scene->addSimpleText(s_d2euro(volumeValue))};
+        volumeTick->setBrush(volumeColor);
+        volumeTick->setPos(verlaufMarginLeft -volumeTick->boundingRect().width() -6,
+                            y -volumeTick->boundingRect().height() /2);
+
+        const int countValue {qRound(maxCount - t * double(maxCount -minCount))};
+        QGraphicsSimpleTextItem* countTick {scene->addSimpleText(i2s(countValue))};
+        countTick->setBrush(countColor);
+        countTick->setPos(verlaufMarginLeft +verlaufPlotW +6, y -countTick->boundingRect().height() /2);
+    }
+
+    QPointF prevVolumePt;
+    QPointF prevCountPt;
+    for( qsizetype i =0; i < verlaufPoints.size(); ++i) {
+        const QPointF volumePt {verlaufXForIndex(i), yForVolume(verlaufPoints[i].kreditVolumen)};
+        const QPointF countPt {verlaufXForIndex(i), yForCount(verlaufPoints[i].anzahlVertraege)};
+
+        if( i > 0) {
+            scene->addLine(QLineF(prevVolumePt, volumePt), QPen(volumeColor, 2));
+            scene->addLine(QLineF(prevCountPt, countPt), QPen(countColor, 2));
+        }
+
+        QGraphicsEllipseItem* volumeMarker {
+            scene->addEllipse(volumePt.x() -3, volumePt.y() -3, 6, 6, QPen(volumeColor), QBrush(volumeColor))};
+        volumeMarker->setToolTip(qsl("%1: %2").arg(verlaufPoints[i].date.toString(qsl("dd.MM.yyyy")), s_d2euro(verlaufPoints[i].kreditVolumen)));
+
+        QGraphicsEllipseItem* countMarker {
+            scene->addEllipse(countPt.x() -3, countPt.y() -3, 6, 6, QPen(countColor), QBrush(countColor))};
+        countMarker->setToolTip(qsl("%1: %2 Verträge").arg(verlaufPoints[i].date.toString(qsl("dd.MM.yyyy")), i2s(verlaufPoints[i].anzahlVertraege)));
+
+        prevVolumePt =volumePt;
+        prevCountPt =countPt;
+    }
+
+    QGraphicsSimpleTextItem* firstLabel {scene->addSimpleText(verlaufPoints.first().date.toString(qsl("dd.MM.yyyy")))};
+    firstLabel->setPos(verlaufMarginLeft, verlaufMarginTop +verlaufPlotH +4);
+    QGraphicsSimpleTextItem* lastLabel {scene->addSimpleText(verlaufPoints.last().date.toString(qsl("dd.MM.yyyy")))};
+    lastLabel->setPos(verlaufMarginLeft +verlaufPlotW -lastLabel->boundingRect().width(), verlaufMarginTop +verlaufPlotH +4);
+
+    scene->addRect(verlaufMarginLeft, 4, 10, 10, QPen(volumeColor), QBrush(volumeColor));
+    QGraphicsSimpleTextItem* volumeLegend {scene->addSimpleText(
+        qsl("Kreditvolumen (%1 – %2)").arg(s_d2euro(minVolume), s_d2euro(maxVolume)))};
+    volumeLegend->setPos(verlaufMarginLeft +14, 0);
+
+    const qreal countLegendX {verlaufMarginLeft +14 +volumeLegend->boundingRect().width() +20};
+    scene->addRect(countLegendX -14, 4, 10, 10, QPen(countColor), QBrush(countColor));
+    QGraphicsSimpleTextItem* countLegend {scene->addSimpleText(
+        qsl("Anzahl Verträge (%1 – %2)").arg(i2s(minCount), i2s(maxCount)))};
+    countLegend->setPos(countLegendX, 0);
+
+    if( not dates.isEmpty())
+        highlightVerlaufDate(dates[currentDateIndex].date);
+    fitVerlaufChart();
+}
+// scales the (fixed-size) chart scene to fill whatever size graphicsView
+// currently has, keeping aspect ratio; re-applied on every resize via eventFilter,
+// since fitInView must be called again whenever the viewport size changes.
+void MainWindow::fitVerlaufChart()
+{
+    QGraphicsScene* scene {ui->graphicsView->scene()};
+    if( not scene or not ui->graphicsView->viewport()->size().isValid() or ui->graphicsView->viewport()->width() == 0)
+        return;
+    ui->graphicsView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
+}
+void MainWindow::highlightVerlaufDate(const QDate& d)
+{
+    QGraphicsScene* scene {ui->graphicsView->scene()};
+    if( not scene or verlaufPoints.size() < 2)
+        return;
+
+    if( verlaufHighlightLine) {
+        scene->removeItem(verlaufHighlightLine);
+        delete verlaufHighlightLine;
+        verlaufHighlightLine =nullptr;
+    }
+    if( verlaufHighlightLabel) {
+        scene->removeItem(verlaufHighlightLabel);
+        delete verlaufHighlightLabel;
+        verlaufHighlightLabel =nullptr;
+    }
+
+    // the highlighted date may not be exactly one of the (deduplicated/capped) chart
+    // points, so snap to the nearest one.
+    qsizetype nearest {0};
+    qint64 bestDiff {qAbs(verlaufPoints.first().date.daysTo(d))};
+    for( qsizetype i =1; i < verlaufPoints.size(); ++i) {
+        const qint64 diff {qAbs(verlaufPoints[i].date.daysTo(d))};
+        if( diff < bestDiff) {
+            bestDiff =diff;
+            nearest =i;
+        }
+    }
+
+    const qreal x {verlaufXForIndex(nearest)};
+    verlaufHighlightLine =new QGraphicsLineItem(x, verlaufMarginTop, x, verlaufMarginTop +verlaufPlotH);
+    verlaufHighlightLine->setPen(QPen(QColor(200, 40, 40), 2, Qt::DashLine));
+    verlaufHighlightLine->setZValue(10);
+    scene->addItem(verlaufHighlightLine);
+
+    // date label for the highlighted line, placed in the gap between the legend
+    // (top) and the plot rect (verlaufMarginTop) so it doesn't overlap either.
+    verlaufHighlightLabel =new QGraphicsSimpleTextItem(verlaufPoints[nearest].date.toString(qsl("dd.MM.yyyy")));
+    verlaufHighlightLabel->setBrush(QColor(200, 40, 40));
+    const qreal labelW {verlaufHighlightLabel->boundingRect().width()};
+    const qreal lx {qBound(verlaufMarginLeft, x -labelW /2, verlaufMarginLeft +verlaufPlotW -labelW)};
+    verlaufHighlightLabel->setPos(lx, verlaufHighlightLabelY);
+    verlaufHighlightLabel->setZValue(10);
+    scene->addItem(verlaufHighlightLabel);
+}
 void MainWindow::prepare_statisticsPage()
 {
     getDatesFromContractStates();
@@ -760,15 +1068,33 @@ void MainWindow::prepare_statisticsPage()
         ui->pbNext->setEnabled(false);
         ui->pbBack->setEnabled(false);
         ui->pbLetzter->setEnabled(false);
+        ui->pbErster->setEnabled(false);
         ui->lblBookingDate->setText(qsl("&nbr;-   <i>  Keine Daten  </i>   -&nbr;"));
+        renderVerlaufChart();
         return;
+    }
+
+    if( not verlaufYearRangeInitialized) {
+        // `dates` is newest-first; restrict both spin boxes to years that actually
+        // have bookings, so you can't dial in an empty year.
+        const int minYear {dates.last().date.year()};
+        const int maxYear {dates.first().date.year()};
+        ui->sbVerlaufFromYear->setMinimum(minYear);
+        ui->sbVerlaufFromYear->setMaximum(maxYear);
+        ui->sbVerlaufFromYear->setValue(minYear);
+        ui->sbVerlaufToYear->setMinimum(minYear);
+        ui->sbVerlaufToYear->setMaximum(maxYear);
+        ui->sbVerlaufToYear->setValue(maxYear);
+        verlaufYearRangeInitialized =true;
     }
 
     ui->lblBookingDate->setText(bookingDateDesc(dates[currentDateIndex]));
     ui->pbNext->setEnabled(false);
     ui->pbBack->setEnabled(dates.size()>1);
     ui->pbLetzter->setEnabled(true);
+    ui->pbErster->setEnabled(dates.size()>1);
     fillStatisticsTableView();
+    renderVerlaufChart();
     ui->tvData->resizeColumnsToContents();
     ui->tvData->setItemDelegateForColumn(0/*iMode*/, new interestModeFormatter);
     ui->tvData->setItemDelegateForColumn(1/*mbrContr.*/, new centralAlignedTextFormatter);
@@ -780,8 +1106,11 @@ void MainWindow::prepare_statisticsPage()
 }
 void MainWindow::on_actionStatistik_triggered()
 {
-    prepare_statisticsPage();
+    // show the page first: prepare_statisticsPage() renders the Verlauf chart and
+    // fits it to graphicsView's viewport, which only has a valid size once the page
+    // is actually the current stacked-widget page.
     ui->stackedWidget->setCurrentIndex(statisticsPageIndex);
+    prepare_statisticsPage();
 }
 
 /////////////////////////////////////////////////

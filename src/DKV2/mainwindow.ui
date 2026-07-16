@@ -310,7 +310,14 @@
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="0,1,0,0,6">
+         <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="0,0,1,0,0,6">
+          <item>
+           <widget class="QPushButton" name="pbErster">
+            <property name="text">
+             <string>&lt;&lt; &amp;Älteste Buchung</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QPushButton" name="pbBack">
             <property name="sizePolicy">
@@ -376,10 +383,82 @@
          </layout>
         </item>
         <item>
-         <widget class="QTableView" name="tvData"/>
+         <layout class="QHBoxLayout" name="horizontalLayout_verlaufRange">
+          <item>
+           <widget class="QLabel" name="lblVerlaufRange">
+            <property name="text">
+             <string>Von Anfang</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="sbVerlaufFromYear">
+            <property name="minimumSize">
+             <size>
+              <width>70</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>1990</number>
+            </property>
+            <property name="maximum">
+             <number>2100</number>
+            </property>
+            <property name="value">
+             <number>1990</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lblVerlaufRangeTo">
+            <property name="text">
+             <string>bis Ende</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="sbVerlaufToYear">
+            <property name="minimumSize">
+             <size>
+              <width>70</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>1990</number>
+            </property>
+            <property name="maximum">
+             <number>2100</number>
+            </property>
+            <property name="value">
+             <number>2100</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_verlaufRange">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </item>
         <item>
-         <widget class="QGraphicsView" name="graphicsView"/>
+         <widget class="QSplitter" name="splitterStatistics">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <widget class="QTableView" name="tvData"/>
+          <widget class="QGraphicsView" name="graphicsView"/>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -876,6 +955,7 @@
   <tabstop>rbInactive</tabstop>
   <tabstop>rbFinished</tabstop>
   <tabstop>rbAll</tabstop>
+  <tabstop>pbErster</tabstop>
   <tabstop>pbBack</tabstop>
   <tabstop>pbNext</tabstop>
   <tabstop>pbLetzter</tabstop>

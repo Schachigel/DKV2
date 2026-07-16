@@ -337,6 +337,10 @@ per_contract AS (
   JOIN last_booking lb
     ON lb.VertragsId = v.id AND lb.rn = 1
   -- nur Verträge mit mindestens einer Einzahlung (kein NULL/kein "leerer Vertrag")
+  -- contracts with delayed interest (zActive = FALSE) are included deliberately: they still
+  -- go through annual settlement with 0 interest (actualInterestRate() is 0 while inactive),
+  -- so every creditor gets a yearly settlement record for their annual letter, legally
+  -- required and part of the yearly account statement regardless of activation status.
   WHERE EXISTS (
     SELECT 1
     FROM Buchungen b1
@@ -371,9 +375,10 @@ FROM Vertraege v
 JOIN last_booking lb ON lb.VertragsId = v.id
 JOIN has_deposit  hd ON hd.VertragsId = v.id
 WHERE
-  v.zActive = TRUE
+  -- delayed-interest contracts (zActive = FALSE) are included deliberately: they still get
+  -- a yearly settlement with 0 interest, see sqlNextAnnualSettlement for the rationale.
   -- last AS or interest activation year end last year
-  AND ( lb.lastDatum = printf('%04d-12-31', (:YEAR - 1))
+  ( lb.lastDatum = printf('%04d-12-31', (:YEAR - 1))
   -- any booking in  YEAR
   OR ( lb.lastDatum >= printf('%04d-01-01', :YEAR)
   AND lb.lastDatum <  printf('%04d-12-31', :YEAR))

@@ -20,6 +20,7 @@ private slots:
     void test_dateOfNextSettlement_mixedStates_earliestWins();
     void test_dateOfNextSettlement_mixedStates_laterContractIgnored();
     void test_dateOfNextSettlement_mixedStates_deterministic();
+    void test_dateOfNextSettlement_includesDelayedInterestContract();
     void test_multipleContracts();
     void test_csvCreation_fails_with_no_AS();
     void test_csvCreation_check_headers();
