@@ -220,6 +220,105 @@ void test_views::test_investmentOverview_includesDeletedContractsAndBookings()
     QCOMPARE(data.ZzglZins, 330.0);
 }
 
+void test_views::test_getStatisticData_anchorsOnFirstPaymentElseContractDate()
+{
+    // Window for newContractDate = 2026-06-01 (continuous investment): (2025-06-01, 2026-06-01]
+    const tableindex_t investmentId = saveNewInvestment(250, QDate(1900, 1, 1), QDate(9999, 12, 31), qsl("Testanlage"));
+    QVERIFY(isValidRowId(investmentId));
+
+    const creditorId_t creditorId{insertMinimalCreditor()};
+    QVERIFY(isValidRowId(creditorId.v));
+
+    // Contract 1: Vertragsdatum before the window, but first payment lands inside it
+    // -> must count via Ersteinzahlung, would be missed by a pure Vertragsdatum filter.
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Vertraege "
+            "(id, KreditorId, Kennung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum) "
+            "VALUES (1, %1, 'DK-TST-2026-000001', 250, 5000, 0, '2025-01-01', 6, %2, '9999-12-31', TRUE, '9999-12-31')")
+            .arg(i2s(creditorId.v), i2s(investmentId))));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Buchungen (id, %1, %2, %3, %4, %5) VALUES (1, 1, '2025-12-01', 1, 5000, '1900-01-01')")
+            .arg(booking::fn_bVertragsId, booking::fn_bDatum, booking::fn_bBuchungsArt,
+                 booking::fn_bBetrag, booking::fn_bModifiziert)));
+
+    // Contract 2: Vertragsdatum inside the window, never paid
+    // -> must count via the Vertragsdatum fallback (earliest possible booking date).
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Vertraege "
+            "(id, KreditorId, Kennung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum) "
+            "VALUES (2, %1, 'DK-TST-2026-000002', 250, 3000, 0, '2025-07-01', 6, %2, '9999-12-31', TRUE, '9999-12-31')")
+            .arg(i2s(creditorId.v), i2s(investmentId))));
+
+    // Contract 3: Vertragsdatum inside the window, but first payment lands after it
+    // -> must NOT count; a pure Vertragsdatum filter would wrongly include it.
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Vertraege "
+            "(id, KreditorId, Kennung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum) "
+            "VALUES (3, %1, 'DK-TST-2026-000003', 250, 7000, 0, '2025-08-01', 6, %2, '9999-12-31', TRUE, '9999-12-31')")
+            .arg(i2s(creditorId.v), i2s(investmentId))));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Buchungen (id, %1, %2, %3, %4, %5) VALUES (2, 3, '2026-07-01', 1, 7000, '1900-01-01')")
+            .arg(booking::fn_bVertragsId, booking::fn_bDatum, booking::fn_bBuchungsArt,
+                 booking::fn_bBetrag, booking::fn_bModifiziert)));
+
+    investment invest(investmentId);
+    const investment::invStatisticData data = invest.getStatisticData(QDate(2026, 6, 1));
+    QCOMPARE(data.anzahlVertraege, 2);
+    QCOMPARE(data.summeVertraege, 80.0);
+}
+
+void test_views::test_investmentsOverview_fortlaufend_anchorsOnFirstPaymentElseContractDate()
+{
+    const QDate today = QDate::currentDate();
+    const tableindex_t investmentId = saveNewInvestment(250, QDate(1900, 1, 1), QDate(9999, 12, 31), qsl("Testanlage"));
+    QVERIFY(isValidRowId(investmentId));
+
+    const creditorId_t creditorId{insertMinimalCreditor()};
+    QVERIFY(isValidRowId(creditorId.v));
+
+    // Contract A: Vertragsdatum 2 years old (outside window), but first payment recent
+    // -> must count in Anzahl/AnzahlAktive via the Ersteinzahlung anchor.
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Vertraege "
+            "(id, KreditorId, Kennung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum) "
+            "VALUES (1, %1, 'DK-TST-2026-000001', 250, 5000, 0, '%2', 6, %3, '9999-12-31', TRUE, '9999-12-31')")
+            .arg(i2s(creditorId.v), today.addYears(-2).toString(Qt::ISODate), i2s(investmentId))));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Buchungen (id, %1, %2, %3, %4, %5) VALUES (1, 1, '%6', 1, 5000, '1900-01-01')")
+            .arg(booking::fn_bVertragsId, booking::fn_bDatum, booking::fn_bBuchungsArt,
+                 booking::fn_bBetrag, booking::fn_bModifiziert, today.addDays(-30).toString(Qt::ISODate))));
+
+    // Contract B: Vertragsdatum recent, never paid
+    // -> must count in Anzahl via the Vertragsdatum fallback, but NOT in AnzahlAktive.
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Vertraege "
+            "(id, KreditorId, Kennung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum) "
+            "VALUES (2, %1, 'DK-TST-2026-000002', 250, 3000, 0, '%2', 6, %3, '9999-12-31', TRUE, '9999-12-31')")
+            .arg(i2s(creditorId.v), today.addDays(-10).toString(Qt::ISODate), i2s(investmentId))));
+
+    // Contract C: both Vertragsdatum and first payment 2 years old
+    // -> must NOT count anywhere; truly stale, outside the window by either anchor.
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Vertraege "
+            "(id, KreditorId, Kennung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum) "
+            "VALUES (3, %1, 'DK-TST-2026-000003', 250, 7000, 0, '%2', 6, %3, '9999-12-31', TRUE, '9999-12-31')")
+            .arg(i2s(creditorId.v), today.addYears(-2).toString(Qt::ISODate), i2s(investmentId))));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Buchungen (id, %1, %2, %3, %4, %5) VALUES (2, 3, '%6', 1, 7000, '1900-01-01')")
+            .arg(booking::fn_bVertragsId, booking::fn_bDatum, booking::fn_bBuchungsArt,
+                 booking::fn_bBetrag, booking::fn_bModifiziert, today.addYears(-2).addDays(5).toString(Qt::ISODate))));
+
+    QSqlRecord rec = executeSingleRecordSql(
+        qsl("SELECT Anzahl, SummeVertraege, AnzahlAktive, SummeAktive FROM vInvestmentsOverview WHERE AnlagenId = %1")
+            .arg(i2s(investmentId)));
+    QVERIFY(not rec.isEmpty());
+
+    QCOMPARE(rec.value(0).toInt(), 2);        // Anzahl: A (via Ersteinzahlung) + B (via Vertragsdatum fallback)
+    QCOMPARE(rec.value(1).toDouble(), 80.0);  // SummeVertraege: 50 + 30
+    QCOMPARE(rec.value(2).toInt(), 1);        // AnzahlAktive: only A
+    QCOMPARE(rec.value(3).toDouble(), 50.0);  // SummeAktive: only A
+}
+
 void test_views::test_interestByYearOverview_classifiesInterimInterestByContractMode()
 {
     dbConfig::writeValue(ZINSUSANCE, qsl("30/360"));

@@ -87,15 +87,30 @@ investment::invStatisticData investment::getStatisticData(const QDate newContrac
     QString id =i2s(rowid);
 
     // anzahlAlleVertraege, summeAlleVertraege
-    // (! Betrachtung der Vertragswerte (ohne nachträgliche Ein- oder Auszahlungen)
+    // Anker je Vertrag: Ersteinzahlungsdatum, falls vorhanden, sonst Vertragsdatum
+    // (frühestmögliches Buchungsdatum) als Fallback für noch unbezahlte Verträge.
     QString sqlContractDataAll =qsl(R"str(
 WITH alleVertraege AS (
   SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM Vertraege
   UNION ALL
   SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM exVertraege
+),
+alleBuchungen AS (
+  SELECT VertragsId, Betrag, BuchungsArt, Datum FROM Buchungen
+  UNION ALL
+  SELECT VertragsId, Betrag, BuchungsArt, Datum FROM exBuchungen
+),
+ersteinzahlungen AS (
+  SELECT VertragsId, MIN(Datum) AS ersteDatum
+  FROM alleBuchungen
+  WHERE BuchungsArt = 1
+  GROUP BY VertragsId
 )
-SELECT COUNT(*), SUM(Betrag) FROM alleVertraege
-WHERE AnlagenId =%0 AND Vertragsdatum > '%1' AND Vertragsdatum <= '%2'
+SELECT COUNT(*), SUM(V.Betrag) FROM alleVertraege AS V
+LEFT JOIN ersteinzahlungen AS E ON E.VertragsId = V.id
+WHERE V.AnlagenId =%0
+  AND COALESCE(E.ersteDatum, V.Vertragsdatum) > '%1'
+  AND COALESCE(E.ersteDatum, V.Vertragsdatum) <= '%2'
 )str");
     QSqlRecord recContractDataAll =executeSingleRecordSql (
                 sqlContractDataAll.arg(id, pStart, pEnd));

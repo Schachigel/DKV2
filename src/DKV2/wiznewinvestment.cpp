@@ -89,7 +89,6 @@ wpTimeFrame::wpTimeFrame(QWidget* w) : QWizardPage(w)
 
     cbFloating =new QCheckBox(qsl("Ohne Datum (\"fortlaufend\")"));
     cbFloating->setToolTip (qsl("Bei einer Anlage ohne Ende Datum werden immer die letzten 12 Monate als Referenzzeitraum verwendet"));
-    cbFloating->setCheckState (Qt::Unchecked);
     connect(cbFloating, &QCheckBox::checkStateChanged, this, &wpTimeFrame::onSwitchFloating);
 
     deVon =new QDateEdit();
@@ -105,6 +104,9 @@ wpTimeFrame::wpTimeFrame(QWidget* w) : QWizardPage(w)
     registerField(pnBis, deBis, "date" /*, "dateChanged(QDate)"*/);
 
     connect(deVon, &QDateTimeEdit::dateChanged, this, &wpTimeFrame::onStartDate_changed);
+
+    // fires onSwitchFloating synchronously; deVon/deBis must already exist
+    cbFloating->setCheckState (Qt::Checked);
 
     QHBoxLayout* hlVon =new QHBoxLayout();
     hlVon->addWidget(lVon);
@@ -193,6 +195,7 @@ wizNewInvestment::wizNewInvestment(QWidget* p) : QWizard(p)
 
 void wizNewInvestment::initStartDate (QDate d)
 {
+    // only remembered as the fallback for wpTimeFrame::onSwitchFloating() when the
+    // user unchecks "fortlaufend" - must not override the floating-by-default Von field
     initialStartDate =d;
-    setField(pnVon, d);
 }

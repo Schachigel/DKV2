@@ -564,8 +564,6 @@ void MainWindow::on_actionTyp_Bezeichnung_aendern_triggered()
     id.setWindowTitle(qsl("Geldanlagen"));
     id.setLabelText(msg.arg(zinssatz, von, bis, typ));
     id.setTextValue(typ);
-    QLineEdit* leText =id.findChild<QLineEdit*>();
-    if(leText) leText->setMaxLength(25);
 
     int idOk =id.exec();
     QString txt = id.textValue().trimmed();

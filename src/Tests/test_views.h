@@ -14,6 +14,8 @@ private slots:
     void init();
     void cleanup();
     void test_investmentOverview_includesDeletedContractsAndBookings();
+    void test_getStatisticData_anchorsOnFirstPaymentElseContractDate();
+    void test_investmentsOverview_fortlaufend_anchorsOnFirstPaymentElseContractDate();
     void test_interestByYearOverview_classifiesInterimInterestByContractMode();
     void test_shortInfo_overviews_keepDeferredMarkerNeutral();
     void test_perpetualInvestmentBookings_executesForOpenInvestment();

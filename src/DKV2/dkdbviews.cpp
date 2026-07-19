@@ -169,6 +169,14 @@ SELECT VertragsId, Betrag, BuchungsArt, Datum FROM Buchungen
 UNION ALL
 SELECT VertragsId, Betrag, BuchungsArt, Datum FROM exBuchungen
 )
+, ersteinzahlungen AS (
+  -- Anker je Vertrag für die 1-Jahres-Grenzwertprüfung (Doc 7.7): Ersteinzahlungsdatum,
+  -- falls vorhanden, sonst Vertragsdatum als Fallback für noch unbezahlte Verträge.
+  SELECT VertragsId, MIN(Datum) AS ersteDatum
+  FROM alleBuchungen
+  WHERE BuchungsArt = 1
+  GROUP BY VertragsId
+)
 , fortlaufend_temp AS (
 SELECT ga.ZSatz
   , IIF( ga.Anfang == '1900-01-01', '-', ga.Anfang) AS Anfang
@@ -176,27 +184,27 @@ SELECT ga.ZSatz
   , ga.Typ
   , (SELECT count(*)
      FROM alleVertraege AS V
-     WHERE V.AnlagenId == ga.rowid AND V.Vertragsdatum > DATE('now', '-1 year')
+     LEFT JOIN ersteinzahlungen AS E ON E.VertragsId = V.id
+     WHERE V.AnlagenId == ga.rowid
+       AND COALESCE(E.ersteDatum, V.Vertragsdatum) > DATE('now', '-1 year')
   ) AS Anzahl
-  , (SELECT SUM(Betrag) /100.
+  , (SELECT SUM(V.Betrag) /100.
      FROM alleVertraege AS V
-     WHERE V.AnlagenId == ga.rowid AND V.Vertragsdatum > DATE('now', '-1 year')
+     LEFT JOIN ersteinzahlungen AS E ON E.VertragsId = V.id
+     WHERE V.AnlagenId == ga.rowid
+       AND COALESCE(E.ersteDatum, V.Vertragsdatum) > DATE('now', '-1 year')
   ) AS SummeVertraege
   , (SELECT count(*)
      FROM alleVertraege AS v
+     INNER JOIN ersteinzahlungen AS E ON E.VertragsId = v.id
      WHERE v.AnlagenId == ga.rowid
-       AND EXISTS(
-            SELECT 1
-            FROM alleBuchungen AS B
-            WHERE B.VertragsId == v.id) AND v.Vertragsdatum > DATE('now', '-1 year')
+       AND E.ersteDatum > DATE('now', '-1 year')
   ) AS AnzahlAktive
-  , (SELECT SUM(Betrag) /100.
+  , (SELECT SUM(v.Betrag) /100.
      FROM alleVertraege AS v
+     INNER JOIN ersteinzahlungen AS E ON E.VertragsId = v.id
      WHERE v.AnlagenId == ga.rowid
-       AND EXISTS(
-            SELECT 1
-            FROM alleBuchungen AS B
-            WHERE B.VertragsId == v.id) AND v.Vertragsdatum > DATE('now', '-1 year')
+       AND E.ersteDatum > DATE('now', '-1 year')
   ) AS SummeAktive
   , (SELECT SUM(Betrag) /100.
      FROM alleBuchungen AS B

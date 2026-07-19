@@ -103,3 +103,35 @@ Projekt-Memory `code_doc_deviations`):
    `ZinsesZins_30_360`), funktional korrekt befunden und als neuer Abschnitt
    **4.4 „Zinsmodelle und Buchungslogik"** samt Zeile für Typ 32 in Abschnitt
    4.2 ins Dokument aufgenommen.
+
+~~6. **Vorschau der Geldanlagen-Grenzwerte im Neu-Vertrag-Wizard weicht vom
+   Ersteinzahlungs-Anker aus Punkt 4 ab** (gefunden 2026-07-16)~~ — **behoben
+   am 2026-07-19**: `investment::getStatisticData()` (`investment.cpp:80-103`)
+   zählt bestehende Verträge jetzt über
+   `COALESCE(Ersteinzahlungsdatum, Vertragsdatum)` statt nur über
+   `Vertragsdatum` — ein bereits bezahlter Vertrag zählt ab seiner
+   Ersteinzahlung, ein noch unbezahlter fällt auf sein Vertragsdatum zurück
+   (frühestmöglicher Buchungszeitpunkt), analog zur `ersteinzahlungen`-CTE aus
+   `perpetualInvestment_bookings()`. Test
+   `test_getStatisticData_anchorsOnFirstPaymentElseContractDate`
+   (`test_views.cpp`) deckt alle drei Fälle ab (zahlungsverschobener alter
+   Vertrag, unbezahlter neuer Vertrag, verspätet bezahlter Vertrag) und ist
+   grün.
+
+7. **Neu gefunden und behoben am 2026-07-19: `vInvestmentsOverview`
+   (`dkdbviews.cpp`) hatte denselben Vertragsdatum-only-Anker-Fehler wie
+   Punkt 6.** Bei der ersten Behebung von Punkt 4 (2026-07-14) wurde dieses
+   View bewusst nicht angefasst ("außerhalb des besprochenen Scopes"), da es
+   damals nirgends im UI gerendert wurde — inzwischen zeigt
+   `MainWindow::InvestmentsTableView` ("Geldanlagen verwalten") es aber an.
+   Für Verträge, deren Vertragsdatum älter als 12 Monate war, deren
+   Ersteinzahlung aber neuer (oder umgekehrt), lieferte die
+   `fortlaufend_temp`-CTE falsche bzw. leere `Anzahl (alle)`/`Summe
+   (aktive)`-Werte. Jetzt: `Anzahl`/`SummeVertraege` über
+   `COALESCE(Ersteinzahlungsdatum, Vertragsdatum)`; `AnzahlAktive`/
+   `SummeAktive` verlangen zusätzlich eine tatsächliche Ersteinzahlung
+   (`BuchungsArt = 1`) statt nur irgendeiner Buchung. Test
+   `test_investmentsOverview_fortlaufend_anchorsOnFirstPaymentElseContractDate`
+   (`test_views.cpp`, mit `QDate::currentDate()`-relativen Daten, da dieses
+   View auf `DATE('now')` statt auf ein Buchungsdatum ankert) deckt dies ab,
+   zusätzlich vom Nutzer manuell an echten Daten verifiziert.

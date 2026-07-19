@@ -802,6 +802,7 @@ qlonglong createInvestment_matchingContract(int &interest, QDate &from,
     wizNewInvestment wiz;
     wiz.setField(pnZSatz, QVariant(interest));
     wiz.initStartDate(from);
+    wiz.setField(pnVon, QVariant(from));
     wiz.setField(pnBis, QVariant(from.addYears(1).addDays(-1)));
     wiz.exec();
     if (not wiz.field(pnKorrekt).toBool()) {
