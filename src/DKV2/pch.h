@@ -9,7 +9,7 @@
 #define PCH_H
 #pragma once
 
-#include <QtSQl>
+#include <QtSql>
 #include <QtGui>
 // QtCore
 

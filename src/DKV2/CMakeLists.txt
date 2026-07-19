@@ -155,3 +155,7 @@ set_target_properties(${APP_TARGET} PROPERTIES AUTOGEN_USE_PCH ON)
 
 
 # Installation/Bundle-Properties bleiben am Executable wie bisher.
+install(TARGETS ${APP_TARGET}
+    BUNDLE  DESTINATION .
+    RUNTIME DESTINATION bin
+)
