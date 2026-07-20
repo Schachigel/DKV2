@@ -122,7 +122,7 @@ void contract::initContractDefaults(const creditorId_t credId )
 
 void contract::initRandom(const creditorId_t credId)
 {
-    static QRandomGenerator *rand = QRandomGenerator::system();
+    QRandomGenerator *rand = sampleDataRandomGenerator();
     setLabel(proposeContractLabel());
     setCreditorId(credId);
     setInterestRate( rand->bounded(25)* 0.15);
@@ -1347,7 +1347,7 @@ void saveRandomContracts(int count)
     if( creditorIds.isEmpty ())
         qCritical() << "No Creditors to create contracts for";
 
-    static QRandomGenerator* rand = QRandomGenerator::system();
+    QRandomGenerator* rand = sampleDataRandomGenerator();
     for (int i = 0; i<count; i++)
         saveRandomContract(creditorId_t{creditorIds[rand->bounded(creditorIds.size())].toLongLong()});
 }
@@ -1380,7 +1380,7 @@ QDate activateRandomContracts(const int percent)
     QVector<QVariant> contractData = executeSingleColumnSql (contract::getTableDef ().Fields ()[0]);
 
     qsizetype activations = contractData.count() * percent / 100l;
-    static QRandomGenerator* rand = QRandomGenerator::system();
+    QRandomGenerator* rand = sampleDataRandomGenerator();
 
     for (int i=0; i < activations; i++) {
         contract c(contractId_t {contractData[i].toLongLong ()});

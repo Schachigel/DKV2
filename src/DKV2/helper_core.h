@@ -42,6 +42,13 @@ inline const QDate BeginingOfTime{QDate(1900, 1, 1)};
 void logger(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 QString logFilePath();
 
+// shared RNG for random test/sample data (initRandom(), saveRandomContracts(),
+// saveRandomCreditor(), activateRandomContracts(), create_sampleData()). Seeded from
+// DKV2_RANDOM_SEED if set, otherwise from system entropy; the effective seed is always
+// logged so a failure caused by a specific random draw can be reproduced by rerunning
+// with DKV2_RANDOM_SEED set to the logged value.
+QRandomGenerator* sampleDataRandomGenerator();
+
 ////////////////
 
 inline QString cat (QString s) { return s; }

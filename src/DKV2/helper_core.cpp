@@ -66,6 +66,18 @@ QString logFilePath()
     return logFilePath;
 }
 
+QRandomGenerator* sampleDataRandomGenerator()
+{
+    static QRandomGenerator gen = [] {
+        bool ok = false;
+        const quint32 envSeed = static_cast<quint32>(qEnvironmentVariableIntValue("DKV2_RANDOM_SEED", &ok));
+        const quint32 seed = ok ? envSeed : QRandomGenerator::system()->generate();
+        qInfo().noquote() << qsl("Random test/sample data seed: %1 (set DKV2_RANDOM_SEED=%1 to reproduce)").arg(seed);
+        return QRandomGenerator(seed);
+    }();
+    return &gen;
+}
+
 QString toString(const QBitArray& ba)
 {
     QString res;
