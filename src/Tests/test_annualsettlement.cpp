@@ -251,6 +251,15 @@ void test_annualsettlement::test_dateOfNextSettlement_includesDelayedInterestCon
     QVERIFY(active.bookInitialPayment(QDate(2000, 6, 1), 1000.));
 
     contract delayed(saveRandomContract(active.credId()));
+    // saveRandomContract() picks a random interestModel via initRandom() and already persisted it
+    // via saveNewContract(); setInterestModel() alone only updates the in-memory object, not the
+    // saved row, so pin it in the DB directly too. Without this, executeCompleteAS() below re-reads
+    // the random model from SQL, and payout mode books an extra payout entry alongside the interest
+    // deposit (contract.cpp: annualSettlement()), making delayedBookings.size() 3 instead of 2.
+    delayed.setInterestModel(interestModel::reinvest);
+    QVERIFY(executeSql_wNoRecords(
+        qsl("UPDATE Vertraege SET thesaurierend = ? WHERE id = ?"),
+        {toInt(interestModel::reinvest), delayed.id().v}));
     delayed.markInterestPaymentDelayed();
     delayed.updateConclusionDate(QDate(2000, 7, 1));
     QVERIFY(delayed.bookInitialPayment(QDate(2000, 8, 1), 1000.));
