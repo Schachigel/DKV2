@@ -87,3 +87,6 @@ DOCS/Screenshots
 
 # macos
 .DS_Store
+
+# local Claude Code settings (personal permission allowlist, not shared)
+.claude/
