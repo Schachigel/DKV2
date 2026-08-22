@@ -22,30 +22,30 @@ bool ensureLetterTemplates() {
     bool ok = true;
     QDir outDir(appconfig::Outdir());
     ok = outDir.mkpath(qsl(".")) && ok;
-    ok = outDir.mkpath(qsl("vorlagen")) && ok;
-    ok = outDir.mkpath(qsl("html")) && ok;
-    const QString vorlagenVerzeichnis = appconfig::Outdir() + qsl("/vorlagen/");
-    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("brieflogo.png")) && ok;
-    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.css")) && ok;
-    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsbrief.html")) && ok;
-    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsliste.html")) && ok;
+    ok = outDir.mkpath(dirVorlagen) && ok;
+    ok = outDir.mkpath(dirHtml) && ok;
+    const QString vorlagenVerzeichnis = appconfig::Outdir() + qsl("/") + dirVorlagen + qsl("/");
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, tplFnBrieflogoPng) && ok;
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, tplFnZinsbriefCss) && ok;
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, tplFnZinsbriefHtml) && ok;
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, tplFnZinslisteHtml) && ok;
 #ifdef Q_OS_WIN
-    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("zinsmails-win.bat"),
-                                         qsl("zinsmails.bat")) && ok;
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, tplFnZinsmailsWinBat,
+                                         tplFnZinsmailsBat) && ok;
 #else
     ok = extractTemplateFileFromResource(
-                vorlagenVerzeichnis, qsl("zinsmails-linux.bat"), qsl("zinsmails.bat")) && ok;
+                vorlagenVerzeichnis, tplFnZinsmailsLinuxBat, tplFnZinsmailsBat) && ok;
 #endif
-    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("dkv2mail.bat")) && ok;
-    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, qsl("dkv2mail")) && ok;
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, tplFnDkv2mailBat) && ok;
+    ok = extractTemplateFileFromResource(vorlagenVerzeichnis, tplFnDkv2mail) && ok;
     ok = extractTemplateFileFromResource(vorlagenVerzeichnis,
-                                         qsl("endabrechnung.html")) && ok;
+                                         tplFnEndabrechnungHtml) && ok;
     ok = extractTemplateFileFromResource(vorlagenVerzeichnis,
-                                         qsl("endabr-Zinsnachw.html")) && ok;
+                                         tplFnEndabrZinsnachwHtml) && ok;
     ok = extractTemplateFileFromResource(vorlagenVerzeichnis,
-                                         qsl("endabrechnung.csv")) && ok;
-    ok = extractTemplateFileFromResource(appconfig::Outdir() + qsl("/html/"),
-                                         qsl("zinsbrief.css")) && ok;
+                                         tplFnEndabrechnungCsv) && ok;
+    ok = extractTemplateFileFromResource(appconfig::Outdir() + qsl("/") + dirHtml + qsl("/"),
+                                         tplFnZinsbriefCss) && ok;
     if (!ok) {
         qCritical() << "ensureLetterTemplates: failed to prepare one or more template files in"
                     << appconfig::Outdir();
@@ -65,7 +65,7 @@ QVariantMap buildLetterBaseData(int yearOfSettlement) {
     basePrintData[qsl("Zinsdatum")] =
             QDate(yearOfSettlement, 12, 31).toString(qsl("dd.MM.yyyy"));
     basePrintData[qsl("gmbhLogo")] =
-            QVariant(appconfig::Outdir() + qsl("/vorlagen/brieflogo.png"));
+            QVariant(appconfig::Outdir() + qsl("/") + dirVorlagen + qsl("/") + tplFnBrieflogoPng);
     basePrintData[qsl("meta")] = getMetaTableAsMap();
     return basePrintData;
 }
@@ -106,7 +106,7 @@ ContractSummary summarizeContracts(const QVariantList &contracts)
 
 bool writeCreditorLetterFiles(const CreditorLetterData &data)
 {
-    return savePdfFromHtmlTemplate(qsl("zinsbrief.html"), data.fileName, data.printData);
+    return savePdfFromHtmlTemplate(tplFnZinsbriefHtml, data.fileName, data.printData);
 }
 
 QVariantMap buildSummaryData(const QVariantMap &basePrintData,
@@ -134,12 +134,12 @@ bool writeYearSummaryFiles(const QVariantMap &summaryData, int yearOfSettlement)
 {
     bool ok = true;
     ok = writeRenderedTemplate(
-                qsl("zinsmails.bat"),
+                tplFnZinsmailsBat,
                 qsl("zinsmails").append(i2s(yearOfSettlement)).append(qsl(".bat")),
                 summaryData) && ok;
 
     ok = savePdfFromHtmlTemplate(
-                qsl("zinsliste.html"),
+                tplFnZinslisteHtml,
                 qsl("Zinsliste-").append(i2s(yearOfSettlement)).append(qsl(".pdf")),
                 summaryData) && ok;
 

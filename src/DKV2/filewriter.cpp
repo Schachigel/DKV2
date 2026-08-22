@@ -100,7 +100,8 @@ QString mustachReplace(const QString &templateFileName, const QVariantMap &data)
     Mustache::QtVariantContext context(data);
     Mustache::Renderer renderer;
 
-    const QString outdirTemplatePath = appendFilenameToOutputDir(qsl("/vorlagen/") + templateFileName);
+    const QString outdirTemplatePath =
+            appendFilenameToOutputDir(qsl("/") + dirVorlagen + qsl("/") + templateFileName);
     QString content{readFileToString(outdirTemplatePath)};
     if (content == qsl("file open error")) {
         qWarning() << "mustachReplace: failed to load template from outdir, trying resource:"
@@ -145,12 +146,12 @@ bool savePdfFromHtmlTemplate(const QString &templateFileName, const QString &out
     if (fi.isRelative())
         fullOutputFileName = appendFilenameToOutputDir(outputFileName);
 
-    QString css{readFileToString(appendFilenameToOutputDir(qsl("vorlagen/zinsbrief.css")))};
+    QString css{readFileToString(appendFilenameToOutputDir(dirVorlagen + qsl("/") + tplFnZinsbriefCss))};
     if (css == qsl("file open error")) {
         css.clear();
     }
     if (css.isEmpty()) {
-        css = readFileToString(appendFilenameToOutputDir(qsl("zinsbrief.css")));
+        css = readFileToString(appendFilenameToOutputDir(tplFnZinsbriefCss));
     }
     if (css == qsl("file open error"))
         css.clear();
@@ -201,7 +202,7 @@ bool savePdfFromHtmlTemplate(const QString &templateFileName, const QString &out
     // Write the html content to file. (just in case ... e.g. for editing)
 
     QString htmlFileName {
-        qsl("html/") + QFileInfo(outputFileName).completeBaseName() + qsl(".html")
+        dirHtml + qsl("/") + QFileInfo(outputFileName).completeBaseName() + qsl(".html")
     };
     if (saveStringToUtf8File(htmlFileName, renderedHtml).isEmpty()) {
         qCritical() << "failed to write template";

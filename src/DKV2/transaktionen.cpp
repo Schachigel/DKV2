@@ -738,7 +738,7 @@ void finalizeContractLetter(contract *c) {
 
     QVariantMap printData = {};
     printData[qsl("gmbhLogo")] =
-            QVariant(appconfig::Outdir() + qsl("/vorlagen/brieflogo.png"));
+            QVariant(appconfig::Outdir() + qsl("/") + dirVorlagen + qsl("/") + tplFnBrieflogoPng);
     printData[qsl("meta")] = getMetaTableAsMap();
 
     creditor credRecord(c->credId());
@@ -753,19 +753,19 @@ void finalizeContractLetter(contract *c) {
             .arg(c->label(), credRecord.lastname(), credRecord.firstname());
     filenamepattern = sanitizeFilename(filenamepattern);
 
-    if (!savePdfFromHtmlTemplate(qsl("Endabrechnung.html"),
+    if (!savePdfFromHtmlTemplate(tplFnEndabrechnungHtml,
                                  qsl("Endabrechnung-") + filenamepattern + qsl(".pdf"),
                                  printData)) {
         qCritical() << "failed to create Endabrechnung pdf for contract:" << c->label();
     }
     if (printData[qsl("mitAusbezahltemZins")].toBool())
         if (!savePdfFromHtmlTemplate(
-                    qsl("endabr-Zinsnachw.html"),
+                    tplFnEndabrZinsnachwHtml,
                     qsl("FinalerZinsnachweis-") + filenamepattern + qsl(".pdf"), printData)) {
             qCritical() << "failed to create final interest proof pdf for contract:" << c->label();
         }
 
-    if (!writeRenderedTemplate(qsl("Endabrechnung.csv"),
+    if (!writeRenderedTemplate(tplFnEndabrechnungCsv,
                                qsl("Endabrechnung-") + filenamepattern + qsl(".csv"),
                                printData)) {
         qCritical() << "failed to create Endabrechnung csv for contract:" << c->label();
