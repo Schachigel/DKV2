@@ -1,2 +1,0 @@
-{{#Kreditoren}}{{#Vertraege}}{{#Auszahlung}}12;7321;;;;;{{Buchungskonto}};{{dAuszahlung}};{{dAuszahlung}};;;;31.12.{{Zinsjahr}};;;;;Zinsen {{Zinsjahr}} {{Vorname}} {{Nachname}} {{VertragsNr}}
-{{/Auszahlung}}{{/Vertraege}}{{/Kreditoren}}
