@@ -99,3 +99,17 @@ void test_appconfig::test_getMetaTableAsMap()
     QCOMPARE( map.value ("gmbhprojekt"), "Esperanza");
     QCOMPARE( map.size (), projectConfiguration::MAX_PC_INDEX);
 }
+
+void test_appconfig::test_maxInvestSum_defaultRoundTripsAsInt()
+{
+    // Regression test for a fresh/empty database: fill_DkDbDefaultContent()
+    // (called from init() above) writes all Meta defaults via
+    // dbConfig::writeDefaults(), exactly as a brand-new database created via
+    // the "new database" wizard does before the wizard's own config page even
+    // runs. wpContractMinValues_Page::initializePage() (wiznewdatabase.cpp)
+    // then pre-fills the "Grenzwert für die Summe von Verträgen pro
+    // Investment" field with dbConfig::readValue(MAX_INVESTMENT_SUM).toInt().
+    // That must reproduce the declared default of 100000, not 0.
+    QCOMPARE(dbConfig::readValue(MAX_INVESTMENT_SUM).toInt(), 100000);
+    QCOMPARE(dbConfig::readValue(MAX_INVESTMENT_SUM).toDouble(), 100000.0);
+}

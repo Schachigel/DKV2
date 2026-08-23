@@ -19,6 +19,7 @@ private slots:
     void test_dbConfig_RuntimeData();
     void test_dbConfig_Db();
     void test_getMetaTableAsMap();
+    void test_maxInvestSum_defaultRoundTripsAsInt();
 private:
     QString oldDir;
 };

@@ -83,10 +83,19 @@ void setMetaInfo(const QString& name, const QString& value, const QSqlDatabase& 
 }
 void setNumMetaInfo(const QString& name, const double value, const QSqlDatabase& db, const QString& tblAlias /*=QString()*/)
 {   LOG_CALL_W(name);
-    QString tablename =qsl("Meta");
-    if( tblAlias.size()) tablename =tblAlias +qsl(".") +tablename;
-    QString sql {qsl("INSERT OR REPLACE INTO %1 (Name, Wert) VALUES (:name, :value)")};
-    executeSql_wNoRecords(sql.arg(tablename), {name, value}, db);
+    // Meta.Wert is a TEXT-affinity column (QMetaType::QString, see
+    // appconfig::getTableDef()). Binding a raw C++ double lets SQLite's own
+    // REAL->TEXT conversion decide the stored text -- e.g. 100000.0 is
+    // stored as "100000.0", not "100000" -- which silently breaks callers
+    // that parse the stored value back with QString::toInt() (e.g.
+    // wpContractMinValues_Page::initializePage() in wiznewdatabase.cpp,
+    // pre-filling MAX_INVESTMENT_SUM). QVariant(value).toString() is no
+    // better: it renders whole numbers like 100000.0 in scientific notation
+    // ("1e+05"), which is just as unparsable as an int. Convert explicitly
+    // via QString::number()'s 'g' format at high precision instead, which
+    // avoids scientific notation for any value in the realistic config range
+    // and keeps a deterministic, round-trippable text form.
+    setMetaInfo(name, QString::number(value, 'g', 15), db, tblAlias);
 }
 
 /* statics */
