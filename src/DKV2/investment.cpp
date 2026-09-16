@@ -84,12 +84,19 @@ investment::invStatisticData investment::getStatisticData(const QDate newContrac
             ? newContractDate.addYears (-1).toString(Qt::ISODate) : start.toString(Qt::ISODate);
     QString pEnd   = isContinouse ()
             ? newContractDate.toString(Qt::ISODate) : end.toString(Qt::ISODate);
+    // anzahlVertraege (maxInvestNbr, § 2 Abs. 1 Nr. 3a VermAnlG) has no rolling
+    // window in the law, unlike the sum (§ 2 Abs. 1 Nr. 3b, rolling 12 months,
+    // see docs 7.5/7.7): for a continuous Geldanlage it counts every contract
+    // ever assigned to it; for a time-boxed one, its own start already IS the
+    // Geldanlage's lifetime start, so no separate lower bound is needed there.
+    QString pStartForCount = isContinouse ()
+            ? BeginingOfTime.toString(Qt::ISODate) : start.toString(Qt::ISODate);
     QString id =i2s(rowid);
 
-    // anzahlAlleVertraege, summeAlleVertraege
+    // summeAlleVertraege (rolling window, unchanged)
     // Anker je Vertrag: Ersteinzahlungsdatum, falls vorhanden, sonst Vertragsdatum
     // (frühestmögliches Buchungsdatum) als Fallback für noch unbezahlte Verträge.
-    QString sqlContractDataAll =qsl(R"str(
+    QString sqlContractSum =qsl(R"str(
 WITH alleVertraege AS (
   SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM Vertraege
   UNION ALL
@@ -106,16 +113,43 @@ ersteinzahlungen AS (
   WHERE BuchungsArt = 1
   GROUP BY VertragsId
 )
-SELECT COUNT(*), SUM(V.Betrag) FROM alleVertraege AS V
+SELECT SUM(V.Betrag) FROM alleVertraege AS V
 LEFT JOIN ersteinzahlungen AS E ON E.VertragsId = V.id
 WHERE V.AnlagenId =%0
   AND COALESCE(E.ersteDatum, V.Vertragsdatum) > '%1'
   AND COALESCE(E.ersteDatum, V.Vertragsdatum) <= '%2'
 )str");
-    QSqlRecord recContractDataAll =executeSingleRecordSql (
-                sqlContractDataAll.arg(id, pStart, pEnd));
-    ret.anzahlVertraege =recContractDataAll.field (0).value ().toInt ();
-    ret.summeVertraege  =euroFromCt(recContractDataAll.field (1).value ().toInt());
+    ret.summeVertraege =euroFromCt(executeSingleValueSql (
+                sqlContractSum.arg(id, pStart, pEnd)).toInt ());
+
+    // anzahlAlleVertraege (cumulative, no rolling lower bound - see above).
+    // Same anchor logic as the sum query; upper bound still needed so a first
+    // payment dated after newContractDate isn't counted early.
+    QString sqlContractCount =qsl(R"str(
+WITH alleVertraege AS (
+  SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM Vertraege
+  UNION ALL
+  SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM exVertraege
+),
+alleBuchungen AS (
+  SELECT VertragsId, Betrag, BuchungsArt, Datum FROM Buchungen
+  UNION ALL
+  SELECT VertragsId, Betrag, BuchungsArt, Datum FROM exBuchungen
+),
+ersteinzahlungen AS (
+  SELECT VertragsId, MIN(Datum) AS ersteDatum
+  FROM alleBuchungen
+  WHERE BuchungsArt = 1
+  GROUP BY VertragsId
+)
+SELECT COUNT(*) FROM alleVertraege AS V
+LEFT JOIN ersteinzahlungen AS E ON E.VertragsId = V.id
+WHERE V.AnlagenId =%0
+  AND COALESCE(E.ersteDatum, V.Vertragsdatum) > '%1'
+  AND COALESCE(E.ersteDatum, V.Vertragsdatum) <= '%2'
+)str");
+    ret.anzahlVertraege =executeSingleValueSql (
+                sqlContractCount.arg(id, pStartForCount, pEnd)).toInt ();
 
     // einAuszahlungen beinhaltet
     // - Vertragswerte abgeschlossener Verträge ohne Einzahlung
@@ -184,6 +218,42 @@ WHERE
     ret.ZzglZins =valuePassiveContracts + allBookingsInclInterest;
 
     return ret;
+}
+
+// true if this (fortlaufende) Geldanlage already has other contracts dated
+// between newContractDate and today: the preview shown to the user during
+// contract creation is anchored on newContractDate (Doc 7.7), so such
+// contracts are silently excluded from the Anzahl/Summe shown here.
+bool investment::hasContractsAfter(const QDate newContractDate)
+{ LOG_CALL_W(newContractDate.toString ());
+    if( not isContinouse() || newContractDate >= QDate::currentDate())
+        return false;
+
+    QString sql =qsl(R"str(
+WITH alleVertraege AS (
+  SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM Vertraege
+  UNION ALL
+  SELECT id, AnlagenId, Betrag, Vertragsdatum, thesaurierend FROM exVertraege
+),
+alleBuchungen AS (
+  SELECT VertragsId, Betrag, BuchungsArt, Datum FROM Buchungen
+  UNION ALL
+  SELECT VertragsId, Betrag, BuchungsArt, Datum FROM exBuchungen
+),
+ersteinzahlungen AS (
+  SELECT VertragsId, MIN(Datum) AS ersteDatum
+  FROM alleBuchungen
+  WHERE BuchungsArt = 1
+  GROUP BY VertragsId
+)
+SELECT COUNT(*) FROM alleVertraege AS V
+LEFT JOIN ersteinzahlungen AS E ON E.VertragsId = V.id
+WHERE V.AnlagenId =%0
+  AND COALESCE(E.ersteDatum, V.Vertragsdatum) > '%1'
+  AND COALESCE(E.ersteDatum, V.Vertragsdatum) <= '%2'
+)str");
+    return 0 < executeSingleValueSql (sql.arg(i2s(rowid), newContractDate.toString(Qt::ISODate),
+                                              QDate::currentDate().toString(Qt::ISODate))).toInt ();
 }
 
 
@@ -336,7 +406,7 @@ QString investmentInfoForNewContract(qlonglong ridInvestment, const double amoun
 
     QString timeSpan;
     if( invest.isContinouse ())
-        timeSpan =qsl("fortlaufend (Jahresfrist: %1 bis %2)").arg(start.toString(qsl("dd.MM.yyyy")), end.toString (qsl("dd.MM.yyyy")));
+        timeSpan =qsl("fortlaufend (Jahresfrist vor Vertragsdatum: %1 bis %2)").arg(start.toString(qsl("dd.MM.yyyy")), end.toString (qsl("dd.MM.yyyy")));
     else
         timeSpan =qsl("von %1 bis %2").arg(start.toString (qsl("dd.MM.yyyy")), end.toString (qsl("dd.MM.yyyy")));
 
@@ -354,7 +424,13 @@ QString investmentInfoForNewContract(qlonglong ridInvestment, const double amoun
 
     QString tableStatistics {qsl("<table width=100%> \n %1 \n %2 \n %3 \n %4 \n %5 </table>").arg(
                     headers, headerLine, s1Line, headerLine2, s2Line)};
-    return tableInvestmentData + tableStatistics;
+
+    QString warning;
+    if( invest.hasContractsAfter (newContractDate))
+        warning =qsl("<p><b>Achtung: es gibt bereits Verträge zwischen dem %1<br>und heute, die hier nicht berücksichtigt sind.</b></p><br>")
+                .arg(newContractDate.toString(qsl("dd.MM.yyyy")));
+
+    return tableInvestmentData + warning + tableStatistics;
 }
 
 QVector<investment> openInvestments(int rate, QDate conclusionDate)

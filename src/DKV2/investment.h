@@ -23,6 +23,7 @@ struct investment
     bool matchesContract(const contract& c);
     bool isContinouse(){return ( end == EndOfTheFuckingWorld || not end.isValid ());};
     invStatisticData getStatisticData(const QDate newContractData);
+    bool hasContractsAfter(const QDate newContractDate);
 
 // data
     qlonglong rowid;

@@ -170,8 +170,13 @@ UNION ALL
 SELECT VertragsId, Betrag, BuchungsArt, Datum FROM exBuchungen
 )
 , ersteinzahlungen AS (
-  -- Anker je Vertrag für die 1-Jahres-Grenzwertprüfung (Doc 7.7): Ersteinzahlungsdatum,
-  -- falls vorhanden, sonst Vertragsdatum als Fallback für noch unbezahlte Verträge.
+  -- Anker je Vertrag (Doc 7.7): Ersteinzahlungsdatum, falls vorhanden, sonst
+  -- Vertragsdatum als Fallback für noch unbezahlte Verträge. Alle
+  -- Summen-Spalten (SummeVertraege/SummeAktive/Einzahlungen*/SummeInclZins)
+  -- sind auf die laufenden 12 Monate begrenzt (maxInvestSum, § 2 Abs. 1
+  -- Nr. 3b VermAnlG); nur die Anzahl-Spalten (Anzahl/AnzahlAktive) zählen
+  -- kumulativ ohne Zeitfenster (maxInvestNbr, § 2 Abs. 1 Nr. 3a VermAnlG
+  -- kennt keins).
   SELECT VertragsId, MIN(Datum) AS ersteDatum
   FROM alleBuchungen
   WHERE BuchungsArt = 1
@@ -186,7 +191,7 @@ SELECT ga.ZSatz
      FROM alleVertraege AS V
      LEFT JOIN ersteinzahlungen AS E ON E.VertragsId = V.id
      WHERE V.AnlagenId == ga.rowid
-       AND COALESCE(E.ersteDatum, V.Vertragsdatum) > DATE('now', '-1 year')
+       AND COALESCE(E.ersteDatum, V.Vertragsdatum) <= DATE('now')
   ) AS Anzahl
   , (SELECT SUM(V.Betrag) /100.
      FROM alleVertraege AS V
@@ -198,7 +203,6 @@ SELECT ga.ZSatz
      FROM alleVertraege AS v
      INNER JOIN ersteinzahlungen AS E ON E.VertragsId = v.id
      WHERE v.AnlagenId == ga.rowid
-       AND E.ersteDatum > DATE('now', '-1 year')
   ) AS AnzahlAktive
   , (SELECT SUM(v.Betrag) /100.
      FROM alleVertraege AS v
@@ -208,17 +212,32 @@ SELECT ga.ZSatz
   ) AS SummeAktive
   , (SELECT SUM(Betrag) /100.
      FROM alleBuchungen AS B
-     WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE thesaurierend == 0 AND AnlagenId == ga.rowid)
+     WHERE B.VertragsId IN (
+       SELECT V.id FROM alleVertraege AS V
+       INNER JOIN ersteinzahlungen AS E ON E.VertragsId = V.id
+       WHERE V.thesaurierend == 0 AND V.AnlagenId == ga.rowid
+         AND E.ersteDatum > DATE('now', '-1 year')
+     )
        AND (B.BuchungsArt == 1 OR B.BuchungsArt == 2 OR B.BuchungsArt == 8)
      ) AS EinzahlungenAuszahlenderV
   , (SELECT SUM(Betrag) /100.
      FROM alleBuchungen AS B
-     WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE thesaurierend != 0 AND AnlagenId == ga.rowid)
+     WHERE B.VertragsId IN (
+       SELECT V.id FROM alleVertraege AS V
+       INNER JOIN ersteinzahlungen AS E ON E.VertragsId = V.id
+       WHERE V.thesaurierend != 0 AND V.AnlagenId == ga.rowid
+         AND E.ersteDatum > DATE('now', '-1 year')
+     )
        AND (B.BuchungsArt == 1 OR B.BuchungsArt == 2)
      ) AS EinzahlungenRestlV
   , (SELECT SUM(Betrag) /100.
      FROM alleBuchungen AS B
-     WHERE B.VertragsId IN (SELECT id FROM alleVertraege WHERE AnlagenId == ga.rowid)) AS SummeInclZins
+     WHERE B.VertragsId IN (
+       SELECT V.id FROM alleVertraege AS V
+       INNER JOIN ersteinzahlungen AS E ON E.VertragsId = V.id
+       WHERE V.AnlagenId == ga.rowid
+         AND E.ersteDatum > DATE('now', '-1 year')
+     )) AS SummeInclZins
   , CASE WHEN ga.Offen THEN 'Offen' ELSE 'Abgeschlossen' END AS Offen
   , ga.rowid
 FROM Geldanlagen AS ga

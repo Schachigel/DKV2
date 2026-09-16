@@ -7,6 +7,7 @@
 #include "creditor.h"
 
 #include "investment.h"
+#include <QCoreApplication>
 
 
 
@@ -725,6 +726,13 @@ void wpInterestFromInvestment::onInvestments_currentIndexChanged(int)
     double amount = field(pnAmount).toDouble();
     QString html = investmentInfoForNewContract(rowId, amount, field(pnCDate).toDate());
     lblInvestmentInfo->setText(html);
+    // setText() posts a LayoutRequest event that QWizard uses to recompute its
+    // size; without forcing it to be processed now, adjustSize() below still
+    // sees the wizard's pre-change size hint (only up to date on the next
+    // event loop iteration), so growth wouldn't take effect until later.
+    QCoreApplication::sendPostedEvents(this, QEvent::LayoutRequest);
+    if( wizard())
+        wizard()->adjustSize();
 }
 bool wpInterestFromInvestment::validatePage()
 {

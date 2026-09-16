@@ -261,9 +261,23 @@ void test_views::test_getStatisticData_anchorsOnFirstPaymentElseContractDate()
             .arg(booking::fn_bVertragsId, booking::fn_bDatum, booking::fn_bBuchungsArt,
                  booking::fn_bBetrag, booking::fn_bModifiziert)));
 
+    // Contract 4: years old, first payment years old too, fully outside the 12-month
+    // window on both ends -> must still count in anzahlVertraege (maxInvestNbr has no
+    // rolling window, § 2 Abs. 1 Nr. 3a VermAnlG, see docs 7.5/7.7), but must NOT
+    // contribute to summeVertraege (maxInvestSum stays rolling 12 months).
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Vertraege "
+            "(id, KreditorId, Kennung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum) "
+            "VALUES (4, %1, 'DK-TST-2026-000004', 250, 9000, 0, '2023-01-01', 6, %2, '9999-12-31', TRUE, '9999-12-31')")
+            .arg(i2s(creditorId.v), i2s(investmentId))));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Buchungen (id, %1, %2, %3, %4, %5) VALUES (3, 4, '2023-01-15', 1, 9000, '1900-01-01')")
+            .arg(booking::fn_bVertragsId, booking::fn_bDatum, booking::fn_bBuchungsArt,
+                 booking::fn_bBetrag, booking::fn_bModifiziert)));
+
     investment invest(investmentId);
     const investment::invStatisticData data = invest.getStatisticData(QDate(2026, 6, 1));
-    QCOMPARE(data.anzahlVertraege, 2);
+    QCOMPARE(data.anzahlVertraege, 3);
     QCOMPARE(data.summeVertraege, 80.0);
 }
 
@@ -287,6 +301,12 @@ void test_views::test_investmentsOverview_fortlaufend_anchorsOnFirstPaymentElseC
         qsl("INSERT INTO Buchungen (id, %1, %2, %3, %4, %5) VALUES (1, 1, '%6', 1, 5000, '1900-01-01')")
             .arg(booking::fn_bVertragsId, booking::fn_bDatum, booking::fn_bBuchungsArt,
                  booking::fn_bBetrag, booking::fn_bModifiziert, today.addDays(-30).toString(Qt::ISODate))));
+    // Nachschuss (top-up) on A beyond its nominal Betrag: Einzahlungen must reflect the
+    // actual 7000 booked, not the 5000 nominal Vertragswert (customer bug, #144-adjacent).
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Buchungen (id, %1, %2, %3, %4, %5) VALUES (3, 1, '%6', 1, 2000, '1900-01-01')")
+            .arg(booking::fn_bVertragsId, booking::fn_bDatum, booking::fn_bBuchungsArt,
+                 booking::fn_bBetrag, booking::fn_bModifiziert, today.addDays(-20).toString(Qt::ISODate))));
 
     // Contract B: Vertragsdatum recent, never paid
     // -> must count in Anzahl via the Vertragsdatum fallback, but NOT in AnzahlAktive.
@@ -297,7 +317,10 @@ void test_views::test_investmentsOverview_fortlaufend_anchorsOnFirstPaymentElseC
             .arg(i2s(creditorId.v), today.addDays(-10).toString(Qt::ISODate), i2s(investmentId))));
 
     // Contract C: both Vertragsdatum and first payment 2 years old
-    // -> must NOT count anywhere; truly stale, outside the window by either anchor.
+    // -> must still count in Anzahl/AnzahlAktive (maxInvestNbr is a cumulative,
+    // lifetime count with no rolling window - § 2 Abs. 1 Nr. 3a VermAnlG, see docs
+    // 7.5/7.7), but must NOT contribute to SummeVertraege/SummeAktive (maxInvestSum
+    // stays rolling 12 months, § 2 Abs. 1 Nr. 3b VermAnlG).
     QVERIFY(executeSql_wNoRecords(
         qsl("INSERT INTO Vertraege "
             "(id, KreditorId, Kennung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum) "
@@ -309,14 +332,19 @@ void test_views::test_investmentsOverview_fortlaufend_anchorsOnFirstPaymentElseC
                  booking::fn_bBetrag, booking::fn_bModifiziert, today.addYears(-2).addDays(5).toString(Qt::ISODate))));
 
     QSqlRecord rec = executeSingleRecordSql(
-        qsl("SELECT Anzahl, SummeVertraege, AnzahlAktive, SummeAktive FROM vInvestmentsOverview WHERE AnlagenId = %1")
+        qsl("SELECT Anzahl, SummeVertraege, AnzahlAktive, SummeAktive, Einzahlungen, SummeInclZins "
+            "FROM vInvestmentsOverview WHERE AnlagenId = %1")
             .arg(i2s(investmentId)));
     QVERIFY(not rec.isEmpty());
 
-    QCOMPARE(rec.value(0).toInt(), 2);        // Anzahl: A (via Ersteinzahlung) + B (via Vertragsdatum fallback)
-    QCOMPARE(rec.value(1).toDouble(), 80.0);  // SummeVertraege: 50 + 30
-    QCOMPARE(rec.value(2).toInt(), 1);        // AnzahlAktive: only A
-    QCOMPARE(rec.value(3).toDouble(), 50.0);  // SummeAktive: only A
+    QCOMPARE(rec.value(0).toInt(), 3);        // Anzahl: A + B + C, all count cumulatively
+    QCOMPARE(rec.value(1).toDouble(), 80.0);  // SummeVertraege (nominal): 50 + 30 (C outside the 12-month window)
+    QCOMPARE(rec.value(2).toInt(), 2);        // AnzahlAktive: A + C, both have a real Ersteinzahlung
+    QCOMPARE(rec.value(3).toDouble(), 50.0);  // SummeAktive (nominal): only A (C outside the 12-month window)
+    // Einzahlungen/SummeInclZins: same "aktiv + im Fenster" scope as SummeAktive (only A),
+    // but valued from actual Buchungen -> reflects A's Nachschuss (50+20=70), not A's nominal 50.
+    QCOMPARE(rec.value(4).toDouble(), 70.0);  // Einzahlungen
+    QCOMPARE(rec.value(5).toDouble(), 70.0);  // SummeInclZins (no interest bookings here)
 }
 
 void test_views::test_interestByYearOverview_classifiesInterimInterestByContractMode()
@@ -514,7 +542,7 @@ void test_views::test_perpetualInvestmentBookings_executesForOpenInvestment()
     QCOMPARE(data[1][6], s_d2euro(10000.0));
 }
 
-void test_views::test_perpetualInvestmentBookings_keepsFinalizedContractsPositiveForOneYear()
+void test_views::test_perpetualInvestmentBookings_keepsFinalizedContractsCountingForever()
 {
     dbConfig::writeValue(ZINSUSANCE, qsl("act/act"));
 
@@ -540,8 +568,9 @@ void test_views::test_perpetualInvestmentBookings_keepsFinalizedContractsPositiv
     QCOMPARE(activeContract.annualSettlement(2026), 2026);
     const double activeInterest{ZinsesZins_act_act(2.5, 10000.0, QDate(2026, 1, 15), QDate(2026, 12, 31), true)};
 
-    // deposited, then terminated mid-year: must still count toward maxInvestNbr/maxInvestSum
-    // until its own 1-year window (from first payment) runs out, per CLAUDE.md deviation #4
+    // deposited, then terminated mid-year: must still count toward maxInvestNbr forever
+    // (no rolling window - § 2 Abs. 1 Nr. 3a VermAnlG, docs 7.5/7.7) and toward
+    // maxInvestSum until its own 1-year window (from first payment) runs out
     contract finalizedContract;
     finalizedContract.initContractDefaults(creditorId);
     finalizedContract.setInterestRate(2.5);
@@ -588,7 +617,8 @@ void test_views::test_perpetualInvestmentBookings_keepsFinalizedContractsPositiv
     QCOMPARE(data[2][6], s_d2euro(30000.0));
 
     // the terminated contract keeps counting (AnzahlVerträge stays 2) even though it has no
-    // more bookings from here on - this is the behavior deviation #4 fixed.
+    // more bookings from here on - and it will keep counting indefinitely, not just for
+    // the remainder of its own 1-year window, since maxInvestNbr has no rolling window.
     QCOMPARE(data[3][1], qsl("31.12.2026"));
     QCOMPARE(data[3][2], qsl("1"));
     QCOMPARE(data[3][3], s_d2euro(activeInterest));

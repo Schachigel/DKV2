@@ -115,10 +115,12 @@ bool updateViewsAndIndices_if_needed(const QSqlDatabase& db = QSqlDatabase::data
 {   LOG_CALL;
     QString lastProgramVersion = dbConfig::read_DKV2_Version(db);
     QString thisProgramVersion = QCoreApplication::applicationVersion();
+#ifndef QT_DEBUG
     if( lastProgramVersion == thisProgramVersion) {
         qInfo() << "Same Program Version -> no update of views and indices necessary";
         return true;
     }
+#endif
     qInfo() << "Program versions used differ -> views will be updated";
     qInfo() << qsl("last exe: ") << lastProgramVersion << qsl(" / this exe: ") << thisProgramVersion;
     QString errorMsg;
@@ -563,9 +565,11 @@ alleVertraege AS
 )
 , ersteinzahlungen AS
 (
-  -- a contract counts against maxInvestNbr for exactly 1 year from its first
-  -- deposit (Ersteinzahlung), independent of whether it gets terminated
-  -- within that year (see CLAUDE.md deviation #4)
+  -- a contract counts against maxInvestNbr forever from its first deposit
+  -- (Ersteinzahlung) onward, with no time window - unlike maxInvestSum,
+  -- § 2 Abs. 1 Nr. 3a VermAnlG (the "20 Direktkredite" exemption) has no
+  -- rolling window in the law, so a contract never drops out of this count
+  -- even long after it's fully repaid (see docs 7.5/7.7).
   SELECT
     V.id AS VertragsId
     , Anlagen.rowid AS aId
@@ -589,8 +593,7 @@ alleVertraege AS
        FROM ersteinzahlungen AS E
        WHERE E.aId == G.aId
          AND E.ersteDatum <= G.bDatum
-         AND E.ersteDatum > DATE(G.bDatum, '-1 year')
-      ) AS AnzahlVertraegeLd12M
+      ) AS AnzahlVertraegeGesamt
     , (SELECT SUM(R.WertInclZinsBeitrag)
        FROM relevanteBuchungen AS R
        WHERE R.aId == G.aId
@@ -612,7 +615,7 @@ SELECT
   , bDatum
   , anzahlBuchungen AS zumDatum_anzahlBuchungen
   , IFNULL(Buchungsbetraege, 0.) AS zumDatum_Gebucht
-  , IFNULL(AnzahlVertraegeLd12M, 0) AS ly_AnzahlVertraege
+  , IFNULL(AnzahlVertraegeGesamt, 0) AS gesamt_AnzahlVertraege
   , IFNULL(BuchungsSummenOhneZins, 0.) AS ly_einAusZahlungen_oZ
   , IFNULL(BuchungsSummenInclZins, 0.) AS ly_Wert_incl_Zinsen
 FROM temp
@@ -653,7 +656,7 @@ ORDER BY aId DESC, bDatum ASC
         zeile.push_back (rec[i].value(col++).toDate().toString ("dd.MM.yyyy")); // Buchungsdatum
         zeile.push_back (i2s(rec[i].value(col++).toInt())); // Anzahl Buchungen
         zeile.push_back (s_d2euro(rec[i].value(col++).toDouble ())); // buchungen zu diesem Buchungsdatum
-        zeile.push_back (i2s(rec[i].value(col++).toInt())); // Anzahl Verträge (lfd. 12M)
+        zeile.push_back (i2s(rec[i].value(col++).toInt())); // Anzahl Verträge (insgesamt)
         zeile.push_back (decorateHighValues (rec[i].value(col + 1).toDouble ())); // Wert incl. Zinsen
         zeile.push_back (decorateHighValues (rec[i].value(col).toDouble ())); // Wert nur Einzahlungen
         result.push_back (zeile);

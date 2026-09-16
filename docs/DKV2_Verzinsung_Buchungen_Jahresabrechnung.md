@@ -97,6 +97,12 @@ Wichtige Felder:
 
 * **Kennung**: eindeutige, alphanumerische Vertragskennung (nicht zwingend numerisch)
 * **ZSatz**: Zinssatz als ganze Zahl in Hundertstel-Prozent (z. B. 250 = 2,50 %)
+* **Betrag**: der bei Vertragsabschluss vereinbarte **Nominalwert** – das, was auf dem
+  Papiervertrag steht. Dieser Wert kann von den tatsächlichen Einzahlungen abweichen,
+  da nach der Ersteinzahlung weitere Einzahlungen möglich sind (siehe 4.3), die
+  **Betrag nicht** aktualisieren. Für alle fachlichen Berechnungen (Zinsen, aber auch
+  Auswertungen über tatsächlich eingezahltes Geld) gilt daher unverändert die Regel aus
+  4.1: maßgeblich sind ausschließlich die **Buchungen**, nie dieses Feld.
 * **thesaurierend**: steuert die Behandlung der Zinsen; die einzelnen Zinsmodelle und ihre Auswirkungen werden in Abschnitt **4.4 Zinsmodelle und Buchungslogik** erläutert
 * **zActive**: gibt an, ob der Vertrag aktuell verzinst wird; gespeichert als **1 (wahr)** bzw. **0 (falsch)**. Mit diesem Feld kann ein Vertrag vorübergehend unverzinslich begonnen werden, um nach der Aktivierung der Zinszahlung normal verzinst zu werden. Hintergrund: entgegenkommende Kreditgeber können auf Zinsen verzichten, bis das Projekt regelmäßige Einnahmen hat; der Vertrag läuft in dieser Zeit mit **verzögerter Zinszahlung**. Der Übergang von verzinst zu unverzinst ist als reguläre Geschäftsoperation nicht vorgesehen; er existiert im Code nur, um eine irrtümliche Aktivierungsbuchung rückgängig zu machen (`contract::markInterestPaymentDelayed()`, Gegenstück zu `contract::activateInterestPayment()`).
 
@@ -148,9 +154,26 @@ Für die erste Einzahlung eines Vertrags gelten besondere Regeln, da sie den Beg
 
 Diese Regeln sind unabhängig vom später gewählten Zinsmodell (`thesaurierend`) und betreffen ausschließlich den **Start des Vertrags und der Verzinsung**.
 
+Nach der Ersteinzahlung sind **weitere Einzahlungen** (Typ 1) auf denselben Vertrag
+möglich (Nachschuss/Aufstockung) – auch über den nominalen Vertragswert (`Betrag`,
+siehe 3.2) hinaus. Das ist der reguläre Zweck dieser Folgebuchungen, kein
+Fehlerfall. `Betrag` wird dabei nicht angepasst; der tatsächlich eingezahlte Betrag
+ergibt sich, wie in 3.2/4.1 beschrieben, ausschließlich aus der Summe der
+Buchungen.
+
 Für die **Aktivierung der Zinszahlung** gelten zusätzlich folgende Regeln:
 
 * Die Aktivierung der Zinszahlung (Typ 16) kann am Tag der Ersteinzahlung oder danach erfolgen.
+
+* Zusätzlich zur Typ-16-Buchung erzeugt die Aktivierung eine **Typ-4-Buchung
+  (Zinsanrechnung) mit Wert 0** (`contract::bookActivateInterest()`,
+  `contract.cpp`). Diese berechnet den Zins für den Zeitraum bis zum
+  Aktivierungsdatum – der zwingend 0 ergibt, da während der ausgesetzten
+  Zinszahlung (`zActive = false`) kein Zins anfällt – und zieht dadurch den
+  Zinsberechnungs-Cursor auf das Aktivierungsdatum. Ohne diese Buchung würde
+  die nächste reguläre Zinsbuchung die gesamte Aussetzungsphase fälschlich
+  mitverzinsen. Die Typ-16-Buchung selbst dient nur als Audit-Marker für den
+  Zeitpunkt der Aktivierung und hat keinen Einfluss auf die Zinsberechnung.
 
 ### 4.4 Zinsmodelle und Buchungslogik
 
@@ -327,6 +350,18 @@ dargestellt (`redOrBlack()` in `investment.cpp`, genutzt von
 Entscheidung liegt darin begründet, dass DKV2 nichts verbieten, sondern nur
 unterstützen soll — die rechtliche Verantwortung bleibt bei den Projekten.
 
+**Rechtlich sind `maxInvestNbr` und `maxInvestSum` keine gleichartigen
+Grenzen** (Quelle: MHS-Handbuch „Direktkredite", syndiDAT, Stand
+2023/10/04 — als verbindlich für MHS-Projekte behandelt):
+
+* `maxInvestSum` bildet § 2 Abs. 1 Nr. 3b VermAnlG ab: „Nicht mehr als
+  100.000 € **innerhalb von 12 Monaten** je Vermögensanlage." — explizit
+  zeitfensterbasiert.
+* `maxInvestNbr` bildet § 2 Abs. 1 Nr. 3a VermAnlG ab: „Nicht mehr als 20
+  Direktkredite" je Vermögensanlage — **ohne jedes Zeitfenster im
+  Gesetzestext**. Das ist eine kumulative Obergrenze über die gesamte
+  Lebensdauer der Vermögensanlage, siehe 7.7.
+
 ### 7.6 Auswertungen
 
 Für fortlaufende Geldanlagen stellt DKV2 eine Compliance-Übersicht bereit
@@ -335,7 +370,7 @@ Buchungen”, `perpetualInvestment_bookings()` in `dkdbhelper.cpp`), die pro
 Geldanlage und Buchungsdatum zeigt:
 
 * Anzahl und Wert der Buchungen an diesem Datum
-* **Anzahl der Verträge** in den laufenden 12 Monaten (siehe 7.7)
+* **Anzahl der Verträge insgesamt** (kumulativ, ohne Zeitfenster — siehe 7.7)
 * **Gesamtwert** in den laufenden 12 Monaten, sowohl inkl. Zinsen als auch nur die Einzahlungen
 
 Diese Auswertung dient dem Vergleich mit `maxInvestNbr`/`maxInvestSum`
@@ -354,17 +389,63 @@ mitzählt).
 
 Geldanlagen ohne explizites Zeitfenster (*Anfang*, *Ende*) werden in DKV2 als **„fortlaufend”** bezeichnet.
 
-Für fortlaufende Geldanlagen gilt:
+Für fortlaufende Geldanlagen gilt — **unterschiedlich für Anzahl und
+Summe**, siehe 7.5:
 
-* Es wird ein **dynamisches Zeitfenster** verwendet.
-* Maßgeblich ist ein Zeitraum von **1 Jahr rückwirkend ab dem jeweils betrachteten Buchungsdatum**.
-* Dieses Zeitfenster dient insbesondere der **Erfüllung gesetzlicher Anforderungen** (vgl. 7.5).
+* **`maxInvestSum` (Summe):** Es wird ein **dynamisches, rollierendes
+  Zeitfenster** verwendet. Maßgeblich ist ein Zeitraum von **1 Jahr
+  rückwirkend ab dem jeweils betrachteten Buchungsdatum**. Dieses
+  Zeitfenster dient der Erfüllung von § 2 Abs. 1 Nr. 3b VermAnlG (vgl. 7.5).
+* **`maxInvestNbr` (Anzahl):** **Kein Zeitfenster.** Gezählt wird
+  kumulativ über die gesamte Lebensdauer der Vermögensanlage — jeder
+  Direktkredit, der ihr jemals zugeordnet war, zählt dauerhaft mit. Das
+  bildet § 2 Abs. 1 Nr. 3a VermAnlG ab, der kein Zeitfenster kennt (vgl.
+  7.5).
 
-**Beendete Verträge:** Ein Vertrag zählt gegen `maxInvestNbr`/`maxInvestSum`
-seiner Geldanlage für genau **1 Jahr ab seiner Ersteinzahlung** (dem Tag,
-an dem das Geld tatsächlich auf dem Konto des Projekts eingegangen ist —
-nicht das Vertragsdatum). Eine spätere Vertragsbeendigung innerhalb dieses
-Jahres ändert daran nichts: der Vertrag zählt bis zum Ablauf seines
-eigenen 1-Jahres-Fensters unverändert weiter mit, unabhängig vom
-Beendigungsstatus. Erst nach Ablauf des Jahres fällt er aus dem
-rollierenden Fenster.
+**Beendete Verträge:**
+
+* Für `maxInvestSum` zählt ein Vertrag gegen die Summe seiner Geldanlage
+  für genau **1 Jahr ab seiner Ersteinzahlung** (dem Tag, an dem das Geld
+  tatsächlich auf dem Konto des Projekts eingegangen ist — nicht das
+  Vertragsdatum). Eine spätere Vertragsbeendigung innerhalb dieses Jahres
+  ändert daran nichts: der Vertrag zählt bis zum Ablauf seines eigenen
+  1-Jahres-Fensters unverändert weiter mit, unabhängig vom
+  Beendigungsstatus. Erst nach Ablauf des Jahres fällt er aus dem
+  rollierenden Fenster.
+* Für `maxInvestNbr` zählt ein Vertrag **dauerhaft, ohne jemals aus der
+  Zählung zu fallen** — auch Jahre nach vollständiger Rückzahlung. Das
+  entspricht dem gesetzlichen Wortlaut („nicht mehr als 20 Direktkredite"),
+  der keine zeitliche Begrenzung kennt.
+
+### 7.8 Verwaltungstabelle „Geldanlagen verwalten" (`vInvestmentsOverview`)
+
+Neben der Compliance-Auswertung aus 7.6 (`perpetualInvestment_bookings()`,
+strikt Buchungen-basiert) zeigt DKV2 unter „Geldanlagen verwalten"
+(`MainWindow::InvestmentsTableView`, View `vInvestmentsOverview` in
+`dkdbviews.cpp`) für jede fortlaufende Geldanlage zusätzlich **vier
+unterschiedliche Bewertungsvarianten** nebeneinander:
+
+| Spalte(n) | Basis | Verträge ohne Ersteinzahlung? |
+| --- | --- | --- |
+| Anzahl (alle) / Summe (alle Vertr.) | Nominalwert (`Betrag`) | ja |
+| Anzahl (aktive) / Summe (aktive) | Nominalwert (`Betrag`) | nein |
+| Summe Einzahlungen | tatsächliche Buchungen (Typ 1/2, ausz. auch Typ 8) | nein (nur aktive) |
+| Summe incl. Zins | tatsächliche Buchungen (alle Typen) | nein (nur aktive) |
+
+Grund für die parallele Existenz mehrerer Spalten: unterschiedliche Projekte
+legen die 100.000-€- bzw. 20-Verträge-Regel (7.5) unterschiedlich aus. Manche
+werten strikt nominal (dann zählen auch Verträge ohne bisherige Einzahlung
+mit), andere wollen ausschließlich tatsächlich eingezahltes Geld sehen, ggf.
+mit oder ohne aufgelaufene Zinsen. DKV2 schreibt keine dieser Interpretationen
+vor, sondern stellt alle vier nebeneinander – siehe auch 3.2/4.3 zum
+Unterschied zwischen nominalem `Betrag` und tatsächlichen Einzahlungen
+(Nachschüsse können dazu führen, dass „Summe Einzahlungen" den nominalen Wert
+übersteigt).
+
+**Zeitfenster:** Für fortlaufende Geldanlagen gilt für **alle vier
+Summen-Varianten** (Summe (alle Vertr.), Summe (aktive), Summe Einzahlungen,
+Summe incl. Zins) einheitlich das rollierende 12-Monats-Fenster aus 7.7
+(Anker: Ersteinzahlungsdatum, sonst Vertragsdatum als Fallback für
+Summe (alle Vertr.); für die drei anderen Spalten ist eine tatsächliche
+Ersteinzahlung Voraussetzung). Nur **Anzahl (alle)**/**Anzahl (aktive)**
+bleiben, wie in 7.7 festgelegt, kumulativ ohne Zeitfenster.
