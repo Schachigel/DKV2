@@ -53,6 +53,7 @@ private slots:
     void test_finalize_deferredMidYearInterest();
     void test_finalize();
     void test_finalLetter_onlyLastPayoutIsFinal();
+    void test_finalLetter_showsStartSaldoForBookingsBeforeContractDate();
     void test_readExContract();
 };
 

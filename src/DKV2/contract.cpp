@@ -1169,7 +1169,9 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate) const
     v["dStartBetrag"] = d;
     v["startBetrag"] = s_d2euro(d);
     v["startDatum"] = fromDate.toString(qsl("dd.MM.yyyy"));
-    v["showStartSaldo"] = td.getValue(fnVertragsDatum).toDate() < fromDate;
+    // also show a non-zero start value if the period starts at the contract date: bookings
+    // dated before the Vertragsdatum (legacy/imported data) would otherwise vanish from the list
+    v["showStartSaldo"] = td.getValue(fnVertragsDatum).toDate() < fromDate or not qFuzzyIsNull(d);
 
     d = value(toDate);
     v["dEndBetrag"] = d;

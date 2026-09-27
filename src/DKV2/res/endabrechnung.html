@@ -62,6 +62,14 @@
             <td width=150><strong>Text</strong></td>
             <td class="colBuchungsBetrag" width=150 float="right"><strong>Betrag</strong></td>
         </tr>
+        {{#showStartSaldo}}
+        <tr>
+            <td width=20></td>
+            <td class="colBuchungsdatum">{{startDatum}}</td>
+            <td class="colBuchungstext">letzter Saldo</td>
+            <td class="colBuchungsBetrag">{{startBetrag}}</td>
+        </tr>
+        {{/showStartSaldo}}
         {{#Buchungen}}
         <tr>
             <td width=20></td>

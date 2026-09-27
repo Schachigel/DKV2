@@ -1546,6 +1546,30 @@ void test_contract::test_finalLetter_onlyLastPayoutIsFinal()
     QCOMPARE(payoutDates, QStringList{qsl("31.12.2020")});
 }
 
+void test_contract::test_finalLetter_showsStartSaldoForBookingsBeforeContractDate()
+{
+    creditor cred(saveRandomCreditor());
+    contract cont(saveRandomContract(cred.id()));
+    cont.setInterestRate(2.0);
+    cont.activateInterestPayment();
+    cont.updateConclusionDate(QDate(2020, 1, 1));
+    QVERIFY(cont.bookInitialPayment(QDate(2020, 1, 10), 1000.));
+    const contractId_t contractId = cont.id();
+    {   // normal data: the letter starts at the contract date with value 0 -> no start line
+        const QVariantMap vm =cont.toVariantMap();
+        QCOMPARE(vm.value(qsl("showStartSaldo")).toBool(), false);
+    }
+    // legacy data (#144): contract date later than the first booking
+    QVERIFY(cont.updateConclusionDate(QDate(2020, 6, 1)));
+    double fi =0., fp =0.;
+    QVERIFY(cont.finalize(false, QDate(2020, 9, 30), fi, fp));
+    contract ex(contractId, true);
+    const QVariantMap vm =ex.toVariantMap();
+    QCOMPARE(vm.value(qsl("showStartSaldo")).toBool(), true);
+    QCOMPARE(vm.value(qsl("startDatum")).toString(), qsl("01.06.2020"));
+    QCOMPARE(vm.value(qsl("dStartBetrag")).toDouble(), 1000.);
+}
+
 void test_contract::test_readExContract()
 {
     creditor c(saveRandomCreditor ());
