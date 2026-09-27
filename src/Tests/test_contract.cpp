@@ -1517,6 +1517,35 @@ void test_contract::test_finalize()
     QCOMPARE(ex.value (), 0.);
 }
 
+void test_contract::test_finalLetter_onlyLastPayoutIsFinal()
+{
+    creditor cred(saveRandomCreditor());
+    contract cont(saveRandomContract(cred.id()));
+    cont.setInterestRate(2.0);
+    cont.setInterestModel(interestModel::payout);
+    cont.activateInterestPayment();
+    cont.updateConclusionDate(QDate(2020, 1, 1));
+    QVERIFY(cont.bookInitialPayment(QDate(2020, 1, 10), 1000.));
+    // payout contract: annual interest is paid out -> payout booking on 31.12.2020
+    QCOMPARE(cont.annualSettlement(2020), 2020);
+    const contractId_t contractId = cont.id();
+    double fi =0., fp =0.;
+    QVERIFY(cont.finalize(false, QDate(2021, 3, 31), fi, fp));
+
+    contract ex(contractId, true);
+    const QVariantList bookings =ex.toVariantMap().value(qsl("Buchungen")).toList();
+    QStringList finalPayoutDates, payoutDates;
+    for (const QVariant& b : bookings) {
+        const QVariantMap bm =b.toMap();
+        if (bm.value(qsl("Text")).toString() == qsl("Finale Auszahlung"))
+            finalPayoutDates.append(bm.value(qsl("Date")).toString());
+        else if (bm.value(qsl("Text")).toString() == bookingTypeDisplayString(bookingType::payout))
+            payoutDates.append(bm.value(qsl("Date")).toString());
+    }
+    QCOMPARE(finalPayoutDates, QStringList{qsl("31.03.2021")});
+    QCOMPARE(payoutDates, QStringList{qsl("31.12.2020")});
+}
+
 void test_contract::test_readExContract()
 {
     creditor c(saveRandomCreditor ());

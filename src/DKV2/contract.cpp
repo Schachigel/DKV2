@@ -1249,7 +1249,9 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate) const
             QVariantMap bookMap = {};
             bookMap["Date"] = b.date.toString(qsl("dd.MM.yyyy"));
             QString bookingText = bookingTypeDisplayString(b.type);
-            if (isTerminated && b.type == bookingType::payout) {
+            // only the payout on the termination date (= the contract's last booking) is final;
+            // earlier payouts (e.g. annual interest of payout contracts) keep their normal text
+            if (isTerminated && b.type == bookingType::payout && b.date == latestB.date) {
                 bookingText = qsl("Finale Auszahlung");
             }
             bookMap["Text"] = bookingText;

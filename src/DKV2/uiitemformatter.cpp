@@ -97,10 +97,19 @@ QString BookingAmountItemFormatter::displayText(const QVariant& value, const QLo
 
 QString bookingTypeFormatter::displayText(const QVariant &value, const QLocale &) const
 {
-    const bookingType type{bookingtypeFromInt(value.toInt())};
-    if( finalPayoutForTerminatedContracts and type == bookingType::payout)
-        return qsl("Finale Auszahlung");
-    return bookingTypeDisplayString(type);
+    return bookingTypeDisplayString(bookingtypeFromInt(value.toInt()));
+}
+void bookingTypeFormatter::initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const
+{
+    QStyledItemDelegate::initStyleOption(option, index);
+    if( not finalPayoutForTerminatedContracts
+        or bookingtypeFromInt(index.data().toInt()) not_eq bookingType::payout)
+        return;
+    // only the payout on the termination date is final; the bookings view is ordered
+    // by id DESC, so row 0 (column 2 = date) holds the contract's last booking
+    const QDate lastBookingDate =index.model()->index(0, 2).data().toDate();
+    if( index.siblingAtColumn(2).data().toDate() == lastBookingDate)
+        option->text = qsl("Finale Auszahlung");
 }
 void bookingTypeFormatter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
