@@ -36,8 +36,8 @@
             dkdbstructur[qsl("Kreditoren")][fnId], ODOU_Action::CASCADE));
         // deleting a creditor will delete inactive contracts but not
         // contracts with existing bookings (=active or terminated contracts)
-        contractTable.append(dbfield(fnKennung,       QMetaType::QString).setUnique ());
-        contractTable.append(dbfield(fnAnmerkung,     QMetaType::QString).setDefault(""));
+        contractTable.append(dbfield(fnKennung,       QMetaType::QString).setUnique ().setTrimPolicy(dbfield::TrimPolicy::trimAndFlatten));
+        contractTable.append(dbfield(fnAnmerkung,     QMetaType::QString).setDefault("").setTrimPolicy(dbfield::TrimPolicy::trim));
         contractTable.append(dbfield(fnZSatz,         QMetaType::Int).setNotNull().setDefault(0)); // 100-stel %; 100 entspricht 1%
         contractTable.append(dbfield(fnBetrag,        QMetaType::Int).setNotNull().setDefault(0)); // ct
         contractTable.append(dbfield(fnThesaurierend, QMetaType::Int).setNotNull().setDefault(1));

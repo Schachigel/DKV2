@@ -17,6 +17,8 @@ private slots:
     void test_nextContractLabelIndex_legacyGuessHonorsHigherStartIndex();
     void test_fillDkDbDefaultContent_createsZeitstempelTriggers();
     void test_postDbUpgradeActions_backfillsZeitstempelHistorically();
+    void test_postDbUpgradeActions_trimsLegacyTextFields();
+    void test_postDbUpgradeActions_noTrimFromVersion17();
 
 };
 

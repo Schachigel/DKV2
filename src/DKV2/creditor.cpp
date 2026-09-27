@@ -215,19 +215,19 @@ bool creditor::remove()
     if( 0 == creditortable.Fields().size())
     {
         creditortable.append(dbfield(fnId,       QMetaType::LongLong).setAutoInc());
-        creditortable.append(dbfield(fnVorname,  QMetaType::QString).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnNachname, QMetaType::QString).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnStrasse,  QMetaType::QString).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnPlz,      QMetaType::QString).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnStadt,    QMetaType::QString).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnLand,     QMetaType::QString).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnTel,      QMetaType::QString).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnEmail,    QMetaType::QString).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnAnmerkung,QMetaType::QString).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnKontakt,  QMetaType::QString).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnBuchungskonto,QMetaType::QString).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnIBAN,     QMetaType::QString).setDefault(emptyStringV));
-        creditortable.append(dbfield(fnBIC,      QMetaType::QString).setDefault(emptyStringV));
+        creditortable.append(dbfield(fnVorname,  QMetaType::QString).setDefault(emptyStringV).setTrimPolicy(dbfield::TrimPolicy::trimAndFlatten));
+        creditortable.append(dbfield(fnNachname, QMetaType::QString).setDefault(emptyStringV).setTrimPolicy(dbfield::TrimPolicy::trimAndFlatten));
+        creditortable.append(dbfield(fnStrasse,  QMetaType::QString).setDefault(emptyStringV).setTrimPolicy(dbfield::TrimPolicy::trimAndFlatten));
+        creditortable.append(dbfield(fnPlz,      QMetaType::QString).setDefault(emptyStringV).setTrimPolicy(dbfield::TrimPolicy::trimAndFlatten));
+        creditortable.append(dbfield(fnStadt,    QMetaType::QString).setDefault(emptyStringV).setTrimPolicy(dbfield::TrimPolicy::trimAndFlatten));
+        creditortable.append(dbfield(fnLand,     QMetaType::QString).setDefault(emptyStringV).setTrimPolicy(dbfield::TrimPolicy::trimAndFlatten));
+        creditortable.append(dbfield(fnTel,      QMetaType::QString).setDefault(emptyStringV).setTrimPolicy(dbfield::TrimPolicy::trimAndFlatten));
+        creditortable.append(dbfield(fnEmail,    QMetaType::QString).setDefault(emptyStringV).setTrimPolicy(dbfield::TrimPolicy::trimAndFlatten));
+        creditortable.append(dbfield(fnAnmerkung,QMetaType::QString).setDefault(emptyStringV).setTrimPolicy(dbfield::TrimPolicy::trim));
+        creditortable.append(dbfield(fnKontakt,  QMetaType::QString).setDefault(emptyStringV).setTrimPolicy(dbfield::TrimPolicy::trim));
+        creditortable.append(dbfield(fnBuchungskonto,QMetaType::QString).setDefault(emptyStringV).setTrimPolicy(dbfield::TrimPolicy::trimAndFlatten));
+        creditortable.append(dbfield(fnIBAN,     QMetaType::QString).setDefault(emptyStringV).setTrimPolicy(dbfield::TrimPolicy::trimAndFlatten));
+        creditortable.append(dbfield(fnBIC,      QMetaType::QString).setDefault(emptyStringV).setTrimPolicy(dbfield::TrimPolicy::trimAndFlatten));
         creditortable.append(dbfield(fnZeitstempel, QMetaType::QDateTime).setDefaultNow());
         QVector<dbfield> unique;
         unique.append(creditortable[fnVorname]);

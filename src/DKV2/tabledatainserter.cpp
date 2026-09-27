@@ -124,8 +124,10 @@ TableDataInserter::TableDataInserter(const dbtable& t)
 {
     tablename = t.Name();
     for( int i =0; i < t.Fields ().count (); i++) {
-        QSqlField f {t.Fields ().at (i)};
-        record.append (f);
+        const dbfield& f =t.Fields ().at (i);
+        if( f.getTrimPolicy() not_eq dbfield::TrimPolicy::none)
+            trimPolicies.insert(f.name(), f.getTrimPolicy());
+        record.append (QSqlField(f));
     }
 }
 
@@ -140,12 +142,35 @@ bool TableDataInserter::setValue(const QString& n, const QVariant& v, NullPolicy
             record.setValue(n, QVariant());
         return true;
     }
-    if( dbAffinityType(record.field(n).metaType()) == dbAffinityType(v.metaType())) {
-        record.setValue(n, v);
+    QVariant value = v;
+    const QMetaType fieldType =record.field(n).metaType();
+    if( value.metaType() == QMetaType(QMetaType::QString)) {
+        if( fieldType == QMetaType(QMetaType::QString)) {
+            const dbfield::TrimPolicy policy =trimPolicies.value(n, dbfield::TrimPolicy::none);
+            if( policy not_eq dbfield::TrimPolicy::none)
+                value = dbfield::applyTrimPolicy(value.toString(), policy);
+        } else if( fieldType == QMetaType(QMetaType::QDate) or fieldType == QMetaType(QMetaType::QDateTime)) {
+            // dates/datetimes are stored as ISO text (yyyy-MM-dd[THH:mm:ss]); a stray incoming
+            // string (e.g. from a DB copy/import) should be null/empty or obey that format --
+            // trim incidental whitespace, treat empty as null, and let the conversion below
+            // reject anything that still doesn't parse as a valid date/datetime.
+            const QString trimmed =value.toString().trimmed();
+            if( trimmed.isEmpty()) {
+                if( nullPolicy == NullPolicy::useDefaultForNull)
+                    setValueToDefault(n);
+                else
+                    record.setValue(n, QVariant());
+                return true;
+            }
+            value = trimmed;
+        }
+    }
+    if( dbAffinityType(fieldType) == dbAffinityType(value.metaType())) {
+        record.setValue(n, value);
         return true;
     }
-    qInfo() << "TDI::setValue: Wrong field type for insertion -> converting" << v.metaType().name() << " -> " << record.field(n).metaType().name();
-    QVariant vf (v);
+    qInfo() << "TDI::setValue: Wrong field type for insertion -> converting" << value.metaType().name() << " -> " << record.field(n).metaType().name();
+    QVariant vf (value);
     if( vf.convert(record.field(n).metaType())) {
         record.setValue(n, vf);
         return true;

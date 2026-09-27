@@ -111,6 +111,44 @@ bool repairLegacyTimestamps(const QSqlDatabase& db)
                                  db);
 }
 
+// text written by DKV2 versions before db version 17 was stored untrimmed;
+// apply the dbfield::TrimPolicy (as TableDataInserter does for new data) to existing rows.
+// A row whose cleaned value would violate a UNIQUE constraint is left unchanged and logged.
+bool trimLegacyTextFields(const QSqlDatabase& db)
+{
+    int changed =0, skipped =0;
+    for (const dbtable& table : dkdbstructur.getTables()) {
+        for (const dbfield& field : table.Fields()) {
+            const dbfield::TrimPolicy policy =field.getTrimPolicy();
+            if( policy == dbfield::TrimPolicy::none)
+                continue;
+            QVector<QSqlRecord> records;
+            if( not executeSql(qsl("SELECT rowid, [%1] FROM [%2] WHERE [%1] IS NOT NULL").arg(field.name(), table.Name()), records, db))
+                RETURN_ERR(false, qsl("failed to read text field for trimming"), table.Name(), field.name());
+            const QString updateSql {qsl("UPDATE [%1] SET [%2] = ? WHERE rowid = ?").arg(table.Name(), field.name())};
+            for (const QSqlRecord& rec : std::as_const(records)) {
+                const QString original =rec.value(1).toString();
+                const QString cleaned =dbfield::applyTrimPolicy(original, policy);
+                if( cleaned == original)
+                    continue;
+                if( executeSql_wNoRecords(updateSql, QVector<QVariant>{cleaned, rec.value(0)}, db))
+                    changed++;
+                else {
+                    skipped++;
+                    qWarning() << "trimLegacyTextFields: could not update" << table.Name() << field.name()
+                               << "rowid" << rec.value(0).toLongLong() << "- value left unchanged:" << original;
+                }
+            }
+        }
+    }
+    qInfo() << "trimLegacyTextFields: values cleaned:" << changed << "/ left unchanged due to conflicts:" << skipped;
+    const QString markerSql {qsl("INSERT OR REPLACE INTO Meta (Name, Wert) VALUES (?, ?)")};
+    return executeSql_wNoRecords(markerSql,
+                                 QVector<QVariant>{qsl("migration.17.TrimText"),
+                                                   qsl("cleaned %1, skipped %2").arg(changed).arg(skipped)},
+                                 db);
+}
+
 bool updateViewsAndIndices_if_needed(const QSqlDatabase& db = QSqlDatabase::database())
 {   LOG_CALL;
     QString lastProgramVersion = dbConfig::read_DKV2_Version(db);
@@ -231,6 +269,9 @@ bool postDB_UpgradeActions(int sourceVersion, const QString& dbName)
     }
     if( sourceVersion < 17) {
         if( not repairLegacyTimestamps(db))
+            return false;
+        // before the Zeitstempel triggers are installed, so cleaning does not touch Zeitstempel
+        if( not trimLegacyTextFields(db))
             return false;
     }
     if( not insertDKDB_TimestampTriggers(db))

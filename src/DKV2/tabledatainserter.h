@@ -30,6 +30,9 @@ private:
     // data
     QString tablename;
     QSqlRecord record;
+    // dbfield metadata (e.g. TrimPolicy) is lost when dbfield is sliced down to
+    // plain QSqlField for the record; keep what setValue() needs separately.
+    QHash<QString, dbfield::TrimPolicy> trimPolicies;
 };
 
 

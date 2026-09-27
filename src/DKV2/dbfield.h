@@ -6,6 +6,11 @@
 class dbfield : public QSqlField
 {
 public: // types
+    // whitespace handling applied to QString values before they are written to the DB
+    // (see TableDataInserter::setValue): trim = strip leading/trailing whitespace only,
+    // embedded newlines are kept (multi-line free text); trimAndFlatten = additionally
+    // replace embedded newlines with a single space (single-line fields, e.g. names).
+    enum class TrimPolicy { none, trim, trimAndFlatten };
     // constr. destr. & access fu
     explicit dbfield() : QSqlField(){}
     dbfield(const QString& name,
@@ -27,6 +32,9 @@ public: // types
     dbfield setDefault(const QVariant& defaultvalue){ Q_ASSERT(unique == false); setDefaultValue(defaultvalue); return *this;}
     dbfield setAutoInc(const bool a=true){ if(a) setPrimaryKey (); setAutoValue(a); return *this;}
     dbfield setDefaultNow() { setDefaultValue(QVariant()); timeStamp =true; return *this;}
+    dbfield setTrimPolicy(const TrimPolicy p){ Q_ASSERT(metaType() == QMetaType(QMetaType::QString)); trimPolicy =p; return *this;}
+    TrimPolicy getTrimPolicy() const { return trimPolicy;}
+    static QString applyTrimPolicy(QString s, TrimPolicy policy);
 private:
     // somewhat a helper
     static bool isSupportedDBType(const QMetaType::Type t);
@@ -34,6 +42,7 @@ private:
     bool unique = false;
     bool primaryKey=false;
     bool timeStamp =false;
+    TrimPolicy trimPolicy = TrimPolicy::none;
 };
 
 enum ODOU_Action { NO_ACTION, RESTRICT, SET_NULL, SET_DEFAULT, CASCADE};

@@ -243,5 +243,76 @@ void test_dkdbhelper::test_postDbUpgradeActions_backfillsZeitstempelHistorically
     }
 }
 
+namespace {
+void seedUntrimmedLegacyData(const QString& filename)
+{
+    autoDb db(filename, qsl("seed-untrimmed-db"));
+    QVERIFY(db.db.isOpen());
+    // creditor 1: untrimmed, cleaning is conflict free
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Kreditoren (id, Vorname, Nachname, Strasse, Plz, Stadt, Anmerkung, Zeitstempel) "
+            "VALUES (1, ' Ada ', 'Love\nlace', 'Memory Lane 1 ', '68167', 'Mannheim', ' line 1\nline 2 ', NULL)"), db));
+    // creditors 2 and 3: cleaning 3 would make it identical to 2 -> UNIQUE conflict, 3 stays unchanged
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Kreditoren (id, Vorname, Nachname, Strasse, Plz, Stadt, Zeitstempel) "
+            "VALUES (2, 'Grace', 'Hopper', 'Navy Rd 2', '12345', 'Arlington', NULL)"), db));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Kreditoren (id, Vorname, Nachname, Strasse, Plz, Stadt, Zeitstempel) "
+            "VALUES (3, 'Grace ', 'Hopper', 'Navy Rd 2', '12345', 'Arlington', NULL)"), db));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO Vertraege "
+            "(id, KreditorId, Kennung, Anmerkung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum, Zeitstempel) "
+            "VALUES (1, 1, '  DK-TST-2026-000001 \r\n', ' note\nsecond line ', 150, 10000, 1, '2024-01-15', 6, NULL, '9999-12-31', TRUE, '9999-12-31', NULL)"), db));
+    QVERIFY(executeSql_wNoRecords(
+        qsl("INSERT INTO exVertraege "
+            "(id, KreditorId, Kennung, Anmerkung, ZSatz, Betrag, thesaurierend, Vertragsdatum, Kfrist, AnlagenId, LaufzeitEnde, zActive, KueDatum, Zeitstempel) "
+            "VALUES (2, 1, 'DK-TST-2023-000002 ', '', 150, 10000, 1, '2023-05-10', 6, NULL, '2023-12-31', TRUE, '9999-12-31', NULL)"), db));
+}
+}
 
+void test_dkdbhelper::test_postDbUpgradeActions_trimsLegacyTextFields()
+{
+    TestTempDir tmp(this);
+    QVERIFY(tmp.isValid());
+    const QString filename =QDir(tmp.path()).filePath(qsl("upgrade-trim.sqlite"));
+    QVERIFY(createNewDatabaseFileWDefaultContent(filename, zs_30360, dkdbstructur, false));
+    seedUntrimmedLegacyData(filename);
 
+    QVERIFY(postDB_UpgradeActions(16, filename));
+
+    autoDb db(filename, qsl("verify-trimmed-db"));
+    QVERIFY(db.db.isOpen());
+    // trimAndFlatten
+    QCOMPARE(executeSingleValueSql(qsl("Vorname"),  creditor::tablename, qsl("id = 1"), db).toString(), qsl("Ada"));
+    QCOMPARE(executeSingleValueSql(qsl("Nachname"), creditor::tablename, qsl("id = 1"), db).toString(), qsl("Love lace"));
+    QCOMPARE(executeSingleValueSql(qsl("Strasse"),  creditor::tablename, qsl("id = 1"), db).toString(), qsl("Memory Lane 1"));
+    QCOMPARE(executeSingleValueSql(qsl("Kennung"), contract::tnContracts,   qsl("id = 1"), db).toString(), qsl("DK-TST-2026-000001"));
+    QCOMPARE(executeSingleValueSql(qsl("Kennung"), contract::tnExContracts, qsl("id = 2"), db).toString(), qsl("DK-TST-2023-000002"));
+    // trim only: embedded newlines are kept
+    QCOMPARE(executeSingleValueSql(qsl("Anmerkung"), creditor::tablename,   qsl("id = 1"), db).toString(), qsl("line 1\nline 2"));
+    QCOMPARE(executeSingleValueSql(qsl("Anmerkung"), contract::tnContracts, qsl("id = 1"), db).toString(), qsl("note\nsecond line"));
+    // UNIQUE conflict: left unchanged, migration still succeeds
+    QCOMPARE(executeSingleValueSql(qsl("Vorname"), creditor::tablename, qsl("id = 3"), db).toString(), qsl("Grace "));
+    // cleaning ran before the triggers were installed -> historical Zeitstempel not overwritten
+    QCOMPARE(executeSingleValueSql(qsl("Zeitstempel"), contract::tnContracts, qsl("id = 1"), db).toString(),
+             qsl("2024-01-15 00:00:00"));
+    QCOMPARE(executeSingleValueSql(qsl("Wert"), qsl("Meta"), qsl("Name = 'migration.17.TrimText'"), db).toString(),
+             qsl("cleaned 7, skipped 1"));
+}
+
+void test_dkdbhelper::test_postDbUpgradeActions_noTrimFromVersion17()
+{
+    TestTempDir tmp(this);
+    QVERIFY(tmp.isValid());
+    const QString filename =QDir(tmp.path()).filePath(qsl("upgrade-notrim.sqlite"));
+    QVERIFY(createNewDatabaseFileWDefaultContent(filename, zs_30360, dkdbstructur, false));
+    seedUntrimmedLegacyData(filename);
+
+    QVERIFY(postDB_UpgradeActions(17, filename));
+
+    autoDb db(filename, qsl("verify-untrimmed-db"));
+    QVERIFY(db.db.isOpen());
+    QCOMPARE(executeSingleValueSql(qsl("Vorname"), creditor::tablename,   qsl("id = 1"), db).toString(), qsl(" Ada "));
+    QCOMPARE(executeSingleValueSql(qsl("Kennung"), contract::tnContracts, qsl("id = 1"), db).toString(), qsl("  DK-TST-2026-000001 \r\n"));
+    QVERIFY(not executeSingleValueSql(qsl("Wert"), qsl("Meta"), qsl("Name = 'migration.17.TrimText'"), db).isValid());
+}

@@ -48,7 +48,7 @@ QString investment::toString() const
         investmentTable.append(dbfield(fnInvestmentInterest, QMetaType::Int).setNotNull());
         investmentTable.append(dbfield(fnInvestmentStart,    QMetaType::QDate).setNotNull());
         investmentTable.append(dbfield(fnInvestmentEnd,      QMetaType::QDate).setNotNull());
-        investmentTable.append(dbfield(fnInvestmentType,     QMetaType::QString).setNotNull());
+        investmentTable.append(dbfield(fnInvestmentType,     QMetaType::QString).setNotNull().setTrimPolicy(dbfield::TrimPolicy::trimAndFlatten));
         investmentTable.append(dbfield(fnInvestmentState,    QMetaType::Bool).setNotNull());
         QVector<dbfield> unique;
         unique.append(investmentTable[fnInvestmentInterest]);

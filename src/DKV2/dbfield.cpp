@@ -3,6 +3,17 @@
 #include "helper_core.h"
 #include "helpersql.h"
 
+#include <QRegularExpression>
+
+/* static */ QString dbfield::applyTrimPolicy(QString s, TrimPolicy policy)
+{
+    if( policy == TrimPolicy::none)
+        return s;
+    if( policy == TrimPolicy::trimAndFlatten)
+        s.replace(QRegularExpression(qsl("[\\r\\n]+")), qsl(" "));
+    return s.trimmed();
+}
+
 /* static */ bool dbfield::isSupportedDBType(QMetaType::Type t)
 {
     if(t == QMetaType::LongLong) return true; // index col
