@@ -54,6 +54,7 @@ private slots:
     void test_finalize();
     void test_finalLetter_onlyLastPayoutIsFinal();
     void test_finalLetter_showsStartSaldoForBookingsBeforeContractDate();
+    void test_letters_omitZeroAmountBookings();
     void test_readExContract();
 };
 

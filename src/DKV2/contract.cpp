@@ -1238,15 +1238,22 @@ QVariantMap contract::toVariantMap(QDate fromDate, QDate toDate) const
         }
     }
 
+    // bookings of 0,00 € (interest while payment was delayed, marker bookings like
+    // interest activation) carry no information for the creditor -> not listed in letters
+    QVector<booking> listedBookings;
+    for (const auto &b : std::as_const(yearBookings))
+        if (not qFuzzyIsNull(b.amount))
+            listedBookings.push_back(b);
+
     // Only include booking list if there is more than just the AS booking.
-    bool includeBookingList = !yearBookings.isEmpty();
-    if (yearBookings.size() == 1 &&
-        yearBookings[0].type == bookingType::annualInterestDeposit) {
+    bool includeBookingList = !listedBookings.isEmpty();
+    if (listedBookings.size() == 1 &&
+        listedBookings[0].type == bookingType::annualInterestDeposit) {
         includeBookingList = false;
     }
     if (includeBookingList) {
         QVariantList bl;
-        for (const auto &b : std::as_const(yearBookings))
+        for (const auto &b : std::as_const(listedBookings))
         {
             QVariantMap bookMap = {};
             bookMap["Date"] = b.date.toString(qsl("dd.MM.yyyy"));

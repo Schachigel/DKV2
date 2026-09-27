@@ -1570,6 +1570,32 @@ void test_contract::test_finalLetter_showsStartSaldoForBookingsBeforeContractDat
     QCOMPARE(vm.value(qsl("dStartBetrag")).toDouble(), 1000.);
 }
 
+void test_contract::test_letters_omitZeroAmountBookings()
+{
+    creditor cred(saveRandomCreditor());
+    contract cont(saveRandomContract(cred.id()));
+    cont.setInterestRate(2.0);
+    cont.setInterestModel(interestModel::payout);
+    cont.markInterestPaymentDelayed();
+    cont.updateConclusionDate(QDate(2020, 1, 1));
+    QVERIFY(cont.bookInitialPayment(QDate(2020, 1, 10), 1000.));
+    // delayed interest: annual settlement books Jahreszins 0 + Auszahlung 0
+    QCOMPARE(cont.annualSettlement(2020), 2020);
+    const contractId_t contractId = cont.id();
+    QVERIFY(getNbrOfBookings(contractId) > 1);
+    double fi =0., fp =0.;
+    QVERIFY(cont.finalize(false, QDate(2021, 3, 31), fi, fp));
+
+    contract ex(contractId, true);
+    const QVariantList bookings =ex.toVariantMap().value(qsl("Buchungen")).toList();
+    QStringList texts;
+    for (const QVariant& b : bookings) {
+        QVERIFY(b.toMap().value(qsl("Betrag")).toString() not_eq s_d2euro(0.));
+        texts.append(b.toMap().value(qsl("Text")).toString());
+    }
+    QCOMPARE(texts, (QStringList{bookingTypeDisplayString(bookingType::deposit), qsl("Finale Auszahlung")}));
+}
+
 void test_contract::test_readExContract()
 {
     creditor c(saveRandomCreditor ());

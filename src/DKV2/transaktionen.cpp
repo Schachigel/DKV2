@@ -692,6 +692,8 @@ void terminateContract_Final(contract &c) {
     if (not wiz.field(qsl("confirm")).toBool())
         return;
     double interest = 0., finalValue = 0.;
+    // finalize() resets c, so keep the id to load the archived contract afterwards
+    const contractId_t finalizedId = c.id();
     if (not c.finalize(false, wiz.field(qsl("date")).toDate(), interest,
                        finalValue)) {
         QMessageBox::warning(nullptr, qsl("Fehler"),
@@ -700,13 +702,10 @@ void terminateContract_Final(contract &c) {
         qInfo() << "failed to terminate contract";
         return;
     }
-    if (wiz.field(qsl("print")).toBool())
-
-    {
-        // todo        printFinalizedContractAsCsv(c.id ());
+    if (wiz.field(qsl("print")).toBool()) {
+        contract finalized(finalizedId, true);
+        finalizeContractLetter(&finalized);
     }
-
-    return;
 }
 void cancelContract(contract &c) {
     LOG_CALL;

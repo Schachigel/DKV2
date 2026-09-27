@@ -45,9 +45,11 @@ wpTerminateContract_ConfirmationPage::wpTerminateContract_ConfirmationPage(QWidg
 {
     setTitle(qsl("Vertrag beenden"));
     subTitleLabel->setWordWrap(true);
-    QCheckBox *cbPrint = new QCheckBox(qsl("Beleg als CSV Datei speichern"));
+    QCheckBox *cbPrint = new QCheckBox(qsl("Endabrechnung (Brief und CSV Datei) erstellen"));
+    cbPrint->setChecked(true);
     registerField(qsl("print"), cbPrint);
-    cbPrint->setToolTip(qsl("Die Datei wird in dem konfigurierten Ausgabeordner gespeichert"));
+    cbPrint->setToolTip(qsl("Die Dateien werden in dem konfigurierten Ausgabeordner gespeichert. "
+                            "Sie können auch später über das Kontextmenü der beendeten Verträge erstellt werden."));
     QCheckBox* cbConfirm = new QCheckBox(qsl("Die Engaben sind korrekt"));
     registerField(qsl("confirm"), cbConfirm);
     cbConfirm->setToolTip(qsl("Bestätige, dass die Eingaben richtig sind!"));
